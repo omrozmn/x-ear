@@ -25,10 +25,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BodyUploadAndProcessFiles,
+  BodyCreateSgkUpload,
   EReceiptQueryRequest,
   HTTPValidationError,
-  ListDeliveredEreceiptsParams,
+  ListSgkEReceiptDeliveredParams,
   PatientRightsQueryRequest,
   UploadSGKDocumentRequest,
   WorkflowCreateRequest,
@@ -138,7 +138,7 @@ export function useListSgkDocuments<TData = Awaited<ReturnType<typeof listSgkDoc
  * Upload SGK document
  * @summary Upload Sgk Document
  */
-export const uploadSgkDocument = (
+export const createSgkDocuments = (
     uploadSGKDocumentRequest: UploadSGKDocumentRequest,
  signal?: AbortSignal
 ) => {
@@ -154,11 +154,11 @@ export const uploadSgkDocument = (
   
 
 
-export const getUploadSgkDocumentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadSgkDocument>>, TError,{data: UploadSGKDocumentRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof uploadSgkDocument>>, TError,{data: UploadSGKDocumentRequest}, TContext> => {
+export const getCreateSgkDocumentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkDocuments>>, TError,{data: UploadSGKDocumentRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSgkDocuments>>, TError,{data: UploadSGKDocumentRequest}, TContext> => {
 
-const mutationKey = ['uploadSgkDocument'];
+const mutationKey = ['createSgkDocuments'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -168,10 +168,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadSgkDocument>>, {data: UploadSGKDocumentRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSgkDocuments>>, {data: UploadSGKDocumentRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  uploadSgkDocument(data,)
+          return  createSgkDocuments(data,)
         }
 
         
@@ -179,23 +179,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UploadSgkDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof uploadSgkDocument>>>
-    export type UploadSgkDocumentMutationBody = UploadSGKDocumentRequest
-    export type UploadSgkDocumentMutationError = HTTPValidationError
+    export type CreateSgkDocumentsMutationResult = NonNullable<Awaited<ReturnType<typeof createSgkDocuments>>>
+    export type CreateSgkDocumentsMutationBody = UploadSGKDocumentRequest
+    export type CreateSgkDocumentsMutationError = HTTPValidationError
 
     /**
  * @summary Upload Sgk Document
  */
-export const useUploadSgkDocument = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadSgkDocument>>, TError,{data: UploadSGKDocumentRequest}, TContext>, }
+export const useCreateSgkDocuments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkDocuments>>, TError,{data: UploadSGKDocumentRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof uploadSgkDocument>>,
+        Awaited<ReturnType<typeof createSgkDocuments>>,
         TError,
         {data: UploadSGKDocumentRequest},
         TContext
       > => {
 
-      const mutationOptions = getUploadSgkDocumentMutationOptions(options);
+      const mutationOptions = getCreateSgkDocumentsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -358,13 +358,13 @@ export const useDeleteSgkDocument = <TError = HTTPValidationError,
  * Upload and process SGK files with OCR
  * @summary Upload And Process Files
  */
-export const uploadAndProcessFiles = (
-    bodyUploadAndProcessFiles: BodyUploadAndProcessFiles,
+export const createSgkUpload = (
+    bodyCreateSgkUpload: BodyCreateSgkUpload,
  signal?: AbortSignal
 ) => {
       
       const formData = new FormData();
-bodyUploadAndProcessFiles.files.forEach(value => formData.append(`files`, value));
+bodyCreateSgkUpload.files.forEach(value => formData.append(`files`, value));
 
       return customInstance<unknown>(
       {url: `/api/sgk/upload`, method: 'POST',
@@ -376,11 +376,11 @@ bodyUploadAndProcessFiles.files.forEach(value => formData.append(`files`, value)
   
 
 
-export const getUploadAndProcessFilesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadAndProcessFiles>>, TError,{data: BodyUploadAndProcessFiles}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof uploadAndProcessFiles>>, TError,{data: BodyUploadAndProcessFiles}, TContext> => {
+export const getCreateSgkUploadMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkUpload>>, TError,{data: BodyCreateSgkUpload}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSgkUpload>>, TError,{data: BodyCreateSgkUpload}, TContext> => {
 
-const mutationKey = ['uploadAndProcessFiles'];
+const mutationKey = ['createSgkUpload'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -390,10 +390,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadAndProcessFiles>>, {data: BodyUploadAndProcessFiles}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSgkUpload>>, {data: BodyCreateSgkUpload}> = (props) => {
           const {data} = props ?? {};
 
-          return  uploadAndProcessFiles(data,)
+          return  createSgkUpload(data,)
         }
 
         
@@ -401,23 +401,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UploadAndProcessFilesMutationResult = NonNullable<Awaited<ReturnType<typeof uploadAndProcessFiles>>>
-    export type UploadAndProcessFilesMutationBody = BodyUploadAndProcessFiles
-    export type UploadAndProcessFilesMutationError = HTTPValidationError
+    export type CreateSgkUploadMutationResult = NonNullable<Awaited<ReturnType<typeof createSgkUpload>>>
+    export type CreateSgkUploadMutationBody = BodyCreateSgkUpload
+    export type CreateSgkUploadMutationError = HTTPValidationError
 
     /**
  * @summary Upload And Process Files
  */
-export const useUploadAndProcessFiles = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadAndProcessFiles>>, TError,{data: BodyUploadAndProcessFiles}, TContext>, }
+export const useCreateSgkUpload = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkUpload>>, TError,{data: BodyCreateSgkUpload}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof uploadAndProcessFiles>>,
+        Awaited<ReturnType<typeof createSgkUpload>>,
         TError,
-        {data: BodyUploadAndProcessFiles},
+        {data: BodyCreateSgkUpload},
         TContext
       > => {
 
-      const mutationOptions = getUploadAndProcessFilesMutationOptions(options);
+      const mutationOptions = getCreateSgkUploadMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -425,7 +425,7 @@ export const useUploadAndProcessFiles = <TError = HTTPValidationError,
  * Get SGK documents for a specific patient
  * @summary Get Patient Sgk Documents
  */
-export const getPatientSgkDocuments = (
+export const listPatientSgkDocuments = (
     patientId: string,
  signal?: AbortSignal
 ) => {
@@ -440,69 +440,69 @@ export const getPatientSgkDocuments = (
 
 
 
-export const getGetPatientSgkDocumentsQueryKey = (patientId?: string,) => {
+export const getListPatientSgkDocumentsQueryKey = (patientId?: string,) => {
     return [
     `/api/patients/${patientId}/sgk-documents`
     ] as const;
     }
 
     
-export const getGetPatientSgkDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError, TData>>, }
+export const getListPatientSgkDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPatientSgkDocumentsQueryKey(patientId);
+  const queryKey =  queryOptions?.queryKey ?? getListPatientSgkDocumentsQueryKey(patientId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPatientSgkDocuments>>> = ({ signal }) => getPatientSgkDocuments(patientId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientSgkDocuments>>> = ({ signal }) => listPatientSgkDocuments(patientId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPatientSgkDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof getPatientSgkDocuments>>>
-export type GetPatientSgkDocumentsQueryError = HTTPValidationError
+export type ListPatientSgkDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientSgkDocuments>>>
+export type ListPatientSgkDocumentsQueryError = HTTPValidationError
 
 
-export function useGetPatientSgkDocuments<TData = Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError, TData>> & Pick<
+export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPatientSgkDocuments>>,
+          Awaited<ReturnType<typeof listPatientSgkDocuments>>,
           TError,
-          Awaited<ReturnType<typeof getPatientSgkDocuments>>
+          Awaited<ReturnType<typeof listPatientSgkDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPatientSgkDocuments<TData = Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError, TData>> & Pick<
+export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPatientSgkDocuments>>,
+          Awaited<ReturnType<typeof listPatientSgkDocuments>>,
           TError,
-          Awaited<ReturnType<typeof getPatientSgkDocuments>>
+          Awaited<ReturnType<typeof listPatientSgkDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPatientSgkDocuments<TData = Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError, TData>>, }
+export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Patient Sgk Documents
  */
 
-export function useGetPatientSgkDocuments<TData = Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientSgkDocuments>>, TError, TData>>, }
+export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPatientSgkDocumentsQueryOptions(patientId,options)
+  const queryOptions = getListPatientSgkDocumentsQueryOptions(patientId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -518,7 +518,7 @@ export function useGetPatientSgkDocuments<TData = Awaited<ReturnType<typeof getP
  * E-reçete sorgulama endpoint'i
  * @summary Query E Receipt
  */
-export const queryEReceipt = (
+export const createSgkEReceiptQuery = (
     eReceiptQueryRequest: EReceiptQueryRequest,
  signal?: AbortSignal
 ) => {
@@ -534,11 +534,11 @@ export const queryEReceipt = (
   
 
 
-export const getQueryEReceiptMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof queryEReceipt>>, TError,{data: EReceiptQueryRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof queryEReceipt>>, TError,{data: EReceiptQueryRequest}, TContext> => {
+export const getCreateSgkEReceiptQueryMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkEReceiptQuery>>, TError,{data: EReceiptQueryRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSgkEReceiptQuery>>, TError,{data: EReceiptQueryRequest}, TContext> => {
 
-const mutationKey = ['queryEReceipt'];
+const mutationKey = ['createSgkEReceiptQuery'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -548,10 +548,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof queryEReceipt>>, {data: EReceiptQueryRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSgkEReceiptQuery>>, {data: EReceiptQueryRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  queryEReceipt(data,)
+          return  createSgkEReceiptQuery(data,)
         }
 
         
@@ -559,23 +559,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type QueryEReceiptMutationResult = NonNullable<Awaited<ReturnType<typeof queryEReceipt>>>
-    export type QueryEReceiptMutationBody = EReceiptQueryRequest
-    export type QueryEReceiptMutationError = HTTPValidationError
+    export type CreateSgkEReceiptQueryMutationResult = NonNullable<Awaited<ReturnType<typeof createSgkEReceiptQuery>>>
+    export type CreateSgkEReceiptQueryMutationBody = EReceiptQueryRequest
+    export type CreateSgkEReceiptQueryMutationError = HTTPValidationError
 
     /**
  * @summary Query E Receipt
  */
-export const useQueryEReceipt = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof queryEReceipt>>, TError,{data: EReceiptQueryRequest}, TContext>, }
+export const useCreateSgkEReceiptQuery = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkEReceiptQuery>>, TError,{data: EReceiptQueryRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof queryEReceipt>>,
+        Awaited<ReturnType<typeof createSgkEReceiptQuery>>,
         TError,
         {data: EReceiptQueryRequest},
         TContext
       > => {
 
-      const mutationOptions = getQueryEReceiptMutationOptions(options);
+      const mutationOptions = getCreateSgkEReceiptQueryMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -583,8 +583,8 @@ export const useQueryEReceipt = <TError = HTTPValidationError,
  * List delivered e-receipts grouped by patient
  * @summary List Delivered Ereceipts
  */
-export const listDeliveredEreceipts = (
-    params?: ListDeliveredEreceiptsParams,
+export const listSgkEReceiptDelivered = (
+    params?: ListSgkEReceiptDeliveredParams,
  signal?: AbortSignal
 ) => {
       
@@ -599,69 +599,69 @@ export const listDeliveredEreceipts = (
 
 
 
-export const getListDeliveredEreceiptsQueryKey = (params?: ListDeliveredEreceiptsParams,) => {
+export const getListSgkEReceiptDeliveredQueryKey = (params?: ListSgkEReceiptDeliveredParams,) => {
     return [
     `/api/sgk/e-receipts/delivered`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListDeliveredEreceiptsQueryOptions = <TData = Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError = HTTPValidationError>(params?: ListDeliveredEreceiptsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError, TData>>, }
+export const getListSgkEReceiptDeliveredQueryOptions = <TData = Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError = HTTPValidationError>(params?: ListSgkEReceiptDeliveredParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListDeliveredEreceiptsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListSgkEReceiptDeliveredQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeliveredEreceipts>>> = ({ signal }) => listDeliveredEreceipts(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>> = ({ signal }) => listSgkEReceiptDelivered(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListDeliveredEreceiptsQueryResult = NonNullable<Awaited<ReturnType<typeof listDeliveredEreceipts>>>
-export type ListDeliveredEreceiptsQueryError = HTTPValidationError
+export type ListSgkEReceiptDeliveredQueryResult = NonNullable<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>>
+export type ListSgkEReceiptDeliveredQueryError = HTTPValidationError
 
 
-export function useListDeliveredEreceipts<TData = Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError = HTTPValidationError>(
- params: undefined |  ListDeliveredEreceiptsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError, TData>> & Pick<
+export function useListSgkEReceiptDelivered<TData = Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError = HTTPValidationError>(
+ params: undefined |  ListSgkEReceiptDeliveredParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listDeliveredEreceipts>>,
+          Awaited<ReturnType<typeof listSgkEReceiptDelivered>>,
           TError,
-          Awaited<ReturnType<typeof listDeliveredEreceipts>>
+          Awaited<ReturnType<typeof listSgkEReceiptDelivered>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListDeliveredEreceipts<TData = Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError = HTTPValidationError>(
- params?: ListDeliveredEreceiptsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError, TData>> & Pick<
+export function useListSgkEReceiptDelivered<TData = Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError = HTTPValidationError>(
+ params?: ListSgkEReceiptDeliveredParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listDeliveredEreceipts>>,
+          Awaited<ReturnType<typeof listSgkEReceiptDelivered>>,
           TError,
-          Awaited<ReturnType<typeof listDeliveredEreceipts>>
+          Awaited<ReturnType<typeof listSgkEReceiptDelivered>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListDeliveredEreceipts<TData = Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError = HTTPValidationError>(
- params?: ListDeliveredEreceiptsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError, TData>>, }
+export function useListSgkEReceiptDelivered<TData = Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError = HTTPValidationError>(
+ params?: ListSgkEReceiptDeliveredParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Delivered Ereceipts
  */
 
-export function useListDeliveredEreceipts<TData = Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError = HTTPValidationError>(
- params?: ListDeliveredEreceiptsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeliveredEreceipts>>, TError, TData>>, }
+export function useListSgkEReceiptDelivered<TData = Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError = HTTPValidationError>(
+ params?: ListSgkEReceiptDeliveredParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDelivered>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListDeliveredEreceiptsQueryOptions(params,options)
+  const queryOptions = getListSgkEReceiptDeliveredQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -677,7 +677,7 @@ export function useListDeliveredEreceipts<TData = Awaited<ReturnType<typeof list
  * SGK hasta hakları sorgulama endpoint'i
  * @summary Query Patient Rights
  */
-export const queryPatientRights = (
+export const createSgkPatientRightQuery = (
     patientRightsQueryRequest: PatientRightsQueryRequest,
  signal?: AbortSignal
 ) => {
@@ -693,11 +693,11 @@ export const queryPatientRights = (
   
 
 
-export const getQueryPatientRightsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof queryPatientRights>>, TError,{data: PatientRightsQueryRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof queryPatientRights>>, TError,{data: PatientRightsQueryRequest}, TContext> => {
+export const getCreateSgkPatientRightQueryMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkPatientRightQuery>>, TError,{data: PatientRightsQueryRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSgkPatientRightQuery>>, TError,{data: PatientRightsQueryRequest}, TContext> => {
 
-const mutationKey = ['queryPatientRights'];
+const mutationKey = ['createSgkPatientRightQuery'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -707,10 +707,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof queryPatientRights>>, {data: PatientRightsQueryRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSgkPatientRightQuery>>, {data: PatientRightsQueryRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  queryPatientRights(data,)
+          return  createSgkPatientRightQuery(data,)
         }
 
         
@@ -718,23 +718,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type QueryPatientRightsMutationResult = NonNullable<Awaited<ReturnType<typeof queryPatientRights>>>
-    export type QueryPatientRightsMutationBody = PatientRightsQueryRequest
-    export type QueryPatientRightsMutationError = HTTPValidationError
+    export type CreateSgkPatientRightQueryMutationResult = NonNullable<Awaited<ReturnType<typeof createSgkPatientRightQuery>>>
+    export type CreateSgkPatientRightQueryMutationBody = PatientRightsQueryRequest
+    export type CreateSgkPatientRightQueryMutationError = HTTPValidationError
 
     /**
  * @summary Query Patient Rights
  */
-export const useQueryPatientRights = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof queryPatientRights>>, TError,{data: PatientRightsQueryRequest}, TContext>, }
+export const useCreateSgkPatientRightQuery = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkPatientRightQuery>>, TError,{data: PatientRightsQueryRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof queryPatientRights>>,
+        Awaited<ReturnType<typeof createSgkPatientRightQuery>>,
         TError,
         {data: PatientRightsQueryRequest},
         TContext
       > => {
 
-      const mutationOptions = getQueryPatientRightsMutationOptions(options);
+      const mutationOptions = getCreateSgkPatientRightQueryMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -742,7 +742,7 @@ export const useQueryPatientRights = <TError = HTTPValidationError,
  * SGK workflow oluşturma endpoint'i
  * @summary Create Sgk Workflow
  */
-export const createSgkWorkflow = (
+export const createSgkWorkflowCreate = (
     workflowCreateRequest: WorkflowCreateRequest,
  signal?: AbortSignal
 ) => {
@@ -758,11 +758,11 @@ export const createSgkWorkflow = (
   
 
 
-export const getCreateSgkWorkflowMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkWorkflow>>, TError,{data: WorkflowCreateRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createSgkWorkflow>>, TError,{data: WorkflowCreateRequest}, TContext> => {
+export const getCreateSgkWorkflowCreateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkWorkflowCreate>>, TError,{data: WorkflowCreateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSgkWorkflowCreate>>, TError,{data: WorkflowCreateRequest}, TContext> => {
 
-const mutationKey = ['createSgkWorkflow'];
+const mutationKey = ['createSgkWorkflowCreate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -772,10 +772,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSgkWorkflow>>, {data: WorkflowCreateRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSgkWorkflowCreate>>, {data: WorkflowCreateRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  createSgkWorkflow(data,)
+          return  createSgkWorkflowCreate(data,)
         }
 
         
@@ -783,23 +783,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateSgkWorkflowMutationResult = NonNullable<Awaited<ReturnType<typeof createSgkWorkflow>>>
-    export type CreateSgkWorkflowMutationBody = WorkflowCreateRequest
-    export type CreateSgkWorkflowMutationError = HTTPValidationError
+    export type CreateSgkWorkflowCreateMutationResult = NonNullable<Awaited<ReturnType<typeof createSgkWorkflowCreate>>>
+    export type CreateSgkWorkflowCreateMutationBody = WorkflowCreateRequest
+    export type CreateSgkWorkflowCreateMutationError = HTTPValidationError
 
     /**
  * @summary Create Sgk Workflow
  */
-export const useCreateSgkWorkflow = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkWorkflow>>, TError,{data: WorkflowCreateRequest}, TContext>, }
+export const useCreateSgkWorkflowCreate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkWorkflowCreate>>, TError,{data: WorkflowCreateRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createSgkWorkflow>>,
+        Awaited<ReturnType<typeof createSgkWorkflowCreate>>,
         TError,
         {data: WorkflowCreateRequest},
         TContext
       > => {
 
-      const mutationOptions = getCreateSgkWorkflowMutationOptions(options);
+      const mutationOptions = getCreateSgkWorkflowCreateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -807,7 +807,7 @@ export const useCreateSgkWorkflow = <TError = HTTPValidationError,
  * SGK workflow güncelleme endpoint'i
  * @summary Update Sgk Workflow
  */
-export const updateSgkWorkflow = (
+export const updateSgkWorkflowUpdate = (
     workflowId: string,
     workflowUpdateRequest: WorkflowUpdateRequest,
  ) => {
@@ -823,11 +823,11 @@ export const updateSgkWorkflow = (
   
 
 
-export const getUpdateSgkWorkflowMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflow>>, TError,{workflowId: string;data: WorkflowUpdateRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflow>>, TError,{workflowId: string;data: WorkflowUpdateRequest}, TContext> => {
+export const getUpdateSgkWorkflowUpdateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflowUpdate>>, TError,{workflowId: string;data: WorkflowUpdateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflowUpdate>>, TError,{workflowId: string;data: WorkflowUpdateRequest}, TContext> => {
 
-const mutationKey = ['updateSgkWorkflow'];
+const mutationKey = ['updateSgkWorkflowUpdate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -837,10 +837,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSgkWorkflow>>, {workflowId: string;data: WorkflowUpdateRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSgkWorkflowUpdate>>, {workflowId: string;data: WorkflowUpdateRequest}> = (props) => {
           const {workflowId,data} = props ?? {};
 
-          return  updateSgkWorkflow(workflowId,data,)
+          return  updateSgkWorkflowUpdate(workflowId,data,)
         }
 
         
@@ -848,23 +848,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateSgkWorkflowMutationResult = NonNullable<Awaited<ReturnType<typeof updateSgkWorkflow>>>
-    export type UpdateSgkWorkflowMutationBody = WorkflowUpdateRequest
-    export type UpdateSgkWorkflowMutationError = HTTPValidationError
+    export type UpdateSgkWorkflowUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof updateSgkWorkflowUpdate>>>
+    export type UpdateSgkWorkflowUpdateMutationBody = WorkflowUpdateRequest
+    export type UpdateSgkWorkflowUpdateMutationError = HTTPValidationError
 
     /**
  * @summary Update Sgk Workflow
  */
-export const useUpdateSgkWorkflow = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflow>>, TError,{workflowId: string;data: WorkflowUpdateRequest}, TContext>, }
+export const useUpdateSgkWorkflowUpdate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflowUpdate>>, TError,{workflowId: string;data: WorkflowUpdateRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateSgkWorkflow>>,
+        Awaited<ReturnType<typeof updateSgkWorkflowUpdate>>,
         TError,
         {workflowId: string;data: WorkflowUpdateRequest},
         TContext
       > => {
 
-      const mutationOptions = getUpdateSgkWorkflowMutationOptions(options);
+      const mutationOptions = getUpdateSgkWorkflowUpdateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -965,7 +965,7 @@ export function useGetSgkWorkflow<TData = Awaited<ReturnType<typeof getSgkWorkfl
  * Update workflow status
  * @summary Update Workflow Status
  */
-export const updateWorkflowStatus = (
+export const updateSgkWorkflowStatus = (
     workflowId: string,
     workflowStatusUpdate: WorkflowStatusUpdate,
  ) => {
@@ -981,11 +981,11 @@ export const updateWorkflowStatus = (
   
 
 
-export const getUpdateWorkflowStatusMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkflowStatus>>, TError,{workflowId: string;data: WorkflowStatusUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateWorkflowStatus>>, TError,{workflowId: string;data: WorkflowStatusUpdate}, TContext> => {
+export const getUpdateSgkWorkflowStatusMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflowStatus>>, TError,{workflowId: string;data: WorkflowStatusUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflowStatus>>, TError,{workflowId: string;data: WorkflowStatusUpdate}, TContext> => {
 
-const mutationKey = ['updateWorkflowStatus'];
+const mutationKey = ['updateSgkWorkflowStatus'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -995,10 +995,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWorkflowStatus>>, {workflowId: string;data: WorkflowStatusUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSgkWorkflowStatus>>, {workflowId: string;data: WorkflowStatusUpdate}> = (props) => {
           const {workflowId,data} = props ?? {};
 
-          return  updateWorkflowStatus(workflowId,data,)
+          return  updateSgkWorkflowStatus(workflowId,data,)
         }
 
         
@@ -1006,23 +1006,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateWorkflowStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkflowStatus>>>
-    export type UpdateWorkflowStatusMutationBody = WorkflowStatusUpdate
-    export type UpdateWorkflowStatusMutationError = HTTPValidationError
+    export type UpdateSgkWorkflowStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateSgkWorkflowStatus>>>
+    export type UpdateSgkWorkflowStatusMutationBody = WorkflowStatusUpdate
+    export type UpdateSgkWorkflowStatusMutationError = HTTPValidationError
 
     /**
  * @summary Update Workflow Status
  */
-export const useUpdateWorkflowStatus = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkflowStatus>>, TError,{workflowId: string;data: WorkflowStatusUpdate}, TContext>, }
+export const useUpdateSgkWorkflowStatus = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSgkWorkflowStatus>>, TError,{workflowId: string;data: WorkflowStatusUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateWorkflowStatus>>,
+        Awaited<ReturnType<typeof updateSgkWorkflowStatus>>,
         TError,
         {workflowId: string;data: WorkflowStatusUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateWorkflowStatusMutationOptions(options);
+      const mutationOptions = getUpdateSgkWorkflowStatusMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1030,7 +1030,7 @@ export const useUpdateWorkflowStatus = <TError = HTTPValidationError,
  * Download patient form as PDF
  * @summary Download Patient Form
  */
-export const downloadPatientForm = (
+export const listSgkEReceiptDownloadPatientForm = (
     receiptId: string,
  signal?: AbortSignal
 ) => {
@@ -1045,69 +1045,69 @@ export const downloadPatientForm = (
 
 
 
-export const getDownloadPatientFormQueryKey = (receiptId?: string,) => {
+export const getListSgkEReceiptDownloadPatientFormQueryKey = (receiptId?: string,) => {
     return [
     `/api/sgk/e-receipts/${receiptId}/download-patient-form`
     ] as const;
     }
 
     
-export const getDownloadPatientFormQueryOptions = <TData = Awaited<ReturnType<typeof downloadPatientForm>>, TError = HTTPValidationError>(receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPatientForm>>, TError, TData>>, }
+export const getListSgkEReceiptDownloadPatientFormQueryOptions = <TData = Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError = HTTPValidationError>(receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getDownloadPatientFormQueryKey(receiptId);
+  const queryKey =  queryOptions?.queryKey ?? getListSgkEReceiptDownloadPatientFormQueryKey(receiptId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadPatientForm>>> = ({ signal }) => downloadPatientForm(receiptId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>> = ({ signal }) => listSgkEReceiptDownloadPatientForm(receiptId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(receiptId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadPatientForm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(receiptId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type DownloadPatientFormQueryResult = NonNullable<Awaited<ReturnType<typeof downloadPatientForm>>>
-export type DownloadPatientFormQueryError = HTTPValidationError
+export type ListSgkEReceiptDownloadPatientFormQueryResult = NonNullable<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>>
+export type ListSgkEReceiptDownloadPatientFormQueryError = HTTPValidationError
 
 
-export function useDownloadPatientForm<TData = Awaited<ReturnType<typeof downloadPatientForm>>, TError = HTTPValidationError>(
- receiptId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPatientForm>>, TError, TData>> & Pick<
+export function useListSgkEReceiptDownloadPatientForm<TData = Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError = HTTPValidationError>(
+ receiptId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadPatientForm>>,
+          Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>,
           TError,
-          Awaited<ReturnType<typeof downloadPatientForm>>
+          Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useDownloadPatientForm<TData = Awaited<ReturnType<typeof downloadPatientForm>>, TError = HTTPValidationError>(
- receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPatientForm>>, TError, TData>> & Pick<
+export function useListSgkEReceiptDownloadPatientForm<TData = Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError = HTTPValidationError>(
+ receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadPatientForm>>,
+          Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>,
           TError,
-          Awaited<ReturnType<typeof downloadPatientForm>>
+          Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useDownloadPatientForm<TData = Awaited<ReturnType<typeof downloadPatientForm>>, TError = HTTPValidationError>(
- receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPatientForm>>, TError, TData>>, }
+export function useListSgkEReceiptDownloadPatientForm<TData = Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError = HTTPValidationError>(
+ receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Download Patient Form
  */
 
-export function useDownloadPatientForm<TData = Awaited<ReturnType<typeof downloadPatientForm>>, TError = HTTPValidationError>(
- receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPatientForm>>, TError, TData>>, }
+export function useListSgkEReceiptDownloadPatientForm<TData = Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError = HTTPValidationError>(
+ receiptId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSgkEReceiptDownloadPatientForm>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getDownloadPatientFormQueryOptions(receiptId,options)
+  const queryOptions = getListSgkEReceiptDownloadPatientFormQueryOptions(receiptId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1125,7 +1125,7 @@ then insert a Patient record with a generated valid TC that contains the partial
 This endpoint is intended for local/dev only and makes a best-effort to avoid duplicate inserts.
  * @summary Seed Test Patients
  */
-export const seedTestPatients = (
+export const createSgkSeedTestPatients = (
     
  signal?: AbortSignal
 ) => {
@@ -1139,11 +1139,11 @@ export const seedTestPatients = (
   
 
 
-export const getSeedTestPatientsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof seedTestPatients>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof seedTestPatients>>, TError,void, TContext> => {
+export const getCreateSgkSeedTestPatientsMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkSeedTestPatients>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSgkSeedTestPatients>>, TError,void, TContext> => {
 
-const mutationKey = ['seedTestPatients'];
+const mutationKey = ['createSgkSeedTestPatients'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1153,10 +1153,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof seedTestPatients>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSgkSeedTestPatients>>, void> = () => {
           
 
-          return  seedTestPatients()
+          return  createSgkSeedTestPatients()
         }
 
         
@@ -1164,23 +1164,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SeedTestPatientsMutationResult = NonNullable<Awaited<ReturnType<typeof seedTestPatients>>>
+    export type CreateSgkSeedTestPatientsMutationResult = NonNullable<Awaited<ReturnType<typeof createSgkSeedTestPatients>>>
     
-    export type SeedTestPatientsMutationError = unknown
+    export type CreateSgkSeedTestPatientsMutationError = unknown
 
     /**
  * @summary Seed Test Patients
  */
-export const useSeedTestPatients = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof seedTestPatients>>, TError,void, TContext>, }
+export const useCreateSgkSeedTestPatients = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSgkSeedTestPatients>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof seedTestPatients>>,
+        Awaited<ReturnType<typeof createSgkSeedTestPatients>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getSeedTestPatientsMutationOptions(options);
+      const mutationOptions = getCreateSgkSeedTestPatientsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ error, errorInfo });
-    
+
     // Log error to console in development
     if (isDev()) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
@@ -61,11 +61,11 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex justify-center mb-4">
               <AlertTriangle className="h-12 w-12 text-red-500" />
             </div>
-            
+
             <h1 className="text-xl font-semibold text-gray-900 mb-2">
               Bir Hata Oluştu
             </h1>
-            
+
             <p className="text-gray-600 mb-6">
               Üzgünüz, beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin.
             </p>
@@ -74,7 +74,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-left">
                 <h3 className="text-sm font-medium text-red-800 mb-2">Hata Detayları:</h3>
                 <pre className="text-xs text-red-700 whitespace-pre-wrap overflow-auto max-h-32">
-                  {this.state.error.message}
+                  {this.state.error instanceof Error ? this.state.error.message : String(this.state.error)}
                   {this.state.errorInfo?.componentStack}
                 </pre>
               </div>
@@ -87,7 +87,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Tekrar Dene
               </Button>
-              
+
               <Button
                 onClick={this.handleGoHome}
                 variant="outline"

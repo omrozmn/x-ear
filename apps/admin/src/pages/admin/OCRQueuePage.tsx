@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useListOCRJobs } from '@/lib/api-client';
+import { useListOcrJobs } from '@/lib/api-client';
 import {
     ClockIcon,
     CheckCircleIcon,
@@ -10,7 +10,7 @@ import {
 
 const OCRQueuePage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('');
-    const { data: jobsData, isLoading, refetch } = useListOCRJobs({ status: statusFilter || undefined });
+    const { data: jobsData, isLoading, refetch } = useListOcrJobs({ status: statusFilter || undefined });
 
     const jobs = (jobsData as any)?.data || [];
 

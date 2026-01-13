@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useGetTenant } from '@/lib/api-client';
+import { useGetAdminTenant } from '@/lib/api-client';
 import { GeneralTab } from './GeneralTab';
 import { UsersTab } from './UsersTab';
 import { SubscriptionTab } from './SubscriptionTab';
@@ -32,7 +32,7 @@ export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: strin
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState('general');
 
-    const { data: tenantData, isLoading: loadingTenant, refetch } = useGetTenant(tenantId!, {
+    const { data: tenantData, isLoading: loadingTenant, refetch } = useGetAdminTenant(tenantId!, {
         query: {
             enabled: !!tenantId && isOpen
         }

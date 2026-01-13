@@ -64,7 +64,7 @@ def invalidate_role_permissions(db_session: Session, role_name: str):
 
 # --- Routes ---
 
-@router.get("/roles", response_model=ResponseEnvelope[List[RoleRead]])
+@router.get("/roles", operation_id="listRoles", response_model=ResponseEnvelope[List[RoleRead]])
 def list_roles(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -77,7 +77,7 @@ def list_roles(
         logger.error(f"List roles error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/roles", status_code=201, response_model=ResponseEnvelope[RoleRead])
+@router.post("/roles", operation_id="createRoles", status_code=201, response_model=ResponseEnvelope[RoleRead])
 def create_role(
     role_in: RoleCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -119,7 +119,7 @@ def create_role(
         logger.error(f"Create role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/roles/{role_id}", response_model=ResponseEnvelope[RoleRead])
+@router.put("/roles/{role_id}", operation_id="updateRole", response_model=ResponseEnvelope[RoleRead])
 def update_role(
     role_id: str,
     role_in: RoleUpdate,
@@ -165,7 +165,7 @@ def update_role(
         logger.error(f"Update role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/roles/{role_id}")
+@router.delete("/roles/{role_id}", operation_id="deleteRole")
 def delete_role(
     role_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -201,7 +201,7 @@ def delete_role(
 # This duplicate was causing OpenAPI conflicts
 
 
-@router.post("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleRead])
+@router.post("/roles/{role_id}/permissions", operation_id="createRolePermissions", response_model=ResponseEnvelope[RoleRead])
 def add_permission_to_role(
     role_id: str,
     perm_in: PermissionAssign,
@@ -240,7 +240,7 @@ def add_permission_to_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/roles/{role_id}/permissions/{permission_name}")
+@router.delete("/roles/{role_id}/permissions/{permission_name}", operation_id="deleteRolePermission")
 def remove_permission_from_role(
     role_id: str,
     permission_name: str,
@@ -279,7 +279,7 @@ def remove_permission_from_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleRead])
+@router.put("/roles/{role_id}/permissions", operation_id="updateRolePermissions", response_model=ResponseEnvelope[RoleRead])
 def set_role_permissions(
     role_id: str,
     permissions: List[str],

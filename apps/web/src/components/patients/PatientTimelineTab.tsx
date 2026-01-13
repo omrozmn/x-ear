@@ -42,6 +42,30 @@ interface PatientTimelineTabProps {
 export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient, onPatientUpdate: _onPatientUpdate }) => {
   const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
 
+  const formatDate = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return 'Tarih belirtilmemiş';
+      }
+      return date.toLocaleDateString('tr-TR');
+    } catch {
+      return 'Tarih belirtilmemiş';
+    }
+  };
+
+  const formatTime = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+      return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  };
+
   // State management
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
@@ -290,35 +314,13 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
     }
   };
 
-  const formatDate = (dateStr: string): string => {
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) {
-        return 'Tarih belirtilmemiş';
-      }
-      return date.toLocaleDateString('tr-TR');
-    } catch {
-      return 'Tarih belirtilmemiş';
-    }
-  };
 
-  const formatTime = (dateStr: string): string => {
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) {
-        return '';
-      }
-      return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">Hasta Geçmişi</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Hasta Geçmişi</h3>
         <div className="flex items-center space-x-2">
           <Badge variant="secondary" className="text-sm">
             {filteredEvents.length} olay
@@ -366,7 +368,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
             <div className="space-y-4">
               {/* Event type filter */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Olay Türleri
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -393,7 +395,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
               {/* Date range filter */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                     Başlangıç Tarihi
                   </label>
                   <Input
@@ -403,7 +405,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                     Bitiş Tarihi
                   </label>
                   <Input
@@ -440,15 +442,15 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
               <div className="flex items-center mb-4">
                 <div className="flex-shrink-0 w-3 h-3 bg-blue-600 rounded-full"></div>
                 <div className="ml-4">
-                  <h4 className="text-sm font-medium text-gray-900">{date}</h4>
-                  <p className="text-xs text-gray-500">{dayEvents.length} olay</p>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{date}</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{dayEvents.length} olay</p>
                 </div>
               </div>
 
               {/* Events for this date */}
               <div className="ml-7 space-y-4">
                 {dayEvents.map((event) => (
-                  <Card key={event.id} className="border-l-4 border-l-blue-500">
+                  <Card key={event.id} className="border-l-4 border-l-blue-500 dark:bg-gray-800 dark:border-gray-700">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3 flex-1">
@@ -459,7 +461,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
-                              <h5 className="text-sm font-medium text-gray-900">{event.title}</h5>
+                              <h5 className="text-sm font-medium text-gray-900 dark:text-white">{event.title}</h5>
                               {event.priority && (
                                 <Badge className={`text-xs ${getPriorityColor(event.priority)}`}>
                                   {event.priority}
@@ -471,8 +473,8 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">{event.description}</p>
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{event.description}</p>
+                            <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
                               <span className="flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
                                 {formatTime(event.date)}
@@ -481,8 +483,8 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
 
                             {/* Expanded metadata */}
                             {expandedEvents.has(event.id) && event.metadata && (
-                              <div className="mt-3 p-3 bg-gray-50 rounded-md">
-                                <h6 className="text-xs font-medium text-gray-700 mb-2">Detaylar</h6>
+                              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                                <h6 className="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Detaylar</h6>
                                 <div className="space-y-1">
                                   {Object.entries(event.metadata).map(([key, value]) => {
                                     const keyMapping: Record<string, string> = {
@@ -509,8 +511,8 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
 
                                     return (
                                       <div key={key} className="flex justify-between text-xs">
-                                        <span className="text-gray-500">{keyMapping[key] || key}:</span>
-                                        <span className="text-gray-700">{displayValue}</span>
+                                        <span className="text-gray-500 dark:text-gray-400">{keyMapping[key] || key}:</span>
+                                        <span className="text-gray-700 dark:text-gray-300">{displayValue}</span>
                                       </div>
                                     );
                                   })}
@@ -545,11 +547,11 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
           ))}
         </div>
       ) : (
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="text-center py-8">
-            <div className="text-gray-500">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">Olay bulunamadı</p>
+            <div className="text-gray-500 dark:text-gray-400">
+              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+              <p className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">Olay bulunamadı</p>
               <p className="text-sm">
                 {searchTerm || selectedEventTypes.length > 0 || dateRange
                   ? 'Filtrelerinizi değiştirmeyi deneyin'

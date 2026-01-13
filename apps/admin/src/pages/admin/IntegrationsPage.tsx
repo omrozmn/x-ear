@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Zap, Save, RefreshCw, CheckCircle, XCircle, FileText } from 'lucide-react';
-import { useGetAdminIntegrations } from '@/lib/api-client';
+import { useListAdminIntegrations } from '@/lib/api-client';
 import { adminApi } from '@/lib/apiMutator';
 import toast from 'react-hot-toast';
 
 export default function IntegrationsPage() {
     const queryClient = useQueryClient();
-    const { data: integrationsData, isLoading } = useGetAdminIntegrations({});
+    const { data: integrationsData, isLoading } = useListAdminIntegrations({});
 
     const [smsConfig, setSmsConfig] = useState({
         provider: 'vatan-sms',

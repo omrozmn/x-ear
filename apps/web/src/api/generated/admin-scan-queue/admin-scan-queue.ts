@@ -25,8 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminScanQueueParams,
   HTTPValidationError,
+  ListAdminScanQueueParams,
   ResponseEnvelope
 } from '.././schemas';
 
@@ -39,7 +39,7 @@ import { customInstance } from '../../orval-mutator';
  * Initialize Scan Queue table
  * @summary Init Db
  */
-export const initAdminScanQueueDb = (
+export const createAdminScanQueueInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -53,11 +53,11 @@ export const initAdminScanQueueDb = (
   
 
 
-export const getInitAdminScanQueueDbMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminScanQueueDb>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initAdminScanQueueDb>>, TError,void, TContext> => {
+export const getCreateAdminScanQueueInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminScanQueueInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminScanQueueInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initAdminScanQueueDb'];
+const mutationKey = ['createAdminScanQueueInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -67,10 +67,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initAdminScanQueueDb>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminScanQueueInitDb>>, void> = () => {
           
 
-          return  initAdminScanQueueDb()
+          return  createAdminScanQueueInitDb()
         }
 
         
@@ -78,23 +78,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitAdminScanQueueDbMutationResult = NonNullable<Awaited<ReturnType<typeof initAdminScanQueueDb>>>
+    export type CreateAdminScanQueueInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminScanQueueInitDb>>>
     
-    export type InitAdminScanQueueDbMutationError = unknown
+    export type CreateAdminScanQueueInitDbMutationError = unknown
 
     /**
  * @summary Init Db
  */
-export const useInitAdminScanQueueDb = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminScanQueueDb>>, TError,void, TContext>, }
+export const useCreateAdminScanQueueInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminScanQueueInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initAdminScanQueueDb>>,
+        Awaited<ReturnType<typeof createAdminScanQueueInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitAdminScanQueueDbMutationOptions(options);
+      const mutationOptions = getCreateAdminScanQueueInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -102,8 +102,8 @@ export const useInitAdminScanQueueDb = <TError = unknown,
  * Get scan queue items
  * @summary Get Scan Queue
  */
-export const getAdminScanQueue = (
-    params?: GetAdminScanQueueParams,
+export const listAdminScanQueue = (
+    params?: ListAdminScanQueueParams,
  signal?: AbortSignal
 ) => {
       
@@ -118,69 +118,69 @@ export const getAdminScanQueue = (
 
 
 
-export const getGetAdminScanQueueQueryKey = (params?: GetAdminScanQueueParams,) => {
+export const getListAdminScanQueueQueryKey = (params?: ListAdminScanQueueParams,) => {
     return [
     `/api/admin/scan-queue`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminScanQueueQueryOptions = <TData = Awaited<ReturnType<typeof getAdminScanQueue>>, TError = HTTPValidationError>(params?: GetAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminScanQueue>>, TError, TData>>, }
+export const getListAdminScanQueueQueryOptions = <TData = Awaited<ReturnType<typeof listAdminScanQueue>>, TError = HTTPValidationError>(params?: ListAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminScanQueue>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminScanQueueQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminScanQueueQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminScanQueue>>> = ({ signal }) => getAdminScanQueue(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminScanQueue>>> = ({ signal }) => listAdminScanQueue(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminScanQueue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminScanQueue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminScanQueueQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminScanQueue>>>
-export type GetAdminScanQueueQueryError = HTTPValidationError
+export type ListAdminScanQueueQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminScanQueue>>>
+export type ListAdminScanQueueQueryError = HTTPValidationError
 
 
-export function useGetAdminScanQueue<TData = Awaited<ReturnType<typeof getAdminScanQueue>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminScanQueueParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminScanQueue>>, TError, TData>> & Pick<
+export function useListAdminScanQueue<TData = Awaited<ReturnType<typeof listAdminScanQueue>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminScanQueueParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminScanQueue>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminScanQueue>>,
+          Awaited<ReturnType<typeof listAdminScanQueue>>,
           TError,
-          Awaited<ReturnType<typeof getAdminScanQueue>>
+          Awaited<ReturnType<typeof listAdminScanQueue>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminScanQueue<TData = Awaited<ReturnType<typeof getAdminScanQueue>>, TError = HTTPValidationError>(
- params?: GetAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminScanQueue>>, TError, TData>> & Pick<
+export function useListAdminScanQueue<TData = Awaited<ReturnType<typeof listAdminScanQueue>>, TError = HTTPValidationError>(
+ params?: ListAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminScanQueue>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminScanQueue>>,
+          Awaited<ReturnType<typeof listAdminScanQueue>>,
           TError,
-          Awaited<ReturnType<typeof getAdminScanQueue>>
+          Awaited<ReturnType<typeof listAdminScanQueue>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminScanQueue<TData = Awaited<ReturnType<typeof getAdminScanQueue>>, TError = HTTPValidationError>(
- params?: GetAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminScanQueue>>, TError, TData>>, }
+export function useListAdminScanQueue<TData = Awaited<ReturnType<typeof listAdminScanQueue>>, TError = HTTPValidationError>(
+ params?: ListAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminScanQueue>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Scan Queue
  */
 
-export function useGetAdminScanQueue<TData = Awaited<ReturnType<typeof getAdminScanQueue>>, TError = HTTPValidationError>(
- params?: GetAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminScanQueue>>, TError, TData>>, }
+export function useListAdminScanQueue<TData = Awaited<ReturnType<typeof listAdminScanQueue>>, TError = HTTPValidationError>(
+ params?: ListAdminScanQueueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminScanQueue>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminScanQueueQueryOptions(params,options)
+  const queryOptions = getListAdminScanQueueQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -196,7 +196,7 @@ export function useGetAdminScanQueue<TData = Awaited<ReturnType<typeof getAdminS
  * Retry a failed scan
  * @summary Retry Scan
  */
-export const retryAdminScan = (
+export const createAdminScanQueueRetry = (
     scanId: string,
  signal?: AbortSignal
 ) => {
@@ -210,11 +210,11 @@ export const retryAdminScan = (
   
 
 
-export const getRetryAdminScanMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryAdminScan>>, TError,{scanId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof retryAdminScan>>, TError,{scanId: string}, TContext> => {
+export const getCreateAdminScanQueueRetryMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminScanQueueRetry>>, TError,{scanId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminScanQueueRetry>>, TError,{scanId: string}, TContext> => {
 
-const mutationKey = ['retryAdminScan'];
+const mutationKey = ['createAdminScanQueueRetry'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -224,10 +224,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof retryAdminScan>>, {scanId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminScanQueueRetry>>, {scanId: string}> = (props) => {
           const {scanId} = props ?? {};
 
-          return  retryAdminScan(scanId,)
+          return  createAdminScanQueueRetry(scanId,)
         }
 
         
@@ -235,23 +235,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RetryAdminScanMutationResult = NonNullable<Awaited<ReturnType<typeof retryAdminScan>>>
+    export type CreateAdminScanQueueRetryMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminScanQueueRetry>>>
     
-    export type RetryAdminScanMutationError = HTTPValidationError
+    export type CreateAdminScanQueueRetryMutationError = HTTPValidationError
 
     /**
  * @summary Retry Scan
  */
-export const useRetryAdminScan = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryAdminScan>>, TError,{scanId: string}, TContext>, }
+export const useCreateAdminScanQueueRetry = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminScanQueueRetry>>, TError,{scanId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof retryAdminScan>>,
+        Awaited<ReturnType<typeof createAdminScanQueueRetry>>,
         TError,
         {scanId: string},
         TContext
       > => {
 
-      const mutationOptions = getRetryAdminScanMutationOptions(options);
+      const mutationOptions = getCreateAdminScanQueueRetryMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

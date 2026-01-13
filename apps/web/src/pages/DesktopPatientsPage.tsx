@@ -90,17 +90,11 @@ export function DesktopPatientsPage() {
   };
 
   const handlePatientClick = (patient: Patient) => {
-    console.log('=== PATIENT CLICK ===');
-    console.log('Patient:', patient);
-    console.log('Patient ID:', patient.id);
     if (patient.id) {
-      console.log('Navigating to:', `/patients/${patient.id}`);
       navigate({
         to: '/patients/$patientId',
         params: { patientId: String(patient.id) }
       });
-    } else {
-      console.error('Patient ID is missing!');
     }
   };
 
@@ -111,7 +105,6 @@ export function DesktopPatientsPage() {
 
   const handleCSVUpload = async (file: File) => {
     // TODO: Implement CSV upload logic
-    console.log('CSV upload:', file);
     setShowCSVModal(false);
   };
 
@@ -138,7 +131,7 @@ export function DesktopPatientsPage() {
     }
   };
 
-  const handleTagUpdate = async (patientId: string, updates: any) => {
+  const handleTagUpdate = async (patientId: string, updates: { tags?: string[]; labels?: string[]; status?: PatientStatus; segment?: PatientSegment; acquisitionType?: string; branchId?: string }) => {
     try {
       await updatePatientMutation.mutateAsync({ patientId, updates });
       setTagUpdatePatient(null);
@@ -197,8 +190,8 @@ export function DesktopPatientsPage() {
 
   // Sorted patients
   const sortedPatients = [...filteredPatients].sort((a, b) => {
-    let aValue: any;
-    let bValue: any;
+    let aValue: string | number;
+    let bValue: string | number;
 
     switch (sortBy) {
       case 'name':
@@ -242,7 +235,6 @@ export function DesktopPatientsPage() {
               size="sm"
               onClick={() => {
                 // TODO: Navigate to settings page with patients tab active
-                console.log('TODO: Open settings with patients tab');
                 alert('TODO: Ayarlar sayfasında hastalar sekmesi açılacak');
               }}
             >
@@ -311,7 +303,7 @@ export function DesktopPatientsPage() {
                 placeholder="Ad, soyad, telefon veya TC ile ara..."
                 value={searchValue}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
+                className="pl-10 dark:bg-slate-800 dark:text-white dark:border-slate-700"
               />
             </div>
           </div>

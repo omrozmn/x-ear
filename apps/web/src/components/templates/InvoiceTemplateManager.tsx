@@ -66,6 +66,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
   // Load templates on component mount
   useEffect(() => {
     loadTemplates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTemplates = useCallback(async () => {
@@ -203,7 +204,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           isActive: true
         };
         
-        result = await InvoiceTemplateService.createTemplate(createData);
+        result = await InvoiceTemplateService.createCommunicationTemplates(createData);
         setState(prev => ({
           ...prev,
           templates: [...prev.templates, result]
@@ -220,7 +221,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           templateData: formData
         };
         
-        result = await InvoiceTemplateService.updateTemplate(formState.template.id, updateData);
+        result = await InvoiceTemplateService.updateCommunicationTemplate(formState.template.id, updateData);
         setState(prev => ({
           ...prev,
           templates: prev.templates.map(t => t.id === result.id ? result : t)
@@ -250,7 +251,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
     if (!confirmDialog.templateId) return;
 
     try {
-      await InvoiceTemplateService.deleteTemplate(confirmDialog.templateId);
+      await InvoiceTemplateService.deleteCommunicationTemplate(confirmDialog.templateId);
       setState(prev => ({
         ...prev,
         templates: prev.templates.filter(t => t.id !== confirmDialog.templateId)

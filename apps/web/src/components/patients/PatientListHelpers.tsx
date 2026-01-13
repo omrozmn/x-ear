@@ -7,7 +7,8 @@ import { Badge } from '@x-ear/ui-web';
  */
 
 export const getStatusBadge = (status?: string) => {
-  switch (status) {
+  const normalizedStatus = (status || '').toUpperCase();
+  switch (normalizedStatus) {
     case 'ACTIVE':
       return <Badge variant="success" size="sm">Aktif</Badge>;
     case 'INACTIVE':

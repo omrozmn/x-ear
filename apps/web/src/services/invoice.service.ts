@@ -22,14 +22,24 @@ import { INVOICES_DATA } from '../constants/storage-keys';
 import { outbox } from '../utils/outbox';
 import { unwrapObject, unwrapArray } from '../utils/response-unwrap';
 import {
-  createInvoicesInvoice,
+  createInvoices,
   getInvoice,
-  getInvoices
+  listInvoices
 } from '@/api/generated/invoices/invoices';
 import {
-  issueInvoice,
-  serveInvoicePdf
+  createInvoiceIssue,
+  listInvoicePdf
 } from '@/api/generated/invoice-actions/invoice-actions';
+import {
+  listInvoiceTemplates,
+  listInvoicePrintQueue,
+  createInvoicePrintQueue,
+  createInvoiceSendToGib,
+  createInvoiceBulkUpload
+} from '@/api/generated/invoices/invoices';
+import {
+  listAdminInvoices
+} from '@/api/generated/admin-invoices/admin-invoices';
 import { apiClient } from '../api/orval-mutator';
 
 
@@ -148,7 +158,7 @@ export class InvoiceService {
       currency: local.currency || 'TRY'
     };
 
-    const response = await createInvoicesInvoice(payload);
+    const response = await createInvoices(payload);
     const serverInv = unwrapObject<any>(response);
 
     if (serverInv && typeof serverInv === 'object' && serverInv.id) {
@@ -293,7 +303,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoicesInvoice(payload);
+      const response = await createInvoices(payload);
       const serverInv = unwrapObject<any>(response);
 
       if (serverInv && typeof serverInv === 'object' && serverInv.id) {
@@ -372,7 +382,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoicesInvoice(payload);
+      const response = await createInvoices(payload);
       const created = unwrapObject<any>(response);
 
       if (created && typeof created === 'object' && created.id) {
@@ -412,7 +422,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoicesInvoice(cancelPayload);
+      const response = await createInvoices(cancelPayload);
       const cancellation = unwrapObject<any>(response);
       if (cancellation && typeof cancellation === 'object' && cancellation.id) {
         const invoices = await this.loadInvoices();
@@ -545,9 +555,10 @@ export class InvoiceService {
       if (filters?.issueDateFrom) params.issueDateFrom = filters.issueDateFrom;
       if (filters?.issueDateTo) params.issueDateTo = filters.issueDateTo;
 
-      // Call API using axios directly (Swagger spec missing)
-      const response = await apiClient.get('/api/admin/invoices', { params });
-      const data = response.data as any;
+      // Call API using Orval-generated function
+      const response = await listAdminInvoices(params);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = response as any;
 
       // Handle various response shapes gracefully using unwrap helpers
       const items = unwrapArray<any>(data);
@@ -668,7 +679,7 @@ export class InvoiceService {
     }
 
     try {
-      await apiClient.post(`/api/invoices/${id}/send-to-gib`);
+      await createInvoiceSendToGib(Number(id));
       // Try to refresh server state
       const response = await getInvoice(Number(id));
       const serverInv = unwrapObject<any>(response);
@@ -691,14 +702,14 @@ export class InvoiceService {
    * This is used for the explicit "Fatura Kes" action — it will NOT directly send
    * to GİB, integrator will add UUID/signature and handle submission.
    */
-  async issueInvoice(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  async createInvoiceIssue(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
     // Ensure we have a server id before issuing — issuing requires a server-side
     // invoice record.
     try {
       const serverId = await this.resolveServerId(id);
       if (!serverId) return { success: false, error: 'Fatura henüz sunucuya gönderilmedi; önce senkronize edin.' };
 
-      const response = await issueInvoice(Number(serverId));
+      const response = await createInvoiceIssue(Number(serverId));
 
       if (!(response as any)?.success) {
         return { success: false, error: 'Issue failed' };
@@ -722,7 +733,7 @@ export class InvoiceService {
     }
   }
 
-  async cancelInvoice(id: string, reason?: string): Promise<Invoice> {
+  async createEfaturaCancel(id: string, reason?: string): Promise<Invoice> {
     const invoice = await this.getInvoice(id);
     if (!invoice) {
       throw new Error('Fatura bulunamadı');
@@ -795,37 +806,61 @@ export class InvoiceService {
 
   // Template Operations
   async getTemplates(): Promise<InvoiceTemplate[]> {
-    // Mock templates for now
-    return [
-      {
-        id: 'template-1',
-        name: 'Standart Fatura',
-        type: 'sale' as InvoiceType,
-        description: 'Genel kullanım için standart fatura şablonu',
-        category: 'general',
-        isDefault: true,
-        fields: ['customerName', 'items', 'totalAmount'],
-        templateData: {},
-        items: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'system'
-      },
-      {
-        id: 'template-2',
-        name: 'Proforma Fatura',
-        type: 'proforma' as InvoiceType,
-        description: 'Proforma fatura şablonu',
-        category: 'proforma',
-        isDefault: false,
-        fields: ['customerName', 'items', 'totalAmount', 'validUntil'],
-        templateData: {},
-        items: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'system'
-      }
-    ];
+    try {
+      const response = await listInvoiceTemplates();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = response as any;
+      const templates = Array.isArray(data) ? data : (data?.data || []);
+      return templates as InvoiceTemplate[];
+    } catch (error) {
+      console.warn('Failed to fetch templates from API:', error);
+      return [];
+    }
+  }
+
+  // New P1 Features
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async bulkUploadInvoices(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
+    try {
+      const response = await createInvoiceBulkUpload({ file });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = response as any;
+      return {
+        processed: result?.data?.processed || 0,
+        success: result?.data?.success || 0,
+        errors: result?.data?.errors || []
+      };
+    } catch (error) {
+      console.error('Invoice bulk upload failed:', error);
+      throw error;
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getPrintQueue(): Promise<any[]> {
+    try {
+      const response = await listInvoicePrintQueue();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = response as any;
+      return Array.isArray(data) ? data : (data?.data || []);
+    } catch (error) {
+      console.error('Failed to get print queue:', error);
+      return [];
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async addToPrintQueue(invoiceIds: string | string[]): Promise<any> {
+    try {
+      const ids = Array.isArray(invoiceIds) ? invoiceIds : [invoiceIds];
+      // Convert string IDs to numbers as backend expects number[]
+      const numericIds = ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+      const response = await createInvoicePrintQueue({ invoiceIds: numericIds });
+      return response;
+    } catch (error) {
+      console.error('Failed to add to print queue:', error);
+      throw error;
+    }
   }
 
   // Calculation Helpers
@@ -962,7 +997,7 @@ export class InvoiceService {
     }
 
     try {
-      const response = await serveInvoicePdf(Number(serverId)) as unknown as Blob;
+      const response = await listInvoicePdf(Number(serverId)) as unknown as Blob;
       return { success: true, data: response };
     } catch (error) {
       console.error('Error generating invoice PDF:', error);
@@ -994,7 +1029,7 @@ export class InvoiceService {
           data: response
         };
       }
-
+  
       return {
         success: false,
         error: response?.message || 'PDF verisi geçerli değil'

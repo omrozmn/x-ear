@@ -31,7 +31,7 @@ import { customInstance } from '../../orval-mutator';
  * Send document to BirFatura
  * @summary Send Document
  */
-export const sendDocument = (
+export const createEfaturaSenddocument = (
     
  signal?: AbortSignal
 ) => {
@@ -45,11 +45,11 @@ export const sendDocument = (
   
 
 
-export const getSendDocumentMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendDocument>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendDocument>>, TError,void, TContext> => {
+export const getCreateEfaturaSenddocumentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaSenddocument>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createEfaturaSenddocument>>, TError,void, TContext> => {
 
-const mutationKey = ['sendDocument'];
+const mutationKey = ['createEfaturaSenddocument'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -59,10 +59,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendDocument>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEfaturaSenddocument>>, void> = () => {
           
 
-          return  sendDocument()
+          return  createEfaturaSenddocument()
         }
 
         
@@ -70,23 +70,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof sendDocument>>>
+    export type CreateEfaturaSenddocumentMutationResult = NonNullable<Awaited<ReturnType<typeof createEfaturaSenddocument>>>
     
-    export type SendDocumentMutationError = unknown
+    export type CreateEfaturaSenddocumentMutationError = unknown
 
     /**
  * @summary Send Document
  */
-export const useSendDocument = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendDocument>>, TError,void, TContext>, }
+export const useCreateEfaturaSenddocument = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaSenddocument>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendDocument>>,
+        Awaited<ReturnType<typeof createEfaturaSenddocument>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getSendDocumentMutationOptions(options);
+      const mutationOptions = getCreateEfaturaSenddocumentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -94,7 +94,7 @@ export const useSendDocument = <TError = unknown,
  * Send basic invoice to BirFatura
  * @summary Send Basic Invoice
  */
-export const sendBasicInvoice = (
+export const createEfaturaSendbasicinvoice = (
     
  signal?: AbortSignal
 ) => {
@@ -108,11 +108,11 @@ export const sendBasicInvoice = (
   
 
 
-export const getSendBasicInvoiceMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendBasicInvoice>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendBasicInvoice>>, TError,void, TContext> => {
+export const getCreateEfaturaSendbasicinvoiceMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaSendbasicinvoice>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createEfaturaSendbasicinvoice>>, TError,void, TContext> => {
 
-const mutationKey = ['sendBasicInvoice'];
+const mutationKey = ['createEfaturaSendbasicinvoice'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -122,10 +122,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendBasicInvoice>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEfaturaSendbasicinvoice>>, void> = () => {
           
 
-          return  sendBasicInvoice()
+          return  createEfaturaSendbasicinvoice()
         }
 
         
@@ -133,23 +133,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendBasicInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof sendBasicInvoice>>>
+    export type CreateEfaturaSendbasicinvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof createEfaturaSendbasicinvoice>>>
     
-    export type SendBasicInvoiceMutationError = unknown
+    export type CreateEfaturaSendbasicinvoiceMutationError = unknown
 
     /**
  * @summary Send Basic Invoice
  */
-export const useSendBasicInvoice = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendBasicInvoice>>, TError,void, TContext>, }
+export const useCreateEfaturaSendbasicinvoice = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaSendbasicinvoice>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendBasicInvoice>>,
+        Awaited<ReturnType<typeof createEfaturaSendbasicinvoice>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getSendBasicInvoiceMutationOptions(options);
+      const mutationOptions = getCreateEfaturaSendbasicinvoiceMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -157,7 +157,7 @@ export const useSendBasicInvoice = <TError = unknown,
  * Create invoice (draft mode)
  * @summary Create Invoice
  */
-export const createEfaturaCreateInvoice = (
+export const createEfaturaCreate = (
     
  signal?: AbortSignal
 ) => {
@@ -171,11 +171,11 @@ export const createEfaturaCreateInvoice = (
   
 
 
-export const getCreateEfaturaCreateInvoiceMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCreateInvoice>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCreateInvoice>>, TError,void, TContext> => {
+export const getCreateEfaturaCreateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCreate>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCreate>>, TError,void, TContext> => {
 
-const mutationKey = ['createEfaturaCreateInvoice'];
+const mutationKey = ['createEfaturaCreate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -185,10 +185,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEfaturaCreateInvoice>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEfaturaCreate>>, void> = () => {
           
 
-          return  createEfaturaCreateInvoice()
+          return  createEfaturaCreate()
         }
 
         
@@ -196,23 +196,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateEfaturaCreateInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof createEfaturaCreateInvoice>>>
+    export type CreateEfaturaCreateMutationResult = NonNullable<Awaited<ReturnType<typeof createEfaturaCreate>>>
     
-    export type CreateEfaturaCreateInvoiceMutationError = unknown
+    export type CreateEfaturaCreateMutationError = unknown
 
     /**
  * @summary Create Invoice
  */
-export const useCreateEfaturaCreateInvoice = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCreateInvoice>>, TError,void, TContext>, }
+export const useCreateEfaturaCreate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCreate>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createEfaturaCreateInvoice>>,
+        Awaited<ReturnType<typeof createEfaturaCreate>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getCreateEfaturaCreateInvoiceMutationOptions(options);
+      const mutationOptions = getCreateEfaturaCreateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -220,7 +220,7 @@ export const useCreateEfaturaCreateInvoice = <TError = unknown,
  * Retry sending a failed invoice
  * @summary Retry Invoice
  */
-export const retryInvoice = (
+export const createEfaturaRetry = (
     invoiceId: string,
  signal?: AbortSignal
 ) => {
@@ -234,11 +234,11 @@ export const retryInvoice = (
   
 
 
-export const getRetryInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryInvoice>>, TError,{invoiceId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof retryInvoice>>, TError,{invoiceId: string}, TContext> => {
+export const getCreateEfaturaRetryMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaRetry>>, TError,{invoiceId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createEfaturaRetry>>, TError,{invoiceId: string}, TContext> => {
 
-const mutationKey = ['retryInvoice'];
+const mutationKey = ['createEfaturaRetry'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -248,10 +248,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof retryInvoice>>, {invoiceId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEfaturaRetry>>, {invoiceId: string}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  retryInvoice(invoiceId,)
+          return  createEfaturaRetry(invoiceId,)
         }
 
         
@@ -259,23 +259,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RetryInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof retryInvoice>>>
+    export type CreateEfaturaRetryMutationResult = NonNullable<Awaited<ReturnType<typeof createEfaturaRetry>>>
     
-    export type RetryInvoiceMutationError = HTTPValidationError
+    export type CreateEfaturaRetryMutationError = HTTPValidationError
 
     /**
  * @summary Retry Invoice
  */
-export const useRetryInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryInvoice>>, TError,{invoiceId: string}, TContext>, }
+export const useCreateEfaturaRetry = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaRetry>>, TError,{invoiceId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof retryInvoice>>,
+        Awaited<ReturnType<typeof createEfaturaRetry>>,
         TError,
         {invoiceId: string},
         TContext
       > => {
 
-      const mutationOptions = getRetryInvoiceMutationOptions(options);
+      const mutationOptions = getCreateEfaturaRetryMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -283,7 +283,7 @@ export const useRetryInvoice = <TError = HTTPValidationError,
  * Cancel an invoice
  * @summary Cancel Invoice
  */
-export const cancelInvoice = (
+export const createEfaturaCancel = (
     invoiceId: string,
  signal?: AbortSignal
 ) => {
@@ -297,11 +297,11 @@ export const cancelInvoice = (
   
 
 
-export const getCancelInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelInvoice>>, TError,{invoiceId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof cancelInvoice>>, TError,{invoiceId: string}, TContext> => {
+export const getCreateEfaturaCancelMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCancel>>, TError,{invoiceId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCancel>>, TError,{invoiceId: string}, TContext> => {
 
-const mutationKey = ['cancelInvoice'];
+const mutationKey = ['createEfaturaCancel'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -311,10 +311,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelInvoice>>, {invoiceId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEfaturaCancel>>, {invoiceId: string}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  cancelInvoice(invoiceId,)
+          return  createEfaturaCancel(invoiceId,)
         }
 
         
@@ -322,23 +322,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CancelInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof cancelInvoice>>>
+    export type CreateEfaturaCancelMutationResult = NonNullable<Awaited<ReturnType<typeof createEfaturaCancel>>>
     
-    export type CancelInvoiceMutationError = HTTPValidationError
+    export type CreateEfaturaCancelMutationError = HTTPValidationError
 
     /**
  * @summary Cancel Invoice
  */
-export const useCancelInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelInvoice>>, TError,{invoiceId: string}, TContext>, }
+export const useCreateEfaturaCancel = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEfaturaCancel>>, TError,{invoiceId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof cancelInvoice>>,
+        Awaited<ReturnType<typeof createEfaturaCancel>>,
         TError,
         {invoiceId: string},
         TContext
       > => {
 
-      const mutationOptions = getCancelInvoiceMutationOptions(options);
+      const mutationOptions = getCreateEfaturaCancelMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -346,7 +346,7 @@ export const useCancelInvoice = <TError = HTTPValidationError,
  * Sync invoices from BirFatura API
  * @summary Sync Invoices
  */
-export const syncInvoices = (
+export const createBirfaturaSyncInvoices = (
     invoiceSyncRequest: InvoiceSyncRequest,
  signal?: AbortSignal
 ) => {
@@ -362,11 +362,11 @@ export const syncInvoices = (
   
 
 
-export const getSyncInvoicesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncInvoices>>, TError,{data: InvoiceSyncRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof syncInvoices>>, TError,{data: InvoiceSyncRequest}, TContext> => {
+export const getCreateBirfaturaSyncInvoicesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBirfaturaSyncInvoices>>, TError,{data: InvoiceSyncRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createBirfaturaSyncInvoices>>, TError,{data: InvoiceSyncRequest}, TContext> => {
 
-const mutationKey = ['syncInvoices'];
+const mutationKey = ['createBirfaturaSyncInvoices'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -376,10 +376,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncInvoices>>, {data: InvoiceSyncRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBirfaturaSyncInvoices>>, {data: InvoiceSyncRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  syncInvoices(data,)
+          return  createBirfaturaSyncInvoices(data,)
         }
 
         
@@ -387,23 +387,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SyncInvoicesMutationResult = NonNullable<Awaited<ReturnType<typeof syncInvoices>>>
-    export type SyncInvoicesMutationBody = InvoiceSyncRequest
-    export type SyncInvoicesMutationError = HTTPValidationError
+    export type CreateBirfaturaSyncInvoicesMutationResult = NonNullable<Awaited<ReturnType<typeof createBirfaturaSyncInvoices>>>
+    export type CreateBirfaturaSyncInvoicesMutationBody = InvoiceSyncRequest
+    export type CreateBirfaturaSyncInvoicesMutationError = HTTPValidationError
 
     /**
  * @summary Sync Invoices
  */
-export const useSyncInvoices = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncInvoices>>, TError,{data: InvoiceSyncRequest}, TContext>, }
+export const useCreateBirfaturaSyncInvoices = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBirfaturaSyncInvoices>>, TError,{data: InvoiceSyncRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof syncInvoices>>,
+        Awaited<ReturnType<typeof createBirfaturaSyncInvoices>>,
         TError,
         {data: InvoiceSyncRequest},
         TContext
       > => {
 
-      const mutationOptions = getSyncInvoicesMutationOptions(options);
+      const mutationOptions = getCreateBirfaturaSyncInvoicesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -411,7 +411,7 @@ export const useSyncInvoices = <TError = HTTPValidationError,
  * Send document via OutEBelgeV2 API
  * @summary Send Document V2
  */
-export const sendDocumentV2 = (
+export const createOutebelgev2Senddocument = (
     
  signal?: AbortSignal
 ) => {
@@ -425,11 +425,11 @@ export const sendDocumentV2 = (
   
 
 
-export const getSendDocumentV2MutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendDocumentV2>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendDocumentV2>>, TError,void, TContext> => {
+export const getCreateOutebelgev2SenddocumentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Senddocument>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Senddocument>>, TError,void, TContext> => {
 
-const mutationKey = ['sendDocumentV2'];
+const mutationKey = ['createOutebelgev2Senddocument'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -439,10 +439,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendDocumentV2>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOutebelgev2Senddocument>>, void> = () => {
           
 
-          return  sendDocumentV2()
+          return  createOutebelgev2Senddocument()
         }
 
         
@@ -450,23 +450,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendDocumentV2MutationResult = NonNullable<Awaited<ReturnType<typeof sendDocumentV2>>>
+    export type CreateOutebelgev2SenddocumentMutationResult = NonNullable<Awaited<ReturnType<typeof createOutebelgev2Senddocument>>>
     
-    export type SendDocumentV2MutationError = unknown
+    export type CreateOutebelgev2SenddocumentMutationError = unknown
 
     /**
  * @summary Send Document V2
  */
-export const useSendDocumentV2 = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendDocumentV2>>, TError,void, TContext>, }
+export const useCreateOutebelgev2Senddocument = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Senddocument>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendDocumentV2>>,
+        Awaited<ReturnType<typeof createOutebelgev2Senddocument>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getSendDocumentV2MutationOptions(options);
+      const mutationOptions = getCreateOutebelgev2SenddocumentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -474,7 +474,7 @@ export const useSendDocumentV2 = <TError = unknown,
  * Send basic invoice from model via OutEBelgeV2 API
  * @summary Send Basic Invoice From Model
  */
-export const sendBasicInvoiceFromModel = (
+export const createOutebelgev2Sendbasicinvoicefrommodel = (
     
  signal?: AbortSignal
 ) => {
@@ -488,11 +488,11 @@ export const sendBasicInvoiceFromModel = (
   
 
 
-export const getSendBasicInvoiceFromModelMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendBasicInvoiceFromModel>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendBasicInvoiceFromModel>>, TError,void, TContext> => {
+export const getCreateOutebelgev2SendbasicinvoicefrommodelMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Sendbasicinvoicefrommodel>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Sendbasicinvoicefrommodel>>, TError,void, TContext> => {
 
-const mutationKey = ['sendBasicInvoiceFromModel'];
+const mutationKey = ['createOutebelgev2Sendbasicinvoicefrommodel'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -502,10 +502,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendBasicInvoiceFromModel>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOutebelgev2Sendbasicinvoicefrommodel>>, void> = () => {
           
 
-          return  sendBasicInvoiceFromModel()
+          return  createOutebelgev2Sendbasicinvoicefrommodel()
         }
 
         
@@ -513,23 +513,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendBasicInvoiceFromModelMutationResult = NonNullable<Awaited<ReturnType<typeof sendBasicInvoiceFromModel>>>
+    export type CreateOutebelgev2SendbasicinvoicefrommodelMutationResult = NonNullable<Awaited<ReturnType<typeof createOutebelgev2Sendbasicinvoicefrommodel>>>
     
-    export type SendBasicInvoiceFromModelMutationError = unknown
+    export type CreateOutebelgev2SendbasicinvoicefrommodelMutationError = unknown
 
     /**
  * @summary Send Basic Invoice From Model
  */
-export const useSendBasicInvoiceFromModel = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendBasicInvoiceFromModel>>, TError,void, TContext>, }
+export const useCreateOutebelgev2Sendbasicinvoicefrommodel = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Sendbasicinvoicefrommodel>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendBasicInvoiceFromModel>>,
+        Awaited<ReturnType<typeof createOutebelgev2Sendbasicinvoicefrommodel>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getSendBasicInvoiceFromModelMutationOptions(options);
+      const mutationOptions = getCreateOutebelgev2SendbasicinvoicefrommodelMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -537,7 +537,7 @@ export const useSendBasicInvoiceFromModel = <TError = unknown,
  * Mock customer search endpoint
  * @summary Search Firm Customers Mock
  */
-export const searchFirmCustomersMock = (
+export const createMusteriFirmamusterigetir = (
     mockSearchRequest: MockSearchRequest,
  signal?: AbortSignal
 ) => {
@@ -553,11 +553,11 @@ export const searchFirmCustomersMock = (
   
 
 
-export const getSearchFirmCustomersMockMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof searchFirmCustomersMock>>, TError,{data: MockSearchRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof searchFirmCustomersMock>>, TError,{data: MockSearchRequest}, TContext> => {
+export const getCreateMusteriFirmamusterigetirMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMusteriFirmamusterigetir>>, TError,{data: MockSearchRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createMusteriFirmamusterigetir>>, TError,{data: MockSearchRequest}, TContext> => {
 
-const mutationKey = ['searchFirmCustomersMock'];
+const mutationKey = ['createMusteriFirmamusterigetir'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -567,10 +567,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof searchFirmCustomersMock>>, {data: MockSearchRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMusteriFirmamusterigetir>>, {data: MockSearchRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  searchFirmCustomersMock(data,)
+          return  createMusteriFirmamusterigetir(data,)
         }
 
         
@@ -578,23 +578,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SearchFirmCustomersMockMutationResult = NonNullable<Awaited<ReturnType<typeof searchFirmCustomersMock>>>
-    export type SearchFirmCustomersMockMutationBody = MockSearchRequest
-    export type SearchFirmCustomersMockMutationError = HTTPValidationError
+    export type CreateMusteriFirmamusterigetirMutationResult = NonNullable<Awaited<ReturnType<typeof createMusteriFirmamusterigetir>>>
+    export type CreateMusteriFirmamusterigetirMutationBody = MockSearchRequest
+    export type CreateMusteriFirmamusterigetirMutationError = HTTPValidationError
 
     /**
  * @summary Search Firm Customers Mock
  */
-export const useSearchFirmCustomersMock = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof searchFirmCustomersMock>>, TError,{data: MockSearchRequest}, TContext>, }
+export const useCreateMusteriFirmamusterigetir = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMusteriFirmamusterigetir>>, TError,{data: MockSearchRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof searchFirmCustomersMock>>,
+        Awaited<ReturnType<typeof createMusteriFirmamusterigetir>>,
         TError,
         {data: MockSearchRequest},
         TContext
       > => {
 
-      const mutationOptions = getSearchFirmCustomersMockMutationOptions(options);
+      const mutationOptions = getCreateMusteriFirmamusterigetirMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -602,7 +602,7 @@ export const useSearchFirmCustomersMock = <TError = HTTPValidationError,
  * Mock PK info endpoint
  * @summary Get Firm Pk Info Mock
  */
-export const getFirmPkInfoMock = (
+export const createFirmaFirmapkbilgisigetir = (
     mockDetailRequest: MockDetailRequest,
  signal?: AbortSignal
 ) => {
@@ -618,11 +618,11 @@ export const getFirmPkInfoMock = (
   
 
 
-export const getGetFirmPkInfoMockMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getFirmPkInfoMock>>, TError,{data: MockDetailRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof getFirmPkInfoMock>>, TError,{data: MockDetailRequest}, TContext> => {
+export const getCreateFirmaFirmapkbilgisigetirMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFirmaFirmapkbilgisigetir>>, TError,{data: MockDetailRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createFirmaFirmapkbilgisigetir>>, TError,{data: MockDetailRequest}, TContext> => {
 
-const mutationKey = ['getFirmPkInfoMock'];
+const mutationKey = ['createFirmaFirmapkbilgisigetir'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -632,10 +632,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getFirmPkInfoMock>>, {data: MockDetailRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFirmaFirmapkbilgisigetir>>, {data: MockDetailRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  getFirmPkInfoMock(data,)
+          return  createFirmaFirmapkbilgisigetir(data,)
         }
 
         
@@ -643,23 +643,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type GetFirmPkInfoMockMutationResult = NonNullable<Awaited<ReturnType<typeof getFirmPkInfoMock>>>
-    export type GetFirmPkInfoMockMutationBody = MockDetailRequest
-    export type GetFirmPkInfoMockMutationError = HTTPValidationError
+    export type CreateFirmaFirmapkbilgisigetirMutationResult = NonNullable<Awaited<ReturnType<typeof createFirmaFirmapkbilgisigetir>>>
+    export type CreateFirmaFirmapkbilgisigetirMutationBody = MockDetailRequest
+    export type CreateFirmaFirmapkbilgisigetirMutationError = HTTPValidationError
 
     /**
  * @summary Get Firm Pk Info Mock
  */
-export const useGetFirmPkInfoMock = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getFirmPkInfoMock>>, TError,{data: MockDetailRequest}, TContext>, }
+export const useCreateFirmaFirmapkbilgisigetir = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFirmaFirmapkbilgisigetir>>, TError,{data: MockDetailRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof getFirmPkInfoMock>>,
+        Awaited<ReturnType<typeof createFirmaFirmapkbilgisigetir>>,
         TError,
         {data: MockDetailRequest},
         TContext
       > => {
 
-      const mutationOptions = getGetFirmPkInfoMockMutationOptions(options);
+      const mutationOptions = getCreateFirmaFirmapkbilgisigetirMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -667,7 +667,7 @@ export const useGetFirmPkInfoMock = <TError = HTTPValidationError,
  * Mock Address info endpoint
  * @summary Get Firm Address Info Mock
  */
-export const getFirmAddressInfoMock = (
+export const createFirmaFirmaadresbilgisigetir = (
     mockDetailRequest: MockDetailRequest,
  signal?: AbortSignal
 ) => {
@@ -683,11 +683,11 @@ export const getFirmAddressInfoMock = (
   
 
 
-export const getGetFirmAddressInfoMockMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getFirmAddressInfoMock>>, TError,{data: MockDetailRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof getFirmAddressInfoMock>>, TError,{data: MockDetailRequest}, TContext> => {
+export const getCreateFirmaFirmaadresbilgisigetirMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFirmaFirmaadresbilgisigetir>>, TError,{data: MockDetailRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createFirmaFirmaadresbilgisigetir>>, TError,{data: MockDetailRequest}, TContext> => {
 
-const mutationKey = ['getFirmAddressInfoMock'];
+const mutationKey = ['createFirmaFirmaadresbilgisigetir'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -697,10 +697,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getFirmAddressInfoMock>>, {data: MockDetailRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFirmaFirmaadresbilgisigetir>>, {data: MockDetailRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  getFirmAddressInfoMock(data,)
+          return  createFirmaFirmaadresbilgisigetir(data,)
         }
 
         
@@ -708,23 +708,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type GetFirmAddressInfoMockMutationResult = NonNullable<Awaited<ReturnType<typeof getFirmAddressInfoMock>>>
-    export type GetFirmAddressInfoMockMutationBody = MockDetailRequest
-    export type GetFirmAddressInfoMockMutationError = HTTPValidationError
+    export type CreateFirmaFirmaadresbilgisigetirMutationResult = NonNullable<Awaited<ReturnType<typeof createFirmaFirmaadresbilgisigetir>>>
+    export type CreateFirmaFirmaadresbilgisigetirMutationBody = MockDetailRequest
+    export type CreateFirmaFirmaadresbilgisigetirMutationError = HTTPValidationError
 
     /**
  * @summary Get Firm Address Info Mock
  */
-export const useGetFirmAddressInfoMock = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getFirmAddressInfoMock>>, TError,{data: MockDetailRequest}, TContext>, }
+export const useCreateFirmaFirmaadresbilgisigetir = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFirmaFirmaadresbilgisigetir>>, TError,{data: MockDetailRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof getFirmAddressInfoMock>>,
+        Awaited<ReturnType<typeof createFirmaFirmaadresbilgisigetir>>,
         TError,
         {data: MockDetailRequest},
         TContext
       > => {
 
-      const mutationOptions = getGetFirmAddressInfoMockMutationOptions(options);
+      const mutationOptions = getCreateFirmaFirmaadresbilgisigetirMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

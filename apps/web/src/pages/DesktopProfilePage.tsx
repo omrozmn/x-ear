@@ -5,9 +5,9 @@ import { User, Mail, Shield, Key, Save, Phone, Eye, EyeOff, Edit2 } from 'lucide
 import { toast } from 'react-hot-toast';
 import { generateUsername } from '../utils/stringUtils';
 import {
-    useGetMeApiUsersMeGet,
-    useUpdateMeApiUsersMePut,
-    useChangePasswordApiUsersMePasswordPost
+    useListUserMe,
+    useUpdateUserMe,
+    useCreateUserMePassword
 } from '@/api/generated';
 
 
@@ -49,7 +49,7 @@ export const DesktopProfilePage: React.FC = () => {
     const [isEditingPhone, setIsEditingPhone] = useState(false);
 
     // API Hooks (Query & Mutations)
-    const { data: userDataResponse, isError, isLoading, error } = useGetMeApiUsersMeGet({
+    const { data: userDataResponse, isError, isLoading, error } = useListUserMe({
         query: {
             retry: 1,
             refetchOnWindowFocus: false
@@ -70,7 +70,7 @@ export const DesktopProfilePage: React.FC = () => {
         });
     }, [isLoading, isError, userDataResponse, error]);
 
-    const updateMeMutation = useUpdateMeApiUsersMePut({
+    const updateMeMutation = useUpdateUserMe({
         mutation: {
             onSuccess: (data: any) => {
                 toast.success('Profil bilgileri güncellendi');
@@ -88,7 +88,7 @@ export const DesktopProfilePage: React.FC = () => {
         }
     });
 
-    const changePasswordMutation = useChangePasswordApiUsersMePasswordPost({
+    const changePasswordMutation = useCreateUserMePassword({
         mutation: {
             onSuccess: () => {
                 toast.success('Şifre başarıyla değiştirildi');
@@ -136,6 +136,7 @@ export const DesktopProfilePage: React.FC = () => {
             if (freshUser.email) setEmail(freshUser.email);
             if (freshUser.phone) setPhone(freshUser.phone);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userDataResponse, setUser]);
 
     // 2. CONDITIONAL RETURNS FOR UI STATE (After all hooks)

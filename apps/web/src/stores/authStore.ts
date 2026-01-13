@@ -2,12 +2,12 @@ import { create } from 'zustand';
 import { apiClient } from '../api/orval-mutator';
 import { persist } from 'zustand/middleware';
 import {
-  refreshToken as refreshTokenApi,
-  verifyOtp as verifyOtpApi,
-  sendVerificationOtp as sendVerificationOtpApi,
-  forgotPassword as forgotPasswordApi
+  createAuthRefresh as refreshTokenApi,
+  createAuthVerifyOtp as verifyOtpApi,
+  createAuthSendVerificationOtp as sendVerificationOtpApi,
+  createAuthForgotPassword as forgotPasswordApi
 } from '@/api/generated/auth/auth';
-import { adminLogin } from '@/api/generated/admin/admin';
+import { createAdminAuthLogin as adminLogin } from '@/api/generated/admin/admin';
 import { DEV_CONFIG } from '../config/dev-config';
 import { subscriptionService } from '../services/subscription.service';
 import { tokenManager } from '../utils/token-manager';
@@ -596,7 +596,7 @@ export const useAuthStore = create<AuthStore>()(
       refreshAuth: async () => {
         try {
           const { clearAuth } = get();
-          const refreshToken = tokenManager.refreshToken;
+          const refreshToken = tokenManager.createAuthRefresh;
 
           if (!refreshToken) {
             clearAuth();
@@ -628,7 +628,7 @@ export const useAuthStore = create<AuthStore>()(
 
         // Get tokens from TokenManager (single source of truth)
         const storedToken = tokenManager.accessToken;
-        const storedRefreshToken = tokenManager.refreshToken;
+        const storedRefreshToken = tokenManager.createAuthRefresh;
 
         console.log('[initializeAuth] TokenManager state:', {
           hasAccessToken: !!storedToken,
@@ -640,8 +640,8 @@ export const useAuthStore = create<AuthStore>()(
         if (storedToken && !tokenManager.isAccessTokenExpired()) {
           try {
             // Get current user info from API
-            const { getUsersMeMe } = await import('../api/generated/users/users');
-            const response = await getUsersMeMe();
+            const { listUserMe } = await import('../api/generated/users/users');
+            const response = await listUserMe();
 
             // customInstance returns response.data directly: {success, data: {...}}
             const responseData = response as any;

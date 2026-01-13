@@ -91,6 +91,7 @@ class StockMovementRead(IDMixin, TimestampMixin, AppBaseModel):
     tenant_id: str = Field(..., alias="tenantId")
     movement_type: str = Field(..., alias="movementType")
     quantity: int
+    serial_number: Optional[str] = Field(None, alias="serialNumber")
     user_id: Optional[str] = Field(None, alias="userId")
     transaction_id: Optional[str] = Field(None, alias="transactionId")
     notes: Optional[str] = None

@@ -89,6 +89,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
 
   useEffect(() => {
     loadSGKSchemes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientAge, isBilateral]);
 
   const handleSchemeSelect = (schemeId: string) => {

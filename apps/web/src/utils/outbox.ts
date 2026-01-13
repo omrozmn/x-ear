@@ -366,6 +366,8 @@ export class IndexedDBOutbox {
 
   /**
    * Sync pending operations
+   * NOTE: GET requests are NOT synced because they are idempotent and should be
+   * re-fetched by the UI when needed, not replayed from outbox.
    */
   async syncPendingOperations(): Promise<void> {
     if (this.syncInProgress || !this.isOnline) return;
@@ -377,8 +379,17 @@ export class IndexedDBOutbox {
       const pendingOps = await this.getPendingOperations();
       let successCount = 0;
       let failureCount = 0;
+      let skippedCount = 0;
 
       for (const operation of pendingOps) {
+        // Skip GET requests - they should be re-fetched by UI, not replayed
+        // GET requests are idempotent and don't need offline queue replay
+        if (operation.method === 'GET') {
+          await this.removeOperation(operation.id!);
+          skippedCount++;
+          continue;
+        }
+
         try {
           const result = await this.executeOperation(operation);
           this.emitOutboxEvent('operation-succeeded', { operation, result });
@@ -414,7 +425,8 @@ export class IndexedDBOutbox {
       this.emitOutboxEvent('sync-completed', {
         total: pendingOps.length,
         success: successCount,
-        failures: failureCount
+        failures: failureCount,
+        skipped: skippedCount
       });
 
     } catch (error) {

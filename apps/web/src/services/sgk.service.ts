@@ -29,11 +29,11 @@ import { apiClient } from '../api/orval-mutator';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { SGK_DATA, SGK_DOCUMENTS } from '../constants/storage-keys';
 import {
-  getPatientSgkDocuments,
-  queryPatientRights,
-  createSgkWorkflow,
-  updateSgkWorkflow,
-  getSgkWorkflow
+  listPatientSgkDocuments,
+  createSgkWorkflowCreate,
+  updateSgkWorkflowStatus,
+  getSgkWorkflow,
+  listSgkEReceiptDownloadPatientForm
 } from '@/api/generated';
 import { unwrapObject } from '../utils/response-unwrap';
 
@@ -729,20 +729,31 @@ export class SGKService {
   }
 
   // Hasta işlem formu indirme
-  async downloadPatientForm(_receiptId: string): Promise<Blob> {
-    // There is no direct "download form" endpoint in the generated API currently.
-    // Using a placeholder error until the correct endpoint is identified or implemented.
-    console.warn('downloadPatientForm not fully implemented in frontend API generation');
-    throw new Error('Form download not implemented');
+  // Hasta işlem formu indirme
+  async downloadPatientForm(receiptId: string): Promise<Blob> {
+    try {
+      const response = await listSgkEReceiptDownloadPatientForm(receiptId);
+      // If the response is already a Blob, return it directly
+      // Otherwise, convert the response to a Blob
+      if (response instanceof Blob) {
+        return response;
+      }
+      // Fallback: convert to blob if needed
+      return new Blob([JSON.stringify(response)], { type: 'application/json' });
+    } catch (error) {
+      console.error('Download form error:', error);
+      throw error;
+    }
   }
 
   // Hasta hakları sorgulama
-  async queryPatientRights(patientId: string, tcNumber: string): Promise<any> {
+  async createSgkQueryRightsMethod(patientId: string, tcNumber: string): Promise<any> {
     try {
-      // Gerçek API çağrısı
-      const response = await queryPatientRights({
-        tcNumber,
-        patientId
+      // Gerçek API çağrısı - using apiClient since createSgkQueryRights doesn't exist
+      const response = await apiClient({
+        url: '/api/sgk/query-rights',
+        method: 'POST',
+        data: { tcNumber, patientId }
       });
       return response;
     } catch (error) {
@@ -752,10 +763,10 @@ export class SGKService {
   }
 
   // SGK Workflow Management
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async createWorkflow(patientId: string, documentId?: string, workflowType: string = 'approval'): Promise<any> {
     try {
-      // Gerçek API çağrısı
-      const response = await createSgkWorkflow({
+      const response = await createSgkWorkflowCreate({
         patientId,
         documentId,
         workflowType
@@ -770,11 +781,10 @@ export class SGKService {
   async updateWorkflow(workflowId: string, stepId: string, status: string, notes?: string): Promise<any> {
     try {
       // Gerçek API çağrısı
-      const response = await updateSgkWorkflow(workflowId, {
-        stepId,
+      const response = await updateSgkWorkflowStatus(workflowId, {
         status,
         notes
-      });
+      } as any);
       return response;
     } catch (error) {
       console.error('SGK workflow update error:', error);

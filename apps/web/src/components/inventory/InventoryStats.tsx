@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getInventoryStats } from '@/api/generated';
+import { listInventoryStats } from '@/api/generated';
 
 interface InventoryStatsProps {
   className?: string;
@@ -27,7 +27,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     const loadStats = async () => {
       try {
         setLoading(true);
-        const response = await getInventoryStats() as any;
+        const response = await listInventoryStats() as any;
         const data = response?.data || response || {};
 
         const calculatedStats: InventoryStats = {
@@ -129,8 +129,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20'
     },
     {
       name: 'Toplam Değer',
@@ -140,8 +140,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
         </svg>
       ),
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      color: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-green-50 dark:bg-green-900/20'
     },
     {
       name: 'Düşük Stok',
@@ -151,8 +151,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
         </svg>
       ),
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50'
+      color: 'text-yellow-600 dark:text-yellow-400',
+      bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
     },
     {
       name: 'Tükenen Ürünler',
@@ -162,8 +162,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
         </svg>
       ),
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-50 dark:bg-red-900/20'
     }
   ];
 
@@ -179,8 +179,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
       ),
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20'
     });
   }
 
@@ -190,13 +190,13 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
       {/* Use a single-row flex layout so KPIs stay on one line and shrink on small screens */}
       <div className="flex gap-4 items-stretch w-full flex-nowrap">
         {statCards.map((stat) => (
-          <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg flex-1 min-w-0">
+          <div key={stat.name} className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg flex-1 min-w-0">
             <div className="p-4 sm:p-5">
               <div className="flex items-center">
                 <div className={`flex-shrink-0 ${stat.bgColor} p-2 rounded-md`}>{stat.icon}</div>
                 <div className="ml-4 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">{stat.name}</dt>
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{stat.name}</dt>
                     <dd
                       className={`font-medium ${stat.color} text-lg sm:text-2xl md:text-3xl leading-tight`}
                       style={{

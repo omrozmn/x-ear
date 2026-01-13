@@ -3,7 +3,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Banknote, Calendar, DollarSign, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react';
-import { getSalePromissoryNotes } from '@/api/generated';
+import { listSalePromissoryNotes } from '@/api/generated';
 
 interface PromissoryNote {
   id: string;
@@ -44,13 +44,14 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
     if (isOpen && sale?.id) {
       fetchPromissoryNotes();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sale?.id]);
 
   const fetchPromissoryNotes = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await getSalePromissoryNotes(sale.id);
+      const response = await listSalePromissoryNotes(sale.id);
       // API response type is void, so we'll handle the actual data structure
       // Normalize response to always be an array of notes
       const payload = (response as any) ?? {};

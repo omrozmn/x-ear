@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { Plus, Trash2, Mail, User, Shield, AlertCircle, CheckCircle2, Lock, Eye, EyeOff, Building2, Pencil, AlertTriangle } from 'lucide-react';
+import { Button, Input, Select } from '@x-ear/ui-web';
 import {
-    useListUsersApiUsersGet,
-    useCreateUserApiUsersPost,
-    useDeleteUserApiUsersUserIdDelete,
-    useUpdateUserApiUsersUserIdPut
-} from '@/api/generated';
+    useListTenantUsers,
+    useCreateTenantUsers,
+    useDeleteTenantUser,
+    useUpdateTenantUser,
+    getListTenantUsersQueryKey
+} from '@/api/generated/tenant-users/tenant-users';
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
@@ -79,9 +81,10 @@ export function TeamMembersTab() {
     const [inviteError, setInviteError] = useState('');
 
     // Queries and Mutations
-    const { data: usersResponse, isLoading: loading, error, refetch } = useListUsersApiUsersGet();
+    const { data: usersResponse, isLoading: loading, error: queryError, refetch } = useListTenantUsers();
+    const error = queryError as Error | null;
 
-    const inviteMutation = useCreateUserApiUsersPost({
+    const inviteMutation = useCreateTenantUsers({
         mutation: {
             onSuccess: () => {
                 setInviteSuccess('Kullanici basariyla olusturuldu!');
@@ -94,7 +97,7 @@ export function TeamMembersTab() {
         }
     });
 
-    const deleteMutation = useDeleteUserApiUsersUserIdDelete({
+    const deleteMutation = useDeleteTenantUser({
         mutation: {
             onSuccess: () => {
                 refetch();
@@ -105,7 +108,7 @@ export function TeamMembersTab() {
         }
     });
 
-    const updateUserMutation = useUpdateUserApiUsersUserIdPut();
+    const updateUserMutation = useUpdateTenantUser();
 
     const handleInvite = (e: React.FormEvent) => {
         e.preventDefault();
@@ -184,34 +187,24 @@ export function TeamMembersTab() {
             return;
         }
 
+        const newIsActive = !user.isActive;
+        
         setConfirmationModal({
             isOpen: true,
             title: user.isActive ? 'Kullaniciyi Pasife Al' : 'Kullaniciyi Aktiflestir',
             message: `Bu kullaniciyi ${user.isActive ? 'pasife almak' : 'aktiflestirmek'} istediginize emin misiniz?`,
             type: user.isActive ? 'warning' : 'info',
             onConfirm: async () => {
-                const previousData = queryClient.getQueryData(['tenantUsersList']);
-
-                queryClient.setQueryData(['tenantUsersList'], (old: any) => {
-                    if (!old?.data?.data) return old;
-                    return {
-                        ...old,
-                        data: {
-                            ...old.data,
-                            data: old.data.data.map((u: any) =>
-                                u.id === user.id ? { ...u, isActive: !user.isActive } : u
-                            )
-                        }
-                    };
-                });
-
                 try {
-                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: !user.isActive } as any });
+                    console.log('[TeamMembersTab] Toggling user status:', { userId: user.id, currentIsActive: user.isActive, newIsActive });
+                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: newIsActive } as any });
                     toast.success(`Kullanici ${user.isActive ? 'pasife alindi' : 'aktiflestirildi'}.`);
-                    queryClient.invalidateQueries({ queryKey: ['tenantUsersList'] });
-                } catch {
-                    queryClient.setQueryData(['tenantUsersList'], previousData);
-                    toast.error('Durum guncellenemedi.');
+                    // Invalidate and refetch to ensure UI updates
+                    queryClient.invalidateQueries({ queryKey: getListTenantUsersQueryKey() });
+                    await refetch();
+                } catch (err: any) {
+                    console.error('[TeamMembersTab] Toggle status error:', err);
+                    toast.error(err?.response?.data?.error?.message || err?.message || 'Durum guncellenemedi.');
                 }
                 setConfirmationModal(prev => ({ ...prev, isOpen: false }));
             }
@@ -252,13 +245,14 @@ export function TeamMembersTab() {
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ekip Uyeleri</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Sistemdeki tum kullanicilari yonetin</p>
                 </div>
-                <button
+                <Button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    variant="primary"
+                    className="flex items-center"
                 >
                     <Plus className="w-5 h-5 mr-2" />
                     Yeni Kullanici Ekle
-                </button>
+                </Button>
             </div>
 
             {error && (
@@ -266,8 +260,8 @@ export function TeamMembersTab() {
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Kullanicilar yuklenirken bir hata olustu.</div>
-                        {(error as any)?.message && (
-                            <div className="text-sm mt-1">{String((error as any).message)}</div>
+                        {(error as Error)?.message && (
+                            <div className="text-sm mt-1">{String((error as Error).message)}</div>
                         )}
                     </div>
                 </div>
@@ -327,34 +321,42 @@ export function TeamMembersTab() {
                                     </td>
                                     <td className="px-6 py-4 text-right flex justify-end items-center space-x-2">
                                         {user.isActive ? (
-                                            <button
+                                            <Button
                                                 onClick={() => handleToggleStatus(user)}
-                                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
+                                                size="sm"
+                                                variant="outline"
+                                                className="border-transparent text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500"
                                             >
                                                 Pasife Al
-                                            </button>
+                                            </Button>
                                         ) : (
-                                            <button
+                                            <Button
                                                 onClick={() => handleToggleStatus(user)}
-                                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                                                size="sm"
+                                                variant="outline"
+                                                className="border-transparent text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500"
                                             >
                                                 Aktiflestir
-                                            </button>
+                                            </Button>
                                         )}
-                                        <button
+                                        <Button
                                             onClick={() => handleEditClick(user)}
-                                            className="text-blue-600 hover:text-blue-800 transition-colors p-1"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-blue-600 hover:text-blue-800 p-1"
                                             title="Duzenle"
                                         >
                                             <Pencil className="w-5 h-5" />
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
                                             onClick={() => handleDelete(user.id)}
-                                            className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-gray-400 hover:text-red-600 p-1"
                                             title="Kullaniciyi Sil"
                                         >
                                             <Trash2 className="w-5 h-5" />
-                                        </button>
+                                        </Button>
                                     </td>
                                 </tr>
                             ))
@@ -376,19 +378,21 @@ export function TeamMembersTab() {
                                     Davet Basarili!
                                 </div>
                                 <p className="text-sm text-green-600 break-all">{inviteSuccess}</p>
-                                <button
+                                <Button
                                     onClick={() => { setIsModalOpen(false); setInviteSuccess(''); }}
-                                    className="mt-4 w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                    fullWidth
+                                    variant="success"
+                                    className="mt-4"
                                 >
                                     Tamam
-                                </button>
+                                </Button>
                             </div>
                         ) : (
                             <form onSubmit={handleInvite} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ad</label>
-                                        <input
+                                        <Input
                                             type="text"
                                             required
                                             value={inviteData.firstName}
@@ -401,12 +405,11 @@ export function TeamMembersTab() {
                                                     username: newUsername
                                                 });
                                             }}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
-                                        <input
+                                        <Input
                                             type="text"
                                             required
                                             value={inviteData.lastName}
@@ -419,7 +422,6 @@ export function TeamMembersTab() {
                                                     username: newUsername
                                                 });
                                             }}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>
                                 </div>
@@ -427,13 +429,13 @@ export function TeamMembersTab() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kullanici Adi *</label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                        <input
+
+                                        <Input
                                             type="text"
                                             required
                                             value={inviteData.username}
                                             onChange={(e) => setInviteData({ ...inviteData, username: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                            leftIcon={<User className="w-5 h-5" />}
                                             placeholder="kullanici.adi"
                                         />
                                     </div>
@@ -442,23 +444,25 @@ export function TeamMembersTab() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sifre *</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                        <input
+
+                                        <Input
                                             type={showPassword ? "text" : "password"}
                                             required
                                             value={inviteData.password}
                                             onChange={(e) => setInviteData({ ...inviteData, password: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                            leftIcon={<Lock className="w-5 h-5" />}
+                                            rightIcon={
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="focus:outline-none"
+                                                >
+                                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                </button>
+                                            }
                                             placeholder="Guvenli sifre olusturun"
                                             minLength={6}
                                         />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                        </button>
                                     </div>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Minimum 6 karakter</p>
                                 </div>
@@ -466,49 +470,53 @@ export function TeamMembersTab() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-posta Adresi (Opsiyonel)</label>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                        <input
+                                        <Input
                                             type="email"
                                             value={inviteData.email}
                                             onChange={(e) => setInviteData({ ...inviteData, email: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                            leftIcon={<Mail className="w-5 h-5" />}
                                             placeholder="ornek@sirket.com"
                                         />
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
-                                    <div className="relative">
-                                        <Shield className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                        <select
-                                            value={inviteData.role}
-                                            onChange={(e) => setInviteData({ ...inviteData, role: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                        >
-                                            <option value="user">Kullanici</option>
-                                            <option value="admin">Yonetici</option>
-                                            <option value="tenant_admin">Tenant Admin</option>
-                                            <option value="doctor">Doktor</option>
-                                            <option value="secretary">Sekreter</option>
-                                        </select>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
+                                        <div className="relative">
+                                            <Select
+                                                value={inviteData.role}
+                                                onChange={(e) => setInviteData({ ...inviteData, role: e.target.value })}
+                                                className="pl-10"
+                                                options={[
+                                                    { value: "user", label: "Kullanici" },
+                                                    { value: "admin", label: "Yonetici" },
+                                                    { value: "tenant_admin", label: "Tenant Admin" },
+                                                    { value: "doctor", label: "Doktor" },
+                                                    { value: "secretary", label: "Sekreter" }
+                                                ]}
+                                            />
+                                            <div className="absolute left-3 top-2.5 pointer-events-none">
+                                                <Shield className="w-5 h-5 text-gray-400" />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube</label>
-                                    <div className="relative">
-                                        <Building2 className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                        <select
-                                            value={inviteData.branchId}
-                                            onChange={(e) => setInviteData({ ...inviteData, branchId: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                        >
-                                            <option value="">Sube Seciniz (Opsiyonel)</option>
-                                            {branches.map((branch) => (
-                                                <option key={branch.id} value={branch.id}>{branch.name}</option>
-                                            ))}
-                                        </select>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube</label>
+                                        <div className="relative">
+                                            <Select
+                                                value={inviteData.branchId}
+                                                onChange={(e) => setInviteData({ ...inviteData, branchId: e.target.value })}
+                                                className="pl-10"
+                                                placeholder="Sube Seciniz (Opsiyonel)"
+                                                options={branches.map((branch) => ({
+                                                    value: branch.id,
+                                                    label: branch.name
+                                                }))}
+                                            />
+                                            <div className="absolute left-3 top-2.5 pointer-events-none">
+                                                <Building2 className="w-5 h-5 text-gray-400" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -520,20 +528,23 @@ export function TeamMembersTab() {
                                 )}
 
                                 <div className="flex space-x-3 pt-4">
-                                    <button
+                                    <Button
                                         type="button"
                                         onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        variant="outline"
+                                        className="flex-1"
                                     >
                                         Iptal
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="submit"
                                         disabled={inviteMutation.isPending}
-                                        className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                                        loading={inviteMutation.isPending}
+                                        variant="primary"
+                                        className="flex-1"
                                     >
                                         {inviteMutation.isPending ? 'Olusturuluyor...' : 'Kullanici Olustur'}
-                                    </button>
+                                    </Button>
                                 </div>
                             </form>
                         )}
@@ -551,20 +562,18 @@ export function TeamMembersTab() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ad</label>
-                                    <input
+                                    <Input
                                         type="text"
                                         value={editData.firstName}
                                         onChange={(e) => setEditData({ ...editData, firstName: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
-                                    <input
+                                    <Input
                                         type="text"
                                         value={editData.lastName}
                                         onChange={(e) => setEditData({ ...editData, lastName: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                     />
                                 </div>
                             </div>
@@ -572,13 +581,13 @@ export function TeamMembersTab() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kullanici Adi</label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                    <input
+
+                                    <Input
                                         type="text"
                                         required
                                         value={editData.username}
                                         onChange={(e) => setEditData({ ...editData, username: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                        leftIcon={<User className="w-5 h-5" />}
                                     />
                                 </div>
                             </div>
@@ -586,34 +595,36 @@ export function TeamMembersTab() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Yeni Sifre (Opsiyonel)</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                    <input
+
+                                    <Input
                                         type={showPassword ? "text" : "password"}
                                         value={editData.password}
                                         onChange={(e) => setEditData({ ...editData, password: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                        leftIcon={<Lock className="w-5 h-5" />}
+                                        rightIcon={
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="focus:outline-none"
+                                            >
+                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        }
                                         placeholder="Degistirmek icin girin"
                                         minLength={6}
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                                    >
-                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                    </button>
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-posta Adresi</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                    <input
+
+                                    <Input
                                         type="email"
                                         value={editData.email}
                                         onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                        leftIcon={<Mail className="w-5 h-5" />}
                                     />
                                 </div>
                             </div>
@@ -621,35 +632,36 @@ export function TeamMembersTab() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
                                 <div className="relative">
-                                    <Shield className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                    <select
+                                    <Select
                                         value={editData.role}
                                         onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                    >
-                                        <option value="user">Kullanici</option>
-                                        <option value="admin">Yonetici</option>
-                                        <option value="tenant_admin">Tenant Admin</option>
-                                        <option value="doctor">Doktor</option>
-                                        <option value="secretary">Sekreter</option>
-                                    </select>
+                                        className="pl-10"
+                                        options={[
+                                            { value: "user", label: "Kullanici" },
+                                            { value: "admin", label: "Yonetici" },
+                                            { value: "tenant_admin", label: "Tenant Admin" },
+                                            { value: "doctor", label: "Doktor" },
+                                            { value: "secretary", label: "Sekreter" }
+                                        ]}
+                                    />
+
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube</label>
                                 <div className="relative">
-                                    <Building2 className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                    <select
+                                    <Select
                                         value={editData.branchId}
                                         onChange={(e) => setEditData({ ...editData, branchId: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                    >
-                                        <option value="">Sube Seciniz (Opsiyonel)</option>
-                                        {branches.map((branch) => (
-                                            <option key={branch.id} value={branch.id}>{branch.name}</option>
-                                        ))}
-                                    </select>
+                                        className="pl-10"
+                                        placeholder="Sube Seciniz (Opsiyonel)"
+                                        options={branches.map((branch) => ({
+                                            value: branch.id,
+                                            label: branch.name
+                                        }))}
+                                    />
+
                                 </div>
                             </div>
 
@@ -661,20 +673,23 @@ export function TeamMembersTab() {
                             )}
 
                             <div className="flex space-x-3 pt-4">
-                                <button
+                                <Button
                                     type="button"
                                     onClick={() => setIsEditModalOpen(false)}
-                                    className="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    variant="outline"
+                                    className="flex-1"
                                 >
                                     Iptal
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="submit"
                                     disabled={isUpdating}
-                                    className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                                    loading={isUpdating}
+                                    variant="primary"
+                                    className="flex-1"
                                 >
                                     {isUpdating ? 'Guncelleniyor...' : 'Guncelle'}
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -699,21 +714,25 @@ export function TeamMembersTab() {
                         </p>
 
                         <div className="flex justify-end space-x-3">
-                            <button
+                            <Button
                                 onClick={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                variant="outline"
                             >
                                 Iptal
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={confirmationModal.onConfirm}
-                                className={`px-4 py-2 text-white rounded-lg transition-colors ${confirmationModal.type === 'danger' ? 'bg-red-600 hover:bg-red-700' :
-                                    confirmationModal.type === 'warning' ? 'bg-amber-500 hover:bg-amber-600' :
-                                        'bg-blue-600 hover:bg-blue-700'
-                                    }`}
+                                variant={confirmationModal.type === 'danger' ? 'danger' : 'default'}
+                                className={
+                                    confirmationModal.type === 'warning' 
+                                        ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' 
+                                        : confirmationModal.type === 'info'
+                                            ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                                            : ''
+                                }
                             >
                                 Onayla
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

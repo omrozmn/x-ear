@@ -25,9 +25,11 @@ import {
   formatDate,
   formatPhone,
   getSegmentBadge,
-  getAcquisitionStatusBadge,
-  getBranchBadge
+  getAcquisitionStatusBadge
 } from './PatientListHelpers';
+import { useListBranches } from '../../api/generated/branches/branches';
+import { unwrapArray } from '../../utils/response-unwrap';
+import { BranchRead } from '../../api/generated/schemas';
 
 interface PatientListProps {
   patients: Patient[];
@@ -101,6 +103,24 @@ export function PatientList({
 }: PatientListProps) {
   const [hoveredPatient, setHoveredPatient] = useState<string | null>(null);
   const [communicationPatient, setCommunicationPatient] = useState<Patient | null>(null);
+
+  // Fetch branches for display
+  const { data: branchesData } = useListBranches();
+  const branches = unwrapArray<BranchRead>(branchesData) || [];
+
+  // Helper to find branch name
+  const getBranchName = useCallback((patient: Patient) => {
+    const p = patient as any;
+    const branchId = p.branchId || p.branch_id;
+    const branchName = p.branchName || p.branch_name;
+
+    if (branchName) return branchName;
+    if (branchId) {
+      const branch = branches.find(b => b.id === branchId);
+      return branch?.name || '-';
+    }
+    return '-';
+  }, [branches]);
 
   const isAllSelected = useMemo(() => {
     return patients.length > 0 && patients.every(p => p.id && selectedPatients.includes(p.id));
@@ -382,7 +402,7 @@ export function PatientList({
                     }}
                     title="Etiket güncellemek için tıklayın"
                   >
-                    {getBranchBadge((patient as any).branchId, (patient as any).branch)}
+                    <Badge variant="default" size="sm">{getBranchName(patient)}</Badge>
                   </td>
                   <td
                     className="px-6 py-4 whitespace-nowrap cursor-pointer"

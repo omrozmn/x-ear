@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useUpdateTenant } from '@/lib/api-client';
+import { useUpdateAdminTenant } from '@/lib/api-client';
 
 interface ExtendedTenant {
     id?: string;
@@ -17,7 +17,7 @@ interface GeneralTabProps {
 }
 
 export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
-    const { mutateAsync: updateTenant, isPending } = useUpdateTenant();
+    const { mutateAsync: updateTenant, isPending } = useUpdateAdminTenant();
     const [formData, setFormData] = useState({
         name: tenant.name || '',
         owner_email: tenant.owner_email || '',

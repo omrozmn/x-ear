@@ -18,7 +18,7 @@ function syncTokensFromZustand() {
     if (authStorage) {
       const parsed = JSON.parse(authStorage);
       const zustandToken = parsed?.state?.token;
-      const zustandRefresh = parsed?.state?.refreshToken;
+      const zustandRefresh = parsed?.state?.createAuthRefresh;
       
       if (zustandToken && !tokenManager.accessToken) {
         console.log('[main.tsx] Syncing tokens from Zustand persist storage...');
@@ -34,7 +34,7 @@ function syncTokensFromZustand() {
 // TokenManager handles all token hydration from storage automatically on construction
 console.log('[main.tsx] TokenManager initialized:', {
   hasAccessToken: !!tokenManager.accessToken,
-  hasRefreshToken: !!tokenManager.refreshToken,
+  hasRefreshToken: !!tokenManager.createAuthRefresh,
   isExpired: tokenManager.isAccessTokenExpired(),
   userId: tokenManager.getUserId()
 });
@@ -44,7 +44,7 @@ syncTokensFromZustand();
 
 console.log('[main.tsx] After sync:', {
   hasAccessToken: !!tokenManager.accessToken,
-  hasRefreshToken: !!tokenManager.refreshToken,
+  hasRefreshToken: !!tokenManager.createAuthRefresh,
 });
 
 console.log('Starting migration and auth init...');

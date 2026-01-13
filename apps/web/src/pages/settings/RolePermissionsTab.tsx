@@ -4,12 +4,12 @@ import { customInstance } from '@/api/orval-mutator';
 import { Shield, Check, Save, Loader2, AlertCircle, Users, ShoppingCart, DollarSign, FileText, Headphones, Package, Megaphone, Settings, BarChart, LayoutDashboard, Calendar, ClipboardList, Pencil, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-  useGetRolePermissionsApiPermissionsRoleRoleNameGet,
-  useUpdateRolePermissionsApiPermissionsRoleRoleNamePut,
-  getGetRolePermissionsQueryKey,
-  getGetMyPermissionsQueryKey,
+  useGetPermissionRole,
+  useUpdatePermissionRole,
+  getGetPermissionRoleQueryKey,
+  getListPermissionsQueryKey,
   useListRoles,
-  useCreateRole,
+  useCreateRoles,
   useUpdateRole,
   getListRolesQueryKey,
 } from '@/api/generated';
@@ -108,14 +108,32 @@ export function RolePermissionsTab() {
   const [editRoleName, setEditRoleName] = useState('');
 
   // Fetch roles from backend
-  const { data: rolesResponse, isLoading: loadingRoles } = useListRoles();
+  const { data: rolesResponse, isLoading: loadingRoles, refetch: refetchRoles } = useListRoles();
   
-  // Extract roles list
+  // Extract roles list - handle wrapped response
   const rolesList = useMemo(() => {
-    const data = rolesResponse?.data as RoleItem[] | undefined;
-    if (!data) return [];
+    // customInstance returns response.data, which is ResponseEnvelope
+    // So rolesResponse = { success: true, data: [...], meta: {...} }
+    // rolesResponse.data = RoleRead[]
+    console.log('[RolePermissionsTab] rolesResponse:', rolesResponse);
+    
+    let roles: RoleItem[] = [];
+    
+    // rolesResponse is the ResponseEnvelope, so .data is the array
+    if (rolesResponse && typeof rolesResponse === 'object') {
+      const envelope = rolesResponse as any;
+      if (Array.isArray(envelope.data)) {
+        roles = envelope.data;
+      } else if (Array.isArray(envelope)) {
+        // Direct array (shouldn't happen but handle it)
+        roles = envelope;
+      }
+    }
+    
+    console.log('[RolePermissionsTab] Extracted roles:', roles);
+    
     // Filter out tenant_admin from editable list (it has all permissions)
-    return data.filter(r => r.name !== 'tenant_admin');
+    return roles.filter(r => r.name !== 'tenant_admin');
   }, [rolesResponse]);
 
   // Set default selected role when roles load
@@ -126,18 +144,37 @@ export function RolePermissionsTab() {
   }, [rolesList, selectedRole]);
 
   // Create role mutation
-  const createRoleMutation = useCreateRole({
+  const createRoleMutation = useCreateRoles({
     mutation: {
       onSuccess: () => {
         toast.success('Rol başarıyla oluşturuldu');
         queryClient.invalidateQueries({ queryKey: getListRolesQueryKey() });
+        refetchRoles(); // Force refetch
         setCreateModalOpen(false);
         setNewRoleName('');
       },
-      onError: (error: AxiosError<{ error?: string; message?: string }>) => {
-        const errorMessage = error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Rol oluşturulurken bir hata oluştu';
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+        let errorMessage = 'Rol oluşturulurken bir hata oluştu';
+        
+        try {
+          const errorData = error.response?.data?.error;
+          const detail = error.response?.data?.detail;
+          
+          if (typeof errorData === 'object' && errorData?.message) {
+            errorMessage = String(errorData.message);
+          } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          } else if (typeof detail === 'object' && detail?.message) {
+            errorMessage = String(detail.message);
+          } else if (typeof detail === 'string') {
+            errorMessage = detail;
+          } else if (error.response?.data?.message) {
+            errorMessage = String(error.response.data.message);
+          }
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        
         toast.error(errorMessage);
       },
     },
@@ -157,10 +194,28 @@ export function RolePermissionsTab() {
         setEditingRole(null);
         setEditRoleName('');
       },
-      onError: (error: AxiosError<{ error?: string; message?: string }>) => {
-        const errorMessage = error.response?.data?.error ||
-          error.response?.data?.message ||
-          'Rol güncellenirken bir hata oluştu';
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+        let errorMessage = 'Rol güncellenirken bir hata oluştu';
+        
+        try {
+          const errorData = error.response?.data?.error;
+          const detail = error.response?.data?.detail;
+          
+          if (typeof errorData === 'object' && errorData?.message) {
+            errorMessage = String(errorData.message);
+          } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          } else if (typeof detail === 'object' && detail?.message) {
+            errorMessage = String(detail.message);
+          } else if (typeof detail === 'string') {
+            errorMessage = detail;
+          } else if (error.response?.data?.message) {
+            errorMessage = String(error.response.data.message);
+          }
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        
         toast.error(errorMessage);
       },
     },
@@ -183,30 +238,48 @@ export function RolePermissionsTab() {
   const { data: allPermissionsResponse, isLoading: loadingPermissions } = usePermissionsGetAllPermissions();
 
   // Get role permissions using orval hook
-  const { data: rolePermissionsResponse, isLoading: loadingRole } = useGetRolePermissionsApiPermissionsRoleRoleNameGet(
+  const { data: rolePermissionsResponse, isLoading: loadingRole } = useGetPermissionRole(
     selectedRole || '',
     {
       query: {
-        queryKey: getGetRolePermissionsQueryKey(selectedRole || ''),
+        queryKey: getGetPermissionRoleQueryKey(selectedRole || ''),
         enabled: !!selectedRole,
       },
     }
   );
 
   // Update role permissions mutation using orval hook
-  const updateMutation = useUpdateRolePermissionsApiPermissionsRoleRoleNamePut({
+  const updateMutation = useUpdatePermissionRole({
     mutation: {
       onSuccess: () => {
         toast.success('İzinler başarıyla güncellendi');
         // Invalidate role permissions query
-        queryClient.invalidateQueries({ queryKey: getGetRolePermissionsQueryKey(selectedRole || '') });
-        queryClient.invalidateQueries({ queryKey: getGetMyPermissionsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetPermissionRoleQueryKey(selectedRole || '') });
+        queryClient.invalidateQueries({ queryKey: getListPermissionsQueryKey() });
         setHasChanges(false);
       },
-      onError: (error: AxiosError<{ error?: string; message?: string }>) => {
-        const errorMessage = error.response?.data?.error ||
-          error.response?.data?.message ||
-          'İzinler güncellenirken bir hata oluştu';
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+        let errorMessage = 'İzinler güncellenirken bir hata oluştu';
+        
+        try {
+          const errorData = error.response?.data?.error;
+          const detail = error.response?.data?.detail;
+          
+          if (typeof errorData === 'object' && errorData?.message) {
+            errorMessage = String(errorData.message);
+          } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          } else if (typeof detail === 'object' && detail?.message) {
+            errorMessage = String(detail.message);
+          } else if (typeof detail === 'string') {
+            errorMessage = detail;
+          } else if (error.response?.data?.message) {
+            errorMessage = String(error.response.data.message);
+          }
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        
         toast.error(errorMessage);
         console.error('Permission update error:', error);
       },

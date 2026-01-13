@@ -17,6 +17,8 @@ export interface DeviceAssignmentFormProps {
   onUpdate?: (assignment: DeviceAssignment) => Promise<void> | void;
 }
 
+
+
 export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
   patientId,
   assignment,
@@ -74,6 +76,14 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
       // include the SGK reduction, salePrice and patient payment values.
       let assignmentData = ({ ...formData, ...calculatedPricing } as DeviceAssignment);
 
+      // Inject mode for parent handler compatibility
+      (assignmentData as any).mode = isManualMode ? 'manual' : 'inventory';
+
+      // Map deviceId to inventoryId for parent compatibility if not manual
+      if (!isManualMode && formData.deviceId) {
+        (assignmentData as any).inventoryId = formData.deviceId;
+      }
+
       if (isManualMode) {
         // If manual mode, clear deviceId (inventoryId) and attach manual info
         // We'll use a special structure or simple fields that parent component understands
@@ -93,25 +103,28 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
           alert('Lütfen liste fiyatı giriniz.');
           return;
         }
+      } else if (selectedDevice) {
+        // Inventory mode: Inject selected device details to avoid lookup failures in parent
+        (assignmentData as any).brand = selectedDevice.brand;
+        (assignmentData as any).model = selectedDevice.model;
+        (assignmentData as any).deviceType = selectedDevice.category;
+        // If no serial number selected in form, but device is unique/has one, might need to handle it.
+        // Usually serial number form handles selection.
       }
 
-      console.log('💾 [DeviceAssignmentForm] KAYDET BAŞLANGIÇ');
-      console.log('💾 [DeviceAssignmentForm] assignment?.id:', assignment?.id);
-      console.log('💾 [DeviceAssignmentForm] assignmentData:', assignmentData);
-      console.log('💾 [DeviceAssignmentForm] deliveryStatus in formData:', formData.deliveryStatus);
-      console.log('💾 [DeviceAssignmentForm] deliveryStatus in assignmentData:', (assignmentData as any).deliveryStatus);
+      // Debug logging disabled to reduce console noise
+      // console.log('💾 [DeviceAssignmentForm] KAYDET BAŞLANGIÇ');
+      // console.log('💾 [DeviceAssignmentForm] assignment?.id:', assignment?.id);
+      // console.log('💾 [DeviceAssignmentForm] assignmentData:', assignmentData);
 
       if (assignment?.id) {
         // Update existing assignment
-        console.log('💾 [DeviceAssignmentForm] Calling onUpdate with:', assignmentData);
         await onUpdate?.(assignmentData); // Await the update
       } else {
         // Create new assignment
-        console.log('💾 [DeviceAssignmentForm] Calling onSave with:', assignmentData);
         await onSave?.(assignmentData); // Await the save
       }
 
-      console.log('💾 [DeviceAssignmentForm] onClose() çağrılıyor...');
       onClose();
     } catch (error) {
       console.error('Cihaz ataması kaydedilirken hata:', error);
@@ -156,9 +169,9 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Device Search - Only show in create mode or collapsed in edit mode */}
         {!assignment && (
-          <div className="bg-gray-50 rounded-lg p-6">
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Cihaz Seçimi</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Cihaz Seçimi</h3>
               <Button
                 type="button"
                 variant="ghost"
@@ -178,20 +191,20 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Marka</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marka</label>
                     <input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:text-white"
                       value={manualDevice.brand}
                       onChange={e => setManualDevice({ ...manualDevice, brand: e.target.value })}
                       placeholder="Örn: Phonak"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
                     <input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:text-white"
                       value={manualDevice.model}
                       onChange={e => setManualDevice({ ...manualDevice, model: e.target.value })}
                       placeholder="Örn: Paradise P90"
@@ -217,14 +230,14 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
             For now, manual mode is primarily for NEW assignments where stock is missing. 
         */}
         {assignment && selectedDevice && (
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm text-blue-600 font-medium">Seçili Cihaz</p>
-                <p className="text-lg font-semibold text-gray-900">
+                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Seçili Cihaz</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {selectedDevice.brand} {selectedDevice.model}
                 </p>
-                <p className="text-sm text-gray-600">Barkod: {selectedDevice.barcode || '-'}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Barkod: {selectedDevice.barcode || '-'}</p>
               </div>
               <button
                 type="button"
@@ -245,8 +258,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Device Search in edit mode (hidden by default) */}
         {assignment && (
-          <div id="device-search-section" style={{ display: 'none' }} className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Farklı Cihaz Seç</h3>
+          <div id="device-search-section" style={{ display: 'none' }} className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Farklı Cihaz Seç</h3>
             <DeviceSearchForm
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
@@ -260,8 +273,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Assignment Details - Show if device selected OR isManualMode */}
         {(selectedDevice || isManualMode) && (
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Atama Detayları</h3>
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Atama Detayları</h3>
             <AssignmentDetailsForm
               formData={formData}
               onFormDataChange={handleFormDataChange}
@@ -273,8 +286,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Pricing */}
         {(selectedDevice || isManualMode) && formData.reason === 'sale' && (
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Fiyatlandırma</h3>
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Fiyatlandırma</h3>
             <PricingForm
               formData={formData}
               onFormDataChange={handleFormDataChange}
@@ -285,8 +298,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Serial Numbers */}
         {(selectedDevice || isManualMode) && (
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Seri Numarası</h3>
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Seri Numarası</h3>
             <SerialNumberForm
               formData={formData}
               selectedDevice={selectedDevice} // Optional in manual mode
@@ -299,22 +312,22 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
         {/* Notes - At the bottom */}
         {(selectedDevice || isManualMode) && (
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Notlar</h3>
+          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Notlar</h3>
             <div className="relative">
               <textarea
                 value={formData.notes || ''}
                 onChange={(e) => updateFormData('notes', e.target.value)}
                 placeholder="Cihaz ataması ile ilgili notlar..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:bg-slate-800 dark:text-white"
               />
             </div>
           </div>
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+        <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-800">
           <Button
             type="button"
             variant="outline"

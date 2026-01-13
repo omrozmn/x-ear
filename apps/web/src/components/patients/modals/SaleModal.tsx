@@ -11,7 +11,7 @@ import { Patient } from '../../../types/patient/patient-base.types';
 import { useInventory } from '../../../hooks/useInventory';
 import ProductSearch, { type Product } from '../../common/ProductSearch';
 import { useFuzzySearch } from '../../../utils/fuzzySearch';
-import { addTimelineEvent, logPatientActivity } from '@/api/generated';
+import { createPatientTimeline, createPatientActivities } from '@/api/generated';
 import { patientApiService } from '../../../services/patient/patient-api.service';
 
 interface SaleModalProps {
@@ -60,6 +60,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
 
     const searchResults = fuzzySearchUtil.search(productSearchTerm, products, ['name', 'brand', 'model', 'barcode', 'serialNumber']);
     return searchResults.slice(0, 10).map(result => result.item);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productSearchTerm, products]);  // Click outside handler for dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -221,7 +222,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
         category: 'sales'
       };
 
-      await addTimelineEvent(patientId, timelineData as any);
+      await createPatientTimeline(patientId, timelineData as any);
       console.log('Timeline log created successfully');
     } catch (error) {
       console.error('Error creating timeline log:', error);
@@ -251,7 +252,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
         category: 'sales'
       };
 
-      await logPatientActivity(patientId, activityData as any);
+      await createPatientActivities(patientId, activityData as any);
       console.log('Sales activity log created successfully');
     } catch (error) {
       console.error('Error creating sales activity log:', error);

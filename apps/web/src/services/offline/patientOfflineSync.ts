@@ -61,7 +61,7 @@ export class PatientOfflineSync {
       window.addEventListener('online', () => this.handleOnline());
       window.addEventListener('offline', () => this.handleOffline());
 
-      console.log('Patient offline sync initialized');
+      // Patient offline sync initialized
     } catch (error) {
       console.error('Failed to initialize patient offline sync:', error);
       throw error;
@@ -200,7 +200,7 @@ export class PatientOfflineSync {
       // Update sync metadata
       await this.updateSyncMetadata();
 
-      console.log('Patient sync completed successfully');
+      // Patient sync completed
     } catch (error) {
       console.error('Patient sync failed:', error);
       throw error;
@@ -228,7 +228,7 @@ export class PatientOfflineSync {
     try {
       // Check if there are active API calls to prevent conflicts
       if (this.hasActiveApiCalls()) {
-        console.log('Patient sync: Skipping background sync due to active API calls');
+        // Skipping background sync due to active API calls
         return;
       }
 
@@ -255,7 +255,7 @@ export class PatientOfflineSync {
           requestCount++;
 
           // Log progress for debugging
-          console.log(`Background sync: fetched ${data.data?.length || 0} patients (batch ${requestCount})`);
+          // Fetched batch
         } catch (fetchError) {
           console.warn('Background sync fetch error:', fetchError);
           break; // Stop on network error
@@ -277,12 +277,12 @@ export class PatientOfflineSync {
             });
           }
         }
-        console.log(`Background sync: updated ${patients.length} patients in local DB`);
+        // Updated patients in local DB
       }
 
       // If we hit the request limit, schedule another sync for much later
       if (hasMore && requestCount >= maxRequests) {
-        console.log('Patient sync: Partial sync completed, scheduling continuation in 2 minutes');
+        // Partial sync completed, scheduling continuation
         setTimeout(() => this.syncWithServer(), 120000); // Continue in 2 minutes instead of 30 seconds
       }
     } catch (error) {
@@ -331,7 +331,7 @@ export class PatientOfflineSync {
 
   // Event handlers
   private async handleOnline(): Promise<void> {
-    console.log('Patient sync: Going online, starting sync...');
+    // Going online, starting sync
     try {
       await this.syncWithServer();
     } catch (error) {
@@ -340,7 +340,7 @@ export class PatientOfflineSync {
   }
 
   private handleOffline(): void {
-    console.log('Patient sync: Going offline, operations will be queued');
+    // Going offline, operations will be queued
     this.notifyListeners();
   }
 

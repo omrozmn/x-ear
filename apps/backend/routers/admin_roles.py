@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
+from schemas.roles import RoleCreate, RoleUpdate, RolePermissionsUpdate, RoleRead, RoleListResponse, RoleResponse, PermissionRead, PermissionGroup, PermissionListResponse
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 
@@ -34,26 +35,12 @@ PERMISSION_CATEGORIES = {
     'dashboard': {'label': 'Dashboard', 'icon': 'layout-dashboard'},
 }
 
-# --- Schemas ---
-
-class RoleCreate(BaseModel):
-    name: str
-    description: Optional[str] = ""
-    permissions: Optional[List[str]] = None
-
-class RoleUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-
-class RolePermissionsUpdate(BaseModel):
-    permissions: List[str]
-
 class UserRolesUpdate(BaseModel):
     role_ids: List[str]
 
 # --- Routes ---
 
-@router.get("/roles")
+@router.get("/roles", response_model=ResponseEnvelope[RoleListResponse], operation_id="listAdminRoles")
 def get_admin_roles(
     include_permissions: bool = False,
     access: UnifiedAccess = Depends(require_access()),
@@ -68,13 +55,23 @@ def get_admin_roles(
         
         roles = db.query(AdminRoleModel).order_by(AdminRoleModel.name).all()
         
-        return ResponseEnvelope(data={
-            'roles': [
-                r.to_dict(include_permissions=include_permissions) if hasattr(r, 'to_dict') else {'id': r.id, 'name': r.name}
-                for r in roles
-            ],
-            'total': len(roles)
-        })
+        roles_data = []
+        for r in roles:
+            perms = []
+            if include_permissions:
+                perms = [PermissionRead.model_validate(p) for p in r.permissions.all()]
+            
+            roles_data.append(RoleRead(
+                id=r.id,
+                name=r.name,
+                description=r.description,
+                is_system_role=r.is_system_role,
+                created_at=r.created_at,
+                updated_at=r.updated_at,
+                permissions=perms
+            ))
+        
+        return ResponseEnvelope(data=RoleListResponse(roles=roles_data, total=len(roles)))
         
     except HTTPException:
         raise
@@ -82,7 +79,7 @@ def get_admin_roles(
         logger.error(f"Get admin roles error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/roles/{role_id}")
+@router.get("/roles/{role_id}", response_model=ResponseEnvelope[RoleResponse], operation_id="getAdminRole")
 def get_admin_role(
     role_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -99,9 +96,18 @@ def get_admin_role(
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
-        return ResponseEnvelope(data={
-            'role': role.to_dict(include_permissions=True) if hasattr(role, 'to_dict') else {'id': role.id, 'name': role.name}
-        })
+        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        role_data = RoleRead(
+            id=role.id,
+            name=role.name,
+            description=role.description,
+            is_system_role=role.is_system_role,
+            created_at=role.created_at,
+            updated_at=role.updated_at,
+            permissions=perms
+        )
+
+        return ResponseEnvelope(data=RoleResponse(role=role_data))
         
     except HTTPException:
         raise
@@ -109,7 +115,7 @@ def get_admin_role(
         logger.error(f"Get admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/roles", status_code=201)
+@router.post("/roles", response_model=ResponseEnvelope[RoleResponse], operation_id="createAdminRoles", status_code=201)
 def create_admin_role(
     request_data: RoleCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -149,10 +155,18 @@ def create_admin_role(
         
         logger.info(f"Admin role created: {role.name} by user {access.principal_id}")
         
-        return ResponseEnvelope(data={
-            'message': 'Rol oluşturuldu',
-            'role': role.to_dict(include_permissions=True) if hasattr(role, 'to_dict') else {'id': role.id, 'name': role.name}
-        })
+        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        role_data = RoleRead(
+            id=role.id,
+            name=role.name,
+            description=role.description,
+            is_system_role=role.is_system_role,
+            created_at=role.created_at,
+            updated_at=role.updated_at,
+            permissions=perms
+        )
+
+        return ResponseEnvelope(data=RoleResponse(role=role_data))
         
     except HTTPException:
         raise
@@ -161,7 +175,7 @@ def create_admin_role(
         logger.error(f"Create admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/roles/{role_id}")
+@router.put("/roles/{role_id}", response_model=ResponseEnvelope[RoleResponse], operation_id="updateAdminRole")
 def update_admin_role(
     role_id: str,
     request_data: RoleUpdate,
@@ -197,10 +211,18 @@ def update_admin_role(
         
         logger.info(f"Admin role updated: {role.name}")
         
-        return ResponseEnvelope(data={
-            'message': 'Rol güncellendi',
-            'role': role.to_dict(include_permissions=True) if hasattr(role, 'to_dict') else {'id': role.id, 'name': role.name}
-        })
+        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        role_data = RoleRead(
+            id=role.id,
+            name=role.name,
+            description=role.description,
+            is_system_role=role.is_system_role,
+            created_at=role.created_at,
+            updated_at=role.updated_at,
+            permissions=perms
+        )
+
+        return ResponseEnvelope(data=RoleResponse(role=role_data))
         
     except HTTPException:
         raise
@@ -209,7 +231,7 @@ def update_admin_role(
         logger.error(f"Update admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/roles/{role_id}")
+@router.delete("/roles/{role_id}", operation_id="deleteAdminRole")
 def delete_admin_role(
     role_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -252,7 +274,7 @@ def delete_admin_role(
         logger.error(f"Delete admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/roles/{role_id}/permissions")
+@router.get("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleResponse], operation_id="listAdminRolePermissions")
 def get_admin_role_permissions(
     role_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -269,12 +291,18 @@ def get_admin_role_permissions(
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
-        return ResponseEnvelope(data={
-            'role_id': role.id,
-            'role_name': role.name,
-            'is_system_role': role.is_system_role,
-            'permissions': [p.to_dict() if hasattr(p, 'to_dict') else {'code': p.code} for p in role.permissions.all()]
-        })
+        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        role_data = RoleRead(
+            id=role.id,
+            name=role.name,
+            description=role.description,
+            is_system_role=role.is_system_role,
+            created_at=role.created_at,
+            updated_at=role.updated_at,
+            permissions=perms
+        )
+
+        return ResponseEnvelope(data=RoleResponse(role=role_data))
         
     except HTTPException:
         raise
@@ -282,7 +310,7 @@ def get_admin_role_permissions(
         logger.error(f"Get role permissions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/roles/{role_id}/permissions")
+@router.put("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleResponse], operation_id="updateAdminRolePermissions")
 def update_admin_role_permissions(
     role_id: str,
     request_data: RolePermissionsUpdate,
@@ -318,10 +346,18 @@ def update_admin_role_permissions(
         
         logger.info(f"Admin role permissions updated: {role.name}, {len(request_data.permissions)} permissions")
         
-        return ResponseEnvelope(data={
-            'message': 'Rol izinleri güncellendi',
-            'role': role.to_dict(include_permissions=True) if hasattr(role, 'to_dict') else {'id': role.id, 'name': role.name}
-        })
+        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        role_data = RoleRead(
+            id=role.id,
+            name=role.name,
+            description=role.description,
+            is_system_role=role.is_system_role,
+            created_at=role.created_at,
+            updated_at=role.updated_at,
+            permissions=perms
+        )
+
+        return ResponseEnvelope(data=RoleResponse(role=role_data))
         
     except HTTPException:
         raise
@@ -330,7 +366,7 @@ def update_admin_role_permissions(
         logger.error(f"Update role permissions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/permissions")
+@router.get("/permissions", response_model=ResponseEnvelope[PermissionListResponse], operation_id="listAdminPermissions")
 def get_admin_permissions(
     category: Optional[str] = None,
     access: UnifiedAccess = Depends(require_access()),
@@ -351,7 +387,7 @@ def get_admin_permissions(
         
         # Group permissions by category
         grouped = {}
-        ungrouped = []
+        ungrouped_perms = []
         
         for perm in permissions:
             cat = perm.category
@@ -359,7 +395,7 @@ def get_admin_permissions(
                 cat = perm.code.split('.')[0]
             cat = cat or 'other'
             
-            pdict = perm.to_dict() if hasattr(perm, 'to_dict') else {'code': perm.code}
+            p_read = PermissionRead.model_validate(perm)
             
             if cat in PERMISSION_CATEGORIES:
                 if cat not in grouped:
@@ -369,24 +405,27 @@ def get_admin_permissions(
                         'icon': PERMISSION_CATEGORIES[cat]['icon'],
                         'permissions': []
                     }
-                grouped[cat]['permissions'].append(pdict)
+                grouped[cat]['permissions'].append(p_read)
             else:
-                ungrouped.append(pdict)
+                ungrouped_perms.append(p_read)
         
-        result = list(grouped.values())
-        if ungrouped:
-            result.append({
-                'category': 'other',
-                'label': 'Diğer',
-                'icon': 'more-horizontal',
-                'permissions': ungrouped
-            })
+        groups_data = []
+        for cat in grouped:
+             groups_data.append(PermissionGroup(**grouped[cat]))
         
-        return ResponseEnvelope(data={
-            'data': result,
-            'all': [p.to_dict() if hasattr(p, 'to_dict') else {'code': p.code} for p in permissions],
-            'total': len(permissions)
-        })
+        if ungrouped_perms:
+            groups_data.append(PermissionGroup(
+                category='other',
+                label='Diğer',
+                icon='more-horizontal',
+                permissions=ungrouped_perms
+            ))
+
+        return ResponseEnvelope(data=PermissionListResponse(
+            data=groups_data,
+            all=[PermissionRead.model_validate(p) for p in permissions],
+            total=len(permissions)
+        ))
         
     except HTTPException:
         raise
@@ -394,7 +433,7 @@ def get_admin_permissions(
         logger.error(f"Get admin permissions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/admin-users")
+@router.get("/admin-users", operation_id="listAdminAdminUsers")
 def get_admin_users_with_roles(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -422,7 +461,7 @@ def get_admin_users_with_roles(
         logger.error(f"Get admin users error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/admin-users/{user_id}")
+@router.get("/admin-users/{user_id}", operation_id="getAdminAdminUser")
 def get_admin_user_detail(
     user_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -449,7 +488,7 @@ def get_admin_user_detail(
         logger.error(f"Get admin user detail error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/admin-users/{user_id}/roles")
+@router.put("/admin-users/{user_id}/roles", operation_id="updateAdminAdminUserRoles")
 def update_admin_user_roles(
     user_id: str,
     request_data: UserRolesUpdate,
@@ -503,7 +542,7 @@ def update_admin_user_roles(
         logger.error(f"Update admin user roles error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/my-permissions")
+@router.get("/my-permissions", operation_id="listAdminMyPermissions")
 def get_my_admin_permissions(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)

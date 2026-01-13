@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import {
-    useUpdatePaytrConfigApiPaymentsPosPaytrConfigPut,
-    useGetPaytrConfigApiPaymentsPosPaytrConfigGet
-} from '@/api/generated';
+    useUpdatePaymentPoPaytrConfig,
+    useListPaymentPoPaytrConfig
+} from '@/api/generated/payment-integrations/payment-integrations';
 import { CreditCard, Building2, Check, AlertCircle } from 'lucide-react';
 
 type PosProvider = 'xear' | 'paytr' | 'iyzico' | 'none';
@@ -36,8 +36,8 @@ export const PosSettings = () => {
     });
     const { success, error } = useToastHelpers();
 
-    const updateConfigMutation = useUpdatePaytrConfigApiPaymentsPosPaytrConfigPut();
-    const { data: configData, isLoading } = useGetPaytrConfigApiPaymentsPosPaytrConfigGet();
+    const updateConfigMutation = useUpdatePaymentPoPaytrConfig();
+    const { data: configData, isLoading } = useListPaymentPoPaytrConfig();
 
     const selectedProvider = watch('provider');
 

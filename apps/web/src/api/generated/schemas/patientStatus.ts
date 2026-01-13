@@ -12,7 +12,11 @@ export type PatientStatus = typeof PatientStatus[keyof typeof PatientStatus];
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PatientStatus = {
   active: 'active',
-  passive: 'passive',
+  inactive: 'inactive',
+  lead: 'lead',
+  trial: 'trial',
+  customer: 'customer',
+  new: 'new',
   deceased: 'deceased',
   archived: 'archived',
 } as const;

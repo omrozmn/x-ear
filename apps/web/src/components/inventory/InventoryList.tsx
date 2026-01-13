@@ -7,12 +7,12 @@ import { Link } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { unwrapPaginated } from '../../utils/response-unwrap';
 import {
-  useGetAllInventory,
+  useListInventory,
   useDeleteInventory,
   useUpdateInventory,
-  getGetAllInventoryQueryKey
+  getListInventoryQueryKey
 } from '@/api/generated/inventory/inventory';
-import type { GetAllInventoryParams } from '@/api/generated/schemas';
+import type { ListInventoryParams } from '@/api/generated/schemas';
 
 // Alias for backward compatibility
 type InventoryItemSchema = Record<string, unknown>;
@@ -40,7 +40,7 @@ interface InventoryListProps {
 }
 
 // Define specific type for extended params to handle backend filters not in OpenAPI
-interface ExtendedInventoryParams extends GetAllInventoryParams {
+interface ExtendedInventoryParams extends ListInventoryParams {
   brand?: string;
   supplier?: string;
   out_of_stock?: boolean;
@@ -96,7 +96,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     isLoading,
     error: fetchError,
     refetch
-  } = useGetAllInventory(queryParams as GetAllInventoryParams, {
+  } = useListInventory(queryParams as ListInventoryParams, {
     query: {
       staleTime: 5000
     }
@@ -247,7 +247,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       await Promise.all(selectedIds.map(id => deleteItemMutation.mutateAsync({ itemId: id })));
       setSelectedIds([]);
       // Invalidate specific query keys
-      await queryClient.invalidateQueries({ queryKey: getGetAllInventoryQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
     } catch (err) {
       console.error('Bulk delete failed:', err);
       alert('Toplu silme başarısız oldu');
@@ -337,7 +337,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         setFailureModalOpen(true);
       }
 
-      await queryClient.invalidateQueries({ queryKey: getGetAllInventoryQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
       setSelectedIds([]);
       setIsBulkModalOpen(false);
     } catch (err: any) {
@@ -483,7 +483,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
             // Default delete behavior/fallback
             try {
               await deleteItemMutation.mutateAsync({ itemId: record.id });
-              await queryClient.invalidateQueries({ queryKey: getGetAllInventoryQueryKey() });
+              await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
             } catch (e) {
               console.error("Delete failed", e);
               alert("Silme başarısız");

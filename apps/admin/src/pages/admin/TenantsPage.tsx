@@ -5,8 +5,8 @@ import toast from 'react-hot-toast';
 import Pagination from '@/components/ui/Pagination';
 import { TenantEditModal } from './tenants';
 import {
-    useGetAdminTenants,
-    useUpdateTenantStatus
+    useListAdminTenants,
+    useUpdateAdminTenantStatus
 } from '@/lib/api-client';
 
 type TenantStatus = 'active' | 'trial' | 'suspended' | 'cancelled';
@@ -20,7 +20,7 @@ export default function TenantsPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data: tenantsData, isLoading } = useGetAdminTenants({
+    const { data: tenantsData, isLoading } = useListAdminTenants({
         page,
         limit,
         search: searchTerm || undefined,
@@ -30,7 +30,7 @@ export default function TenantsPage() {
     const tenants = (tenantsData as any)?.data?.tenants || (tenantsData as any)?.tenants || [];
     const pagination = (tenantsData as any)?.data?.pagination || (tenantsData as any)?.pagination;
 
-    const { mutateAsync: updateStatus } = useUpdateTenantStatus();
+    const { mutateAsync: updateStatus } = useUpdateAdminTenantStatus();
 
     const handleStatusChange = async (tenantId: string, newStatus: string, e: React.MouseEvent) => {
         e.stopPropagation();

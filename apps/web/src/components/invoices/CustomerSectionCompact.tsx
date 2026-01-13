@@ -55,6 +55,7 @@ export function CustomerSectionCompact({
       onChange('customerTaxNumber', SGK_CUSTOMER.taxNumber);
       onChange('customerAddress', SGK_CUSTOMER.address);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   // TC ile hasta arama

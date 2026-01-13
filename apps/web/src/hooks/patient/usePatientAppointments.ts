@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 
 export interface PatientAppointment {
@@ -24,7 +24,7 @@ export function usePatientAppointments(patientId?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | string | null>(null);
 
-  const apiService = new PatientApiService();
+  const apiService = useMemo(() => new PatientApiService(), []);
 
   // Fetch appointments for a patient
   const fetchAppointments = useCallback(async (id: string) => {

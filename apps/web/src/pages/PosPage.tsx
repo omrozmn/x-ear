@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Card, Button, Input, useToastHelpers } from '@x-ear/ui-web';
 import {
-    useInitiatePaytrPaymentApiPaymentsPosPaytrInitiatePost,
-    useGetInstallmentOptionsApiPosCommissionInstallmentOptionsPost
+    useCreatePaymentPoPaytrInitiate,
+    useCreatePoCommissionInstallmentOptions
 } from '@/api/generated';
 import { CreditCard, AlertTriangle, ShieldCheck, Check, TrendingDown, User, X } from 'lucide-react';
 
@@ -27,8 +27,8 @@ export default function PosPage() {
 
     const amount = watch('amount');
     const patientName = watch('patientName');
-    const { mutate: initiatePayment, isPending } = useInitiatePaytrPaymentApiPaymentsPosPaytrInitiatePost();
-    const { mutate: getInstallments, isPending: loadingInstallments } = useGetInstallmentOptionsApiPosCommissionInstallmentOptionsPost();
+    const { mutate: initiatePayment, isPending } = useCreatePaymentPoPaytrInitiate();
+    const { mutate: getInstallments, isPending: loadingInstallments } = useCreatePoCommissionInstallmentOptions();
 
     // Fetch installment options when amount changes
     useEffect(() => {

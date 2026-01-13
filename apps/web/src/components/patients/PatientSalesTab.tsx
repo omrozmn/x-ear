@@ -31,7 +31,7 @@ import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
 import { PatientSaleCard } from './patient/PatientSaleCard';
 import { SalesTableView } from './patient/SalesTableView';
-import { getSales } from '@/api/generated';
+import { listSales } from '@/api/generated';
 import { PATIENT_SALES_DATA } from '../../constants/storage-keys';
 
 interface DeviceReplacement {
@@ -117,7 +117,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
     try {
       console.log('🔄 Loading patient sales for:', patient.id);
 
-      const response = await getSales({ search: patient.id }) as any;
+      const response = await listSales({ search: patient.id }) as any;
 
       console.log('📊 API Response:', response);
 
@@ -270,12 +270,14 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       loadPatientSales();
       loadDeviceReplacements();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient?.id]);
 
   // Listen for data change events from other tabs (like Device updates)
   useEffect(() => {
     const handleDataChange = () => {
-      console.log('🔄 [PatientSalesTab] Received xEar:dataChanged event, reloading sales...');
+      // Debug logging disabled to reduce console noise
+      // console.log('🔄 [PatientSalesTab] Received xEar:dataChanged event, reloading sales...');
       loadPatientSales();
     };
 
@@ -283,7 +285,8 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
     return () => {
       window.removeEventListener('xEar:dataChanged', handleDataChange);
     };
-  }, [loadPatientSales]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
 
@@ -441,7 +444,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
 
       {/* Action Buttons */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Satış İşlemleri</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Satış İşlemleri</h3>
         <div className="flex space-x-2">
           <Button onClick={handleCreateSale} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4 mr-2" />
@@ -634,8 +637,8 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       {deviceReplacements.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <RefreshCw className="w-5 h-5 mr-2 text-gray-600" />
+            <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
+              <RefreshCw className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" />
               Cihaz Değişimleri
             </CardTitle>
           </CardHeader>
@@ -643,21 +646,21 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
             {replacementsLoading ? (
               <div className="text-center py-4">
                 <Loading className="w-6 h-6 mx-auto mb-2" />
-                <p className="text-gray-500 text-sm">Cihaz değişimleri yükleniyor...</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Cihaz değişimleri yükleniyor...</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {deviceReplacements.map((replacement, index) => (
-                  <div key={replacement.id} className="bg-amber-50 p-4 rounded-lg border-2 border-amber-300">
+                  <div key={replacement.id} className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg border-2 border-amber-300 dark:border-amber-700/50">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-gray-900 text-sm">Cihaz Değişimi #{index + 1}</h4>
-                          <span className={`inline-block px-2 py-0.5 text-xs rounded ${replacement.status === 'pending_invoice' ? 'bg-yellow-100 text-yellow-800' :
-                            replacement.status === 'invoice_created' ? 'bg-blue-100 text-blue-800' :
-                              replacement.status === 'completed' && replacement.returnInvoice?.gibSent ? 'bg-green-100 text-green-800' :
-                                replacement.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                  'bg-gray-100 text-gray-800'
+                          <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Cihaz Değişimi #{index + 1}</h4>
+                          <span className={`inline-block px-2 py-0.5 text-xs rounded ${replacement.status === 'pending_invoice' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400' :
+                            replacement.status === 'invoice_created' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' :
+                              replacement.status === 'completed' && replacement.returnInvoice?.gibSent ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+                                replacement.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+                                  'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
                             }`}>
                             {
                               replacement.status === 'pending_invoice' ? 'Fatura Bekliyor' :
@@ -667,7 +670,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
                             }
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600 mb-2">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                           <strong>Tarih:</strong> {new Date(replacement.createdAt).toLocaleDateString('tr-TR', {
                             day: 'numeric',
                             month: 'short',
@@ -675,13 +678,13 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
                           })}
                         </p>
                         <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="bg-red-50 border border-red-200 rounded p-2">
-                            <p className="text-xs text-red-600 font-medium mb-1">Eski Cihaz</p>
-                            <p className="text-xs text-gray-900">{replacement.oldDeviceInfo}</p>
+                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded p-2">
+                            <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1">Eski Cihaz</p>
+                            <p className="text-xs text-gray-900 dark:text-gray-300">{replacement.oldDeviceInfo}</p>
                           </div>
-                          <div className="bg-green-50 border border-green-200 rounded p-2">
-                            <p className="text-xs text-green-600 font-medium mb-1">Yeni Cihaz</p>
-                            <p className="text-xs text-gray-900">{replacement.newDeviceInfo}</p>
+                          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded p-2">
+                            <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">Yeni Cihaz</p>
+                            <p className="text-xs text-gray-900 dark:text-gray-300">{replacement.newDeviceInfo}</p>
                           </div>
                         </div>
                       </div>
@@ -742,7 +745,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
                     </div>
 
                     {replacement.returnInvoice && (
-                      <div className="mt-3 pt-3 border-t border-amber-200">
+                      <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700/50">
                         <p className="text-xs text-green-600 flex items-center mb-1">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           İade faturası oluşturuldu: {replacement.returnInvoice.invoiceNumber}
@@ -786,10 +789,10 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       {/* Modals */}
       {showNewSaleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Yeni Satış</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Yeni Satış</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -894,10 +897,10 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       {/* Device Replacement Modal */}
       {showDeviceReplacementModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Cihaz Değişimi</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Cihaz Değişimi</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -906,7 +909,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
                   ×
                 </Button>
               </div>
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 Cihaz değişimi özelliği implementasyonu devam ediyor.
                 <br />
                 Legacy sistemdeki device replacement logic'i React'e taşınıyor.

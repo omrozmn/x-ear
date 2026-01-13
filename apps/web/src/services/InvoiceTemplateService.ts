@@ -95,7 +95,7 @@ export class InvoiceTemplateService {
     }
   }
 
-  static async createTemplate(data: CreateInvoiceTemplateData): Promise<InvoiceTemplate> {
+  static async createCommunicationTemplates(data: CreateInvoiceTemplateData): Promise<InvoiceTemplate> {
     try {
       // Mock API call - replace with actual implementation
       const newTemplate: InvoiceTemplate = {
@@ -125,7 +125,7 @@ export class InvoiceTemplateService {
     }
   }
 
-  static async updateTemplate(id: string, data: UpdateInvoiceTemplateData): Promise<InvoiceTemplate> {
+  static async updateCommunicationTemplate(id: string, data: UpdateInvoiceTemplateData): Promise<InvoiceTemplate> {
     try {
       const existingTemplate = await this.getTemplate(id);
       
@@ -149,7 +149,7 @@ export class InvoiceTemplateService {
     }
   }
 
-  static async deleteTemplate(id: string): Promise<void> {
+  static async deleteCommunicationTemplate(id: string): Promise<void> {
     try {
       // Mock API call - replace with actual implementation
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -276,7 +276,7 @@ export class InvoiceTemplateService {
         isActive: true
       };
       
-      return await this.createTemplate(createData);
+      return await this.createCommunicationTemplates(createData);
     } catch (error) {
       throw new Error('Şablon içe aktarılırken hata oluştu');
     }

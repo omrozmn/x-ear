@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 import logging
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
@@ -76,14 +77,14 @@ def parse_date(date_str: str) -> datetime:
 
 # --- Routes ---
 
-@router.get("/appointments", response_model=ResponseEnvelope[List[AppointmentRead]])
+@router.get("/appointments", operation_id="listAppointments", response_model=ResponseEnvelope[List[AppointmentRead]])
 def get_appointments(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     patient_id: Optional[str] = Query(None, alias="patient_id"),
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(20, ge=1, le=1000),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
@@ -138,7 +139,7 @@ def get_appointments(
         logger.error(f"Get appointments error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments", status_code=201, response_model=ResponseEnvelope[AppointmentRead])
+@router.post("/appointments", operation_id="createAppointments", status_code=201, response_model=ResponseEnvelope[AppointmentRead])
 def create_appointment(
     appointment_in: AppointmentCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -203,17 +204,17 @@ def create_appointment(
         logger.error(f"Create appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/{appointment_id}", response_model=ResponseEnvelope[AppointmentRead])
+@router.get("/appointments/{appointment_id}", operation_id="getAppointment", response_model=ResponseEnvelope[AppointmentRead])
 def get_appointment(
     appointment_id: str,
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get a single appointment"""
-    appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+    appointment = get_appointment_or_404(db_session, appointment_id, access)
     return ResponseEnvelope(data=appointment.to_dict())
 
-@router.put("/appointments/{appointment_id}", response_model=ResponseEnvelope[AppointmentRead])
+@router.put("/appointments/{appointment_id}", operation_id="updateAppointment", response_model=ResponseEnvelope[AppointmentRead])
 def update_appointment(
     appointment_id: str,
     appointment_in: AppointmentUpdate,
@@ -222,7 +223,7 @@ def update_appointment(
 ):
     """Update appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         data = appointment_in.model_dump(exclude_unset=True, by_alias=False)
         
         if 'date' in data and data['date']:
@@ -251,7 +252,7 @@ def update_appointment(
         logger.error(f"Update appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/appointments/{appointment_id}")
+@router.delete("/appointments/{appointment_id}", operation_id="deleteAppointment")
 def delete_appointment(
     appointment_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -259,7 +260,7 @@ def delete_appointment(
 ):
     """Delete an appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         db_session.delete(appointment)
         db_session.commit()
         return ResponseEnvelope(message="Appointment deleted")
@@ -270,7 +271,7 @@ def delete_appointment(
         logger.error(f"Delete appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments/{appointment_id}/reschedule", response_model=ResponseEnvelope[AppointmentRead])
+@router.post("/appointments/{appointment_id}/reschedule", operation_id="createAppointmentReschedule", response_model=ResponseEnvelope[AppointmentRead])
 def reschedule_appointment(
     appointment_id: str,
     reschedule_data: RescheduleRequest,
@@ -279,7 +280,7 @@ def reschedule_appointment(
 ):
     """Reschedule an appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         
         appointment.date = parse_date(reschedule_data.date)
         appointment.time = reschedule_data.time
@@ -294,7 +295,7 @@ def reschedule_appointment(
         logger.error(f"Reschedule appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments/{appointment_id}/cancel", response_model=ResponseEnvelope[AppointmentRead])
+@router.post("/appointments/{appointment_id}/cancel", operation_id="createAppointmentCancel", response_model=ResponseEnvelope[AppointmentRead])
 def cancel_appointment(
     appointment_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -302,7 +303,7 @@ def cancel_appointment(
 ):
     """Cancel an appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = 'cancelled'
         db_session.commit()
         return ResponseEnvelope(data=appointment.to_dict())
@@ -313,7 +314,7 @@ def cancel_appointment(
         logger.error(f"Cancel appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments/{appointment_id}/complete", response_model=ResponseEnvelope[AppointmentRead])
+@router.post("/appointments/{appointment_id}/complete", operation_id="createAppointmentComplete", response_model=ResponseEnvelope[AppointmentRead])
 def complete_appointment(
     appointment_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -321,7 +322,7 @@ def complete_appointment(
 ):
     """Mark appointment as completed"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = AppointmentStatus.COMPLETED
         db_session.commit()
         return ResponseEnvelope(data=appointment.to_dict())
@@ -332,7 +333,7 @@ def complete_appointment(
         logger.error(f"Complete appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/availability")
+@router.get("/appointments/availability", operation_id="listAppointmentAvailability")
 def get_availability(
     date: str,
     duration: int = Query(30, ge=15, le=120),
@@ -344,7 +345,7 @@ def get_availability(
         target_date = datetime.fromisoformat(date).date()
         
         query = db_session.query(Appointment).filter(
-            db.func.date(Appointment.date) == target_date,
+            func.date(Appointment.date) == target_date,
             Appointment.status.in_(['scheduled', 'confirmed'])
         )
         
@@ -385,7 +386,7 @@ def get_availability(
         logger.error(f"Get availability error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/list", response_model=ResponseEnvelope[List[AppointmentRead]])
+@router.get("/appointments/list", operation_id="listAppointmentList", response_model=ResponseEnvelope[List[AppointmentRead]])
 def list_appointments(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),

@@ -2,10 +2,10 @@ import React from 'react';
 import { CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 import {
-    useListSmsPackagesApiSmsPackagesGet,
-    useGetSmsCreditApiSmsCreditGet,
-    useGetCurrentApiSubscriptionsCurrentGet,
-    useGetAddonsApiAddonsGet
+    useListSmPackages,
+    useListSmCredit,
+    useListSubscriptionCurrent,
+    useListAddons
 } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -16,8 +16,8 @@ type FeatureUsageStats = {
 
 const Subscription: React.FC = () => {
     const { token, user } = useAuthStore();
-    const { data: subscriptionData, isLoading, isError } = useGetCurrentApiSubscriptionsCurrentGet();
-    const { data: creditData } = useGetSmsCreditApiSmsCreditGet({
+    const { data: subscriptionData, isLoading, isError } = useListSubscriptionCurrent();
+    const { data: creditData } = useListSmCredit({
         query: { enabled: !!token }
     });
     const info = (subscriptionData as any)?.data?.data;
@@ -167,7 +167,7 @@ const Subscription: React.FC = () => {
 };
 
 function SmsPackagesList() {
-    const { data: packagesData, isLoading, isError } = useListSmsPackagesApiSmsPackagesGet();
+    const { data: packagesData, isLoading, isError } = useListSmPackages();
     if (isLoading) return <div className="text-gray-500">SMS Paketleri yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">SMS paketleri yüklenemedi.</div>;
 
@@ -202,7 +202,7 @@ function SmsPackagesList() {
 }
 
 function AddOnsList() {
-    const { data: addonsData, isLoading, isError } = useGetAddonsApiAddonsGet();
+    const { data: addonsData, isLoading, isError } = useListAddons();
     if (isLoading) return <div className="text-gray-500">Eklentiler yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">Eklentiler yüklenemedi.</div>;
 

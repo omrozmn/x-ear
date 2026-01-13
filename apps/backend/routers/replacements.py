@@ -33,7 +33,7 @@ class ReplacementStatusUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
 
-@router.get("/patients/{patient_id}/replacements")
+@router.get("/patients/{patient_id}/replacements", operation_id="listPatientReplacements")
 async def get_patient_replacements(
     patient_id: str,
     db: Session = Depends(get_db),
@@ -51,7 +51,7 @@ async def get_patient_replacements(
         logger.error(f"Get patient replacements error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/replacements")
+@router.post("/patients/{patient_id}/replacements", operation_id="createPatientReplacements")
 async def create_patient_replacement(
     patient_id: str,
     data: ReplacementCreate,
@@ -94,7 +94,7 @@ async def create_patient_replacement(
         logger.error(f"Create replacement error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/replacements/{replacement_id}")
+@router.get("/replacements/{replacement_id}", operation_id="getReplacement")
 async def get_replacement(
     replacement_id: str,
     db: Session = Depends(get_db),
@@ -108,7 +108,7 @@ async def get_replacement(
         raise HTTPException(status_code=404, detail="Replacement not found")
     return {"success": True, "data": r.to_dict()}
 
-@router.patch("/replacements/{replacement_id}/status")
+@router.patch("/replacements/{replacement_id}/status", operation_id="updateReplacementStatus")
 async def patch_replacement_status(
     replacement_id: str,
     data: ReplacementStatusUpdate,
@@ -136,7 +136,7 @@ class InvoiceCreateRequest(BaseModel):
     invoiceType: Optional[str] = "return"
     notes: Optional[str] = None
 
-@router.post("/replacements/{replacement_id}/invoice")
+@router.post("/replacements/{replacement_id}/invoice", operation_id="createReplacementInvoice")
 async def create_replacement_invoice(
     replacement_id: str,
     data: InvoiceCreateRequest,
@@ -167,7 +167,7 @@ async def create_replacement_invoice(
     
     return {"success": True, "data": {"invoice": invoice_data, "replacement": r.to_dict()}}
 
-@router.post("/return-invoices/{invoice_id}/send-to-gib")
+@router.post("/return-invoices/{invoice_id}/send-to-gib", operation_id="createReturnInvoiceSendToGib")
 async def send_return_invoice_to_gib(
     invoice_id: str,
     db: Session = Depends(get_db),

@@ -106,7 +106,7 @@ def get_otp_store():
 
 # --- Routes ---
 
-@router.post("/auth/lookup-phone")
+@router.post("/auth/lookup-phone", operation_id="createAuthLookupPhone")
 def lookup_phone(
     request_data: RouterLookupPhoneRequest,
     db_session: Session = Depends(get_db)
@@ -147,7 +147,7 @@ def lookup_phone(
         logger.error(f"Lookup phone error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/forgot-password")
+@router.post("/auth/forgot-password", operation_id="createAuthForgotPassword")
 def forgot_password(
     request_data: RouterForgotPasswordRequest,
     db_session: Session = Depends(get_db)
@@ -195,7 +195,7 @@ def forgot_password(
         logger.error(f"Forgot password error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/verify-otp", response_model=ResponseEnvelope[CanonicalTokenResponse])
+@router.post("/auth/verify-otp", operation_id="createAuthVerifyOtp", response_model=ResponseEnvelope[CanonicalTokenResponse])
 def verify_otp(
     request_data: RouterVerifyOTPRequest,
     authorization: Optional[str] = None,
@@ -283,7 +283,7 @@ def verify_otp(
         logger.error(f"Verify OTP error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/reset-password")
+@router.post("/auth/reset-password", operation_id="createAuthResetPassword")
 def reset_password(
     request_data: RouterResetPasswordRequest,
     db_session: Session = Depends(get_db)
@@ -347,7 +347,7 @@ def reset_password(
         logger.error(f"Reset password error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/login", response_model=ResponseEnvelope[CanonicalTokenResponse])
+@router.post("/auth/login", operation_id="createAuthLogin", response_model=ResponseEnvelope[CanonicalTokenResponse])
 def login(
     request_data: CanonicalLoginRequest,
     db_session: Session = Depends(get_db)
@@ -479,7 +479,7 @@ def login(
         logger.error(f"Login error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/refresh", response_model=ResponseEnvelope[RefreshTokenResponse])
+@router.post("/auth/refresh", operation_id="createAuthRefresh", response_model=ResponseEnvelope[RefreshTokenResponse])
 def refresh_token(
     authorization: str = Depends(oauth2_scheme),
     db_session: Session = Depends(get_db)
@@ -578,7 +578,7 @@ def refresh_token(
         logger.error(f"Token refresh error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/auth/me", response_model=ResponseEnvelope[CanonicalUserRead])
+@router.get("/auth/me", operation_id="listAuthMe", response_model=ResponseEnvelope[CanonicalUserRead])
 def get_current_user(
     authorization: str = Depends(oauth2_scheme),
     db_session: Session = Depends(get_db)
@@ -607,7 +607,7 @@ def get_current_user(
         logger.error(f"Get current user error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/send-verification-otp")
+@router.post("/auth/send-verification-otp", operation_id="createAuthSendVerificationOtp")
 def send_verification_otp(
     request_data: RouterSendVerificationOTPRequest,
     authorization: str = Depends(oauth2_scheme),
@@ -673,7 +673,7 @@ def send_verification_otp(
         logger.error(f"Send OTP error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/set-password")
+@router.post("/auth/set-password", operation_id="createAuthSetPassword")
 def set_password(
     request_data: RouterSetPasswordRequest,
     authorization: str = Depends(oauth2_scheme),

@@ -93,16 +93,16 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
     if (!noteContent.trim()) {
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       // TODO: Implement note saving logic
-      console.log('Saving note:', { 
+      console.log('Saving note:', {
         patientId: patient.id,
         title: noteTitle || 'Not',
-        content: noteContent 
+        content: noteContent
       });
-      
+
       // Close modal and reset form
       if (onCloseNoteModal) {
         onCloseNoteModal();
@@ -127,33 +127,33 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Personal Information */}
-      <div className="bg-white border rounded-lg shadow-sm">
-        <div className="p-6 border-b">
-          <h3 className="text-lg font-medium text-gray-900">Kişisel Bilgiler</h3>
+      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm">
+        <div className="p-6 border-b dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Kişisel Bilgiler</h3>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="flex items-center space-x-3">
               <User className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">Ad Soyad</p>
-                <p className="text-sm text-gray-900">{patient.firstName} {patient.lastName}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ad Soyad</p>
+                <p className="text-sm text-gray-900 dark:text-white">{patient.firstName} {patient.lastName}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
               <Phone className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">Telefon</p>
-                <p className="text-sm text-gray-900">{patient.phone || 'Belirtilmemiş'}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Telefon</p>
+                <p className="text-sm text-gray-900 dark:text-white">{patient.phone || 'Belirtilmemiş'}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
               <Mail className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">E-posta</p>
-                <p className="text-sm text-gray-900">{patient.email || 'Belirtilmemiş'}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">E-posta</p>
+                <p className="text-sm text-gray-900 dark:text-white">{patient.email || 'Belirtilmemiş'}</p>
               </div>
             </div>
 
@@ -162,24 +162,24 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
                 {getStatusBadge(patient.status)}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Durum</p>
-                <p className="text-sm text-gray-900">{getStatusText(patient.status)}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Durum</p>
+                <p className="text-sm text-gray-900 dark:text-white">{getStatusText(patient.status)}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
               <Tag className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">TC Kimlik No</p>
-                <p className="text-sm text-gray-900">{patient.tcNumber || 'Belirtilmemiş'}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">TC Kimlik No</p>
+                <p className="text-sm text-gray-900 dark:text-white">{patient.tcNumber || 'Belirtilmemiş'}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
               <div className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">Doğum Tarihi</p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Doğum Tarihi</p>
+                <p className="text-sm text-gray-900 dark:text-white">
                   {patient.birthDate ? formatDate(patient.birthDate) : 'Belirtilmemiş'}
                 </p>
               </div>
@@ -188,16 +188,16 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
             <div className="flex items-center space-x-3">
               <Tag className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">Segment</p>
-                <p className="text-sm text-gray-900">{getSegmentText(patient.segment)}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Segment</p>
+                <p className="text-sm text-gray-900 dark:text-white">{getSegmentText(patient.segment)}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
               <Tag className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">Kazanım Türü</p>
-                <p className="text-sm text-gray-900">{getAcquisitionTypeText(patient.acquisitionType)}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kazanım Türü</p>
+                <p className="text-sm text-gray-900 dark:text-white">{getAcquisitionTypeText(patient.acquisitionType)}</p>
               </div>
             </div>
 
@@ -205,8 +205,8 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
               <div className="flex items-center space-x-3">
                 <MapPin className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Şube</p>
-                  <p className="text-sm text-gray-900">{(patient as any).branchId}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Şube</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{(patient as any).branchId}</p>
                 </div>
               </div>
             )}
@@ -215,17 +215,17 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
       </div>
 
       {/* Address Information */}
-      <div className="bg-white border rounded-lg shadow-sm">
-        <div className="p-6 border-b">
-          <h3 className="text-lg font-medium text-gray-900">Adres Bilgileri</h3>
+      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm">
+        <div className="p-6 border-b dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Adres Bilgileri</h3>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center space-x-3">
               <MapPin className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">İl</p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">İl</p>
+                <p className="text-sm text-gray-900 dark:text-white">
                   {patient.addressCity || 'Belirtilmemiş'}
                 </p>
               </div>
@@ -234,8 +234,8 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
             <div className="flex items-center space-x-3">
               <MapPin className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500">İlçe</p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">İlçe</p>
+                <p className="text-sm text-gray-900 dark:text-white">
                   {patient.addressDistrict || 'Belirtilmemiş'}
                 </p>
               </div>
@@ -244,8 +244,8 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
             <div className="flex items-start space-x-3 md:col-span-3">
               <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-500 mb-1">Adres</p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Adres</p>
+                <p className="text-sm text-gray-900 dark:text-white">
                   {patient.addressFull || 'Adres bilgisi bulunmuyor'}
                 </p>
               </div>
@@ -255,9 +255,9 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
       </div>
 
       {/* Additional Details */}
-      <div className="bg-white border rounded-lg shadow-sm">
-        <div className="p-6 border-b">
-          <h3 className="text-lg font-medium text-gray-900">Ek Bilgiler</h3>
+      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm">
+        <div className="p-6 border-b dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Ek Bilgiler</h3>
         </div>
         <div className="p-6">
           <div className="space-y-4">
@@ -266,9 +266,9 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
                 <p className="text-sm font-medium text-gray-500 mb-2">Son Notlar</p>
                 <div className="space-y-2">
                   {patient.notes.slice(0, 3).map((note) => (
-                    <div key={note.id} className="p-3 bg-gray-50 rounded">
-                      <p className="text-sm text-gray-900">{note.text}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                    <div key={note.id} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+                      <p className="text-sm text-gray-900 dark:text-gray-200">{note.text}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {note.author} - {formatDate(note.date)}
                       </p>
                     </div>
@@ -282,7 +282,7 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
                 <p className="text-sm font-medium text-gray-500 mb-2">Etiketler</p>
                 <div className="flex flex-wrap gap-2">
                   {patient.tags.map((tag, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded-full">
                       {tag}
                     </span>
                   ))}
@@ -292,14 +292,14 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
               <div>
-                <p className="text-sm font-medium text-gray-500">Kayıt Tarihi</p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kayıt Tarihi</p>
+                <p className="text-sm text-gray-900 dark:text-white">
                   {patient.createdAt ? formatDate(patient.createdAt) : 'Bilinmiyor'}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Son Güncelleme</p>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Son Güncelleme</p>
+                <p className="text-sm text-gray-900 dark:text-white">
                   {patient.updatedAt ? formatDate(patient.updatedAt) : 'Bilinmiyor'}
                 </p>
               </div>
@@ -316,7 +316,7 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Başlık (Opsiyonel)
             </label>
             <Input
@@ -326,9 +326,9 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
               className="w-full"
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Not <span className="text-red-500">*</span>
             </label>
             <Textarea

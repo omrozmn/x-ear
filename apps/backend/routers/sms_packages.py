@@ -36,7 +36,7 @@ class SMSPackageUpdate(BaseModel):
 
 # --- Public Routes ---
 
-@router.get("/sms-packages")
+@router.get("/sms-packages", operation_id="listSmsPackages")
 def list_public_packages(db: Session = Depends(get_db)):
     """List all active SMS packages (Public)"""
     try:
@@ -55,7 +55,7 @@ def list_public_packages(db: Session = Depends(get_db)):
 
 # --- Admin Routes ---
 
-@router.get("/admin/sms/packages")
+@router.get("/admin/sms/packages", operation_id="listAdminSmPackages")
 def list_admin_packages(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -94,7 +94,7 @@ def list_admin_packages(
         logger.error(f"List admin SMS packages error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/admin/sms/packages", status_code=201)
+@router.post("/admin/sms/packages", operation_id="createAdminSmPackages", status_code=201)
 def create_package(
     request_data: SMSPackageCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -126,7 +126,7 @@ def create_package(
         logger.error(f"Create SMS package error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/admin/sms/packages/{package_id}")
+@router.put("/admin/sms/packages/{package_id}", operation_id="updateAdminSmPackage")
 def update_package(
     package_id: str,
     request_data: SMSPackageUpdate,
@@ -166,7 +166,7 @@ def update_package(
         logger.error(f"Update SMS package error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/admin/sms/packages/{package_id}")
+@router.delete("/admin/sms/packages/{package_id}", operation_id="deleteAdminSmPackage")
 def delete_package(
     package_id: str,
     access: UnifiedAccess = Depends(require_access()),

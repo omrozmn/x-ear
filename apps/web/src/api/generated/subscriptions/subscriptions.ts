@@ -40,7 +40,7 @@ import { customInstance } from '../../orval-mutator';
  * Subscribe to a plan (Mock Payment)
  * @summary Subscribe
  */
-export const subscribe = (
+export const createSubscriptionSubscribe = (
     subscribeRequest: SubscribeRequest,
  signal?: AbortSignal
 ) => {
@@ -56,11 +56,11 @@ export const subscribe = (
   
 
 
-export const getSubscribeMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof subscribe>>, TError,{data: SubscribeRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof subscribe>>, TError,{data: SubscribeRequest}, TContext> => {
+export const getCreateSubscriptionSubscribeMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionSubscribe>>, TError,{data: SubscribeRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionSubscribe>>, TError,{data: SubscribeRequest}, TContext> => {
 
-const mutationKey = ['subscribe'];
+const mutationKey = ['createSubscriptionSubscribe'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -70,10 +70,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof subscribe>>, {data: SubscribeRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSubscriptionSubscribe>>, {data: SubscribeRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  subscribe(data,)
+          return  createSubscriptionSubscribe(data,)
         }
 
         
@@ -81,23 +81,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SubscribeMutationResult = NonNullable<Awaited<ReturnType<typeof subscribe>>>
-    export type SubscribeMutationBody = SubscribeRequest
-    export type SubscribeMutationError = HTTPValidationError
+    export type CreateSubscriptionSubscribeMutationResult = NonNullable<Awaited<ReturnType<typeof createSubscriptionSubscribe>>>
+    export type CreateSubscriptionSubscribeMutationBody = SubscribeRequest
+    export type CreateSubscriptionSubscribeMutationError = HTTPValidationError
 
     /**
  * @summary Subscribe
  */
-export const useSubscribe = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof subscribe>>, TError,{data: SubscribeRequest}, TContext>, }
+export const useCreateSubscriptionSubscribe = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionSubscribe>>, TError,{data: SubscribeRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof subscribe>>,
+        Awaited<ReturnType<typeof createSubscriptionSubscribe>>,
         TError,
         {data: SubscribeRequest},
         TContext
       > => {
 
-      const mutationOptions = getSubscribeMutationOptions(options);
+      const mutationOptions = getCreateSubscriptionSubscribeMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -105,7 +105,7 @@ export const useSubscribe = <TError = HTTPValidationError,
  * Complete user signup and subscribe
  * @summary Complete Signup
  */
-export const completeSignup = (
+export const createSubscriptionCompleteSignup = (
     completeSignupRequest: CompleteSignupRequest,
  signal?: AbortSignal
 ) => {
@@ -121,11 +121,11 @@ export const completeSignup = (
   
 
 
-export const getCompleteSignupMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: CompleteSignupRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: CompleteSignupRequest}, TContext> => {
+export const getCreateSubscriptionCompleteSignupMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionCompleteSignup>>, TError,{data: CompleteSignupRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionCompleteSignup>>, TError,{data: CompleteSignupRequest}, TContext> => {
 
-const mutationKey = ['completeSignup'];
+const mutationKey = ['createSubscriptionCompleteSignup'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -135,10 +135,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeSignup>>, {data: CompleteSignupRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSubscriptionCompleteSignup>>, {data: CompleteSignupRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  completeSignup(data,)
+          return  createSubscriptionCompleteSignup(data,)
         }
 
         
@@ -146,23 +146,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CompleteSignupMutationResult = NonNullable<Awaited<ReturnType<typeof completeSignup>>>
-    export type CompleteSignupMutationBody = CompleteSignupRequest
-    export type CompleteSignupMutationError = HTTPValidationError
+    export type CreateSubscriptionCompleteSignupMutationResult = NonNullable<Awaited<ReturnType<typeof createSubscriptionCompleteSignup>>>
+    export type CreateSubscriptionCompleteSignupMutationBody = CompleteSignupRequest
+    export type CreateSubscriptionCompleteSignupMutationError = HTTPValidationError
 
     /**
  * @summary Complete Signup
  */
-export const useCompleteSignup = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: CompleteSignupRequest}, TContext>, }
+export const useCreateSubscriptionCompleteSignup = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionCompleteSignup>>, TError,{data: CompleteSignupRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof completeSignup>>,
+        Awaited<ReturnType<typeof createSubscriptionCompleteSignup>>,
         TError,
         {data: CompleteSignupRequest},
         TContext
       > => {
 
-      const mutationOptions = getCompleteSignupMutationOptions(options);
+      const mutationOptions = getCreateSubscriptionCompleteSignupMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -170,7 +170,7 @@ export const useCompleteSignup = <TError = HTTPValidationError,
  * Get current subscription details
  * @summary Get Current
  */
-export const getCurrent = (
+export const listSubscriptionCurrent = (
     
  signal?: AbortSignal
 ) => {
@@ -185,69 +185,69 @@ export const getCurrent = (
 
 
 
-export const getGetCurrentQueryKey = () => {
+export const getListSubscriptionCurrentQueryKey = () => {
     return [
     `/api/subscriptions/current`
     ] as const;
     }
 
     
-export const getGetCurrentQueryOptions = <TData = Awaited<ReturnType<typeof getCurrent>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrent>>, TError, TData>>, }
+export const getListSubscriptionCurrentQueryOptions = <TData = Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCurrentQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSubscriptionCurrentQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrent>>> = ({ signal }) => getCurrent(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSubscriptionCurrent>>> = ({ signal }) => listSubscriptionCurrent(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetCurrentQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrent>>>
-export type GetCurrentQueryError = unknown
+export type ListSubscriptionCurrentQueryResult = NonNullable<Awaited<ReturnType<typeof listSubscriptionCurrent>>>
+export type ListSubscriptionCurrentQueryError = unknown
 
 
-export function useGetCurrent<TData = Awaited<ReturnType<typeof getCurrent>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrent>>, TError, TData>> & Pick<
+export function useListSubscriptionCurrent<TData = Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCurrent>>,
+          Awaited<ReturnType<typeof listSubscriptionCurrent>>,
           TError,
-          Awaited<ReturnType<typeof getCurrent>>
+          Awaited<ReturnType<typeof listSubscriptionCurrent>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCurrent<TData = Awaited<ReturnType<typeof getCurrent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrent>>, TError, TData>> & Pick<
+export function useListSubscriptionCurrent<TData = Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCurrent>>,
+          Awaited<ReturnType<typeof listSubscriptionCurrent>>,
           TError,
-          Awaited<ReturnType<typeof getCurrent>>
+          Awaited<ReturnType<typeof listSubscriptionCurrent>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCurrent<TData = Awaited<ReturnType<typeof getCurrent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrent>>, TError, TData>>, }
+export function useListSubscriptionCurrent<TData = Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Current
  */
 
-export function useGetCurrent<TData = Awaited<ReturnType<typeof getCurrent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrent>>, TError, TData>>, }
+export function useListSubscriptionCurrent<TData = Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionCurrent>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetCurrentQueryOptions(options)
+  const queryOptions = getListSubscriptionCurrentQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -263,7 +263,7 @@ export function useGetCurrent<TData = Awaited<ReturnType<typeof getCurrent>>, TE
  * Register new tenant and subscribe (Public)
  * @summary Register And Subscribe
  */
-export const registerAndSubscribe = (
+export const createSubscriptionRegisterAndSubscribe = (
     registerAndSubscribeRequest: RegisterAndSubscribeRequest,
  signal?: AbortSignal
 ) => {
@@ -279,11 +279,11 @@ export const registerAndSubscribe = (
   
 
 
-export const getRegisterAndSubscribeMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerAndSubscribe>>, TError,{data: RegisterAndSubscribeRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof registerAndSubscribe>>, TError,{data: RegisterAndSubscribeRequest}, TContext> => {
+export const getCreateSubscriptionRegisterAndSubscribeMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionRegisterAndSubscribe>>, TError,{data: RegisterAndSubscribeRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionRegisterAndSubscribe>>, TError,{data: RegisterAndSubscribeRequest}, TContext> => {
 
-const mutationKey = ['registerAndSubscribe'];
+const mutationKey = ['createSubscriptionRegisterAndSubscribe'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -293,10 +293,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof registerAndSubscribe>>, {data: RegisterAndSubscribeRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSubscriptionRegisterAndSubscribe>>, {data: RegisterAndSubscribeRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  registerAndSubscribe(data,)
+          return  createSubscriptionRegisterAndSubscribe(data,)
         }
 
         
@@ -304,23 +304,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RegisterAndSubscribeMutationResult = NonNullable<Awaited<ReturnType<typeof registerAndSubscribe>>>
-    export type RegisterAndSubscribeMutationBody = RegisterAndSubscribeRequest
-    export type RegisterAndSubscribeMutationError = HTTPValidationError
+    export type CreateSubscriptionRegisterAndSubscribeMutationResult = NonNullable<Awaited<ReturnType<typeof createSubscriptionRegisterAndSubscribe>>>
+    export type CreateSubscriptionRegisterAndSubscribeMutationBody = RegisterAndSubscribeRequest
+    export type CreateSubscriptionRegisterAndSubscribeMutationError = HTTPValidationError
 
     /**
  * @summary Register And Subscribe
  */
-export const useRegisterAndSubscribe = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerAndSubscribe>>, TError,{data: RegisterAndSubscribeRequest}, TContext>, }
+export const useCreateSubscriptionRegisterAndSubscribe = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubscriptionRegisterAndSubscribe>>, TError,{data: RegisterAndSubscribeRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof registerAndSubscribe>>,
+        Awaited<ReturnType<typeof createSubscriptionRegisterAndSubscribe>>,
         TError,
         {data: RegisterAndSubscribeRequest},
         TContext
       > => {
 
-      const mutationOptions = getRegisterAndSubscribeMutationOptions(options);
+      const mutationOptions = getCreateSubscriptionRegisterAndSubscribeMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

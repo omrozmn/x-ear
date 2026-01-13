@@ -21,7 +21,6 @@ import { outbox } from '../utils/outbox';
 class AppointmentService {
   private appointments: Appointment[] = [];
   private listeners: Set<() => void> = new Set();
-  private bootstrapAttempted = false;
 
   constructor() {
     this.loadAppointments();
@@ -33,9 +32,8 @@ class AppointmentService {
 
   // Call this after login is confirmed to sync from server
   public async triggerServerSync(): Promise<void> {
-    if (this.bootstrapAttempted) return; // Only try once per session
-    this.bootstrapAttempted = true;
-
+    // Always sync from server on login - don't skip based on bootstrapAttempted
+    // This ensures fresh data after hard refresh
     await this.bootstrapFromServer();
   }
 
@@ -44,9 +42,33 @@ class AppointmentService {
     try {
       // Use the generated API client
       const { appointmentsApi } = await import('../api/appointments');
-      const items = await appointmentsApi.getAppointments({ per_page: 1000 } as any);
+      console.log('[appointment.service] bootstrapFromServer - calling API...');
+      const response = await appointmentsApi.getAppointments({ per_page: 100 } as any);
+      
+      console.log('[appointment.service] bootstrapFromServer - raw response:', response);
+      
+      // Handle both array and wrapped response formats
+      // Response is ResponseEnvelope: { success: true, data: [...], meta: {...} }
+      let items: any[] = [];
+      if (Array.isArray(response)) {
+        items = response;
+      } else if (response && typeof response === 'object') {
+        // Response is ResponseEnvelope, so .data is the array
+        const envelope = response as any;
+        if (Array.isArray(envelope.data)) {
+          items = envelope.data;
+        } else if (envelope.data && typeof envelope.data === 'object' && Array.isArray(envelope.data.data)) {
+          // Double wrapped (shouldn't happen but handle it)
+          items = envelope.data.data;
+        }
+      }
 
-      if (!Array.isArray(items) || items.length === 0) return;
+      console.log('[appointment.service] bootstrapFromServer - items count:', items.length);
+
+      if (!Array.isArray(items) || items.length === 0) {
+        console.log('[appointment.service] No appointments found from server');
+        return;
+      }
 
       // Try to fetch patient names to enrich appointments (best-effort)
       let patientMap: Record<string, string> = {};
@@ -132,8 +154,6 @@ class AppointmentService {
 
   // CRUD Operations
   async createAppointment(data: CreateAppointmentData): Promise<Appointment> {
-    console.log('📝 Creating appointment:', data);
-
     try {
       // Call backend API directly instead of using outbox
       const { appointmentsApi } = await import('../api/appointments');
@@ -152,10 +172,7 @@ class AppointmentService {
         branchId: data.branchId
       };
 
-      console.log('📤 Sending to backend:', backendData);
-
       const backendAppointment = await appointmentsApi.createAppointment(backendData, idempotencyKey);
-      console.log('✅ Backend created appointment:', backendAppointment);
 
       // Also save to localStorage for offline access
       const appointment: Appointment = {
@@ -483,14 +500,14 @@ class AppointmentService {
     });
   }
 
-  async cancelAppointment(id: string, reason?: string): Promise<Appointment> {
+  async createAppointmentCancel(id: string, reason?: string): Promise<Appointment> {
     return this.updateAppointment(id, {
       status: 'cancelled',
       notes: reason ? `Cancelled: ${reason}` : 'Cancelled'
     });
   }
 
-  async completeAppointment(id: string, notes?: string): Promise<Appointment> {
+  async createAppointmentComplete(id: string, notes?: string): Promise<Appointment> {
     return this.updateAppointment(id, {
       status: 'completed',
       notes: notes || 'Appointment completed'
@@ -517,10 +534,10 @@ class AppointmentService {
       try {
         switch (operation.operation) {
           case 'cancel':
-            await this.cancelAppointment(appointmentId, operation.data?.reason);
+            await this.createAppointmentCancel(appointmentId, operation.data?.reason);
             break;
           case 'complete':
-            await this.completeAppointment(appointmentId, operation.data?.reason);
+            await this.createAppointmentComplete(appointmentId, operation.data?.reason);
             break;
           case 'reschedule':
             if (operation.data?.newDate && operation.data?.newTime) {
@@ -633,7 +650,26 @@ class AppointmentService {
 
   // Utility methods
   private calculateEndTime(date: string, time: string, duration: number): string {
-    const startDateTime = new Date(`${date}T${time}:00.000Z`);
+    // Guard against undefined/invalid date or time values
+    if (!date || !time) {
+      console.warn('calculateEndTime called with invalid date/time:', { date, time });
+      return new Date().toISOString(); // Return current time as fallback
+    }
+
+    // Extract just the date part if date is in ISO datetime format (e.g., "2026-01-21T00:00:00")
+    const normalizedDate = date.includes('T') ? date.split('T')[0] : date;
+
+    // Ensure time is in HH:MM format (pad if needed)
+    const normalizedTime = time.includes(':') ? time : `${time}:00`;
+
+    const startDateTime = new Date(`${normalizedDate}T${normalizedTime}:00.000Z`);
+
+    // Check if the date is valid
+    if (isNaN(startDateTime.getTime())) {
+      console.warn('calculateEndTime created invalid date from:', { date: normalizedDate, time: normalizedTime });
+      return new Date().toISOString(); // Return current time as fallback
+    }
+
     const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
     return endDateTime.toISOString();
   }

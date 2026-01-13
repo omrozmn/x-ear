@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { CreditCard, FileText, MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
-import { useUpdateTenant } from '@/lib/api-client';
+import { useUpdateAdminTenant } from '@/lib/api-client';
 
 // Local type since Tenant is not exported from generated client
 interface ExtendedTenant {
@@ -15,7 +15,7 @@ interface ExtendedTenant {
 }
 
 export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdate: () => void }) => {
-    const { mutateAsync: updateTenant, isPending } = useUpdateTenant();
+    const { mutateAsync: updateTenant, isPending } = useUpdateAdminTenant();
     const [smsConfigData, setSmsConfigData] = useState<any>(null);
     const [loadingSmsConfig, setLoadingSmsConfig] = useState(true);
 

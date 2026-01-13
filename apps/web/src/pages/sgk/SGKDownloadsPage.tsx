@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@x-ear/ui-web';
 import { Download, Eye, FileText, Calendar, Filter, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { useListDeliveredEreceipts } from '../../api/generated/sgk/sgk';
+import { useListSgkEReceiptDelivered } from '../../api/generated/sgk/sgk';
 import { unwrapArray } from '../../utils/response-unwrap';
 
 interface DeliveredEReceipt {
@@ -48,7 +48,7 @@ export const SGKDownloadsPage: React.FC = () => {
   const [selectedEReceipt, setSelectedEReceipt] = useState<DeliveredEReceipt | null>(null);
 
   // Orval Hook
-  const { data: apiResponse, isLoading: isApiLoading } = useListDeliveredEreceipts();
+  const { data: apiResponse, isLoading: isApiLoading } = useListSgkEReceiptDelivered();
 
   // Sync data from API
   useEffect(() => {
@@ -83,6 +83,7 @@ export const SGKDownloadsPage: React.FC = () => {
 
   useEffect(() => {
     filterPatients();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patients, selectedMonth]);
 
 

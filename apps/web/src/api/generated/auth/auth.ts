@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CreateAuthVerifyOtpParams,
   HTTPValidationError,
   LoginRequest,
   ResponseEnvelopeRefreshTokenResponse,
@@ -35,8 +36,7 @@ import type {
   RouterResetPasswordRequest,
   RouterSendVerificationOTPRequest,
   RouterSetPasswordRequest,
-  RouterVerifyOTPRequest,
-  VerifyOtpParams
+  RouterVerifyOTPRequest
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -48,7 +48,7 @@ import { customInstance } from '../../orval-mutator';
  * Lookup user by identifier and return masked phone
  * @summary Lookup Phone
  */
-export const lookupPhone = (
+export const createAuthLookupPhone = (
     routerLookupPhoneRequest: RouterLookupPhoneRequest,
  signal?: AbortSignal
 ) => {
@@ -64,11 +64,11 @@ export const lookupPhone = (
   
 
 
-export const getLookupPhoneMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lookupPhone>>, TError,{data: RouterLookupPhoneRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof lookupPhone>>, TError,{data: RouterLookupPhoneRequest}, TContext> => {
+export const getCreateAuthLookupPhoneMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthLookupPhone>>, TError,{data: RouterLookupPhoneRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthLookupPhone>>, TError,{data: RouterLookupPhoneRequest}, TContext> => {
 
-const mutationKey = ['lookupPhone'];
+const mutationKey = ['createAuthLookupPhone'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -78,10 +78,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lookupPhone>>, {data: RouterLookupPhoneRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthLookupPhone>>, {data: RouterLookupPhoneRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  lookupPhone(data,)
+          return  createAuthLookupPhone(data,)
         }
 
         
@@ -89,23 +89,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type LookupPhoneMutationResult = NonNullable<Awaited<ReturnType<typeof lookupPhone>>>
-    export type LookupPhoneMutationBody = RouterLookupPhoneRequest
-    export type LookupPhoneMutationError = HTTPValidationError
+    export type CreateAuthLookupPhoneMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthLookupPhone>>>
+    export type CreateAuthLookupPhoneMutationBody = RouterLookupPhoneRequest
+    export type CreateAuthLookupPhoneMutationError = HTTPValidationError
 
     /**
  * @summary Lookup Phone
  */
-export const useLookupPhone = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lookupPhone>>, TError,{data: RouterLookupPhoneRequest}, TContext>, }
+export const useCreateAuthLookupPhone = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthLookupPhone>>, TError,{data: RouterLookupPhoneRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof lookupPhone>>,
+        Awaited<ReturnType<typeof createAuthLookupPhone>>,
         TError,
         {data: RouterLookupPhoneRequest},
         TContext
       > => {
 
-      const mutationOptions = getLookupPhoneMutationOptions(options);
+      const mutationOptions = getCreateAuthLookupPhoneMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -113,7 +113,7 @@ export const useLookupPhone = <TError = HTTPValidationError,
  * Send OTP for password reset
  * @summary Forgot Password
  */
-export const forgotPassword = (
+export const createAuthForgotPassword = (
     routerForgotPasswordRequest: RouterForgotPasswordRequest,
  signal?: AbortSignal
 ) => {
@@ -129,11 +129,11 @@ export const forgotPassword = (
   
 
 
-export const getForgotPasswordMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof forgotPassword>>, TError,{data: RouterForgotPasswordRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof forgotPassword>>, TError,{data: RouterForgotPasswordRequest}, TContext> => {
+export const getCreateAuthForgotPasswordMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthForgotPassword>>, TError,{data: RouterForgotPasswordRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthForgotPassword>>, TError,{data: RouterForgotPasswordRequest}, TContext> => {
 
-const mutationKey = ['forgotPassword'];
+const mutationKey = ['createAuthForgotPassword'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -143,10 +143,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof forgotPassword>>, {data: RouterForgotPasswordRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthForgotPassword>>, {data: RouterForgotPasswordRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  forgotPassword(data,)
+          return  createAuthForgotPassword(data,)
         }
 
         
@@ -154,23 +154,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ForgotPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof forgotPassword>>>
-    export type ForgotPasswordMutationBody = RouterForgotPasswordRequest
-    export type ForgotPasswordMutationError = HTTPValidationError
+    export type CreateAuthForgotPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthForgotPassword>>>
+    export type CreateAuthForgotPasswordMutationBody = RouterForgotPasswordRequest
+    export type CreateAuthForgotPasswordMutationError = HTTPValidationError
 
     /**
  * @summary Forgot Password
  */
-export const useForgotPassword = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof forgotPassword>>, TError,{data: RouterForgotPasswordRequest}, TContext>, }
+export const useCreateAuthForgotPassword = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthForgotPassword>>, TError,{data: RouterForgotPasswordRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof forgotPassword>>,
+        Awaited<ReturnType<typeof createAuthForgotPassword>>,
         TError,
         {data: RouterForgotPasswordRequest},
         TContext
       > => {
 
-      const mutationOptions = getForgotPasswordMutationOptions(options);
+      const mutationOptions = getCreateAuthForgotPasswordMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -178,9 +178,9 @@ export const useForgotPassword = <TError = HTTPValidationError,
  * Verify OTP for phone verification or password reset
  * @summary Verify Otp
  */
-export const verifyOtp = (
+export const createAuthVerifyOtp = (
     routerVerifyOTPRequest: RouterVerifyOTPRequest,
-    params?: VerifyOtpParams,
+    params?: CreateAuthVerifyOtpParams,
  signal?: AbortSignal
 ) => {
       
@@ -196,11 +196,11 @@ export const verifyOtp = (
   
 
 
-export const getVerifyOtpMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyOtp>>, TError,{data: RouterVerifyOTPRequest;params?: VerifyOtpParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof verifyOtp>>, TError,{data: RouterVerifyOTPRequest;params?: VerifyOtpParams}, TContext> => {
+export const getCreateAuthVerifyOtpMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: RouterVerifyOTPRequest;params?: CreateAuthVerifyOtpParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: RouterVerifyOTPRequest;params?: CreateAuthVerifyOtpParams}, TContext> => {
 
-const mutationKey = ['verifyOtp'];
+const mutationKey = ['createAuthVerifyOtp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -210,10 +210,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyOtp>>, {data: RouterVerifyOTPRequest;params?: VerifyOtpParams}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthVerifyOtp>>, {data: RouterVerifyOTPRequest;params?: CreateAuthVerifyOtpParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  verifyOtp(data,params,)
+          return  createAuthVerifyOtp(data,params,)
         }
 
         
@@ -221,23 +221,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type VerifyOtpMutationResult = NonNullable<Awaited<ReturnType<typeof verifyOtp>>>
-    export type VerifyOtpMutationBody = RouterVerifyOTPRequest
-    export type VerifyOtpMutationError = HTTPValidationError
+    export type CreateAuthVerifyOtpMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthVerifyOtp>>>
+    export type CreateAuthVerifyOtpMutationBody = RouterVerifyOTPRequest
+    export type CreateAuthVerifyOtpMutationError = HTTPValidationError
 
     /**
  * @summary Verify Otp
  */
-export const useVerifyOtp = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyOtp>>, TError,{data: RouterVerifyOTPRequest;params?: VerifyOtpParams}, TContext>, }
+export const useCreateAuthVerifyOtp = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: RouterVerifyOTPRequest;params?: CreateAuthVerifyOtpParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof verifyOtp>>,
+        Awaited<ReturnType<typeof createAuthVerifyOtp>>,
         TError,
-        {data: RouterVerifyOTPRequest;params?: VerifyOtpParams},
+        {data: RouterVerifyOTPRequest;params?: CreateAuthVerifyOtpParams},
         TContext
       > => {
 
-      const mutationOptions = getVerifyOtpMutationOptions(options);
+      const mutationOptions = getCreateAuthVerifyOtpMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -245,7 +245,7 @@ export const useVerifyOtp = <TError = HTTPValidationError,
  * Reset password using verified OTP
  * @summary Reset Password
  */
-export const resetPassword = (
+export const createAuthResetPassword = (
     routerResetPasswordRequest: RouterResetPasswordRequest,
  signal?: AbortSignal
 ) => {
@@ -261,11 +261,11 @@ export const resetPassword = (
   
 
 
-export const getResetPasswordMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{data: RouterResetPasswordRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{data: RouterResetPasswordRequest}, TContext> => {
+export const getCreateAuthResetPasswordMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthResetPassword>>, TError,{data: RouterResetPasswordRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthResetPassword>>, TError,{data: RouterResetPasswordRequest}, TContext> => {
 
-const mutationKey = ['resetPassword'];
+const mutationKey = ['createAuthResetPassword'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -275,10 +275,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetPassword>>, {data: RouterResetPasswordRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthResetPassword>>, {data: RouterResetPasswordRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  resetPassword(data,)
+          return  createAuthResetPassword(data,)
         }
 
         
@@ -286,23 +286,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ResetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof resetPassword>>>
-    export type ResetPasswordMutationBody = RouterResetPasswordRequest
-    export type ResetPasswordMutationError = HTTPValidationError
+    export type CreateAuthResetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthResetPassword>>>
+    export type CreateAuthResetPasswordMutationBody = RouterResetPasswordRequest
+    export type CreateAuthResetPasswordMutationError = HTTPValidationError
 
     /**
  * @summary Reset Password
  */
-export const useResetPassword = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{data: RouterResetPasswordRequest}, TContext>, }
+export const useCreateAuthResetPassword = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthResetPassword>>, TError,{data: RouterResetPasswordRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof resetPassword>>,
+        Awaited<ReturnType<typeof createAuthResetPassword>>,
         TError,
         {data: RouterResetPasswordRequest},
         TContext
       > => {
 
-      const mutationOptions = getResetPasswordMutationOptions(options);
+      const mutationOptions = getCreateAuthResetPasswordMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -310,7 +310,7 @@ export const useResetPassword = <TError = HTTPValidationError,
  * Login with username/email/phone and password
  * @summary Login
  */
-export const login = (
+export const createAuthLogin = (
     loginRequest: LoginRequest,
  signal?: AbortSignal
 ) => {
@@ -326,11 +326,11 @@ export const login = (
   
 
 
-export const getLoginMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof login>>, TError,{data: LoginRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof login>>, TError,{data: LoginRequest}, TContext> => {
+export const getCreateAuthLoginMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthLogin>>, TError,{data: LoginRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthLogin>>, TError,{data: LoginRequest}, TContext> => {
 
-const mutationKey = ['login'];
+const mutationKey = ['createAuthLogin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -340,10 +340,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof login>>, {data: LoginRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthLogin>>, {data: LoginRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  login(data,)
+          return  createAuthLogin(data,)
         }
 
         
@@ -351,23 +351,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type LoginMutationResult = NonNullable<Awaited<ReturnType<typeof login>>>
-    export type LoginMutationBody = LoginRequest
-    export type LoginMutationError = HTTPValidationError
+    export type CreateAuthLoginMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthLogin>>>
+    export type CreateAuthLoginMutationBody = LoginRequest
+    export type CreateAuthLoginMutationError = HTTPValidationError
 
     /**
  * @summary Login
  */
-export const useLogin = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof login>>, TError,{data: LoginRequest}, TContext>, }
+export const useCreateAuthLogin = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthLogin>>, TError,{data: LoginRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof login>>,
+        Awaited<ReturnType<typeof createAuthLogin>>,
         TError,
         {data: LoginRequest},
         TContext
       > => {
 
-      const mutationOptions = getLoginMutationOptions(options);
+      const mutationOptions = getCreateAuthLoginMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -375,7 +375,7 @@ export const useLogin = <TError = HTTPValidationError,
  * Refresh access token using refresh token
  * @summary Refresh Token
  */
-export const refreshToken = (
+export const createAuthRefresh = (
     
  signal?: AbortSignal
 ) => {
@@ -389,11 +389,11 @@ export const refreshToken = (
   
 
 
-export const getRefreshTokenMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshToken>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof refreshToken>>, TError,void, TContext> => {
+export const getCreateAuthRefreshMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthRefresh>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthRefresh>>, TError,void, TContext> => {
 
-const mutationKey = ['refreshToken'];
+const mutationKey = ['createAuthRefresh'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -403,10 +403,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshToken>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthRefresh>>, void> = () => {
           
 
-          return  refreshToken()
+          return  createAuthRefresh()
         }
 
         
@@ -414,23 +414,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RefreshTokenMutationResult = NonNullable<Awaited<ReturnType<typeof refreshToken>>>
+    export type CreateAuthRefreshMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthRefresh>>>
     
-    export type RefreshTokenMutationError = unknown
+    export type CreateAuthRefreshMutationError = unknown
 
     /**
  * @summary Refresh Token
  */
-export const useRefreshToken = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshToken>>, TError,void, TContext>, }
+export const useCreateAuthRefresh = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthRefresh>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof refreshToken>>,
+        Awaited<ReturnType<typeof createAuthRefresh>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getRefreshTokenMutationOptions(options);
+      const mutationOptions = getCreateAuthRefreshMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -438,7 +438,7 @@ export const useRefreshToken = <TError = unknown,
  * Get current authenticated user
  * @summary Get Current User
  */
-export const getCurrentUser = (
+export const listAuthMe = (
     
  signal?: AbortSignal
 ) => {
@@ -453,69 +453,69 @@ export const getCurrentUser = (
 
 
 
-export const getGetCurrentUserQueryKey = () => {
+export const getListAuthMeQueryKey = () => {
     return [
     `/api/auth/me`
     ] as const;
     }
 
     
-export const getGetCurrentUserQueryOptions = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>>, }
+export const getListAuthMeQueryOptions = <TData = Awaited<ReturnType<typeof listAuthMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuthMe>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCurrentUserQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAuthMeQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentUser>>> = ({ signal }) => getCurrentUser(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAuthMe>>> = ({ signal }) => listAuthMe(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAuthMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetCurrentUserQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
-export type GetCurrentUserQueryError = unknown
+export type ListAuthMeQueryResult = NonNullable<Awaited<ReturnType<typeof listAuthMe>>>
+export type ListAuthMeQueryError = unknown
 
 
-export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>> & Pick<
+export function useListAuthMe<TData = Awaited<ReturnType<typeof listAuthMe>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuthMe>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCurrentUser>>,
+          Awaited<ReturnType<typeof listAuthMe>>,
           TError,
-          Awaited<ReturnType<typeof getCurrentUser>>
+          Awaited<ReturnType<typeof listAuthMe>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>> & Pick<
+export function useListAuthMe<TData = Awaited<ReturnType<typeof listAuthMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuthMe>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCurrentUser>>,
+          Awaited<ReturnType<typeof listAuthMe>>,
           TError,
-          Awaited<ReturnType<typeof getCurrentUser>>
+          Awaited<ReturnType<typeof listAuthMe>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>>, }
+export function useListAuthMe<TData = Awaited<ReturnType<typeof listAuthMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuthMe>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Current User
  */
 
-export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>>, }
+export function useListAuthMe<TData = Awaited<ReturnType<typeof listAuthMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuthMe>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetCurrentUserQueryOptions(options)
+  const queryOptions = getListAuthMeQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -531,7 +531,7 @@ export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUs
  * Send OTP to the user's phone number (requires pre-auth token)
  * @summary Send Verification Otp
  */
-export const sendVerificationOtp = (
+export const createAuthSendVerificationOtp = (
     routerSendVerificationOTPRequest: RouterSendVerificationOTPRequest,
  signal?: AbortSignal
 ) => {
@@ -547,11 +547,11 @@ export const sendVerificationOtp = (
   
 
 
-export const getSendVerificationOtpMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendVerificationOtp>>, TError,{data: RouterSendVerificationOTPRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendVerificationOtp>>, TError,{data: RouterSendVerificationOTPRequest}, TContext> => {
+export const getCreateAuthSendVerificationOtpMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthSendVerificationOtp>>, TError,{data: RouterSendVerificationOTPRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthSendVerificationOtp>>, TError,{data: RouterSendVerificationOTPRequest}, TContext> => {
 
-const mutationKey = ['sendVerificationOtp'];
+const mutationKey = ['createAuthSendVerificationOtp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -561,10 +561,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendVerificationOtp>>, {data: RouterSendVerificationOTPRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthSendVerificationOtp>>, {data: RouterSendVerificationOTPRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  sendVerificationOtp(data,)
+          return  createAuthSendVerificationOtp(data,)
         }
 
         
@@ -572,23 +572,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendVerificationOtpMutationResult = NonNullable<Awaited<ReturnType<typeof sendVerificationOtp>>>
-    export type SendVerificationOtpMutationBody = RouterSendVerificationOTPRequest
-    export type SendVerificationOtpMutationError = HTTPValidationError
+    export type CreateAuthSendVerificationOtpMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthSendVerificationOtp>>>
+    export type CreateAuthSendVerificationOtpMutationBody = RouterSendVerificationOTPRequest
+    export type CreateAuthSendVerificationOtpMutationError = HTTPValidationError
 
     /**
  * @summary Send Verification Otp
  */
-export const useSendVerificationOtp = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendVerificationOtp>>, TError,{data: RouterSendVerificationOTPRequest}, TContext>, }
+export const useCreateAuthSendVerificationOtp = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthSendVerificationOtp>>, TError,{data: RouterSendVerificationOTPRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendVerificationOtp>>,
+        Awaited<ReturnType<typeof createAuthSendVerificationOtp>>,
         TError,
         {data: RouterSendVerificationOTPRequest},
         TContext
       > => {
 
-      const mutationOptions = getSendVerificationOtpMutationOptions(options);
+      const mutationOptions = getCreateAuthSendVerificationOtpMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -596,7 +596,7 @@ export const useSendVerificationOtp = <TError = HTTPValidationError,
  * Set password for authenticated user (Post-Registration Flow)
  * @summary Set Password
  */
-export const setPassword = (
+export const createAuthSetPassword = (
     routerSetPasswordRequest: RouterSetPasswordRequest,
  signal?: AbortSignal
 ) => {
@@ -612,11 +612,11 @@ export const setPassword = (
   
 
 
-export const getSetPasswordMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPassword>>, TError,{data: RouterSetPasswordRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof setPassword>>, TError,{data: RouterSetPasswordRequest}, TContext> => {
+export const getCreateAuthSetPasswordMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthSetPassword>>, TError,{data: RouterSetPasswordRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthSetPassword>>, TError,{data: RouterSetPasswordRequest}, TContext> => {
 
-const mutationKey = ['setPassword'];
+const mutationKey = ['createAuthSetPassword'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -626,10 +626,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setPassword>>, {data: RouterSetPasswordRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthSetPassword>>, {data: RouterSetPasswordRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  setPassword(data,)
+          return  createAuthSetPassword(data,)
         }
 
         
@@ -637,23 +637,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof setPassword>>>
-    export type SetPasswordMutationBody = RouterSetPasswordRequest
-    export type SetPasswordMutationError = HTTPValidationError
+    export type CreateAuthSetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof createAuthSetPassword>>>
+    export type CreateAuthSetPasswordMutationBody = RouterSetPasswordRequest
+    export type CreateAuthSetPasswordMutationError = HTTPValidationError
 
     /**
  * @summary Set Password
  */
-export const useSetPassword = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPassword>>, TError,{data: RouterSetPasswordRequest}, TContext>, }
+export const useCreateAuthSetPassword = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthSetPassword>>, TError,{data: RouterSetPasswordRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof setPassword>>,
+        Awaited<ReturnType<typeof createAuthSetPassword>>,
         TError,
         {data: RouterSetPasswordRequest},
         TContext
       > => {
 
-      const mutationOptions = getSetPasswordMutationOptions(options);
+      const mutationOptions = getCreateAuthSetPasswordMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

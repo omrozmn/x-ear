@@ -34,6 +34,7 @@ import { PagePermissionsViewer } from './PagePermissionsViewer';
 import { useTheme } from '../theme-provider';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { GlobalOfflineAlert } from '../common/GlobalOfflineAlert';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -250,6 +251,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     return () => {
       delete (window as any).toggleSidebar;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -367,7 +369,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         } catch (e) {
                           try {
                             localStorage.removeItem('token');
-                            localStorage.removeItem('refreshToken');
+                            localStorage.removeItem('createAuthRefresh');
                             localStorage.removeItem('auth_token');
                             localStorage.removeItem('refresh_token');
                             localStorage.removeItem('x-ear.auth.token@v1');
@@ -392,7 +394,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
         {/* Content */}
         <main className="flex-1 p-8 bg-gray-50 dark:bg-gray-950 min-h-[calc(100vh-80px)]">
-          {/* Impersonation Warning Banner */}
           {((user as any)?.isImpersonatingTenant || (user as any)?.isImpersonating) && (
             <div className="mb-4 p-3 rounded-lg flex items-center justify-between border-2 bg-emerald-100 dark:bg-emerald-900/30 border-emerald-600 dark:border-emerald-500">
               <div className="flex items-center gap-2">
@@ -408,6 +409,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </span>
             </div>
           )}
+
+          <GlobalOfflineAlert />
 
           {children}
 

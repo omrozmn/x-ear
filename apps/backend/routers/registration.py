@@ -51,13 +51,13 @@ def get_otp_store():
 
 # --- Routes ---
 
-@router.get("/config/turnstile")
+@router.get("/config/turnstile", operation_id="listConfigTurnstile")
 def get_turnstile_config():
     """Get Turnstile configuration"""
     site_key = os.getenv('TURNSTILE_SITE_KEY')
     return ResponseEnvelope(data={'siteKey': site_key or ''})
 
-@router.post("/register-phone")
+@router.post("/register-phone", operation_id="createRegisterPhone")
 def register_phone(
     request_data: RegisterPhoneRequest,
     db: Session = Depends(get_db)
@@ -113,7 +113,7 @@ def register_phone(
         logger.error(f"Register phone error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/verify-registration-otp", status_code=201)
+@router.post("/verify-registration-otp", operation_id="createVerifyRegistrationOtp", status_code=201)
 def verify_registration_otp(
     request_data: VerifyRegistrationOTPRequest,
     db: Session = Depends(get_db)

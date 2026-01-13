@@ -4,8 +4,8 @@ import { Building2, ChevronDown, Check, Loader2, Search, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useListAdminTenants,
-  useDebugSwitchTenant,
-  useDebugExitImpersonation,
+  useCreateAdminDebugSwitchTenant,
+  useCreateAdminDebugExitImpersonation,
 } from '@/api/generated';
 import { useAuthStore } from '../../stores/authStore';
 import { patientService } from '../../services/patient.service';
@@ -47,7 +47,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   );
 
   // Tenant switch mutation
-  const { mutate: switchTenant, isPending: isSwitching } = useDebugSwitchTenant({
+  const { mutate: switchTenant, isPending: isSwitching } = useCreateAdminDebugSwitchTenant({
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugTenantSwitcher] Tenant switch success:', response);
@@ -77,9 +77,9 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
           };
 
           // Pass both access and refresh tokens to setAuth
-          setAuth(updatedUser, data.accessToken, data.refreshToken || null);
+          setAuth(updatedUser, data.accessToken, data.createAuthRefresh || null);
           console.log('[DebugTenantSwitcher] Switched to tenant:', data.tenantName);
-          console.log('[DebugTenantSwitcher] Has refresh token:', !!data.refreshToken);
+          console.log('[DebugTenantSwitcher] Has refresh token:', !!data.createAuthRefresh);
 
           // Clear React Query cache
           queryClient.clear();
@@ -100,7 +100,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   });
 
   // Exit impersonation mutation
-  const { mutate: exitImpersonation, isPending: isExiting } = useDebugExitImpersonation({
+  const { mutate: exitImpersonation, isPending: isExiting } = useCreateAdminDebugExitImpersonation({
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugTenantSwitcher] Exit impersonation success');
@@ -130,8 +130,8 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
           };
 
           // Pass both access and refresh tokens to setAuth
-          setAuth(updatedUser, data.accessToken, data.refreshToken || null);
-          console.log('[DebugTenantSwitcher] Has refresh token:', !!data.refreshToken);
+          setAuth(updatedUser, data.accessToken, data.createAuthRefresh || null);
+          console.log('[DebugTenantSwitcher] Has refresh token:', !!data.createAuthRefresh);
 
           // Clear React Query cache
           queryClient.clear();

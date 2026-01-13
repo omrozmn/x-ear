@@ -17,7 +17,7 @@ import {
 import {
   listPatients,
   getPatient,
-  createPatient,
+  createPatients,
   updatePatient,
   deletePatient
 } from "@/api/generated";
@@ -69,7 +69,6 @@ export class PatientService {
       const cachedPatients = await indexedDBManager.getPatients();
       if (cachedPatients.length > 0) {
         this.patients = cachedPatients;
-        console.log(`📦 Loaded ${cachedPatients.length} patients from IndexedDB cache`);
 
         // Optionally refresh from API in background
         this.refreshFromAPI().catch(error =>
@@ -139,7 +138,6 @@ export class PatientService {
 
         // Cache in IndexedDB
         await indexedDBManager.savePatients(aggregated as any);
-        console.log(`🔄 Refreshed ${aggregated.length} patients from API and cached in IndexedDB`);
       }
     } catch (error) {
       console.warn('API refresh failed, trying localStorage fallback:', error);
@@ -150,7 +148,6 @@ export class PatientService {
         if (stored) {
           const parsed = JSON.parse(stored);
           this.patients = Array.isArray(parsed) ? parsed : [];
-          console.log(`📦 Loaded ${this.patients.length} patients from localStorage fallback`);
         }
       } catch (fallbackError) {
         console.error('Both API and localStorage failed:', fallbackError);
@@ -214,7 +211,7 @@ export class PatientService {
       }
 
       // **CRITICAL: POST to backend API first!**
-      const response = await createPatient(patientData as any) as any;
+      const response = await createPatients(patientData as any) as any;
 
       // Extract data from wrapper if it exists, otherwise use response directly
       const userData = response?.data || response;
@@ -661,6 +658,32 @@ export class PatientService {
     }
   }
 
+  // Bulk Upload (New P1 Feature)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async bulkUploadPatients(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
+    await this.ensureInitialized();
+    try {
+      // Use Orval-generated function
+      const { createPatientBulkUpload } = await import('@/api/generated/patients/patients');
+      const response = await createPatientBulkUpload({ file });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = response as any;
+
+      // Refresh local cache after bulk upload
+      await this.refreshFromAPI();
+
+      return {
+        success: result?.data?.success || false,
+        processed: (result?.data?.created || 0) + (result?.data?.updated || 0),
+        errors: result?.data?.errors || []
+      };
+    } catch (error) {
+      console.error('Bulk upload failed:', error);
+      throw error;
+    }
+  }
+
   /**
    * Calculate priority score for a patient
    */
@@ -756,7 +779,7 @@ export class PatientService {
    * MUST be called when user switches roles or tenants to prevent data leakage
    */
   async reset(): Promise<void> {
-    console.log('🧹 PatientService.reset() - Clearing all patient cache for tenant isolation');
+    // Clearing all patient cache for tenant isolation
 
     // Clear in-memory cache
     this.patients = [];
@@ -765,7 +788,6 @@ export class PatientService {
     // Clear IndexedDB
     try {
       await indexedDBManager.clearAll();
-      console.log('✅ IndexedDB cleared successfully');
     } catch (error) {
       console.error('Failed to clear IndexedDB:', error);
     }

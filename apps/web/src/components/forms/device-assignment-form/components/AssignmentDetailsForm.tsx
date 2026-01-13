@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { getAllInventory } from '@/api/generated';
-import { unwrapObject } from '@/utils/response-unwrap';
+import { listInventory } from '@/api/generated';
+import { unwrapObject, unwrapArray } from '@/utils/response-unwrap';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 
@@ -81,14 +81,29 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
     const timer = setTimeout(async () => {
       if (loanerSearch.length >= 2) {
         try {
-          const response = await getAllInventory({
+          const response = await listInventory({
             search: loanerSearch,
             category: 'hearing_aid'
           });
-          const unwrapped = unwrapObject(response);
-          const items = unwrapped || [];
-          setLoanerResults(Array.isArray(items) ? items : []);
-          setShowLoanerResults(true);
+          // Response is wrapped in ResponseEnvelope: { data: [...], meta: {...} }
+          // unwrapObject returns the inner object, but we need the data array
+          const unwrapped = unwrapObject(response) as any;
+          // If unwrapped has 'data' property (from ResponseEnvelope), use it
+          // Otherwise check if unwrapped itself is an array
+          let items: any[] = [];
+          if (unwrapped) {
+            if (Array.isArray(unwrapped)) {
+              items = unwrapped;
+            } else if (Array.isArray(unwrapped.data)) {
+              items = unwrapped.data;
+            } else if (unwrapped.items && Array.isArray(unwrapped.items)) {
+              items = unwrapped.items;
+            }
+          }
+          // Filter only items with available stock
+          items = items.filter((item: any) => (item.availableInventory || item.available_inventory || 0) > 0);
+          setLoanerResults(items);
+          setShowLoanerResults(items.length > 0);
         } catch (error) {
           console.error("Loaner search failed", error);
           setLoanerResults([]);
@@ -137,13 +152,13 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Assignment Information - 3 columns in one row: Sebep, Tarih, Atayan */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Atama Sebebi *
           </label>
           <select
             value={formData.reason || ''}
             onChange={(e) => updateFormData('reason', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reason ? 'border-red-300' : 'border-gray-300'}`}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${errors.reason ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-slate-700'}`}
           >
             <option value="">Sebep seçiniz</option>
             {!isManualMode && <option value="sale">Satış</option>}
@@ -160,14 +175,14 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Atama Tarihi *
           </label>
           <input
             type="date"
             value={formData.assignedDate || ''}
             onChange={(e) => updateFormData('assignedDate', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.assignedDate ? 'border-red-300' : 'border-gray-300'}`}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${errors.assignedDate ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-slate-700'}`}
           />
           {errors.assignedDate && (
             <p className="mt-1 text-sm text-red-600">{errors.assignedDate}</p>
@@ -175,7 +190,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Atayan Kişi
           </label>
           <input
@@ -183,14 +198,14 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             value={formData.assignedBy || ''}
             onChange={(e) => updateFormData('assignedBy', e.target.value)}
             placeholder="Atayan kişi adı"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
           />
         </div>
       </div>
 
       {/* Ear Selection - BUTTONS with color coding: Right=Red, Bilateral=Gradient, Left=Blue */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Kulak Seçimi *
         </label>
         <div className="grid grid-cols-3 gap-3">
@@ -202,14 +217,14 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             const isSelected = formData.ear === ear.value;
             const colorClasses = {
               blue: isSelected
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-blue-300 bg-white text-blue-600 hover:bg-blue-50',
+                ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200'
+                : 'border-blue-300 bg-white text-blue-600 hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/10',
               red: isSelected
-                ? 'border-red-500 bg-red-50 text-red-700'
-                : 'border-red-300 bg-white text-red-600 hover:bg-red-50',
+                ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200'
+                : 'border-red-300 bg-white text-red-600 hover:bg-red-50 dark:bg-slate-800 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/10',
               gradient: isSelected
-                ? 'border-green-500 bg-green-50 text-green-700'
-                : 'border-green-300 bg-white text-green-600 hover:bg-green-50'
+                ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-200'
+                : 'border-green-300 bg-white text-green-600 hover:bg-green-50 dark:bg-slate-800 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/10'
             };
 
             return (
@@ -237,7 +252,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Trial End Date */}
       {formData.status === 'trial' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Deneme Bitiş Tarihi *
           </label>
           <div className="relative">
@@ -248,7 +263,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
               type="date"
               value={formData.trialEndDate || ''}
               onChange={(e) => updateFormData('trialEndDate', e.target.value)}
-              className={`pl-10 ${errors.trialEndDate ? 'border-red-300' : ''}`}
+              className={`pl-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${errors.trialEndDate ? 'border-red-300 dark:border-red-700' : ''}`}
             />
             {errors.trialEndDate && (
               <p className="mt-1 text-sm text-red-600">{errors.trialEndDate}</p>
@@ -260,7 +275,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Return Date */}
       {formData.status === 'returned' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             İade Tarihi
           </label>
           <div className="relative">
@@ -271,7 +286,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
               type="date"
               value={formData.returnDate || ''}
               onChange={(e) => updateFormData('returnDate', e.target.value)}
-              className="pl-10"
+              className="pl-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
             />
           </div>
         </div>
@@ -280,7 +295,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Device Condition */}
       {(formData.status === 'returned' || formData.status === 'defective') && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Cihaz Durumu
           </label>
           <Select
@@ -300,25 +315,23 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       )}
 
       {/* Delivery & Report Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-slate-700">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Teslimat Durumu
           </label>
           <div className="relative">
             <select
               value={formData.deliveryStatus || 'pending'}
               onChange={(e) => {
-                console.log('📦 [AssignmentDetailsForm] Teslimat durumu değişiyor:', {
-                  old: formData.deliveryStatus,
-                  new: e.target.value
-                });
+                // Debug logging disabled to reduce console noise
+                // console.log('📦 [AssignmentDetailsForm] Teslimat durumu değişiyor:', {...});
                 updateFormData('deliveryStatus', e.target.value);
               }}
-              className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8"
+              className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
             >
-              <option value="pending">Teslim Edilmedi</option>
-              <option value="delivered">Teslim Edildi</option>
+              <option value="pending" className="dark:bg-slate-800">Teslim Edilmedi</option>
+              <option value="delivered" className="dark:bg-slate-800">Teslim Edildi</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
               <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
@@ -330,19 +343,19 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
         {formData.reason === 'sale' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Rapor Durumu
             </label>
             <div className="relative">
               <select
                 value={formData.reportStatus || ''}
                 onChange={(e) => updateFormData('reportStatus', e.target.value)}
-                className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8"
+                className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               >
-                <option value="">Seçiniz...</option>
-                <option value="received">Rapor Teslim Alındı</option>
-                <option value="pending">Rapor Bekleniyor</option>
-                <option value="none">Raporsuz Özel Satış</option>
+                <option value="" className="dark:bg-slate-800">Seçiniz...</option>
+                <option value="received" className="dark:bg-slate-800">Rapor Teslim Alındı</option>
+                <option value="pending" className="dark:bg-slate-800">Rapor Bekleniyor</option>
+                <option value="none" className="dark:bg-slate-800">Raporsuz Özel Satış</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                 <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
@@ -355,20 +368,20 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       </div>
 
       {/* Loaner Device Section */}
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
         <label className="flex items-center space-x-2 cursor-pointer mb-3">
           <input
             type="checkbox"
             checked={formData.isLoaner || false}
             onChange={(e) => updateFormData('isLoaner', e.target.checked)}
-            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
           />
-          <span className="font-medium text-gray-900">Emanet Cihaz Verildi</span>
+          <span className="font-medium text-gray-900 dark:text-gray-100">Emanet Cihaz Verildi</span>
         </label>
 
         {formData.isLoaner && (
-          <div className="bg-purple-50 p-4 rounded-lg space-y-3 border border-purple-200">
-            <h5 className="text-sm font-medium text-purple-900 mb-2">Emanet Cihaz Seçimi</h5>
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg space-y-3 border border-purple-200 dark:border-purple-800">
+            <h5 className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-2">Emanet Cihaz Seçimi</h5>
 
             {/* Search Input */}
             <div className="relative">
@@ -376,26 +389,30 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                 type="text"
                 value={loanerSearch}
                 onChange={(e) => setLoanerSearch(e.target.value)}
-                className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 placeholder-purple-300"
+                className="w-full px-3 py-2 border border-purple-300 dark:border-purple-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 placeholder-purple-300 dark:bg-slate-800 dark:text-white"
                 placeholder="Envanterde emanet cihaz ara (Marka, Model...)"
               />
 
               {/* Results Dropdown */}
               {showLoanerResults && loanerResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
-                  {loanerResults.map(device => (
-                    <div
-                      key={device.id}
-                      onClick={() => selectLoaner(device)}
-                      className="p-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                    >
-                      <div className="font-medium text-sm text-gray-900">{device.brand} {device.model}</div>
-                      <div className="text-xs text-gray-500">
-                        SN: {(device.availableSerials && device.availableSerials.length > 0) ? device.availableSerials.join(', ') : '-'} |
-                        Stok: {device.availableInventory}
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-md shadow-lg border border-gray-200 dark:border-slate-700 max-h-60 overflow-y-auto">
+                  {loanerResults.map(device => {
+                    const serials = device.availableSerials || device.available_serials || [];
+                    const stock = device.availableInventory ?? device.available_inventory ?? 0;
+                    return (
+                      <div
+                        key={device.id}
+                        onClick={() => selectLoaner(device)}
+                        className="p-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 cursor-pointer border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                      >
+                        <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{device.brand} {device.model}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {serials.length > 0 ? `SN: ${serials.slice(0, 3).join(', ')}${serials.length > 3 ? '...' : ''}` : 'Seri No Yok'} |
+                          Stok: {stock}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -403,27 +420,27 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             {/* Selected/Filled Details (Read Only or Editable) */}
             <div className="grid grid-cols-2 gap-3 mt-2">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Marka</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Marka</label>
                 <input
                   type="text"
                   value={formData.loanerBrand || ''}
                   onChange={(e) => updateFormData('loanerBrand', e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-white"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 dark:text-white"
                   placeholder="Marka"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Model</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Model</label>
                 <input
                   type="text"
                   value={formData.loanerModel || ''}
                   onChange={(e) => updateFormData('loanerModel', e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-white"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 dark:text-white"
                   placeholder="Model"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-600 mb-1">Seri No</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Seri No</label>
                 {formData.ear === 'both' ? (
                   <div className="grid grid-cols-2 gap-2">
                     {/* Left Side (Visual) -> Right Ear (Red) */}
@@ -434,7 +451,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                         onChange={(e) => updateFormData('loanerSerialNumberRight', e.target.value)}
                         onFocus={() => setActiveSerialInput('right')}
                         onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                        className="w-full px-2 py-1.5 text-sm border-2 border-red-400 rounded bg-white focus:outline-none focus:ring-2 focus:ring-red-200"
+                        className="w-full px-2 py-1.5 text-sm border-2 border-red-400 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-200"
                         placeholder="Sağ (R)"
                       />
                       {activeSerialInput === 'right' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
@@ -461,7 +478,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                         onChange={(e) => updateFormData('loanerSerialNumberLeft', e.target.value)}
                         onFocus={() => setActiveSerialInput('left')}
                         onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                        className="w-full px-2 py-1.5 text-sm border-2 border-blue-400 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="w-full px-2 py-1.5 text-sm border-2 border-blue-400 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                         placeholder="Sol (L)"
                       />
                       {activeSerialInput === 'left' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
@@ -488,9 +505,9 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       onChange={(e) => updateFormData('loanerSerialNumber', e.target.value)}
                       onFocus={() => setActiveSerialInput('single')}
                       onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                      className={`w-full px-2 py-1.5 text-sm border-2 rounded bg-white focus:outline-none focus:ring-2 ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
+                      className={`w-full px-2 py-1.5 text-sm border-2 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
                         formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
-                          'border-gray-300 focus:ring-gray-200'
+                          'border-gray-300 dark:border-slate-600 focus:ring-gray-200'
                         }`}
                       placeholder="Seri No"
                     />

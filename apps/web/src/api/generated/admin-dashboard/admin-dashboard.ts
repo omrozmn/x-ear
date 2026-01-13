@@ -29,7 +29,7 @@ import { customInstance } from '../../orval-mutator';
  * Get dashboard metrics
  * @summary Get Dashboard Metrics
  */
-export const getAdminDashboardMetrics = (
+export const getAdminDashboard = (
     
  signal?: AbortSignal
 ) => {
@@ -44,69 +44,69 @@ export const getAdminDashboardMetrics = (
 
 
 
-export const getGetAdminDashboardMetricsQueryKey = () => {
+export const getGetAdminDashboardQueryKey = () => {
     return [
     `/api/admin/dashboard`
     ] as const;
     }
 
     
-export const getGetAdminDashboardMetricsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError, TData>>, }
+export const getGetAdminDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminDashboardMetricsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminDashboardQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDashboardMetrics>>> = ({ signal }) => getAdminDashboardMetrics(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDashboard>>> = ({ signal }) => getAdminDashboard(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminDashboardMetricsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminDashboardMetrics>>>
-export type GetAdminDashboardMetricsQueryError = unknown
+export type GetAdminDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminDashboard>>>
+export type GetAdminDashboardQueryError = unknown
 
 
-export function useGetAdminDashboardMetrics<TData = Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError, TData>> & Pick<
+export function useGetAdminDashboard<TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminDashboardMetrics>>,
+          Awaited<ReturnType<typeof getAdminDashboard>>,
           TError,
-          Awaited<ReturnType<typeof getAdminDashboardMetrics>>
+          Awaited<ReturnType<typeof getAdminDashboard>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminDashboardMetrics<TData = Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError, TData>> & Pick<
+export function useGetAdminDashboard<TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminDashboardMetrics>>,
+          Awaited<ReturnType<typeof getAdminDashboard>>,
           TError,
-          Awaited<ReturnType<typeof getAdminDashboardMetrics>>
+          Awaited<ReturnType<typeof getAdminDashboard>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminDashboardMetrics<TData = Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError, TData>>, }
+export function useGetAdminDashboard<TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Dashboard Metrics
  */
 
-export function useGetAdminDashboardMetrics<TData = Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardMetrics>>, TError, TData>>, }
+export function useGetAdminDashboard<TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminDashboardMetricsQueryOptions(options)
+  const queryOptions = getGetAdminDashboardQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -122,7 +122,7 @@ export function useGetAdminDashboardMetrics<TData = Awaited<ReturnType<typeof ge
  * Get dashboard stats - quick summary endpoint
  * @summary Get Dashboard Stats
  */
-export const getAdminDashboardStats = (
+export const listAdminDashboardStats = (
     
  signal?: AbortSignal
 ) => {
@@ -137,69 +137,69 @@ export const getAdminDashboardStats = (
 
 
 
-export const getGetAdminDashboardStatsQueryKey = () => {
+export const getListAdminDashboardStatsQueryKey = () => {
     return [
     `/api/admin/dashboard/stats`
     ] as const;
     }
 
     
-export const getGetAdminDashboardStatsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDashboardStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardStats>>, TError, TData>>, }
+export const getListAdminDashboardStatsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminDashboardStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDashboardStats>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminDashboardStatsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminDashboardStatsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDashboardStats>>> = ({ signal }) => getAdminDashboardStats(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminDashboardStats>>> = ({ signal }) => listAdminDashboardStats(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminDashboardStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminDashboardStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminDashboardStats>>>
-export type GetAdminDashboardStatsQueryError = unknown
+export type ListAdminDashboardStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminDashboardStats>>>
+export type ListAdminDashboardStatsQueryError = unknown
 
 
-export function useGetAdminDashboardStats<TData = Awaited<ReturnType<typeof getAdminDashboardStats>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardStats>>, TError, TData>> & Pick<
+export function useListAdminDashboardStats<TData = Awaited<ReturnType<typeof listAdminDashboardStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDashboardStats>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminDashboardStats>>,
+          Awaited<ReturnType<typeof listAdminDashboardStats>>,
           TError,
-          Awaited<ReturnType<typeof getAdminDashboardStats>>
+          Awaited<ReturnType<typeof listAdminDashboardStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminDashboardStats<TData = Awaited<ReturnType<typeof getAdminDashboardStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardStats>>, TError, TData>> & Pick<
+export function useListAdminDashboardStats<TData = Awaited<ReturnType<typeof listAdminDashboardStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDashboardStats>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminDashboardStats>>,
+          Awaited<ReturnType<typeof listAdminDashboardStats>>,
           TError,
-          Awaited<ReturnType<typeof getAdminDashboardStats>>
+          Awaited<ReturnType<typeof listAdminDashboardStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminDashboardStats<TData = Awaited<ReturnType<typeof getAdminDashboardStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardStats>>, TError, TData>>, }
+export function useListAdminDashboardStats<TData = Awaited<ReturnType<typeof listAdminDashboardStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDashboardStats>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Dashboard Stats
  */
 
-export function useGetAdminDashboardStats<TData = Awaited<ReturnType<typeof getAdminDashboardStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboardStats>>, TError, TData>>, }
+export function useListAdminDashboardStats<TData = Awaited<ReturnType<typeof listAdminDashboardStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDashboardStats>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminDashboardStatsQueryOptions(options)
+  const queryOptions = getListAdminDashboardStatsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

@@ -33,7 +33,7 @@ class IntegrationCreate(BaseModel):
     syncPrices: Optional[bool] = True
     syncOrders: Optional[bool] = True
 
-@router.post("/init-db", response_model=ResponseEnvelope)
+@router.post("/init-db", operation_id="createAdminMarketplaceInitDb", response_model=ResponseEnvelope)
 async def init_db(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
@@ -47,7 +47,7 @@ async def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/integrations", response_model=MarketplaceListResponse)
+@router.get("/integrations", operation_id="listAdminMarketplaceIntegrations", response_model=MarketplaceListResponse)
 async def get_integrations(
     tenant_id: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -63,7 +63,7 @@ async def get_integrations(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/integrations", response_model=MarketplaceDetailResponse)
+@router.post("/integrations", operation_id="createAdminMarketplaceIntegrations", response_model=MarketplaceDetailResponse)
 async def create_integration(
     data: IntegrationCreate,
     db: Session = Depends(get_db),
@@ -90,7 +90,7 @@ async def create_integration(
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/integrations/{integration_id}/sync", response_model=ResponseEnvelope)
+@router.post("/integrations/{integration_id}/sync", operation_id="createAdminMarketplaceIntegrationSync", response_model=ResponseEnvelope)
 async def sync_integration(
     integration_id: str,
     db: Session = Depends(get_db),

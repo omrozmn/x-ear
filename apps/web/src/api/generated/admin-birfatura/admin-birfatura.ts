@@ -21,9 +21,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminBirfaturaInvoicesParams,
-  GetAdminLogsParams,
   HTTPValidationError,
+  ListAdminBirfaturaInvoicesParams,
+  ListAdminBirfaturaLogsParams,
   ResponseEnvelopeBirFaturaInvoicesResponse,
   ResponseEnvelopeBirFaturaLogsResponse,
   ResponseEnvelopeBirFaturaStats
@@ -38,7 +38,7 @@ import { customInstance } from '../../orval-mutator';
  * Get BirFatura statistics
  * @summary Get Stats
  */
-export const getAdminStats = (
+export const listAdminBirfaturaStats = (
     
  signal?: AbortSignal
 ) => {
@@ -53,69 +53,69 @@ export const getAdminStats = (
 
 
 
-export const getGetAdminStatsQueryKey = () => {
+export const getListAdminBirfaturaStatsQueryKey = () => {
     return [
     `/api/admin/birfatura/stats`
     ] as const;
     }
 
     
-export const getGetAdminStatsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStats>>, TError, TData>>, }
+export const getListAdminBirfaturaStatsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminStatsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminBirfaturaStatsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminStats>>> = ({ signal }) => getAdminStats(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminBirfaturaStats>>> = ({ signal }) => listAdminBirfaturaStats(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminStats>>>
-export type GetAdminStatsQueryError = unknown
+export type ListAdminBirfaturaStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminBirfaturaStats>>>
+export type ListAdminBirfaturaStatsQueryError = unknown
 
 
-export function useGetAdminStats<TData = Awaited<ReturnType<typeof getAdminStats>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStats>>, TError, TData>> & Pick<
+export function useListAdminBirfaturaStats<TData = Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminStats>>,
+          Awaited<ReturnType<typeof listAdminBirfaturaStats>>,
           TError,
-          Awaited<ReturnType<typeof getAdminStats>>
+          Awaited<ReturnType<typeof listAdminBirfaturaStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminStats<TData = Awaited<ReturnType<typeof getAdminStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStats>>, TError, TData>> & Pick<
+export function useListAdminBirfaturaStats<TData = Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminStats>>,
+          Awaited<ReturnType<typeof listAdminBirfaturaStats>>,
           TError,
-          Awaited<ReturnType<typeof getAdminStats>>
+          Awaited<ReturnType<typeof listAdminBirfaturaStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminStats<TData = Awaited<ReturnType<typeof getAdminStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStats>>, TError, TData>>, }
+export function useListAdminBirfaturaStats<TData = Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Stats
  */
 
-export function useGetAdminStats<TData = Awaited<ReturnType<typeof getAdminStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStats>>, TError, TData>>, }
+export function useListAdminBirfaturaStats<TData = Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaStats>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminStatsQueryOptions(options)
+  const queryOptions = getListAdminBirfaturaStatsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -131,8 +131,8 @@ export function useGetAdminStats<TData = Awaited<ReturnType<typeof getAdminStats
  * Get invoices with BirFatura status
  * @summary Get Invoices
  */
-export const getAdminBirfaturaInvoices = (
-    params?: GetAdminBirfaturaInvoicesParams,
+export const listAdminBirfaturaInvoices = (
+    params?: ListAdminBirfaturaInvoicesParams,
  signal?: AbortSignal
 ) => {
       
@@ -147,69 +147,69 @@ export const getAdminBirfaturaInvoices = (
 
 
 
-export const getGetAdminBirfaturaInvoicesQueryKey = (params?: GetAdminBirfaturaInvoicesParams,) => {
+export const getListAdminBirfaturaInvoicesQueryKey = (params?: ListAdminBirfaturaInvoicesParams,) => {
     return [
     `/api/admin/birfatura/invoices`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminBirfaturaInvoicesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError = HTTPValidationError>(params?: GetAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError, TData>>, }
+export const getListAdminBirfaturaInvoicesQueryOptions = <TData = Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError = HTTPValidationError>(params?: ListAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminBirfaturaInvoicesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminBirfaturaInvoicesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>> = ({ signal }) => getAdminBirfaturaInvoices(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>> = ({ signal }) => listAdminBirfaturaInvoices(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminBirfaturaInvoicesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>>
-export type GetAdminBirfaturaInvoicesQueryError = HTTPValidationError
+export type ListAdminBirfaturaInvoicesQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>>
+export type ListAdminBirfaturaInvoicesQueryError = HTTPValidationError
 
 
-export function useGetAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminBirfaturaInvoicesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError, TData>> & Pick<
+export function useListAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminBirfaturaInvoicesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>,
+          Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>,
           TError,
-          Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>
+          Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
- params?: GetAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError, TData>> & Pick<
+export function useListAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
+ params?: ListAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>,
+          Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>,
           TError,
-          Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>
+          Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
- params?: GetAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError, TData>>, }
+export function useListAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
+ params?: ListAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Invoices
  */
 
-export function useGetAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
- params?: GetAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaInvoices>>, TError, TData>>, }
+export function useListAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError = HTTPValidationError>(
+ params?: ListAdminBirfaturaInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaInvoices>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminBirfaturaInvoicesQueryOptions(params,options)
+  const queryOptions = getListAdminBirfaturaInvoicesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -225,8 +225,8 @@ export function useGetAdminBirfaturaInvoices<TData = Awaited<ReturnType<typeof g
  * Get BirFatura related logs
  * @summary Get Logs
  */
-export const getAdminLogs = (
-    params?: GetAdminLogsParams,
+export const listAdminBirfaturaLogs = (
+    params?: ListAdminBirfaturaLogsParams,
  signal?: AbortSignal
 ) => {
       
@@ -241,69 +241,69 @@ export const getAdminLogs = (
 
 
 
-export const getGetAdminLogsQueryKey = (params?: GetAdminLogsParams,) => {
+export const getListAdminBirfaturaLogsQueryKey = (params?: ListAdminBirfaturaLogsParams,) => {
     return [
     `/api/admin/birfatura/logs`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminLogsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminLogs>>, TError = HTTPValidationError>(params?: GetAdminLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLogs>>, TError, TData>>, }
+export const getListAdminBirfaturaLogsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError = HTTPValidationError>(params?: ListAdminBirfaturaLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminLogsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminBirfaturaLogsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminLogs>>> = ({ signal }) => getAdminLogs(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>> = ({ signal }) => listAdminBirfaturaLogs(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminLogs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminLogsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminLogs>>>
-export type GetAdminLogsQueryError = HTTPValidationError
+export type ListAdminBirfaturaLogsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>>
+export type ListAdminBirfaturaLogsQueryError = HTTPValidationError
 
 
-export function useGetAdminLogs<TData = Awaited<ReturnType<typeof getAdminLogs>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminLogsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLogs>>, TError, TData>> & Pick<
+export function useListAdminBirfaturaLogs<TData = Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminBirfaturaLogsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminLogs>>,
+          Awaited<ReturnType<typeof listAdminBirfaturaLogs>>,
           TError,
-          Awaited<ReturnType<typeof getAdminLogs>>
+          Awaited<ReturnType<typeof listAdminBirfaturaLogs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminLogs<TData = Awaited<ReturnType<typeof getAdminLogs>>, TError = HTTPValidationError>(
- params?: GetAdminLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLogs>>, TError, TData>> & Pick<
+export function useListAdminBirfaturaLogs<TData = Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError = HTTPValidationError>(
+ params?: ListAdminBirfaturaLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminLogs>>,
+          Awaited<ReturnType<typeof listAdminBirfaturaLogs>>,
           TError,
-          Awaited<ReturnType<typeof getAdminLogs>>
+          Awaited<ReturnType<typeof listAdminBirfaturaLogs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminLogs<TData = Awaited<ReturnType<typeof getAdminLogs>>, TError = HTTPValidationError>(
- params?: GetAdminLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLogs>>, TError, TData>>, }
+export function useListAdminBirfaturaLogs<TData = Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError = HTTPValidationError>(
+ params?: ListAdminBirfaturaLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Logs
  */
 
-export function useGetAdminLogs<TData = Awaited<ReturnType<typeof getAdminLogs>>, TError = HTTPValidationError>(
- params?: GetAdminLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLogs>>, TError, TData>>, }
+export function useListAdminBirfaturaLogs<TData = Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError = HTTPValidationError>(
+ params?: ListAdminBirfaturaLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBirfaturaLogs>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminLogsQueryOptions(params,options)
+  const queryOptions = getListAdminBirfaturaLogsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

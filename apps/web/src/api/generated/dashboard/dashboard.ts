@@ -29,7 +29,7 @@ import { customInstance } from '../../orval-mutator';
  * Main dashboard endpoint with KPIs and recent activity
  * @summary Get Dashboard
  */
-export const getDashboard = (
+export const listDashboard = (
     
  signal?: AbortSignal
 ) => {
@@ -44,69 +44,69 @@ export const getDashboard = (
 
 
 
-export const getGetDashboardQueryKey = () => {
+export const getListDashboardQueryKey = () => {
     return [
     `/api/dashboard`
     ] as const;
     }
 
     
-export const getGetDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getDashboard>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>>, }
+export const getListDashboardQueryOptions = <TData = Awaited<ReturnType<typeof listDashboard>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboard>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDashboardQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDashboard>>> = ({ signal }) => getDashboard(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboard>>> = ({ signal }) => listDashboard(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDashboard>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getDashboard>>>
-export type GetDashboardQueryError = unknown
+export type ListDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboard>>>
+export type ListDashboardQueryError = unknown
 
 
-export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>> & Pick<
+export function useListDashboard<TData = Awaited<ReturnType<typeof listDashboard>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboard>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDashboard>>,
+          Awaited<ReturnType<typeof listDashboard>>,
           TError,
-          Awaited<ReturnType<typeof getDashboard>>
+          Awaited<ReturnType<typeof listDashboard>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>> & Pick<
+export function useListDashboard<TData = Awaited<ReturnType<typeof listDashboard>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboard>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDashboard>>,
+          Awaited<ReturnType<typeof listDashboard>>,
           TError,
-          Awaited<ReturnType<typeof getDashboard>>
+          Awaited<ReturnType<typeof listDashboard>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>>, }
+export function useListDashboard<TData = Awaited<ReturnType<typeof listDashboard>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboard>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Dashboard
  */
 
-export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>>, }
+export function useListDashboard<TData = Awaited<ReturnType<typeof listDashboard>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboard>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetDashboardQueryOptions(options)
+  const queryOptions = getListDashboardQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -122,7 +122,7 @@ export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>
  * Get KPIs only
  * @summary Get Kpis
  */
-export const getKpis = (
+export const listDashboardKpis = (
     
  signal?: AbortSignal
 ) => {
@@ -137,69 +137,69 @@ export const getKpis = (
 
 
 
-export const getGetKpisQueryKey = () => {
+export const getListDashboardKpisQueryKey = () => {
     return [
     `/api/dashboard/kpis`
     ] as const;
     }
 
     
-export const getGetKpisQueryOptions = <TData = Awaited<ReturnType<typeof getKpis>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getKpis>>, TError, TData>>, }
+export const getListDashboardKpisQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardKpis>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardKpis>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetKpisQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardKpisQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getKpis>>> = ({ signal }) => getKpis(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardKpis>>> = ({ signal }) => listDashboardKpis(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getKpis>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDashboardKpis>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetKpisQueryResult = NonNullable<Awaited<ReturnType<typeof getKpis>>>
-export type GetKpisQueryError = unknown
+export type ListDashboardKpisQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboardKpis>>>
+export type ListDashboardKpisQueryError = unknown
 
 
-export function useGetKpis<TData = Awaited<ReturnType<typeof getKpis>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getKpis>>, TError, TData>> & Pick<
+export function useListDashboardKpis<TData = Awaited<ReturnType<typeof listDashboardKpis>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardKpis>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getKpis>>,
+          Awaited<ReturnType<typeof listDashboardKpis>>,
           TError,
-          Awaited<ReturnType<typeof getKpis>>
+          Awaited<ReturnType<typeof listDashboardKpis>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetKpis<TData = Awaited<ReturnType<typeof getKpis>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getKpis>>, TError, TData>> & Pick<
+export function useListDashboardKpis<TData = Awaited<ReturnType<typeof listDashboardKpis>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardKpis>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getKpis>>,
+          Awaited<ReturnType<typeof listDashboardKpis>>,
           TError,
-          Awaited<ReturnType<typeof getKpis>>
+          Awaited<ReturnType<typeof listDashboardKpis>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetKpis<TData = Awaited<ReturnType<typeof getKpis>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getKpis>>, TError, TData>>, }
+export function useListDashboardKpis<TData = Awaited<ReturnType<typeof listDashboardKpis>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardKpis>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Kpis
  */
 
-export function useGetKpis<TData = Awaited<ReturnType<typeof getKpis>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getKpis>>, TError, TData>>, }
+export function useListDashboardKpis<TData = Awaited<ReturnType<typeof listDashboardKpis>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardKpis>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetKpisQueryOptions(options)
+  const queryOptions = getListDashboardKpisQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -215,7 +215,7 @@ export function useGetKpis<TData = Awaited<ReturnType<typeof getKpis>>, TError =
  * Patient trends chart data
  * @summary Patient Trends
  */
-export const patientTrends = (
+export const listDashboardChartPatientTrends = (
     
  signal?: AbortSignal
 ) => {
@@ -230,69 +230,69 @@ export const patientTrends = (
 
 
 
-export const getPatientTrendsQueryKey = () => {
+export const getListDashboardChartPatientTrendsQueryKey = () => {
     return [
     `/api/dashboard/charts/patient-trends`
     ] as const;
     }
 
     
-export const getPatientTrendsQueryOptions = <TData = Awaited<ReturnType<typeof patientTrends>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientTrends>>, TError, TData>>, }
+export const getListDashboardChartPatientTrendsQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getPatientTrendsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardChartPatientTrendsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof patientTrends>>> = ({ signal }) => patientTrends(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>> = ({ signal }) => listDashboardChartPatientTrends(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof patientTrends>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type PatientTrendsQueryResult = NonNullable<Awaited<ReturnType<typeof patientTrends>>>
-export type PatientTrendsQueryError = unknown
+export type ListDashboardChartPatientTrendsQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>>
+export type ListDashboardChartPatientTrendsQueryError = unknown
 
 
-export function usePatientTrends<TData = Awaited<ReturnType<typeof patientTrends>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientTrends>>, TError, TData>> & Pick<
+export function useListDashboardChartPatientTrends<TData = Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof patientTrends>>,
+          Awaited<ReturnType<typeof listDashboardChartPatientTrends>>,
           TError,
-          Awaited<ReturnType<typeof patientTrends>>
+          Awaited<ReturnType<typeof listDashboardChartPatientTrends>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function usePatientTrends<TData = Awaited<ReturnType<typeof patientTrends>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientTrends>>, TError, TData>> & Pick<
+export function useListDashboardChartPatientTrends<TData = Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof patientTrends>>,
+          Awaited<ReturnType<typeof listDashboardChartPatientTrends>>,
           TError,
-          Awaited<ReturnType<typeof patientTrends>>
+          Awaited<ReturnType<typeof listDashboardChartPatientTrends>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function usePatientTrends<TData = Awaited<ReturnType<typeof patientTrends>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientTrends>>, TError, TData>>, }
+export function useListDashboardChartPatientTrends<TData = Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Patient Trends
  */
 
-export function usePatientTrends<TData = Awaited<ReturnType<typeof patientTrends>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientTrends>>, TError, TData>>, }
+export function useListDashboardChartPatientTrends<TData = Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientTrends>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getPatientTrendsQueryOptions(options)
+  const queryOptions = getListDashboardChartPatientTrendsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -308,7 +308,7 @@ export function usePatientTrends<TData = Awaited<ReturnType<typeof patientTrends
  * Revenue trends chart data
  * @summary Revenue Trends
  */
-export const revenueTrends = (
+export const listDashboardChartRevenueTrends = (
     
  signal?: AbortSignal
 ) => {
@@ -323,69 +323,69 @@ export const revenueTrends = (
 
 
 
-export const getRevenueTrendsQueryKey = () => {
+export const getListDashboardChartRevenueTrendsQueryKey = () => {
     return [
     `/api/dashboard/charts/revenue-trends`
     ] as const;
     }
 
     
-export const getRevenueTrendsQueryOptions = <TData = Awaited<ReturnType<typeof revenueTrends>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revenueTrends>>, TError, TData>>, }
+export const getListDashboardChartRevenueTrendsQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getRevenueTrendsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardChartRevenueTrendsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof revenueTrends>>> = ({ signal }) => revenueTrends(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>> = ({ signal }) => listDashboardChartRevenueTrends(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof revenueTrends>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type RevenueTrendsQueryResult = NonNullable<Awaited<ReturnType<typeof revenueTrends>>>
-export type RevenueTrendsQueryError = unknown
+export type ListDashboardChartRevenueTrendsQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>>
+export type ListDashboardChartRevenueTrendsQueryError = unknown
 
 
-export function useRevenueTrends<TData = Awaited<ReturnType<typeof revenueTrends>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof revenueTrends>>, TError, TData>> & Pick<
+export function useListDashboardChartRevenueTrends<TData = Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof revenueTrends>>,
+          Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>,
           TError,
-          Awaited<ReturnType<typeof revenueTrends>>
+          Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useRevenueTrends<TData = Awaited<ReturnType<typeof revenueTrends>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revenueTrends>>, TError, TData>> & Pick<
+export function useListDashboardChartRevenueTrends<TData = Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof revenueTrends>>,
+          Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>,
           TError,
-          Awaited<ReturnType<typeof revenueTrends>>
+          Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useRevenueTrends<TData = Awaited<ReturnType<typeof revenueTrends>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revenueTrends>>, TError, TData>>, }
+export function useListDashboardChartRevenueTrends<TData = Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Revenue Trends
  */
 
-export function useRevenueTrends<TData = Awaited<ReturnType<typeof revenueTrends>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revenueTrends>>, TError, TData>>, }
+export function useListDashboardChartRevenueTrends<TData = Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartRevenueTrends>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getRevenueTrendsQueryOptions(options)
+  const queryOptions = getListDashboardChartRevenueTrendsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -401,7 +401,7 @@ export function useRevenueTrends<TData = Awaited<ReturnType<typeof revenueTrends
  * Recent activity list
  * @summary Recent Activity
  */
-export const recentActivity = (
+export const listDashboardRecentActivity = (
     
  signal?: AbortSignal
 ) => {
@@ -416,69 +416,69 @@ export const recentActivity = (
 
 
 
-export const getRecentActivityQueryKey = () => {
+export const getListDashboardRecentActivityQueryKey = () => {
     return [
     `/api/dashboard/recent-activity`
     ] as const;
     }
 
     
-export const getRecentActivityQueryOptions = <TData = Awaited<ReturnType<typeof recentActivity>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recentActivity>>, TError, TData>>, }
+export const getListDashboardRecentActivityQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getRecentActivityQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardRecentActivityQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof recentActivity>>> = ({ signal }) => recentActivity(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardRecentActivity>>> = ({ signal }) => listDashboardRecentActivity(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof recentActivity>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type RecentActivityQueryResult = NonNullable<Awaited<ReturnType<typeof recentActivity>>>
-export type RecentActivityQueryError = unknown
+export type ListDashboardRecentActivityQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboardRecentActivity>>>
+export type ListDashboardRecentActivityQueryError = unknown
 
 
-export function useRecentActivity<TData = Awaited<ReturnType<typeof recentActivity>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof recentActivity>>, TError, TData>> & Pick<
+export function useListDashboardRecentActivity<TData = Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof recentActivity>>,
+          Awaited<ReturnType<typeof listDashboardRecentActivity>>,
           TError,
-          Awaited<ReturnType<typeof recentActivity>>
+          Awaited<ReturnType<typeof listDashboardRecentActivity>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useRecentActivity<TData = Awaited<ReturnType<typeof recentActivity>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recentActivity>>, TError, TData>> & Pick<
+export function useListDashboardRecentActivity<TData = Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof recentActivity>>,
+          Awaited<ReturnType<typeof listDashboardRecentActivity>>,
           TError,
-          Awaited<ReturnType<typeof recentActivity>>
+          Awaited<ReturnType<typeof listDashboardRecentActivity>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useRecentActivity<TData = Awaited<ReturnType<typeof recentActivity>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recentActivity>>, TError, TData>>, }
+export function useListDashboardRecentActivity<TData = Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Recent Activity
  */
 
-export function useRecentActivity<TData = Awaited<ReturnType<typeof recentActivity>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recentActivity>>, TError, TData>>, }
+export function useListDashboardRecentActivity<TData = Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardRecentActivity>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getRecentActivityQueryOptions(options)
+  const queryOptions = getListDashboardRecentActivityQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -494,7 +494,7 @@ export function useRecentActivity<TData = Awaited<ReturnType<typeof recentActivi
  * Patient distribution by branch
  * @summary Patient Distribution
  */
-export const patientDistribution = (
+export const listDashboardChartPatientDistribution = (
     
  signal?: AbortSignal
 ) => {
@@ -509,69 +509,69 @@ export const patientDistribution = (
 
 
 
-export const getPatientDistributionQueryKey = () => {
+export const getListDashboardChartPatientDistributionQueryKey = () => {
     return [
     `/api/dashboard/charts/patient-distribution`
     ] as const;
     }
 
     
-export const getPatientDistributionQueryOptions = <TData = Awaited<ReturnType<typeof patientDistribution>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientDistribution>>, TError, TData>>, }
+export const getListDashboardChartPatientDistributionQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getPatientDistributionQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardChartPatientDistributionQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof patientDistribution>>> = ({ signal }) => patientDistribution(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>> = ({ signal }) => listDashboardChartPatientDistribution(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof patientDistribution>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type PatientDistributionQueryResult = NonNullable<Awaited<ReturnType<typeof patientDistribution>>>
-export type PatientDistributionQueryError = unknown
+export type ListDashboardChartPatientDistributionQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>>
+export type ListDashboardChartPatientDistributionQueryError = unknown
 
 
-export function usePatientDistribution<TData = Awaited<ReturnType<typeof patientDistribution>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientDistribution>>, TError, TData>> & Pick<
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof patientDistribution>>,
+          Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>,
           TError,
-          Awaited<ReturnType<typeof patientDistribution>>
+          Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function usePatientDistribution<TData = Awaited<ReturnType<typeof patientDistribution>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientDistribution>>, TError, TData>> & Pick<
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof patientDistribution>>,
+          Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>,
           TError,
-          Awaited<ReturnType<typeof patientDistribution>>
+          Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function usePatientDistribution<TData = Awaited<ReturnType<typeof patientDistribution>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientDistribution>>, TError, TData>>, }
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Patient Distribution
  */
 
-export function usePatientDistribution<TData = Awaited<ReturnType<typeof patientDistribution>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof patientDistribution>>, TError, TData>>, }
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getPatientDistributionQueryOptions(options)
+  const queryOptions = getListDashboardChartPatientDistributionQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

@@ -105,10 +105,10 @@ const BRANCH_OPTIONS = [
   { value: 'avm', label: 'AVM' },
 ];
 
-export function AppointmentFormModal({ 
-  open, 
-  onClose, 
-  onSubmit, 
+export function AppointmentFormModal({
+  open,
+  onClose,
+  onSubmit,
   initialData,
   initialDate,
   initialTime,
@@ -195,7 +195,7 @@ export function AppointmentFormModal({
             {isEditing ? 'Randevuyu Düzenle' : 'Yeni Randevu'}
           </Text>
           {selectedDate && (
-            <Text className="text-sm text-gray-600 mt-1">
+            <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {format(selectedDate, 'dd MMMM yyyy, EEEE', { locale: tr })}
             </Text>
           )}
@@ -211,7 +211,7 @@ export function AppointmentFormModal({
           <VStack spacing="md">
             {/* Patient Information */}
             <FormControl className="w-full">
-              <FormLabel>Hasta Arama *</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-gray-300">Hasta Arama *</FormLabel>
               <Controller
                 name="patientName"
                 control={control}
@@ -224,6 +224,7 @@ export function AppointmentFormModal({
                     }}
                     placeholder="Hasta adı veya TC ile arayın..."
                     error={errors.patientName?.message}
+                    className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                   />
                 )}
               />
@@ -232,7 +233,7 @@ export function AppointmentFormModal({
             {/* Date and Time */}
             <HStack spacing="md" className="w-full">
               <FormControl className="flex-1">
-                <FormLabel>Tarih *</FormLabel>
+                <FormLabel className="text-gray-700 dark:text-gray-300">Tarih *</FormLabel>
                 <Controller
                   name="date"
                   control={control}
@@ -248,7 +249,7 @@ export function AppointmentFormModal({
               </FormControl>
 
               <FormControl className="flex-1">
-                <FormLabel>Saat *</FormLabel>
+                <FormLabel className="text-gray-700 dark:text-gray-300">Saat *</FormLabel>
                 <Controller
                   name="time"
                   control={control}
@@ -258,6 +259,7 @@ export function AppointmentFormModal({
                       type="time"
                       placeholder="Saat seçin"
                       error={errors.time?.message}
+                      className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                     />
                   )}
                 />
@@ -267,32 +269,34 @@ export function AppointmentFormModal({
             {/* Type, Duration and Branch */}
             <HStack spacing="md" className="w-full">
               <FormControl className="flex-1">
-                <FormLabel>Randevu Türü *</FormLabel>
+                <FormLabel className="text-gray-700 dark:text-gray-300">Randevu Türü *</FormLabel>
                 <Controller
                   name="type"
                   control={control}
                   render={({ field }) => (
-                    <Select 
+                    <Select
                       {...field}
                       options={APPOINTMENT_TYPES}
                       placeholder="Tür seçin"
                       error={errors.type?.message}
+                      className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                     />
                   )}
                 />
               </FormControl>
 
               <FormControl className="flex-1">
-                <FormLabel>Süre</FormLabel>
+                <FormLabel className="text-gray-700 dark:text-gray-300">Süre</FormLabel>
                 <Controller
                   name="duration"
                   control={control}
                   render={({ field }) => (
-                    <Select 
+                    <Select
                       value={field.value?.toString()}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
                       options={DURATION_OPTIONS}
                       placeholder="Süre seçin"
+                      className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                     />
                   )}
                 />
@@ -304,10 +308,11 @@ export function AppointmentFormModal({
                   name="branchId"
                   control={control}
                   render={({ field }) => (
-                    <Select 
+                    <Select
                       {...field}
                       options={BRANCH_OPTIONS}
                       placeholder="Şube seçin"
+                      className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                     />
                   )}
                 />
@@ -317,15 +322,16 @@ export function AppointmentFormModal({
             {/* Status (only for editing) */}
             {isEditing && (
               <FormControl className="w-full">
-                <FormLabel>Durum</FormLabel>
+                <FormLabel className="text-gray-700 dark:text-gray-300">Durum</FormLabel>
                 <Controller
                   name="status"
                   control={control}
                   render={({ field }) => (
-                    <Select 
+                    <Select
                       {...field}
                       options={APPOINTMENT_STATUSES}
                       placeholder="Durum seçin"
+                      className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                     />
                   )}
                 />
@@ -334,7 +340,7 @@ export function AppointmentFormModal({
 
             {/* Notes */}
             <FormControl className="w-full">
-              <FormLabel>Notlar</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-gray-300">Notlar</FormLabel>
               <Controller
                 name="notes"
                 control={control}
@@ -343,6 +349,7 @@ export function AppointmentFormModal({
                     {...field}
                     placeholder="Randevu notları..."
                     rows={3}
+                    className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                   />
                 )}
               />
@@ -350,7 +357,7 @@ export function AppointmentFormModal({
           </VStack>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-slate-700">
             <Button
               type="button"
               variant="outline"

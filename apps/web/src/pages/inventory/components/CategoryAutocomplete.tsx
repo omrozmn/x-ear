@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
 import { getCategoryDisplay, getCategoryValue } from '../../../utils/category-mapping';
-import { useGetDeviceCategories } from '@/api/generated/devices/devices';
+import { useListDeviceCategories } from '@/api/generated/devices/devices';
 
 interface CategoryAutocompleteProps {
   value: string;
@@ -34,7 +34,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   // Fetch categories from API
-  const { data: categoriesData, isLoading, isError } = useGetDeviceCategories();
+  const { data: categoriesData, isLoading, isError } = useListDeviceCategories();
 
   // Common product categories (fallback)
   const defaultCategories = [
@@ -71,6 +71,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   }, [value]);
 
   // Merge API categories with defaults and local additions
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const allCategories = useMemo(() => {
     let apiCategories: string[] = [];
 
@@ -86,17 +87,13 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
         } else if (innerData?.categories && Array.isArray(innerData.categories)) {
           apiCategories = innerData.categories;
         }
-      } else if (responseData?.success && responseData?.data) {
-        const innerData = responseData.data;
-        if (Array.isArray(innerData)) {
-          apiCategories = innerData;
-        }
       }
     }
 
     // Combine all sources: API, local, and defaults
     const combined = [...new Set([...apiCategories, ...localCategories, ...defaultCategories])];
     return combined.sort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoriesData, localCategories]);
 
   useEffect(() => {
@@ -255,8 +252,8 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   return (
     <div className={`relative ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {label} {required && <span className="text-red-500 dark:text-red-400">*</span>}
         </label>
       )}
 
@@ -285,13 +282,13 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
             role="listbox"
           >
             {isLoading && (
-              <div className="px-4 py-2 text-sm text-gray-500 italic">
+              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
                 Yükleniyor...
               </div>
             )}
 
             {isError && (
-              <div className="px-4 py-2 text-sm text-red-500">
+              <div className="px-4 py-2 text-sm text-red-500 dark:text-red-400">
                 Kategoriler yüklenirken hata oluştu.
               </div>
             )}
@@ -330,8 +327,8 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
                 className="px-4 py-2 cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 focus:bg-green-100 dark:focus:bg-green-900/40 focus:outline-none transition-colors border-t border-gray-200 dark:border-gray-700"
               >
                 <div className="flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-600">
+                  <Plus className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">
                     "{displayValue}" kategorisini ekle
                   </span>
                 </div>
@@ -341,7 +338,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           , portalRef.current)}
       </div>
 
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 };

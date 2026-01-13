@@ -53,7 +53,7 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
       <div className="flex flex-wrap items-center gap-4">
         {/* Search Input */}
         <div className="flex-1 min-w-[300px]">
@@ -63,10 +63,10 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
               placeholder="Ürün ara..."
               value={filters.search || ''}
               onChange={(e) => handleFilterChange('search', e.target.value || undefined)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
             />
             <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -81,34 +81,34 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
 
         {/* Category Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700">Kategori:</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kategori:</label>
           <Select
             value={filters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
             options={categoryOptions}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         {/* Brand Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700">Marka:</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Marka:</label>
           <Select
             value={filters.brand || ''}
             onChange={(e) => handleFilterChange('brand', e.target.value || undefined)}
             options={brandOptions}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         {/* Status Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700">Durum:</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Durum:</label>
           <Select
             value={filters.status || ''}
             onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
             options={statusOptions}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
@@ -117,7 +117,7 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          className="px-4 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
         >
           Filtreleri Temizle
         </Button>

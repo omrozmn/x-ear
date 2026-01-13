@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  createTemplate,
-  updateTemplate,
-  deleteTemplate,
-  listTemplates,
-  listMessages,
-  sendSms,
-  sendEmail
+  createCommunicationTemplates,
+  updateCommunicationTemplate,
+  deleteCommunicationTemplate,
+  listCommunicationTemplates,
+  listCommunicationMessages,
+  createCommunicationMessageSendSms,
+  createCommunicationMessageSendEmail
 } from '@/api/generated';
 
 // Simplified types without idb dependency for now
@@ -185,7 +185,7 @@ class SimpleCommunicationSync {
     }
   }
 
-  async updateTemplate(id: string, updates: Partial<CommunicationTemplate>): Promise<void> {
+  async updateCommunicationTemplate(id: string, updates: Partial<CommunicationTemplate>): Promise<void> {
     const templates = this.getTemplates();
     const index = templates.findIndex(t => t.id === id);
 
@@ -207,7 +207,7 @@ class SimpleCommunicationSync {
     }
   }
 
-  async deleteTemplate(id: string): Promise<void> {
+  async deleteCommunicationTemplate(id: string): Promise<void> {
     const templates = this.getTemplates();
     const filtered = templates.filter(t => t.id !== id);
 
@@ -298,23 +298,23 @@ class SimpleCommunicationSync {
     try {
       if (item.entityType === 'template') {
         if (item.action === 'create') {
-          await createTemplate(item.data);
+          await createCommunicationTemplates(item.data);
         } else if (item.action === 'update') {
-          await updateTemplate(item.entityId, item.data);
+          await updateCommunicationTemplate(item.entityId, item.data);
         } else if (item.action === 'delete') {
-          await deleteTemplate(item.entityId);
+          await deleteCommunicationTemplate(item.entityId);
         }
       } else if (item.entityType === 'message') {
         if (item.action === 'create') {
           const msgData = item.data;
           if (msgData.type === 'sms') {
-            await sendSms({
+            await createCommunicationMessageSendSms({
               phoneNumber: msgData.recipient,
               message: msgData.content,
               patientId: msgData.patientId
             });
           } else if (msgData.type === 'email') {
-            await sendEmail({
+            await createCommunicationMessageSendEmail({
               toEmail: msgData.recipient,
               subject: msgData.subject || 'No Subject',
               bodyText: msgData.content,
@@ -367,7 +367,7 @@ class SimpleCommunicationSync {
     if (!navigator.onLine) return;
 
     try {
-      const response = await listMessages();
+      const response = await listCommunicationMessages();
       const result = (response as any).data || response;
 
       if (!result.success) return;
@@ -395,7 +395,7 @@ class SimpleCommunicationSync {
 
   private async syncTemplatesFromServer(): Promise<void> {
     try {
-      const response = await listTemplates();
+      const response = await listCommunicationTemplates();
 
       const result = (response as any).data || response;
       if (!result.success) return;
@@ -527,13 +527,13 @@ export const useCommunicationOfflineSync = () => {
     updateSyncStatus();
   }, [updateSyncStatus]);
 
-  const updateTemplate = useCallback(async (id: string, updates: Partial<CommunicationTemplate>) => {
-    await communicationSync.updateTemplate(id, updates);
+  const updateCommunicationTemplate = useCallback(async (id: string, updates: Partial<CommunicationTemplate>) => {
+    await communicationSync.updateCommunicationTemplate(id, updates);
     updateSyncStatus();
   }, [updateSyncStatus]);
 
-  const deleteTemplate = useCallback(async (id: string) => {
-    await communicationSync.deleteTemplate(id);
+  const deleteCommunicationTemplate = useCallback(async (id: string) => {
+    await communicationSync.deleteCommunicationTemplate(id);
     updateSyncStatus();
   }, [updateSyncStatus]);
 
@@ -557,8 +557,8 @@ export const useCommunicationOfflineSync = () => {
     updateMessage,
     getMessages,
     saveTemplate,
-    updateTemplate,
-    deleteTemplate,
+    updateCommunicationTemplate,
+    deleteCommunicationTemplate,
     getTemplates,
     forcSync
   };

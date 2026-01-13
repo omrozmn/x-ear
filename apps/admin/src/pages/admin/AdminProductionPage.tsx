@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
-    useGetProductionOrders as useGetProductionOrdersApi,
-    useUpdateProductionOrderStatus
+    useListAdminProductionOrders as useGetProductionOrdersApi,
+    useUpdateAdminProductionOrderStatus
 } from '@/lib/api-client';
 
-// Fallback hook if useGetProductionOrders doesn't exist
+// Fallback hook if useListAdminProductionOrders doesn't exist
 const useGetProductionOrders = (params?: any) => {
     // Try to use the API hook, fallback to empty data
     try {
@@ -30,7 +30,7 @@ const AdminProductionPage: React.FC = () => {
     const { data: ordersData, isLoading, refetch } = useGetProductionOrders(
         statusFilter ? { status: statusFilter } : undefined
     );
-    const updateStatusMutation = useUpdateProductionOrderStatus();
+    const updateStatusMutation = useUpdateAdminProductionOrderStatus();
 
     const orders = ordersData?.data || [];
 

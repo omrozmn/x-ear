@@ -16269,7 +16269,11 @@ components:
       type: string
       enum:
       - active
-      - passive
+      - inactive
+      - lead
+      - trial
+      - customer
+      - new
       - deceased
       - archived
       title: PatientStatus
@@ -16300,6 +16304,28 @@ components:
           anyOf:
           - $ref: '#/components/schemas/PatientStatus'
           - type: 'null'
+        segment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Segment
+        acquisitionType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Acquisitiontype
+        branchId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branchid
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
         addressCity:
           anyOf:
           - type: string

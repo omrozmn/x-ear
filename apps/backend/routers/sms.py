@@ -26,7 +26,7 @@ router = APIRouter(tags=["SMS"])
 
 # --- Admin Routes ---
 
-@router.get("/admin/sms/packages", response_model=ResponseEnvelope[List[SMSPackageRead]])
+@router.get("/admin/sms/packages", operation_id="listAdminSmPackages", response_model=ResponseEnvelope[List[SMSPackageRead]])
 def list_admin_packages(
     page: int = 1, 
     limit: int = 10,
@@ -49,7 +49,7 @@ def list_admin_packages(
         }
     )
 
-@router.post("/admin/sms/packages", response_model=ResponseEnvelope[SMSPackageRead], status_code=201)
+@router.post("/admin/sms/packages", operation_id="createAdminSmPackages", response_model=ResponseEnvelope[SMSPackageRead], status_code=201)
 def create_package(pkg_in: SMSPackageCreate, db: Session = Depends(get_db)):
     """Create a new SMS package"""
     pkg = SmsPackage(
@@ -64,7 +64,7 @@ def create_package(pkg_in: SMSPackageCreate, db: Session = Depends(get_db)):
     db.commit()
     return ResponseEnvelope(data=pkg)
 
-@router.put("/admin/sms/packages/{pkg_id}", response_model=ResponseEnvelope[SMSPackageRead])
+@router.put("/admin/sms/packages/{pkg_id}", operation_id="updateAdminSmPackage", response_model=ResponseEnvelope[SMSPackageRead])
 def update_package(pkg_id: str, pkg_in: SMSPackageUpdate, db: Session = Depends(get_db)):
     """Update an SMS package"""
     pkg = db.get(SmsPackage, pkg_id)

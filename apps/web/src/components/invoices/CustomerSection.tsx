@@ -3,9 +3,8 @@ import { useState, useEffect } from 'react';
 import { Edit2, Plus } from 'lucide-react';
 import { InvoiceFormData } from '../../types/invoice';
 import {
-  useSearchFirmCustomersMock,
-  useGetFirmPkInfoMock,
-  useGetFirmAddressInfoMock
+  useCreateFirmaFirmapkbilgisigetir,
+  useCreateFirmaFirmaadresbilgisigetir
 } from '../../api/generated/bir-fatura/bir-fatura';
 import { unwrapArray } from '../../utils/response-unwrap';
 
@@ -60,9 +59,9 @@ export function CustomerSection({
   const [showAddresses, setShowAddresses] = useState(false);
 
   // Orval Hooks
-  const searchMutation = useSearchFirmCustomersMock();
-  const pkInfoMutation = useGetFirmPkInfoMock();
-  const addressInfoMutation = useGetFirmAddressInfoMock();
+  const searchMutation = useCreateFirmaFirmapkbilgisigetir();
+  const pkInfoMutation = useCreateFirmaFirmapkbilgisigetir();
+  const addressInfoMutation = useCreateFirmaFirmaadresbilgisigetir();
 
   // SGK durumu için önceki müşteri bilgilerini sakla
   const [previousCustomerState, setPreviousCustomerState] = useState<{
@@ -84,6 +83,7 @@ export function CustomerSection({
       onChange('customerId', '0');
       onChange('customerName', SGK_CUSTOMER_TEXT);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   // SGK modundan çıkıldığında önceki müşteri bilgilerini geri yükle
@@ -94,6 +94,7 @@ export function CustomerSection({
       setSearchQuery(previousCustomerState.searchQuery || '');
       setPreviousCustomerState(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   const handleSearch = async (query: string) => {
@@ -107,7 +108,7 @@ export function CustomerSection({
     setIsSearching(true);
     try {
       const response = await searchMutation.mutateAsync({
-        data: { search: query }
+        data: { search: query } as any
       });
 
       const results = unwrapArray<CustomerSearchResult>(response) || [];

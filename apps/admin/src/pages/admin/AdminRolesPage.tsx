@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
-    useGetRoles,
-    useCreateRole,
-    useUpdateRole,
-    useDeleteRole,
-    useGetPermissions,
+    useListAdminRoles,
+    useCreateAdminRoles,
+    useUpdateAdminRole,
+    useDeleteAdminRole,
+    useListPermissions,
     useUpdateRolePermissions
 } from '@/lib/api-client';
 import {
@@ -27,12 +27,12 @@ const AdminRolesPage: React.FC = () => {
     const [roleDescription, setRoleDescription] = useState('');
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
-    const { data: rolesData, isLoading, refetch } = useGetRoles({ include_permissions: true });
-    const { data: permissionsData } = useGetPermissions({});
+    const { data: rolesData, isLoading, refetch } = useListAdminRoles({ include_permissions: true });
+    const { data: permissionsData } = useListPermissions({});
 
-    const createRoleMutation = useCreateRole();
-    const updateRoleMutation = useUpdateRole();
-    const deleteRoleMutation = useDeleteRole();
+    const createRoleMutation = useCreateAdminRoles();
+    const updateRoleMutation = useUpdateAdminRole();
+    const deleteRoleMutation = useDeleteAdminRole();
     const updatePermissionsMutation = useUpdateRolePermissions();
 
     const roles = (rolesData as any)?.data?.roles || [];
@@ -86,8 +86,8 @@ const AdminRolesPage: React.FC = () => {
 
         try {
             await updatePermissionsMutation.mutateAsync({
-                roleName: selectedRole.name,
-                data: { permissions: selectedPermissions }
+                roleId: selectedRole.id,
+                data: selectedPermissions
             });
             toast.success('İzinler güncellendi');
             setIsPermissionModalOpen(false);

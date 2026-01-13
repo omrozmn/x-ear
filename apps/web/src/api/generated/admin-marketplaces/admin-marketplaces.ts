@@ -25,9 +25,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminMarketplacesIntegrationsParams,
   HTTPValidationError,
   IntegrationCreate,
+  ListAdminMarketplaceIntegrationsParams,
   MarketplaceDetailResponse,
   MarketplaceListResponse,
   ResponseEnvelope
@@ -42,7 +42,7 @@ import { customInstance } from '../../orval-mutator';
  * Initialize Marketplace tables
  * @summary Init Db
  */
-export const initAdminMarketplacesDb = (
+export const createAdminMarketplaceInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -56,11 +56,11 @@ export const initAdminMarketplacesDb = (
   
 
 
-export const getInitAdminMarketplacesDbMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminMarketplacesDb>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initAdminMarketplacesDb>>, TError,void, TContext> => {
+export const getCreateAdminMarketplaceInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initAdminMarketplacesDb'];
+const mutationKey = ['createAdminMarketplaceInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -70,10 +70,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initAdminMarketplacesDb>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminMarketplaceInitDb>>, void> = () => {
           
 
-          return  initAdminMarketplacesDb()
+          return  createAdminMarketplaceInitDb()
         }
 
         
@@ -81,23 +81,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitAdminMarketplacesDbMutationResult = NonNullable<Awaited<ReturnType<typeof initAdminMarketplacesDb>>>
+    export type CreateAdminMarketplaceInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminMarketplaceInitDb>>>
     
-    export type InitAdminMarketplacesDbMutationError = unknown
+    export type CreateAdminMarketplaceInitDbMutationError = unknown
 
     /**
  * @summary Init Db
  */
-export const useInitAdminMarketplacesDb = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminMarketplacesDb>>, TError,void, TContext>, }
+export const useCreateAdminMarketplaceInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initAdminMarketplacesDb>>,
+        Awaited<ReturnType<typeof createAdminMarketplaceInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitAdminMarketplacesDbMutationOptions(options);
+      const mutationOptions = getCreateAdminMarketplaceInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -105,8 +105,8 @@ export const useInitAdminMarketplacesDb = <TError = unknown,
  * Get list of marketplace integrations
  * @summary Get Integrations
  */
-export const getAdminMarketplacesIntegrations = (
-    params?: GetAdminMarketplacesIntegrationsParams,
+export const listAdminMarketplaceIntegrations = (
+    params?: ListAdminMarketplaceIntegrationsParams,
  signal?: AbortSignal
 ) => {
       
@@ -121,69 +121,69 @@ export const getAdminMarketplacesIntegrations = (
 
 
 
-export const getGetAdminMarketplacesIntegrationsQueryKey = (params?: GetAdminMarketplacesIntegrationsParams,) => {
+export const getListAdminMarketplaceIntegrationsQueryKey = (params?: ListAdminMarketplaceIntegrationsParams,) => {
     return [
     `/api/admin/marketplaces/integrations`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminMarketplacesIntegrationsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError = HTTPValidationError>(params?: GetAdminMarketplacesIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError, TData>>, }
+export const getListAdminMarketplaceIntegrationsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError = HTTPValidationError>(params?: ListAdminMarketplaceIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminMarketplacesIntegrationsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminMarketplaceIntegrationsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>> = ({ signal }) => getAdminMarketplacesIntegrations(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>> = ({ signal }) => listAdminMarketplaceIntegrations(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminMarketplacesIntegrationsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>>
-export type GetAdminMarketplacesIntegrationsQueryError = HTTPValidationError
+export type ListAdminMarketplaceIntegrationsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>>
+export type ListAdminMarketplaceIntegrationsQueryError = HTTPValidationError
 
 
-export function useGetAdminMarketplacesIntegrations<TData = Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminMarketplacesIntegrationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError, TData>> & Pick<
+export function useListAdminMarketplaceIntegrations<TData = Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminMarketplaceIntegrationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>,
+          Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>,
           TError,
-          Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>
+          Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminMarketplacesIntegrations<TData = Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError = HTTPValidationError>(
- params?: GetAdminMarketplacesIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError, TData>> & Pick<
+export function useListAdminMarketplaceIntegrations<TData = Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError = HTTPValidationError>(
+ params?: ListAdminMarketplaceIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>,
+          Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>,
           TError,
-          Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>
+          Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminMarketplacesIntegrations<TData = Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError = HTTPValidationError>(
- params?: GetAdminMarketplacesIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError, TData>>, }
+export function useListAdminMarketplaceIntegrations<TData = Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError = HTTPValidationError>(
+ params?: ListAdminMarketplaceIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Integrations
  */
 
-export function useGetAdminMarketplacesIntegrations<TData = Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError = HTTPValidationError>(
- params?: GetAdminMarketplacesIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminMarketplacesIntegrations>>, TError, TData>>, }
+export function useListAdminMarketplaceIntegrations<TData = Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError = HTTPValidationError>(
+ params?: ListAdminMarketplaceIntegrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMarketplaceIntegrations>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminMarketplacesIntegrationsQueryOptions(params,options)
+  const queryOptions = getListAdminMarketplaceIntegrationsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -199,7 +199,7 @@ export function useGetAdminMarketplacesIntegrations<TData = Awaited<ReturnType<t
  * Create a new marketplace integration
  * @summary Create Integration
  */
-export const createAdminIntegration = (
+export const createAdminMarketplaceIntegrations = (
     integrationCreate: IntegrationCreate,
  signal?: AbortSignal
 ) => {
@@ -215,11 +215,11 @@ export const createAdminIntegration = (
   
 
 
-export const getCreateAdminIntegrationMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminIntegration>>, TError,{data: IntegrationCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminIntegration>>, TError,{data: IntegrationCreate}, TContext> => {
+export const getCreateAdminMarketplaceIntegrationsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceIntegrations>>, TError,{data: IntegrationCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceIntegrations>>, TError,{data: IntegrationCreate}, TContext> => {
 
-const mutationKey = ['createAdminIntegration'];
+const mutationKey = ['createAdminMarketplaceIntegrations'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -229,10 +229,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminIntegration>>, {data: IntegrationCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminMarketplaceIntegrations>>, {data: IntegrationCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminIntegration(data,)
+          return  createAdminMarketplaceIntegrations(data,)
         }
 
         
@@ -240,23 +240,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminIntegrationMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminIntegration>>>
-    export type CreateAdminIntegrationMutationBody = IntegrationCreate
-    export type CreateAdminIntegrationMutationError = HTTPValidationError
+    export type CreateAdminMarketplaceIntegrationsMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminMarketplaceIntegrations>>>
+    export type CreateAdminMarketplaceIntegrationsMutationBody = IntegrationCreate
+    export type CreateAdminMarketplaceIntegrationsMutationError = HTTPValidationError
 
     /**
  * @summary Create Integration
  */
-export const useCreateAdminIntegration = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminIntegration>>, TError,{data: IntegrationCreate}, TContext>, }
+export const useCreateAdminMarketplaceIntegrations = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceIntegrations>>, TError,{data: IntegrationCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminIntegration>>,
+        Awaited<ReturnType<typeof createAdminMarketplaceIntegrations>>,
         TError,
         {data: IntegrationCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminIntegrationMutationOptions(options);
+      const mutationOptions = getCreateAdminMarketplaceIntegrationsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -264,7 +264,7 @@ export const useCreateAdminIntegration = <TError = HTTPValidationError,
  * Trigger sync for an integration
  * @summary Sync Integration
  */
-export const syncIntegration = (
+export const createAdminMarketplaceIntegrationSync = (
     integrationId: string,
  signal?: AbortSignal
 ) => {
@@ -278,11 +278,11 @@ export const syncIntegration = (
   
 
 
-export const getSyncIntegrationMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncIntegration>>, TError,{integrationId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof syncIntegration>>, TError,{integrationId: string}, TContext> => {
+export const getCreateAdminMarketplaceIntegrationSyncMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceIntegrationSync>>, TError,{integrationId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceIntegrationSync>>, TError,{integrationId: string}, TContext> => {
 
-const mutationKey = ['syncIntegration'];
+const mutationKey = ['createAdminMarketplaceIntegrationSync'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -292,10 +292,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncIntegration>>, {integrationId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminMarketplaceIntegrationSync>>, {integrationId: string}> = (props) => {
           const {integrationId} = props ?? {};
 
-          return  syncIntegration(integrationId,)
+          return  createAdminMarketplaceIntegrationSync(integrationId,)
         }
 
         
@@ -303,23 +303,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SyncIntegrationMutationResult = NonNullable<Awaited<ReturnType<typeof syncIntegration>>>
+    export type CreateAdminMarketplaceIntegrationSyncMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminMarketplaceIntegrationSync>>>
     
-    export type SyncIntegrationMutationError = HTTPValidationError
+    export type CreateAdminMarketplaceIntegrationSyncMutationError = HTTPValidationError
 
     /**
  * @summary Sync Integration
  */
-export const useSyncIntegration = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncIntegration>>, TError,{integrationId: string}, TContext>, }
+export const useCreateAdminMarketplaceIntegrationSync = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminMarketplaceIntegrationSync>>, TError,{integrationId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof syncIntegration>>,
+        Awaited<ReturnType<typeof createAdminMarketplaceIntegrationSync>>,
         TError,
         {integrationId: string},
         TContext
       > => {
 
-      const mutationOptions = getSyncIntegrationMutationOptions(options);
+      const mutationOptions = getCreateAdminMarketplaceIntegrationSyncMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

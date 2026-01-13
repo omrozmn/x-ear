@@ -28,7 +28,8 @@ export const useHaptic = () => {
         } catch (error) {
             console.warn('Haptic feedback failed:', error);
         }
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // patterns is a static object defined outside the callback
 
     const triggerSelection = useCallback(() => trigger({ type: 'light' }), [trigger]);
     const triggerImpact = useCallback(() => trigger({ type: 'medium' }), [trigger]);

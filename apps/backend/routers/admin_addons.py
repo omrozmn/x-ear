@@ -29,7 +29,7 @@ class AddonListResponse(ResponseEnvelope):
 class AddonDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=AddonListResponse)
+@router.get("", operation_id="listAdminAddons", response_model=AddonListResponse)
 def list_addons(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -59,7 +59,7 @@ def list_addons(
         logger.error(f"List addons error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=AddonDetailResponse)
+@router.post("", operation_id="createAdminAddon", response_model=AddonDetailResponse)
 def create_addon(
     request_data: AddonCreate,
     db_session: Session = Depends(get_db),
@@ -92,7 +92,7 @@ def create_addon(
         logger.error(f"Create addon error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{addon_id}", response_model=AddonDetailResponse)
+@router.get("/{addon_id}", operation_id="getAdminAddon", response_model=AddonDetailResponse)
 def get_addon(
     addon_id: str,
     db_session: Session = Depends(get_db),
@@ -104,7 +104,7 @@ def get_addon(
         raise HTTPException(status_code=404, detail={"message": "Add-on not found", "code": "NOT_FOUND"})
     return ResponseEnvelope(data={"addon": addon.to_dict()})
 
-@router.put("/{addon_id}", response_model=AddonDetailResponse)
+@router.put("/{addon_id}", operation_id="updateAdminAddon", response_model=AddonDetailResponse)
 def update_addon(
     addon_id: str,
     request_data: AddonUpdate,
@@ -135,7 +135,7 @@ def update_addon(
         logger.error(f"Update addon error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{addon_id}", response_model=ResponseEnvelope)
+@router.delete("/{addon_id}", operation_id="deleteAdminAddon", response_model=ResponseEnvelope)
 def delete_addon(
     addon_id: str,
     db_session: Session = Depends(get_db),

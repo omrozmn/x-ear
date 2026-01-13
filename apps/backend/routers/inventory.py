@@ -36,7 +36,7 @@ def get_inventory_or_404(db_session: Session, item_id: str, access: UnifiedAcces
         )
     return item
 
-@router.get("/inventory", response_model=ResponseEnvelope[List[InventoryItemRead]])
+@router.get("/inventory", operation_id="listInventory", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_all_inventory(
     page: int = 1,
     per_page: int = 20,
@@ -94,7 +94,7 @@ def get_all_inventory(
         }
     )
 
-@router.get("/inventory/search") # Note: No strict response model due to dynamic meta 'filters'
+@router.get("/inventory/search", operation_id="listInventorySearch") # Note: No strict response model due to dynamic meta 'filters'
 def advanced_search(
     q: Optional[str] = None,
     category: Optional[str] = None,
@@ -209,7 +209,7 @@ def advanced_search(
         },
     )
 
-@router.get("/inventory/stats", response_model=ResponseEnvelope[InventoryStats])
+@router.get("/inventory/stats", operation_id="listInventoryStats", response_model=ResponseEnvelope[InventoryStats])
 def get_inventory_stats(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -236,7 +236,7 @@ def get_inventory_stats(
         "total_value": float(total_value)
     })
 
-@router.get("/inventory/low-stock", response_model=ResponseEnvelope[List[InventoryItemRead]])
+@router.get("/inventory/low-stock", operation_id="listInventoryLowStock", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_low_stock(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -247,7 +247,28 @@ def get_low_stock(
     items = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).all()
     return ResponseEnvelope(data=[item.to_dict() for item in items])
 
-@router.post("/inventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
+@router.get("/inventory/units", operation_id="listInventoryUnits", response_model=ResponseEnvelope[Dict[str, List[str]]])
+def get_units(
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get available units"""
+    from models.inventory import UNIT_TYPES
+    return ResponseEnvelope(data={"units": UNIT_TYPES})
+
+@router.get("/inventory/{item_id}/activity", operation_id="listInventoryActivity", response_model=ResponseEnvelope[List[Dict[str, Any]]])
+def get_inventory_activities(
+    item_id: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get inventory item activity log"""
+    item = get_inventory_or_404(db, item_id, access)
+    # Placeholder for activity log implementation
+    # Future: fetch from ActivityLog where entity_id=item_id
+    return ResponseEnvelope(data=[])
+
+@router.post("/inventory", operation_id="createInventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
 def create_inventory(
     item_in: InventoryItemCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -290,7 +311,7 @@ def create_inventory(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/inventory/{item_id}", response_model=ResponseEnvelope[InventoryItemRead])
+@router.get("/inventory/{item_id}", operation_id="getInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def get_inventory_item(
     item_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -300,7 +321,7 @@ def get_inventory_item(
     item = get_inventory_or_404(db, item_id, access)
     return ResponseEnvelope(data=item.to_dict())
 
-@router.put("/inventory/{item_id}", response_model=ResponseEnvelope[InventoryItemRead])
+@router.put("/inventory/{item_id}", operation_id="updateInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def update_inventory(
     item_id: str,
     item_in: InventoryItemUpdate,
@@ -318,7 +339,7 @@ def update_inventory(
     db.commit()
     return ResponseEnvelope(data=item.to_dict())
 
-@router.delete("/inventory/{item_id}")
+@router.delete("/inventory/{item_id}", operation_id="deleteInventory")
 def delete_inventory(
     item_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -330,7 +351,7 @@ def delete_inventory(
     db.commit()
     return ResponseEnvelope(message="Item deleted")
 
-@router.post("/inventory/{item_id}/serials")
+@router.post("/inventory/{item_id}/serials", operation_id="createInventorySerials")
 def add_serials(
     item_id: str,
     payload: Dict[str, List[str]], # manual schema
@@ -347,7 +368,7 @@ def add_serials(
     db.commit()
     return ResponseEnvelope(message=f"{count} serial numbers added", data=item)
 
-@router.get("/inventory/{item_id}/movements", response_model=ResponseEnvelope[List[StockMovementRead]])
+@router.get("/inventory/{item_id}/movements", operation_id="listInventoryMovements", response_model=ResponseEnvelope[List[StockMovementRead]])
 def get_movements(
     item_id: str,
     startTime: Optional[str] = None,
@@ -358,29 +379,60 @@ def get_movements(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
-    """Get movements"""
+    """Get movements with patient enrichment (Flask parity)"""
+    from models.sales import DeviceAssignment, Sale
+    from models.patient import Patient
+    
     item = get_inventory_or_404(db, item_id, access)
     query = item.movements
     
     if startTime:
          try: query = query.filter(StockMovement.created_at >= datetime.fromisoformat(startTime.replace('Z', '+00:00')))
-         except: pass
+         except (ValueError, TypeError): pass
     if endTime:
          try: query = query.filter(StockMovement.created_at <= datetime.fromisoformat(endTime.replace('Z', '+00:00')))
-         except: pass
+         except (ValueError, TypeError): pass
     if type: query = query.filter(StockMovement.movement_type == type)
     
-    pagination = query.order_by(StockMovement.created_at.desc()).paginate(page=page, per_page=limit, error_out=False)
     
-    # Enrich logic is simpler in frontend if we return just movement data? 
-    # Or strict schema? Let's return to_dict() equivalent for safety.
-    results = [m.to_dict() for m in pagination.items]
+    total = query.count()
+    movements = query.order_by(StockMovement.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+    
+    # Enrich with patient info (Flask parity)
+    results = []
+    for m in movements:
+        m_dict = m.to_dict()
+        
+        # Enrich with patient info from transaction
+        if m.transaction_id:
+            try:
+                # If transaction is a device assignment, get patient info
+                if m.transaction_id.startswith('assign_'):
+                    assignment = db.get(DeviceAssignment, m.transaction_id)
+                    if assignment and assignment.patient_id:
+                        patient = db.get(Patient, assignment.patient_id)
+                        if patient:
+                            m_dict['patientId'] = patient.id
+                            m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+                # If transaction is a sale
+                elif m.transaction_id.startswith('sale_'):
+                    sale = db.get(Sale, m.transaction_id)
+                    if sale and sale.patient_id:
+                        patient = db.get(Patient, sale.patient_id)
+                        if patient:
+                            m_dict['patientId'] = patient.id
+                            m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+            except Exception as enrich_err:
+                logger.warning(f"Failed to enrich movement {m.id}: {enrich_err}")
+        
+        results.append(m_dict)
     
     return ResponseEnvelope(
         data=results,
         meta={
             "page": page,
             "per_page": limit,
-            "total": pagination.total
+            "total": total
         }
     )
+

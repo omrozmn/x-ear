@@ -27,7 +27,7 @@ class CheckoutSession(BaseModel):
 class PaymentConfirm(BaseModel):
     payment_id: str
 
-@router.post("/session")
+@router.post("/session", operation_id="createCheckoutSession")
 async def create_checkout_session(data: CheckoutSession, db: Session = Depends(get_db)):
     """Create checkout session for plan purchase"""
     try:
@@ -83,7 +83,7 @@ async def create_checkout_session(data: CheckoutSession, db: Session = Depends(g
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/confirm")
+@router.post("/confirm", operation_id="createCheckoutConfirm")
 async def confirm_payment(data: PaymentConfirm, db: Session = Depends(get_db)):
     """Confirm payment"""
     try:

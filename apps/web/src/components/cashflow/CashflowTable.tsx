@@ -60,7 +60,7 @@ export function CashflowTable({
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-sm text-gray-600">Kayıt bulunamadı</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Kayıt bulunamadı</p>
         </div>
       </div>
     );
@@ -68,52 +68,52 @@ export function CashflowTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Tarih
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Saat
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               İşlem Türü
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Kayıt Türü
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Hasta
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Tutar
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               İşlemler
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+
+        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
           {records.map((record) => (
             <tr
               key={record.id}
               onClick={() => onRecordClick(record)}
-              className="hover:bg-gray-50 transition-colors cursor-pointer"
+              className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                 {formatDate(record.date)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                 {formatTime(record.date)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    record.transactionType === 'income'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${record.transactionType === 'income'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                    : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+                    }`}
                 >
                   {record.transactionType === 'income' ? (
                     <TrendingUp className="h-3 w-3 mr-1" />
@@ -123,18 +123,17 @@ export function CashflowTable({
                   {record.transactionType === 'income' ? 'Gelir' : 'Gider'}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                 {RECORD_TYPE_LABELS[record.recordType] || record.recordType}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                 {record.patientName || '-'}
               </td>
               <td
-                className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                  record.transactionType === 'income'
-                    ? 'text-green-600'
-                    : 'text-red-600'
-                }`}
+                className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${record.transactionType === 'income'
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
+                  }`}
               >
                 {record.transactionType === 'income' ? '+' : '-'}
                 {formatCurrency(record.amount)}
@@ -147,7 +146,7 @@ export function CashflowTable({
                     e.stopPropagation();
                     onDeleteRecord(record);
                   }}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Sil
@@ -157,6 +156,6 @@ export function CashflowTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </div >
   );
 }

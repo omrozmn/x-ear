@@ -25,8 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminOrdersParams,
   HTTPValidationError,
+  ListAdminProductionOrdersParams,
   OrderStatusUpdate,
   ResponseEnvelope
 } from '.././schemas';
@@ -40,7 +40,7 @@ import { customInstance } from '../../orval-mutator';
  * Initialize Production Orders table
  * @summary Init Db
  */
-export const initAdminProductionDb = (
+export const createAdminProductionInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -54,11 +54,11 @@ export const initAdminProductionDb = (
   
 
 
-export const getInitAdminProductionDbMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminProductionDb>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initAdminProductionDb>>, TError,void, TContext> => {
+export const getCreateAdminProductionInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminProductionInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminProductionInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initAdminProductionDb'];
+const mutationKey = ['createAdminProductionInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -68,10 +68,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initAdminProductionDb>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminProductionInitDb>>, void> = () => {
           
 
-          return  initAdminProductionDb()
+          return  createAdminProductionInitDb()
         }
 
         
@@ -79,23 +79,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitAdminProductionDbMutationResult = NonNullable<Awaited<ReturnType<typeof initAdminProductionDb>>>
+    export type CreateAdminProductionInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminProductionInitDb>>>
     
-    export type InitAdminProductionDbMutationError = unknown
+    export type CreateAdminProductionInitDbMutationError = unknown
 
     /**
  * @summary Init Db
  */
-export const useInitAdminProductionDb = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminProductionDb>>, TError,void, TContext>, }
+export const useCreateAdminProductionInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminProductionInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initAdminProductionDb>>,
+        Awaited<ReturnType<typeof createAdminProductionInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitAdminProductionDbMutationOptions(options);
+      const mutationOptions = getCreateAdminProductionInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -103,8 +103,8 @@ export const useInitAdminProductionDb = <TError = unknown,
  * Get production orders
  * @summary Get Orders
  */
-export const getAdminOrders = (
-    params?: GetAdminOrdersParams,
+export const listAdminProductionOrders = (
+    params?: ListAdminProductionOrdersParams,
  signal?: AbortSignal
 ) => {
       
@@ -119,69 +119,69 @@ export const getAdminOrders = (
 
 
 
-export const getGetAdminOrdersQueryKey = (params?: GetAdminOrdersParams,) => {
+export const getListAdminProductionOrdersQueryKey = (params?: ListAdminProductionOrdersParams,) => {
     return [
     `/api/admin/production/orders`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminOrdersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminOrders>>, TError = HTTPValidationError>(params?: GetAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrders>>, TError, TData>>, }
+export const getListAdminProductionOrdersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminProductionOrders>>, TError = HTTPValidationError>(params?: ListAdminProductionOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminProductionOrders>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminOrdersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminProductionOrdersQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminOrders>>> = ({ signal }) => getAdminOrders(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminProductionOrders>>> = ({ signal }) => listAdminProductionOrders(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminOrders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminProductionOrders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminOrdersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminOrders>>>
-export type GetAdminOrdersQueryError = HTTPValidationError
+export type ListAdminProductionOrdersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminProductionOrders>>>
+export type ListAdminProductionOrdersQueryError = HTTPValidationError
 
 
-export function useGetAdminOrders<TData = Awaited<ReturnType<typeof getAdminOrders>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminOrdersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrders>>, TError, TData>> & Pick<
+export function useListAdminProductionOrders<TData = Awaited<ReturnType<typeof listAdminProductionOrders>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminProductionOrdersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminProductionOrders>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminOrders>>,
+          Awaited<ReturnType<typeof listAdminProductionOrders>>,
           TError,
-          Awaited<ReturnType<typeof getAdminOrders>>
+          Awaited<ReturnType<typeof listAdminProductionOrders>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminOrders<TData = Awaited<ReturnType<typeof getAdminOrders>>, TError = HTTPValidationError>(
- params?: GetAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrders>>, TError, TData>> & Pick<
+export function useListAdminProductionOrders<TData = Awaited<ReturnType<typeof listAdminProductionOrders>>, TError = HTTPValidationError>(
+ params?: ListAdminProductionOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminProductionOrders>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminOrders>>,
+          Awaited<ReturnType<typeof listAdminProductionOrders>>,
           TError,
-          Awaited<ReturnType<typeof getAdminOrders>>
+          Awaited<ReturnType<typeof listAdminProductionOrders>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminOrders<TData = Awaited<ReturnType<typeof getAdminOrders>>, TError = HTTPValidationError>(
- params?: GetAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrders>>, TError, TData>>, }
+export function useListAdminProductionOrders<TData = Awaited<ReturnType<typeof listAdminProductionOrders>>, TError = HTTPValidationError>(
+ params?: ListAdminProductionOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminProductionOrders>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Orders
  */
 
-export function useGetAdminOrders<TData = Awaited<ReturnType<typeof getAdminOrders>>, TError = HTTPValidationError>(
- params?: GetAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrders>>, TError, TData>>, }
+export function useListAdminProductionOrders<TData = Awaited<ReturnType<typeof listAdminProductionOrders>>, TError = HTTPValidationError>(
+ params?: ListAdminProductionOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminProductionOrders>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminOrdersQueryOptions(params,options)
+  const queryOptions = getListAdminProductionOrdersQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -197,7 +197,7 @@ export function useGetAdminOrders<TData = Awaited<ReturnType<typeof getAdminOrde
  * Update order status
  * @summary Update Order Status
  */
-export const updateAdminOrderStatus = (
+export const updateAdminProductionOrderStatus = (
     orderId: string,
     orderStatusUpdate: OrderStatusUpdate,
  ) => {
@@ -213,11 +213,11 @@ export const updateAdminOrderStatus = (
   
 
 
-export const getUpdateAdminOrderStatusMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminOrderStatus>>, TError,{orderId: string;data: OrderStatusUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminOrderStatus>>, TError,{orderId: string;data: OrderStatusUpdate}, TContext> => {
+export const getUpdateAdminProductionOrderStatusMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminProductionOrderStatus>>, TError,{orderId: string;data: OrderStatusUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminProductionOrderStatus>>, TError,{orderId: string;data: OrderStatusUpdate}, TContext> => {
 
-const mutationKey = ['updateAdminOrderStatus'];
+const mutationKey = ['updateAdminProductionOrderStatus'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -227,10 +227,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminOrderStatus>>, {orderId: string;data: OrderStatusUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminProductionOrderStatus>>, {orderId: string;data: OrderStatusUpdate}> = (props) => {
           const {orderId,data} = props ?? {};
 
-          return  updateAdminOrderStatus(orderId,data,)
+          return  updateAdminProductionOrderStatus(orderId,data,)
         }
 
         
@@ -238,23 +238,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateAdminOrderStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminOrderStatus>>>
-    export type UpdateAdminOrderStatusMutationBody = OrderStatusUpdate
-    export type UpdateAdminOrderStatusMutationError = HTTPValidationError
+    export type UpdateAdminProductionOrderStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminProductionOrderStatus>>>
+    export type UpdateAdminProductionOrderStatusMutationBody = OrderStatusUpdate
+    export type UpdateAdminProductionOrderStatusMutationError = HTTPValidationError
 
     /**
  * @summary Update Order Status
  */
-export const useUpdateAdminOrderStatus = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminOrderStatus>>, TError,{orderId: string;data: OrderStatusUpdate}, TContext>, }
+export const useUpdateAdminProductionOrderStatus = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminProductionOrderStatus>>, TError,{orderId: string;data: OrderStatusUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminOrderStatus>>,
+        Awaited<ReturnType<typeof updateAdminProductionOrderStatus>>,
         TError,
         {orderId: string;data: OrderStatusUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateAdminOrderStatusMutationOptions(options);
+      const mutationOptions = getUpdateAdminProductionOrderStatusMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

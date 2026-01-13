@@ -73,8 +73,8 @@ class DeviceAssignmentBase(AppBaseModel):
     reason: Optional[str] = None
     
     # Pricing
-    list_price: float = Field(..., alias="listPrice")
-    sale_price: float = Field(..., alias="salePrice")
+    list_price: Optional[float] = Field(0.0, alias="listPrice")
+    sale_price: Optional[float] = Field(0.0, alias="salePrice")
     sgk_support: Optional[float] = Field(0.0, alias="sgkSupport")
     net_payable: Optional[float] = Field(0.0, alias="netPayable")
     
@@ -87,18 +87,111 @@ class DeviceAssignmentBase(AppBaseModel):
     is_loaner: bool = Field(False, alias="isLoaner")
     loaner_serial_number: Optional[str] = Field(None, alias="loanerSerialNumber")
 
-class DeviceAssignmentRead(IDMixin, DeviceAssignmentBase):
+
+# ==================== DEVICE ASSIGNMENT CREATE SCHEMA ====================
+
+class DeviceAssignmentItemCreate(AppBaseModel):
+    """Single device assignment item within a batch assignment request."""
+    inventory_id: Optional[str] = Field(None, alias="inventoryId")
+    ear: Optional[str] = Field("both", alias="ear")  # L, R, B, both, left, right
+    reason: Optional[str] = Field("Sale")
+    
+    # Pricing (optional - server calculates if not provided)
+    base_price: Optional[float] = Field(None, alias="basePrice")
+    discount_type: Optional[str] = Field(None, alias="discountType")  # percentage, fixed
+    discount_value: Optional[float] = Field(None, alias="discountValue")
+    sale_price: Optional[float] = Field(None, alias="salePrice")
+    patient_payment: Optional[float] = Field(None, alias="patientPayment")
+    sgk_support: Optional[float] = Field(None, alias="sgkSupport")
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    
+    # Serials
+    serial_number: Optional[str] = Field(None, alias="serialNumber")
+    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
+    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
+    
+    # Manual device info (when not from inventory)
+    manual_brand: Optional[str] = Field(None, alias="manualBrand")
+    manual_model: Optional[str] = Field(None, alias="manualModel")
+    
+    # Delivery & Report
+    delivery_status: Optional[str] = Field("pending", alias="deliveryStatus")
+    report_status: Optional[str] = Field(None, alias="reportStatus")
+    
+    # Loaner device info
+    is_loaner: bool = Field(False, alias="isLoaner")
+    loaner_inventory_id: Optional[str] = Field(None, alias="loanerInventoryId")
+    loaner_serial_number: Optional[str] = Field(None, alias="loanerSerialNumber")
+    loaner_serial_number_left: Optional[str] = Field(None, alias="loanerSerialNumberLeft")
+    loaner_serial_number_right: Optional[str] = Field(None, alias="loanerSerialNumberRight")
+    loaner_brand: Optional[str] = Field(None, alias="loanerBrand")
+    loaner_model: Optional[str] = Field(None, alias="loanerModel")
+    
+    payment_method: Optional[str] = Field("cash", alias="paymentMethod")
+    notes: Optional[str] = None
+
+
+class DeviceAssignmentCreate(AppBaseModel):
+    """Request body for POST /patients/{patient_id}/device-assignments endpoint."""
+    device_assignments: List[DeviceAssignmentItemCreate] = Field(..., alias="deviceAssignments")
+    
+    # SGK scheme for all assignments (can be overridden per item)
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    
+    # Payment plan type: cash, installment_3, installment_6, etc.
+    payment_plan: Optional[str] = Field("cash", alias="paymentPlan")
+    
+    # Branch ID (optional)
+    branch_id: Optional[str] = Field(None, alias="branchId")
+    
+    # Accessories and services (optional)
+    accessories: Optional[List[Dict[str, Any]]] = None
+    services: Optional[List[Dict[str, Any]]] = None
+
+
+class DeviceAssignmentCreateResponse(AppBaseModel):
+    """Response for device assignment creation."""
     sale_id: str = Field(..., alias="saleId")
+    assignment_ids: List[str] = Field(..., alias="assignmentIds")
+    pricing: Dict[str, Any] = Field(default_factory=dict)
+    warnings: List[str] = Field(default_factory=list)
+
+class DeviceAssignmentRead(IDMixin, TimestampMixin, DeviceAssignmentBase):
+    sale_id: Optional[str] = Field(None, alias="saleId")
     delivery_status: str = Field("pending", alias="deliveryStatus")
     report_status: Optional[str] = Field(None, alias="reportStatus")
     
     # Device details (enriched)
     name: Optional[str] = None
+    device_name: Optional[str] = Field(None, alias="deviceName")  # Computed: brand + model
     brand: Optional[str] = None
     model: Optional[str] = None
     barcode: Optional[str] = None
+    category: Optional[str] = None  # From inventory (Flask parity)
     
-    # Aliases for frontend compatibility
+    # Assignment details
+    assignment_uid: Optional[str] = Field(None, alias="assignmentUid")
+    assigned_date: Optional[str] = Field(None, alias="assignedDate")
+    
+    # SGK and Payment
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    sgk_support_type: Optional[str] = Field(None, alias="sgkSupportType")  # Alias for sgkScheme (Flask parity)
+    payment_method: Optional[str] = Field(None, alias="paymentMethod")
+    discount_type: Optional[str] = Field(None, alias="discountType")
+    discount_value: Optional[float] = Field(None, alias="discountValue")
+    down_payment: Optional[float] = Field(0.0, alias="downPayment")  # From PaymentRecord (Flask parity)
+    
+    # Ear side alias (Flask parity)
+    ear_side: Optional[str] = Field(None, alias="earSide")
+    
+    # Loaner device details
+    loaner_inventory_id: Optional[str] = Field(None, alias="loanerInventoryId")
+    loaner_brand: Optional[str] = Field(None, alias="loanerBrand")
+    loaner_model: Optional[str] = Field(None, alias="loanerModel")
+    loaner_serial_number_left: Optional[str] = Field(None, alias="loanerSerialNumberLeft")
+    loaner_serial_number_right: Optional[str] = Field(None, alias="loanerSerialNumberRight")
+    
+    # Aliases for frontend compatibility (Flask parity)
     sgk_reduction: float = Field(0.0, alias="sgkReduction")
     patient_payment: float = Field(0.0, alias="patientPayment")
     sgk_coverage_amount: float = Field(0.0, alias="sgkCoverageAmount")
@@ -117,6 +210,7 @@ class DeviceAssignmentUpdate(AppBaseModel):
     serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
     
     delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
+    report_status: Optional[str] = Field(None, alias="reportStatus")
     
     # Pricing
     base_price: Optional[float] = Field(None, alias="basePrice")
@@ -131,9 +225,21 @@ class DeviceAssignmentUpdate(AppBaseModel):
     sgk_reduction: Optional[float] = Field(None, alias="sgkReduction")
     sgkSupport: Optional[float] = None # Alias
     
+    # Down payment
+    down_payment: Optional[float] = Field(None, alias="downPayment")
+    
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     notes: Optional[str] = None
     user_id: Optional[str] = Field(None, alias="userId") # For audit
+    
+    # Loaner device fields
+    is_loaner: Optional[bool] = Field(None, alias="isLoaner")
+    loaner_inventory_id: Optional[str] = Field(None, alias="loanerInventoryId")
+    loaner_serial_number: Optional[str] = Field(None, alias="loanerSerialNumber")
+    loaner_serial_number_left: Optional[str] = Field(None, alias="loanerSerialNumberLeft")
+    loaner_serial_number_right: Optional[str] = Field(None, alias="loanerSerialNumberRight")
+    loaner_brand: Optional[str] = Field(None, alias="loanerBrand")
+    loaner_model: Optional[str] = Field(None, alias="loanerModel")
 
 
 # ==================== SALE SCHEMAS ====================
@@ -223,3 +329,15 @@ class SaleUpdate(AppBaseModel):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     status: Optional[str] = None
     notes: Optional[str] = None
+
+class SaleRecalcRequest(AppBaseModel):
+    patient_id: Optional[str] = Field(None, alias="patientId")
+    sale_id: Optional[str] = Field(None, alias="saleId")
+    limit: Optional[int] = None
+
+class SaleRecalcResponse(AppBaseModel):
+    success: bool
+    updated: int
+    processed: int
+    errors: List[Dict[str, Any]]
+    timestamp: datetime

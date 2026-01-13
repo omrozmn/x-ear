@@ -35,7 +35,7 @@ def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
 
 # --- Routes ---
 
-@router.get("/dashboard")
+@router.get("/dashboard", operation_id="listDashboard")
 def get_dashboard(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -149,7 +149,7 @@ def get_dashboard(
         logger.error(f"Get dashboard error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/kpis")
+@router.get("/dashboard/kpis", operation_id="listDashboardKpis")
 def get_kpis(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -177,7 +177,7 @@ def get_kpis(
         logger.error(f"Get KPIs error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/charts/patient-trends")
+@router.get("/dashboard/charts/patient-trends", operation_id="listDashboardChartPatientTrends")
 def patient_trends(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -209,7 +209,7 @@ def patient_trends(
         logger.error(f"Patient trends error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/charts/revenue-trends")
+@router.get("/dashboard/charts/revenue-trends", operation_id="listDashboardChartRevenueTrends")
 def revenue_trends(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -243,7 +243,7 @@ def revenue_trends(
         logger.error(f"Revenue trends error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/recent-activity")
+@router.get("/dashboard/recent-activity", operation_id="listDashboardRecentActivity")
 def recent_activity(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -258,7 +258,7 @@ def recent_activity(
         logger.error(f"Recent activity error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/charts/patient-distribution")
+@router.get("/dashboard/charts/patient-distribution", operation_id="listDashboardChartPatientDistribution")
 def patient_distribution(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)

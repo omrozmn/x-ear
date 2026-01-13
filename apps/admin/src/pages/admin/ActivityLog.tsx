@@ -11,9 +11,9 @@ import {
 } from 'lucide-react';
 import { Input, Select } from '@x-ear/ui-web';
 import {
-    useAdminGetActivityLogs,
-    useAdminGetActivityLogsStats,
-    useAdminGetActivityLogFilterOptions
+    useListActivityLogs,
+    useListActivityLogStats,
+    useListActivityLogFilterOptions
 } from '../../lib/api-client';
 import Pagination from '../../components/ui/Pagination';
 
@@ -129,15 +129,15 @@ export default function ActivityLogPage() {
     const [pageSize, setPageSize] = useState(20);
     const [selectedLog, setSelectedLog] = useState<any>(null);
 
-    const { data: logsData, isLoading } = useAdminGetActivityLogs({
+    const { data: logsData, isLoading } = useListActivityLogs({
         ...filters,
         critical_only: filters.critical_only === 'true',
         page,
         page_size: pageSize
     } as any);
 
-    const { data: statsData } = useAdminGetActivityLogsStats({});
-    const { data: filterOptions } = useAdminGetActivityLogFilterOptions();
+    const { data: statsData } = useListActivityLogStats({});
+    const { data: filterOptions } = useListActivityLogFilterOptions();
 
     const logs = (logsData?.data as any)?.logs || [];
     const meta = (logsData?.data as any)?.meta;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DatePicker } from '@x-ear/ui-web';
-import { useGetMovementsApiInventoryItemIdMovementsGet } from '@/api/generated';
+import { useListInventoryMovements } from '@/api/generated';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ArrowUpRight, ArrowDownLeft, Calendar, User, Search } from 'lucide-react';
 
@@ -26,7 +26,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     // Use orval-generated hook with CORRECT endpoint (path param, not query)
     // Note: Backend supports startTime/endTime
-    const { data: movementsResponseRaw, isLoading, error } = useGetMovementsApiInventoryItemIdMovementsGet(
+    const { data: movementsResponseRaw, isLoading, error } = useListInventoryMovements(
         inventoryId || '', // item_id as path parameter
         {},
         {
@@ -67,7 +67,15 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
     };
 
     const formatDate = (date: string) => {
-        return new Date(date).toLocaleString('tr-TR');
+        // Backend stores in UTC, convert to local timezone (Istanbul)
+        const d = new Date(date);
+        // If the date string doesn't have timezone info, treat it as UTC
+        if (!date.includes('+') && !date.includes('Z')) {
+            // Append Z to treat as UTC
+            const utcDate = new Date(date + 'Z');
+            return utcDate.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+        }
+        return d.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
     };
 
     const getMovementDescription = (movement: StockMovement) => {

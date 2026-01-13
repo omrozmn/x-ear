@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import sgkService from '@/services/sgk/sgk.service';
+import type { OCRProcessingRequest } from '@/types/sgk';
 
 // Note: The OpenAPI/Orval-generated client in this repo exposes SGK document endpoints and OCR/processing
 // helpers (sgkGetPatientSgkDocuments, sgkUploadSgkDocument, sgkDeleteSgkDocument, ocrProcessDocument, automationTriggerSgkProcessing).
@@ -9,7 +10,7 @@ import sgkService from '@/services/sgk/sgk.service';
 export function useProcessSgkOcr() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body?: any) => sgkService.processOcr(body),
+    mutationFn: (body: OCRProcessingRequest) => sgkService.processOcr(body),
     onSuccess: () => {
       // Invalidate potentially affected queries (patient documents may change after OCR)
       qc.invalidateQueries({ queryKey: ['patients'] });
@@ -20,7 +21,7 @@ export function useProcessSgkOcr() {
 export function useTriggerSgkProcessing() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body?: any) => sgkService.triggerProcessing(body),
+    mutationFn: (body: { patientId: string }) => sgkService.triggerProcessing(body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 }

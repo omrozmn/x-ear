@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/admin/production", tags=["Admin Production"])
 class OrderStatusUpdate(BaseModel):
     status: str
 
-@router.post("/init-db", response_model=ResponseEnvelope)
+@router.post("/init-db", operation_id="createAdminProductionInitDb", response_model=ResponseEnvelope)
 async def init_db(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
@@ -30,7 +30,7 @@ async def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/orders", response_model=ResponseEnvelope)
+@router.get("/orders", operation_id="listAdminProductionOrders", response_model=ResponseEnvelope)
 async def get_orders(
     status: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -46,7 +46,7 @@ async def get_orders(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/orders/{order_id}/status", response_model=ResponseEnvelope)
+@router.put("/orders/{order_id}/status", operation_id="updateAdminProductionOrderStatus", response_model=ResponseEnvelope)
 async def update_order_status(
     order_id: str,
     data: OrderStatusUpdate,

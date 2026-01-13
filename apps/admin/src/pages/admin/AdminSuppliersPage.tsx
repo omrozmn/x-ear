@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-    useGetAdminSuppliers,
+    useListAdminSuppliers,
     useCreateAdminSupplier,
     useUpdateAdminSupplier,
     useDeleteAdminSupplier,
@@ -32,7 +32,7 @@ const AdminSuppliersPage: React.FC = () => {
     const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
 
     // Queries
-    const { data: suppliersData, isLoading } = useGetAdminSuppliers({
+    const { data: suppliersData, isLoading } = useListAdminSuppliers({
         page,
         limit,
         search: search || undefined,
@@ -88,9 +88,9 @@ const AdminSuppliersPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: string | number) => {
         if (window.confirm('Bu tedarikçiyi silmek istediğinizden emin misiniz?')) {
-            deleteMutation.mutate({ supplierId: id });
+            deleteMutation.mutate({ supplierId: Number(id) });
         }
     };
 
@@ -258,7 +258,7 @@ const AdminSuppliersPage: React.FC = () => {
                     initialData={editingSupplier}
                     onSubmit={(data) => {
                         if (editingSupplier) {
-                            updateMutation.mutate({ supplierId: parseInt(editingSupplier.id!), data });
+                            updateMutation.mutate({ supplierId: Number(editingSupplier.id!), data });
                         } else {
                             createMutation.mutate({ data });
                         }

@@ -4,7 +4,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
-    useGetAdminAddons,
+    useListAdminAddons,
     useCreateAdminAddon,
     useUpdateAdminAddon,
     useDeleteAdminAddon,
@@ -31,7 +31,7 @@ const AddOns: React.FC = () => {
     const queryClient = useQueryClient();
     const [page, setPage] = React.useState(1);
     const [limit, setLimit] = React.useState(10);
-    const { data: addonsData, isLoading, error } = useGetAdminAddons({ page, limit } as any);
+    const { data: addonsData, isLoading, error } = useListAdminAddons({ page, limit } as any);
     const addons = (addonsData as any)?.data?.addons || (addonsData as any)?.addons || [];
     const pagination = (addonsData as any)?.data?.pagination || (addonsData as any)?.pagination;
 

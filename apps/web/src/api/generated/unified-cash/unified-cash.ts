@@ -21,9 +21,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetCashSummaryParams,
-  GetUnifiedCashRecordsParams,
-  HTTPValidationError
+  HTTPValidationError,
+  ListUnifiedCashRecordSummaryParams,
+  ListUnifiedCashRecordsParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -40,8 +40,8 @@ Combines:
 - Cash Records (nakit kayıtları)
  * @summary Get Unified Cash Records
  */
-export const getUnifiedCashRecords = (
-    params?: GetUnifiedCashRecordsParams,
+export const listUnifiedCashRecords = (
+    params?: ListUnifiedCashRecordsParams,
  signal?: AbortSignal
 ) => {
       
@@ -56,69 +56,69 @@ export const getUnifiedCashRecords = (
 
 
 
-export const getGetUnifiedCashRecordsQueryKey = (params?: GetUnifiedCashRecordsParams,) => {
+export const getListUnifiedCashRecordsQueryKey = (params?: ListUnifiedCashRecordsParams,) => {
     return [
     `/api/unified-cash-records`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetUnifiedCashRecordsQueryOptions = <TData = Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError = HTTPValidationError>(params?: GetUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError, TData>>, }
+export const getListUnifiedCashRecordsQueryOptions = <TData = Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError = HTTPValidationError>(params?: ListUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetUnifiedCashRecordsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListUnifiedCashRecordsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUnifiedCashRecords>>> = ({ signal }) => getUnifiedCashRecords(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUnifiedCashRecords>>> = ({ signal }) => listUnifiedCashRecords(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetUnifiedCashRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof getUnifiedCashRecords>>>
-export type GetUnifiedCashRecordsQueryError = HTTPValidationError
+export type ListUnifiedCashRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof listUnifiedCashRecords>>>
+export type ListUnifiedCashRecordsQueryError = HTTPValidationError
 
 
-export function useGetUnifiedCashRecords<TData = Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError = HTTPValidationError>(
- params: undefined |  GetUnifiedCashRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError, TData>> & Pick<
+export function useListUnifiedCashRecords<TData = Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError = HTTPValidationError>(
+ params: undefined |  ListUnifiedCashRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUnifiedCashRecords>>,
+          Awaited<ReturnType<typeof listUnifiedCashRecords>>,
           TError,
-          Awaited<ReturnType<typeof getUnifiedCashRecords>>
+          Awaited<ReturnType<typeof listUnifiedCashRecords>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUnifiedCashRecords<TData = Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError = HTTPValidationError>(
- params?: GetUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError, TData>> & Pick<
+export function useListUnifiedCashRecords<TData = Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError = HTTPValidationError>(
+ params?: ListUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUnifiedCashRecords>>,
+          Awaited<ReturnType<typeof listUnifiedCashRecords>>,
           TError,
-          Awaited<ReturnType<typeof getUnifiedCashRecords>>
+          Awaited<ReturnType<typeof listUnifiedCashRecords>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUnifiedCashRecords<TData = Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError = HTTPValidationError>(
- params?: GetUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError, TData>>, }
+export function useListUnifiedCashRecords<TData = Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError = HTTPValidationError>(
+ params?: ListUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Unified Cash Records
  */
 
-export function useGetUnifiedCashRecords<TData = Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError = HTTPValidationError>(
- params?: GetUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnifiedCashRecords>>, TError, TData>>, }
+export function useListUnifiedCashRecords<TData = Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError = HTTPValidationError>(
+ params?: ListUnifiedCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecords>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetUnifiedCashRecordsQueryOptions(params,options)
+  const queryOptions = getListUnifiedCashRecordsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -138,8 +138,8 @@ Query parameters:
 - start_date, end_date: custom date range
  * @summary Get Cash Summary
  */
-export const getCashSummary = (
-    params?: GetCashSummaryParams,
+export const listUnifiedCashRecordSummary = (
+    params?: ListUnifiedCashRecordSummaryParams,
  signal?: AbortSignal
 ) => {
       
@@ -154,69 +154,69 @@ export const getCashSummary = (
 
 
 
-export const getGetCashSummaryQueryKey = (params?: GetCashSummaryParams,) => {
+export const getListUnifiedCashRecordSummaryQueryKey = (params?: ListUnifiedCashRecordSummaryParams,) => {
     return [
     `/api/unified-cash-records/summary`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetCashSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getCashSummary>>, TError = HTTPValidationError>(params?: GetCashSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashSummary>>, TError, TData>>, }
+export const getListUnifiedCashRecordSummaryQueryOptions = <TData = Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError = HTTPValidationError>(params?: ListUnifiedCashRecordSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCashSummaryQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListUnifiedCashRecordSummaryQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCashSummary>>> = ({ signal }) => getCashSummary(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>> = ({ signal }) => listUnifiedCashRecordSummary(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCashSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetCashSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getCashSummary>>>
-export type GetCashSummaryQueryError = HTTPValidationError
+export type ListUnifiedCashRecordSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>>
+export type ListUnifiedCashRecordSummaryQueryError = HTTPValidationError
 
 
-export function useGetCashSummary<TData = Awaited<ReturnType<typeof getCashSummary>>, TError = HTTPValidationError>(
- params: undefined |  GetCashSummaryParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashSummary>>, TError, TData>> & Pick<
+export function useListUnifiedCashRecordSummary<TData = Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError = HTTPValidationError>(
+ params: undefined |  ListUnifiedCashRecordSummaryParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCashSummary>>,
+          Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>,
           TError,
-          Awaited<ReturnType<typeof getCashSummary>>
+          Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCashSummary<TData = Awaited<ReturnType<typeof getCashSummary>>, TError = HTTPValidationError>(
- params?: GetCashSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashSummary>>, TError, TData>> & Pick<
+export function useListUnifiedCashRecordSummary<TData = Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError = HTTPValidationError>(
+ params?: ListUnifiedCashRecordSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCashSummary>>,
+          Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>,
           TError,
-          Awaited<ReturnType<typeof getCashSummary>>
+          Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCashSummary<TData = Awaited<ReturnType<typeof getCashSummary>>, TError = HTTPValidationError>(
- params?: GetCashSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashSummary>>, TError, TData>>, }
+export function useListUnifiedCashRecordSummary<TData = Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError = HTTPValidationError>(
+ params?: ListUnifiedCashRecordSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Cash Summary
  */
 
-export function useGetCashSummary<TData = Awaited<ReturnType<typeof getCashSummary>>, TError = HTTPValidationError>(
- params?: GetCashSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashSummary>>, TError, TData>>, }
+export function useListUnifiedCashRecordSummary<TData = Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError = HTTPValidationError>(
+ params?: ListUnifiedCashRecordSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnifiedCashRecordSummary>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetCashSummaryQueryOptions(params,options)
+  const queryOptions = getListUnifiedCashRecordSummaryQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

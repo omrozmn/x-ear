@@ -25,11 +25,11 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AuditTrailParams,
   CommissionCreate,
-  GetCommissionsByAffiliateParams,
+  CreateCommissionUpdateStatusParams,
   HTTPValidationError,
-  UpdateCommissionStatusParams
+  ListCommissionAuditParams,
+  ListCommissionByAffiliateParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -41,7 +41,7 @@ import { customInstance } from '../../orval-mutator';
  * Create a new commission entry
  * @summary Create Commission
  */
-export const createCommission = (
+export const createCommissionCreate = (
     commissionCreate: CommissionCreate,
  signal?: AbortSignal
 ) => {
@@ -57,11 +57,11 @@ export const createCommission = (
   
 
 
-export const getCreateCommissionMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommission>>, TError,{data: CommissionCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createCommission>>, TError,{data: CommissionCreate}, TContext> => {
+export const getCreateCommissionCreateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommissionCreate>>, TError,{data: CommissionCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommissionCreate>>, TError,{data: CommissionCreate}, TContext> => {
 
-const mutationKey = ['createCommission'];
+const mutationKey = ['createCommissionCreate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -71,10 +71,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommission>>, {data: CommissionCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommissionCreate>>, {data: CommissionCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createCommission(data,)
+          return  createCommissionCreate(data,)
         }
 
         
@@ -82,23 +82,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateCommissionMutationResult = NonNullable<Awaited<ReturnType<typeof createCommission>>>
-    export type CreateCommissionMutationBody = CommissionCreate
-    export type CreateCommissionMutationError = HTTPValidationError
+    export type CreateCommissionCreateMutationResult = NonNullable<Awaited<ReturnType<typeof createCommissionCreate>>>
+    export type CreateCommissionCreateMutationBody = CommissionCreate
+    export type CreateCommissionCreateMutationError = HTTPValidationError
 
     /**
  * @summary Create Commission
  */
-export const useCreateCommission = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommission>>, TError,{data: CommissionCreate}, TContext>, }
+export const useCreateCommissionCreate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommissionCreate>>, TError,{data: CommissionCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createCommission>>,
+        Awaited<ReturnType<typeof createCommissionCreate>>,
         TError,
         {data: CommissionCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateCommissionMutationOptions(options);
+      const mutationOptions = getCreateCommissionCreateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -106,8 +106,8 @@ export const useCreateCommission = <TError = HTTPValidationError,
  * Update commission status
  * @summary Update Commission Status
  */
-export const updateCommissionStatus = (
-    params: UpdateCommissionStatusParams,
+export const createCommissionUpdateStatus = (
+    params: CreateCommissionUpdateStatusParams,
  signal?: AbortSignal
 ) => {
       
@@ -121,11 +121,11 @@ export const updateCommissionStatus = (
   
 
 
-export const getUpdateCommissionStatusMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommissionStatus>>, TError,{params: UpdateCommissionStatusParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateCommissionStatus>>, TError,{params: UpdateCommissionStatusParams}, TContext> => {
+export const getCreateCommissionUpdateStatusMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommissionUpdateStatus>>, TError,{params: CreateCommissionUpdateStatusParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommissionUpdateStatus>>, TError,{params: CreateCommissionUpdateStatusParams}, TContext> => {
 
-const mutationKey = ['updateCommissionStatus'];
+const mutationKey = ['createCommissionUpdateStatus'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -135,10 +135,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCommissionStatus>>, {params: UpdateCommissionStatusParams}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommissionUpdateStatus>>, {params: CreateCommissionUpdateStatusParams}> = (props) => {
           const {params} = props ?? {};
 
-          return  updateCommissionStatus(params,)
+          return  createCommissionUpdateStatus(params,)
         }
 
         
@@ -146,23 +146,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateCommissionStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateCommissionStatus>>>
+    export type CreateCommissionUpdateStatusMutationResult = NonNullable<Awaited<ReturnType<typeof createCommissionUpdateStatus>>>
     
-    export type UpdateCommissionStatusMutationError = HTTPValidationError
+    export type CreateCommissionUpdateStatusMutationError = HTTPValidationError
 
     /**
  * @summary Update Commission Status
  */
-export const useUpdateCommissionStatus = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommissionStatus>>, TError,{params: UpdateCommissionStatusParams}, TContext>, }
+export const useCreateCommissionUpdateStatus = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommissionUpdateStatus>>, TError,{params: CreateCommissionUpdateStatusParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateCommissionStatus>>,
+        Awaited<ReturnType<typeof createCommissionUpdateStatus>>,
         TError,
-        {params: UpdateCommissionStatusParams},
+        {params: CreateCommissionUpdateStatusParams},
         TContext
       > => {
 
-      const mutationOptions = getUpdateCommissionStatusMutationOptions(options);
+      const mutationOptions = getCreateCommissionUpdateStatusMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -170,8 +170,8 @@ export const useUpdateCommissionStatus = <TError = HTTPValidationError,
  * Get commissions for an affiliate
  * @summary Get Commissions By Affiliate
  */
-export const getCommissionsByAffiliate = (
-    params: GetCommissionsByAffiliateParams,
+export const listCommissionByAffiliate = (
+    params: ListCommissionByAffiliateParams,
  signal?: AbortSignal
 ) => {
       
@@ -186,69 +186,69 @@ export const getCommissionsByAffiliate = (
 
 
 
-export const getGetCommissionsByAffiliateQueryKey = (params?: GetCommissionsByAffiliateParams,) => {
+export const getListCommissionByAffiliateQueryKey = (params?: ListCommissionByAffiliateParams,) => {
     return [
     `/api/commissions/by-affiliate`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetCommissionsByAffiliateQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError = HTTPValidationError>(params: GetCommissionsByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError, TData>>, }
+export const getListCommissionByAffiliateQueryOptions = <TData = Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError = HTTPValidationError>(params: ListCommissionByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionsByAffiliateQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListCommissionByAffiliateQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionsByAffiliate>>> = ({ signal }) => getCommissionsByAffiliate(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommissionByAffiliate>>> = ({ signal }) => listCommissionByAffiliate(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetCommissionsByAffiliateQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionsByAffiliate>>>
-export type GetCommissionsByAffiliateQueryError = HTTPValidationError
+export type ListCommissionByAffiliateQueryResult = NonNullable<Awaited<ReturnType<typeof listCommissionByAffiliate>>>
+export type ListCommissionByAffiliateQueryError = HTTPValidationError
 
 
-export function useGetCommissionsByAffiliate<TData = Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError = HTTPValidationError>(
- params: GetCommissionsByAffiliateParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError, TData>> & Pick<
+export function useListCommissionByAffiliate<TData = Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError = HTTPValidationError>(
+ params: ListCommissionByAffiliateParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsByAffiliate>>,
+          Awaited<ReturnType<typeof listCommissionByAffiliate>>,
           TError,
-          Awaited<ReturnType<typeof getCommissionsByAffiliate>>
+          Awaited<ReturnType<typeof listCommissionByAffiliate>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCommissionsByAffiliate<TData = Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError = HTTPValidationError>(
- params: GetCommissionsByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError, TData>> & Pick<
+export function useListCommissionByAffiliate<TData = Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError = HTTPValidationError>(
+ params: ListCommissionByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsByAffiliate>>,
+          Awaited<ReturnType<typeof listCommissionByAffiliate>>,
           TError,
-          Awaited<ReturnType<typeof getCommissionsByAffiliate>>
+          Awaited<ReturnType<typeof listCommissionByAffiliate>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCommissionsByAffiliate<TData = Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError = HTTPValidationError>(
- params: GetCommissionsByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError, TData>>, }
+export function useListCommissionByAffiliate<TData = Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError = HTTPValidationError>(
+ params: ListCommissionByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Commissions By Affiliate
  */
 
-export function useGetCommissionsByAffiliate<TData = Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError = HTTPValidationError>(
- params: GetCommissionsByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsByAffiliate>>, TError, TData>>, }
+export function useListCommissionByAffiliate<TData = Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError = HTTPValidationError>(
+ params: ListCommissionByAffiliateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionByAffiliate>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetCommissionsByAffiliateQueryOptions(params,options)
+  const queryOptions = getListCommissionByAffiliateQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -264,8 +264,8 @@ export function useGetCommissionsByAffiliate<TData = Awaited<ReturnType<typeof g
  * Get audit trail for a commission
  * @summary Audit Trail
  */
-export const auditTrail = (
-    params: AuditTrailParams,
+export const listCommissionAudit = (
+    params: ListCommissionAuditParams,
  signal?: AbortSignal
 ) => {
       
@@ -280,69 +280,69 @@ export const auditTrail = (
 
 
 
-export const getAuditTrailQueryKey = (params?: AuditTrailParams,) => {
+export const getListCommissionAuditQueryKey = (params?: ListCommissionAuditParams,) => {
     return [
     `/api/commissions/audit`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getAuditTrailQueryOptions = <TData = Awaited<ReturnType<typeof auditTrail>>, TError = HTTPValidationError>(params: AuditTrailParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditTrail>>, TError, TData>>, }
+export const getListCommissionAuditQueryOptions = <TData = Awaited<ReturnType<typeof listCommissionAudit>>, TError = HTTPValidationError>(params: ListCommissionAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionAudit>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAuditTrailQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListCommissionAuditQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof auditTrail>>> = ({ signal }) => auditTrail(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommissionAudit>>> = ({ signal }) => listCommissionAudit(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof auditTrail>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommissionAudit>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type AuditTrailQueryResult = NonNullable<Awaited<ReturnType<typeof auditTrail>>>
-export type AuditTrailQueryError = HTTPValidationError
+export type ListCommissionAuditQueryResult = NonNullable<Awaited<ReturnType<typeof listCommissionAudit>>>
+export type ListCommissionAuditQueryError = HTTPValidationError
 
 
-export function useAuditTrail<TData = Awaited<ReturnType<typeof auditTrail>>, TError = HTTPValidationError>(
- params: AuditTrailParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditTrail>>, TError, TData>> & Pick<
+export function useListCommissionAudit<TData = Awaited<ReturnType<typeof listCommissionAudit>>, TError = HTTPValidationError>(
+ params: ListCommissionAuditParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionAudit>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof auditTrail>>,
+          Awaited<ReturnType<typeof listCommissionAudit>>,
           TError,
-          Awaited<ReturnType<typeof auditTrail>>
+          Awaited<ReturnType<typeof listCommissionAudit>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useAuditTrail<TData = Awaited<ReturnType<typeof auditTrail>>, TError = HTTPValidationError>(
- params: AuditTrailParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditTrail>>, TError, TData>> & Pick<
+export function useListCommissionAudit<TData = Awaited<ReturnType<typeof listCommissionAudit>>, TError = HTTPValidationError>(
+ params: ListCommissionAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionAudit>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof auditTrail>>,
+          Awaited<ReturnType<typeof listCommissionAudit>>,
           TError,
-          Awaited<ReturnType<typeof auditTrail>>
+          Awaited<ReturnType<typeof listCommissionAudit>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useAuditTrail<TData = Awaited<ReturnType<typeof auditTrail>>, TError = HTTPValidationError>(
- params: AuditTrailParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditTrail>>, TError, TData>>, }
+export function useListCommissionAudit<TData = Awaited<ReturnType<typeof listCommissionAudit>>, TError = HTTPValidationError>(
+ params: ListCommissionAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionAudit>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Audit Trail
  */
 
-export function useAuditTrail<TData = Awaited<ReturnType<typeof auditTrail>>, TError = HTTPValidationError>(
- params: AuditTrailParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditTrail>>, TError, TData>>, }
+export function useListCommissionAudit<TData = Awaited<ReturnType<typeof listCommissionAudit>>, TError = HTTPValidationError>(
+ params: ListCommissionAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommissionAudit>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getAuditTrailQueryOptions(params,options)
+  const queryOptions = getListCommissionAuditQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

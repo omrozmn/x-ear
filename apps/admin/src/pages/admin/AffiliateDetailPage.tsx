@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGetAffiliateDetails, useGetAffiliateCommissions, Commission } from '@/lib/api-client';
+import { useListAffiliateDetails, useListAffiliateCommissions, CommissionRead } from '@/lib/api-client';
 import { Link } from '@tanstack/react-router';
 
 interface AffiliateDetailPageProps {
@@ -8,8 +8,8 @@ interface AffiliateDetailPageProps {
 
 const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }) => {
   const idAsNumber = parseInt(affiliateId, 10);
-  const { data: affiliateData, isLoading: loadingAffiliate } = useGetAffiliateDetails(idAsNumber);
-  const { data: commissionsData, isLoading: loadingCommissions } = useGetAffiliateCommissions(idAsNumber);
+  const { data: affiliateData, isLoading: loadingAffiliate } = useListAffiliateDetails(idAsNumber);
+  const { data: commissionsData, isLoading: loadingCommissions } = useListAffiliateCommissions(idAsNumber);
 
   const affiliate = (affiliateData as any)?.data;
   const commissions = (commissionsData as any)?.data;
@@ -17,7 +17,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
   if (loadingAffiliate) return <div className="p-8 text-center text-gray-500">Yükleniyor...</div>;
   if (!affiliate) return <div className="p-8 text-center text-red-500">Affiliate bulunamadı.</div>;
 
-  const totalEarnings = commissions?.filter((c: Commission) => c.status !== 'cancelled').reduce((sum: number, c: Commission) => sum + c.amount, 0) || 0;
+  const totalEarnings = commissions?.filter((c: CommissionRead) => c.status !== 'cancelled').reduce((sum: number, c: CommissionRead) => sum + c.amount, 0) || 0;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">

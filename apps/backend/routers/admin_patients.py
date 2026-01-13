@@ -23,7 +23,7 @@ class PatientListResponse(ResponseEnvelope):
 class PatientDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=PatientListResponse)
+@router.get("", operation_id="listAdminPatients", response_model=PatientListResponse)
 async def get_all_patients(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -66,7 +66,7 @@ async def get_all_patients(
         logger.error(f"Get all patients error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{patient_id}", response_model=PatientDetailResponse)
+@router.get("/{patient_id}", operation_id="getAdminPatient", response_model=PatientDetailResponse)
 async def get_patient_detail(
     patient_id: str,
     db: Session = Depends(get_db),
@@ -90,7 +90,7 @@ async def get_patient_detail(
         logger.error(f"Get patient detail error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{patient_id}/devices", response_model=ResponseEnvelope)
+@router.get("/{patient_id}/devices", operation_id="listAdminPatientDevices", response_model=ResponseEnvelope)
 async def get_patient_devices(
     patient_id: str,
     db: Session = Depends(get_db),
@@ -110,7 +110,7 @@ async def get_patient_devices(
         logger.error(f"Get patient devices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{patient_id}/sales", response_model=ResponseEnvelope)
+@router.get("/{patient_id}/sales", operation_id="listAdminPatientSales", response_model=ResponseEnvelope)
 async def get_patient_sales(
     patient_id: str,
     db: Session = Depends(get_db),
@@ -130,7 +130,7 @@ async def get_patient_sales(
         logger.error(f"Get patient sales error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{patient_id}/timeline", response_model=ResponseEnvelope)
+@router.get("/{patient_id}/timeline", operation_id="listAdminPatientTimeline", response_model=ResponseEnvelope)
 async def get_patient_timeline(
     patient_id: str,
     db: Session = Depends(get_db),
@@ -152,7 +152,7 @@ async def get_patient_timeline(
         logger.error(f"Get patient timeline error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{patient_id}/documents", response_model=ResponseEnvelope)
+@router.get("/{patient_id}/documents", operation_id="listAdminPatientDocuments", response_model=ResponseEnvelope)
 async def get_patient_documents(
     patient_id: str,
     db: Session = Depends(get_db),

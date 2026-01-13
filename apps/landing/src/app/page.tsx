@@ -1,8 +1,26 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Menu, Users, Ear, FileText, MessageSquare, Archive, BarChart3, Plus, Check } from "lucide-react";
 import AppHeader from "./AppHeader";
+
+import type { Variants } from "framer-motion";
+
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 export default function Home() {
   return (
@@ -17,18 +35,23 @@ export default function Home() {
       <main className="relative z-10">
         {/* Hero Section */}
         <section id="hero" className="min-h-screen flex items-center justify-center text-center pt-24 sm:pt-20 px-4">
-          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-white">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+            className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"
+          >
+            <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-white">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
                 İşitme Merkeziniz
               </span>{" "}
               için Hepsi Bir Arada Çözüm
-            </h1>
-            <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10">
+            </motion.h1>
+            <motion.p variants={fadeInUp} className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10">
               X-Ear, hasta yönetiminden SGK entegrasyonuna kadar tüm süreçlerinizi tek bir platformda birleştirerek
               kliniğinizin verimliliğini ve hasta memnuniyetini en üst düzeye çıkarır.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-md mx-auto sm:max-w-none">
+            </motion.p>
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-md mx-auto sm:max-w-none">
               <Link
                 href="/pricing"
                 className="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-4 px-10 rounded-xl transition text-lg shadow-lg hover:shadow-xl active:scale-95 w-full sm:w-auto text-center min-h-[56px] flex items-center justify-center"
@@ -41,54 +64,66 @@ export default function Home() {
               >
                 Özellikleri Keşfet
               </a>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Features Section */}
         <section id="features" className="py-16 sm:py-20 scroll-mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+              className="text-center mb-16"
+            >
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
                 Neden X-Ear?
               </h2>
               <p className="mt-4 text-lg md:text-xl text-slate-400 max-w-3xl mx-auto">
                 Kliniğinizi geleceğe taşıyacak güçlü ve kullanıcı dostu özellikler.
               </p>
-            </div>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               <FeatureCard
+                delay={0}
                 icon={<Users className="w-7 h-7" />}
                 title="Kapsamlı Hasta Yönetimi"
                 description="Tüm hasta bilgilerinizi, randevularınızı, ve geçmiş işlemlerinizi tek bir yerden kolayca yönetin."
                 color="indigo"
               />
               <FeatureCard
+                delay={0.1}
                 icon={<Ear className="w-7 h-7" />}
                 title="Cihaz Takibi ve Denemeler"
                 description="Stoktaki cihazları, hastaların deneme süreçlerini ve cihaz iadelerini kolayca takip edin."
                 color="purple"
               />
               <FeatureCard
+                delay={0.2}
                 icon={<FileText className="w-7 h-7" />}
                 title="SGK Medula Entegrasyonu"
                 description="E-reçeteleri OCR ile otomatik okuyun, Medula işlemlerini hızlandırın ve hataları en aza indirin."
                 color="pink"
               />
               <FeatureCard
+                delay={0.3}
                 icon={<MessageSquare className="w-7 h-7" />}
                 title="Akıllı SMS Kampanyaları"
                 description="Doğum günü kutlamaları, randevu hatırlatmaları ve özel kampanyalar için otomatik SMS gönderin."
                 color="blue"
               />
               <FeatureCard
+                delay={0.4}
                 icon={<Archive className="w-7 h-7" />}
                 title="Envanter Yönetimi"
                 description="Stok seviyelerinizi anlık olarak izleyin, kritik stok uyarıları alın ve tedarik süreçlerinizi optimize edin."
                 color="green"
               />
               <FeatureCard
+                delay={0.5}
                 icon={<BarChart3 className="w-7 h-7" />}
                 title="Detaylı Raporlama"
                 description="Satış, randevu ve hasta verileri üzerine kurulu detaylı raporlarla kliniğinizin performansını analiz edin."
@@ -120,7 +155,7 @@ export default function Home() {
   );
 }
 
-function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: string }) {
+function FeatureCard({ icon, title, description, color, delay = 0 }: { icon: React.ReactNode; title: string; description: string; color: string; delay?: number }) {
   const colorClasses: Record<string, string> = {
     indigo: "bg-indigo-600/20 text-indigo-400",
     purple: "bg-purple-600/20 text-purple-400",
@@ -131,13 +166,19 @@ function FeatureCard({ icon, title, description, color }: { icon: React.ReactNod
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 transform hover:-translate-y-2 active:scale-98 transition-all duration-300 active:shadow-lg">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, delay }}
+      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 transform hover:-translate-y-2 active:scale-98 transition-all duration-300 active:shadow-lg"
+    >
       <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center mb-4 sm:mb-6 ${colorClasses[color]}`}>
         {icon}
       </div>
       <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">{title}</h3>
       <p className="text-sm sm:text-base text-slate-400">{description}</p>
-    </div>
+    </motion.div>
   );
 }
 

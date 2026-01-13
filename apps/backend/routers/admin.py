@@ -133,7 +133,7 @@ def create_refresh_token(identity: str, additional_claims: dict = None, expires_
 
 # --- Routes ---
 
-@router.post("/auth/login")
+@router.post("/auth/login", operation_id="createAdminAuthLogin")
 def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
     """Admin login endpoint"""
     try:
@@ -179,7 +179,7 @@ def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
         logger.error(f"Admin login error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/users")
+@router.post("/users", operation_id="createAdminUsers")
 def create_admin_user(
     request_data: CreateAdminUserRequest,
     db: Session = Depends(get_db),
@@ -237,7 +237,7 @@ def create_admin_user(
         logger.error(f"Create user error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/users")
+@router.get("/users", operation_id="listAdminUsers")
 def get_admin_users(
     page: int = 1,
     limit: int = 10,
@@ -270,7 +270,7 @@ def get_admin_users(
         logger.error(f"Get admin users error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/users/all")
+@router.get("/users/all", operation_id="listAdminUserAll")
 def get_all_tenant_users(
     page: int = 1,
     limit: int = 10,
@@ -310,7 +310,7 @@ def get_all_tenant_users(
         logger.error(f"Get all tenant users error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/users/all/{user_id}")
+@router.put("/users/all/{user_id}", operation_id="updateAdminUserAll")
 def update_any_tenant_user(
     user_id: str,
     request_data: UpdateTenantUserRequest,
@@ -346,7 +346,7 @@ def update_any_tenant_user(
 
 # --- Tickets ---
 
-@router.get("/tickets")
+@router.get("/tickets", operation_id="listAdminTickets")
 def get_admin_tickets(
     page: int = 1,
     limit: int = 10,
@@ -362,7 +362,7 @@ def get_admin_tickets(
         "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit if limit > 0 else 0}
     })
 
-@router.post("/tickets")
+@router.post("/tickets", operation_id="createAdminTickets")
 def create_admin_ticket(
     request_data: CreateTicketRequest,
     access: UnifiedAccess = Depends(require_admin())
@@ -384,7 +384,7 @@ def create_admin_ticket(
     MOCK_TICKETS.insert(0, ticket)
     return ResponseEnvelope(data={"ticket": ticket})
 
-@router.put("/tickets/{ticket_id}")
+@router.put("/tickets/{ticket_id}", operation_id="updateAdminTicket")
 def update_admin_ticket(
     ticket_id: str,
     request_data: UpdateTicketRequest,
@@ -403,7 +403,7 @@ def update_admin_ticket(
     
     return ResponseEnvelope(data={"ticket": ticket})
 
-@router.post("/tickets/{ticket_id}/responses")
+@router.post("/tickets/{ticket_id}/responses", operation_id="createAdminTicketResponses")
 def create_ticket_response(
     ticket_id: str,
     request_data: TicketResponseRequest,
@@ -418,7 +418,7 @@ def create_ticket_response(
 
 # --- Debug Endpoints ---
 
-@router.post("/debug/switch-role")
+@router.post("/debug/switch-role", operation_id="createAdminDebugSwitchRole")
 def debug_switch_role(
     request_data: SwitchRoleRequest,
     db_session: Session = Depends(get_db),
@@ -471,7 +471,7 @@ def debug_switch_role(
         "realUserEmail": access.user.email
     })
 
-@router.get("/debug/available-roles")
+@router.get("/debug/available-roles", operation_id="listAdminDebugAvailableRoles")
 def debug_available_roles(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -509,7 +509,7 @@ def debug_available_roles(
         } for r in roles]
     })
 
-@router.post("/debug/switch-tenant")
+@router.post("/debug/switch-tenant", operation_id="createAdminDebugSwitchTenant")
 def debug_switch_tenant(
     request_data: SwitchTenantRequest,
     db_session: Session = Depends(get_db),
@@ -551,7 +551,7 @@ def debug_switch_tenant(
         "realUserEmail": access.user.email
     })
 
-@router.post("/debug/exit-impersonation")
+@router.post("/debug/exit-impersonation", operation_id="createAdminDebugExitImpersonation")
 def debug_exit_impersonation(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -572,7 +572,7 @@ def debug_exit_impersonation(
         "isImpersonating": False
     })
 
-@router.get("/debug/page-permissions/{page_key}")
+@router.get("/debug/page-permissions/{page_key}", operation_id="getAdminDebugPagePermission")
 def debug_page_permissions(
     page_key: str,
     db_session: Session = Depends(get_db),

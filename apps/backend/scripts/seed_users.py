@@ -89,6 +89,8 @@ def upsert_user(conn, user: dict, existing_columns: set):
         data['last_name'] = user.get('last_name')
     if 'role' in allowed_keys:
         data['role'] = user.get('role', 'user')
+    if 'is_active' in allowed_keys:
+        data['is_active'] = 1
 
     # Try update if user with same username or email or phone exists
     cur.execute("SELECT id FROM users WHERE username = ? OR email = ? OR phone = ?", (user['username'], user['email'], user.get('phone')))

@@ -22,17 +22,17 @@ import type {
 
 import type {
   HTTPValidationError,
-  ReportAppointmentsParams,
-  ReportCampaignsParams,
-  ReportCashflowSummaryParams,
-  ReportFinancialParams,
-  ReportOverviewParams,
-  ReportPatientsParams,
-  ReportPosMovementsParams,
-  ReportPromissoryNotesByPatientParams,
-  ReportPromissoryNotesListParams,
-  ReportPromissoryNotesParams,
-  ReportRemainingPaymentsParams
+  ListReportAppointmentsParams,
+  ListReportCampaignsParams,
+  ListReportCashflowSummaryParams,
+  ListReportFinancialParams,
+  ListReportOverviewParams,
+  ListReportPatientsParams,
+  ListReportPosMovementsParams,
+  ListReportPromissoryNoteByPatientParams,
+  ListReportPromissoryNoteListParams,
+  ListReportPromissoryNotesParams,
+  ListReportRemainingPaymentsParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -44,8 +44,8 @@ import { customInstance } from '../../orval-mutator';
  * General report overview
  * @summary Report Overview
  */
-export const reportOverview = (
-    params?: ReportOverviewParams,
+export const listReportOverview = (
+    params?: ListReportOverviewParams,
  signal?: AbortSignal
 ) => {
       
@@ -60,69 +60,69 @@ export const reportOverview = (
 
 
 
-export const getReportOverviewQueryKey = (params?: ReportOverviewParams,) => {
+export const getListReportOverviewQueryKey = (params?: ListReportOverviewParams,) => {
     return [
     `/api/reports/overview`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportOverviewQueryOptions = <TData = Awaited<ReturnType<typeof reportOverview>>, TError = HTTPValidationError>(params?: ReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportOverview>>, TError, TData>>, }
+export const getListReportOverviewQueryOptions = <TData = Awaited<ReturnType<typeof listReportOverview>>, TError = HTTPValidationError>(params?: ListReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportOverview>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportOverviewQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportOverviewQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportOverview>>> = ({ signal }) => reportOverview(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportOverview>>> = ({ signal }) => listReportOverview(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportOverview>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportOverview>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof reportOverview>>>
-export type ReportOverviewQueryError = HTTPValidationError
+export type ListReportOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof listReportOverview>>>
+export type ListReportOverviewQueryError = HTTPValidationError
 
 
-export function useReportOverview<TData = Awaited<ReturnType<typeof reportOverview>>, TError = HTTPValidationError>(
- params: undefined |  ReportOverviewParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportOverview>>, TError, TData>> & Pick<
+export function useListReportOverview<TData = Awaited<ReturnType<typeof listReportOverview>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportOverviewParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportOverview>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportOverview>>,
+          Awaited<ReturnType<typeof listReportOverview>>,
           TError,
-          Awaited<ReturnType<typeof reportOverview>>
+          Awaited<ReturnType<typeof listReportOverview>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportOverview<TData = Awaited<ReturnType<typeof reportOverview>>, TError = HTTPValidationError>(
- params?: ReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportOverview>>, TError, TData>> & Pick<
+export function useListReportOverview<TData = Awaited<ReturnType<typeof listReportOverview>>, TError = HTTPValidationError>(
+ params?: ListReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportOverview>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportOverview>>,
+          Awaited<ReturnType<typeof listReportOverview>>,
           TError,
-          Awaited<ReturnType<typeof reportOverview>>
+          Awaited<ReturnType<typeof listReportOverview>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportOverview<TData = Awaited<ReturnType<typeof reportOverview>>, TError = HTTPValidationError>(
- params?: ReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportOverview>>, TError, TData>>, }
+export function useListReportOverview<TData = Awaited<ReturnType<typeof listReportOverview>>, TError = HTTPValidationError>(
+ params?: ListReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportOverview>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Overview
  */
 
-export function useReportOverview<TData = Awaited<ReturnType<typeof reportOverview>>, TError = HTTPValidationError>(
- params?: ReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportOverview>>, TError, TData>>, }
+export function useListReportOverview<TData = Awaited<ReturnType<typeof listReportOverview>>, TError = HTTPValidationError>(
+ params?: ListReportOverviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportOverview>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportOverviewQueryOptions(params,options)
+  const queryOptions = getListReportOverviewQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -138,8 +138,8 @@ export function useReportOverview<TData = Awaited<ReturnType<typeof reportOvervi
  * Patient analysis report
  * @summary Report Patients
  */
-export const reportPatients = (
-    params?: ReportPatientsParams,
+export const listReportPatients = (
+    params?: ListReportPatientsParams,
  signal?: AbortSignal
 ) => {
       
@@ -154,69 +154,69 @@ export const reportPatients = (
 
 
 
-export const getReportPatientsQueryKey = (params?: ReportPatientsParams,) => {
+export const getListReportPatientsQueryKey = (params?: ListReportPatientsParams,) => {
     return [
     `/api/reports/patients`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportPatientsQueryOptions = <TData = Awaited<ReturnType<typeof reportPatients>>, TError = HTTPValidationError>(params?: ReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPatients>>, TError, TData>>, }
+export const getListReportPatientsQueryOptions = <TData = Awaited<ReturnType<typeof listReportPatients>>, TError = HTTPValidationError>(params?: ListReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPatients>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportPatientsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportPatientsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportPatients>>> = ({ signal }) => reportPatients(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportPatients>>> = ({ signal }) => listReportPatients(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportPatients>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportPatients>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportPatientsQueryResult = NonNullable<Awaited<ReturnType<typeof reportPatients>>>
-export type ReportPatientsQueryError = HTTPValidationError
+export type ListReportPatientsQueryResult = NonNullable<Awaited<ReturnType<typeof listReportPatients>>>
+export type ListReportPatientsQueryError = HTTPValidationError
 
 
-export function useReportPatients<TData = Awaited<ReturnType<typeof reportPatients>>, TError = HTTPValidationError>(
- params: undefined |  ReportPatientsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPatients>>, TError, TData>> & Pick<
+export function useListReportPatients<TData = Awaited<ReturnType<typeof listReportPatients>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportPatientsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPatients>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPatients>>,
+          Awaited<ReturnType<typeof listReportPatients>>,
           TError,
-          Awaited<ReturnType<typeof reportPatients>>
+          Awaited<ReturnType<typeof listReportPatients>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPatients<TData = Awaited<ReturnType<typeof reportPatients>>, TError = HTTPValidationError>(
- params?: ReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPatients>>, TError, TData>> & Pick<
+export function useListReportPatients<TData = Awaited<ReturnType<typeof listReportPatients>>, TError = HTTPValidationError>(
+ params?: ListReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPatients>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPatients>>,
+          Awaited<ReturnType<typeof listReportPatients>>,
           TError,
-          Awaited<ReturnType<typeof reportPatients>>
+          Awaited<ReturnType<typeof listReportPatients>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPatients<TData = Awaited<ReturnType<typeof reportPatients>>, TError = HTTPValidationError>(
- params?: ReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPatients>>, TError, TData>>, }
+export function useListReportPatients<TData = Awaited<ReturnType<typeof listReportPatients>>, TError = HTTPValidationError>(
+ params?: ListReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPatients>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Patients
  */
 
-export function useReportPatients<TData = Awaited<ReturnType<typeof reportPatients>>, TError = HTTPValidationError>(
- params?: ReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPatients>>, TError, TData>>, }
+export function useListReportPatients<TData = Awaited<ReturnType<typeof listReportPatients>>, TError = HTTPValidationError>(
+ params?: ListReportPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPatients>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportPatientsQueryOptions(params,options)
+  const queryOptions = getListReportPatientsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -232,8 +232,8 @@ export function useReportPatients<TData = Awaited<ReturnType<typeof reportPatien
  * Financial report
  * @summary Report Financial
  */
-export const reportFinancial = (
-    params?: ReportFinancialParams,
+export const listReportFinancial = (
+    params?: ListReportFinancialParams,
  signal?: AbortSignal
 ) => {
       
@@ -248,69 +248,69 @@ export const reportFinancial = (
 
 
 
-export const getReportFinancialQueryKey = (params?: ReportFinancialParams,) => {
+export const getListReportFinancialQueryKey = (params?: ListReportFinancialParams,) => {
     return [
     `/api/reports/financial`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportFinancialQueryOptions = <TData = Awaited<ReturnType<typeof reportFinancial>>, TError = HTTPValidationError>(params?: ReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportFinancial>>, TError, TData>>, }
+export const getListReportFinancialQueryOptions = <TData = Awaited<ReturnType<typeof listReportFinancial>>, TError = HTTPValidationError>(params?: ListReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportFinancial>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportFinancialQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportFinancialQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportFinancial>>> = ({ signal }) => reportFinancial(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportFinancial>>> = ({ signal }) => listReportFinancial(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportFinancial>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportFinancial>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportFinancialQueryResult = NonNullable<Awaited<ReturnType<typeof reportFinancial>>>
-export type ReportFinancialQueryError = HTTPValidationError
+export type ListReportFinancialQueryResult = NonNullable<Awaited<ReturnType<typeof listReportFinancial>>>
+export type ListReportFinancialQueryError = HTTPValidationError
 
 
-export function useReportFinancial<TData = Awaited<ReturnType<typeof reportFinancial>>, TError = HTTPValidationError>(
- params: undefined |  ReportFinancialParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportFinancial>>, TError, TData>> & Pick<
+export function useListReportFinancial<TData = Awaited<ReturnType<typeof listReportFinancial>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportFinancialParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportFinancial>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportFinancial>>,
+          Awaited<ReturnType<typeof listReportFinancial>>,
           TError,
-          Awaited<ReturnType<typeof reportFinancial>>
+          Awaited<ReturnType<typeof listReportFinancial>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportFinancial<TData = Awaited<ReturnType<typeof reportFinancial>>, TError = HTTPValidationError>(
- params?: ReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportFinancial>>, TError, TData>> & Pick<
+export function useListReportFinancial<TData = Awaited<ReturnType<typeof listReportFinancial>>, TError = HTTPValidationError>(
+ params?: ListReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportFinancial>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportFinancial>>,
+          Awaited<ReturnType<typeof listReportFinancial>>,
           TError,
-          Awaited<ReturnType<typeof reportFinancial>>
+          Awaited<ReturnType<typeof listReportFinancial>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportFinancial<TData = Awaited<ReturnType<typeof reportFinancial>>, TError = HTTPValidationError>(
- params?: ReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportFinancial>>, TError, TData>>, }
+export function useListReportFinancial<TData = Awaited<ReturnType<typeof listReportFinancial>>, TError = HTTPValidationError>(
+ params?: ListReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportFinancial>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Financial
  */
 
-export function useReportFinancial<TData = Awaited<ReturnType<typeof reportFinancial>>, TError = HTTPValidationError>(
- params?: ReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportFinancial>>, TError, TData>>, }
+export function useListReportFinancial<TData = Awaited<ReturnType<typeof listReportFinancial>>, TError = HTTPValidationError>(
+ params?: ListReportFinancialParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportFinancial>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportFinancialQueryOptions(params,options)
+  const queryOptions = getListReportFinancialQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -326,8 +326,8 @@ export function useReportFinancial<TData = Awaited<ReturnType<typeof reportFinan
  * Campaign report
  * @summary Report Campaigns
  */
-export const reportCampaigns = (
-    params?: ReportCampaignsParams,
+export const listReportCampaigns = (
+    params?: ListReportCampaignsParams,
  signal?: AbortSignal
 ) => {
       
@@ -342,69 +342,69 @@ export const reportCampaigns = (
 
 
 
-export const getReportCampaignsQueryKey = (params?: ReportCampaignsParams,) => {
+export const getListReportCampaignsQueryKey = (params?: ListReportCampaignsParams,) => {
     return [
     `/api/reports/campaigns`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportCampaignsQueryOptions = <TData = Awaited<ReturnType<typeof reportCampaigns>>, TError = HTTPValidationError>(params?: ReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCampaigns>>, TError, TData>>, }
+export const getListReportCampaignsQueryOptions = <TData = Awaited<ReturnType<typeof listReportCampaigns>>, TError = HTTPValidationError>(params?: ListReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCampaigns>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportCampaignsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportCampaignsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportCampaigns>>> = ({ signal }) => reportCampaigns(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportCampaigns>>> = ({ signal }) => listReportCampaigns(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportCampaigns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportCampaigns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportCampaignsQueryResult = NonNullable<Awaited<ReturnType<typeof reportCampaigns>>>
-export type ReportCampaignsQueryError = HTTPValidationError
+export type ListReportCampaignsQueryResult = NonNullable<Awaited<ReturnType<typeof listReportCampaigns>>>
+export type ListReportCampaignsQueryError = HTTPValidationError
 
 
-export function useReportCampaigns<TData = Awaited<ReturnType<typeof reportCampaigns>>, TError = HTTPValidationError>(
- params: undefined |  ReportCampaignsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCampaigns>>, TError, TData>> & Pick<
+export function useListReportCampaigns<TData = Awaited<ReturnType<typeof listReportCampaigns>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportCampaignsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCampaigns>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportCampaigns>>,
+          Awaited<ReturnType<typeof listReportCampaigns>>,
           TError,
-          Awaited<ReturnType<typeof reportCampaigns>>
+          Awaited<ReturnType<typeof listReportCampaigns>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportCampaigns<TData = Awaited<ReturnType<typeof reportCampaigns>>, TError = HTTPValidationError>(
- params?: ReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCampaigns>>, TError, TData>> & Pick<
+export function useListReportCampaigns<TData = Awaited<ReturnType<typeof listReportCampaigns>>, TError = HTTPValidationError>(
+ params?: ListReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCampaigns>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportCampaigns>>,
+          Awaited<ReturnType<typeof listReportCampaigns>>,
           TError,
-          Awaited<ReturnType<typeof reportCampaigns>>
+          Awaited<ReturnType<typeof listReportCampaigns>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportCampaigns<TData = Awaited<ReturnType<typeof reportCampaigns>>, TError = HTTPValidationError>(
- params?: ReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCampaigns>>, TError, TData>>, }
+export function useListReportCampaigns<TData = Awaited<ReturnType<typeof listReportCampaigns>>, TError = HTTPValidationError>(
+ params?: ListReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCampaigns>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Campaigns
  */
 
-export function useReportCampaigns<TData = Awaited<ReturnType<typeof reportCampaigns>>, TError = HTTPValidationError>(
- params?: ReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCampaigns>>, TError, TData>>, }
+export function useListReportCampaigns<TData = Awaited<ReturnType<typeof listReportCampaigns>>, TError = HTTPValidationError>(
+ params?: ListReportCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCampaigns>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportCampaignsQueryOptions(params,options)
+  const queryOptions = getListReportCampaignsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -420,7 +420,7 @@ export function useReportCampaigns<TData = Awaited<ReturnType<typeof reportCampa
  * Revenue report placeholder
  * @summary Report Revenue
  */
-export const reportRevenue = (
+export const listReportRevenue = (
     
  signal?: AbortSignal
 ) => {
@@ -435,69 +435,69 @@ export const reportRevenue = (
 
 
 
-export const getReportRevenueQueryKey = () => {
+export const getListReportRevenueQueryKey = () => {
     return [
     `/api/reports/revenue`
     ] as const;
     }
 
     
-export const getReportRevenueQueryOptions = <TData = Awaited<ReturnType<typeof reportRevenue>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRevenue>>, TError, TData>>, }
+export const getListReportRevenueQueryOptions = <TData = Awaited<ReturnType<typeof listReportRevenue>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRevenue>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportRevenueQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListReportRevenueQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportRevenue>>> = ({ signal }) => reportRevenue(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportRevenue>>> = ({ signal }) => listReportRevenue(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportRevenue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportRevenue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportRevenueQueryResult = NonNullable<Awaited<ReturnType<typeof reportRevenue>>>
-export type ReportRevenueQueryError = unknown
+export type ListReportRevenueQueryResult = NonNullable<Awaited<ReturnType<typeof listReportRevenue>>>
+export type ListReportRevenueQueryError = unknown
 
 
-export function useReportRevenue<TData = Awaited<ReturnType<typeof reportRevenue>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRevenue>>, TError, TData>> & Pick<
+export function useListReportRevenue<TData = Awaited<ReturnType<typeof listReportRevenue>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRevenue>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportRevenue>>,
+          Awaited<ReturnType<typeof listReportRevenue>>,
           TError,
-          Awaited<ReturnType<typeof reportRevenue>>
+          Awaited<ReturnType<typeof listReportRevenue>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportRevenue<TData = Awaited<ReturnType<typeof reportRevenue>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRevenue>>, TError, TData>> & Pick<
+export function useListReportRevenue<TData = Awaited<ReturnType<typeof listReportRevenue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRevenue>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportRevenue>>,
+          Awaited<ReturnType<typeof listReportRevenue>>,
           TError,
-          Awaited<ReturnType<typeof reportRevenue>>
+          Awaited<ReturnType<typeof listReportRevenue>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportRevenue<TData = Awaited<ReturnType<typeof reportRevenue>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRevenue>>, TError, TData>>, }
+export function useListReportRevenue<TData = Awaited<ReturnType<typeof listReportRevenue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRevenue>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Revenue
  */
 
-export function useReportRevenue<TData = Awaited<ReturnType<typeof reportRevenue>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRevenue>>, TError, TData>>, }
+export function useListReportRevenue<TData = Awaited<ReturnType<typeof listReportRevenue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRevenue>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportRevenueQueryOptions(options)
+  const queryOptions = getListReportRevenueQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -513,8 +513,8 @@ export function useReportRevenue<TData = Awaited<ReturnType<typeof reportRevenue
  * Appointments report placeholder
  * @summary Report Appointments
  */
-export const reportAppointments = (
-    params?: ReportAppointmentsParams,
+export const listReportAppointments = (
+    params?: ListReportAppointmentsParams,
  signal?: AbortSignal
 ) => {
       
@@ -529,69 +529,69 @@ export const reportAppointments = (
 
 
 
-export const getReportAppointmentsQueryKey = (params?: ReportAppointmentsParams,) => {
+export const getListReportAppointmentsQueryKey = (params?: ListReportAppointmentsParams,) => {
     return [
     `/api/reports/appointments`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof reportAppointments>>, TError = HTTPValidationError>(params?: ReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportAppointments>>, TError, TData>>, }
+export const getListReportAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof listReportAppointments>>, TError = HTTPValidationError>(params?: ListReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportAppointments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportAppointmentsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportAppointmentsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportAppointments>>> = ({ signal }) => reportAppointments(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportAppointments>>> = ({ signal }) => listReportAppointments(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof reportAppointments>>>
-export type ReportAppointmentsQueryError = HTTPValidationError
+export type ListReportAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof listReportAppointments>>>
+export type ListReportAppointmentsQueryError = HTTPValidationError
 
 
-export function useReportAppointments<TData = Awaited<ReturnType<typeof reportAppointments>>, TError = HTTPValidationError>(
- params: undefined |  ReportAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportAppointments>>, TError, TData>> & Pick<
+export function useListReportAppointments<TData = Awaited<ReturnType<typeof listReportAppointments>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportAppointments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportAppointments>>,
+          Awaited<ReturnType<typeof listReportAppointments>>,
           TError,
-          Awaited<ReturnType<typeof reportAppointments>>
+          Awaited<ReturnType<typeof listReportAppointments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportAppointments<TData = Awaited<ReturnType<typeof reportAppointments>>, TError = HTTPValidationError>(
- params?: ReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportAppointments>>, TError, TData>> & Pick<
+export function useListReportAppointments<TData = Awaited<ReturnType<typeof listReportAppointments>>, TError = HTTPValidationError>(
+ params?: ListReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportAppointments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportAppointments>>,
+          Awaited<ReturnType<typeof listReportAppointments>>,
           TError,
-          Awaited<ReturnType<typeof reportAppointments>>
+          Awaited<ReturnType<typeof listReportAppointments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportAppointments<TData = Awaited<ReturnType<typeof reportAppointments>>, TError = HTTPValidationError>(
- params?: ReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportAppointments>>, TError, TData>>, }
+export function useListReportAppointments<TData = Awaited<ReturnType<typeof listReportAppointments>>, TError = HTTPValidationError>(
+ params?: ListReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportAppointments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Appointments
  */
 
-export function useReportAppointments<TData = Awaited<ReturnType<typeof reportAppointments>>, TError = HTTPValidationError>(
- params?: ReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportAppointments>>, TError, TData>>, }
+export function useListReportAppointments<TData = Awaited<ReturnType<typeof listReportAppointments>>, TError = HTTPValidationError>(
+ params?: ListReportAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportAppointments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportAppointmentsQueryOptions(params,options)
+  const queryOptions = getListReportAppointmentsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -607,8 +607,8 @@ export function useReportAppointments<TData = Awaited<ReturnType<typeof reportAp
  * Promissory notes report
  * @summary Report Promissory Notes
  */
-export const reportPromissoryNotes = (
-    params?: ReportPromissoryNotesParams,
+export const listReportPromissoryNotes = (
+    params?: ListReportPromissoryNotesParams,
  signal?: AbortSignal
 ) => {
       
@@ -623,69 +623,69 @@ export const reportPromissoryNotes = (
 
 
 
-export const getReportPromissoryNotesQueryKey = (params?: ReportPromissoryNotesParams,) => {
+export const getListReportPromissoryNotesQueryKey = (params?: ListReportPromissoryNotesParams,) => {
     return [
     `/api/reports/promissory-notes`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportPromissoryNotesQueryOptions = <TData = Awaited<ReturnType<typeof reportPromissoryNotes>>, TError = HTTPValidationError>(params?: ReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotes>>, TError, TData>>, }
+export const getListReportPromissoryNotesQueryOptions = <TData = Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError = HTTPValidationError>(params?: ListReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportPromissoryNotesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportPromissoryNotesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportPromissoryNotes>>> = ({ signal }) => reportPromissoryNotes(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportPromissoryNotes>>> = ({ signal }) => listReportPromissoryNotes(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportPromissoryNotesQueryResult = NonNullable<Awaited<ReturnType<typeof reportPromissoryNotes>>>
-export type ReportPromissoryNotesQueryError = HTTPValidationError
+export type ListReportPromissoryNotesQueryResult = NonNullable<Awaited<ReturnType<typeof listReportPromissoryNotes>>>
+export type ListReportPromissoryNotesQueryError = HTTPValidationError
 
 
-export function useReportPromissoryNotes<TData = Awaited<ReturnType<typeof reportPromissoryNotes>>, TError = HTTPValidationError>(
- params: undefined |  ReportPromissoryNotesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotes>>, TError, TData>> & Pick<
+export function useListReportPromissoryNotes<TData = Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportPromissoryNotesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPromissoryNotes>>,
+          Awaited<ReturnType<typeof listReportPromissoryNotes>>,
           TError,
-          Awaited<ReturnType<typeof reportPromissoryNotes>>
+          Awaited<ReturnType<typeof listReportPromissoryNotes>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPromissoryNotes<TData = Awaited<ReturnType<typeof reportPromissoryNotes>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotes>>, TError, TData>> & Pick<
+export function useListReportPromissoryNotes<TData = Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPromissoryNotes>>,
+          Awaited<ReturnType<typeof listReportPromissoryNotes>>,
           TError,
-          Awaited<ReturnType<typeof reportPromissoryNotes>>
+          Awaited<ReturnType<typeof listReportPromissoryNotes>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPromissoryNotes<TData = Awaited<ReturnType<typeof reportPromissoryNotes>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotes>>, TError, TData>>, }
+export function useListReportPromissoryNotes<TData = Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Promissory Notes
  */
 
-export function useReportPromissoryNotes<TData = Awaited<ReturnType<typeof reportPromissoryNotes>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotes>>, TError, TData>>, }
+export function useListReportPromissoryNotes<TData = Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNotes>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportPromissoryNotesQueryOptions(params,options)
+  const queryOptions = getListReportPromissoryNotesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -701,8 +701,8 @@ export function useReportPromissoryNotes<TData = Awaited<ReturnType<typeof repor
  * Patient promissory notes summary
  * @summary Report Promissory Notes By Patient
  */
-export const reportPromissoryNotesByPatient = (
-    params?: ReportPromissoryNotesByPatientParams,
+export const listReportPromissoryNoteByPatient = (
+    params?: ListReportPromissoryNoteByPatientParams,
  signal?: AbortSignal
 ) => {
       
@@ -717,69 +717,69 @@ export const reportPromissoryNotesByPatient = (
 
 
 
-export const getReportPromissoryNotesByPatientQueryKey = (params?: ReportPromissoryNotesByPatientParams,) => {
+export const getListReportPromissoryNoteByPatientQueryKey = (params?: ListReportPromissoryNoteByPatientParams,) => {
     return [
     `/api/reports/promissory-notes/by-patient`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportPromissoryNotesByPatientQueryOptions = <TData = Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError = HTTPValidationError>(params?: ReportPromissoryNotesByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError, TData>>, }
+export const getListReportPromissoryNoteByPatientQueryOptions = <TData = Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError = HTTPValidationError>(params?: ListReportPromissoryNoteByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportPromissoryNotesByPatientQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportPromissoryNoteByPatientQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>> = ({ signal }) => reportPromissoryNotesByPatient(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>> = ({ signal }) => listReportPromissoryNoteByPatient(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportPromissoryNotesByPatientQueryResult = NonNullable<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>>
-export type ReportPromissoryNotesByPatientQueryError = HTTPValidationError
+export type ListReportPromissoryNoteByPatientQueryResult = NonNullable<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>>
+export type ListReportPromissoryNoteByPatientQueryError = HTTPValidationError
 
 
-export function useReportPromissoryNotesByPatient<TData = Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError = HTTPValidationError>(
- params: undefined |  ReportPromissoryNotesByPatientParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError, TData>> & Pick<
+export function useListReportPromissoryNoteByPatient<TData = Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportPromissoryNoteByPatientParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>,
+          Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>,
           TError,
-          Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>
+          Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPromissoryNotesByPatient<TData = Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError, TData>> & Pick<
+export function useListReportPromissoryNoteByPatient<TData = Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNoteByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>,
+          Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>,
           TError,
-          Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>
+          Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPromissoryNotesByPatient<TData = Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError, TData>>, }
+export function useListReportPromissoryNoteByPatient<TData = Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNoteByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Promissory Notes By Patient
  */
 
-export function useReportPromissoryNotesByPatient<TData = Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesByPatient>>, TError, TData>>, }
+export function useListReportPromissoryNoteByPatient<TData = Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNoteByPatientParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteByPatient>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportPromissoryNotesByPatientQueryOptions(params,options)
+  const queryOptions = getListReportPromissoryNoteByPatientQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -795,8 +795,8 @@ export function useReportPromissoryNotesByPatient<TData = Awaited<ReturnType<typ
  * Detailed promissory notes list report
  * @summary Report Promissory Notes List
  */
-export const reportPromissoryNotesList = (
-    params?: ReportPromissoryNotesListParams,
+export const listReportPromissoryNoteList = (
+    params?: ListReportPromissoryNoteListParams,
  signal?: AbortSignal
 ) => {
       
@@ -811,69 +811,69 @@ export const reportPromissoryNotesList = (
 
 
 
-export const getReportPromissoryNotesListQueryKey = (params?: ReportPromissoryNotesListParams,) => {
+export const getListReportPromissoryNoteListQueryKey = (params?: ListReportPromissoryNoteListParams,) => {
     return [
     `/api/reports/promissory-notes/list`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportPromissoryNotesListQueryOptions = <TData = Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError = HTTPValidationError>(params?: ReportPromissoryNotesListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError, TData>>, }
+export const getListReportPromissoryNoteListQueryOptions = <TData = Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError = HTTPValidationError>(params?: ListReportPromissoryNoteListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportPromissoryNotesListQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportPromissoryNoteListQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportPromissoryNotesList>>> = ({ signal }) => reportPromissoryNotesList(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportPromissoryNoteList>>> = ({ signal }) => listReportPromissoryNoteList(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportPromissoryNotesListQueryResult = NonNullable<Awaited<ReturnType<typeof reportPromissoryNotesList>>>
-export type ReportPromissoryNotesListQueryError = HTTPValidationError
+export type ListReportPromissoryNoteListQueryResult = NonNullable<Awaited<ReturnType<typeof listReportPromissoryNoteList>>>
+export type ListReportPromissoryNoteListQueryError = HTTPValidationError
 
 
-export function useReportPromissoryNotesList<TData = Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError = HTTPValidationError>(
- params: undefined |  ReportPromissoryNotesListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError, TData>> & Pick<
+export function useListReportPromissoryNoteList<TData = Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportPromissoryNoteListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPromissoryNotesList>>,
+          Awaited<ReturnType<typeof listReportPromissoryNoteList>>,
           TError,
-          Awaited<ReturnType<typeof reportPromissoryNotesList>>
+          Awaited<ReturnType<typeof listReportPromissoryNoteList>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPromissoryNotesList<TData = Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError, TData>> & Pick<
+export function useListReportPromissoryNoteList<TData = Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNoteListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPromissoryNotesList>>,
+          Awaited<ReturnType<typeof listReportPromissoryNoteList>>,
           TError,
-          Awaited<ReturnType<typeof reportPromissoryNotesList>>
+          Awaited<ReturnType<typeof listReportPromissoryNoteList>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPromissoryNotesList<TData = Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError, TData>>, }
+export function useListReportPromissoryNoteList<TData = Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNoteListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Promissory Notes List
  */
 
-export function useReportPromissoryNotesList<TData = Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError = HTTPValidationError>(
- params?: ReportPromissoryNotesListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPromissoryNotesList>>, TError, TData>>, }
+export function useListReportPromissoryNoteList<TData = Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError = HTTPValidationError>(
+ params?: ListReportPromissoryNoteListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPromissoryNoteList>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportPromissoryNotesListQueryOptions(params,options)
+  const queryOptions = getListReportPromissoryNoteListQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -889,8 +889,8 @@ export function useReportPromissoryNotesList<TData = Awaited<ReturnType<typeof r
  * Remaining payments report
  * @summary Report Remaining Payments
  */
-export const reportRemainingPayments = (
-    params?: ReportRemainingPaymentsParams,
+export const listReportRemainingPayments = (
+    params?: ListReportRemainingPaymentsParams,
  signal?: AbortSignal
 ) => {
       
@@ -905,69 +905,69 @@ export const reportRemainingPayments = (
 
 
 
-export const getReportRemainingPaymentsQueryKey = (params?: ReportRemainingPaymentsParams,) => {
+export const getListReportRemainingPaymentsQueryKey = (params?: ListReportRemainingPaymentsParams,) => {
     return [
     `/api/reports/remaining-payments`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportRemainingPaymentsQueryOptions = <TData = Awaited<ReturnType<typeof reportRemainingPayments>>, TError = HTTPValidationError>(params?: ReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRemainingPayments>>, TError, TData>>, }
+export const getListReportRemainingPaymentsQueryOptions = <TData = Awaited<ReturnType<typeof listReportRemainingPayments>>, TError = HTTPValidationError>(params?: ListReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRemainingPayments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportRemainingPaymentsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportRemainingPaymentsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportRemainingPayments>>> = ({ signal }) => reportRemainingPayments(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportRemainingPayments>>> = ({ signal }) => listReportRemainingPayments(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportRemainingPayments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportRemainingPayments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportRemainingPaymentsQueryResult = NonNullable<Awaited<ReturnType<typeof reportRemainingPayments>>>
-export type ReportRemainingPaymentsQueryError = HTTPValidationError
+export type ListReportRemainingPaymentsQueryResult = NonNullable<Awaited<ReturnType<typeof listReportRemainingPayments>>>
+export type ListReportRemainingPaymentsQueryError = HTTPValidationError
 
 
-export function useReportRemainingPayments<TData = Awaited<ReturnType<typeof reportRemainingPayments>>, TError = HTTPValidationError>(
- params: undefined |  ReportRemainingPaymentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRemainingPayments>>, TError, TData>> & Pick<
+export function useListReportRemainingPayments<TData = Awaited<ReturnType<typeof listReportRemainingPayments>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportRemainingPaymentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRemainingPayments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportRemainingPayments>>,
+          Awaited<ReturnType<typeof listReportRemainingPayments>>,
           TError,
-          Awaited<ReturnType<typeof reportRemainingPayments>>
+          Awaited<ReturnType<typeof listReportRemainingPayments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportRemainingPayments<TData = Awaited<ReturnType<typeof reportRemainingPayments>>, TError = HTTPValidationError>(
- params?: ReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRemainingPayments>>, TError, TData>> & Pick<
+export function useListReportRemainingPayments<TData = Awaited<ReturnType<typeof listReportRemainingPayments>>, TError = HTTPValidationError>(
+ params?: ListReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRemainingPayments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportRemainingPayments>>,
+          Awaited<ReturnType<typeof listReportRemainingPayments>>,
           TError,
-          Awaited<ReturnType<typeof reportRemainingPayments>>
+          Awaited<ReturnType<typeof listReportRemainingPayments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportRemainingPayments<TData = Awaited<ReturnType<typeof reportRemainingPayments>>, TError = HTTPValidationError>(
- params?: ReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRemainingPayments>>, TError, TData>>, }
+export function useListReportRemainingPayments<TData = Awaited<ReturnType<typeof listReportRemainingPayments>>, TError = HTTPValidationError>(
+ params?: ListReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRemainingPayments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Remaining Payments
  */
 
-export function useReportRemainingPayments<TData = Awaited<ReturnType<typeof reportRemainingPayments>>, TError = HTTPValidationError>(
- params?: ReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportRemainingPayments>>, TError, TData>>, }
+export function useListReportRemainingPayments<TData = Awaited<ReturnType<typeof listReportRemainingPayments>>, TError = HTTPValidationError>(
+ params?: ListReportRemainingPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportRemainingPayments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportRemainingPaymentsQueryOptions(params,options)
+  const queryOptions = getListReportRemainingPaymentsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -983,8 +983,8 @@ export function useReportRemainingPayments<TData = Awaited<ReturnType<typeof rep
  * Cashflow summary report
  * @summary Report Cashflow Summary
  */
-export const reportCashflowSummary = (
-    params?: ReportCashflowSummaryParams,
+export const listReportCashflowSummary = (
+    params?: ListReportCashflowSummaryParams,
  signal?: AbortSignal
 ) => {
       
@@ -999,69 +999,69 @@ export const reportCashflowSummary = (
 
 
 
-export const getReportCashflowSummaryQueryKey = (params?: ReportCashflowSummaryParams,) => {
+export const getListReportCashflowSummaryQueryKey = (params?: ListReportCashflowSummaryParams,) => {
     return [
     `/api/reports/cashflow-summary`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportCashflowSummaryQueryOptions = <TData = Awaited<ReturnType<typeof reportCashflowSummary>>, TError = HTTPValidationError>(params?: ReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCashflowSummary>>, TError, TData>>, }
+export const getListReportCashflowSummaryQueryOptions = <TData = Awaited<ReturnType<typeof listReportCashflowSummary>>, TError = HTTPValidationError>(params?: ListReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCashflowSummary>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportCashflowSummaryQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportCashflowSummaryQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportCashflowSummary>>> = ({ signal }) => reportCashflowSummary(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportCashflowSummary>>> = ({ signal }) => listReportCashflowSummary(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportCashflowSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportCashflowSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportCashflowSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof reportCashflowSummary>>>
-export type ReportCashflowSummaryQueryError = HTTPValidationError
+export type ListReportCashflowSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof listReportCashflowSummary>>>
+export type ListReportCashflowSummaryQueryError = HTTPValidationError
 
 
-export function useReportCashflowSummary<TData = Awaited<ReturnType<typeof reportCashflowSummary>>, TError = HTTPValidationError>(
- params: undefined |  ReportCashflowSummaryParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCashflowSummary>>, TError, TData>> & Pick<
+export function useListReportCashflowSummary<TData = Awaited<ReturnType<typeof listReportCashflowSummary>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportCashflowSummaryParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCashflowSummary>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportCashflowSummary>>,
+          Awaited<ReturnType<typeof listReportCashflowSummary>>,
           TError,
-          Awaited<ReturnType<typeof reportCashflowSummary>>
+          Awaited<ReturnType<typeof listReportCashflowSummary>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportCashflowSummary<TData = Awaited<ReturnType<typeof reportCashflowSummary>>, TError = HTTPValidationError>(
- params?: ReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCashflowSummary>>, TError, TData>> & Pick<
+export function useListReportCashflowSummary<TData = Awaited<ReturnType<typeof listReportCashflowSummary>>, TError = HTTPValidationError>(
+ params?: ListReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCashflowSummary>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportCashflowSummary>>,
+          Awaited<ReturnType<typeof listReportCashflowSummary>>,
           TError,
-          Awaited<ReturnType<typeof reportCashflowSummary>>
+          Awaited<ReturnType<typeof listReportCashflowSummary>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportCashflowSummary<TData = Awaited<ReturnType<typeof reportCashflowSummary>>, TError = HTTPValidationError>(
- params?: ReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCashflowSummary>>, TError, TData>>, }
+export function useListReportCashflowSummary<TData = Awaited<ReturnType<typeof listReportCashflowSummary>>, TError = HTTPValidationError>(
+ params?: ListReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCashflowSummary>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Cashflow Summary
  */
 
-export function useReportCashflowSummary<TData = Awaited<ReturnType<typeof reportCashflowSummary>>, TError = HTTPValidationError>(
- params?: ReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportCashflowSummary>>, TError, TData>>, }
+export function useListReportCashflowSummary<TData = Awaited<ReturnType<typeof listReportCashflowSummary>>, TError = HTTPValidationError>(
+ params?: ListReportCashflowSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportCashflowSummary>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportCashflowSummaryQueryOptions(params,options)
+  const queryOptions = getListReportCashflowSummaryQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1077,8 +1077,8 @@ export function useReportCashflowSummary<TData = Awaited<ReturnType<typeof repor
  * POS movements report
  * @summary Report Pos Movements
  */
-export const reportPosMovements = (
-    params?: ReportPosMovementsParams,
+export const listReportPosMovements = (
+    params?: ListReportPosMovementsParams,
  signal?: AbortSignal
 ) => {
       
@@ -1093,69 +1093,69 @@ export const reportPosMovements = (
 
 
 
-export const getReportPosMovementsQueryKey = (params?: ReportPosMovementsParams,) => {
+export const getListReportPosMovementsQueryKey = (params?: ListReportPosMovementsParams,) => {
     return [
     `/api/reports/pos-movements`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getReportPosMovementsQueryOptions = <TData = Awaited<ReturnType<typeof reportPosMovements>>, TError = HTTPValidationError>(params?: ReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPosMovements>>, TError, TData>>, }
+export const getListReportPosMovementsQueryOptions = <TData = Awaited<ReturnType<typeof listReportPosMovements>>, TError = HTTPValidationError>(params?: ListReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPosMovements>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getReportPosMovementsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListReportPosMovementsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportPosMovements>>> = ({ signal }) => reportPosMovements(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportPosMovements>>> = ({ signal }) => listReportPosMovements(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportPosMovements>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportPosMovements>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ReportPosMovementsQueryResult = NonNullable<Awaited<ReturnType<typeof reportPosMovements>>>
-export type ReportPosMovementsQueryError = HTTPValidationError
+export type ListReportPosMovementsQueryResult = NonNullable<Awaited<ReturnType<typeof listReportPosMovements>>>
+export type ListReportPosMovementsQueryError = HTTPValidationError
 
 
-export function useReportPosMovements<TData = Awaited<ReturnType<typeof reportPosMovements>>, TError = HTTPValidationError>(
- params: undefined |  ReportPosMovementsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPosMovements>>, TError, TData>> & Pick<
+export function useListReportPosMovements<TData = Awaited<ReturnType<typeof listReportPosMovements>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportPosMovementsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPosMovements>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPosMovements>>,
+          Awaited<ReturnType<typeof listReportPosMovements>>,
           TError,
-          Awaited<ReturnType<typeof reportPosMovements>>
+          Awaited<ReturnType<typeof listReportPosMovements>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPosMovements<TData = Awaited<ReturnType<typeof reportPosMovements>>, TError = HTTPValidationError>(
- params?: ReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPosMovements>>, TError, TData>> & Pick<
+export function useListReportPosMovements<TData = Awaited<ReturnType<typeof listReportPosMovements>>, TError = HTTPValidationError>(
+ params?: ListReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPosMovements>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof reportPosMovements>>,
+          Awaited<ReturnType<typeof listReportPosMovements>>,
           TError,
-          Awaited<ReturnType<typeof reportPosMovements>>
+          Awaited<ReturnType<typeof listReportPosMovements>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useReportPosMovements<TData = Awaited<ReturnType<typeof reportPosMovements>>, TError = HTTPValidationError>(
- params?: ReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPosMovements>>, TError, TData>>, }
+export function useListReportPosMovements<TData = Awaited<ReturnType<typeof listReportPosMovements>>, TError = HTTPValidationError>(
+ params?: ListReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPosMovements>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Report Pos Movements
  */
 
-export function useReportPosMovements<TData = Awaited<ReturnType<typeof reportPosMovements>>, TError = HTTPValidationError>(
- params?: ReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportPosMovements>>, TError, TData>>, }
+export function useListReportPosMovements<TData = Awaited<ReturnType<typeof listReportPosMovements>>, TError = HTTPValidationError>(
+ params?: ListReportPosMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportPosMovements>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getReportPosMovementsQueryOptions(params,options)
+  const queryOptions = getListReportPosMovementsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

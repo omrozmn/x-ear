@@ -21,8 +21,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminPosTransactionsParams,
   HTTPValidationError,
+  ListAdminPaymentPoTransactionsParams,
   PaymentListResponse
 } from '.././schemas';
 
@@ -35,8 +35,8 @@ import { customInstance } from '../../orval-mutator';
  * Get all POS transactions for admin panel
  * @summary Get Pos Transactions
  */
-export const getAdminPosTransactions = (
-    params?: GetAdminPosTransactionsParams,
+export const listAdminPaymentPoTransactions = (
+    params?: ListAdminPaymentPoTransactionsParams,
  signal?: AbortSignal
 ) => {
       
@@ -51,69 +51,69 @@ export const getAdminPosTransactions = (
 
 
 
-export const getGetAdminPosTransactionsQueryKey = (params?: GetAdminPosTransactionsParams,) => {
+export const getListAdminPaymentPoTransactionsQueryKey = (params?: ListAdminPaymentPoTransactionsParams,) => {
     return [
     `/api/admin/payments/pos/transactions`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminPosTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminPosTransactions>>, TError = HTTPValidationError>(params?: GetAdminPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPosTransactions>>, TError, TData>>, }
+export const getListAdminPaymentPoTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError = HTTPValidationError>(params?: ListAdminPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminPosTransactionsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminPaymentPoTransactionsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminPosTransactions>>> = ({ signal }) => getAdminPosTransactions(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>> = ({ signal }) => listAdminPaymentPoTransactions(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminPosTransactions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminPosTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminPosTransactions>>>
-export type GetAdminPosTransactionsQueryError = HTTPValidationError
+export type ListAdminPaymentPoTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>>
+export type ListAdminPaymentPoTransactionsQueryError = HTTPValidationError
 
 
-export function useGetAdminPosTransactions<TData = Awaited<ReturnType<typeof getAdminPosTransactions>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminPosTransactionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPosTransactions>>, TError, TData>> & Pick<
+export function useListAdminPaymentPoTransactions<TData = Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminPaymentPoTransactionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPosTransactions>>,
+          Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>,
           TError,
-          Awaited<ReturnType<typeof getAdminPosTransactions>>
+          Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPosTransactions<TData = Awaited<ReturnType<typeof getAdminPosTransactions>>, TError = HTTPValidationError>(
- params?: GetAdminPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPosTransactions>>, TError, TData>> & Pick<
+export function useListAdminPaymentPoTransactions<TData = Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params?: ListAdminPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPosTransactions>>,
+          Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>,
           TError,
-          Awaited<ReturnType<typeof getAdminPosTransactions>>
+          Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPosTransactions<TData = Awaited<ReturnType<typeof getAdminPosTransactions>>, TError = HTTPValidationError>(
- params?: GetAdminPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPosTransactions>>, TError, TData>>, }
+export function useListAdminPaymentPoTransactions<TData = Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params?: ListAdminPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Pos Transactions
  */
 
-export function useGetAdminPosTransactions<TData = Awaited<ReturnType<typeof getAdminPosTransactions>>, TError = HTTPValidationError>(
- params?: GetAdminPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPosTransactions>>, TError, TData>>, }
+export function useListAdminPaymentPoTransactions<TData = Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params?: ListAdminPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPaymentPoTransactions>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminPosTransactionsQueryOptions(params,options)
+  const queryOptions = getListAdminPaymentPoTransactionsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

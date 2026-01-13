@@ -41,7 +41,7 @@ import { customInstance } from '../../orval-mutator';
  * Get all branches for the current tenant
  * @summary Get Branches
  */
-export const getBranches = (
+export const listBranches = (
     
  signal?: AbortSignal
 ) => {
@@ -56,69 +56,69 @@ export const getBranches = (
 
 
 
-export const getGetBranchesQueryKey = () => {
+export const getListBranchesQueryKey = () => {
     return [
     `/api/branches`
     ] as const;
     }
 
     
-export const getGetBranchesQueryOptions = <TData = Awaited<ReturnType<typeof getBranches>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export const getListBranchesQueryOptions = <TData = Awaited<ReturnType<typeof listBranches>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBranches>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetBranchesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListBranchesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranches>>> = ({ signal }) => getBranches(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBranches>>> = ({ signal }) => listBranches(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof getBranches>>>
-export type GetBranchesQueryError = unknown
+export type ListBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof listBranches>>>
+export type ListBranchesQueryError = unknown
 
 
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
+export function useListBranches<TData = Awaited<ReturnType<typeof listBranches>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBranches>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranches>>,
+          Awaited<ReturnType<typeof listBranches>>,
           TError,
-          Awaited<ReturnType<typeof getBranches>>
+          Awaited<ReturnType<typeof listBranches>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
+export function useListBranches<TData = Awaited<ReturnType<typeof listBranches>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBranches>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranches>>,
+          Awaited<ReturnType<typeof listBranches>>,
           TError,
-          Awaited<ReturnType<typeof getBranches>>
+          Awaited<ReturnType<typeof listBranches>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export function useListBranches<TData = Awaited<ReturnType<typeof listBranches>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBranches>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Branches
  */
 
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export function useListBranches<TData = Awaited<ReturnType<typeof listBranches>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBranches>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetBranchesQueryOptions(options)
+  const queryOptions = getListBranchesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -134,7 +134,7 @@ export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, 
  * Create a new branch
  * @summary Create Branch
  */
-export const createBranch = (
+export const createBranches = (
     branchCreate: BranchCreate,
  signal?: AbortSignal
 ) => {
@@ -150,11 +150,11 @@ export const createBranch = (
   
 
 
-export const getCreateBranchMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBranch>>, TError,{data: BranchCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createBranch>>, TError,{data: BranchCreate}, TContext> => {
+export const getCreateBranchesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBranches>>, TError,{data: BranchCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createBranches>>, TError,{data: BranchCreate}, TContext> => {
 
-const mutationKey = ['createBranch'];
+const mutationKey = ['createBranches'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -164,10 +164,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBranch>>, {data: BranchCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBranches>>, {data: BranchCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createBranch(data,)
+          return  createBranches(data,)
         }
 
         
@@ -175,23 +175,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateBranchMutationResult = NonNullable<Awaited<ReturnType<typeof createBranch>>>
-    export type CreateBranchMutationBody = BranchCreate
-    export type CreateBranchMutationError = HTTPValidationError
+    export type CreateBranchesMutationResult = NonNullable<Awaited<ReturnType<typeof createBranches>>>
+    export type CreateBranchesMutationBody = BranchCreate
+    export type CreateBranchesMutationError = HTTPValidationError
 
     /**
  * @summary Create Branch
  */
-export const useCreateBranch = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBranch>>, TError,{data: BranchCreate}, TContext>, }
+export const useCreateBranches = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBranches>>, TError,{data: BranchCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createBranch>>,
+        Awaited<ReturnType<typeof createBranches>>,
         TError,
         {data: BranchCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateBranchMutationOptions(options);
+      const mutationOptions = getCreateBranchesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

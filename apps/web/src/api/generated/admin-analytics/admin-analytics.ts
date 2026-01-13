@@ -29,7 +29,7 @@ import { customInstance } from '../../orval-mutator';
  * Get admin analytics data
  * @summary Get Admin Analytics
  */
-export const getAdminAnalyticsOverview = (
+export const listAdminAnalyticOverview = (
     
  signal?: AbortSignal
 ) => {
@@ -44,69 +44,69 @@ export const getAdminAnalyticsOverview = (
 
 
 
-export const getGetAdminAnalyticsOverviewQueryKey = () => {
+export const getListAdminAnalyticOverviewQueryKey = () => {
     return [
     `/api/admin/analytics/overview`
     ] as const;
     }
 
     
-export const getGetAdminAnalyticsOverviewQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError, TData>>, }
+export const getListAdminAnalyticOverviewQueryOptions = <TData = Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminAnalyticsOverviewQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminAnalyticOverviewQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>> = ({ signal }) => getAdminAnalyticsOverview(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminAnalyticOverview>>> = ({ signal }) => listAdminAnalyticOverview(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminAnalyticsOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>>
-export type GetAdminAnalyticsOverviewQueryError = unknown
+export type ListAdminAnalyticOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminAnalyticOverview>>>
+export type ListAdminAnalyticOverviewQueryError = unknown
 
 
-export function useGetAdminAnalyticsOverview<TData = Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError, TData>> & Pick<
+export function useListAdminAnalyticOverview<TData = Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAnalyticsOverview>>,
+          Awaited<ReturnType<typeof listAdminAnalyticOverview>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAnalyticsOverview>>
+          Awaited<ReturnType<typeof listAdminAnalyticOverview>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAnalyticsOverview<TData = Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError, TData>> & Pick<
+export function useListAdminAnalyticOverview<TData = Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAnalyticsOverview>>,
+          Awaited<ReturnType<typeof listAdminAnalyticOverview>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAnalyticsOverview>>
+          Awaited<ReturnType<typeof listAdminAnalyticOverview>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAnalyticsOverview<TData = Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError, TData>>, }
+export function useListAdminAnalyticOverview<TData = Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Analytics
  */
 
-export function useGetAdminAnalyticsOverview<TData = Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAnalyticsOverview>>, TError, TData>>, }
+export function useListAdminAnalyticOverview<TData = Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticOverview>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminAnalyticsOverviewQueryOptions(options)
+  const queryOptions = getListAdminAnalyticOverviewQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -215,7 +215,7 @@ export function useGetAdminAnalytics<TData = Awaited<ReturnType<typeof getAdminA
  * Get revenue analytics
  * @summary Get Revenue Analytics
  */
-export const getAdminRevenueAnalytics = (
+export const listAdminAnalyticRevenue = (
     
  signal?: AbortSignal
 ) => {
@@ -230,69 +230,69 @@ export const getAdminRevenueAnalytics = (
 
 
 
-export const getGetAdminRevenueAnalyticsQueryKey = () => {
+export const getListAdminAnalyticRevenueQueryKey = () => {
     return [
     `/api/admin/analytics/revenue`
     ] as const;
     }
 
     
-export const getGetAdminRevenueAnalyticsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError, TData>>, }
+export const getListAdminAnalyticRevenueQueryOptions = <TData = Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRevenueAnalyticsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminAnalyticRevenueQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>> = ({ signal }) => getAdminRevenueAnalytics(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>> = ({ signal }) => listAdminAnalyticRevenue(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminRevenueAnalyticsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>>
-export type GetAdminRevenueAnalyticsQueryError = unknown
+export type ListAdminAnalyticRevenueQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>>
+export type ListAdminAnalyticRevenueQueryError = unknown
 
 
-export function useGetAdminRevenueAnalytics<TData = Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError, TData>> & Pick<
+export function useListAdminAnalyticRevenue<TData = Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRevenueAnalytics>>,
+          Awaited<ReturnType<typeof listAdminAnalyticRevenue>>,
           TError,
-          Awaited<ReturnType<typeof getAdminRevenueAnalytics>>
+          Awaited<ReturnType<typeof listAdminAnalyticRevenue>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminRevenueAnalytics<TData = Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError, TData>> & Pick<
+export function useListAdminAnalyticRevenue<TData = Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRevenueAnalytics>>,
+          Awaited<ReturnType<typeof listAdminAnalyticRevenue>>,
           TError,
-          Awaited<ReturnType<typeof getAdminRevenueAnalytics>>
+          Awaited<ReturnType<typeof listAdminAnalyticRevenue>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminRevenueAnalytics<TData = Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError, TData>>, }
+export function useListAdminAnalyticRevenue<TData = Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Revenue Analytics
  */
 
-export function useGetAdminRevenueAnalytics<TData = Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRevenueAnalytics>>, TError, TData>>, }
+export function useListAdminAnalyticRevenue<TData = Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticRevenue>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminRevenueAnalyticsQueryOptions(options)
+  const queryOptions = getListAdminAnalyticRevenueQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -308,7 +308,7 @@ export function useGetAdminRevenueAnalytics<TData = Awaited<ReturnType<typeof ge
  * Get user analytics
  * @summary Get User Analytics
  */
-export const getAdminUserAnalytics = (
+export const listAdminAnalyticUsers = (
     
  signal?: AbortSignal
 ) => {
@@ -323,69 +323,69 @@ export const getAdminUserAnalytics = (
 
 
 
-export const getGetAdminUserAnalyticsQueryKey = () => {
+export const getListAdminAnalyticUsersQueryKey = () => {
     return [
     `/api/admin/analytics/users`
     ] as const;
     }
 
     
-export const getGetAdminUserAnalyticsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError, TData>>, }
+export const getListAdminAnalyticUsersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminUserAnalyticsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminAnalyticUsersQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUserAnalytics>>> = ({ signal }) => getAdminUserAnalytics(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminAnalyticUsers>>> = ({ signal }) => listAdminAnalyticUsers(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminUserAnalyticsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminUserAnalytics>>>
-export type GetAdminUserAnalyticsQueryError = unknown
+export type ListAdminAnalyticUsersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminAnalyticUsers>>>
+export type ListAdminAnalyticUsersQueryError = unknown
 
 
-export function useGetAdminUserAnalytics<TData = Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError, TData>> & Pick<
+export function useListAdminAnalyticUsers<TData = Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUserAnalytics>>,
+          Awaited<ReturnType<typeof listAdminAnalyticUsers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminUserAnalytics>>
+          Awaited<ReturnType<typeof listAdminAnalyticUsers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminUserAnalytics<TData = Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError, TData>> & Pick<
+export function useListAdminAnalyticUsers<TData = Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUserAnalytics>>,
+          Awaited<ReturnType<typeof listAdminAnalyticUsers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminUserAnalytics>>
+          Awaited<ReturnType<typeof listAdminAnalyticUsers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminUserAnalytics<TData = Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError, TData>>, }
+export function useListAdminAnalyticUsers<TData = Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get User Analytics
  */
 
-export function useGetAdminUserAnalytics<TData = Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserAnalytics>>, TError, TData>>, }
+export function useListAdminAnalyticUsers<TData = Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticUsers>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminUserAnalyticsQueryOptions(options)
+  const queryOptions = getListAdminAnalyticUsersQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -401,7 +401,7 @@ export function useGetAdminUserAnalytics<TData = Awaited<ReturnType<typeof getAd
  * Get tenant analytics
  * @summary Get Tenant Analytics
  */
-export const getAdminTenantAnalytics = (
+export const listAdminAnalyticTenants = (
     
  signal?: AbortSignal
 ) => {
@@ -416,69 +416,69 @@ export const getAdminTenantAnalytics = (
 
 
 
-export const getGetAdminTenantAnalyticsQueryKey = () => {
+export const getListAdminAnalyticTenantsQueryKey = () => {
     return [
     `/api/admin/analytics/tenants`
     ] as const;
     }
 
     
-export const getGetAdminTenantAnalyticsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError, TData>>, }
+export const getListAdminAnalyticTenantsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminTenantAnalyticsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminAnalyticTenantsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTenantAnalytics>>> = ({ signal }) => getAdminTenantAnalytics(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminAnalyticTenants>>> = ({ signal }) => listAdminAnalyticTenants(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminTenantAnalyticsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminTenantAnalytics>>>
-export type GetAdminTenantAnalyticsQueryError = unknown
+export type ListAdminAnalyticTenantsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminAnalyticTenants>>>
+export type ListAdminAnalyticTenantsQueryError = unknown
 
 
-export function useGetAdminTenantAnalytics<TData = Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError, TData>> & Pick<
+export function useListAdminAnalyticTenants<TData = Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantAnalytics>>,
+          Awaited<ReturnType<typeof listAdminAnalyticTenants>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantAnalytics>>
+          Awaited<ReturnType<typeof listAdminAnalyticTenants>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantAnalytics<TData = Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError, TData>> & Pick<
+export function useListAdminAnalyticTenants<TData = Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantAnalytics>>,
+          Awaited<ReturnType<typeof listAdminAnalyticTenants>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantAnalytics>>
+          Awaited<ReturnType<typeof listAdminAnalyticTenants>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantAnalytics<TData = Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError, TData>>, }
+export function useListAdminAnalyticTenants<TData = Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Tenant Analytics
  */
 
-export function useGetAdminTenantAnalytics<TData = Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantAnalytics>>, TError, TData>>, }
+export function useListAdminAnalyticTenants<TData = Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAnalyticTenants>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminTenantAnalyticsQueryOptions(options)
+  const queryOptions = getListAdminAnalyticTenantsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

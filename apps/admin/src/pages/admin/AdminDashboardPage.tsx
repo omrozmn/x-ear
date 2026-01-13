@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { useGetAdminDashboardMetrics } from '@/lib/api-client';
+import { useGetAdminDashboard } from '@/lib/api-client';
 import {
     Users,
     CreditCard,
@@ -31,7 +31,7 @@ export default function AdminDashboardPage() {
         }
     }, [authLoading, isAuthenticated, navigate]);
 
-    const { data: dashboardData, isLoading: metricsLoading, error: metricsError, refetch } = useGetAdminDashboardMetrics({
+    const { data: dashboardData, isLoading: metricsLoading, error: metricsError, refetch } = useGetAdminDashboard({
         query: {
             retry: 1,
             refetchOnWindowFocus: false,

@@ -91,6 +91,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     if (!formData.title || formData.title === getTypeLabel(formData.type)) {
       setFormData(prev => ({ ...prev, title: getTypeLabel(formData.type) }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.type]);
 
   const getTypeLabel = (type: AppointmentType): string => {

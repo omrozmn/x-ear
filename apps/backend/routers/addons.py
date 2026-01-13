@@ -19,7 +19,7 @@ router = APIRouter(prefix="/addons", tags=["Addons"])
 
 # --- Routes ---
 
-@router.get("", response_model=ResponseEnvelope[List[AddonRead]])
+@router.get("", operation_id="listAddons", response_model=ResponseEnvelope[List[AddonRead]])
 def get_addons(db: Session = Depends(get_db)):
     """Get all active addons (Public)"""
     try:
@@ -36,7 +36,7 @@ def get_addons(db: Session = Depends(get_db)):
         logger.error(f"Error getting addons: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/admin", response_model=ResponseEnvelope[List[AddonRead]])
+@router.get("/admin", operation_id="listAddonAdmin", response_model=ResponseEnvelope[List[AddonRead]])
 def get_admin_addons(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -61,7 +61,7 @@ def get_admin_addons(
         logger.error(f"Error getting admin addons: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", status_code=201, response_model=ResponseEnvelope[AddonRead])
+@router.post("", operation_id="createAddon", status_code=201, response_model=ResponseEnvelope[AddonRead])
 def create_addon(
     request_data: AddonCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -95,7 +95,7 @@ def create_addon(
         logger.error(f"Error creating addon: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/{addon_id}", response_model=ResponseEnvelope[AddonRead])
+@router.put("/{addon_id}", operation_id="updateAddon", response_model=ResponseEnvelope[AddonRead])
 def update_addon(
     addon_id: str,
     request_data: AddonUpdate,
@@ -135,7 +135,7 @@ def update_addon(
         logger.error(f"Error updating addon: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{addon_id}")
+@router.delete("/{addon_id}", operation_id="deleteAddon")
 def delete_addon(
     addon_id: str,
     access: UnifiedAccess = Depends(require_access()),

@@ -7,7 +7,11 @@ from .base import AppBaseModel, IDMixin, TimestampMixin
 # Enums
 class PatientStatus(str, Enum):
     ACTIVE = 'active'
-    PASSIVE = 'passive'
+    INACTIVE = 'inactive'
+    LEAD = 'lead'
+    TRIAL = 'trial'
+    CUSTOMER = 'customer'
+    NEW = 'new'
     DECEASED = 'deceased'
     ARCHIVED = 'archived'
 
@@ -63,7 +67,12 @@ class PatientUpdate(AppBaseModel):
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     status: Optional[PatientStatus] = None
-    # ... allow updating other fields optionally
+    # CRM fields
+    segment: Optional[str] = None
+    acquisition_type: Optional[str] = Field(None, alias="acquisitionType")
+    branch_id: Optional[str] = Field(None, alias="branchId")
+    tags: Optional[List[str]] = None
+    # Address fields
     address_city: Optional[str] = Field(None, alias="addressCity")
     address_district: Optional[str] = Field(None, alias="addressDistrict")
     address_full: Optional[str] = Field(None, alias="addressFull")
@@ -115,3 +124,9 @@ class PatientSearchFilters(AppBaseModel):
     city: Optional[str] = None
     district: Optional[str] = None
     branch_id: Optional[str] = Field(None, alias="branchId")
+
+class BulkUploadResponse(AppBaseModel):
+    success: bool
+    created: int
+    updated: int
+    errors: List[Dict[str, Any]]

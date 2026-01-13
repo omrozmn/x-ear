@@ -4,10 +4,10 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-    useSyncInvoicesApiBirfaturaSyncInvoicesPost,
-    getGetSuppliersQueryKey,
-    useGetInvoices,
-    useGetSuppliers,
+    useCreateBirfaturaSyncInvoices,
+    getListSuppliersQueryKey,
+    useListInvoices,
+    useListSuppliers,
 } from '@/api/generated';
 import type { HTTPValidationError, InvoiceRead, SupplierRead } from '@/api/generated/schemas';
 
@@ -83,7 +83,7 @@ interface SupplierInvoicesResponse {
 export const useSupplierInvoices = (params: SupplierInvoicesParams) => {
     const { supplierId, page = 1, perPage = 20 } = params;
 
-    const { data, isLoading, isError, error, refetch } = useGetInvoices({
+    const { data, isLoading, isError, error, refetch } = useListInvoices({
         page,
         per_page: perPage,
         // Note: Backend doesn't have supplier_id filter yet,
@@ -117,7 +117,7 @@ export const useSupplierInvoices = (params: SupplierInvoicesParams) => {
  * Calculates invoice counts and totals from available data
  */
 export const useSuggestedSuppliers = () => {
-    const { data, isLoading, isError, error, refetch } = useGetSuppliers({
+    const { data, isLoading, isError, error, refetch } = useListSuppliers({
         per_page: 100,
         is_active: true,
     });
@@ -163,7 +163,7 @@ export const useAcceptSuggestedSupplier = () => {
             // In a real implementation, this might update a "suggested" flag to "accepted"
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getGetSuppliersQueryKey() });
+            queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });
         },
     });
 };
@@ -181,7 +181,7 @@ export const useRejectSuggestedSupplier = () => {
             console.log(`[useRejectSuggestedSupplier] Rejecting supplier ID: ${suggestedId}`);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getGetSuppliersQueryKey() });
+            queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });
         },
     });
 };
@@ -193,7 +193,7 @@ export const useRejectSuggestedSupplier = () => {
  */
 export const useSyncInvoices = () => {
     const queryClient = useQueryClient();
-    const { mutateAsync, ...rest } = useSyncInvoicesApiBirfaturaSyncInvoicesPost({
+    const { mutateAsync, ...rest } = useCreateBirfaturaSyncInvoices({
         mutation: {
             onSuccess: () => {
                 // Invalidate all invoice-related queries

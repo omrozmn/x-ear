@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import AppHeader from '../../AppHeader';
-import { registerAffiliate } from '../../../lib/api/affiliate';
+import { registerAffiliate } from '../../../lib/affiliate';
 import { useRouter } from 'next/navigation';
 import { Loader2, CheckCircle } from 'lucide-react';
 

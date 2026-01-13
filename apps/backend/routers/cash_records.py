@@ -64,7 +64,7 @@ def derive_record_type(notes: str) -> str:
 
 # --- Routes ---
 
-@router.get("/cash-records")
+@router.get("/cash-records", operation_id="listCashRecords")
 def get_cash_records(
     limit: int = Query(200, ge=1, le=1000),
     status: Optional[str] = None,
@@ -145,7 +145,7 @@ def get_cash_records(
         logger.error(f"Error fetching cash records: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/cash-records", status_code=201)
+@router.post("/cash-records", operation_id="createCashRecords", status_code=201)
 def create_cash_record(
     request_data: CashRecordCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -205,7 +205,7 @@ def create_cash_record(
         if request_data.date:
             try:
                 payment.payment_date = datetime.fromisoformat(request_data.date.replace('Z', '+00:00'))
-            except:
+            except (ValueError, TypeError):
                 payment.payment_date = datetime.now(timezone.utc)
         else:
             payment.payment_date = datetime.now(timezone.utc)
@@ -244,7 +244,7 @@ def create_cash_record(
         logger.error(f"Create cash record error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/cash-records/{record_id}")
+@router.delete("/cash-records/{record_id}", operation_id="deleteCashRecord")
 def delete_cash_record(
     record_id: str,
     access: UnifiedAccess = Depends(require_access()),

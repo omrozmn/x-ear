@@ -28,8 +28,8 @@ import type {
   ApiKeyCreate,
   ApiKeyDetailResponse,
   ApiKeyListResponse,
-  GetAdminApiKeysParams,
   HTTPValidationError,
+  ListAdminApiKeysParams,
   ResponseEnvelope
 } from '.././schemas';
 
@@ -42,7 +42,7 @@ import { customInstance } from '../../orval-mutator';
  * Initialize API Key table
  * @summary Init Db
  */
-export const initAdminApiKeysDb = (
+export const createAdminApiKeyInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -56,11 +56,11 @@ export const initAdminApiKeysDb = (
   
 
 
-export const getInitAdminApiKeysDbMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminApiKeysDb>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initAdminApiKeysDb>>, TError,void, TContext> => {
+export const getCreateAdminApiKeyInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminApiKeyInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminApiKeyInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initAdminApiKeysDb'];
+const mutationKey = ['createAdminApiKeyInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -70,10 +70,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initAdminApiKeysDb>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminApiKeyInitDb>>, void> = () => {
           
 
-          return  initAdminApiKeysDb()
+          return  createAdminApiKeyInitDb()
         }
 
         
@@ -81,23 +81,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitAdminApiKeysDbMutationResult = NonNullable<Awaited<ReturnType<typeof initAdminApiKeysDb>>>
+    export type CreateAdminApiKeyInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminApiKeyInitDb>>>
     
-    export type InitAdminApiKeysDbMutationError = unknown
+    export type CreateAdminApiKeyInitDbMutationError = unknown
 
     /**
  * @summary Init Db
  */
-export const useInitAdminApiKeysDb = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminApiKeysDb>>, TError,void, TContext>, }
+export const useCreateAdminApiKeyInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminApiKeyInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initAdminApiKeysDb>>,
+        Awaited<ReturnType<typeof createAdminApiKeyInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitAdminApiKeysDbMutationOptions(options);
+      const mutationOptions = getCreateAdminApiKeyInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -105,8 +105,8 @@ export const useInitAdminApiKeysDb = <TError = unknown,
  * Get list of API keys
  * @summary Get Api Keys
  */
-export const getAdminApiKeys = (
-    params?: GetAdminApiKeysParams,
+export const listAdminApiKeys = (
+    params?: ListAdminApiKeysParams,
  signal?: AbortSignal
 ) => {
       
@@ -121,69 +121,69 @@ export const getAdminApiKeys = (
 
 
 
-export const getGetAdminApiKeysQueryKey = (params?: GetAdminApiKeysParams,) => {
+export const getListAdminApiKeysQueryKey = (params?: ListAdminApiKeysParams,) => {
     return [
     `/api/admin/api-keys`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminApiKeysQueryOptions = <TData = Awaited<ReturnType<typeof getAdminApiKeys>>, TError = HTTPValidationError>(params?: GetAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminApiKeys>>, TError, TData>>, }
+export const getListAdminApiKeysQueryOptions = <TData = Awaited<ReturnType<typeof listAdminApiKeys>>, TError = HTTPValidationError>(params?: ListAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminApiKeys>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminApiKeysQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminApiKeysQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminApiKeys>>> = ({ signal }) => getAdminApiKeys(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminApiKeys>>> = ({ signal }) => listAdminApiKeys(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminApiKeys>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminApiKeys>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminApiKeysQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminApiKeys>>>
-export type GetAdminApiKeysQueryError = HTTPValidationError
+export type ListAdminApiKeysQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminApiKeys>>>
+export type ListAdminApiKeysQueryError = HTTPValidationError
 
 
-export function useGetAdminApiKeys<TData = Awaited<ReturnType<typeof getAdminApiKeys>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminApiKeysParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminApiKeys>>, TError, TData>> & Pick<
+export function useListAdminApiKeys<TData = Awaited<ReturnType<typeof listAdminApiKeys>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminApiKeysParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminApiKeys>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminApiKeys>>,
+          Awaited<ReturnType<typeof listAdminApiKeys>>,
           TError,
-          Awaited<ReturnType<typeof getAdminApiKeys>>
+          Awaited<ReturnType<typeof listAdminApiKeys>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminApiKeys<TData = Awaited<ReturnType<typeof getAdminApiKeys>>, TError = HTTPValidationError>(
- params?: GetAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminApiKeys>>, TError, TData>> & Pick<
+export function useListAdminApiKeys<TData = Awaited<ReturnType<typeof listAdminApiKeys>>, TError = HTTPValidationError>(
+ params?: ListAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminApiKeys>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminApiKeys>>,
+          Awaited<ReturnType<typeof listAdminApiKeys>>,
           TError,
-          Awaited<ReturnType<typeof getAdminApiKeys>>
+          Awaited<ReturnType<typeof listAdminApiKeys>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminApiKeys<TData = Awaited<ReturnType<typeof getAdminApiKeys>>, TError = HTTPValidationError>(
- params?: GetAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminApiKeys>>, TError, TData>>, }
+export function useListAdminApiKeys<TData = Awaited<ReturnType<typeof listAdminApiKeys>>, TError = HTTPValidationError>(
+ params?: ListAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminApiKeys>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Api Keys
  */
 
-export function useGetAdminApiKeys<TData = Awaited<ReturnType<typeof getAdminApiKeys>>, TError = HTTPValidationError>(
- params?: GetAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminApiKeys>>, TError, TData>>, }
+export function useListAdminApiKeys<TData = Awaited<ReturnType<typeof listAdminApiKeys>>, TError = HTTPValidationError>(
+ params?: ListAdminApiKeysParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminApiKeys>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminApiKeysQueryOptions(params,options)
+  const queryOptions = getListAdminApiKeysQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -264,7 +264,7 @@ export const useCreateAdminApiKey = <TError = HTTPValidationError,
  * Revoke (delete) an API key
  * @summary Revoke Api Key
  */
-export const revokeApiKey = (
+export const deleteAdminApiKey = (
     keyId: string,
  ) => {
       
@@ -277,11 +277,11 @@ export const revokeApiKey = (
   
 
 
-export const getRevokeApiKeyMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeApiKey>>, TError,{keyId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof revokeApiKey>>, TError,{keyId: string}, TContext> => {
+export const getDeleteAdminApiKeyMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminApiKey>>, TError,{keyId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminApiKey>>, TError,{keyId: string}, TContext> => {
 
-const mutationKey = ['revokeApiKey'];
+const mutationKey = ['deleteAdminApiKey'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -291,10 +291,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof revokeApiKey>>, {keyId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminApiKey>>, {keyId: string}> = (props) => {
           const {keyId} = props ?? {};
 
-          return  revokeApiKey(keyId,)
+          return  deleteAdminApiKey(keyId,)
         }
 
         
@@ -302,23 +302,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RevokeApiKeyMutationResult = NonNullable<Awaited<ReturnType<typeof revokeApiKey>>>
+    export type DeleteAdminApiKeyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminApiKey>>>
     
-    export type RevokeApiKeyMutationError = HTTPValidationError
+    export type DeleteAdminApiKeyMutationError = HTTPValidationError
 
     /**
  * @summary Revoke Api Key
  */
-export const useRevokeApiKey = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeApiKey>>, TError,{keyId: string}, TContext>, }
+export const useDeleteAdminApiKey = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminApiKey>>, TError,{keyId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof revokeApiKey>>,
+        Awaited<ReturnType<typeof deleteAdminApiKey>>,
         TError,
         {keyId: string},
         TContext
       > => {
 
-      const mutationOptions = getRevokeApiKeyMutationOptions(options);
+      const mutationOptions = getDeleteAdminApiKeyMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -45,7 +45,7 @@ class RolePermissionsUpdate(BaseModel):
 
 # --- Routes ---
 
-@router.get("/permissions")
+@router.get("/permissions", operation_id="listPermissions")
 def list_permissions(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -100,7 +100,7 @@ def list_permissions(
         logger.error(f"Error listing permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/permissions/my")
+@router.get("/permissions/my", operation_id="listPermissionMy")
 def get_my_permissions(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -156,7 +156,7 @@ def get_my_permissions(
         logger.error(f"Error getting my permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/permissions/role/{role_name}")
+@router.get("/permissions/role/{role_name}", operation_id="getPermissionRole")
 def get_role_permissions(
     role_name: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -181,7 +181,7 @@ def get_role_permissions(
         logger.error(f"Error getting role permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/permissions/role/{role_name}")
+@router.put("/permissions/role/{role_name}", operation_id="updatePermissionRole")
 def update_role_permissions(
     role_name: str,
     request_data: RolePermissionsUpdate,
@@ -220,7 +220,7 @@ def update_role_permissions(
         logger.error(f"Error updating role permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/permissions", status_code=201)
+@router.post("/permissions", operation_id="createPermissions", status_code=201)
 def create_permission(
     request_data: PermissionCreate,
     access: UnifiedAccess = Depends(require_access()),

@@ -52,10 +52,10 @@ const APP_PRESETS = {
     schemasPath: './schemas',
   },
   admin: {
-    generatedDir: path.join(__dirname, '../apps/admin/src/lib/api'),
-    aliasesOutput: path.join(__dirname, '../apps/admin/src/lib/api-aliases.ts'),
+    generatedDir: path.join(__dirname, '../apps/admin/src/api/generated'),
+    aliasesOutput: path.join(__dirname, '../apps/admin/src/api/generated/aliases.ts'),
     aliasesConfig: path.join(__dirname, '../apps/admin/api-aliases.json'),
-    schemasPath: './api/schemas',
+    schemasPath: './schemas',
   },
   landing: {
     generatedDir: path.join(__dirname, '../apps/landing/src/api/generated'),

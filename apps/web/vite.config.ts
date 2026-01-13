@@ -82,6 +82,7 @@ export default defineConfig({
   },
   server: {
     port: 8080,
+    strictPort: true,
     host: true,
     proxy: {
       '/api': {
@@ -94,5 +95,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    minify: 'esbuild',
+  },
+  // Strip console.log and debugger statements in production builds
+  esbuild: {
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
   },
 })

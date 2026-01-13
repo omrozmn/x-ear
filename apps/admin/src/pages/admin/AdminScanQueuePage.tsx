@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-    useGetScanQueue,
-    useRetryScan
+    useListAdminScanQueue,
+    useCreateAdminScanQueueRetry
 } from '@/lib/api-client';
 import {
     RefreshCw,
@@ -16,10 +16,10 @@ import toast from 'react-hot-toast';
 const AdminScanQueuePage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState('');
 
-    const { data: queueData, isLoading, refetch } = useGetScanQueue(
+    const { data: queueData, isLoading, refetch } = useListAdminScanQueue(
         statusFilter ? { status: statusFilter } : undefined
     );
-    const retryMutation = useRetryScan();
+    const retryMutation = useCreateAdminScanQueueRetry();
 
     const queueItems = (queueData as any)?.data || [];
 

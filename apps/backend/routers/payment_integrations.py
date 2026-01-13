@@ -61,7 +61,7 @@ def get_tenant_paytr_settings(db: Session, tenant_id: str) -> Optional[dict]:
 
 # --- Routes ---
 
-@router.get("/paytr/config")
+@router.get("/paytr/config", operation_id="listPaymentPoPaytrConfig")
 def get_paytr_config(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -87,7 +87,7 @@ def get_paytr_config(
         'enabled': bool(settings.get('merchant_id'))
     })
 
-@router.put("/paytr/config")
+@router.put("/paytr/config", operation_id="updatePaymentPoPaytrConfig")
 def update_paytr_config(
     request_data: PayTRConfigUpdate,
     access: UnifiedAccess = Depends(require_access()),
@@ -135,7 +135,7 @@ def update_paytr_config(
     
     return ResponseEnvelope(message="PayTR config updated")
 
-@router.post("/paytr/initiate")
+@router.post("/paytr/initiate", operation_id="createPaymentPoPaytrInitiate")
 def initiate_paytr_payment(
     request_data: PayTRInitiateRequest,
     request: Request,
@@ -274,7 +274,7 @@ def initiate_paytr_payment(
         logger.error(f"PayTR Initiate Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/paytr/callback", response_class=PlainTextResponse)
+@router.post("/paytr/callback", operation_id="createPaymentPoPaytrCallback", response_class=PlainTextResponse)
 async def paytr_callback(
     merchant_oid: str = Form(...),
     status: str = Form(...),
@@ -363,11 +363,11 @@ async def paytr_callback(
                 error_payment.status = 'error'
                 error_payment.error_message = f"Callback error: {str(e)}"
                 db.commit()
-        except:
-            pass
+        except Exception as inner_e:
+            logger.error(f"PayTR Callback: Failed to update error status: {inner_e}")
         return "OK"
 
-@router.get("/transactions")
+@router.get("/transactions", operation_id="listPaymentPoTransactions")
 def get_pos_transactions(
     provider: Optional[str] = None,
     start_date: Optional[str] = None,
@@ -397,15 +397,15 @@ def get_pos_transactions(
         try:
             s_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
             query = query.filter(PaymentRecord.payment_date >= s_dt)
-        except:
-            pass
+        except (ValueError, TypeError) as e:
+            logger.debug(f"Invalid start_date format: {start_date}, error: {e}")
     
     if end_date:
         try:
             e_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
             query = query.filter(PaymentRecord.payment_date <= e_dt)
-        except:
-            pass
+        except (ValueError, TypeError) as e:
+            logger.debug(f"Invalid end_date format: {end_date}, error: {e}")
     
     query = query.order_by(PaymentRecord.payment_date.desc()).limit(limit)
     records = query.all()

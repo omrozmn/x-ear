@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink } from 'lucide-react';
 import {
-    useGetSmsConfigApiSmsConfigGet,
-    useListSmsHeadersApiSmsHeadersGet,
-    useGetSmsCreditApiSmsCreditGet,
-    useUploadSmsDocumentApiSmsDocumentsUploadPost,
-    useDeleteSmsDocumentApiSmsDocumentsDocumentTypeDelete,
-    useSubmitSmsDocumentsApiSmsDocumentsSubmitPost,
-    useRequestSmsHeaderApiSmsHeadersPost
-} from '@/api/generated';
+    useListSmConfig,
+    useListSmHeaders,
+    useListSmCredit,
+    useCreateSmDocumentUpload,
+    useDeleteSmDocument,
+    useCreateSmDocumentSubmit,
+    useCreateSmHeaders
+} from '@/api/generated/sms-integration/sms-integration';
 import { Button, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -43,14 +43,14 @@ export default function IntegrationSettings() {
     const uploadInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
     const { token } = useAuthStore();
 
-    const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useGetSmsConfigApiSmsConfigGet({ query: { enabled: !!token } });
-    const { data: creditData } = useGetSmsCreditApiSmsCreditGet({ query: { enabled: !!token } });
-    const { data: headersData, refetch: refetchHeaders } = useListSmsHeadersApiSmsHeadersGet({ query: { enabled: !!token } });
+    const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useListSmConfig({ query: { enabled: !!token } });
+    const { data: creditData } = useListSmCredit({ query: { enabled: !!token } });
+    const { data: headersData, refetch: refetchHeaders } = useListSmHeaders({ query: { enabled: !!token } });
 
-    const { mutateAsync: uploadDocument } = useUploadSmsDocumentApiSmsDocumentsUploadPost();
-    const { mutateAsync: deleteDocument } = useDeleteSmsDocumentApiSmsDocumentsDocumentTypeDelete();
-    const { mutateAsync: submitDocuments } = useSubmitSmsDocumentsApiSmsDocumentsSubmitPost();
-    const { mutateAsync: requestHeader } = useRequestSmsHeaderApiSmsHeadersPost();
+    const { mutateAsync: uploadDocument } = useCreateSmDocumentUpload();
+    const { mutateAsync: deleteDocument } = useDeleteSmDocument();
+    const { mutateAsync: submitDocuments } = useCreateSmDocumentSubmit();
+    const { mutateAsync: requestHeader } = useCreateSmHeaders();
 
     const [isUploading, setIsUploading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);

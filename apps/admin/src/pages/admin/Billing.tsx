@@ -14,16 +14,16 @@ import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '@/components/ui/Pagination';
 import toast from 'react-hot-toast';
 import {
-  useGetAdminInvoices,
+  useListAdminInvoices,
   useGetAdminInvoice,
   useCreateAdminInvoice,
-  useGetAdminPlans,
-  useCreatePlan,
-  useUpdatePlan,
-  useDeletePlan,
-  useGetAdminTenants,
-  Invoice,
-  Plan,
+  useListAdminPlans,
+  useCreateAdminPlan,
+  useUpdateAdminPlan,
+  useDeleteAdminPlan,
+  useListAdminTenants,
+  InvoiceRead,
+  PlanRead,
   PlanCreate
 } from '@/lib/api-client';
 import { adminApi } from '@/lib/apiMutator';
@@ -59,7 +59,7 @@ const Billing: React.FC = () => {
 
   // Plan Management State
   const [planModalView, setPlanModalView] = useState<'list' | 'form'>('list');
-  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [editingPlan, setEditingPlan] = useState<PlanRead | null>(null);
   const [planFormData, setPlanFormData] = useState({
     name: '',
     description: '',
@@ -75,22 +75,22 @@ const Billing: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch invoices
-  const { data: invoicesData, isLoading, error } = useGetAdminInvoices({
+  const { data: invoicesData, isLoading, error } = useListAdminInvoices({
     page,
     limit,
     search: searchTerm || undefined,
-    status: statusFilter !== 'all' ? (statusFilter as Invoice['status']) : undefined
+    status: statusFilter !== 'all' ? (statusFilter as InvoiceRead['status']) : undefined
   });
 
   const invoices = (invoicesData as any)?.data?.invoices || [];
   const pagination = (invoicesData as any)?.data?.pagination;
 
   // Fetch plans
-  const { data: plansData } = useGetAdminPlans();
+  const { data: plansData } = useListAdminPlans();
   const plans = (plansData as any)?.data?.plans || [];
 
   // Fetch tenants for invoice creation
-  const { data: tenantsData } = useGetAdminTenants({ limit: 100 }, { query: { enabled: showCreateModal } });
+  const { data: tenantsData } = useListAdminTenants({ limit: 100 }, { query: { enabled: showCreateModal } });
   const tenants = (tenantsData as any)?.data?.tenants || [];
 
   // Fetch invoice details
@@ -109,9 +109,9 @@ const Billing: React.FC = () => {
   const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateAdminInvoice();
 
   // Plan mutations
-  const { mutateAsync: createPlan } = useCreatePlan();
-  const { mutateAsync: updatePlan } = useUpdatePlan();
-  const { mutateAsync: deletePlan } = useDeletePlan();
+  const { mutateAsync: createPlan } = useCreateAdminPlan();
+  const { mutateAsync: updatePlan } = useUpdateAdminPlan();
+  const { mutateAsync: deletePlan } = useDeleteAdminPlan();
 
   const handlePaymentRecordClick = (invoiceId: string, totalAmount: number) => {
     setPaymentInvoiceId(invoiceId);
@@ -219,7 +219,7 @@ const Billing: React.FC = () => {
     setPlanModalView('form');
   };
 
-  const handleEditPlanClick = (plan: Plan) => {
+  const handleEditPlanClick = (plan: PlanRead) => {
     setEditingPlan(plan);
     // Convert features object to array for UI
     const featuresArray = plan.features ? Object.values(plan.features) : [];

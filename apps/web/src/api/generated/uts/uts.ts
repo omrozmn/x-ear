@@ -27,7 +27,7 @@ import type {
 import type {
   BulkRegistration,
   HTTPValidationError,
-  ListRegistrationsParams
+  ListUtRegistrationsParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -39,8 +39,8 @@ import { customInstance } from '../../orval-mutator';
  * List UTS device registrations
  * @summary List Registrations
  */
-export const listRegistrations = (
-    params?: ListRegistrationsParams,
+export const listUtRegistrations = (
+    params?: ListUtRegistrationsParams,
  signal?: AbortSignal
 ) => {
       
@@ -55,69 +55,69 @@ export const listRegistrations = (
 
 
 
-export const getListRegistrationsQueryKey = (params?: ListRegistrationsParams,) => {
+export const getListUtRegistrationsQueryKey = (params?: ListUtRegistrationsParams,) => {
     return [
     `/api/uts/registrations`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListRegistrationsQueryOptions = <TData = Awaited<ReturnType<typeof listRegistrations>>, TError = HTTPValidationError>(params?: ListRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegistrations>>, TError, TData>>, }
+export const getListUtRegistrationsQueryOptions = <TData = Awaited<ReturnType<typeof listUtRegistrations>>, TError = HTTPValidationError>(params?: ListUtRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtRegistrations>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListRegistrationsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListUtRegistrationsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRegistrations>>> = ({ signal }) => listRegistrations(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUtRegistrations>>> = ({ signal }) => listUtRegistrations(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRegistrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUtRegistrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListRegistrationsQueryResult = NonNullable<Awaited<ReturnType<typeof listRegistrations>>>
-export type ListRegistrationsQueryError = HTTPValidationError
+export type ListUtRegistrationsQueryResult = NonNullable<Awaited<ReturnType<typeof listUtRegistrations>>>
+export type ListUtRegistrationsQueryError = HTTPValidationError
 
 
-export function useListRegistrations<TData = Awaited<ReturnType<typeof listRegistrations>>, TError = HTTPValidationError>(
- params: undefined |  ListRegistrationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegistrations>>, TError, TData>> & Pick<
+export function useListUtRegistrations<TData = Awaited<ReturnType<typeof listUtRegistrations>>, TError = HTTPValidationError>(
+ params: undefined |  ListUtRegistrationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtRegistrations>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listRegistrations>>,
+          Awaited<ReturnType<typeof listUtRegistrations>>,
           TError,
-          Awaited<ReturnType<typeof listRegistrations>>
+          Awaited<ReturnType<typeof listUtRegistrations>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListRegistrations<TData = Awaited<ReturnType<typeof listRegistrations>>, TError = HTTPValidationError>(
- params?: ListRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegistrations>>, TError, TData>> & Pick<
+export function useListUtRegistrations<TData = Awaited<ReturnType<typeof listUtRegistrations>>, TError = HTTPValidationError>(
+ params?: ListUtRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtRegistrations>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listRegistrations>>,
+          Awaited<ReturnType<typeof listUtRegistrations>>,
           TError,
-          Awaited<ReturnType<typeof listRegistrations>>
+          Awaited<ReturnType<typeof listUtRegistrations>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListRegistrations<TData = Awaited<ReturnType<typeof listRegistrations>>, TError = HTTPValidationError>(
- params?: ListRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegistrations>>, TError, TData>>, }
+export function useListUtRegistrations<TData = Awaited<ReturnType<typeof listUtRegistrations>>, TError = HTTPValidationError>(
+ params?: ListUtRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtRegistrations>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Registrations
  */
 
-export function useListRegistrations<TData = Awaited<ReturnType<typeof listRegistrations>>, TError = HTTPValidationError>(
- params?: ListRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegistrations>>, TError, TData>>, }
+export function useListUtRegistrations<TData = Awaited<ReturnType<typeof listUtRegistrations>>, TError = HTTPValidationError>(
+ params?: ListUtRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtRegistrations>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListRegistrationsQueryOptions(params,options)
+  const queryOptions = getListUtRegistrationsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -133,7 +133,7 @@ export function useListRegistrations<TData = Awaited<ReturnType<typeof listRegis
  * Start bulk UTS device registration job
  * @summary Start Bulk Registration
  */
-export const startBulkRegistration = (
+export const createUtRegistrationBulk = (
     bulkRegistration: BulkRegistration,
  signal?: AbortSignal
 ) => {
@@ -149,11 +149,11 @@ export const startBulkRegistration = (
   
 
 
-export const getStartBulkRegistrationMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startBulkRegistration>>, TError,{data: BulkRegistration}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof startBulkRegistration>>, TError,{data: BulkRegistration}, TContext> => {
+export const getCreateUtRegistrationBulkMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUtRegistrationBulk>>, TError,{data: BulkRegistration}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUtRegistrationBulk>>, TError,{data: BulkRegistration}, TContext> => {
 
-const mutationKey = ['startBulkRegistration'];
+const mutationKey = ['createUtRegistrationBulk'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -163,10 +163,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startBulkRegistration>>, {data: BulkRegistration}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUtRegistrationBulk>>, {data: BulkRegistration}> = (props) => {
           const {data} = props ?? {};
 
-          return  startBulkRegistration(data,)
+          return  createUtRegistrationBulk(data,)
         }
 
         
@@ -174,23 +174,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type StartBulkRegistrationMutationResult = NonNullable<Awaited<ReturnType<typeof startBulkRegistration>>>
-    export type StartBulkRegistrationMutationBody = BulkRegistration
-    export type StartBulkRegistrationMutationError = HTTPValidationError
+    export type CreateUtRegistrationBulkMutationResult = NonNullable<Awaited<ReturnType<typeof createUtRegistrationBulk>>>
+    export type CreateUtRegistrationBulkMutationBody = BulkRegistration
+    export type CreateUtRegistrationBulkMutationError = HTTPValidationError
 
     /**
  * @summary Start Bulk Registration
  */
-export const useStartBulkRegistration = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startBulkRegistration>>, TError,{data: BulkRegistration}, TContext>, }
+export const useCreateUtRegistrationBulk = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUtRegistrationBulk>>, TError,{data: BulkRegistration}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof startBulkRegistration>>,
+        Awaited<ReturnType<typeof createUtRegistrationBulk>>,
         TError,
         {data: BulkRegistration},
         TContext
       > => {
 
-      const mutationOptions = getStartBulkRegistrationMutationOptions(options);
+      const mutationOptions = getCreateUtRegistrationBulkMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -198,7 +198,7 @@ export const useStartBulkRegistration = <TError = HTTPValidationError,
  * Get UTS registration job status
  * @summary Get Job Status
  */
-export const getJobStatus = (
+export const getUtJob = (
     jobId: string,
  signal?: AbortSignal
 ) => {
@@ -213,69 +213,69 @@ export const getJobStatus = (
 
 
 
-export const getGetJobStatusQueryKey = (jobId?: string,) => {
+export const getGetUtJobQueryKey = (jobId?: string,) => {
     return [
     `/api/uts/jobs/${jobId}`
     ] as const;
     }
 
     
-export const getGetJobStatusQueryOptions = <TData = Awaited<ReturnType<typeof getJobStatus>>, TError = HTTPValidationError>(jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobStatus>>, TError, TData>>, }
+export const getGetUtJobQueryOptions = <TData = Awaited<ReturnType<typeof getUtJob>>, TError = HTTPValidationError>(jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtJob>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetJobStatusQueryKey(jobId);
+  const queryKey =  queryOptions?.queryKey ?? getGetUtJobQueryKey(jobId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJobStatus>>> = ({ signal }) => getJobStatus(jobId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUtJob>>> = ({ signal }) => getUtJob(jobId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(jobId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getJobStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(jobId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUtJob>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetJobStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getJobStatus>>>
-export type GetJobStatusQueryError = HTTPValidationError
+export type GetUtJobQueryResult = NonNullable<Awaited<ReturnType<typeof getUtJob>>>
+export type GetUtJobQueryError = HTTPValidationError
 
 
-export function useGetJobStatus<TData = Awaited<ReturnType<typeof getJobStatus>>, TError = HTTPValidationError>(
- jobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobStatus>>, TError, TData>> & Pick<
+export function useGetUtJob<TData = Awaited<ReturnType<typeof getUtJob>>, TError = HTTPValidationError>(
+ jobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtJob>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getJobStatus>>,
+          Awaited<ReturnType<typeof getUtJob>>,
           TError,
-          Awaited<ReturnType<typeof getJobStatus>>
+          Awaited<ReturnType<typeof getUtJob>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetJobStatus<TData = Awaited<ReturnType<typeof getJobStatus>>, TError = HTTPValidationError>(
- jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobStatus>>, TError, TData>> & Pick<
+export function useGetUtJob<TData = Awaited<ReturnType<typeof getUtJob>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtJob>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getJobStatus>>,
+          Awaited<ReturnType<typeof getUtJob>>,
           TError,
-          Awaited<ReturnType<typeof getJobStatus>>
+          Awaited<ReturnType<typeof getUtJob>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetJobStatus<TData = Awaited<ReturnType<typeof getJobStatus>>, TError = HTTPValidationError>(
- jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobStatus>>, TError, TData>>, }
+export function useGetUtJob<TData = Awaited<ReturnType<typeof getUtJob>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtJob>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Job Status
  */
 
-export function useGetJobStatus<TData = Awaited<ReturnType<typeof getJobStatus>>, TError = HTTPValidationError>(
- jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobStatus>>, TError, TData>>, }
+export function useGetUtJob<TData = Awaited<ReturnType<typeof getUtJob>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtJob>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetJobStatusQueryOptions(jobId,options)
+  const queryOptions = getGetUtJobQueryOptions(jobId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -291,7 +291,7 @@ export function useGetJobStatus<TData = Awaited<ReturnType<typeof getJobStatus>>
  * Cancel UTS registration job
  * @summary Cancel Job
  */
-export const cancelJob = (
+export const createUtJobCancel = (
     jobId: string,
  signal?: AbortSignal
 ) => {
@@ -305,11 +305,11 @@ export const cancelJob = (
   
 
 
-export const getCancelJobMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelJob>>, TError,{jobId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof cancelJob>>, TError,{jobId: string}, TContext> => {
+export const getCreateUtJobCancelMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUtJobCancel>>, TError,{jobId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUtJobCancel>>, TError,{jobId: string}, TContext> => {
 
-const mutationKey = ['cancelJob'];
+const mutationKey = ['createUtJobCancel'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -319,10 +319,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelJob>>, {jobId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUtJobCancel>>, {jobId: string}> = (props) => {
           const {jobId} = props ?? {};
 
-          return  cancelJob(jobId,)
+          return  createUtJobCancel(jobId,)
         }
 
         
@@ -330,23 +330,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CancelJobMutationResult = NonNullable<Awaited<ReturnType<typeof cancelJob>>>
+    export type CreateUtJobCancelMutationResult = NonNullable<Awaited<ReturnType<typeof createUtJobCancel>>>
     
-    export type CancelJobMutationError = HTTPValidationError
+    export type CreateUtJobCancelMutationError = HTTPValidationError
 
     /**
  * @summary Cancel Job
  */
-export const useCancelJob = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelJob>>, TError,{jobId: string}, TContext>, }
+export const useCreateUtJobCancel = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUtJobCancel>>, TError,{jobId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof cancelJob>>,
+        Awaited<ReturnType<typeof createUtJobCancel>>,
         TError,
         {jobId: string},
         TContext
       > => {
 
-      const mutationOptions = getCancelJobMutationOptions(options);
+      const mutationOptions = getCreateUtJobCancelMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

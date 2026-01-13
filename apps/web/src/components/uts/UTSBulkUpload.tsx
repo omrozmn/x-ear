@@ -52,7 +52,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
       });
 
       // Also trigger immediate processing via mutation for online case
-      const res = await (startBulk as ReturnType<typeof useStartBulkUtsRegistration>).mutateAsync({ csv: fileContent });
+      const res = await (startBulk as ReturnType<typeof useStartBulkUtsRegistration>).mutateAsync({ csv: fileContent } as any);
       const jobId = (res as { jobId?: string }).jobId || `queued-${Date.now()}`;
       onStarted?.(jobId);
     } catch (err) {

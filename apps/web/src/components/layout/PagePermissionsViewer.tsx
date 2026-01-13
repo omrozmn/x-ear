@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useMemo } from 'react';
 import { Eye, X, Check, Lock, Shield } from 'lucide-react';
-import { useGetMyPermissions, getGetMyPermissionsQueryKey } from '@/api/generated/permissions/permissions';
+import { useListPermissions, getListPermissionsQueryKey } from '@/api/generated/permissions/permissions';
 import { useAuthStore } from '../../stores/authStore';
 
 // Page permission mappings - maps pageKey to required permissions
@@ -65,9 +65,9 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
   const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL || user?.role === 'super_admin';
 
   // Fetch user's permissions
-  const { data: permissionsResponse, isLoading } = useGetMyPermissions({
+  const { data: permissionsResponse, isLoading } = useListPermissions({
     query: {
-      queryKey: getGetMyPermissionsQueryKey(),
+      queryKey: getListPermissionsQueryKey(),
       enabled: isDebugAdmin && isOpen,
       staleTime: 30 * 1000, // 30 seconds
     }

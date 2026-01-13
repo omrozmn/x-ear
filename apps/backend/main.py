@@ -21,70 +21,7 @@ from fastapi_app.middleware import envelope_error, request_id_middleware
 from middleware.permission_middleware import FastAPIPermissionMiddleware
 
 # ============================================================================
-# Custom Operation ID Generator for Clean OpenAPI Spec
-# ============================================================================
-from fastapi.routing import APIRoute
-
-def generate_operation_id(route: APIRoute) -> str:
-    """
-    Generate clean, unique operation IDs for OpenAPI spec.
-    
-    Uses path segments to ensure uniqueness while keeping names readable.
-    
-    Examples:
-    - GET /api/admin/tenants -> getAdminTenants
-    - POST /api/patients -> createPatients  
-    - GET /api/patients/{patient_id} -> getPatient
-    - PUT /api/admin/settings -> updateAdminSettings
-    """
-    # Get the function name
-    func_name = route.endpoint.__name__
-    
-    # Get path for context
-    path = route.path
-    
-    # Extract meaningful path segments (skip api, parameters)
-    segments = [s for s in path.split('/') if s and s != 'api' and not s.startswith('{')]
-    
-    # Convert function name to camelCase
-    parts = func_name.split('_')
-    base_name = parts[0] + ''.join(word.capitalize() for word in parts[1:])
-    base_lower = base_name.lower()
-    
-    # Build unique suffix from path if needed
-    # For generic names like 'init_db', 'health_check', 'get_me', etc.
-    generic_names = ['initdb', 'healthcheck', 'getme', 'createinvoice', 'getinvoices', 
-                     'getanalytics', 'getintegrations']
-    
-    if base_lower.replace('_', '') in generic_names or base_lower in generic_names:
-        # Use first 2 path segments for context
-        context_segments = segments[:2] if len(segments) >= 2 else segments
-        if context_segments:
-            context = ''.join(word.capitalize() for word in context_segments)
-            # Rebuild with context
-            action_verbs = ['get', 'list', 'create', 'update', 'delete', 'init', 'trigger', 'send', 'retry', 'health']
-            for verb in action_verbs:
-                if base_lower.startswith(verb):
-                    verb_len = len(verb)
-                    # Insert context after verb
-                    base_name = base_name[:verb_len] + context + base_name[verb_len:].replace(context, '')
-                    break
-            else:
-                # No verb found, prepend context
-                base_name = context + base_name
-    elif 'admin' in segments and 'admin' not in base_lower:
-        # Add Admin prefix for admin routes
-        action_verbs = ['get', 'list', 'create', 'update', 'delete', 'init', 'trigger', 'send', 'retry']
-        for verb in action_verbs:
-            if base_lower.startswith(verb):
-                verb_len = len(verb)
-                base_name = base_name[:verb_len] + 'Admin' + base_name[verb_len:]
-                break
-    
-    return base_name
-
-# ============================================================================
-# Structured JSON Logging Setup
+# Structured JSON Logging Setup with Rotation
 # ============================================================================
 class JSONFormatter(logging.Formatter):
     """JSON formatter for structured logging"""
@@ -104,19 +41,36 @@ class JSONFormatter(logging.Formatter):
         return json.dumps(log_obj)
 
 # Configure root logger with JSON format
-json_handler = logging.StreamHandler()
-json_handler.setFormatter(JSONFormatter())
-logging.basicConfig(level=logging.INFO, handlers=[json_handler])
+json_formatter = JSONFormatter()
+
+# Console handler (for stdout/stderr)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(json_formatter)
+
+# File handler with rotation (prevents log bloat)
+# Max 50MB per file, keep 5 backup files (total max ~300MB)
+from logging.handlers import RotatingFileHandler
+log_dir = os.path.dirname(os.path.abspath(__file__))
+log_file = os.path.join(log_dir, 'server.log')
+file_handler = RotatingFileHandler(
+    log_file,
+    maxBytes=50 * 1024 * 1024,  # 50MB per file
+    backupCount=5,               # Keep 5 old files
+    encoding='utf-8'
+)
+file_handler.setFormatter(json_formatter)
+
+# Configure logging with both handlers
+logging.basicConfig(level=logging.INFO, handlers=[console_handler, file_handler])
 logger = logging.getLogger("x-ear")
 
-# Create FastAPI app with custom operation ID generator
+# Create FastAPI app - operation_ids are now explicit in each endpoint
 app = FastAPI(
     title="X-Ear CRM API",
     description="Auto-generated from Flask backend routes",
     version="1.0.0",
     docs_url="/docs",
-    openapi_url="/openapi.json",
-    generate_unique_id_function=generate_operation_id
+    openapi_url="/openapi.json"
 )
 
 # ============================================================================
@@ -300,6 +254,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
+    # Log the actual error for debugging
+    import traceback
+    import sys
+    error_msg = f"Unhandled exception: {exc}"
+    tb = traceback.format_exc()
+    # Print to stderr to ensure visibility
+    print(f"ERROR: {error_msg}", file=sys.stderr)
+    print(f"Traceback: {tb}", file=sys.stderr)
+    logger.error(error_msg)
+    logger.error(f"Traceback: {tb}")
     # Avoid leaking internal details; log is handled elsewhere.
     return envelope_error(
         "Internal server error",
@@ -453,8 +417,9 @@ app.include_router(pos_commission.router)
 app.include_router(uts.router)
 
 # Phase 7 migrated routers - Final modules
-from routers import invoice_management, invoices_actions, communications, sms_integration
+from routers import invoice_management, invoices_actions, communications, sms_integration, sms_packages
 app.include_router(sms_integration.router)
+app.include_router(sms_packages.router, prefix="/api")
 app.include_router(invoice_management.router)
 app.include_router(invoices_actions.router)
 app.include_router(communications.router)

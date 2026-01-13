@@ -10,7 +10,7 @@ import { InventoryForm } from '../components/inventory/InventoryForm';
 import { AdvancedFilters, InventoryFilters } from '../components/inventory/AdvancedFilters';
 import { InventoryItem } from '../types/inventory';
 
-import { getAllInventory, deleteInventory } from '@/api/generated';
+import { listInventory, deleteInventory } from '@/api/generated';
 import { apiClient } from '../api/orval-mutator';
 import { unwrapArray } from '../utils/response-unwrap';
 
@@ -50,7 +50,7 @@ export const DesktopInventoryPage: React.FC = () => {
   useEffect(() => {
     const loadFilterOptions = async () => {
       try {
-        const response = await getAllInventory({
+        const response = await listInventory({
           per_page: 100
         });
 
@@ -136,7 +136,7 @@ export const DesktopInventoryPage: React.FC = () => {
 
   const exportInventory = async () => {
     try {
-      const response = await getAllInventory({
+      const response = await listInventory({
         per_page: 1000
       });
 
@@ -186,7 +186,7 @@ export const DesktopInventoryPage: React.FC = () => {
     let mounted = true;
     const load = async () => {
       try {
-        const response = await getAllInventory({ per_page: 500 });
+        const response = await listInventory({ per_page: 500 });
         const items = unwrapArray<any>(response);
         if (mounted) setModalItems(items);
       } catch (error) {

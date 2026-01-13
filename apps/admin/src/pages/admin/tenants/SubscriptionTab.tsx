@@ -3,11 +3,11 @@ import { CreditCard, MessageSquare, PlusCircle, Plus, Settings, Trash2 } from 'l
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
 import {
-    useGetAdminPlans,
-    useGetAdminAddons,
-    useSubscribeTenant,
-    useAddTenantAddon,
-    useUpdateTenant,
+    useListAdminPlans,
+    useListAdminAddons,
+    useCreateAdminTenantSubscribe,
+    useCreateAdminTenantAddons,
+    useUpdateAdminTenant,
 } from '@/lib/api-client';
 
 // Local type since Tenant is not exported from generated client
@@ -23,10 +23,10 @@ interface ExtendedTenant {
 }
 
 export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdate: () => void }) => {
-    const { data: plansData } = useGetAdminPlans();
+    const { data: plansData } = useListAdminPlans();
     const plans = (plansData as any)?.data?.plans || (plansData as any)?.plans || [];
 
-    const { data: addonsData } = useGetAdminAddons();
+    const { data: addonsData } = useListAdminAddons();
     const addons = (addonsData as any)?.data?.addons || (addonsData as any)?.addons || [];
 
     const [selectedPlanId, setSelectedPlanId] = useState(tenant.current_plan_id || '');
@@ -40,9 +40,9 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
     const [loadingRemoveAddon, setLoadingRemoveAddon] = useState(false);
     const [loadingSmsUpdate, setLoadingSmsUpdate] = useState(false);
 
-    const { mutateAsync: subscribeTenant } = useSubscribeTenant();
-    const { mutateAsync: addTenantAddon } = useAddTenantAddon();
-    const { mutateAsync: updateTenant } = useUpdateTenant();
+    const { mutateAsync: subscribeTenant } = useCreateAdminTenantSubscribe();
+    const { mutateAsync: addTenantAddon } = useCreateAdminTenantAddons();
+    const { mutateAsync: updateTenant } = useUpdateAdminTenant();
 
     useEffect(() => {
         setSelectedPlanId(tenant.current_plan_id || '');

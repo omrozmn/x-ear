@@ -40,6 +40,7 @@ class UserRead(UserBase, IDMixin, TimestampMixin):
     branch_id: Optional[str] = Field(None, alias="branchId")
     full_name: str = Field(..., alias="fullName", description="Full name")
     last_login: Optional[datetime] = Field(None, alias="lastLogin")
+    username: Optional[str] = Field(None, description="Username")
     
     # Permissions
     permissions: List[str] = Field(default=[], description="User permissions")
@@ -76,3 +77,13 @@ class PermissionRead(IDMixin, AppBaseModel):
     name: str = Field(..., description="Permission name")
     description: Optional[str] = Field(None, description="Permission description")
     category: Optional[str] = Field(None, description="Permission category")
+
+
+class UserListResponse(AppBaseModel):
+    """Schema for user list response"""
+    users: List[UserRead]
+
+
+class UserResponse(AppBaseModel):
+    """Schema for single user response"""
+    user: UserRead

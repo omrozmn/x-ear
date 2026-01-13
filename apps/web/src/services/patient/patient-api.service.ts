@@ -12,21 +12,21 @@ import { CreatePatientRequest, LegacyPatient, UpdatePatientRequest } from '../..
 import { unwrapArray, unwrapObject, unwrapProperty } from '../../utils/response-unwrap';
 import {
   listPatients,
-  createPatient,
+  createPatients,
   getPatient,
   updatePatient,
   deletePatient
 } from '@/api/generated/patients/patients';
-import { getAdminPatientSales } from '@/api/generated/admin-patients/admin-patients';
-import { createSale, updateSale } from '@/api/generated/sales/sales';
-import { getTimeline } from '@/api/generated/timeline/timeline';
-import { getPatientSgkDocuments } from '@/api/generated/sgk/sgk';
-import { getPatientDocuments } from '@/api/generated/documents/documents';
+import { listAdminPatientSales } from '@/api/generated/admin-patients/admin-patients';
+import { createSales, updateSale } from '@/api/generated/sales/sales';
+import { listTimeline } from '@/api/generated/timeline/timeline';
+import { listPatientSgkDocuments } from '@/api/generated/sgk/sgk';
+import { listPatientDocuments } from '@/api/generated/documents/documents';
 import {
-  getPatientAppointments,
-  getPatientHearingTests,
-  getPatientNotes,
-  createPatientNote,
+  listPatientAppointments,
+  listPatientHearingTests,
+  listPatientNotes,
+  createPatientNotes,
   deletePatientNote
 } from '@/api/generated/patient-subresources/patient-subresources';
 
@@ -109,12 +109,10 @@ export class PatientApiService {
     const cached = this.cache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-      console.log('📋 Returning cached patients data');
       return cached.data;
     }
 
     if (this.ongoingRequests.has(cacheKey)) {
-      console.log('⏳ Waiting for ongoing request...');
       return this.ongoingRequests.get(cacheKey)!;
     }
 
@@ -134,15 +132,12 @@ export class PatientApiService {
    * Fetch all patients (simplified implementation)
    */
   private async _fetchAllPatientsInternal(perPage: number = 200): Promise<Patient[]> {
-    console.log(`🔄 Starting to fetch all patients (per_page: ${perPage})...`);
-
     try {
       const response = await listPatients({ page: 1, per_page: perPage });
       // Orval response unwrapping - check if data is directly valid or nested
       const rawData = (response as unknown) as any;
       const list = Array.isArray(rawData) ? rawData : (rawData?.data?.data || rawData?.data || []);
 
-      console.log(`✅ Successfully fetched ${list.length} patients`);
       // Map Orval Patient schema to local Patient shape
       return list.map((p: PatientRead) => ({
         id: p.id,
@@ -165,7 +160,7 @@ export class PatientApiService {
   async getSales(patientId: string): Promise<ApiEnvelope<Sale[]>> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await getAdminPatientSales(patientId);
+        return await listAdminPatientSales(patientId);
       });
       const res = response as unknown as { data?: { data?: Sale[]; meta?: ResponseMeta } };
       // Unwrap logic depends on backend response structure. Orval might already return parsed JSON.
@@ -190,12 +185,10 @@ export class PatientApiService {
 
   clearCache(): void {
     this.cache.clear();
-    console.log('🗑️ Cache cleared');
   }
 
   invalidateCache(key: string = 'all_patients'): void {
     this.cache.delete(key);
-    console.log(`🗑️ Cache invalidated for key: ${key}`);
   }
 
   async fetchPatient(id: string): Promise<Patient | null> {
@@ -232,7 +225,7 @@ export class PatientApiService {
         birthDate: (patientData as any).birthDate || patientData.birth_date,
         tcNumber: (patientData as any).tcNumber
       };
-      const response = await createPatient(body);
+      const response = await createPatients(body);
       const payload = unwrapObject<any>(response);
       const newPatient = payload?.patient || payload;
       if (newPatient) {
@@ -330,7 +323,7 @@ export class PatientApiService {
         reportStatus: ((saleData as Record<string, unknown>)?.reportStatus as any)
       } as unknown as SaleCreate;
 
-      const response = await createSale(body);
+      const response = await createSales(body);
 
       const payload = (response as unknown) as { data?: unknown };
       return { data: payload?.data ?? null, success: true };
@@ -363,7 +356,7 @@ export class PatientApiService {
 
   async getTimeline(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await getTimeline({ patient_id: patientId } as any);
+      const response = await listTimeline({ patient_id: patientId } as any);
       const payload = unwrapObject<any>(response);
       return {
         data: unwrapArray<unknown>(response),
@@ -383,7 +376,7 @@ export class PatientApiService {
   async getSgk(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await getPatientSgkDocuments(patientId);
+        return await listPatientSgkDocuments(patientId);
       });
       return {
         data: unwrapArray<unknown>(response),
@@ -403,7 +396,7 @@ export class PatientApiService {
     try {
       const response = await this.throttler.throttle(async () => {
         // Direct endpoint for patient appointments
-        return await getPatientAppointments(patientId);
+        return await listPatientAppointments(patientId);
       });
 
       const allAppointments = unwrapArray<any>(response);
@@ -423,7 +416,7 @@ export class PatientApiService {
 
   async getHearingTests(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await getPatientHearingTests(patientId);
+      const response = await listPatientHearingTests(patientId);
       return {
         data: unwrapArray<unknown>(response),
         success: true
@@ -440,7 +433,7 @@ export class PatientApiService {
 
   async getNotes(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await getPatientNotes(patientId);
+      const response = await listPatientNotes(patientId);
       return {
         data: unwrapArray<unknown>(response),
         success: true,
@@ -458,7 +451,7 @@ export class PatientApiService {
 
   async getDocuments(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await getPatientDocuments(patientId);
+      const response = await listPatientDocuments(patientId);
       return {
         data: unwrapArray<unknown>(response),
         success: true,
@@ -502,7 +495,7 @@ export class PatientApiService {
   async createNote(patientId: string, noteData: unknown): Promise<unknown> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await createPatientNote(patientId, noteData as PatientNoteCreate);
+        return await createPatientNotes(patientId, noteData as PatientNoteCreate);
       });
       return {
         data: (response as any).data,

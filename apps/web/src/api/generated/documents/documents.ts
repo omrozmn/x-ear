@@ -38,7 +38,7 @@ import { customInstance } from '../../orval-mutator';
  * Get all documents for a patient
  * @summary Get Patient Documents
  */
-export const getPatientDocuments = (
+export const listPatientDocuments = (
     patientId: string,
  signal?: AbortSignal
 ) => {
@@ -53,69 +53,69 @@ export const getPatientDocuments = (
 
 
 
-export const getGetPatientDocumentsQueryKey = (patientId?: string,) => {
+export const getListPatientDocumentsQueryKey = (patientId?: string,) => {
     return [
     `/api/patients/${patientId}/documents`
     ] as const;
     }
 
     
-export const getGetPatientDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof getPatientDocuments>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocuments>>, TError, TData>>, }
+export const getListPatientDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPatientDocumentsQueryKey(patientId);
+  const queryKey =  queryOptions?.queryKey ?? getListPatientDocumentsQueryKey(patientId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPatientDocuments>>> = ({ signal }) => getPatientDocuments(patientId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientDocuments>>> = ({ signal }) => listPatientDocuments(patientId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPatientDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPatientDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof getPatientDocuments>>>
-export type GetPatientDocumentsQueryError = HTTPValidationError
+export type ListPatientDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientDocuments>>>
+export type ListPatientDocumentsQueryError = HTTPValidationError
 
 
-export function useGetPatientDocuments<TData = Awaited<ReturnType<typeof getPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocuments>>, TError, TData>> & Pick<
+export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPatientDocuments>>,
+          Awaited<ReturnType<typeof listPatientDocuments>>,
           TError,
-          Awaited<ReturnType<typeof getPatientDocuments>>
+          Awaited<ReturnType<typeof listPatientDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPatientDocuments<TData = Awaited<ReturnType<typeof getPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocuments>>, TError, TData>> & Pick<
+export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPatientDocuments>>,
+          Awaited<ReturnType<typeof listPatientDocuments>>,
           TError,
-          Awaited<ReturnType<typeof getPatientDocuments>>
+          Awaited<ReturnType<typeof listPatientDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPatientDocuments<TData = Awaited<ReturnType<typeof getPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocuments>>, TError, TData>>, }
+export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Patient Documents
  */
 
-export function useGetPatientDocuments<TData = Awaited<ReturnType<typeof getPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocuments>>, TError, TData>>, }
+export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPatientDocumentsQueryOptions(patientId,options)
+  const queryOptions = getListPatientDocumentsQueryOptions(patientId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -131,7 +131,7 @@ export function useGetPatientDocuments<TData = Awaited<ReturnType<typeof getPati
  * Add a new document to patient - stores file locally
  * @summary Add Patient Document
  */
-export const addPatientDocument = (
+export const createPatientDocuments = (
     patientId: string,
     documentCreate: DocumentCreate,
  signal?: AbortSignal
@@ -148,11 +148,11 @@ export const addPatientDocument = (
   
 
 
-export const getAddPatientDocumentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPatientDocument>>, TError,{patientId: string;data: DocumentCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof addPatientDocument>>, TError,{patientId: string;data: DocumentCreate}, TContext> => {
+export const getCreatePatientDocumentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{patientId: string;data: DocumentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{patientId: string;data: DocumentCreate}, TContext> => {
 
-const mutationKey = ['addPatientDocument'];
+const mutationKey = ['createPatientDocuments'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -162,10 +162,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addPatientDocument>>, {patientId: string;data: DocumentCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientDocuments>>, {patientId: string;data: DocumentCreate}> = (props) => {
           const {patientId,data} = props ?? {};
 
-          return  addPatientDocument(patientId,data,)
+          return  createPatientDocuments(patientId,data,)
         }
 
         
@@ -173,23 +173,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type AddPatientDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof addPatientDocument>>>
-    export type AddPatientDocumentMutationBody = DocumentCreate
-    export type AddPatientDocumentMutationError = HTTPValidationError
+    export type CreatePatientDocumentsMutationResult = NonNullable<Awaited<ReturnType<typeof createPatientDocuments>>>
+    export type CreatePatientDocumentsMutationBody = DocumentCreate
+    export type CreatePatientDocumentsMutationError = HTTPValidationError
 
     /**
  * @summary Add Patient Document
  */
-export const useAddPatientDocument = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPatientDocument>>, TError,{patientId: string;data: DocumentCreate}, TContext>, }
+export const useCreatePatientDocuments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{patientId: string;data: DocumentCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof addPatientDocument>>,
+        Awaited<ReturnType<typeof createPatientDocuments>>,
         TError,
         {patientId: string;data: DocumentCreate},
         TContext
       > => {
 
-      const mutationOptions = getAddPatientDocumentMutationOptions(options);
+      const mutationOptions = getCreatePatientDocumentsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

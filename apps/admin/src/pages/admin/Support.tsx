@@ -13,11 +13,11 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import {
-  useGetAdminTickets,
-  useCreateAdminTicket,
+  useListAdminTickets,
+  useCreateAdminTickets,
   useUpdateAdminTicket,
-  useGetAdminUsers,
-  useCreateTicketResponse,
+  useListAdminUsers,
+  useCreateAdminTicketResponses,
 } from '@/lib/api-client';
 
 // Local type definitions (not exported from generated client)
@@ -55,7 +55,7 @@ const Support: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch tickets
-  const { data: ticketsData, isLoading, error } = useGetAdminTickets({
+  const { data: ticketsData, isLoading, error } = useListAdminTickets({
     page,
     limit,
     search: searchTerm || undefined,
@@ -67,12 +67,12 @@ const Support: React.FC = () => {
   const pagination = (ticketsData as any)?.data?.pagination || (ticketsData as any)?.pagination;
 
   // Fetch admin users for assignment
-  const { data: adminUsersData } = useGetAdminUsers({ limit: 100 });
+  const { data: adminUsersData } = useListAdminUsers({ limit: 100 });
   const adminUsers = (adminUsersData as any)?.data?.users || (adminUsersData as any)?.users || [];
 
   // Mutations
   const { mutateAsync: updateTicket } = useUpdateAdminTicket();
-  const { mutateAsync: createTicket } = useCreateAdminTicket();
+  const { mutateAsync: createTicket } = useCreateAdminTickets();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -696,7 +696,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 }) => {
   const [response, setResponse] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const { mutateAsync: createTicketResponse } = useCreateTicketResponse();
+  const { mutateAsync: createTicketResponse } = useCreateAdminTicketResponses();
   // CSAT fields removed as they are not in schema yet
 
   const formatDate = (dateString: string | undefined) => {

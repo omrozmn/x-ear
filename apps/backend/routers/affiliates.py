@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/affiliates", tags=["Affiliates"])
 
-@router.get("/check/{code}")
+@router.get("/check/{code}", operation_id="getAffiliateCheck")
 async def check_affiliate(code: str, db: Session = Depends(get_db)):
     """Check if affiliate code exists (Public)"""
     try:
@@ -33,7 +33,7 @@ async def check_affiliate(code: str, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/register", response_model=ResponseEnvelope[AffiliateRead])
+@router.post("/register", operation_id="createAffiliateRegister", response_model=ResponseEnvelope[AffiliateRead])
 async def register_affiliate(data: AffiliateCreate, db: Session = Depends(get_db)):
     """Register a new affiliate"""
     try:
@@ -42,7 +42,7 @@ async def register_affiliate(data: AffiliateCreate, db: Session = Depends(get_db
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/login")
+@router.post("/login", operation_id="createAffiliateLogin")
 async def login_affiliate(email: str, password: str, db: Session = Depends(get_db)):
     """Login affiliate"""
     try:
@@ -56,7 +56,7 @@ async def login_affiliate(email: str, password: str, db: Session = Depends(get_d
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/me", response_model=ResponseEnvelope[AffiliateRead])
+@router.get("/me", operation_id="listAffiliateMe", response_model=ResponseEnvelope[AffiliateRead])
 async def get_me(affiliate_id: int, db: Session = Depends(get_db)):
     """Get current affiliate info"""
     try:
@@ -75,7 +75,7 @@ async def get_me(affiliate_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.patch("/{affiliate_id}", response_model=ResponseEnvelope[AffiliateRead])
+@router.patch("/{affiliate_id}", operation_id="updateAffiliate", response_model=ResponseEnvelope[AffiliateRead])
 async def update_affiliate_payment(affiliate_id: int, data: AffiliateUpdate, db: Session = Depends(get_db)):
     """Update affiliate payment info"""
     try:
@@ -84,7 +84,7 @@ async def update_affiliate_payment(affiliate_id: int, data: AffiliateUpdate, db:
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{affiliate_id}/commissions", response_model=ResponseEnvelope[List[CommissionRead]])
+@router.get("/{affiliate_id}/commissions", operation_id="listAffiliateCommissions", response_model=ResponseEnvelope[List[CommissionRead]])
 async def get_affiliate_commissions(affiliate_id: int, db: Session = Depends(get_db)):
     """Get affiliate commissions"""
     try:
@@ -93,7 +93,7 @@ async def get_affiliate_commissions(affiliate_id: int, db: Session = Depends(get
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{affiliate_id}/details", response_model=ResponseEnvelope[AffiliateRead])
+@router.get("/{affiliate_id}/details", operation_id="listAffiliateDetails", response_model=ResponseEnvelope[AffiliateRead])
 async def get_affiliate_details(affiliate_id: int, db: Session = Depends(get_db)):
     """Get detailed affiliate information with referrals"""
     try:
@@ -176,7 +176,7 @@ async def get_affiliate_details(affiliate_id: int, db: Session = Depends(get_db)
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.patch("/{affiliate_id}/toggle-status", response_model=ResponseEnvelope[AffiliateRead])
+@router.patch("/{affiliate_id}/toggle-status", operation_id="updateAffiliateToggleStatus", response_model=ResponseEnvelope[AffiliateRead])
 async def toggle_affiliate_status(affiliate_id: int, db: Session = Depends(get_db)):
     """Toggle affiliate active/inactive status"""
     try:
@@ -198,7 +198,7 @@ async def toggle_affiliate_status(affiliate_id: int, db: Session = Depends(get_d
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/list", response_model=ResponseEnvelope[List[AffiliateRead]])
+@router.get("/list", operation_id="listAffiliateList", response_model=ResponseEnvelope[List[AffiliateRead]])
 async def list_affiliates(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """List all affiliates"""
     try:
@@ -212,7 +212,7 @@ async def list_affiliates(skip: int = 0, limit: int = 100, db: Session = Depends
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/lookup")
+@router.get("/lookup", operation_id="listAffiliateLookup")
 async def lookup_affiliate(
     code: Optional[str] = None,
     email: Optional[str] = None,

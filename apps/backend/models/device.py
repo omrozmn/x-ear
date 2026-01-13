@@ -66,6 +66,7 @@ class Device(BaseModel):
             'serialNumber': self.serial_number,
             'serialNumberLeft': self.serial_number_left,
             'serialNumberRight': self.serial_number_right,
+            'name': f"{self.brand} {self.model}".strip(),
             'brand': self.brand,
             'model': self.model,
             'type': self.device_type,
@@ -83,7 +84,15 @@ class Device(BaseModel):
                 'endDate': self.warranty_end_date.isoformat() if self.warranty_end_date else None,
                 'terms': self.warranty_terms
             } if self.warranty_start_date or self.warranty_end_date else None,
-            'price': float(self.price) if self.price else None,
+            'price': float(self.price) if self.price else 0.0,
+            # Schema compatibility fields
+            'cost': 0.0,
+            'kdvRate': 18.0,
+            'features': [],
+            'warrantyMonths': 24, # Default or calc
+            'barcode': None,
+            'branchId': None,
+            'isAssigned': self.patient_id is not None and self.patient_id != 'inventory',
             'notes': self.notes
         }
         device_dict.update(base_dict)

@@ -52,7 +52,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
     const filtered = appointments.filter(apt => {
       const aptDate = parseISO(apt.date);
       const isInWeek = aptDate >= weekStart && aptDate <= weekEnd;
-      
+
       // When showAll is true, include all appointments; otherwise restrict to selected week
       if (!showAll && !isInWeek) return false;
 
@@ -62,7 +62,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
         const matchesPatient = apt.patientName?.toLowerCase().includes(searchLower);
         const matchesType = apt.type?.toLowerCase().includes(searchLower);
         const matchesNotes = apt.notes?.toLowerCase().includes(searchLower);
-        
+
         if (!matchesPatient && !matchesType && !matchesNotes) {
           return false;
         }
@@ -121,20 +121,21 @@ export const CalendarList: React.FC<CalendarListProps> = ({
     // Convert to ordered array
     const months = Object.values(monthsMap).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
     return months;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments, weekStart, weekEnd, searchTerm, filterStatus, sortBy]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -161,7 +162,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
   return (
     <div className="space-y-6">
       {/* Header with filters */}
-      <Card className="p-4">
+      <Card className="p-4 bg-white dark:bg-slate-800 dark:border-slate-700">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -170,19 +171,19 @@ export const CalendarList: React.FC<CalendarListProps> = ({
                 {showAll ? 'Tüm Randevular' : `${format(weekStart, 'd MMMM', { locale: tr })} - ${format(weekEnd, 'd MMMM yyyy', { locale: tr })}`}
               </Text>
             </div>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <label className="text-sm text-gray-600">Görüntüle:</label>
-                  <select value={showAll ? 'all' : 'week'} onChange={(e) => setShowAll(e.target.value === 'all')} className="px-2 py-1 border rounded-md">
-                    <option value="all">Tümü</option>
-                    <option value="week">Bu Hafta</option>
-                  </select>
-                </div>
-
-                <Badge variant="secondary">
-                  {totalAppointments} randevu
-                </Badge>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-600 dark:text-gray-400">Görüntüle:</label>
+                <select value={showAll ? 'all' : 'week'} onChange={(e) => setShowAll(e.target.value === 'all')} className="px-2 py-1 border rounded-md dark:bg-slate-800 dark:text-white dark:border-slate-700">
+                  <option value="all" className="dark:bg-slate-800">Tümü</option>
+                  <option value="week" className="dark:bg-slate-800">Bu Hafta</option>
+                </select>
               </div>
+
+              <Badge variant="secondary">
+                {totalAppointments} randevu
+              </Badge>
+            </div>
           </div>
 
           {/* Search and filters */}
@@ -193,30 +194,30 @@ export const CalendarList: React.FC<CalendarListProps> = ({
                 placeholder="Hasta, tür veya notlarda ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 dark:bg-slate-800 dark:text-white dark:border-slate-700"
               />
             </div>
 
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
             >
-              <option value="all">Tüm Durumlar</option>
-              <option value="confirmed">Onaylandı</option>
-              <option value="pending">Bekliyor</option>
-              <option value="cancelled">İptal</option>
-              <option value="completed">Tamamlandı</option>
+              <option value="all" className="dark:bg-slate-800">Tüm Durumlar</option>
+              <option value="confirmed" className="dark:bg-slate-800">Onaylandı</option>
+              <option value="pending" className="dark:bg-slate-800">Bekliyor</option>
+              <option value="cancelled" className="dark:bg-slate-800">İptal</option>
+              <option value="completed" className="dark:bg-slate-800">Tamamlandı</option>
             </select>
 
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'date' | 'patient' | 'status')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
             >
-              <option value="date">Tarihe Göre</option>
-              <option value="patient">Hastaya Göre</option>
-              <option value="status">Duruma Göre</option>
+              <option value="date" className="dark:bg-slate-800">Tarihe Göre</option>
+              <option value="patient" className="dark:bg-slate-800">Hastaya Göre</option>
+              <option value="status" className="dark:bg-slate-800">Duruma Göre</option>
             </select>
           </div>
         </div>
@@ -228,7 +229,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
           <Card className="p-8 text-center">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <Text className="text-gray-600">
-              {searchTerm || filterStatus !== 'all' 
+              {searchTerm || filterStatus !== 'all'
                 ? 'Filtrelere uygun randevu bulunamadı'
                 : 'Bu hafta için randevu bulunmuyor'
               }
@@ -245,11 +246,11 @@ export const CalendarList: React.FC<CalendarListProps> = ({
               {Object.entries(month.dates)
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([date, dayAppointments]) => (
-                  <Card key={date} className="overflow-hidden">
-                    <div className="bg-white px-4 py-3 border-b">
+                  <Card key={date} className="overflow-hidden bg-white dark:bg-slate-800 dark:border-slate-700">
+                    <div className="bg-white dark:bg-slate-800 px-4 py-3 border-b dark:border-slate-700">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <Text className="font-semibold text-gray-900">
+                          <Text className="font-semibold text-gray-900 dark:text-white">
                             {format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: tr })}
                           </Text>
                           {isSameDay(parseISO(date), new Date()) && (
@@ -262,25 +263,25 @@ export const CalendarList: React.FC<CalendarListProps> = ({
                       </div>
                     </div>
 
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100 dark:divide-slate-700">
                       {dayAppointments.map((appointment) => (
                         <div
                           key={appointment.id}
-                          className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                          className="p-4 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
                           onClick={() => onAppointmentClick(appointment)}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
                               <div className="flex items-center space-x-2">
-                                <Clock className="w-4 h-4 text-gray-500" />
-                                <Text className="font-medium text-gray-900">
+                                <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                <Text className="font-medium text-gray-900 dark:text-white">
                                   {appointment.time}
                                 </Text>
                               </div>
 
                               <div className="flex items-center space-x-2">
-                                <User className="w-4 h-4 text-gray-500" />
-                                <Text className="font-medium">
+                                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                <Text className="font-medium dark:text-gray-200">
                                   {appointment.patientName || 'Hasta bilgisi yok'}
                                 </Text>
                               </div>
@@ -290,24 +291,24 @@ export const CalendarList: React.FC<CalendarListProps> = ({
                               </Badge>
                             </div>
 
-                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                               <div className="flex items-center space-x-1">
                                 <MapPin className="w-4 h-4" />
                                 <span>{appointment.location || 'Ana Şube'}</span>
                               </div>
-                              
+
                               <span className="font-medium">
                                 {appointment.duration || 30} dk
                               </span>
-                              
-                              <span className="px-2 py-1 bg-gray-100 rounded-md">
+
+                              <span className="px-2 py-1 bg-gray-100 dark:bg-slate-700 rounded-md">
                                 {appointment.type}
                               </span>
                             </div>
                           </div>
 
                           {appointment.notes && (
-                            <div className="mt-2 text-sm text-gray-600">
+                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                               <Text>{appointment.notes}</Text>
                             </div>
                           )}

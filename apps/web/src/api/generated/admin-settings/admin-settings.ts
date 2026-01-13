@@ -39,7 +39,7 @@ import { customInstance } from '../../orval-mutator';
  * Initialize System Settings table
  * @summary Init Db
  */
-export const initAdminSettingsDb = (
+export const createAdminSettingInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -53,11 +53,11 @@ export const initAdminSettingsDb = (
   
 
 
-export const getInitAdminSettingsDbMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminSettingsDb>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initAdminSettingsDb>>, TError,void, TContext> => {
+export const getCreateAdminSettingInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initAdminSettingsDb'];
+const mutationKey = ['createAdminSettingInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -67,10 +67,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initAdminSettingsDb>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminSettingInitDb>>, void> = () => {
           
 
-          return  initAdminSettingsDb()
+          return  createAdminSettingInitDb()
         }
 
         
@@ -78,23 +78,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitAdminSettingsDbMutationResult = NonNullable<Awaited<ReturnType<typeof initAdminSettingsDb>>>
+    export type CreateAdminSettingInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminSettingInitDb>>>
     
-    export type InitAdminSettingsDbMutationError = unknown
+    export type CreateAdminSettingInitDbMutationError = unknown
 
     /**
  * @summary Init Db
  */
-export const useInitAdminSettingsDb = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminSettingsDb>>, TError,void, TContext>, }
+export const useCreateAdminSettingInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initAdminSettingsDb>>,
+        Awaited<ReturnType<typeof createAdminSettingInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitAdminSettingsDbMutationOptions(options);
+      const mutationOptions = getCreateAdminSettingInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -102,7 +102,7 @@ export const useInitAdminSettingsDb = <TError = unknown,
  * Get all system settings
  * @summary Get Settings
  */
-export const getAdminSettings = (
+export const listAdminSettings = (
     
  signal?: AbortSignal
 ) => {
@@ -117,69 +117,69 @@ export const getAdminSettings = (
 
 
 
-export const getGetAdminSettingsQueryKey = () => {
+export const getListAdminSettingsQueryKey = () => {
     return [
     `/api/admin/settings`
     ] as const;
     }
 
     
-export const getGetAdminSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSettings>>, TError, TData>>, }
+export const getListAdminSettingsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSettings>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminSettingsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminSettingsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminSettings>>> = ({ signal }) => getAdminSettings(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminSettings>>> = ({ signal }) => listAdminSettings(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminSettings>>>
-export type GetAdminSettingsQueryError = unknown
+export type ListAdminSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminSettings>>>
+export type ListAdminSettingsQueryError = unknown
 
 
-export function useGetAdminSettings<TData = Awaited<ReturnType<typeof getAdminSettings>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSettings>>, TError, TData>> & Pick<
+export function useListAdminSettings<TData = Awaited<ReturnType<typeof listAdminSettings>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSettings>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminSettings>>,
+          Awaited<ReturnType<typeof listAdminSettings>>,
           TError,
-          Awaited<ReturnType<typeof getAdminSettings>>
+          Awaited<ReturnType<typeof listAdminSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminSettings<TData = Awaited<ReturnType<typeof getAdminSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSettings>>, TError, TData>> & Pick<
+export function useListAdminSettings<TData = Awaited<ReturnType<typeof listAdminSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSettings>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminSettings>>,
+          Awaited<ReturnType<typeof listAdminSettings>>,
           TError,
-          Awaited<ReturnType<typeof getAdminSettings>>
+          Awaited<ReturnType<typeof listAdminSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminSettings<TData = Awaited<ReturnType<typeof getAdminSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSettings>>, TError, TData>>, }
+export function useListAdminSettings<TData = Awaited<ReturnType<typeof listAdminSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSettings>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Settings
  */
 
-export function useGetAdminSettings<TData = Awaited<ReturnType<typeof getAdminSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSettings>>, TError, TData>>, }
+export function useListAdminSettings<TData = Awaited<ReturnType<typeof listAdminSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSettings>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminSettingsQueryOptions(options)
+  const queryOptions = getListAdminSettingsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -260,7 +260,7 @@ export const useUpdateAdminSettings = <TError = HTTPValidationError,
  * Clear system cache (Mock)
  * @summary Clear Cache
  */
-export const clearCache = (
+export const createAdminSettingCacheClear = (
     
  signal?: AbortSignal
 ) => {
@@ -274,11 +274,11 @@ export const clearCache = (
   
 
 
-export const getClearCacheMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearCache>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof clearCache>>, TError,void, TContext> => {
+export const getCreateAdminSettingCacheClearMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingCacheClear>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingCacheClear>>, TError,void, TContext> => {
 
-const mutationKey = ['clearCache'];
+const mutationKey = ['createAdminSettingCacheClear'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -288,10 +288,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearCache>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminSettingCacheClear>>, void> = () => {
           
 
-          return  clearCache()
+          return  createAdminSettingCacheClear()
         }
 
         
@@ -299,23 +299,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ClearCacheMutationResult = NonNullable<Awaited<ReturnType<typeof clearCache>>>
+    export type CreateAdminSettingCacheClearMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminSettingCacheClear>>>
     
-    export type ClearCacheMutationError = unknown
+    export type CreateAdminSettingCacheClearMutationError = unknown
 
     /**
  * @summary Clear Cache
  */
-export const useClearCache = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearCache>>, TError,void, TContext>, }
+export const useCreateAdminSettingCacheClear = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingCacheClear>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof clearCache>>,
+        Awaited<ReturnType<typeof createAdminSettingCacheClear>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getClearCacheMutationOptions(options);
+      const mutationOptions = getCreateAdminSettingCacheClearMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -323,7 +323,7 @@ export const useClearCache = <TError = unknown,
  * Trigger database backup (Mock)
  * @summary Trigger Backup
  */
-export const triggerAdminBackup = (
+export const createAdminSettingBackup = (
     
  signal?: AbortSignal
 ) => {
@@ -337,11 +337,11 @@ export const triggerAdminBackup = (
   
 
 
-export const getTriggerAdminBackupMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerAdminBackup>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof triggerAdminBackup>>, TError,void, TContext> => {
+export const getCreateAdminSettingBackupMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingBackup>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingBackup>>, TError,void, TContext> => {
 
-const mutationKey = ['triggerAdminBackup'];
+const mutationKey = ['createAdminSettingBackup'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -351,10 +351,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof triggerAdminBackup>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminSettingBackup>>, void> = () => {
           
 
-          return  triggerAdminBackup()
+          return  createAdminSettingBackup()
         }
 
         
@@ -362,23 +362,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type TriggerAdminBackupMutationResult = NonNullable<Awaited<ReturnType<typeof triggerAdminBackup>>>
+    export type CreateAdminSettingBackupMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminSettingBackup>>>
     
-    export type TriggerAdminBackupMutationError = unknown
+    export type CreateAdminSettingBackupMutationError = unknown
 
     /**
  * @summary Trigger Backup
  */
-export const useTriggerAdminBackup = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerAdminBackup>>, TError,void, TContext>, }
+export const useCreateAdminSettingBackup = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSettingBackup>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof triggerAdminBackup>>,
+        Awaited<ReturnType<typeof createAdminSettingBackup>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getTriggerAdminBackupMutationOptions(options);
+      const mutationOptions = getCreateAdminSettingBackupMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

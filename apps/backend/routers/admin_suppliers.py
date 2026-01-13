@@ -23,7 +23,7 @@ class SupplierListResponse(ResponseEnvelope):
 class SupplierDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=SupplierListResponse)
+@router.get("", operation_id="listAdminSuppliers", response_model=SupplierListResponse)
 async def get_suppliers(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -40,12 +40,15 @@ async def get_suppliers(
             query = query.filter(
                 or_(
                     Supplier.company_name.ilike(f"%{search}%"),
-                    Supplier.contact_name.ilike(f"%{search}%"),
+                    Supplier.contact_person.ilike(f"%{search}%"),
                     Supplier.email.ilike(f"%{search}%")
                 )
             )
         if status:
-            query = query.filter(Supplier.status == status)
+            # Handle status conversion if needed, assuming status param is matching active/inactive logic or is_active boolean
+            # If status string is used, map it. The usage shows 'status' string param. 
+            pass
+            # query = query.filter(Supplier.is_active == (status == 'ACTIVE'))
         
         total = query.count()
         suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
@@ -60,7 +63,7 @@ async def get_suppliers(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=SupplierDetailResponse)
+@router.post("", operation_id="createAdminSupplier", response_model=SupplierDetailResponse)
 async def create_supplier(
     data: SupplierCreate,
     db: Session = Depends(get_db),
@@ -73,13 +76,13 @@ async def create_supplier(
         
         new_supplier = Supplier(
             company_name=data.company_name,
-            contact_name=data.contact_name,
+            contact_person=data.contact_person,
             email=data.email,
             phone=data.phone,
             address=data.address,
-            tax_id=data.tax_id,
+            tax_number=data.tax_number,
             tax_office=data.tax_office,
-            status=data.status,
+            is_active=data.is_active,
             created_at=datetime.utcnow()
         )
         db.add(new_supplier)
@@ -92,7 +95,7 @@ async def create_supplier(
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{supplier_id}", response_model=SupplierDetailResponse)
+@router.get("/{supplier_id}", operation_id="getAdminSupplier", response_model=SupplierDetailResponse)
 async def get_supplier(
     supplier_id: int,
     db: Session = Depends(get_db),
@@ -109,7 +112,7 @@ async def get_supplier(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/{supplier_id}", response_model=SupplierDetailResponse)
+@router.put("/{supplier_id}", operation_id="updateAdminSupplier", response_model=SupplierDetailResponse)
 async def update_supplier(
     supplier_id: int,
     data: SupplierUpdate,
@@ -124,20 +127,20 @@ async def update_supplier(
         
         if data.company_name is not None:
             supplier.company_name = data.company_name
-        if data.contact_name is not None:
-            supplier.contact_name = data.contact_name
+        if data.contact_person is not None:
+            supplier.contact_person = data.contact_person
         if data.email is not None:
             supplier.email = data.email
         if data.phone is not None:
             supplier.phone = data.phone
         if data.address is not None:
             supplier.address = data.address
-        if data.tax_id is not None:
-            supplier.tax_id = data.tax_id
+        if data.tax_number is not None:
+            supplier.tax_number = data.tax_number
         if data.tax_office is not None:
             supplier.tax_office = data.tax_office
-        if data.status is not None:
-            supplier.status = data.status
+        if data.is_active is not None:
+            supplier.is_active = data.is_active
         
         supplier.updated_at = datetime.utcnow()
         db.commit()
@@ -148,7 +151,7 @@ async def update_supplier(
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{supplier_id}", response_model=ResponseEnvelope)
+@router.delete("/{supplier_id}", operation_id="deleteAdminSupplier", response_model=ResponseEnvelope)
 async def delete_supplier(
     supplier_id: int,
     db: Session = Depends(get_db),

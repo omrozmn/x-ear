@@ -27,13 +27,14 @@ import type {
 import type {
   AddAddonRequest,
   CreateTenantUserRequest,
+  DeleteAdminTenantAddonsParams,
   DocumentStatusUpdate,
   HTTPValidationError,
   ListAdminTenantsParams,
-  RemoveTenantAddonParams,
   ResponseEnvelopeTenantRead,
+  ResponseEnvelopeUserListResponse,
+  ResponseEnvelopeUserResponse,
   RoutersAdminTenantsUpdateTenantUserRequest,
-  SendEmailRequest,
   SubscribeTenantRequest,
   TenantCreate,
   TenantUpdate,
@@ -428,13 +429,13 @@ export const useDeleteAdminTenant = <TError = HTTPValidationError,
  * Get users for a specific tenant
  * @summary Get Tenant Users
  */
-export const getAdminTenantUsers = (
+export const listAdminTenantUsers = (
     tenantId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeUserListResponse>(
       {url: `/api/admin/tenants/${tenantId}/users`, method: 'GET', signal
     },
       );
@@ -443,69 +444,69 @@ export const getAdminTenantUsers = (
 
 
 
-export const getGetAdminTenantUsersQueryKey = (tenantId?: string,) => {
+export const getListAdminTenantUsersQueryKey = (tenantId?: string,) => {
     return [
     `/api/admin/tenants/${tenantId}/users`
     ] as const;
     }
 
     
-export const getGetAdminTenantUsersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminTenantUsers>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantUsers>>, TError, TData>>, }
+export const getListAdminTenantUsersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminTenantUsers>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantUsers>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminTenantUsersQueryKey(tenantId);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminTenantUsersQueryKey(tenantId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTenantUsers>>> = ({ signal }) => getAdminTenantUsers(tenantId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminTenantUsers>>> = ({ signal }) => listAdminTenantUsers(tenantId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminTenantUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminTenantUsers>>>
-export type GetAdminTenantUsersQueryError = HTTPValidationError
+export type ListAdminTenantUsersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminTenantUsers>>>
+export type ListAdminTenantUsersQueryError = HTTPValidationError
 
 
-export function useGetAdminTenantUsers<TData = Awaited<ReturnType<typeof getAdminTenantUsers>>, TError = HTTPValidationError>(
- tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantUsers>>, TError, TData>> & Pick<
+export function useListAdminTenantUsers<TData = Awaited<ReturnType<typeof listAdminTenantUsers>>, TError = HTTPValidationError>(
+ tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantUsers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantUsers>>,
+          Awaited<ReturnType<typeof listAdminTenantUsers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantUsers>>
+          Awaited<ReturnType<typeof listAdminTenantUsers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantUsers<TData = Awaited<ReturnType<typeof getAdminTenantUsers>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantUsers>>, TError, TData>> & Pick<
+export function useListAdminTenantUsers<TData = Awaited<ReturnType<typeof listAdminTenantUsers>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantUsers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantUsers>>,
+          Awaited<ReturnType<typeof listAdminTenantUsers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantUsers>>
+          Awaited<ReturnType<typeof listAdminTenantUsers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantUsers<TData = Awaited<ReturnType<typeof getAdminTenantUsers>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantUsers>>, TError, TData>>, }
+export function useListAdminTenantUsers<TData = Awaited<ReturnType<typeof listAdminTenantUsers>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantUsers>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Tenant Users
  */
 
-export function useGetAdminTenantUsers<TData = Awaited<ReturnType<typeof getAdminTenantUsers>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantUsers>>, TError, TData>>, }
+export function useListAdminTenantUsers<TData = Awaited<ReturnType<typeof listAdminTenantUsers>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantUsers>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminTenantUsersQueryOptions(tenantId,options)
+  const queryOptions = getListAdminTenantUsersQueryOptions(tenantId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -521,14 +522,14 @@ export function useGetAdminTenantUsers<TData = Awaited<ReturnType<typeof getAdmi
  * Create a user for a specific tenant
  * @summary Create Tenant User
  */
-export const createAdminTenantUser = (
+export const createAdminTenantUsers = (
     tenantId: string,
     createTenantUserRequest: CreateTenantUserRequest,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeUserResponse>(
       {url: `/api/admin/tenants/${tenantId}/users`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createTenantUserRequest, signal
@@ -538,11 +539,11 @@ export const createAdminTenantUser = (
   
 
 
-export const getCreateAdminTenantUserMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantUser>>, TError,{tenantId: string;data: CreateTenantUserRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantUser>>, TError,{tenantId: string;data: CreateTenantUserRequest}, TContext> => {
+export const getCreateAdminTenantUsersMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantUsers>>, TError,{tenantId: string;data: CreateTenantUserRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantUsers>>, TError,{tenantId: string;data: CreateTenantUserRequest}, TContext> => {
 
-const mutationKey = ['createAdminTenantUser'];
+const mutationKey = ['createAdminTenantUsers'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -552,10 +553,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTenantUser>>, {tenantId: string;data: CreateTenantUserRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTenantUsers>>, {tenantId: string;data: CreateTenantUserRequest}> = (props) => {
           const {tenantId,data} = props ?? {};
 
-          return  createAdminTenantUser(tenantId,data,)
+          return  createAdminTenantUsers(tenantId,data,)
         }
 
         
@@ -563,23 +564,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminTenantUserMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTenantUser>>>
-    export type CreateAdminTenantUserMutationBody = CreateTenantUserRequest
-    export type CreateAdminTenantUserMutationError = HTTPValidationError
+    export type CreateAdminTenantUsersMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTenantUsers>>>
+    export type CreateAdminTenantUsersMutationBody = CreateTenantUserRequest
+    export type CreateAdminTenantUsersMutationError = HTTPValidationError
 
     /**
  * @summary Create Tenant User
  */
-export const useCreateAdminTenantUser = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantUser>>, TError,{tenantId: string;data: CreateTenantUserRequest}, TContext>, }
+export const useCreateAdminTenantUsers = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantUsers>>, TError,{tenantId: string;data: CreateTenantUserRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminTenantUser>>,
+        Awaited<ReturnType<typeof createAdminTenantUsers>>,
         TError,
         {tenantId: string;data: CreateTenantUserRequest},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminTenantUserMutationOptions(options);
+      const mutationOptions = getCreateAdminTenantUsersMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -594,7 +595,7 @@ export const updateAdminTenantUser = (
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeUserResponse>(
       {url: `/api/admin/tenants/${tenantId}/users/${userId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminTenantsUpdateTenantUserRequest
@@ -653,7 +654,7 @@ export const useUpdateAdminTenantUser = <TError = HTTPValidationError,
  * Subscribe tenant to a plan
  * @summary Subscribe Tenant
  */
-export const subscribeTenant = (
+export const createAdminTenantSubscribe = (
     tenantId: string,
     subscribeTenantRequest: SubscribeTenantRequest,
  signal?: AbortSignal
@@ -670,11 +671,11 @@ export const subscribeTenant = (
   
 
 
-export const getSubscribeTenantMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof subscribeTenant>>, TError,{tenantId: string;data: SubscribeTenantRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof subscribeTenant>>, TError,{tenantId: string;data: SubscribeTenantRequest}, TContext> => {
+export const getCreateAdminTenantSubscribeMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantSubscribe>>, TError,{tenantId: string;data: SubscribeTenantRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantSubscribe>>, TError,{tenantId: string;data: SubscribeTenantRequest}, TContext> => {
 
-const mutationKey = ['subscribeTenant'];
+const mutationKey = ['createAdminTenantSubscribe'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -684,10 +685,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof subscribeTenant>>, {tenantId: string;data: SubscribeTenantRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTenantSubscribe>>, {tenantId: string;data: SubscribeTenantRequest}> = (props) => {
           const {tenantId,data} = props ?? {};
 
-          return  subscribeTenant(tenantId,data,)
+          return  createAdminTenantSubscribe(tenantId,data,)
         }
 
         
@@ -695,23 +696,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SubscribeTenantMutationResult = NonNullable<Awaited<ReturnType<typeof subscribeTenant>>>
-    export type SubscribeTenantMutationBody = SubscribeTenantRequest
-    export type SubscribeTenantMutationError = HTTPValidationError
+    export type CreateAdminTenantSubscribeMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTenantSubscribe>>>
+    export type CreateAdminTenantSubscribeMutationBody = SubscribeTenantRequest
+    export type CreateAdminTenantSubscribeMutationError = HTTPValidationError
 
     /**
  * @summary Subscribe Tenant
  */
-export const useSubscribeTenant = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof subscribeTenant>>, TError,{tenantId: string;data: SubscribeTenantRequest}, TContext>, }
+export const useCreateAdminTenantSubscribe = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantSubscribe>>, TError,{tenantId: string;data: SubscribeTenantRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof subscribeTenant>>,
+        Awaited<ReturnType<typeof createAdminTenantSubscribe>>,
         TError,
         {tenantId: string;data: SubscribeTenantRequest},
         TContext
       > => {
 
-      const mutationOptions = getSubscribeTenantMutationOptions(options);
+      const mutationOptions = getCreateAdminTenantSubscribeMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -719,7 +720,7 @@ export const useSubscribeTenant = <TError = HTTPValidationError,
  * Add addon to tenant
  * @summary Add Tenant Addon
  */
-export const addTenantAddon = (
+export const createAdminTenantAddons = (
     tenantId: string,
     addAddonRequest: AddAddonRequest,
  signal?: AbortSignal
@@ -736,11 +737,11 @@ export const addTenantAddon = (
   
 
 
-export const getAddTenantAddonMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addTenantAddon>>, TError,{tenantId: string;data: AddAddonRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof addTenantAddon>>, TError,{tenantId: string;data: AddAddonRequest}, TContext> => {
+export const getCreateAdminTenantAddonsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantAddons>>, TError,{tenantId: string;data: AddAddonRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantAddons>>, TError,{tenantId: string;data: AddAddonRequest}, TContext> => {
 
-const mutationKey = ['addTenantAddon'];
+const mutationKey = ['createAdminTenantAddons'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -750,10 +751,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addTenantAddon>>, {tenantId: string;data: AddAddonRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTenantAddons>>, {tenantId: string;data: AddAddonRequest}> = (props) => {
           const {tenantId,data} = props ?? {};
 
-          return  addTenantAddon(tenantId,data,)
+          return  createAdminTenantAddons(tenantId,data,)
         }
 
         
@@ -761,23 +762,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type AddTenantAddonMutationResult = NonNullable<Awaited<ReturnType<typeof addTenantAddon>>>
-    export type AddTenantAddonMutationBody = AddAddonRequest
-    export type AddTenantAddonMutationError = HTTPValidationError
+    export type CreateAdminTenantAddonsMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTenantAddons>>>
+    export type CreateAdminTenantAddonsMutationBody = AddAddonRequest
+    export type CreateAdminTenantAddonsMutationError = HTTPValidationError
 
     /**
  * @summary Add Tenant Addon
  */
-export const useAddTenantAddon = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addTenantAddon>>, TError,{tenantId: string;data: AddAddonRequest}, TContext>, }
+export const useCreateAdminTenantAddons = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantAddons>>, TError,{tenantId: string;data: AddAddonRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof addTenantAddon>>,
+        Awaited<ReturnType<typeof createAdminTenantAddons>>,
         TError,
         {tenantId: string;data: AddAddonRequest},
         TContext
       > => {
 
-      const mutationOptions = getAddTenantAddonMutationOptions(options);
+      const mutationOptions = getCreateAdminTenantAddonsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -785,9 +786,9 @@ export const useAddTenantAddon = <TError = HTTPValidationError,
  * Remove addon from tenant
  * @summary Remove Tenant Addon
  */
-export const removeTenantAddon = (
+export const deleteAdminTenantAddons = (
     tenantId: string,
-    params: RemoveTenantAddonParams,
+    params: DeleteAdminTenantAddonsParams,
  ) => {
       
       
@@ -800,11 +801,11 @@ export const removeTenantAddon = (
   
 
 
-export const getRemoveTenantAddonMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeTenantAddon>>, TError,{tenantId: string;params: RemoveTenantAddonParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof removeTenantAddon>>, TError,{tenantId: string;params: RemoveTenantAddonParams}, TContext> => {
+export const getDeleteAdminTenantAddonsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminTenantAddons>>, TError,{tenantId: string;params: DeleteAdminTenantAddonsParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminTenantAddons>>, TError,{tenantId: string;params: DeleteAdminTenantAddonsParams}, TContext> => {
 
-const mutationKey = ['removeTenantAddon'];
+const mutationKey = ['deleteAdminTenantAddons'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -814,10 +815,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeTenantAddon>>, {tenantId: string;params: RemoveTenantAddonParams}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminTenantAddons>>, {tenantId: string;params: DeleteAdminTenantAddonsParams}> = (props) => {
           const {tenantId,params} = props ?? {};
 
-          return  removeTenantAddon(tenantId,params,)
+          return  deleteAdminTenantAddons(tenantId,params,)
         }
 
         
@@ -825,23 +826,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RemoveTenantAddonMutationResult = NonNullable<Awaited<ReturnType<typeof removeTenantAddon>>>
+    export type DeleteAdminTenantAddonsMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminTenantAddons>>>
     
-    export type RemoveTenantAddonMutationError = HTTPValidationError
+    export type DeleteAdminTenantAddonsMutationError = HTTPValidationError
 
     /**
  * @summary Remove Tenant Addon
  */
-export const useRemoveTenantAddon = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeTenantAddon>>, TError,{tenantId: string;params: RemoveTenantAddonParams}, TContext>, }
+export const useDeleteAdminTenantAddons = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminTenantAddons>>, TError,{tenantId: string;params: DeleteAdminTenantAddonsParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof removeTenantAddon>>,
+        Awaited<ReturnType<typeof deleteAdminTenantAddons>>,
         TError,
-        {tenantId: string;params: RemoveTenantAddonParams},
+        {tenantId: string;params: DeleteAdminTenantAddonsParams},
         TContext
       > => {
 
-      const mutationOptions = getRemoveTenantAddonMutationOptions(options);
+      const mutationOptions = getDeleteAdminTenantAddonsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -911,10 +912,10 @@ export const useUpdateAdminTenantStatus = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get tenant SMS configuration
+ * Get SMS configuration for a tenant (admin view) - Flask parity
  * @summary Get Tenant Sms Config
  */
-export const getAdminTenantSmsConfig = (
+export const listAdminTenantSmsConfig = (
     tenantId: string,
  signal?: AbortSignal
 ) => {
@@ -929,69 +930,69 @@ export const getAdminTenantSmsConfig = (
 
 
 
-export const getGetAdminTenantSmsConfigQueryKey = (tenantId?: string,) => {
+export const getListAdminTenantSmsConfigQueryKey = (tenantId?: string,) => {
     return [
     `/api/admin/tenants/${tenantId}/sms-config`
     ] as const;
     }
 
     
-export const getGetAdminTenantSmsConfigQueryOptions = <TData = Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError, TData>>, }
+export const getListAdminTenantSmsConfigQueryOptions = <TData = Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminTenantSmsConfigQueryKey(tenantId);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminTenantSmsConfigQueryKey(tenantId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>> = ({ signal }) => getAdminTenantSmsConfig(tenantId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>> = ({ signal }) => listAdminTenantSmsConfig(tenantId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminTenantSmsConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>>
-export type GetAdminTenantSmsConfigQueryError = HTTPValidationError
+export type ListAdminTenantSmsConfigQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>>
+export type ListAdminTenantSmsConfigQueryError = HTTPValidationError
 
 
-export function useGetAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError = HTTPValidationError>(
- tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError, TData>> & Pick<
+export function useListAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError = HTTPValidationError>(
+ tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantSmsConfig>>,
+          Awaited<ReturnType<typeof listAdminTenantSmsConfig>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantSmsConfig>>
+          Awaited<ReturnType<typeof listAdminTenantSmsConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError, TData>> & Pick<
+export function useListAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantSmsConfig>>,
+          Awaited<ReturnType<typeof listAdminTenantSmsConfig>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantSmsConfig>>
+          Awaited<ReturnType<typeof listAdminTenantSmsConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError, TData>>, }
+export function useListAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Tenant Sms Config
  */
 
-export function useGetAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsConfig>>, TError, TData>>, }
+export function useListAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsConfig>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminTenantSmsConfigQueryOptions(tenantId,options)
+  const queryOptions = getListAdminTenantSmsConfigQueryOptions(tenantId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1004,10 +1005,10 @@ export function useGetAdminTenantSmsConfig<TData = Awaited<ReturnType<typeof get
 
 
 /**
- * Get tenant SMS documents
+ * Get SMS documents for a tenant - Flask parity
  * @summary Get Tenant Sms Documents
  */
-export const getAdminTenantSmsDocuments = (
+export const listAdminTenantSmsDocuments = (
     tenantId: string,
  signal?: AbortSignal
 ) => {
@@ -1022,69 +1023,69 @@ export const getAdminTenantSmsDocuments = (
 
 
 
-export const getGetAdminTenantSmsDocumentsQueryKey = (tenantId?: string,) => {
+export const getListAdminTenantSmsDocumentsQueryKey = (tenantId?: string,) => {
     return [
     `/api/admin/tenants/${tenantId}/sms-documents`
     ] as const;
     }
 
     
-export const getGetAdminTenantSmsDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError, TData>>, }
+export const getListAdminTenantSmsDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminTenantSmsDocumentsQueryKey(tenantId);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminTenantSmsDocumentsQueryKey(tenantId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>> = ({ signal }) => getAdminTenantSmsDocuments(tenantId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>> = ({ signal }) => listAdminTenantSmsDocuments(tenantId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminTenantSmsDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>>
-export type GetAdminTenantSmsDocumentsQueryError = HTTPValidationError
+export type ListAdminTenantSmsDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>>
+export type ListAdminTenantSmsDocumentsQueryError = HTTPValidationError
 
 
-export function useGetAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
- tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError, TData>> & Pick<
+export function useListAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
+ tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>,
+          Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>
+          Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError, TData>> & Pick<
+export function useListAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>,
+          Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>
+          Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError, TData>>, }
+export function useListAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Tenant Sms Documents
  */
 
-export function useGetAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTenantSmsDocuments>>, TError, TData>>, }
+export function useListAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminTenantSmsDocumentsQueryOptions(tenantId,options)
+  const queryOptions = getListAdminTenantSmsDocumentsQueryOptions(tenantId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1097,10 +1098,10 @@ export function useGetAdminTenantSmsDocuments<TData = Awaited<ReturnType<typeof 
 
 
 /**
- * Download tenant SMS document
+ * Get download URL for a tenant's SMS document - Flask parity
  * @summary Download Tenant Sms Document
  */
-export const downloadTenantSmsDocument = (
+export const listAdminTenantSmsDocumentDownload = (
     tenantId: string,
     documentType: string,
  signal?: AbortSignal
@@ -1116,7 +1117,7 @@ export const downloadTenantSmsDocument = (
 
 
 
-export const getDownloadTenantSmsDocumentQueryKey = (tenantId?: string,
+export const getListAdminTenantSmsDocumentDownloadQueryKey = (tenantId?: string,
     documentType?: string,) => {
     return [
     `/api/admin/tenants/${tenantId}/sms-documents/${documentType}/download`
@@ -1124,67 +1125,67 @@ export const getDownloadTenantSmsDocumentQueryKey = (tenantId?: string,
     }
 
     
-export const getDownloadTenantSmsDocumentQueryOptions = <TData = Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError = HTTPValidationError>(tenantId: string,
-    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError, TData>>, }
+export const getListAdminTenantSmsDocumentDownloadQueryOptions = <TData = Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError = HTTPValidationError>(tenantId: string,
+    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getDownloadTenantSmsDocumentQueryKey(tenantId,documentType);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminTenantSmsDocumentDownloadQueryKey(tenantId,documentType);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadTenantSmsDocument>>> = ({ signal }) => downloadTenantSmsDocument(tenantId,documentType, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>> = ({ signal }) => listAdminTenantSmsDocumentDownload(tenantId,documentType, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(tenantId && documentType), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(tenantId && documentType), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type DownloadTenantSmsDocumentQueryResult = NonNullable<Awaited<ReturnType<typeof downloadTenantSmsDocument>>>
-export type DownloadTenantSmsDocumentQueryError = HTTPValidationError
+export type ListAdminTenantSmsDocumentDownloadQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>>
+export type ListAdminTenantSmsDocumentDownloadQueryError = HTTPValidationError
 
 
-export function useDownloadTenantSmsDocument<TData = Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError = HTTPValidationError>(
+export function useListAdminTenantSmsDocumentDownload<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError = HTTPValidationError>(
  tenantId: string,
-    documentType: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError, TData>> & Pick<
+    documentType: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadTenantSmsDocument>>,
+          Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>,
           TError,
-          Awaited<ReturnType<typeof downloadTenantSmsDocument>>
+          Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useDownloadTenantSmsDocument<TData = Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError = HTTPValidationError>(
+export function useListAdminTenantSmsDocumentDownload<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError = HTTPValidationError>(
  tenantId: string,
-    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError, TData>> & Pick<
+    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadTenantSmsDocument>>,
+          Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>,
           TError,
-          Awaited<ReturnType<typeof downloadTenantSmsDocument>>
+          Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useDownloadTenantSmsDocument<TData = Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError = HTTPValidationError>(
+export function useListAdminTenantSmsDocumentDownload<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError = HTTPValidationError>(
  tenantId: string,
-    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError, TData>>, }
+    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Download Tenant Sms Document
  */
 
-export function useDownloadTenantSmsDocument<TData = Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError = HTTPValidationError>(
+export function useListAdminTenantSmsDocumentDownload<TData = Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError = HTTPValidationError>(
  tenantId: string,
-    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadTenantSmsDocument>>, TError, TData>>, }
+    documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTenantSmsDocumentDownload>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getDownloadTenantSmsDocumentQueryOptions(tenantId,documentType,options)
+  const queryOptions = getListAdminTenantSmsDocumentDownloadQueryOptions(tenantId,documentType,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1197,7 +1198,7 @@ export function useDownloadTenantSmsDocument<TData = Awaited<ReturnType<typeof d
 
 
 /**
- * Update tenant SMS document status
+ * Update SMS document status (approve/request revision) - Flask parity
  * @summary Update Tenant Sms Document Status
  */
 export const updateAdminTenantSmsDocumentStatus = (
@@ -1263,31 +1264,28 @@ export const useUpdateAdminTenantSmsDocumentStatus = <TError = HTTPValidationErr
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Send email about tenant SMS documents
+ * Send all approved SMS documents via email - Flask parity
  * @summary Send Tenant Sms Documents Email
  */
-export const sendAdminTenantSmsDocumentsEmail = (
+export const createAdminTenantSmsDocumentSendEmail = (
     tenantId: string,
-    sendEmailRequest: SendEmailRequest,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<unknown>(
-      {url: `/api/admin/tenants/${tenantId}/sms-documents/send-email`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: sendEmailRequest, signal
+      {url: `/api/admin/tenants/${tenantId}/sms-documents/send-email`, method: 'POST', signal
     },
       );
     }
   
 
 
-export const getSendAdminTenantSmsDocumentsEmailMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendAdminTenantSmsDocumentsEmail>>, TError,{tenantId: string;data: SendEmailRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendAdminTenantSmsDocumentsEmail>>, TError,{tenantId: string;data: SendEmailRequest}, TContext> => {
+export const getCreateAdminTenantSmsDocumentSendEmailMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantSmsDocumentSendEmail>>, TError,{tenantId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantSmsDocumentSendEmail>>, TError,{tenantId: string}, TContext> => {
 
-const mutationKey = ['sendAdminTenantSmsDocumentsEmail'];
+const mutationKey = ['createAdminTenantSmsDocumentSendEmail'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1297,10 +1295,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendAdminTenantSmsDocumentsEmail>>, {tenantId: string;data: SendEmailRequest}> = (props) => {
-          const {tenantId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTenantSmsDocumentSendEmail>>, {tenantId: string}> = (props) => {
+          const {tenantId} = props ?? {};
 
-          return  sendAdminTenantSmsDocumentsEmail(tenantId,data,)
+          return  createAdminTenantSmsDocumentSendEmail(tenantId,)
         }
 
         
@@ -1308,23 +1306,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendAdminTenantSmsDocumentsEmailMutationResult = NonNullable<Awaited<ReturnType<typeof sendAdminTenantSmsDocumentsEmail>>>
-    export type SendAdminTenantSmsDocumentsEmailMutationBody = SendEmailRequest
-    export type SendAdminTenantSmsDocumentsEmailMutationError = HTTPValidationError
+    export type CreateAdminTenantSmsDocumentSendEmailMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTenantSmsDocumentSendEmail>>>
+    
+    export type CreateAdminTenantSmsDocumentSendEmailMutationError = HTTPValidationError
 
     /**
  * @summary Send Tenant Sms Documents Email
  */
-export const useSendAdminTenantSmsDocumentsEmail = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendAdminTenantSmsDocumentsEmail>>, TError,{tenantId: string;data: SendEmailRequest}, TContext>, }
+export const useCreateAdminTenantSmsDocumentSendEmail = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTenantSmsDocumentSendEmail>>, TError,{tenantId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendAdminTenantSmsDocumentsEmail>>,
+        Awaited<ReturnType<typeof createAdminTenantSmsDocumentSendEmail>>,
         TError,
-        {tenantId: string;data: SendEmailRequest},
+        {tenantId: string},
         TContext
       > => {
 
-      const mutationOptions = getSendAdminTenantSmsDocumentsEmailMutationOptions(options);
+      const mutationOptions = getCreateAdminTenantSmsDocumentSendEmailMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

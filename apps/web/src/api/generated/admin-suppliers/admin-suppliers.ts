@@ -25,8 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminSuppliersParams,
   HTTPValidationError,
+  ListAdminSuppliersParams,
   ResponseEnvelope,
   SupplierCreate,
   SupplierDetailResponse,
@@ -43,8 +43,8 @@ import { customInstance } from '../../orval-mutator';
  * Get list of suppliers
  * @summary Get Suppliers
  */
-export const getAdminSuppliers = (
-    params?: GetAdminSuppliersParams,
+export const listAdminSuppliers = (
+    params?: ListAdminSuppliersParams,
  signal?: AbortSignal
 ) => {
       
@@ -59,69 +59,69 @@ export const getAdminSuppliers = (
 
 
 
-export const getGetAdminSuppliersQueryKey = (params?: GetAdminSuppliersParams,) => {
+export const getListAdminSuppliersQueryKey = (params?: ListAdminSuppliersParams,) => {
     return [
     `/api/admin/suppliers`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminSuppliersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>>, }
+export const getListAdminSuppliersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminSuppliers>>, TError = HTTPValidationError>(params?: ListAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSuppliers>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminSuppliersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminSuppliersQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminSuppliers>>> = ({ signal }) => getAdminSuppliers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminSuppliers>>> = ({ signal }) => listAdminSuppliers(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminSuppliers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminSuppliersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminSuppliers>>>
-export type GetAdminSuppliersQueryError = HTTPValidationError
+export type ListAdminSuppliersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminSuppliers>>>
+export type ListAdminSuppliersQueryError = HTTPValidationError
 
 
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminSuppliersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>> & Pick<
+export function useListAdminSuppliers<TData = Awaited<ReturnType<typeof listAdminSuppliers>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminSuppliersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSuppliers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminSuppliers>>,
+          Awaited<ReturnType<typeof listAdminSuppliers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminSuppliers>>
+          Awaited<ReturnType<typeof listAdminSuppliers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>> & Pick<
+export function useListAdminSuppliers<TData = Awaited<ReturnType<typeof listAdminSuppliers>>, TError = HTTPValidationError>(
+ params?: ListAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSuppliers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminSuppliers>>,
+          Awaited<ReturnType<typeof listAdminSuppliers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminSuppliers>>
+          Awaited<ReturnType<typeof listAdminSuppliers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>>, }
+export function useListAdminSuppliers<TData = Awaited<ReturnType<typeof listAdminSuppliers>>, TError = HTTPValidationError>(
+ params?: ListAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSuppliers>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Suppliers
  */
 
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>>, }
+export function useListAdminSuppliers<TData = Awaited<ReturnType<typeof listAdminSuppliers>>, TError = HTTPValidationError>(
+ params?: ListAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSuppliers>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminSuppliersQueryOptions(params,options)
+  const queryOptions = getListAdminSuppliersQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

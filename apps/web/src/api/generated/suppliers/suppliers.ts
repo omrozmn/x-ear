@@ -25,12 +25,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetSuppliersParams,
   HTTPValidationError,
+  ListSupplierSearchParams,
+  ListSuppliersParams,
   ResponseEnvelopeListSupplierRead,
   ResponseEnvelopeNoneType,
   ResponseEnvelopeSupplierRead,
-  SearchSuppliersParams,
   SupplierCreate,
   SupplierUpdate
 } from '.././schemas';
@@ -44,8 +44,8 @@ import { customInstance } from '../../orval-mutator';
  * Get all suppliers with filtering and pagination
  * @summary Get Suppliers
  */
-export const getSuppliers = (
-    params?: GetSuppliersParams,
+export const listSuppliers = (
+    params?: ListSuppliersParams,
  signal?: AbortSignal
 ) => {
       
@@ -60,69 +60,69 @@ export const getSuppliers = (
 
 
 
-export const getGetSuppliersQueryKey = (params?: GetSuppliersParams,) => {
+export const getListSuppliersQueryKey = (params?: ListSuppliersParams,) => {
     return [
     `/api/suppliers`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetSuppliersQueryOptions = <TData = Awaited<ReturnType<typeof getSuppliers>>, TError = HTTPValidationError>(params?: GetSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliers>>, TError, TData>>, }
+export const getListSuppliersQueryOptions = <TData = Awaited<ReturnType<typeof listSuppliers>>, TError = HTTPValidationError>(params?: ListSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuppliers>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSuppliersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListSuppliersQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSuppliers>>> = ({ signal }) => getSuppliers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSuppliers>>> = ({ signal }) => listSuppliers(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSuppliers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSuppliers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSuppliersQueryResult = NonNullable<Awaited<ReturnType<typeof getSuppliers>>>
-export type GetSuppliersQueryError = HTTPValidationError
+export type ListSuppliersQueryResult = NonNullable<Awaited<ReturnType<typeof listSuppliers>>>
+export type ListSuppliersQueryError = HTTPValidationError
 
 
-export function useGetSuppliers<TData = Awaited<ReturnType<typeof getSuppliers>>, TError = HTTPValidationError>(
- params: undefined |  GetSuppliersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliers>>, TError, TData>> & Pick<
+export function useListSuppliers<TData = Awaited<ReturnType<typeof listSuppliers>>, TError = HTTPValidationError>(
+ params: undefined |  ListSuppliersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuppliers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSuppliers>>,
+          Awaited<ReturnType<typeof listSuppliers>>,
           TError,
-          Awaited<ReturnType<typeof getSuppliers>>
+          Awaited<ReturnType<typeof listSuppliers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSuppliers<TData = Awaited<ReturnType<typeof getSuppliers>>, TError = HTTPValidationError>(
- params?: GetSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliers>>, TError, TData>> & Pick<
+export function useListSuppliers<TData = Awaited<ReturnType<typeof listSuppliers>>, TError = HTTPValidationError>(
+ params?: ListSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuppliers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSuppliers>>,
+          Awaited<ReturnType<typeof listSuppliers>>,
           TError,
-          Awaited<ReturnType<typeof getSuppliers>>
+          Awaited<ReturnType<typeof listSuppliers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSuppliers<TData = Awaited<ReturnType<typeof getSuppliers>>, TError = HTTPValidationError>(
- params?: GetSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliers>>, TError, TData>>, }
+export function useListSuppliers<TData = Awaited<ReturnType<typeof listSuppliers>>, TError = HTTPValidationError>(
+ params?: ListSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuppliers>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Suppliers
  */
 
-export function useGetSuppliers<TData = Awaited<ReturnType<typeof getSuppliers>>, TError = HTTPValidationError>(
- params?: GetSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliers>>, TError, TData>>, }
+export function useListSuppliers<TData = Awaited<ReturnType<typeof listSuppliers>>, TError = HTTPValidationError>(
+ params?: ListSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuppliers>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSuppliersQueryOptions(params,options)
+  const queryOptions = getListSuppliersQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -138,7 +138,7 @@ export function useGetSuppliers<TData = Awaited<ReturnType<typeof getSuppliers>>
  * Create a new supplier
  * @summary Create Supplier
  */
-export const createSupplier = (
+export const createSuppliers = (
     supplierCreate: SupplierCreate,
  signal?: AbortSignal
 ) => {
@@ -154,11 +154,11 @@ export const createSupplier = (
   
 
 
-export const getCreateSupplierMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSupplier>>, TError,{data: SupplierCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createSupplier>>, TError,{data: SupplierCreate}, TContext> => {
+export const getCreateSuppliersMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSuppliers>>, TError,{data: SupplierCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSuppliers>>, TError,{data: SupplierCreate}, TContext> => {
 
-const mutationKey = ['createSupplier'];
+const mutationKey = ['createSuppliers'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -168,10 +168,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSupplier>>, {data: SupplierCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSuppliers>>, {data: SupplierCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createSupplier(data,)
+          return  createSuppliers(data,)
         }
 
         
@@ -179,23 +179,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateSupplierMutationResult = NonNullable<Awaited<ReturnType<typeof createSupplier>>>
-    export type CreateSupplierMutationBody = SupplierCreate
-    export type CreateSupplierMutationError = HTTPValidationError
+    export type CreateSuppliersMutationResult = NonNullable<Awaited<ReturnType<typeof createSuppliers>>>
+    export type CreateSuppliersMutationBody = SupplierCreate
+    export type CreateSuppliersMutationError = HTTPValidationError
 
     /**
  * @summary Create Supplier
  */
-export const useCreateSupplier = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSupplier>>, TError,{data: SupplierCreate}, TContext>, }
+export const useCreateSuppliers = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSuppliers>>, TError,{data: SupplierCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createSupplier>>,
+        Awaited<ReturnType<typeof createSuppliers>>,
         TError,
         {data: SupplierCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateSupplierMutationOptions(options);
+      const mutationOptions = getCreateSuppliersMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -203,8 +203,8 @@ export const useCreateSupplier = <TError = HTTPValidationError,
  * Fast supplier search for autocomplete
  * @summary Search Suppliers
  */
-export const searchSuppliers = (
-    params?: SearchSuppliersParams,
+export const listSupplierSearch = (
+    params?: ListSupplierSearchParams,
  signal?: AbortSignal
 ) => {
       
@@ -219,69 +219,69 @@ export const searchSuppliers = (
 
 
 
-export const getSearchSuppliersQueryKey = (params?: SearchSuppliersParams,) => {
+export const getListSupplierSearchQueryKey = (params?: ListSupplierSearchParams,) => {
     return [
     `/api/suppliers/search`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getSearchSuppliersQueryOptions = <TData = Awaited<ReturnType<typeof searchSuppliers>>, TError = HTTPValidationError>(params?: SearchSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSuppliers>>, TError, TData>>, }
+export const getListSupplierSearchQueryOptions = <TData = Awaited<ReturnType<typeof listSupplierSearch>>, TError = HTTPValidationError>(params?: ListSupplierSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierSearch>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getSearchSuppliersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListSupplierSearchQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchSuppliers>>> = ({ signal }) => searchSuppliers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSupplierSearch>>> = ({ signal }) => listSupplierSearch(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchSuppliers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSupplierSearch>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type SearchSuppliersQueryResult = NonNullable<Awaited<ReturnType<typeof searchSuppliers>>>
-export type SearchSuppliersQueryError = HTTPValidationError
+export type ListSupplierSearchQueryResult = NonNullable<Awaited<ReturnType<typeof listSupplierSearch>>>
+export type ListSupplierSearchQueryError = HTTPValidationError
 
 
-export function useSearchSuppliers<TData = Awaited<ReturnType<typeof searchSuppliers>>, TError = HTTPValidationError>(
- params: undefined |  SearchSuppliersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSuppliers>>, TError, TData>> & Pick<
+export function useListSupplierSearch<TData = Awaited<ReturnType<typeof listSupplierSearch>>, TError = HTTPValidationError>(
+ params: undefined |  ListSupplierSearchParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierSearch>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchSuppliers>>,
+          Awaited<ReturnType<typeof listSupplierSearch>>,
           TError,
-          Awaited<ReturnType<typeof searchSuppliers>>
+          Awaited<ReturnType<typeof listSupplierSearch>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useSearchSuppliers<TData = Awaited<ReturnType<typeof searchSuppliers>>, TError = HTTPValidationError>(
- params?: SearchSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSuppliers>>, TError, TData>> & Pick<
+export function useListSupplierSearch<TData = Awaited<ReturnType<typeof listSupplierSearch>>, TError = HTTPValidationError>(
+ params?: ListSupplierSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierSearch>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof searchSuppliers>>,
+          Awaited<ReturnType<typeof listSupplierSearch>>,
           TError,
-          Awaited<ReturnType<typeof searchSuppliers>>
+          Awaited<ReturnType<typeof listSupplierSearch>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useSearchSuppliers<TData = Awaited<ReturnType<typeof searchSuppliers>>, TError = HTTPValidationError>(
- params?: SearchSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSuppliers>>, TError, TData>>, }
+export function useListSupplierSearch<TData = Awaited<ReturnType<typeof listSupplierSearch>>, TError = HTTPValidationError>(
+ params?: ListSupplierSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierSearch>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Search Suppliers
  */
 
-export function useSearchSuppliers<TData = Awaited<ReturnType<typeof searchSuppliers>>, TError = HTTPValidationError>(
- params?: SearchSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSuppliers>>, TError, TData>>, }
+export function useListSupplierSearch<TData = Awaited<ReturnType<typeof listSupplierSearch>>, TError = HTTPValidationError>(
+ params?: ListSupplierSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierSearch>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getSearchSuppliersQueryOptions(params,options)
+  const queryOptions = getListSupplierSearchQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -297,7 +297,7 @@ export function useSearchSuppliers<TData = Awaited<ReturnType<typeof searchSuppl
  * Get supplier statistics
  * @summary Get Supplier Stats
  */
-export const getSupplierStats = (
+export const listSupplierStats = (
     
  signal?: AbortSignal
 ) => {
@@ -312,69 +312,69 @@ export const getSupplierStats = (
 
 
 
-export const getGetSupplierStatsQueryKey = () => {
+export const getListSupplierStatsQueryKey = () => {
     return [
     `/api/suppliers/stats`
     ] as const;
     }
 
     
-export const getGetSupplierStatsQueryOptions = <TData = Awaited<ReturnType<typeof getSupplierStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupplierStats>>, TError, TData>>, }
+export const getListSupplierStatsQueryOptions = <TData = Awaited<ReturnType<typeof listSupplierStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierStats>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSupplierStatsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSupplierStatsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSupplierStats>>> = ({ signal }) => getSupplierStats(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSupplierStats>>> = ({ signal }) => listSupplierStats(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSupplierStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSupplierStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSupplierStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getSupplierStats>>>
-export type GetSupplierStatsQueryError = unknown
+export type ListSupplierStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listSupplierStats>>>
+export type ListSupplierStatsQueryError = unknown
 
 
-export function useGetSupplierStats<TData = Awaited<ReturnType<typeof getSupplierStats>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupplierStats>>, TError, TData>> & Pick<
+export function useListSupplierStats<TData = Awaited<ReturnType<typeof listSupplierStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierStats>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSupplierStats>>,
+          Awaited<ReturnType<typeof listSupplierStats>>,
           TError,
-          Awaited<ReturnType<typeof getSupplierStats>>
+          Awaited<ReturnType<typeof listSupplierStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSupplierStats<TData = Awaited<ReturnType<typeof getSupplierStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupplierStats>>, TError, TData>> & Pick<
+export function useListSupplierStats<TData = Awaited<ReturnType<typeof listSupplierStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierStats>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSupplierStats>>,
+          Awaited<ReturnType<typeof listSupplierStats>>,
           TError,
-          Awaited<ReturnType<typeof getSupplierStats>>
+          Awaited<ReturnType<typeof listSupplierStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSupplierStats<TData = Awaited<ReturnType<typeof getSupplierStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupplierStats>>, TError, TData>>, }
+export function useListSupplierStats<TData = Awaited<ReturnType<typeof listSupplierStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierStats>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Supplier Stats
  */
 
-export function useGetSupplierStats<TData = Awaited<ReturnType<typeof getSupplierStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupplierStats>>, TError, TData>>, }
+export function useListSupplierStats<TData = Awaited<ReturnType<typeof listSupplierStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupplierStats>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSupplierStatsQueryOptions(options)
+  const queryOptions = getListSupplierStatsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

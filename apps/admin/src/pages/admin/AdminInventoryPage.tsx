@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetAdminInventory } from '@/lib/api-client';
+import { useListAdminInventory } from '@/lib/api-client';
 import {
     CubeIcon,
     MagnifyingGlassIcon,
@@ -13,7 +13,7 @@ const AdminInventoryPage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
 
-    const { data: inventoryData, isLoading, refetch } = useGetAdminInventory({
+    const { data: inventoryData, isLoading, refetch } = useListAdminInventory({
         page,
         limit: 10,
         search,

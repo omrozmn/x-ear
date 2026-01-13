@@ -8,9 +8,9 @@ import {
 } from 'lucide-react';
 import { Button, Input, Textarea } from '@x-ear/ui-web';
 import {
-    useGetApiAdminSmsPackages,
-    useCreateAdminSmsPackage,
-    useUpdateAdminSmsPackage
+    useListAdminSmPackages,
+    useCreateAdminSmPackages,
+    useUpdateAdminSmPackage
 } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -22,10 +22,10 @@ export default function SMSPackagesPage() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
 
-    const { data: packagesData, isLoading, refetch } = useGetApiAdminSmsPackages({ page, limit } as any);
+    const { data: packagesData, isLoading, refetch } = useListAdminSmPackages({ page, limit } as any);
 
-    const createMutation = useCreateAdminSmsPackage();
-    const updateMutation = useUpdateAdminSmsPackage();
+    const createMutation = useCreateAdminSmPackages();
+    const updateMutation = useUpdateAdminSmPackage();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -45,7 +45,7 @@ export default function SMSPackagesPage() {
         try {
             if (editingPkg) {
                 await updateMutation.mutateAsync({
-                    pkgId: editingPkg.id,
+                    packageId: editingPkg.id,
                     data: {
                         name: formData.name,
                         description: formData.description,
@@ -102,7 +102,7 @@ export default function SMSPackagesPage() {
                 {isLoading ? (
                     <div className="col-span-3 flex justify-center p-8"><Loader2 className="animate-spin" /></div>
                 ) : (
-                    packagesData?.data?.map((pkg: any) => (
+                    (packagesData as any)?.data?.map((pkg: any) => (
                         <div key={pkg.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative group">
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button variant="ghost" size="sm" onClick={() => openEdit(pkg)}>

@@ -59,8 +59,8 @@ export interface UseAppointmentsReturn {
   rescheduleAppointment: (request: RescheduleRequest) => Promise<Appointment>;
   
   // Status operations
-  cancelAppointment: (id: string, reason?: string) => Promise<Appointment>;
-  completeAppointment: (id: string, notes?: string) => Promise<Appointment>;
+  createAppointmentCancel: (id: string, reason?: string) => Promise<Appointment>;
+  createAppointmentComplete: (id: string, notes?: string) => Promise<Appointment>;
   markNoShow: (id: string) => Promise<Appointment>;
   
   // Bulk operations
@@ -83,10 +83,9 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load appointments
+  // Load appointments from local storage
   const loadAppointments = useCallback(() => {
     try {
-      setLoading(true);
       setError(null);
       const filteredAppointments = appointmentService.getAppointments(currentFilters);
       setAppointments(filteredAppointments);
@@ -97,14 +96,24 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     }
   }, [currentFilters]);
 
-  // Subscribe to appointment changes
+  // Subscribe to appointment changes and sync from server on mount
   useEffect(() => {
     const unsubscribe = appointmentService.subscribe(() => {
       loadAppointments();
     });
 
-    // Initial load
-    loadAppointments();
+    // Sync from server first, then load from local storage
+    const initializeAppointments = async () => {
+      setLoading(true);
+      try {
+        await appointmentService.triggerServerSync();
+      } catch (err) {
+        console.warn('Server sync failed, using local data:', err);
+      }
+      loadAppointments();
+    };
+
+    initializeAppointments();
 
     return unsubscribe;
   }, [loadAppointments]);
@@ -235,11 +244,11 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
   }, []);
 
   // Status operations
-  const cancelAppointment = useCallback(async (id: string, reason?: string): Promise<Appointment> => {
+  const createAppointmentCancel = useCallback(async (id: string, reason?: string): Promise<Appointment> => {
     try {
       setUpdating(true);
       setError(null);
-      const cancelledAppointment = await appointmentService.cancelAppointment(id, reason);
+      const cancelledAppointment = await appointmentService.createAppointmentCancel(id, reason);
       return cancelledAppointment;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to cancel appointment';
@@ -250,11 +259,11 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     }
   }, []);
 
-  const completeAppointment = useCallback(async (id: string, notes?: string): Promise<Appointment> => {
+  const createAppointmentComplete = useCallback(async (id: string, notes?: string): Promise<Appointment> => {
     try {
       setUpdating(true);
       setError(null);
-      const completedAppointment = await appointmentService.completeAppointment(id, notes);
+      const completedAppointment = await appointmentService.createAppointmentComplete(id, notes);
       return completedAppointment;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to complete appointment';
@@ -301,10 +310,10 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     return appointmentService['validateAppointment'](appointment);
   }, []);
 
-  // Computed stats
+  // Computed stats - recalculate when appointments change
   const stats = useMemo((): AppointmentStats => {
     return appointmentService.getAppointmentStats(currentFilters);
-  }, [appointments, currentFilters]);
+  }, [appointments, currentFilters]); // Include appointments to trigger recalculation
 
   return {
     // Data
@@ -344,8 +353,8 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     rescheduleAppointment,
     
     // Status operations
-    cancelAppointment,
-    completeAppointment,
+    createAppointmentCancel,
+    createAppointmentComplete,
     markNoShow,
     
     // Bulk operations

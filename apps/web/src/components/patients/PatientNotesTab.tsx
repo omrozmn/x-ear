@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import {
-  getPatientTimeline,
-  addTimelineEvent,
-  createPatientNote,
+  listPatientTimeline,
+  createPatientTimeline,
+  createPatientNotes,
   deletePatientNote,
   updatePatientNote
 } from '@/api/generated';
@@ -37,7 +37,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
 
     try {
       setIsLoading(true);
-      const response = await getPatientTimeline(patient.id) as any;
+      const response = await listPatientTimeline(patient.id) as any;
 
       if (response?.data && Array.isArray(response.data)) {
         // Filter timeline events to get only notes
@@ -76,6 +76,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
     return () => {
       mounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient?.id]);
 
   const handleAddNote = async () => {
@@ -91,7 +92,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
         createdBy: getCurrentUserId()
       };
 
-      await createPatientNote(patient.id || '', noteBody);
+      await createPatientNotes(patient.id || '', noteBody);
 
       // Also add to timeline
       const timelineBody: any = { // TimelineEventCreate
@@ -102,7 +103,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
         category: 'general'
       };
 
-      await addTimelineEvent(patient.id || '', timelineBody);
+      await createPatientTimeline(patient.id || '', timelineBody);
 
       // Reload notes to get the updated list
       await loadNotes();
@@ -148,7 +149,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
         category: 'general'
       };
 
-      await addTimelineEvent(patient.id || '', timelineBody);
+      await createPatientTimeline(patient.id || '', timelineBody);
 
       // Reload notes
       await loadNotes();
@@ -180,7 +181,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
         category: 'general'
       };
 
-      await addTimelineEvent(patient.id || '', timelineBody);
+      await createPatientTimeline(patient.id || '', timelineBody);
 
       // Reload notes
       await loadNotes();
@@ -208,7 +209,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
     <div className="space-y-6">
       {/* Header with Add Button */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Hasta Notları</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Hasta Notları</h3>
         <Button
           onClick={() => setShowAddForm(true)}
           className="bg-blue-600 hover:bg-blue-700"
@@ -220,9 +221,9 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
 
       {/* Add Note Form */}
       {showAddForm && (
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm border dark:border-slate-800">
           <div className="flex justify-between items-center mb-3">
-            <h4 className="font-medium text-gray-900">Yeni Not</h4>
+            <h4 className="font-medium text-gray-900 dark:text-gray-100">Yeni Not</h4>
             <Button
               onClick={handleCancelAdd}
               variant="ghost"
@@ -254,12 +255,12 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
       <div className="space-y-4">
         {notes.length > 0 ? (
           notes.map((note) => (
-            <div key={note.id} className="bg-white p-4 rounded-lg shadow-sm border">
+            <div key={note.id} className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm border dark:border-slate-800">
               {editingNote && editingNote.id === note.id ? (
                 // Edit Mode
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-medium text-gray-900">Notu Düzenle</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100">Notu Düzenle</h4>
                     <Button
                       onClick={handleCancelEdit}
                       variant="ghost"
@@ -288,7 +289,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
                 // View Mode
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-gray-900 whitespace-pre-wrap">{note.text}</p>
+                    <p className="text-gray-900 dark:text-gray-200 whitespace-pre-wrap">{note.text}</p>
                     <div className="flex space-x-2 ml-4">
                       <Button
                         onClick={() => handleEditNote(note)}
@@ -307,7 +308,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
                       </Button>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     {note.date ? new Date(note.date).toLocaleString('tr-TR') : ''}
                     <span> • Yazar: {note.author}</span>
                   </div>
@@ -316,7 +317,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
             </div>
           ))
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <p>Henüz not bulunmamaktadır.</p>
           </div>
         )}

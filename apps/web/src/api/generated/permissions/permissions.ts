@@ -27,7 +27,7 @@ import type {
 import type {
   HTTPValidationError,
   PermissionCreate,
-  RolePermissionsUpdate
+  RoutersPermissionsRolePermissionsUpdate
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -132,7 +132,7 @@ export function useListPermissions<TData = Awaited<ReturnType<typeof listPermiss
  * Create a new permission (System Admin)
  * @summary Create Permission
  */
-export const createPermission = (
+export const createPermissions = (
     permissionCreate: PermissionCreate,
  signal?: AbortSignal
 ) => {
@@ -148,11 +148,11 @@ export const createPermission = (
   
 
 
-export const getCreatePermissionMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPermission>>, TError,{data: PermissionCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPermission>>, TError,{data: PermissionCreate}, TContext> => {
+export const getCreatePermissionsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPermissions>>, TError,{data: PermissionCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPermissions>>, TError,{data: PermissionCreate}, TContext> => {
 
-const mutationKey = ['createPermission'];
+const mutationKey = ['createPermissions'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -162,10 +162,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPermission>>, {data: PermissionCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPermissions>>, {data: PermissionCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createPermission(data,)
+          return  createPermissions(data,)
         }
 
         
@@ -173,23 +173,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreatePermissionMutationResult = NonNullable<Awaited<ReturnType<typeof createPermission>>>
-    export type CreatePermissionMutationBody = PermissionCreate
-    export type CreatePermissionMutationError = HTTPValidationError
+    export type CreatePermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof createPermissions>>>
+    export type CreatePermissionsMutationBody = PermissionCreate
+    export type CreatePermissionsMutationError = HTTPValidationError
 
     /**
  * @summary Create Permission
  */
-export const useCreatePermission = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPermission>>, TError,{data: PermissionCreate}, TContext>, }
+export const useCreatePermissions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPermissions>>, TError,{data: PermissionCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createPermission>>,
+        Awaited<ReturnType<typeof createPermissions>>,
         TError,
         {data: PermissionCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreatePermissionMutationOptions(options);
+      const mutationOptions = getCreatePermissionsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -197,7 +197,7 @@ export const useCreatePermission = <TError = HTTPValidationError,
  * Get current user's permissions based on their role
  * @summary Get My Permissions
  */
-export const getMyPermissions = (
+export const listPermissionMy = (
     
  signal?: AbortSignal
 ) => {
@@ -212,69 +212,69 @@ export const getMyPermissions = (
 
 
 
-export const getGetMyPermissionsQueryKey = () => {
+export const getListPermissionMyQueryKey = () => {
     return [
     `/api/permissions/my`
     ] as const;
     }
 
     
-export const getGetMyPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getMyPermissions>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyPermissions>>, TError, TData>>, }
+export const getListPermissionMyQueryOptions = <TData = Awaited<ReturnType<typeof listPermissionMy>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPermissionMy>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetMyPermissionsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListPermissionMyQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyPermissions>>> = ({ signal }) => getMyPermissions(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPermissionMy>>> = ({ signal }) => listPermissionMy(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPermissionMy>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetMyPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getMyPermissions>>>
-export type GetMyPermissionsQueryError = unknown
+export type ListPermissionMyQueryResult = NonNullable<Awaited<ReturnType<typeof listPermissionMy>>>
+export type ListPermissionMyQueryError = unknown
 
 
-export function useGetMyPermissions<TData = Awaited<ReturnType<typeof getMyPermissions>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyPermissions>>, TError, TData>> & Pick<
+export function useListPermissionMy<TData = Awaited<ReturnType<typeof listPermissionMy>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPermissionMy>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMyPermissions>>,
+          Awaited<ReturnType<typeof listPermissionMy>>,
           TError,
-          Awaited<ReturnType<typeof getMyPermissions>>
+          Awaited<ReturnType<typeof listPermissionMy>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetMyPermissions<TData = Awaited<ReturnType<typeof getMyPermissions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyPermissions>>, TError, TData>> & Pick<
+export function useListPermissionMy<TData = Awaited<ReturnType<typeof listPermissionMy>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPermissionMy>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMyPermissions>>,
+          Awaited<ReturnType<typeof listPermissionMy>>,
           TError,
-          Awaited<ReturnType<typeof getMyPermissions>>
+          Awaited<ReturnType<typeof listPermissionMy>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetMyPermissions<TData = Awaited<ReturnType<typeof getMyPermissions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyPermissions>>, TError, TData>>, }
+export function useListPermissionMy<TData = Awaited<ReturnType<typeof listPermissionMy>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPermissionMy>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get My Permissions
  */
 
-export function useGetMyPermissions<TData = Awaited<ReturnType<typeof getMyPermissions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyPermissions>>, TError, TData>>, }
+export function useListPermissionMy<TData = Awaited<ReturnType<typeof listPermissionMy>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPermissionMy>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetMyPermissionsQueryOptions(options)
+  const queryOptions = getListPermissionMyQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -290,7 +290,7 @@ export function useGetMyPermissions<TData = Awaited<ReturnType<typeof getMyPermi
  * Get permissions for a specific role
  * @summary Get Role Permissions
  */
-export const getRolePermissions = (
+export const getPermissionRole = (
     roleName: string,
  signal?: AbortSignal
 ) => {
@@ -305,69 +305,69 @@ export const getRolePermissions = (
 
 
 
-export const getGetRolePermissionsQueryKey = (roleName?: string,) => {
+export const getGetPermissionRoleQueryKey = (roleName?: string,) => {
     return [
     `/api/permissions/role/${roleName}`
     ] as const;
     }
 
     
-export const getGetRolePermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getRolePermissions>>, TError = HTTPValidationError>(roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolePermissions>>, TError, TData>>, }
+export const getGetPermissionRoleQueryOptions = <TData = Awaited<ReturnType<typeof getPermissionRole>>, TError = HTTPValidationError>(roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissionRole>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRolePermissionsQueryKey(roleName);
+  const queryKey =  queryOptions?.queryKey ?? getGetPermissionRoleQueryKey(roleName);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolePermissions>>> = ({ signal }) => getRolePermissions(roleName, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPermissionRole>>> = ({ signal }) => getPermissionRole(roleName, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(roleName), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRolePermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(roleName), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPermissionRole>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetRolePermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getRolePermissions>>>
-export type GetRolePermissionsQueryError = HTTPValidationError
+export type GetPermissionRoleQueryResult = NonNullable<Awaited<ReturnType<typeof getPermissionRole>>>
+export type GetPermissionRoleQueryError = HTTPValidationError
 
 
-export function useGetRolePermissions<TData = Awaited<ReturnType<typeof getRolePermissions>>, TError = HTTPValidationError>(
- roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolePermissions>>, TError, TData>> & Pick<
+export function useGetPermissionRole<TData = Awaited<ReturnType<typeof getPermissionRole>>, TError = HTTPValidationError>(
+ roleName: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissionRole>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolePermissions>>,
+          Awaited<ReturnType<typeof getPermissionRole>>,
           TError,
-          Awaited<ReturnType<typeof getRolePermissions>>
+          Awaited<ReturnType<typeof getPermissionRole>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetRolePermissions<TData = Awaited<ReturnType<typeof getRolePermissions>>, TError = HTTPValidationError>(
- roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolePermissions>>, TError, TData>> & Pick<
+export function useGetPermissionRole<TData = Awaited<ReturnType<typeof getPermissionRole>>, TError = HTTPValidationError>(
+ roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissionRole>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolePermissions>>,
+          Awaited<ReturnType<typeof getPermissionRole>>,
           TError,
-          Awaited<ReturnType<typeof getRolePermissions>>
+          Awaited<ReturnType<typeof getPermissionRole>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetRolePermissions<TData = Awaited<ReturnType<typeof getRolePermissions>>, TError = HTTPValidationError>(
- roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolePermissions>>, TError, TData>>, }
+export function useGetPermissionRole<TData = Awaited<ReturnType<typeof getPermissionRole>>, TError = HTTPValidationError>(
+ roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissionRole>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Role Permissions
  */
 
-export function useGetRolePermissions<TData = Awaited<ReturnType<typeof getRolePermissions>>, TError = HTTPValidationError>(
- roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolePermissions>>, TError, TData>>, }
+export function useGetPermissionRole<TData = Awaited<ReturnType<typeof getPermissionRole>>, TError = HTTPValidationError>(
+ roleName: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissionRole>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetRolePermissionsQueryOptions(roleName,options)
+  const queryOptions = getGetPermissionRoleQueryOptions(roleName,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -383,27 +383,27 @@ export function useGetRolePermissions<TData = Awaited<ReturnType<typeof getRoleP
  * Update permissions for a role
  * @summary Update Role Permissions
  */
-export const updateRolePermissions = (
+export const updatePermissionRole = (
     roleName: string,
-    rolePermissionsUpdate: RolePermissionsUpdate,
+    routersPermissionsRolePermissionsUpdate: RoutersPermissionsRolePermissionsUpdate,
  ) => {
       
       
       return customInstance<unknown>(
       {url: `/api/permissions/role/${roleName}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: rolePermissionsUpdate
+      data: routersPermissionsRolePermissionsUpdate
     },
       );
     }
   
 
 
-export const getUpdateRolePermissionsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRolePermissions>>, TError,{roleName: string;data: RolePermissionsUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateRolePermissions>>, TError,{roleName: string;data: RolePermissionsUpdate}, TContext> => {
+export const getUpdatePermissionRoleMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RoutersPermissionsRolePermissionsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RoutersPermissionsRolePermissionsUpdate}, TContext> => {
 
-const mutationKey = ['updateRolePermissions'];
+const mutationKey = ['updatePermissionRole'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -413,10 +413,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateRolePermissions>>, {roleName: string;data: RolePermissionsUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePermissionRole>>, {roleName: string;data: RoutersPermissionsRolePermissionsUpdate}> = (props) => {
           const {roleName,data} = props ?? {};
 
-          return  updateRolePermissions(roleName,data,)
+          return  updatePermissionRole(roleName,data,)
         }
 
         
@@ -424,23 +424,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateRolePermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof updateRolePermissions>>>
-    export type UpdateRolePermissionsMutationBody = RolePermissionsUpdate
-    export type UpdateRolePermissionsMutationError = HTTPValidationError
+    export type UpdatePermissionRoleMutationResult = NonNullable<Awaited<ReturnType<typeof updatePermissionRole>>>
+    export type UpdatePermissionRoleMutationBody = RoutersPermissionsRolePermissionsUpdate
+    export type UpdatePermissionRoleMutationError = HTTPValidationError
 
     /**
  * @summary Update Role Permissions
  */
-export const useUpdateRolePermissions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRolePermissions>>, TError,{roleName: string;data: RolePermissionsUpdate}, TContext>, }
+export const useUpdatePermissionRole = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RoutersPermissionsRolePermissionsUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateRolePermissions>>,
+        Awaited<ReturnType<typeof updatePermissionRole>>,
         TError,
-        {roleName: string;data: RolePermissionsUpdate},
+        {roleName: string;data: RoutersPermissionsRolePermissionsUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateRolePermissionsMutationOptions(options);
+      const mutationOptions = getUpdatePermissionRoleMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -123,6 +123,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
     }
 
     await executeBulkAction(action);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const executeBulkAction = useCallback(async (action: InvoiceBulkAction) => {
@@ -178,6 +179,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
         error: error instanceof Error ? error.message : 'Bilinmeyen hata'
       }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedInvoices, exportOptions, onBulkActionComplete]);
 
   const processSendInvoices = async (): Promise<BulkOperationResult[]> => {
@@ -261,7 +263,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
           continue;
         }
 
-        await invoiceService.cancelInvoice(invoice.id);
+        await invoiceService.createEfaturaCancel(invoice.id);
         results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: true, message: 'Fatura başarıyla iptal edildi' });
       } catch (error) {
         results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: error instanceof Error ? error.message : 'İptal hatası' });

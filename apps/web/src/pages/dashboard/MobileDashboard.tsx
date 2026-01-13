@@ -18,10 +18,10 @@ export const MobileDashboard: React.FC = () => {
     };
 
     const quickActions = [
-        { icon: <Plus className="h-6 w-6" />, label: 'Hasta Ekle', bg: 'bg-blue-100', text: 'text-blue-600', to: '/patients?new=true' },
-        { icon: <Calendar className="h-6 w-6" />, label: 'Randevu', bg: 'bg-purple-100', text: 'text-purple-600', to: '/appointments?new=true' },
-        { icon: <Banknote className="h-6 w-6" />, label: 'Satış Yap', bg: 'bg-green-100', text: 'text-green-600', to: '/invoices/new' },
-        { icon: <Clock className="h-6 w-6" />, label: 'Hızlı İşlem', bg: 'bg-orange-100', text: 'text-orange-600', to: '/actions' },
+        { icon: <Plus className="h-6 w-6" />, label: 'Hasta Ekle', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', to: '/patients?new=true' },
+        { icon: <Calendar className="h-6 w-6" />, label: 'Randevu', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', to: '/appointments?new=true' },
+        { icon: <Banknote className="h-6 w-6" />, label: 'Satış Yap', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', to: '/invoices/new' },
+        { icon: <Clock className="h-6 w-6" />, label: 'Hızlı İşlem', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', to: '/actions' },
     ];
 
     const statCards = [
@@ -34,14 +34,14 @@ export const MobileDashboard: React.FC = () => {
     if (loading && !stats) return <div className="flex justify-center p-10 mt-20">Yükleniyor...</div>;
 
     return (
-        <MobileLayout className="bg-gray-50">
+        <MobileLayout className="bg-gray-50 dark:bg-gray-950">
             <MobileHeader title="Dashboard" showBack={false} />
 
             <PullToRefresh onRefresh={handleRefresh}>
                 <div className="p-4 space-y-6 min-h-[calc(100vh-120px)]">
                     {/* Stats Carousel (Horizontal Scroll) */}
                     <section>
-                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900">Genel Bakış</h2>
+                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">Genel Bakış</h2>
                         <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x hide-scrollbar">
                             {statCards.map((stat, idx) => (
                                 <div
@@ -62,7 +62,7 @@ export const MobileDashboard: React.FC = () => {
 
                     {/* Quick Actions Grid */}
                     <section>
-                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900">Hızlı İşlemler</h2>
+                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">Hızlı İşlemler</h2>
                         <div className="grid grid-cols-4 gap-4">
                             {quickActions.map((action, idx) => (
                                 <button
@@ -76,7 +76,7 @@ export const MobileDashboard: React.FC = () => {
                                     <div className={`${action.bg} ${action.text} p-4 rounded-2xl shadow-sm w-full aspect-square flex items-center justify-center group-hover:brightness-95 transition-all`}>
                                         {action.icon}
                                     </div>
-                                    <span className="text-xs font-medium text-gray-600 text-center leading-tight">
+                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400 text-center leading-tight">
                                         {action.label}
                                     </span>
                                 </button>
@@ -86,20 +86,20 @@ export const MobileDashboard: React.FC = () => {
 
                     {/* Recent Activity List */}
                     <section>
-                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900">Son Aktiviteler</h2>
-                        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">Son Aktiviteler</h2>
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
                             {recentActivity && recentActivity.length > 0 ? (
                                 <div className="divide-y divide-gray-100">
                                     {recentActivity.map((activity: any, idx: number) => (
-                                        <div key={idx} className="p-4 flex gap-3 active:bg-gray-50 transition-colors">
-                                            <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                                <Clock className="h-5 w-5 text-gray-500" />
+                                        <div key={idx} className="p-4 flex gap-3 active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
+                                            <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                                                <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-gray-900 font-medium truncate">
+                                                <p className="text-sm text-gray-900 dark:text-white font-medium truncate">
                                                     {activity.description || 'İşlem yapıldı'}
                                                 </p>
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                     {activity.timestamp ? new Date(activity.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '-'}
                                                     {' • '}{activity.user || 'Sistem'}
                                                 </p>
@@ -108,7 +108,7 @@ export const MobileDashboard: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="p-8 text-center text-gray-500 text-sm">
+                                <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
                                     Henüz aktivite yok
                                 </div>
                             )}

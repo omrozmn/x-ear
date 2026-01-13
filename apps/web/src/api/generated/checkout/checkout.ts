@@ -95,7 +95,7 @@ export const useCreateCheckoutSession = <TError = HTTPValidationError,
  * Confirm payment
  * @summary Confirm Payment
  */
-export const confirmPayment = (
+export const createCheckoutConfirm = (
     paymentConfirm: PaymentConfirm,
  signal?: AbortSignal
 ) => {
@@ -111,11 +111,11 @@ export const confirmPayment = (
   
 
 
-export const getConfirmPaymentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmPayment>>, TError,{data: PaymentConfirm}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof confirmPayment>>, TError,{data: PaymentConfirm}, TContext> => {
+export const getCreateCheckoutConfirmMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCheckoutConfirm>>, TError,{data: PaymentConfirm}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCheckoutConfirm>>, TError,{data: PaymentConfirm}, TContext> => {
 
-const mutationKey = ['confirmPayment'];
+const mutationKey = ['createCheckoutConfirm'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -125,10 +125,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmPayment>>, {data: PaymentConfirm}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCheckoutConfirm>>, {data: PaymentConfirm}> = (props) => {
           const {data} = props ?? {};
 
-          return  confirmPayment(data,)
+          return  createCheckoutConfirm(data,)
         }
 
         
@@ -136,23 +136,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ConfirmPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof confirmPayment>>>
-    export type ConfirmPaymentMutationBody = PaymentConfirm
-    export type ConfirmPaymentMutationError = HTTPValidationError
+    export type CreateCheckoutConfirmMutationResult = NonNullable<Awaited<ReturnType<typeof createCheckoutConfirm>>>
+    export type CreateCheckoutConfirmMutationBody = PaymentConfirm
+    export type CreateCheckoutConfirmMutationError = HTTPValidationError
 
     /**
  * @summary Confirm Payment
  */
-export const useConfirmPayment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmPayment>>, TError,{data: PaymentConfirm}, TContext>, }
+export const useCreateCheckoutConfirm = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCheckoutConfirm>>, TError,{data: PaymentConfirm}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof confirmPayment>>,
+        Awaited<ReturnType<typeof createCheckoutConfirm>>,
         TError,
         {data: PaymentConfirm},
         TContext
       > => {
 
-      const mutationOptions = getConfirmPaymentMutationOptions(options);
+      const mutationOptions = getCreateCheckoutConfirmMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

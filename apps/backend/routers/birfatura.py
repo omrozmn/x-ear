@@ -50,7 +50,7 @@ def get_configured_client(tenant_id: str, db: Session):
     
     return BirfaturaClient(api_key=tenant_api_key, secret_key=tenant_secret_key, integration_key=global_integration_key)
 
-@router.post("/EFatura/sendDocument")
+@router.post("/EFatura/sendDocument", operation_id="createEfaturaSenddocument")
 async def send_document(
     request: Request,
     db: Session = Depends(get_db),
@@ -77,7 +77,7 @@ async def send_document(
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
-@router.post("/EFatura/sendBasicInvoice")
+@router.post("/EFatura/sendBasicInvoice", operation_id="createEfaturaSendbasicinvoice")
 async def send_basic_invoice(
     request: Request,
     db: Session = Depends(get_db),
@@ -97,7 +97,7 @@ async def send_basic_invoice(
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
-@router.post("/EFatura/Create")
+@router.post("/EFatura/Create", operation_id="createEfaturaCreate")
 async def create_invoice(
     request: Request,
     db: Session = Depends(get_db),
@@ -115,7 +115,7 @@ async def create_invoice(
     except Exception as e:
         return {"Success": False, "Message": str(e)}
 
-@router.post("/EFatura/Retry/{invoice_id}")
+@router.post("/EFatura/Retry/{invoice_id}", operation_id="createEfaturaRetry")
 async def retry_invoice(
     invoice_id: str,
     db: Session = Depends(get_db),
@@ -132,7 +132,7 @@ async def retry_invoice(
     except Exception as e:
         return {"Success": False, "Message": str(e)}
 
-@router.post("/EFatura/Cancel/{invoice_id}")
+@router.post("/EFatura/Cancel/{invoice_id}", operation_id="createEfaturaCancel")
 async def cancel_invoice(
     invoice_id: str,
     request: Request,
@@ -153,7 +153,7 @@ async def cancel_invoice(
     except Exception as e:
         return {"Success": False, "Message": str(e)}
 
-@router.post("/birfatura/sync-invoices")
+@router.post("/birfatura/sync-invoices", operation_id="createBirfaturaSyncInvoices")
 async def sync_invoices(
     data: InvoiceSyncRequest,
     db: Session = Depends(get_db),
@@ -186,7 +186,7 @@ async def sync_invoices(
 
 # --- OutEBelgeV2 Endpoints (Migrated from Flask) ---
 
-@router.post("/OutEBelgeV2/SendDocument")
+@router.post("/OutEBelgeV2/SendDocument", operation_id="createOutebelgev2Senddocument")
 async def send_document_v2(
     request: Request,
     db: Session = Depends(get_db),
@@ -213,7 +213,7 @@ async def send_document_v2(
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
-@router.post("/OutEBelgeV2/SendBasicInvoiceFromModel")
+@router.post("/OutEBelgeV2/SendBasicInvoiceFromModel", operation_id="createOutebelgev2Sendbasicinvoicefrommodel")
 async def send_basic_invoice_from_model(
     request: Request,
     db: Session = Depends(get_db),
@@ -243,7 +243,7 @@ class MockSearchRequest(BaseModel):
 class MockDetailRequest(BaseModel):
     customer_id: Optional[str] = None
 
-@router.post("/Musteri/FirmaMusteriGetir")
+@router.post("/Musteri/FirmaMusteriGetir", operation_id="createMusteriFirmamusterigetir")
 async def search_firm_customers_mock(
     payload: MockSearchRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -262,7 +262,7 @@ async def search_firm_customers_mock(
         ]
     }
 
-@router.post("/Firma/FirmaPKBilgisiGetir")
+@router.post("/Firma/FirmaPKBilgisiGetir", operation_id="createFirmaFirmapkbilgisigetir")
 async def get_firm_pk_info_mock(
     payload: MockDetailRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -276,7 +276,7 @@ async def get_firm_pk_info_mock(
         ]
     }
 
-@router.post("/Firma/FirmaAdresBilgisiGetir")
+@router.post("/Firma/FirmaAdresBilgisiGetir", operation_id="createFirmaFirmaadresbilgisigetir")
 async def get_firm_address_info_mock(
     payload: MockDetailRequest,
     access: UnifiedAccess = Depends(require_access())

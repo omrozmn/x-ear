@@ -39,6 +39,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
     if (isOpen && invoice) {
       generatePdf();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, invoice]);
 
   const generatePdf = async () => {

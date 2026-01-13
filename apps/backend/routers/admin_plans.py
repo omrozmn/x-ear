@@ -28,7 +28,7 @@ class PlanListResponse(ResponseEnvelope):
 class PlanDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=PlanListResponse)
+@router.get("", operation_id="listAdminPlans", response_model=PlanListResponse)
 def list_plans(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -61,7 +61,7 @@ def list_plans(
         logger.error(f"List plans error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=PlanDetailResponse)
+@router.post("", operation_id="createAdminPlan", response_model=PlanDetailResponse)
 def create_plan(
     request_data: PlanCreate,
     db_session: Session = Depends(get_db),
@@ -91,7 +91,7 @@ def create_plan(
         logger.error(f"Create plan error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{plan_id}", response_model=PlanDetailResponse)
+@router.get("/{plan_id}", operation_id="getAdminPlan", response_model=PlanDetailResponse)
 def get_plan(
     plan_id: str,
     db_session: Session = Depends(get_db),
@@ -103,7 +103,7 @@ def get_plan(
         raise HTTPException(status_code=404, detail={"message": "Plan not found", "code": "NOT_FOUND"})
     return ResponseEnvelope(data={"plan": plan.to_dict(include_relationships=True)})
 
-@router.put("/{plan_id}", response_model=PlanDetailResponse)
+@router.put("/{plan_id}", operation_id="updateAdminPlan", response_model=PlanDetailResponse)
 def update_plan(
     plan_id: str,
     request_data: PlanUpdate,
@@ -136,7 +136,7 @@ def update_plan(
         logger.error(f"Update plan error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{plan_id}", response_model=ResponseEnvelope)
+@router.delete("/{plan_id}", operation_id="deleteAdminPlan", response_model=ResponseEnvelope)
 def delete_plan(
     plan_id: str,
     db_session: Session = Depends(get_db),

@@ -23,55 +23,55 @@ export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <Card>
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Toplam Satış</CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium dark:text-gray-200">Toplam Satış</CardTitle>
+          <DollarSign className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₺{totalSales.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-2xl font-bold dark:text-white">₺{totalSales.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground dark:text-gray-400">
             {sales.length} satış
           </p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">SGK Kapsamı</CardTitle>
-          <Shield className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium dark:text-gray-200">SGK Kapsamı</CardTitle>
+          <Shield className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">₺{totalSGKCoverage.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">₺{totalSGKCoverage.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground dark:text-gray-400">
             {totalSales > 0 ? Math.round((totalSGKCoverage / totalSales) * 100) : 0}% kapsam
           </p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Hasta Ödemesi</CardTitle>
-          <CreditCard className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium dark:text-gray-200">Hasta Ödemesi</CardTitle>
+          <CreditCard className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-600">₺{totalPatientPayment.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">₺{totalPatientPayment.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground dark:text-gray-400">
             Ödenen: ₺{totalPaid.toLocaleString()}
           </p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Kalan Tutar</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium dark:text-gray-200">Kalan Tutar</CardTitle>
+          <Clock className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+          <div className={`text-2xl font-bold ${remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
             ₺{remainingAmount.toLocaleString()}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground dark:text-gray-400">
             {remainingAmount > 0 ? 'Bekleyen ödeme' : 'Tamamlandı'}
           </p>
         </CardContent>

@@ -32,9 +32,24 @@ class DeviceBase(AppBaseModel):
     sale_id: Optional[str] = Field(None, alias="saleId")
 
 
-class DeviceCreate(DeviceBase):
-    """Schema for creating a device"""
+class DeviceCreate(AppBaseModel):
+    """Schema for creating a device - matches frontend expectations"""
+    patient_id: str = Field(..., alias="patientId")
     inventory_id: Optional[str] = Field(None, alias="inventoryId")
+    serial_number: Optional[str] = Field(None, alias="serialNumber")
+    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
+    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
+    # Made optional - will be auto-filled from inventory if inventoryId provided
+    brand: Optional[str] = Field(None, description="Device brand")
+    model: Optional[str] = Field(None, description="Device model")
+    type: Optional[str] = Field(None, description="Device type (e.g., hearing_aid)")
+    category: Optional[str] = Field(None, description="Device category")
+    ear: Optional[str] = Field(None, description="Ear side: left, right, both")
+    status: Optional[str] = Field("in_stock", description="Device status")
+    price: Optional[float] = Field(None, description="Sale price")
+    notes: Optional[str] = Field(None, description="Notes")
+    trial_period: Optional[dict] = Field(None, alias="trialPeriod")
+    warranty: Optional[dict] = Field(None, description="Warranty info")
 
 
 class DeviceUpdate(AppBaseModel):
@@ -51,7 +66,7 @@ class DeviceUpdate(AppBaseModel):
 
 class DeviceRead(DeviceBase, IDMixin, TimestampMixin):
     """Schema for reading a device"""
-    tenant_id: str = Field(..., alias="tenantId")
+    tenant_id: Optional[str] = Field(None, alias="tenantId")
     branch_id: Optional[str] = Field(None, alias="branchId")
     inventory_id: Optional[str] = Field(None, alias="inventoryId")
     

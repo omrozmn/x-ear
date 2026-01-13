@@ -63,6 +63,7 @@ export function InvoiceTypeSection({
       // Bu işlem ProductLinesSection'da yapılacak
       console.log('İade faturası seçildi - KDV oranları 0 yapılmalı');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoiceType, scenario, currency, onSGKModeChange]);
 
   // Koşullu görünürlük kontrolleri

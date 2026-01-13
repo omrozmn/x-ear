@@ -17,13 +17,13 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
-    useGetBranchesApiBranchesGet,
-    useCountPatientsApiPatientsCountGet,
-    useListPatientsApiPatientsGet,
-    useGetSmsCreditApiSmsCreditGet,
-    getGetBranchesQueryKey,
+    useListBranches,
+    useListPatientCount,
+    useListPatients,
+    useListSmCredit,
+    getListBranchesQueryKey,
     getListPatientsQueryKey,
-    getCountPatientsQueryKey
+    getListPatientCountQueryKey
 } from '@/api/generated';
 import type { ListPatientsParams } from '@/api/generated/schemas';
 
@@ -88,7 +88,7 @@ const CampaignsPage: React.FC = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
 
-    const { data: creditData, isFetching: creditLoading } = useGetSmsCreditApiSmsCreditGet();
+    const { data: creditData, isFetching: creditLoading } = useListSmCredit();
 
     // Handle different response structures for credit balance
     let creditBalance = 0;
@@ -109,10 +109,11 @@ const CampaignsPage: React.FC = () => {
         }
     }
 
-    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useGetBranchesApiBranchesGet({
-        query: { queryKey: getGetBranchesQueryKey(), refetchOnWindowFocus: false }
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useListBranches({
+        query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false }
     });
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const branchOptions = useMemo(() => {
         const items: any[] = [];
 
@@ -121,10 +122,10 @@ const CampaignsPage: React.FC = () => {
         return items
             .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
             .map((branch) => ({ value: branch.id, label: branch.name ?? '\u015eube' }));
-    }, [branchesData]);
+    }, []);
 
     // Fetch first patient for preview
-    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatientsApiPatientsGet(
+    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatients(
         { page: 1, per_page: 1 },
         { query: { queryKey: getListPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters', refetchOnWindowFocus: false } }
     );
@@ -153,11 +154,11 @@ const CampaignsPage: React.FC = () => {
         return params;
     }, [audienceFilters]);
 
-    const patientsCountQuery = useCountPatientsApiPatientsCountGet(
+    const patientsCountQuery = useListPatientCount(
         mode === 'filters' ? normalizedParams : undefined,
         {
             query: {
-                queryKey: getCountPatientsQueryKey(mode === 'filters' ? normalizedParams : undefined),
+                queryKey: getListPatientCountQueryKey(mode === 'filters' ? normalizedParams : undefined),
                 enabled: mode === 'filters',
                 refetchOnWindowFocus: false
             }
@@ -387,7 +388,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600">Başlangıç Tarihi</label>
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Başlangıç Tarihi</label>
                     <DatePicker
                         value={audienceFilters.dateStart ? new Date(audienceFilters.dateStart) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
@@ -399,7 +400,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600">Bitiş Tarihi</label>
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Bitiş Tarihi</label>
                     <DatePicker
                         value={audienceFilters.dateEnd ? new Date(audienceFilters.dateEnd) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
@@ -412,10 +413,10 @@ const CampaignsPage: React.FC = () => {
                 </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="text-sm text-gray-600 flex items-center gap-2">
+                <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
                     {patientsCountQuery.isFetching ? (
                         <>
-                            <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                            <Loader2 className="w-4 h-4 animate-spin text-indigo-500 dark:text-indigo-400" />
                             Alıcı sayısı hesaplanıyor...
                         </>
                     ) : (
@@ -435,7 +436,7 @@ const CampaignsPage: React.FC = () => {
                 </div>
             </div>
             {patientsCountQuery.isError && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
+                <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Hedef kitle sayısı alınamadı.
                 </p>
             )}
@@ -445,7 +446,7 @@ const CampaignsPage: React.FC = () => {
     const renderExcelArea = () => (
         <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm text-gray-600">Telefon sütunu içeren Excel dosyasını yükleyin.</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Telefon sütunu içeren Excel dosyasını yükleyin.</p>
                 <Button variant="secondary" size="sm" className="flex items-center gap-1" onClick={handleTemplateDownload}>
                     <Download className="w-4 h-4" /> Örnek Excel
                 </Button>
@@ -555,8 +556,8 @@ const CampaignsPage: React.FC = () => {
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-500">Hedef Kaynağı</p>
-                                <p className="text-xl font-semibold text-gray-900">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Hedef Kaynağı</p>
+                                <p className="text-xl font-semibold text-gray-900 dark:text-white">
                                     {mode === 'filters' ? 'Hasta Filtreleri' : 'Excel Listesi'}
                                 </p>
                             </div>
@@ -579,8 +580,8 @@ const CampaignsPage: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-xs text-gray-500">Alıcı Sayısı</p>
-                                <p className="text-3xl font-semibold text-gray-900">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Alıcı Sayısı</p>
+                                <p className="text-3xl font-semibold text-gray-900 dark:text-white">
                                     {recipients ? formatNumber(recipients) : '-'}
                                 </p>
                                 <p className="text-xs text-gray-400">
@@ -588,8 +589,8 @@ const CampaignsPage: React.FC = () => {
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500">Kaynak Detayı</p>
-                                <p className="text-sm font-medium text-gray-900">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Kaynak Detayı</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {mode === 'filters'
                                         ? `${Object.keys(normalizedParams).length === 0 ? 'Tüm hastalar' : 'Özel filtreler'}`
                                         : excelPreview?.fileName || 'Dosya seçilmedi'}
@@ -688,7 +689,7 @@ const CampaignsPage: React.FC = () => {
                             <span>SMS / kişi</span>
                             <span className="font-semibold">{smsSegments || '-'}</span>
                         </div>
-                        <div className="flex justify-between text-base font-semibold text-gray-900">
+                        <div className="flex justify-between text-base font-semibold text-gray-900 dark:text-white">
                             <span>Toplam kredi</span>
                             <span>{creditsNeeded ? formatNumber(creditsNeeded) : '-'}</span>
                         </div>

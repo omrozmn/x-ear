@@ -73,7 +73,11 @@ export function BranchesTab() {
             resetForm();
             fetchBranches();
         } catch (err: any) {
-            const msg = err.response?.data?.error || 'Islem gerceklestirilemedi.';
+            // Handle error object - extract message string
+            const errorData = err.response?.data?.error;
+            const msg = typeof errorData === 'object' && errorData?.message 
+                ? errorData.message 
+                : (typeof errorData === 'string' ? errorData : 'İşlem gerçekleştirilemedi.');
             setFormError(msg);
             toast.error(msg);
         } finally {
@@ -93,7 +97,11 @@ export function BranchesTab() {
                     toast.success('Sube silindi');
                     fetchBranches();
                 } catch (err: any) {
-                    toast.error('Sube silinemedi');
+                    const errorData = err.response?.data?.error;
+                    const msg = typeof errorData === 'object' && errorData?.message 
+                        ? errorData.message 
+                        : 'Şube silinemedi';
+                    toast.error(msg);
                 }
                 setConfirmationModal(prev => ({ ...prev, isOpen: false }));
             }

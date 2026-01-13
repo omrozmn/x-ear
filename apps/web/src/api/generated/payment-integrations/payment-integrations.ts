@@ -25,9 +25,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BodyPaytrCallback,
-  GetPosTransactionsParams,
+  BodyCreatePaymentPoPaytrCallback,
   HTTPValidationError,
+  ListPaymentPoTransactionsParams,
   PayTRConfigUpdate,
   PayTRInitiateRequest
 } from '.././schemas';
@@ -41,7 +41,7 @@ import { customInstance } from '../../orval-mutator';
  * Get Tenant PayTR Config
  * @summary Get Paytr Config
  */
-export const getPaytrConfig = (
+export const listPaymentPoPaytrConfig = (
     
  signal?: AbortSignal
 ) => {
@@ -56,69 +56,69 @@ export const getPaytrConfig = (
 
 
 
-export const getGetPaytrConfigQueryKey = () => {
+export const getListPaymentPoPaytrConfigQueryKey = () => {
     return [
     `/api/payments/pos/paytr/config`
     ] as const;
     }
 
     
-export const getGetPaytrConfigQueryOptions = <TData = Awaited<ReturnType<typeof getPaytrConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaytrConfig>>, TError, TData>>, }
+export const getListPaymentPoPaytrConfigQueryOptions = <TData = Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPaytrConfigQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListPaymentPoPaytrConfigQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaytrConfig>>> = ({ signal }) => getPaytrConfig(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>> = ({ signal }) => listPaymentPoPaytrConfig(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPaytrConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPaytrConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getPaytrConfig>>>
-export type GetPaytrConfigQueryError = unknown
+export type ListPaymentPoPaytrConfigQueryResult = NonNullable<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>>
+export type ListPaymentPoPaytrConfigQueryError = unknown
 
 
-export function useGetPaytrConfig<TData = Awaited<ReturnType<typeof getPaytrConfig>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaytrConfig>>, TError, TData>> & Pick<
+export function useListPaymentPoPaytrConfig<TData = Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPaytrConfig>>,
+          Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>,
           TError,
-          Awaited<ReturnType<typeof getPaytrConfig>>
+          Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPaytrConfig<TData = Awaited<ReturnType<typeof getPaytrConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaytrConfig>>, TError, TData>> & Pick<
+export function useListPaymentPoPaytrConfig<TData = Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPaytrConfig>>,
+          Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>,
           TError,
-          Awaited<ReturnType<typeof getPaytrConfig>>
+          Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPaytrConfig<TData = Awaited<ReturnType<typeof getPaytrConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaytrConfig>>, TError, TData>>, }
+export function useListPaymentPoPaytrConfig<TData = Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Paytr Config
  */
 
-export function useGetPaytrConfig<TData = Awaited<ReturnType<typeof getPaytrConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPaytrConfig>>, TError, TData>>, }
+export function useListPaymentPoPaytrConfig<TData = Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoPaytrConfig>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPaytrConfigQueryOptions(options)
+  const queryOptions = getListPaymentPoPaytrConfigQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -134,7 +134,7 @@ export function useGetPaytrConfig<TData = Awaited<ReturnType<typeof getPaytrConf
  * Update Tenant PayTR Config
  * @summary Update Paytr Config
  */
-export const updatePaytrConfig = (
+export const updatePaymentPoPaytrConfig = (
     payTRConfigUpdate: PayTRConfigUpdate,
  ) => {
       
@@ -149,11 +149,11 @@ export const updatePaytrConfig = (
   
 
 
-export const getUpdatePaytrConfigMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePaytrConfig>>, TError,{data: PayTRConfigUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updatePaytrConfig>>, TError,{data: PayTRConfigUpdate}, TContext> => {
+export const getUpdatePaymentPoPaytrConfigMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePaymentPoPaytrConfig>>, TError,{data: PayTRConfigUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updatePaymentPoPaytrConfig>>, TError,{data: PayTRConfigUpdate}, TContext> => {
 
-const mutationKey = ['updatePaytrConfig'];
+const mutationKey = ['updatePaymentPoPaytrConfig'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -163,10 +163,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePaytrConfig>>, {data: PayTRConfigUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePaymentPoPaytrConfig>>, {data: PayTRConfigUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  updatePaytrConfig(data,)
+          return  updatePaymentPoPaytrConfig(data,)
         }
 
         
@@ -174,23 +174,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdatePaytrConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updatePaytrConfig>>>
-    export type UpdatePaytrConfigMutationBody = PayTRConfigUpdate
-    export type UpdatePaytrConfigMutationError = HTTPValidationError
+    export type UpdatePaymentPoPaytrConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updatePaymentPoPaytrConfig>>>
+    export type UpdatePaymentPoPaytrConfigMutationBody = PayTRConfigUpdate
+    export type UpdatePaymentPoPaytrConfigMutationError = HTTPValidationError
 
     /**
  * @summary Update Paytr Config
  */
-export const useUpdatePaytrConfig = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePaytrConfig>>, TError,{data: PayTRConfigUpdate}, TContext>, }
+export const useUpdatePaymentPoPaytrConfig = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePaymentPoPaytrConfig>>, TError,{data: PayTRConfigUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updatePaytrConfig>>,
+        Awaited<ReturnType<typeof updatePaymentPoPaytrConfig>>,
         TError,
         {data: PayTRConfigUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdatePaytrConfigMutationOptions(options);
+      const mutationOptions = getUpdatePaymentPoPaytrConfigMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -199,7 +199,7 @@ export const useUpdatePaytrConfig = <TError = HTTPValidationError,
 Supports Sale-linked or Standalone
  * @summary Initiate Paytr Payment
  */
-export const initiatePaytrPayment = (
+export const createPaymentPoPaytrInitiate = (
     payTRInitiateRequest: PayTRInitiateRequest,
  signal?: AbortSignal
 ) => {
@@ -215,11 +215,11 @@ export const initiatePaytrPayment = (
   
 
 
-export const getInitiatePaytrPaymentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initiatePaytrPayment>>, TError,{data: PayTRInitiateRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initiatePaytrPayment>>, TError,{data: PayTRInitiateRequest}, TContext> => {
+export const getCreatePaymentPoPaytrInitiateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentPoPaytrInitiate>>, TError,{data: PayTRInitiateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPaymentPoPaytrInitiate>>, TError,{data: PayTRInitiateRequest}, TContext> => {
 
-const mutationKey = ['initiatePaytrPayment'];
+const mutationKey = ['createPaymentPoPaytrInitiate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -229,10 +229,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initiatePaytrPayment>>, {data: PayTRInitiateRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPaymentPoPaytrInitiate>>, {data: PayTRInitiateRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  initiatePaytrPayment(data,)
+          return  createPaymentPoPaytrInitiate(data,)
         }
 
         
@@ -240,23 +240,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitiatePaytrPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof initiatePaytrPayment>>>
-    export type InitiatePaytrPaymentMutationBody = PayTRInitiateRequest
-    export type InitiatePaytrPaymentMutationError = HTTPValidationError
+    export type CreatePaymentPoPaytrInitiateMutationResult = NonNullable<Awaited<ReturnType<typeof createPaymentPoPaytrInitiate>>>
+    export type CreatePaymentPoPaytrInitiateMutationBody = PayTRInitiateRequest
+    export type CreatePaymentPoPaytrInitiateMutationError = HTTPValidationError
 
     /**
  * @summary Initiate Paytr Payment
  */
-export const useInitiatePaytrPayment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initiatePaytrPayment>>, TError,{data: PayTRInitiateRequest}, TContext>, }
+export const useCreatePaymentPoPaytrInitiate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentPoPaytrInitiate>>, TError,{data: PayTRInitiateRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initiatePaytrPayment>>,
+        Awaited<ReturnType<typeof createPaymentPoPaytrInitiate>>,
         TError,
         {data: PayTRInitiateRequest},
         TContext
       > => {
 
-      const mutationOptions = getInitiatePaytrPaymentMutationOptions(options);
+      const mutationOptions = getCreatePaymentPoPaytrInitiateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -266,22 +266,22 @@ Idempotent: Checks if already paid.
 Public endpoint - validation via PayTR hash check.
  * @summary Paytr Callback
  */
-export const paytrCallback = (
-    bodyPaytrCallback: BodyPaytrCallback,
+export const createPaymentPoPaytrCallback = (
+    bodyCreatePaymentPoPaytrCallback: BodyCreatePaymentPoPaytrCallback,
  signal?: AbortSignal
 ) => {
       
       const formUrlEncoded = new URLSearchParams();
-formUrlEncoded.append(`merchant_oid`, bodyPaytrCallback.merchant_oid)
-formUrlEncoded.append(`status`, bodyPaytrCallback.status)
-if(bodyPaytrCallback.total_amount !== undefined && bodyPaytrCallback.total_amount !== null) {
- formUrlEncoded.append(`total_amount`, bodyPaytrCallback.total_amount)
+formUrlEncoded.append(`merchant_oid`, bodyCreatePaymentPoPaytrCallback.merchant_oid)
+formUrlEncoded.append(`status`, bodyCreatePaymentPoPaytrCallback.status)
+if(bodyCreatePaymentPoPaytrCallback.total_amount !== undefined && bodyCreatePaymentPoPaytrCallback.total_amount !== null) {
+ formUrlEncoded.append(`total_amount`, bodyCreatePaymentPoPaytrCallback.total_amount)
  }
-if(bodyPaytrCallback.failed_reason_msg !== undefined && bodyPaytrCallback.failed_reason_msg !== null) {
- formUrlEncoded.append(`failed_reason_msg`, bodyPaytrCallback.failed_reason_msg)
+if(bodyCreatePaymentPoPaytrCallback.failed_reason_msg !== undefined && bodyCreatePaymentPoPaytrCallback.failed_reason_msg !== null) {
+ formUrlEncoded.append(`failed_reason_msg`, bodyCreatePaymentPoPaytrCallback.failed_reason_msg)
  }
-if(bodyPaytrCallback.hash !== undefined && bodyPaytrCallback.hash !== null) {
- formUrlEncoded.append(`hash`, bodyPaytrCallback.hash)
+if(bodyCreatePaymentPoPaytrCallback.hash !== undefined && bodyCreatePaymentPoPaytrCallback.hash !== null) {
+ formUrlEncoded.append(`hash`, bodyCreatePaymentPoPaytrCallback.hash)
  }
 
       return customInstance<string>(
@@ -294,11 +294,11 @@ if(bodyPaytrCallback.hash !== undefined && bodyPaytrCallback.hash !== null) {
   
 
 
-export const getPaytrCallbackMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof paytrCallback>>, TError,{data: BodyPaytrCallback}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof paytrCallback>>, TError,{data: BodyPaytrCallback}, TContext> => {
+export const getCreatePaymentPoPaytrCallbackMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentPoPaytrCallback>>, TError,{data: BodyCreatePaymentPoPaytrCallback}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPaymentPoPaytrCallback>>, TError,{data: BodyCreatePaymentPoPaytrCallback}, TContext> => {
 
-const mutationKey = ['paytrCallback'];
+const mutationKey = ['createPaymentPoPaytrCallback'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -308,10 +308,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof paytrCallback>>, {data: BodyPaytrCallback}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPaymentPoPaytrCallback>>, {data: BodyCreatePaymentPoPaytrCallback}> = (props) => {
           const {data} = props ?? {};
 
-          return  paytrCallback(data,)
+          return  createPaymentPoPaytrCallback(data,)
         }
 
         
@@ -319,23 +319,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PaytrCallbackMutationResult = NonNullable<Awaited<ReturnType<typeof paytrCallback>>>
-    export type PaytrCallbackMutationBody = BodyPaytrCallback
-    export type PaytrCallbackMutationError = HTTPValidationError
+    export type CreatePaymentPoPaytrCallbackMutationResult = NonNullable<Awaited<ReturnType<typeof createPaymentPoPaytrCallback>>>
+    export type CreatePaymentPoPaytrCallbackMutationBody = BodyCreatePaymentPoPaytrCallback
+    export type CreatePaymentPoPaytrCallbackMutationError = HTTPValidationError
 
     /**
  * @summary Paytr Callback
  */
-export const usePaytrCallback = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof paytrCallback>>, TError,{data: BodyPaytrCallback}, TContext>, }
+export const useCreatePaymentPoPaytrCallback = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentPoPaytrCallback>>, TError,{data: BodyCreatePaymentPoPaytrCallback}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof paytrCallback>>,
+        Awaited<ReturnType<typeof createPaymentPoPaytrCallback>>,
         TError,
-        {data: BodyPaytrCallback},
+        {data: BodyCreatePaymentPoPaytrCallback},
         TContext
       > => {
 
-      const mutationOptions = getPaytrCallbackMutationOptions(options);
+      const mutationOptions = getCreatePaymentPoPaytrCallbackMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -343,8 +343,8 @@ export const usePaytrCallback = <TError = HTTPValidationError,
  * Report Endpoint for POS Transactions (Admin)
  * @summary Get Pos Transactions
  */
-export const getPosTransactions = (
-    params?: GetPosTransactionsParams,
+export const listPaymentPoTransactions = (
+    params?: ListPaymentPoTransactionsParams,
  signal?: AbortSignal
 ) => {
       
@@ -359,69 +359,69 @@ export const getPosTransactions = (
 
 
 
-export const getGetPosTransactionsQueryKey = (params?: GetPosTransactionsParams,) => {
+export const getListPaymentPoTransactionsQueryKey = (params?: ListPaymentPoTransactionsParams,) => {
     return [
     `/api/payments/pos/transactions`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetPosTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = HTTPValidationError>(params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>>, }
+export const getListPaymentPoTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError = HTTPValidationError>(params?: ListPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPosTransactionsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListPaymentPoTransactionsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPosTransactions>>> = ({ signal }) => getPosTransactions(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPaymentPoTransactions>>> = ({ signal }) => listPaymentPoTransactions(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPosTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof getPosTransactions>>>
-export type GetPosTransactionsQueryError = HTTPValidationError
+export type ListPaymentPoTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof listPaymentPoTransactions>>>
+export type ListPaymentPoTransactionsQueryError = HTTPValidationError
 
 
-export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = HTTPValidationError>(
- params: undefined |  GetPosTransactionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>> & Pick<
+export function useListPaymentPoTransactions<TData = Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params: undefined |  ListPaymentPoTransactionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPosTransactions>>,
+          Awaited<ReturnType<typeof listPaymentPoTransactions>>,
           TError,
-          Awaited<ReturnType<typeof getPosTransactions>>
+          Awaited<ReturnType<typeof listPaymentPoTransactions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = HTTPValidationError>(
- params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>> & Pick<
+export function useListPaymentPoTransactions<TData = Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params?: ListPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPosTransactions>>,
+          Awaited<ReturnType<typeof listPaymentPoTransactions>>,
           TError,
-          Awaited<ReturnType<typeof getPosTransactions>>
+          Awaited<ReturnType<typeof listPaymentPoTransactions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = HTTPValidationError>(
- params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>>, }
+export function useListPaymentPoTransactions<TData = Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params?: ListPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Pos Transactions
  */
 
-export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = HTTPValidationError>(
- params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>>, }
+export function useListPaymentPoTransactions<TData = Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError = HTTPValidationError>(
+ params?: ListPaymentPoTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentPoTransactions>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPosTransactionsQueryOptions(params,options)
+  const queryOptions = getListPaymentPoTransactionsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

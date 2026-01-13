@@ -28,7 +28,7 @@ RegistryType = Union[
     UserProfile
 ]
 
-@router.get("/developer/schema-registry", response_model=ResponseEnvelope[List[RegistryType]])
+@router.get("/developer/schema-registry", operation_id="listDeveloperSchemaRegistry", response_model=ResponseEnvelope[List[RegistryType]])
 def schema_registry():
     """
     This endpoint exists solely to force Pydantic to generate OpenAPI schemas 

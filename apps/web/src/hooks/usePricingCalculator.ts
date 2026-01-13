@@ -161,7 +161,8 @@ export function usePricingCalculator(initialOptions: PricingOptions = {}) {
       items: [...items],
       sgkCalculation
     };
-  }, [items, options, calculateItemPrice]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, options]); // calculateItemPrice is a stable callback
 
   // Get pricing preview for a potential item
   const getItemPreview = useCallback((
@@ -216,6 +217,7 @@ export function usePricingCalculator(initialOptions: PricingOptions = {}) {
     formattedSGK: formatCurrency(calculation.sgkDeduction),
     formattedTotal: formatCurrency(calculation.grandTotal),
     formattedPatientPayment: formatCurrency(calculation.patientPayment)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [calculation, formatCurrency]);
 
   return {

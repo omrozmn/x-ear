@@ -41,6 +41,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
     if (isOpen && sale?.id) {
       fetchInstallments();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sale?.id]);
 
   const fetchInstallments = async () => {

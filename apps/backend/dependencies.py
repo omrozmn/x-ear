@@ -24,8 +24,21 @@ from database import get_db, set_current_tenant_id
 
 logger = logging.getLogger(__name__)
 
-# Config
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
+# Config - JWT Security
+# In production, JWT_SECRET_KEY MUST be set via environment variable
+_env = os.getenv('ENVIRONMENT', 'development').lower()
+SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+
+if not SECRET_KEY:
+    if _env in ('production', 'prod', 'staging'):
+        raise ValueError(
+            "CRITICAL: JWT_SECRET_KEY environment variable must be set in production! "
+            "Generate a secure key with: python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+    # Development-only fallback (will log warning)
+    SECRET_KEY = 'dev-only-insecure-key-do-not-use-in-prod'
+    logger.warning("⚠️  Using insecure development JWT key. Set JWT_SECRET_KEY in production!")
+
 ALGORITHM = "HS256"
 
 # OAuth2 scheme

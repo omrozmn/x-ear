@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Mail, Phone, CreditCard, CheckCircle2, AlertCircle, Lock, Plus, User as UserIcon, Loader2, Tag, Smartphone, MessageSquare, X } from "lucide-react";
 import { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { apiClient } from "@/lib/api/api-client";
+import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
 
 // Card Icons  

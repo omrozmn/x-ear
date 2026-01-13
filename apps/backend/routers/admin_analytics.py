@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/analytics", tags=["Admin Analytics"])
 
 @router.get("", operation_id="getAdminAnalytics")
-@router.get("/overview", operation_id="getAdminAnalyticsOverview")
+@router.get("/overview", operation_id="listAdminAnalyticOverview")
 def get_admin_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -158,7 +158,7 @@ def get_admin_analytics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/revenue")
+@router.get("/revenue", operation_id="listAdminAnalyticRevenue")
 def get_revenue_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -198,7 +198,7 @@ def get_revenue_analytics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/users")
+@router.get("/users", operation_id="listAdminAnalyticUsers")
 def get_user_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -222,7 +222,7 @@ def get_user_analytics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/tenants")
+@router.get("/tenants", operation_id="listAdminAnalyticTenants")
 def get_tenant_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())

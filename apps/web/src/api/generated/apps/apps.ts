@@ -419,7 +419,7 @@ export const useDeleteApp = <TError = HTTPValidationError,
  * Assign a user to an app with a specific role
  * @summary Assign User To App
  */
-export const assignUserToApp = (
+export const createAppAssign = (
     appId: string,
     roleAssign: RoleAssign,
  signal?: AbortSignal
@@ -436,11 +436,11 @@ export const assignUserToApp = (
   
 
 
-export const getAssignUserToAppMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignUserToApp>>, TError,{appId: string;data: RoleAssign}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof assignUserToApp>>, TError,{appId: string;data: RoleAssign}, TContext> => {
+export const getCreateAppAssignMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppAssign>>, TError,{appId: string;data: RoleAssign}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppAssign>>, TError,{appId: string;data: RoleAssign}, TContext> => {
 
-const mutationKey = ['assignUserToApp'];
+const mutationKey = ['createAppAssign'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -450,10 +450,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignUserToApp>>, {appId: string;data: RoleAssign}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppAssign>>, {appId: string;data: RoleAssign}> = (props) => {
           const {appId,data} = props ?? {};
 
-          return  assignUserToApp(appId,data,)
+          return  createAppAssign(appId,data,)
         }
 
         
@@ -461,23 +461,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type AssignUserToAppMutationResult = NonNullable<Awaited<ReturnType<typeof assignUserToApp>>>
-    export type AssignUserToAppMutationBody = RoleAssign
-    export type AssignUserToAppMutationError = HTTPValidationError
+    export type CreateAppAssignMutationResult = NonNullable<Awaited<ReturnType<typeof createAppAssign>>>
+    export type CreateAppAssignMutationBody = RoleAssign
+    export type CreateAppAssignMutationError = HTTPValidationError
 
     /**
  * @summary Assign User To App
  */
-export const useAssignUserToApp = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignUserToApp>>, TError,{appId: string;data: RoleAssign}, TContext>, }
+export const useCreateAppAssign = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppAssign>>, TError,{appId: string;data: RoleAssign}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof assignUserToApp>>,
+        Awaited<ReturnType<typeof createAppAssign>>,
         TError,
         {appId: string;data: RoleAssign},
         TContext
       > => {
 
-      const mutationOptions = getAssignUserToAppMutationOptions(options);
+      const mutationOptions = getCreateAppAssignMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -485,7 +485,7 @@ export const useAssignUserToApp = <TError = HTTPValidationError,
  * Transfer app ownership to another user
  * @summary Transfer App Ownership
  */
-export const transferAppOwnership = (
+export const createAppTransferOwnership = (
     appId: string,
     ownerTransfer: OwnerTransfer,
  signal?: AbortSignal
@@ -502,11 +502,11 @@ export const transferAppOwnership = (
   
 
 
-export const getTransferAppOwnershipMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transferAppOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof transferAppOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext> => {
+export const getCreateAppTransferOwnershipMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppTransferOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppTransferOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext> => {
 
-const mutationKey = ['transferAppOwnership'];
+const mutationKey = ['createAppTransferOwnership'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -516,10 +516,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof transferAppOwnership>>, {appId: string;data: OwnerTransfer}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppTransferOwnership>>, {appId: string;data: OwnerTransfer}> = (props) => {
           const {appId,data} = props ?? {};
 
-          return  transferAppOwnership(appId,data,)
+          return  createAppTransferOwnership(appId,data,)
         }
 
         
@@ -527,23 +527,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type TransferAppOwnershipMutationResult = NonNullable<Awaited<ReturnType<typeof transferAppOwnership>>>
-    export type TransferAppOwnershipMutationBody = OwnerTransfer
-    export type TransferAppOwnershipMutationError = HTTPValidationError
+    export type CreateAppTransferOwnershipMutationResult = NonNullable<Awaited<ReturnType<typeof createAppTransferOwnership>>>
+    export type CreateAppTransferOwnershipMutationBody = OwnerTransfer
+    export type CreateAppTransferOwnershipMutationError = HTTPValidationError
 
     /**
  * @summary Transfer App Ownership
  */
-export const useTransferAppOwnership = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transferAppOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
+export const useCreateAppTransferOwnership = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppTransferOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof transferAppOwnership>>,
+        Awaited<ReturnType<typeof createAppTransferOwnership>>,
         TError,
         {appId: string;data: OwnerTransfer},
         TContext
       > => {
 
-      const mutationOptions = getTransferAppOwnershipMutationOptions(options);
+      const mutationOptions = getCreateAppTransferOwnershipMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

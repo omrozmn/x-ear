@@ -71,6 +71,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   useEffect(() => {
     loadInvoices();
     loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // If editId query param present, open editor for that invoice
@@ -94,6 +95,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         console.warn('Could not open invoice editor from editId param', err);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadStats = useCallback(async () => {
@@ -230,47 +232,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     });
   }, []);
 
-  const handleViewInvoice = useCallback((invoice: Invoice) => {
-    // For view mode, we'll show invoice details in a separate component
-    console.log('Viewing invoice:', invoice);
-    // TODO: Implement view modal or navigate to detail page
-  }, []);
 
-  const handleUseTemplate = useCallback((template: InvoiceTemplate) => {
-    setModalState({
-      isOpen: true,
-      mode: 'template',
-      invoice: null,
-      template
-    });
-  }, []);
-
-  const handleInvoiceSelect = useCallback((invoice: Invoice, selected: boolean) => {
-    setState(prev => ({
-      ...prev,
-      selectedInvoices: selected
-        ? [...prev.selectedInvoices, invoice]
-        : prev.selectedInvoices.filter(i => i.id !== invoice.id)
-    }));
-  }, []);
-
-  const handleSelectAll = useCallback((selected: boolean) => {
-    setState(prev => ({
-      ...prev,
-      selectedInvoices: selected ? [...filteredInvoices] : []
-    }));
-  }, [filteredInvoices]);
-
-  const handleBulkActionComplete = useCallback((action: string, results: any) => {
-    // Refresh invoices after bulk action
-    loadInvoices();
-
-    // Clear selection
-    setState(prev => ({ ...prev, selectedInvoices: [] }));
-
-    // Show success message
-    console.log(`Bulk action ${action} completed:`, results);
-  }, [loadInvoices]);
 
   const handleFiltersChange = useCallback((newFilters: InvoiceFilters) => {
     setState(prev => ({ ...prev, filters: newFilters }));
@@ -285,10 +247,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     setState(prev => ({ ...prev, filters: {} }));
   }, []);
 
-  const handleOpenGovernmentModal = useCallback((invoice?: Invoice) => {
-    setCurrentInvoiceForGov(invoice || null);
-    setGovernmentModalOpen(true);
-  }, []);
+
 
   const handleSaveGovernmentData = useCallback((data: any) => {
     console.log('Government invoice data:', data);
@@ -345,7 +304,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       <div className={`invoice-management-loading ${className}`}>
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-600">Faturalar yükleniyor...</span>
+          <span className="ml-3 text-gray-600 dark:text-gray-400">Faturalar yükleniyor...</span>
         </div>
       </div>
     );
@@ -405,7 +364,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       </div>
       {/* Error Display */}
       {state.error && (
-        <div className="error-message bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="error-message bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
               <AlertTriangle className="text-red-400" size={20} />
@@ -417,7 +376,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             <div className="ml-auto pl-3">
               <Button
                 onClick={() => setState(prev => ({ ...prev, error: null }))}
-                className="text-red-400 hover:text-red-600"
+                className="text-red-400 hover:text-red-600 dark:hover:text-red-300"
                 variant='default'>
                 <X size={16} />
               </Button>
@@ -440,7 +399,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           />
 
           {/* Invoice Table (now using shared InvoiceList component) */}
-          <div className="invoice-table bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <div className="invoice-table bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
             <InvoiceList
               onInvoiceSelect={(inv) => handleEditInvoice(inv)}
               filters={state.filters}
@@ -546,100 +505,6 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           </Card>
         </div>
       )}
-    </div>
-  );
-};
-
-// Invoice Row Component
-interface InvoiceRowProps {
-  invoice: Invoice;
-  selected: boolean;
-  onSelect: (selected: boolean) => void;
-  onEdit: () => void;
-  onView: () => void;
-}
-
-const InvoiceRow: React.FC<InvoiceRowProps> = ({
-  invoice,
-  selected,
-  onSelect,
-  onEdit,
-  onView
-}) => {
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      draft: { label: 'Taslak', color: 'bg-gray-100 text-gray-800' },
-      sent: { label: 'Gönderildi', color: 'bg-blue-100 text-blue-800' },
-      approved: { label: 'Onaylandı', color: 'bg-green-100 text-green-800' },
-      rejected: { label: 'Reddedildi', color: 'bg-red-100 text-red-800' },
-      cancelled: { label: 'İptal', color: 'bg-red-100 text-red-800' },
-      paid: { label: 'Ödendi', color: 'bg-green-100 text-green-800' },
-      overdue: { label: 'Gecikmiş', color: 'bg-orange-100 text-orange-800' }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color} dark:bg-opacity-20`}>
-        {config.label}
-      </span>
-    );
-  };
-
-  return (
-    <div className="invoice-row border-b border-gray-200 px-6 py-4 hover:bg-gray-50">
-      <div className="flex items-center">
-        <Input
-          type="checkbox"
-          checked={selected}
-          onChange={(e) => onSelect(e.target.checked)}
-          className="mr-4"
-        />
-
-        <div className="flex-1 grid grid-cols-6 gap-4 items-center">
-          <div>
-            <div className="font-medium text-gray-900">{invoice.invoiceNumber}</div>
-            <div className="text-sm text-gray-500">{invoice.issueDate}</div>
-          </div>
-
-          <div>
-            <div className="font-medium text-gray-900">{invoice.patientName}</div>
-            <div className="text-sm text-gray-500">{invoice.patientPhone}</div>
-          </div>
-
-          <div>
-            {getStatusBadge(invoice.status)}
-          </div>
-
-          <div>
-            <span className="text-sm text-gray-500 capitalize">{invoice.type}</span>
-          </div>
-
-          <div className="text-right">
-            <div className="font-medium text-gray-900">
-              ₺{invoice.grandTotal?.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) || '0.00'}
-            </div>
-            <div className="text-sm text-gray-500">{invoice.currency}</div>
-          </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button
-              onClick={onView}
-              className="p-1 text-gray-400 hover:text-blue-600"
-              title="Görüntüle"
-              variant='default'>
-              <Eye size={18} />
-            </Button>
-            <Button
-              onClick={onEdit}
-              className="p-1 text-gray-400 hover:text-blue-600"
-              title="Düzenle"
-              variant='default'>
-              <Edit2 size={18} />
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

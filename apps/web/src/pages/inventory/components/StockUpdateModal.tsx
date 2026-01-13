@@ -89,7 +89,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
       title="Stok Güncelle"
       size="md"
     >
-      <div className="space-y-6">
+      <div className="space-y-6 dark:text-white">
         {product && (
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <h3 className="font-medium text-gray-900 dark:text-white">{product.name}</h3>
@@ -114,7 +114,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
             required
           />
           {selectedType && (
-            <p className="text-xs text-gray-500 mt-1">{selectedType.description}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{selectedType.description}</p>
           )}
         </div>
 
@@ -160,7 +160,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
           </Alert>
         )}
 
-        <div className="flex justify-end space-x-3 pt-4 border-t">
+        <div className="flex justify-end space-x-3 pt-4 border-t dark:border-gray-700">
           <Button
             variant="outline"
             onClick={handleClose}

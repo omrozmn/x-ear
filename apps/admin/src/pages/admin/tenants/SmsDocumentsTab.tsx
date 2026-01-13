@@ -4,9 +4,9 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
 import toast from 'react-hot-toast';
 import {
-    useGetTenantSmsDocuments,
+    useListAdminTenantSmsDocuments,
     useUpdateAdminTenantSmsDocumentStatus,
-    useSendAdminTenantSmsDocumentsEmail
+    useCreateAdminTenantSmsDocumentSendEmail
 } from '@/lib/api-client';
 import { adminApi } from '@/lib/apiMutator';
 
@@ -28,12 +28,12 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [previewDoc, setPreviewDoc] = useState<{ type: string; url: string; filename: string } | null>(null);
 
-    const { data: documentsData, isLoading, refetch } = useGetTenantSmsDocuments(tenantId, {
+    const { data: documentsData, isLoading, refetch } = useListAdminTenantSmsDocuments(tenantId, {
         query: { enabled: !!tenantId }
     });
 
     const { mutateAsync: updateStatus } = useUpdateAdminTenantSmsDocumentStatus();
-    const { mutateAsync: sendEmail } = useSendAdminTenantSmsDocumentsEmail();
+    const { mutateAsync: sendEmail } = useCreateAdminTenantSmsDocumentSendEmail();
 
     const documents = (documentsData as any)?.data?.documents || [];
     const documentsSubmitted = (documentsData as any)?.data?.documentsSubmitted || false;
@@ -64,7 +64,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
             await updateStatus({
                 tenantId,
                 documentType: docType,
-                data: { status: 'revision_requested', notes: note || '' }
+                data: { status: 'revision_requested', note: note || '' }
             });
             toast.success('Revizyon istendi');
             await refetch();
@@ -80,7 +80,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
         if (!window.confirm('Tüm belgeleri e-posta ile göndermek istediğinize emin misiniz?')) return;
         setActionLoading('send-email');
         try {
-            await sendEmail({ tenantId, data: { subject: 'SMS Başvuru Belgeleri', body: 'Belgeleriniz ektedir.' } });
+            await sendEmail({ tenantId });
             toast.success('E-posta gönderildi');
         } catch (error: any) {
             toast.error(error.response?.data?.error?.message || 'E-posta gönderilemedi');

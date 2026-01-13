@@ -124,7 +124,8 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
 
   // Get status badge
   const getStatusBadge = (status?: string) => {
-    switch (status) {
+    const normalizedStatus = (status || '').toLowerCase();
+    switch (normalizedStatus) {
       case 'active':
         return <Badge variant="success" size="sm">Aktif</Badge>;
       case 'inactive':

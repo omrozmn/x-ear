@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/dashboard", tags=["Admin Dashboard"])
 
-@router.get("")
+@router.get("", operation_id="getAdminDashboard")
 def get_dashboard_metrics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -97,7 +97,7 @@ def get_dashboard_metrics(
                         json_data = json.loads(details_parsed)
                         if isinstance(json_data, dict):
                             details_parsed = json_data.get('message') or json_data.get('error') or str(json_data)
-                    except:
+                    except (json.JSONDecodeError, TypeError):
                         pass
                 
                 recent_errors_data.append({
@@ -152,7 +152,7 @@ def get_dashboard_metrics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stats")
+@router.get("/stats", operation_id="listAdminDashboardStats")
 def get_dashboard_stats(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())

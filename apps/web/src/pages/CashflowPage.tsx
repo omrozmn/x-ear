@@ -16,7 +16,7 @@ import {
   useDeleteCashRecord,
 } from '../hooks/useCashflow';
 import { CashRecordDetailModal } from '../components/cashflow/CashRecordDetailModal';
-import type { CashflowFilters as CashflowFiltersType, CashRecord } from '../types/cashflow';
+import type { CashflowFilters as CashflowFiltersType, CashRecord, CashRecordFormData } from '../types/cashflow';
 
 export function CashflowPage() {
   const [filters, setFilters] = useState<CashflowFiltersType>({});
@@ -39,7 +39,7 @@ export function CashflowPage() {
     if (!recordData) return [];
 
     // Parse inventory info from description if not present (backend compatibility)
-    let filtered = recordData.map((record: any) => {
+    let filtered = recordData.map((record: CashRecord & { description?: string }) => {
       if (!record.inventoryItemId && record.description) {
         const inventoryMatch = record.description.match(/\[INVENTORY:([^:]+):([^\]]+)\]/);
         if (inventoryMatch) {
@@ -115,7 +115,7 @@ export function CashflowPage() {
     setCurrentPage(1);
   };
 
-  const handleSaveRecord = async (formData: any) => {
+  const handleSaveRecord = async (formData: CashRecordFormData) => {
     await createMutation.mutateAsync(formData);
   };
 
@@ -177,13 +177,13 @@ export function CashflowPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Kasa Yönetimi</h1>
-            <p className="text-sm text-gray-500 mt-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Kasa Yönetimi</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               Gelir ve gider kayıtlarınızı yönetin
             </p>
           </div>
@@ -208,9 +208,9 @@ export function CashflowPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Filtreler</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filtreler</h3>
           <Button
             variant={showFilters ? 'default' : 'outline'}
             size="sm"
@@ -231,10 +231,10 @@ export function CashflowPage() {
       </div>
 
       {/* Records Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Kasa Kayıtları</h3>
-          <p className="text-sm text-gray-500 mt-1">{records.length} kayıt</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Kasa Kayıtları</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{records.length} kayıt</p>
         </div>
 
         {error ? (
@@ -256,7 +256,7 @@ export function CashflowPage() {
             />
 
             {totalPages > 1 && (
-              <div className="border-t border-gray-200 p-4">
+              <div className="border-t border-gray-200 dark:border-gray-700 p-4">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -292,23 +292,23 @@ export function CashflowPage() {
         title="Kaydı Sil"
         size="md"
       >
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="space-y-4 dark:text-gray-200">
+          <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg">
             <div className="flex-shrink-0">
               <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
                 <Trash2 className="h-5 w-5 text-red-600" />
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-900">
+              <h3 className="text-sm font-medium text-red-900 dark:text-red-400">
                 Bu kaydı silmek istediğinizden emin misiniz?
               </h3>
-              <p className="mt-1 text-sm text-red-700">
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">
                 {recordToDelete?.patientName || 'Kayıt'} - {recordToDelete?.amount} ₺
               </p>
             </div>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Bu işlem geri alınamaz. Kayıt kalıcı olarak silinecektir.
           </p>
           <div className="flex justify-end gap-2 pt-2">

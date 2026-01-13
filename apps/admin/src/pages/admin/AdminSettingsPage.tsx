@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    useGetSystemSettings,
-    useUpdateSystemSettings,
-    useClearCache,
-    useTriggerBackup
+    useListAdminSettings,
+    useUpdateAdminSettings,
+    useCreateAdminSettingCacheClear,
+    useCreateAdminSettingBackup
 } from '@/lib/api-client';
 import {
     Save,
@@ -21,10 +21,10 @@ const AdminSettingsPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [settings, setSettings] = useState<any[]>([]);
 
-    const { data: settingsData, isLoading, refetch } = useGetSystemSettings({});
-    const updateMutation = useUpdateSystemSettings();
-    const clearCacheMutation = useClearCache();
-    const backupMutation = useTriggerBackup();
+    const { data: settingsData, isLoading, refetch } = useListAdminSettings({});
+    const updateMutation = useUpdateAdminSettings();
+    const clearCacheMutation = useCreateAdminSettingCacheClear();
+    const backupMutation = useCreateAdminSettingBackup();
 
     useEffect(() => {
         if ((settingsData as any)?.data) {

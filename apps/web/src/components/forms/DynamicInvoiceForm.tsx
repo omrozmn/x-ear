@@ -102,6 +102,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
     });
 
     return sections;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.invoiceType, formData.scenario, formData]);
 
   // Check if a field should be visible based on conditions

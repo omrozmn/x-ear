@@ -39,7 +39,7 @@ MOCK_TICKETS = [
     }
 ]
 
-@router.get("", response_model=TicketListResponse)
+@router.get("", operation_id="listAdminTickets", response_model=TicketListResponse)
 async def get_admin_tickets(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -72,7 +72,7 @@ async def get_admin_tickets(
         }
     }
 
-@router.post("", response_model=TicketDetailResponse)
+@router.post("", operation_id="createAdminTicket", response_model=TicketDetailResponse)
 async def create_admin_ticket(
     data: TicketCreate,
     db: Session = Depends(get_db),
@@ -92,7 +92,7 @@ async def create_admin_ticket(
     MOCK_TICKETS.append(new_ticket)
     return {"success": True, "data": {"ticket": new_ticket}}
 
-@router.put("/{ticket_id}", response_model=TicketDetailResponse)
+@router.put("/{ticket_id}", operation_id="updateAdminTicket", response_model=TicketDetailResponse)
 async def update_admin_ticket(
     ticket_id: str,
     data: TicketUpdate,

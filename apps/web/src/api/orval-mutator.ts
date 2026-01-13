@@ -268,9 +268,14 @@ apiClient.interceptors.request.use(
     // URL rewriting logic has been removed as backend now supports Unified Endpoints.
 
     // Case Conversion: Convert payload to snake_case for backend
+    // DISABLED: Backend expects camelCase as per OpenAPI spec and generated types.
+    // The previous conversion to snake_case was causing 422 Validation Errors (e.g. missing 'patientId')
+    // because the backend received 'patient_id' but validated against 'patientId'.
+    /*
     if (config.data && !(config.data instanceof FormData)) {
       config.data = humps.decamelizeKeys(config.data);
     }
+    */
 
     return config;
   },
@@ -300,19 +305,19 @@ apiClient.interceptors.response.use(
     // Handle 401 by attempting a silent refresh and replaying the original request
     try {
       if (error.response?.status === 401 && config && !config.__isRetryRequest && !isAuthEndpoint) {
-        const refreshToken = tokenManager.refreshToken;
+        const createAuthRefresh = tokenManager.createAuthRefresh;
 
         console.log('[orval-mutator] 401 error detected:', {
           url: config.url,
           isAuthEndpoint,
-          hasRefreshToken: !!refreshToken
+          hasRefreshToken: !!createAuthRefresh
         });
 
         if (!(apiClient as any)._refreshing) {
           (apiClient as any)._refreshing = true;
           (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
           try {
-            if (!refreshToken) {
+            if (!createAuthRefresh) {
               console.error('[orval-mutator] No refresh token available');
               throw new Error('No refresh token available');
             }
@@ -327,14 +332,14 @@ apiClient.interceptors.response.use(
               // Try with Authorization header first (preferred by backend)
               console.log('[orval-mutator] Trying refresh with Authorization header...');
               refreshResp = await axios.post(refreshUrl, {}, {
-                headers: { Authorization: `Bearer ${refreshToken}` },
+                headers: { Authorization: `Bearer ${createAuthRefresh}` },
                 withCredentials: true,
               });
             } catch (err) {
               console.log('[orval-mutator] Header refresh failed, trying with token in body...');
               // Fallback to body-based refresh
               try {
-                refreshResp = await axios.post(refreshUrl, { refreshToken }, { withCredentials: false });
+                refreshResp = await axios.post(refreshUrl, { createAuthRefresh }, { withCredentials: false });
               } catch (err2) {
                 console.error('[orval-mutator] Both refresh attempts failed:', err);
                 throw err;
@@ -404,14 +409,22 @@ apiClient.interceptors.response.use(
     }
 
     // Handle network errors (offline scenarios)
+    // Only queue non-GET requests - GET requests should be re-fetched by UI when online
     if (!error.response && error.code === 'ERR_NETWORK') {
-      console.warn('Network error detected, queuing request for offline processing');
-      await queueOfflineRequest(config);
-
-      // Return a rejected promise with offline error
-      const offlineError = new Error('Request queued for offline processing');
-      offlineError.name = 'OfflineError';
-      return Promise.reject(offlineError);
+      const method = config?.method?.toUpperCase() || 'GET';
+      
+      if (method !== 'GET') {
+        console.warn('Network error detected, queuing request for offline processing');
+        await queueOfflineRequest(config);
+        // Return a rejected promise with offline error for mutations
+        const offlineError = new Error('Request queued for offline processing');
+        offlineError.name = 'OfflineError';
+        return Promise.reject(offlineError);
+      } else {
+        // For GET requests, just reject with the original error so react-query can retry
+        console.warn('Network error detected for GET request, not queuing (will be re-fetched by UI)');
+        return Promise.reject(error);
+      }
     }
 
     // Handle other errors normally

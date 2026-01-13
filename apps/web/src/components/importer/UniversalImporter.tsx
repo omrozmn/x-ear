@@ -118,6 +118,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         console.error('Failed to parse file', err);
       }
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
   const sanitizeRowForPreview = (row: Record<string, any>) => {

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["ActivityLogs"])
 
 
-@router.get("/activity-logs", response_model=ResponseEnvelope[List[ActivityLogRead]])
+@router.get("/activity-logs", operation_id="listActivityLogs", response_model=ResponseEnvelope[List[ActivityLogRead]])
 def get_activity_logs(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100, alias="limit"),
@@ -116,7 +116,7 @@ def get_activity_logs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/activity-logs/stats", response_model=ResponseEnvelope[ActivityLogStats])
+@router.get("/activity-logs/stats", operation_id="listActivityLogStats", response_model=ResponseEnvelope[ActivityLogStats])
 def get_activity_stats(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -162,7 +162,7 @@ def get_activity_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/activity-logs/filter-options")
+@router.get("/activity-logs/filter-options", operation_id="listActivityLogFilterOptions")
 def get_activity_log_filter_options(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)

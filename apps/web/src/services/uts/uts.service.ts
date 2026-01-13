@@ -1,29 +1,29 @@
 // UTS endpoints are now generated via Orval
 import {
-  listRegistrations,
-  startBulkRegistration,
-  getJobStatus,
-  cancelJob
+  listUtRegistrations,
+  createUtRegistrationBulk,
+  getUtJob,
+  createUtJobCancel
 } from '../../api/generated/uts/uts';
 import { unwrapObject, unwrapArray } from '../../utils/response-unwrap';
-import { ListRegistrationsParams, BulkRegistration } from '../../api/generated/schemas';
+import { ListUtRegistrationsParams, BulkRegistration } from '../../api/generated/schemas';
 
 export const utsService = {
-  listRegistrations: async (params?: ListRegistrationsParams) => {
-    const response = await listRegistrations(params);
-    return unwrapArray<any>(response);
+  listRegistrations: async (params?: ListUtRegistrationsParams) => {
+    const response = await listUtRegistrations(params);
+    return unwrapArray<unknown>(response);
   },
-  startBulkRegistration: async (body: BulkRegistration) => {
-    const response = await startBulkRegistration(body);
-    return unwrapObject<any>(response);
+  createUtRegistrationBulk: async (body: BulkRegistration) => {
+    const response = await createUtRegistrationBulk(body);
+    return unwrapObject<unknown>(response);
   },
-  getJobStatus: async (jobId: string) => {
-    const response = await getJobStatus(jobId);
-    return unwrapObject<any>(response);
+  getUtJob: async (jobId: string) => {
+    const response = await getUtJob(jobId);
+    return unwrapObject<unknown>(response);
   },
-  cancelJob: async (jobId: string) => {
-    const response = await cancelJob(jobId);
-    return unwrapObject<any>(response);
+  createUtJobCancel: async (jobId: string) => {
+    const response = await createUtJobCancel(jobId);
+    return unwrapObject<unknown>(response);
   },
 };
 

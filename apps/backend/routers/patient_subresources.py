@@ -68,7 +68,7 @@ class EReceiptUpdate(BaseModel):
 
 # --- Patient Devices ---
 
-@router.get("/patients/{patient_id}/devices", response_model=ResponseEnvelope[List[DeviceAssignmentRead]])
+@router.get("/patients/{patient_id}/devices", operation_id="listPatientDevices", response_model=ResponseEnvelope[List[DeviceAssignmentRead]])
 def get_patient_devices(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -77,7 +77,7 @@ def get_patient_devices(
     """Get all devices assigned to a specific patient"""
     try:
         from models.patient import Patient
-        from models.sales import DeviceAssignment
+        from models.sales import DeviceAssignment, Sale, PaymentRecord
         from models.device import Device
         from models.inventory import InventoryItem
         
@@ -89,18 +89,20 @@ def get_patient_devices(
         if access.tenant_id and patient.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
-        # Get all device assignments for this patient
-        assignments = db.query(DeviceAssignment).filter_by(patient_id=patient_id).all()
+        # Get all device assignments for this patient, ordered by created_at descending (newest first)
+        assignments = db.query(DeviceAssignment).filter_by(patient_id=patient_id).order_by(DeviceAssignment.created_at.desc()).all()
         
         # Map assignments to the structure expected by frontend
         mapped_devices = []
         for assignment in assignments:
+            # Get full dict from model - this includes createdAt, assignedDate, sgkScheme, paymentMethod, etc.
             d = assignment.to_dict() if hasattr(assignment, 'to_dict') else {}
             
             # Hydrate with details from linked Device or Inventory
             brand = d.get('brand')
             model = d.get('model')
             serial = d.get('serialNumber')
+            barcode = d.get('barcode')
             
             if not brand or not model:
                 # Try to find linked device
@@ -110,6 +112,7 @@ def get_patient_devices(
                         brand = brand or device.brand
                         model = model or device.model
                         serial = serial or device.serial_number
+                        barcode = barcode or getattr(device, 'barcode', None)
                 
                 # Try to find linked inventory
                 if (not brand or not model) and assignment.inventory_id:
@@ -118,22 +121,67 @@ def get_patient_devices(
                         brand = brand or inv.brand
                         model = model or inv.model
                         serial = serial or inv.serial_number
+                        barcode = barcode or inv.barcode
             
-            # Enriched data
-            mapped_devices.append({
-                **d,
+            # Merge enriched data with original dict (original dict has priority for existing fields)
+            enriched = {
                 'brand': brand or 'Bilinmiyor',
                 'model': model or 'Bilinmiyor',
                 'serialNumber': serial,
+                'barcode': barcode,
                 'status': d.get('status', 'assigned'),
                 'type': d.get('deviceType', 'hearing_aid'),
-                'deliveryStatus': d.get('deliveryStatus', 'pending'),
-                'isLoaner': d.get('isLoaner', False),
-                'loanerInventoryId': d.get('loanerInventoryId'),
-                'loanerSerialNumber': d.get('loanerSerialNumber'),
-                'loanerBrand': d.get('loanerBrand'),
-                'loanerModel': d.get('loanerModel')
-            })
+            }
+            
+            # Merge: original dict values take priority, enriched fills in missing
+            final_device = {**enriched, **d}
+            
+            # === Flask parity: Add earSide alias ===
+            final_device['earSide'] = assignment.ear
+            
+            # === Flask parity: Add sgkSupportType alias ===
+            final_device['sgkSupportType'] = assignment.sgk_scheme
+            
+            # === Flask parity: Add deviceName (computed) ===
+            if assignment.inventory_id:
+                inv = db.get(InventoryItem, assignment.inventory_id)
+                if inv:
+                    final_device['deviceName'] = f"{inv.brand} {inv.model}"
+                    final_device['category'] = inv.category
+            if not final_device.get('deviceName'):
+                if assignment.is_loaner:
+                    final_device['deviceName'] = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}"
+                else:
+                    final_device['deviceName'] = f"{final_device.get('brand', '')} {final_device.get('model', '')}".strip() or f"Device {assignment.device_id or ''}"
+            
+            # === Flask parity: Pricing fields with explicit float conversion ===
+            final_device['sgkReduction'] = float(assignment.sgk_support) if assignment.sgk_support is not None else 0.0
+            final_device['patientPayment'] = float(assignment.net_payable) if assignment.net_payable is not None else 0.0
+            final_device['salePrice'] = float(assignment.sale_price) if assignment.sale_price is not None else 0.0
+            final_device['listPrice'] = float(assignment.list_price) if assignment.list_price is not None else 0.0
+            
+            # === Flask parity: Fetch downPayment from PaymentRecord ===
+            final_device['downPayment'] = 0.0
+            if assignment.sale_id:
+                # Try to get explicit down payment record first
+                down_payment_record = db.query(PaymentRecord).filter_by(
+                    sale_id=assignment.sale_id,
+                    payment_type='down_payment'
+                ).first()
+                
+                if down_payment_record:
+                    final_device['downPayment'] = float(down_payment_record.amount) if down_payment_record.amount else 0.0
+                else:
+                    # Fallback to sale's paid_amount
+                    sale = db.get(Sale, assignment.sale_id)
+                    if sale and sale.paid_amount:
+                        final_device['downPayment'] = float(sale.paid_amount)
+            
+            # === Flask parity: Ensure assignedDate is set ===
+            if not final_device.get('assignedDate') and assignment.created_at:
+                final_device['assignedDate'] = assignment.created_at.isoformat()
+            
+            mapped_devices.append(final_device)
         
         return ResponseEnvelope(
             data=mapped_devices,
@@ -152,7 +200,7 @@ def get_patient_devices(
 
 # --- Hearing Tests ---
 
-@router.get("/patients/{patient_id}/hearing-tests")
+@router.get("/patients/{patient_id}/hearing-tests", operation_id="listPatientHearingTests")
 def get_patient_hearing_tests(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -183,7 +231,7 @@ def get_patient_hearing_tests(
         logger.error(f"Error getting hearing tests: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/hearing-tests", status_code=201)
+@router.post("/patients/{patient_id}/hearing-tests", operation_id="createPatientHearingTests", status_code=201)
 def add_patient_hearing_test(
     patient_id: str,
     request_data: HearingTestCreate,
@@ -222,7 +270,7 @@ def add_patient_hearing_test(
         logger.error(f"Error adding hearing test: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/patients/{patient_id}/hearing-tests/{test_id}")
+@router.put("/patients/{patient_id}/hearing-tests/{test_id}", operation_id="updatePatientHearingTest")
 def update_patient_hearing_test(
     patient_id: str,
     test_id: str,
@@ -266,7 +314,7 @@ def update_patient_hearing_test(
         logger.error(f"Error updating hearing test: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/hearing-tests/{test_id}")
+@router.delete("/patients/{patient_id}/hearing-tests/{test_id}", operation_id="deletePatientHearingTest")
 def delete_patient_hearing_test(
     patient_id: str,
     test_id: str,
@@ -304,7 +352,7 @@ def delete_patient_hearing_test(
 
 # --- Patient Notes ---
 
-@router.get("/patients/{patient_id}/notes")
+@router.get("/patients/{patient_id}/notes", operation_id="listPatientNotes")
 def get_patient_notes(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -335,7 +383,7 @@ def get_patient_notes(
         logger.error(f"Error getting patient notes: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/notes", status_code=201)
+@router.post("/patients/{patient_id}/notes", operation_id="createPatientNotes", status_code=201)
 def create_patient_note(
     patient_id: str,
     request_data: PatientNoteCreate,
@@ -397,7 +445,7 @@ def create_patient_note(
         logger.error(f"Error creating patient note: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/patients/{patient_id}/notes/{note_id}")
+@router.put("/patients/{patient_id}/notes/{note_id}", operation_id="updatePatientNote")
 def update_patient_note(
     patient_id: str,
     note_id: str,
@@ -447,7 +495,7 @@ def update_patient_note(
         logger.error(f"Error updating patient note: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/notes/{note_id}")
+@router.delete("/patients/{patient_id}/notes/{note_id}", operation_id="deletePatientNote")
 def delete_patient_note(
     patient_id: str,
     note_id: str,
@@ -485,7 +533,7 @@ def delete_patient_note(
 
 # --- E-Receipts ---
 
-@router.get("/patients/{patient_id}/ereceipts")
+@router.get("/patients/{patient_id}/ereceipts", operation_id="listPatientEreceipts")
 def get_patient_ereceipts(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -516,7 +564,7 @@ def get_patient_ereceipts(
         logger.error(f"Error getting e-receipts: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/ereceipts", status_code=201)
+@router.post("/patients/{patient_id}/ereceipts", operation_id="createPatientEreceipts", status_code=201)
 def create_patient_ereceipt(
     patient_id: str,
     request_data: EReceiptCreate,
@@ -558,7 +606,7 @@ def create_patient_ereceipt(
         logger.error(f"Error creating e-receipt: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/patients/{patient_id}/ereceipts/{ereceipt_id}")
+@router.put("/patients/{patient_id}/ereceipts/{ereceipt_id}", operation_id="updatePatientEreceipt")
 def update_patient_ereceipt(
     patient_id: str,
     ereceipt_id: str,
@@ -602,7 +650,7 @@ def update_patient_ereceipt(
         logger.error(f"Error updating e-receipt: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/ereceipts/{ereceipt_id}")
+@router.delete("/patients/{patient_id}/ereceipts/{ereceipt_id}", operation_id="deletePatientEreceipt")
 def delete_patient_ereceipt(
     patient_id: str,
     ereceipt_id: str,
@@ -638,9 +686,159 @@ def delete_patient_ereceipt(
         logger.error(f"Error deleting e-receipt: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- Patient Sales (Flask parity) ---
+
+@router.get("/patients/{patient_id}/sales", operation_id="listPatientSales")
+def get_patient_sales(
+    patient_id: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get all sales for a specific patient - Flask parity"""
+    try:
+        from models.patient import Patient
+        from models.sales import Sale, DeviceAssignment, PaymentRecord, PaymentPlan
+        from models.inventory import InventoryItem
+        from models.invoice import Invoice
+        
+        patient = db.get(Patient, patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        
+        # Tenant check
+        if access.tenant_id and patient.tenant_id != access.tenant_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Get all sales for this patient
+        sales = db.query(Sale).filter_by(patient_id=patient_id).order_by(Sale.sale_date.desc()).all()
+        
+        sales_data = []
+        for sale in sales:
+            sale_dict = sale.to_dict() if hasattr(sale, 'to_dict') else {}
+            
+            # === Flask parity: Get device assignments (new method first, then legacy) ===
+            assignments = db.query(DeviceAssignment).filter_by(sale_id=sale.id).all()
+            
+            # Legacy fallback if no assignments found by sale_id
+            if not assignments:
+                linked_ids = [
+                    getattr(sale, 'right_ear_assignment_id', None),
+                    getattr(sale, 'left_ear_assignment_id', None)
+                ]
+                linked_ids = [lid for lid in linked_ids if lid]
+                if linked_ids:
+                    assignments = db.query(DeviceAssignment).filter(DeviceAssignment.id.in_(linked_ids)).all()
+            
+            # Add devices from assignments
+            devices = []
+            for assignment in assignments:
+                # Get inventory item details if available
+                inventory_item = None
+                if assignment.inventory_id:
+                    inventory_item = db.get(InventoryItem, assignment.inventory_id)
+                
+                # Build device info with inventory details
+                if inventory_item:
+                    device_name = f"{inventory_item.brand} {inventory_item.model}"
+                    brand = inventory_item.brand
+                    model = inventory_item.model
+                    barcode = inventory_item.barcode
+                else:
+                    # Fallback for manual/loaner devices
+                    device_name = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}".strip()
+                    brand = assignment.loaner_brand or ''
+                    model = assignment.loaner_model or ''
+                    barcode = None
+                
+                device_info = {
+                    'id': assignment.inventory_id or assignment.device_id,
+                    'name': device_name,
+                    'brand': brand,
+                    'model': model,
+                    'serialNumber': assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right,
+                    'barcode': barcode,
+                    'ear': assignment.ear,
+                    'listPrice': float(assignment.list_price) if assignment.list_price else None,
+                    'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
+                    'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+                    'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None,
+                    # Legacy frontend support
+                    'sgkReduction': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+                    'patientPayment': float(assignment.net_payable) if assignment.net_payable else None
+                }
+                devices.append(device_info)
+            
+            sale_dict['devices'] = devices
+            
+            # === Flask parity: Add payment plan ===
+            payment_plan = db.query(PaymentPlan).filter_by(sale_id=sale.id).first()
+            if payment_plan:
+                sale_dict['paymentPlan'] = payment_plan.to_dict() if hasattr(payment_plan, 'to_dict') else {
+                    'id': payment_plan.id,
+                    'totalAmount': float(payment_plan.total_amount) if payment_plan.total_amount else 0.0,
+                    'installmentCount': payment_plan.installment_count,
+                    'status': payment_plan.status
+                }
+            else:
+                sale_dict['paymentPlan'] = None
+            
+            # Add payment records
+            payment_records = []
+            payments = db.query(PaymentRecord).filter_by(sale_id=sale.id).order_by(PaymentRecord.payment_date.desc()).all()
+            for payment in payments:
+                payment_info = {
+                    'id': payment.id,
+                    'amount': float(payment.amount) if payment.amount else 0.0,
+                    'paymentDate': payment.payment_date.isoformat() if payment.payment_date else None,
+                    'paymentMethod': payment.payment_method,
+                    'paymentType': payment.payment_type,
+                    'status': 'paid',
+                    'referenceNumber': payment.reference_number,
+                    'notes': getattr(payment, 'notes', None)
+                }
+                payment_records.append(payment_info)
+            
+            sale_dict['paymentRecords'] = payment_records
+            
+            # === Flask parity: Add invoice ===
+            invoice = db.query(Invoice).filter_by(sale_id=sale.id).first()
+            if invoice:
+                sale_dict['invoice'] = invoice.to_dict() if hasattr(invoice, 'to_dict') else {
+                    'id': invoice.id,
+                    'invoiceNumber': invoice.invoice_number,
+                    'status': invoice.status
+                }
+            else:
+                sale_dict['invoice'] = None
+            
+            # === Flask parity: SGK coverage recalculation if zero ===
+            sgk_coverage_value = float(sale.sgk_coverage) if sale.sgk_coverage else 0.0
+            if abs(sgk_coverage_value) < 0.01 and assignments:
+                # Recalculate from assignments
+                total_sgk = sum(float(a.sgk_support or 0) for a in assignments)
+                sgk_coverage_value = total_sgk
+            sale_dict['sgkCoverage'] = sgk_coverage_value
+            
+            sales_data.append(sale_dict)
+        
+        return ResponseEnvelope(
+            data=sales_data,
+            meta={
+                'patientId': patient_id,
+                'patientName': f"{patient.first_name} {patient.last_name}",
+                'salesCount': len(sales_data)
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting patient sales: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # --- Patient Appointments ---
 
-@router.get("/patients/{patient_id}/appointments")
+@router.get("/patients/{patient_id}/appointments", operation_id="listPatientAppointments")
 def get_patient_appointments(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),

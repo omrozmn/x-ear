@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createPaymentRecord } from '@/api/generated';
+import { createPaymentRecords } from '@/api/generated';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -95,7 +95,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
       };
 
       // Use Orval-generated function
-      const resp = await createPaymentRecord({
+      const resp = await createPaymentRecords({
         patient_id: sale.patientId,
         sale_id: sale.id,
         amount: paymentData.amount,

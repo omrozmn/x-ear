@@ -6,21 +6,21 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-06T03:31:16.002Z
+ * Generated: 2026-01-12T10:42:05.076Z
  */
 
 // ACTIVITY_LOGS
 export {
-  useGetActivityLogs as useGetActivityLogsApiActivityLogsGet,
-  useGetActivityStats as useGetActivityStatsApiActivityLogsStatsGet,
-  useGetActivityLogFilterOptions,
+  useListActivityLogs,
+  useListActivityLogStats,
+  useListActivityLogFilterOptions,
 } from './activity-logs/activity-logs';
 
 // ADDONS
 export {
-  useGetAddons as useGetAddonsApiAddonsGet,
+  useListAddons,
   useCreateAddon,
-  useGetAdminAddons,
+  useListAddonAdmin,
   useUpdateAddon,
   useDeleteAddon,
 } from './addons/addons';
@@ -36,95 +36,95 @@ export {
 
 // ADMIN_ANALYTICS
 export {
-  useGetAdminAnalyticsOverview,
+  useListAdminAnalyticOverview,
   useGetAdminAnalytics,
-  useGetAdminRevenueAnalytics,
-  useGetAdminUserAnalytics,
-  useGetAdminTenantAnalytics,
+  useListAdminAnalyticRevenue,
+  useListAdminAnalyticUsers,
+  useListAdminAnalyticTenants,
 } from './admin-analytics/admin-analytics';
 
 // ADMIN_API_KEYS
 export {
-  useInitAdminApiKeysDb,
-  useGetAdminApiKeys,
+  useCreateAdminApiKeyInitDb,
+  useListAdminApiKeys,
   useCreateAdminApiKey,
-  useRevokeApiKey,
+  useDeleteAdminApiKey,
 } from './admin-api-keys/admin-api-keys';
 
 // ADMIN_APPOINTMENTS
 export {
-  useGetAdminAllAppointments,
+  useListAdminAppointments,
 } from './admin-appointments/admin-appointments';
 
 // ADMIN_BIRFATURA
 export {
-  useGetAdminStats,
-  useGetAdminBirfaturaInvoices,
-  useGetAdminLogs,
+  useListAdminBirfaturaStats,
+  useListAdminBirfaturaInvoices,
+  useListAdminBirfaturaLogs,
 } from './admin-birfatura/admin-birfatura';
 
 // ADMIN_DASHBOARD
 export {
-  useGetAdminDashboardMetrics,
-  useGetAdminDashboardStats,
+  useGetAdminDashboard,
+  useListAdminDashboardStats,
 } from './admin-dashboard/admin-dashboard';
 
 // ADMIN_INTEGRATIONS
 export {
-  useGetAdminIntegrationsIntegrations,
-  useInitAdminIntegrationsDb,
-  useGetAdminVatanSmsConfig,
-  useUpdateAdminVatanSmsConfig,
-  useGetAdminBirfaturaConfig,
-  useUpdateAdminBirfaturaConfig,
+  useListAdminIntegrations,
+  useCreateAdminIntegrationInitDb,
+  useListAdminIntegrationVatanSmConfig,
+  useUpdateAdminIntegrationVatanSmConfig,
+  useListAdminIntegrationBirfaturaConfig,
+  useUpdateAdminIntegrationBirfaturaConfig,
 } from './admin-integrations/admin-integrations';
 
 // ADMIN_INVENTORY
 export {
-  useGetAdminAllInventory,
+  useListAdminInventory,
 } from './admin-inventory/admin-inventory';
 
 // ADMIN_INVOICES
 export {
-  useGetAdminInvoices,
+  useListAdminInvoices,
   useCreateAdminInvoice,
   useGetAdminInvoice,
-  useRecordPayment,
-  useGetAdminInvoicePdf,
+  useCreateAdminInvoicePayment,
+  useListAdminInvoicePdf,
 } from './admin-invoices/admin-invoices';
 
 // ADMIN_MARKETPLACES
 export {
-  useInitAdminMarketplacesDb,
-  useGetAdminMarketplacesIntegrations,
-  useCreateAdminIntegration,
-  useSyncIntegration,
+  useCreateAdminMarketplaceInitDb,
+  useListAdminMarketplaceIntegrations,
+  useCreateAdminMarketplaceIntegrations,
+  useCreateAdminMarketplaceIntegrationSync,
 } from './admin-marketplaces/admin-marketplaces';
 
 // ADMIN_NOTIFICATIONS
 export {
-  useInitAdminNotificationsDb,
-  useGetAdminNotifications,
-  useSendAdminNotification,
-  useGetAdminTemplates,
-  useCreateAdminTemplate,
-  useUpdateAdminTemplate,
-  useDeleteAdminTemplate,
+  useCreateAdminNotificationInitDb,
+  useListAdminNotifications,
+  useCreateAdminNotificationSend,
+  useListAdminNotificationTemplates,
+  useCreateAdminNotificationTemplates,
+  useUpdateAdminNotificationTemplate,
+  useDeleteAdminNotificationTemplate,
 } from './admin-notifications/admin-notifications';
 
 // ADMIN_PATIENTS
 export {
-  useGetAdminAllPatients,
-  useGetAdminPatientDetail,
-  useGetAdminPatientDevices,
-  useGetAdminPatientSales,
-  useGetAdminPatientTimeline,
-  useGetAdminPatientDocuments,
+  useListAdminPatients,
+  useGetAdminPatient,
+  useListAdminPatientDevices,
+  useListAdminPatientSales,
+  useListAdminPatientTimeline,
+  useListAdminPatientDocuments,
 } from './admin-patients/admin-patients';
 
 // ADMIN_PAYMENTS
 export {
-  useGetAdminPosTransactions,
+  useListAdminPaymentPoTransactions,
 } from './admin-payments/admin-payments';
 
 // ADMIN_PLANS
@@ -138,46 +138,46 @@ export {
 
 // ADMIN_PRODUCTION
 export {
-  useInitAdminProductionDb,
-  useGetAdminOrders,
-  useUpdateAdminOrderStatus,
+  useCreateAdminProductionInitDb,
+  useListAdminProductionOrders,
+  useUpdateAdminProductionOrderStatus,
 } from './admin-production/admin-production';
 
 // ADMIN_ROLES
 export {
-  useGetAdminRoles,
-  useCreateAdminRole,
+  useListAdminRoles,
+  useCreateAdminRoles,
   useGetAdminRole,
   useUpdateAdminRole,
   useDeleteAdminRole,
-  useGetAdminRolePermissions,
+  useListAdminRolePermissions,
   useUpdateAdminRolePermissions,
-  useGetAdminPermissions,
-  useGetAdminUsersWithRoles,
-  useGetAdminUserDetail,
-  useUpdateAdminUserRoles,
-  useGetMyAdminPermissions,
+  useListAdminPermissions,
+  useListAdminAdminUsers,
+  useGetAdminAdminUser,
+  useUpdateAdminAdminUserRoles,
+  useListAdminMyPermissions,
 } from './admin-roles/admin-roles';
 
 // ADMIN_SCAN_QUEUE
 export {
-  useInitAdminScanQueueDb,
-  useGetAdminScanQueue,
-  useRetryAdminScan,
+  useCreateAdminScanQueueInitDb,
+  useListAdminScanQueue,
+  useCreateAdminScanQueueRetry,
 } from './admin-scan-queue/admin-scan-queue';
 
 // ADMIN_SETTINGS
 export {
-  useInitAdminSettingsDb,
-  useGetAdminSettings,
+  useCreateAdminSettingInitDb,
+  useListAdminSettings,
   useUpdateAdminSettings,
-  useClearCache,
-  useTriggerAdminBackup,
+  useCreateAdminSettingCacheClear,
+  useCreateAdminSettingBackup,
 } from './admin-settings/admin-settings';
 
 // ADMIN_SUPPLIERS
 export {
-  useGetAdminSuppliers,
+  useListAdminSuppliers,
   useCreateAdminSupplier,
   useGetAdminSupplier,
   useUpdateAdminSupplier,
@@ -191,64 +191,64 @@ export {
   useGetAdminTenant,
   useUpdateAdminTenant,
   useDeleteAdminTenant,
-  useGetAdminTenantUsers,
-  useCreateAdminTenantUser,
+  useListAdminTenantUsers,
+  useCreateAdminTenantUsers,
   useUpdateAdminTenantUser,
-  useSubscribeTenant,
-  useAddTenantAddon,
-  useRemoveTenantAddon,
+  useCreateAdminTenantSubscribe,
+  useCreateAdminTenantAddons,
+  useDeleteAdminTenantAddons,
   useUpdateAdminTenantStatus,
-  useGetAdminTenantSmsConfig,
-  useGetAdminTenantSmsDocuments,
-  useDownloadTenantSmsDocument,
+  useListAdminTenantSmsConfig,
+  useListAdminTenantSmsDocuments,
+  useListAdminTenantSmsDocumentDownload,
   useUpdateAdminTenantSmsDocumentStatus,
-  useSendAdminTenantSmsDocumentsEmail,
+  useCreateAdminTenantSmsDocumentSendEmail,
 } from './admin-tenants/admin-tenants';
 
 // ADMIN
 export {
-  useAdminLogin,
-  useCreateAdminUser,
-  useGetAdminUsers,
-  useGetAdminAllTenantUsers,
-  useUpdateAdminAnyTenantUser,
-  useGetAdminTickets,
-  useCreateAdminTicket,
+  useCreateAdminAuthLogin,
+  useCreateAdminUsers,
+  useListAdminUsers,
+  useListAdminUserAll,
+  useUpdateAdminUserAll,
+  useListAdminTickets,
+  useCreateAdminTickets,
   useUpdateAdminTicket,
-  useCreateAdminTicketResponse,
-  useDebugSwitchRole,
-  useDebugAvailableRoles,
-  useDebugSwitchTenant,
-  useDebugExitImpersonation,
-  useDebugPagePermissions,
+  useCreateAdminTicketResponses,
+  useCreateAdminDebugSwitchRole,
+  useListAdminDebugAvailableRoles,
+  useCreateAdminDebugSwitchTenant,
+  useCreateAdminDebugExitImpersonation,
+  useGetAdminDebugPagePermission,
 } from './admin/admin';
 
 // AFFILIATES
 export {
-  useCheckAffiliate,
-  useRegisterAffiliate,
-  useLoginAffiliate,
-  useGetAffiliatesMeMe,
-  useUpdateAffiliatePayment,
-  useGetAffiliateCommissions,
-  useGetAffiliateDetails,
-  useToggleAffiliateStatus,
-  useListAffiliates,
-  useLookupAffiliate,
+  useGetAffiliateCheck,
+  useCreateAffiliateRegister,
+  useCreateAffiliateLogin,
+  useListAffiliateMe,
+  useUpdateAffiliate,
+  useListAffiliateCommissions,
+  useListAffiliateDetails,
+  useUpdateAffiliateToggleStatus,
+  useListAffiliateList,
+  useListAffiliateLookup,
 } from './affiliates/affiliates';
 
 // APPOINTMENTS
 export {
-  useGetAppointments,
-  useCreateAppointment,
+  useListAppointments,
+  useCreateAppointments,
   useGetAppointment,
   useUpdateAppointment,
   useDeleteAppointment,
-  useRescheduleAppointment,
-  useCancelAppointment,
-  useCompleteAppointment,
-  useGetAvailability,
-  useListAppointments,
+  useCreateAppointmentReschedule,
+  useCreateAppointmentCancel,
+  useCreateAppointmentComplete,
+  useListAppointmentAvailability,
+  useListAppointmentList,
 } from './appointments/appointments';
 
 // APPS
@@ -258,8 +258,8 @@ export {
   useGetApp,
   useUpdateApp,
   useDeleteApp,
-  useAssignUserToApp,
-  useTransferAppOwnership,
+  useCreateAppAssign,
+  useCreateAppTransferOwnership,
 } from './apps/apps';
 
 // AUDIT
@@ -269,413 +269,435 @@ export {
 
 // AUTH
 export {
-  useLookupPhone,
-  useForgotPassword,
-  useVerifyOtp,
-  useResetPassword,
-  useLogin,
-  useRefreshToken,
-  useGetCurrentUser,
-  useSendVerificationOtp,
-  useSetPassword,
+  useCreateAuthLookupPhone,
+  useCreateAuthForgotPassword,
+  useCreateAuthVerifyOtp,
+  useCreateAuthResetPassword,
+  useCreateAuthLogin,
+  useCreateAuthRefresh,
+  useListAuthMe,
+  useCreateAuthSendVerificationOtp,
+  useCreateAuthSetPassword,
 } from './auth/auth';
 
 // AUTOMATION
 export {
-  useGetAutomationStatus,
-  useTriggerSgkProcessing,
-  useTriggerBackup,
-  useGetAutomationLogs,
+  useListAutomationStatus,
+  useCreateAutomationSgkProcess,
+  useCreateAutomationBackup,
+  useListAutomationLogs,
 } from './automation/automation';
 
 // BIR_FATURA
 export {
-  useSendDocument,
-  useSendBasicInvoice,
-  useCreateEfaturaCreateInvoice,
-  useRetryInvoice,
-  useCancelInvoice,
-  useSyncInvoices as useSyncInvoicesApiBirfaturaSyncInvoicesPost,
-  useSendDocumentV2,
-  useSendBasicInvoiceFromModel,
-  useSearchFirmCustomersMock,
-  useGetFirmPkInfoMock,
-  useGetFirmAddressInfoMock,
+  useCreateEfaturaSenddocument,
+  useCreateEfaturaSendbasicinvoice,
+  useCreateEfaturaCreate,
+  useCreateEfaturaRetry,
+  useCreateEfaturaCancel,
+  useCreateBirfaturaSyncInvoices,
+  useCreateOutebelgev2Senddocument,
+  useCreateOutebelgev2Sendbasicinvoicefrommodel,
+  useCreateMusteriFirmamusterigetir,
+  useCreateFirmaFirmapkbilgisigetir,
+  useCreateFirmaFirmaadresbilgisigetir,
 } from './bir-fatura/bir-fatura';
 
 // BRANCHES
 export {
-  useGetBranches as useGetBranchesApiBranchesGet,
-  useCreateBranch,
+  useListBranches,
+  useCreateBranches,
   useUpdateBranch,
   useDeleteBranch,
 } from './branches/branches';
 
 // CAMPAIGNS
 export {
-  useGetCampaigns,
-  useCreateCampaign,
+  useListCampaigns,
+  useCreateCampaigns,
   useGetCampaign,
   useUpdateCampaign,
   useDeleteCampaign,
-  useAdminGetCampaigns,
+  useCreateCampaignSend,
+  useListAdminCampaigns,
 } from './campaigns/campaigns';
 
 // CASH_RECORDS
 export {
-  useGetCashRecords,
-  useCreateCashRecord,
+  useListCashRecords,
+  useCreateCashRecords,
   useDeleteCashRecord,
 } from './cash-records/cash-records';
 
 // CHECKOUT
 export {
   useCreateCheckoutSession,
-  useConfirmPayment,
+  useCreateCheckoutConfirm,
 } from './checkout/checkout';
 
 // COMMISSION_LEDGER
 export {
-  useCreateCommission,
-  useUpdateCommissionStatus,
-  useGetCommissionsByAffiliate,
-  useAuditTrail,
+  useCreateCommissionCreate,
+  useCreateCommissionUpdateStatus,
+  useListCommissionByAffiliate,
+  useListCommissionAudit,
 } from './commission-ledger/commission-ledger';
 
 // COMMUNICATIONS
 export {
-  useListMessages,
-  useSendSms as useSendSmsApiCommunicationsMessagesSendSmsPost,
-  useSendEmail,
-  useListTemplates,
-  useCreateTemplate,
-  useGetTemplate,
-  useUpdateTemplate,
-  useDeleteTemplate,
+  useListCommunicationMessages,
+  useCreateCommunicationMessageSendSms,
+  useCreateCommunicationMessageSendEmail,
+  useListCommunicationTemplates,
+  useCreateCommunicationTemplates,
+  useGetCommunicationTemplate,
+  useUpdateCommunicationTemplate,
+  useDeleteCommunicationTemplate,
   useListCommunicationHistory,
   useCreateCommunicationHistory,
-  useCommunicationStats,
+  useListCommunicationStats,
 } from './communications/communications';
 
 // CONFIG
 export {
-  useGetConfig,
+  useListConfig,
 } from './config/config';
 
 // DASHBOARD
 export {
-  useGetDashboard as useGetDashboardApiDashboardGet,
-  useGetKpis,
-  usePatientTrends,
-  useRevenueTrends,
-  useRecentActivity,
-  usePatientDistribution,
+  useListDashboard,
+  useListDashboardKpis,
+  useListDashboardChartPatientTrends,
+  useListDashboardChartRevenueTrends,
+  useListDashboardRecentActivity,
+  useListDashboardChartPatientDistribution,
 } from './dashboard/dashboard';
 
 // DEVELOPER
 export {
-  useSchemaRegistry,
+  useListDeveloperSchemaRegistry,
 } from './developer/developer';
 
 // DEVICES
 export {
-  useGetDevices,
-  useCreateDevice,
-  useGetDeviceCategories,
-  useGetDeviceBrands,
-  useCreateDeviceBrand,
-  useGetLowStockDevices,
+  useListDevices,
+  useCreateDevices,
+  useListDeviceCategories,
+  useListDeviceBrands,
+  useCreateDeviceBrands,
+  useListDeviceLowStock,
   useGetDevice,
   useUpdateDevice,
   useDeleteDevice,
-  useUpdateDeviceStock,
+  useCreateDeviceStockUpdate,
 } from './devices/devices';
 
 // DOCUMENTS
 export {
-  useGetPatientDocuments,
-  useAddPatientDocument,
+  useListPatientDocuments,
+  useCreatePatientDocuments,
   useGetPatientDocument,
   useDeletePatientDocument,
 } from './documents/documents';
 
 // HEALTH
 export {
-  useHealthHealthCheck,
-  useReadinessCheck,
+  useHealthCheckHealthGet,
+  useReadinessCheckReadinessGet,
 } from './health/health';
 
 // INVENTORY
 export {
-  useGetAllInventory as useGetAllInventoryApiInventoryGet,
+  useListInventory,
   useCreateInventory,
-  useAdvancedSearch,
-  useGetInventoryStats,
-  useGetLowStock,
-  useGetInventoryItem,
+  useListInventorySearch,
+  useListInventoryStats,
+  useListInventoryLowStock,
+  useListInventoryUnits,
+  useListInventoryActivity,
+  useGetInventory,
   useUpdateInventory as useUpdateInventoryApiInventoryItemIdPut,
   useDeleteInventory as useDeleteInventoryApiInventoryItemIdDelete,
-  useAddSerials,
-  useGetMovements as useGetMovementsApiInventoryItemIdMovementsGet,
+  useCreateInventorySerials,
+  useListInventoryMovements,
 } from './inventory/inventory';
 
 // INVOICE_ACTIONS
 export {
-  useIssueInvoice,
-  useCopyInvoice,
-  useCopyInvoiceCancel,
-  useServeInvoicePdf,
-  useServeShippingPdf,
+  useCreateInvoiceIssue,
+  useCreateInvoiceCopy,
+  useCreateInvoiceCopyCancel,
+  useListInvoicePdf,
+  useListInvoiceShippingPdf,
 } from './invoice-actions/invoice-actions';
 
 // INVOICE_MANAGEMENT
 export {
-  useGetInvoiceSchema,
-  useCreateDynamicInvoice,
-  useGenerateInvoiceXml,
-  useSendInvoiceToGib,
-  useGetInvoiceSettings,
-  useUpdateInvoiceSettings,
+  useListInvoiceSchema,
+  useCreateInvoiceCreateDynamic,
+  useListInvoiceXml,
+  useCreateInvoiceSendGib,
+  useListInvoiceSettings,
+  useCreateInvoiceSettings,
 } from './invoice-management/invoice-management';
 
 // INVOICES
 export {
-  useGetInvoices,
-  useCreateInvoicesInvoice,
+  useListInvoices,
+  useCreateInvoices,
+  useListInvoicePrintQueue,
+  useCreateInvoicePrintQueue,
+  useListInvoiceTemplates,
+  useCreateInvoiceTemplates,
+  useCreateInvoiceBatchGenerate,
   useGetInvoice,
   useUpdateInvoice,
   useDeleteInvoice,
-  useGetPatientInvoices,
-  useSendToGib,
+  useListPatientInvoices,
+  useCreateInvoiceSendToGib,
+  useCreateInvoiceBulkUpload,
 } from './invoices/invoices';
 
 // NOTIFICATIONS
 export {
-  useCreateNotification,
+  useCreateNotifications,
   useListNotifications,
-  useMarkNotificationRead,
+  useUpdateNotificationRead,
   useUpdateNotification,
   useDeleteNotification,
-  useNotificationStats,
-  useGetUserNotificationSettings,
-  useSetUserNotificationSettings,
+  useListNotificationStats,
+  useListNotificationSettings,
+  useUpdateNotificationSettings,
 } from './notifications/notifications';
 
 // OCR
 export {
-  useHealthOcrHealthCheck,
-  useInitDatabase,
-  useInitializeNlpEndpoint,
-  useProcessDocument,
-  useCalculateSimilarity,
-  useExtractEntities,
-  useExtractPatientName,
-  useDebugNer,
-  useListJobs,
-  useCreateJob,
-  useGetJob,
+  useListOcrHealth,
+  useCreateOcrInitDb,
+  useCreateOcrInitialize,
+  useCreateOcrProcess,
+  useCreateOcrSimilarity,
+  useCreateOcrEntities,
+  useCreateOcrExtractPatient,
+  useCreateOcrDebugNer,
+  useListOcrJobs,
+  useCreateOcrJobs,
+  useGetOcrJob,
 } from './ocr/ocr';
 
 // PATIENT_SUBRESOURCES
 export {
-  useGetPatientDevices as useGetPatientDevicesApiPatientsPatientIdDevicesGet,
-  useGetPatientHearingTests,
-  useAddPatientHearingTest,
+  useListPatientDevices,
+  useListPatientHearingTests,
+  useCreatePatientHearingTests,
   useUpdatePatientHearingTest,
   useDeletePatientHearingTest,
-  useGetPatientNotes,
-  useCreatePatientNote,
+  useListPatientNotes,
+  useCreatePatientNotes,
   useUpdatePatientNote,
   useDeletePatientNote,
-  useGetPatientEreceipts,
-  useCreatePatientEreceipt,
+  useListPatientEreceipts,
+  useCreatePatientEreceipts,
   useUpdatePatientEreceipt,
   useDeletePatientEreceipt,
-  useGetPatientAppointments,
+  useListPatientSales,
+  useListPatientAppointments,
 } from './patient-subresources/patient-subresources';
 
 // PATIENTS
 export {
   useListPatients as useListPatientsApiPatientsGet,
-  useCreatePatient,
+  useCreatePatients,
+  useListPatientExport,
+  useListPatientCount,
   useGetPatient,
   useUpdatePatient,
   useDeletePatient,
-  useCountPatients as useCountPatientsApiPatientsCountGet,
+  useCreatePatientBulkUpload,
 } from './patients/patients';
 
 // PAYMENT_INTEGRATIONS
 export {
-  useGetPaytrConfig as useGetPaytrConfigApiPaymentsPosPaytrConfigGet,
-  useUpdatePaytrConfig as useUpdatePaytrConfigApiPaymentsPosPaytrConfigPut,
-  useInitiatePaytrPayment as useInitiatePaytrPaymentApiPaymentsPosPaytrInitiatePost,
-  usePaytrCallback,
-  useGetPosTransactions,
+  useListPaymentPoPaytrConfig,
+  useUpdatePaymentPoPaytrConfig,
+  useCreatePaymentPoPaytrInitiate,
+  useCreatePaymentPoPaytrCallback,
+  useListPaymentPoTransactions,
 } from './payment-integrations/payment-integrations';
 
 // PAYMENTS
 export {
-  useCreatePaymentRecord,
-  useGetPatientPaymentRecords,
+  useCreatePaymentRecords,
+  useListPatientPaymentRecords,
   useUpdatePaymentRecord,
-  useGetPatientPromissoryNotes,
+  useListPatientPromissoryNotes,
   useCreatePromissoryNotes,
   useUpdatePromissoryNote,
-  useCollectPromissoryNote,
-  useGetSalePromissoryNotes,
+  useCreatePromissoryNoteCollect,
+  useListSalePromissoryNotes,
 } from './payments/payments';
 
 // PERMISSIONS
 export {
   useListPermissions,
-  useCreatePermission,
-  useGetMyPermissions,
-  useGetRolePermissions as useGetRolePermissionsApiPermissionsRoleRoleNameGet,
-  useUpdateRolePermissions as useUpdateRolePermissionsApiPermissionsRoleRoleNamePut,
+  useCreatePermissions,
+  useListPermissionMy,
+  useGetPermissionRole,
+  useUpdatePermissionRole,
 } from './permissions/permissions';
 
 // PLANS
 export {
-  useGetPlans,
+  useListPlans,
   useCreatePlan,
-  useGetAdminPlans,
+  useListPlanAdmin,
   useUpdatePlan,
   useDeletePlan,
 } from './plans/plans';
 
 // POS_COMMISSION
 export {
-  useCalculateCommissionEndpoint,
-  useGetCommissionRates,
-  useGetInstallmentOptions as useGetInstallmentOptionsApiPosCommissionInstallmentOptionsPost,
-  useGetTenantRatesAdmin,
-  useUpdateTenantRatesAdmin,
-  useGetSystemRatesEndpoint,
-  useUpdateSystemRates,
+  useCreatePoCommissionCalculate,
+  useListPoCommissionRates,
+  useCreatePoCommissionInstallmentOptions,
+  useGetPoCommissionRateTenant,
+  useUpdatePoCommissionRateTenant,
+  useListPoCommissionRateSystem,
+  useUpdatePoCommissionRateSystem,
 } from './pos-commission/pos-commission';
 
 // REGISTRATION
 export {
-  useGetTurnstileConfig,
-  useRegisterPhone,
-  useVerifyRegistrationOtp,
+  useListConfigTurnstile,
+  useCreateRegisterPhone,
+  useCreateVerifyRegistrationOtp,
 } from './registration/registration';
 
 // REPLACEMENTS
 export {
-  useGetPatientReplacements,
-  useCreatePatientReplacement as useCreatePatientReplacementApiPatientsPatientIdReplacementsPost,
+  useListPatientReplacements,
+  useCreatePatientReplacements,
   useGetReplacement,
-  usePatchReplacementStatus,
+  useUpdateReplacementStatus,
   useCreateReplacementInvoice,
-  useSendReturnInvoiceToGib,
+  useCreateReturnInvoiceSendToGib,
 } from './replacements/replacements';
 
 // REPORTS
 export {
-  useReportOverview as useReportOverviewApiReportsOverviewGet,
-  useReportPatients as useReportPatientsApiReportsPatientsGet,
-  useReportFinancial as useReportFinancialApiReportsFinancialGet,
-  useReportCampaigns,
-  useReportRevenue,
-  useReportAppointments,
-  useReportPromissoryNotes as useReportPromissoryNotesApiReportsPromissoryNotesGet,
-  useReportPromissoryNotesByPatient as useReportPromissoryNotesByPatientApiReportsPromissoryNotesByPatientGet,
-  useReportPromissoryNotesList as useReportPromissoryNotesListApiReportsPromissoryNotesListGet,
-  useReportRemainingPayments,
-  useReportCashflowSummary,
-  useReportPosMovements,
+  useListReportOverview,
+  useListReportPatients,
+  useListReportFinancial,
+  useListReportCampaigns,
+  useListReportRevenue,
+  useListReportAppointments,
+  useListReportPromissoryNotes,
+  useListReportPromissoryNoteByPatient,
+  useListReportPromissoryNoteList,
+  useListReportRemainingPayments,
+  useListReportCashflowSummary,
+  useListReportPosMovements,
 } from './reports/reports';
 
 // ROLES
 export {
   useListRoles,
-  useCreateRole,
+  useCreateRoles,
   useUpdateRole,
   useDeleteRole,
-  useAddPermissionToRole,
-  useSetRolePermissions,
-  useRemovePermissionFromRole,
+  useCreateRolePermissions,
+  useUpdateRolePermissions as useUpdateRolePermissionsApiPermissionsRoleRoleNamePut,
+  useDeleteRolePermission,
 } from './roles/roles';
 
 // SALES
 export {
-  useGetSales,
-  useCreateSale,
-  useGetSalePayments,
-  useRecordSalePayment,
-  useGetSalePaymentPlan,
+  useListSales,
+  useCreateSales,
+  useGetSale,
   useUpdateSale,
+  useListSalePayments,
+  useCreateSalePayments,
+  useListSalePaymentPlan,
+  useCreateSalePaymentPlan,
+  useCreateSaleInstallmentPay,
+  useCreateSaleRecalc,
+  useCreatePatientDeviceAssignments,
+  useUpdateDeviceAssignment,
+  useCreateDeviceAssignmentReturnLoaner,
+  useCreatePricingPreview,
 } from './sales/sales';
 
 // SETTINGS
 export {
-  useGetPricingSettings as useGetPricingSettingsApiSettingsPricingGet,
-  useGetSettings,
+  useListSettingPricing,
+  useListSettings,
   useUpdateSettings,
 } from './settings/settings';
 
 // SGK
 export {
   useListSgkDocuments,
-  useUploadSgkDocument,
+  useCreateSgkDocuments,
   useGetSgkDocument,
   useDeleteSgkDocument,
-  useUploadAndProcessFiles,
-  useGetPatientSgkDocuments,
-  useQueryEReceipt,
-  useListDeliveredEreceipts,
-  useQueryPatientRights,
-  useCreateSgkWorkflow,
-  useUpdateSgkWorkflow,
+  useCreateSgkUpload,
+  useListPatientSgkDocuments,
+  useCreateSgkEReceiptQuery,
+  useListSgkEReceiptDelivered,
+  useCreateSgkPatientRightQuery,
+  useCreateSgkWorkflowCreate,
+  useUpdateSgkWorkflowUpdate,
   useGetSgkWorkflow,
-  useUpdateWorkflowStatus,
-  useDownloadPatientForm,
-  useSeedTestPatients,
+  useUpdateSgkWorkflowStatus,
+  useListSgkEReceiptDownloadPatientForm,
+  useCreateSgkSeedTestPatients,
 } from './sgk/sgk';
 
 // SMS_INTEGRATION
 export {
-  useGetSmsConfig as useGetSmsConfigApiSmsConfigGet,
-  useUpdateSmsConfig,
-  useListSmsHeaders as useListSmsHeadersApiSmsHeadersGet,
-  useRequestSmsHeader as useRequestSmsHeaderApiSmsHeadersPost,
-  useSetDefaultHeader,
-  useListSmsPackages as useListSmsPackagesApiSmsPackagesGet,
-  useGetSmsCredit as useGetSmsCreditApiSmsCreditGet,
-  useListTargetAudiences,
-  useCreateTargetAudience,
-  useUploadSmsDocument as useUploadSmsDocumentApiSmsDocumentsUploadPost,
-  useDownloadSmsDocument,
-  useDeleteSmsDocument as useDeleteSmsDocumentApiSmsDocumentsDocumentTypeDelete,
-  useSubmitSmsDocuments as useSubmitSmsDocumentsApiSmsDocumentsSubmitPost,
-  useUploadAudienceFile,
-  useListAdminSmsHeaders,
-  useUpdateAdminHeaderStatus,
-  useGetSmsDocumentFile,
+  useListSmConfig,
+  useUpdateSmConfig,
+  useListSmHeaders,
+  useCreateSmHeaders,
+  useUpdateSmHeaderSetDefault,
+  useListSmPackages,
+  useListSmCredit,
+  useListSmAudiences,
+  useCreateSmAudiences,
+  useCreateSmDocumentUpload,
+  useListSmDocumentDownload,
+  useDeleteSmDocument,
+  useCreateSmDocumentSubmit,
+  useCreateSmAudienceUpload,
+  useListSmAdminHeaders,
+  useUpdateSmAdminHeaderStatus,
+  useGetSmDocumentFile,
 } from './sms-integration/sms-integration';
 
-// SMS
+// SMSPACKAGES
 export {
-  useListAdminPackages,
-  useCreateAdminPackage,
-  useUpdateAdminPackage,
-} from './sms/sms';
+  useListAdminSmPackages,
+  useCreateAdminSmPackages,
+  useUpdateAdminSmPackage,
+  useListSmsPackages as useListSmsPackagesApiSmsPackagesGet,
+  useDeleteAdminSmPackage,
+} from './smspackages/smspackages';
 
 // SUBSCRIPTIONS
 export {
-  useSubscribe,
-  useCompleteSignup,
-  useGetCurrent as useGetCurrentApiSubscriptionsCurrentGet,
-  useRegisterAndSubscribe,
+  useCreateSubscriptionSubscribe,
+  useCreateSubscriptionCompleteSignup,
+  useListSubscriptionCurrent,
+  useCreateSubscriptionRegisterAndSubscribe,
 } from './subscriptions/subscriptions';
 
 // SUPPLIERS
 export {
-  useGetSuppliers as useGetSuppliersApiSuppliersGet,
-  useCreateSupplier as useCreateSupplierApiSuppliersPost,
-  useSearchSuppliers,
-  useGetSupplierStats,
+  useListSuppliers,
+  useCreateSuppliers,
+  useListSupplierSearch,
+  useListSupplierStats,
   useGetSupplier,
   useUpdateSupplier,
   useDeleteSupplier,
@@ -684,56 +706,56 @@ export {
 // TENANT_USERS
 export {
   useListTenantUsers,
-  useInviteTenantUser,
+  useCreateTenantUsers,
   useDeleteTenantUser,
   useUpdateTenantUser,
-  useGetTenantCompany,
+  useListTenantCompany,
   useUpdateTenantCompany,
-  useUploadTenantAsset,
-  useDeleteTenantAsset,
+  useCreateTenantCompanyUpload,
+  useDeleteTenantCompanyUpload,
   useGetTenantAsset,
-  useGetTenantAssetUrl,
+  useListTenantCompanyAssetUrl,
 } from './tenant-users/tenant-users';
 
 // TIMELINE
 export {
-  useGetTimeline,
-  useGetPatientTimeline,
-  useAddTimelineEvent,
-  useLogPatientActivity,
-  useDeleteTimelineEvent,
+  useListTimeline,
+  useListPatientTimeline,
+  useCreatePatientTimeline,
+  useCreatePatientActivities,
+  useDeletePatientTimeline,
 } from './timeline/timeline';
 
 // UNIFIED_CASH
 export {
-  useGetUnifiedCashRecords,
-  useGetCashSummary,
+  useListUnifiedCashRecords,
+  useListUnifiedCashRecordSummary,
 } from './unified-cash/unified-cash';
 
 // UPLOAD
 export {
-  useGetPresignedUploadUrl,
-  useListFiles,
-  useDeleteFile,
+  useCreateUploadPresigned,
+  useListUploadFiles,
+  useDeleteUploadFiles,
 } from './upload/upload';
 
 // USERS
 export {
   useListUsers as useListUsersApiUsersGet,
-  useCreateUser as useCreateUserApiUsersPost,
-  useGetUsersMeMe as useGetMeApiUsersMeGet,
-  useUpdateMe as useUpdateMeApiUsersMePut,
-  useChangePassword as useChangePasswordApiUsersMePasswordPost,
+  useCreateUsers,
+  useListUserMe,
+  useUpdateUserMe,
+  useCreateUserMePassword,
   useUpdateUser as useUpdateUserApiUsersUserIdPut,
   useDeleteUser as useDeleteUserApiUsersUserIdDelete,
 } from './users/users';
 
 // UTS
 export {
-  useListRegistrations,
-  useStartBulkRegistration,
-  useGetJobStatus,
-  useCancelJob,
+  useListUtRegistrations,
+  useCreateUtRegistrationBulk,
+  useGetUtJob,
+  useCreateUtJobCancel,
 } from './uts/uts';
 
 // SCHEMAS - All types and interfaces
@@ -741,4 +763,3 @@ export * from './schemas';
 
 // TYPE ALIASES - Frontend compatibility
 export type { ListPatientsParams as CountPatientsApiPatientsCountGetParams } from './schemas';
-export type { GetAllInventoryParams as GetAllInventoryApiInventoryGetParams } from './schemas';

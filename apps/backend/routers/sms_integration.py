@@ -36,7 +36,7 @@ os.makedirs(SMS_DOCUMENTS_FOLDER, exist_ok=True)
 
 # Removed duplicate model definitions locally (using schemas.sms)
 
-@router.get("/config", response_model=ResponseEnvelope[Optional[SMSProviderConfigRead]])
+@router.get("/config", operation_id="listSmConfig", response_model=ResponseEnvelope[Optional[SMSProviderConfigRead]])
 async def get_sms_config(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -56,7 +56,7 @@ async def get_sms_config(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/config", response_model=ResponseEnvelope[Optional[SMSProviderConfigRead]])
+@router.put("/config", operation_id="updateSmConfig", response_model=ResponseEnvelope[Optional[SMSProviderConfigRead]])
 async def update_sms_config(
     data: SMSProviderConfigUpdate,
     db: Session = Depends(get_db),
@@ -89,7 +89,7 @@ async def update_sms_config(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/headers", response_model=ResponseEnvelope[List[SMSHeaderRequestRead]])
+@router.get("/headers", operation_id="listSmHeaders", response_model=ResponseEnvelope[List[SMSHeaderRequestRead]])
 async def list_sms_headers(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -107,7 +107,7 @@ async def list_sms_headers(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/headers", response_model=ResponseEnvelope[SMSHeaderRequestRead])
+@router.post("/headers", operation_id="createSmHeaders", response_model=ResponseEnvelope[SMSHeaderRequestRead])
 async def request_sms_header(
     data: SMSHeaderRequestCreate,
     db: Session = Depends(get_db),
@@ -149,7 +149,7 @@ async def request_sms_header(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/headers/{header_id}/set-default", response_model=ResponseEnvelope[SMSHeaderRequestRead])
+@router.put("/headers/{header_id}/set-default", operation_id="updateSmHeaderSetDefault", response_model=ResponseEnvelope[SMSHeaderRequestRead])
 async def set_default_header(
     header_id: str,
     db: Session = Depends(get_db),
@@ -180,7 +180,7 @@ async def set_default_header(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/packages", response_model=ResponseEnvelope[List[SMSPackageRead]])
+@router.get("/packages", operation_id="listSmPackages", response_model=ResponseEnvelope[List[SMSPackageRead]])
 async def list_sms_packages(db: Session = Depends(get_db)):
     """List available SMS packages (public endpoint)"""
     try:
@@ -191,7 +191,7 @@ async def list_sms_packages(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/credit", response_model=ResponseEnvelope[Optional[TenantSMSCreditRead]])
+@router.get("/credit", operation_id="listSmCredit", response_model=ResponseEnvelope[Optional[TenantSMSCreditRead]])
 async def get_sms_credit(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -211,7 +211,7 @@ async def get_sms_credit(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/audiences", response_model=ResponseEnvelope[List[TargetAudienceRead]])
+@router.get("/audiences", operation_id="listSmAudiences", response_model=ResponseEnvelope[List[TargetAudienceRead]])
 async def list_target_audiences(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -230,7 +230,7 @@ async def list_target_audiences(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/audiences", response_model=ResponseEnvelope[TargetAudienceRead])
+@router.post("/audiences", operation_id="createSmAudiences", response_model=ResponseEnvelope[TargetAudienceRead])
 async def create_target_audience(
     data: TargetAudienceCreate,
     db: Session = Depends(get_db),
@@ -270,7 +270,7 @@ from fastapi.responses import FileResponse
 import os
 import tempfile
 
-@router.post("/documents/upload")
+@router.post("/documents/upload", operation_id="createSmDocumentUpload")
 async def upload_sms_document(
     file: UploadFile = File(...),
     document_type: str = "general",
@@ -300,7 +300,7 @@ async def upload_sms_document(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/documents/{document_type}/download")
+@router.get("/documents/{document_type}/download", operation_id="listSmDocumentDownload")
 async def download_sms_document(
     document_type: str,
     db: Session = Depends(get_db),
@@ -316,7 +316,7 @@ async def download_sms_document(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/documents/{document_type}")
+@router.delete("/documents/{document_type}", operation_id="deleteSmDocument")
 async def delete_sms_document(
     document_type: str,
     db: Session = Depends(get_db),
@@ -332,7 +332,7 @@ class DocumentSubmitRequest(BaseModel):
     document_type: str
     file_path: Optional[str] = None
 
-@router.post("/documents/submit")
+@router.post("/documents/submit", operation_id="createSmDocumentSubmit")
 async def submit_sms_documents(
     data: DocumentSubmitRequest,
     db: Session = Depends(get_db),
@@ -348,7 +348,7 @@ async def submit_sms_documents(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/audiences/upload")
+@router.post("/audiences/upload", operation_id="createSmAudienceUpload")
 async def upload_audience_file(
     file: UploadFile = File(...),
     name: str = "Uploaded Audience",
@@ -388,7 +388,7 @@ async def upload_audience_file(
 
 # --- Admin SMS Endpoints ---
 
-@router.get("/admin/headers")
+@router.get("/admin/headers", operation_id="listSmAdminHeaders")
 async def list_admin_sms_headers(
     page: int = 1,
     per_page: int = 20,
@@ -419,7 +419,7 @@ class HeaderStatusUpdate(BaseModel):
     status: str
     rejection_reason: Optional[str] = None
 
-@router.put("/admin/headers/{header_id}/status")
+@router.put("/admin/headers/{header_id}/status", operation_id="updateSmAdminHeaderStatus")
 async def update_header_status(
     header_id: str,
     data: HeaderStatusUpdate,
@@ -448,7 +448,7 @@ async def update_header_status(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/documents/file/{filepath:path}")
+@router.get("/documents/file/{filepath:path}", operation_id="getSmDocumentFile")
 async def get_sms_document_file(
     filepath: str,
     db: Session = Depends(get_db),

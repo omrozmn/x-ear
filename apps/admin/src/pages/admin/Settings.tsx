@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
-import { useGetAdminSettings, usePatchAdminSettings } from '@/lib/api-client';
+import { useListAdminSettings, useUpdateAdminSettings } from '@/lib/api-client';
 
 // Define SystemSettings type locally - flexible for form usage
 type SystemSettings = Record<string, unknown>;
@@ -20,11 +20,11 @@ const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   // Fetch settings
-  const { data: settingsData, isLoading: isLoadingSettings } = useGetAdminSettings();
+  const { data: settingsData, isLoading: isLoadingSettings } = useListAdminSettings();
   const settings = (settingsData as any)?.data?.settings;
 
   // Update settings mutation
-  const { mutateAsync: updateSettings, isPending: isUpdating } = usePatchAdminSettings();
+  const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateAdminSettings();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<SystemSettings>({
     defaultValues: {

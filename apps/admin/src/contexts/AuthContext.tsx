@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { useAdminLogin } from '@/lib/api-client';
+import { useCreateAdminAuthLogin } from '@/lib/api-client';
 import { tokenManager } from '@/lib/api';
 import { LoginCredentials, AdminUser as TypeAdminUser } from '@/types';
 import toast from 'react-hot-toast';
@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, token, setAuth, clearAuth, isAuthenticated, _hasHydrated } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
-    const { mutateAsync: adminLogin } = useAdminLogin();
+    const { mutateAsync: adminLogin } = useCreateAdminAuthLogin();
 
     useEffect(() => {
         // Wait for store hydration

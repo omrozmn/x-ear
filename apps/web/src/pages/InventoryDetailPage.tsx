@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
-  getInventoryItem,
+  getInventory,
   deleteInventory,
   updateInventory,
-  addSerials
+  createInventorySerials
 } from '@/api/generated';
 import { ArrowLeft, Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
 import { Button, Modal } from '@x-ear/ui-web';
@@ -64,12 +64,13 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   useEffect(() => {
     loadItem();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadItem = async () => {
     try {
       setLoading(true);
-      const response = await getInventoryItem(id);
+      const response = await getInventory(id);
       const apiItem = unwrapObject<any>(response);
 
       if (apiItem) {
@@ -251,7 +252,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: serials.length
       });
 
-      const response = await addSerials(id, { serials });
+      const response = await createInventorySerials(id, { serials });
 
       // If inventoryAddSerialNumbers returns void, remove the success check and just reload
       await loadItem();

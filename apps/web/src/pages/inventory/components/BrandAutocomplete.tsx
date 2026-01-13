@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
-import { useGetDeviceBrands, useCreateDeviceBrand, getGetDeviceBrandsQueryKey } from '@/api/generated/devices/devices';
+import { useListDeviceBrands, useCreateDeviceBrands, getListDeviceBrandsQueryKey } from '@/api/generated/devices/devices';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface BrandAutocompleteProps {
@@ -35,13 +35,13 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   const queryClient = useQueryClient();
 
   // Fetch brands from API
-  const { data: brandsData, isLoading, isError } = useGetDeviceBrands();
+  const { data: brandsData, isLoading, isError } = useListDeviceBrands();
 
   // Create brand mutation
-  const createBrandMutation = useCreateDeviceBrand({
+  const createBrandMutation = useCreateDeviceBrands({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetDeviceBrandsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListDeviceBrandsQueryKey() });
       }
     }
   });
@@ -75,6 +75,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   ];
 
   // Merge API brands with defaults and local additions
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const allBrands = useMemo(() => {
     let apiBrands: string[] = [];
 
@@ -90,17 +91,13 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
         } else if (innerData?.brands && Array.isArray(innerData.brands)) {
           apiBrands = innerData.brands;
         }
-      } else if (responseData?.success && responseData?.data) {
-        const innerData = responseData.data;
-        if (Array.isArray(innerData)) {
-          apiBrands = innerData.map((b: any) => typeof b === 'string' ? b : b.name || b.brandName || String(b));
-        }
       }
     }
 
     // Combine all sources: API, local, and defaults
     const combined = [...new Set([...apiBrands, ...localBrands, ...defaultBrands])];
     return combined.sort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brandsData, localBrands]);
 
   useEffect(() => {
@@ -333,11 +330,11 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
                     handleCreateNew();
                   }
                 }}
-                className="px-4 py-2 cursor-pointer bg-green-50 hover:bg-green-100 focus:bg-green-100 focus:outline-none transition-colors border-t border-gray-200"
+                className="px-4 py-2 cursor-pointer bg-green-50 hover:bg-green-100 focus:bg-green-100 focus:outline-none transition-colors border-t border-gray-200 dark:bg-green-900/20 dark:hover:bg-green-900/40 dark:focus:bg-green-900/40 dark:border-gray-700"
               >
                 <div className="flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-600">
+                  <Plus className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">
                     "{value}" markasını ekle
                   </span>
                 </div>

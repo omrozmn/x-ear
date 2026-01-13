@@ -51,7 +51,7 @@ class TemplateCreate(BaseModel):
     templateCategory: Optional[str] = "platform_announcement"
     isActive: Optional[bool] = True
 
-@router.post("/init-db", response_model=ResponseEnvelope)
+@router.post("/init-db", operation_id="createAdminNotificationInitDb", response_model=ResponseEnvelope)
 async def init_db(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
@@ -66,7 +66,7 @@ async def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", response_model=NotificationListResponse)
+@router.get("", operation_id="listAdminNotifications", response_model=NotificationListResponse)
 async def get_notifications(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -97,17 +97,53 @@ async def get_notifications(
         logger.error(f"Get notifications error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/send", response_model=ResponseEnvelope)
+@router.post("/send", operation_id="createAdminNotificationSend", response_model=ResponseEnvelope)
 async def send_notification(
     data: NotificationSend,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
 ):
-    """Send a notification to tenants"""
+    """Send a notification to tenants - supports push, email, or both channels"""
     try:
         if not data.title or not data.message:
             raise HTTPException(status_code=400, detail="Title and message are required")
         
+        # For email channel, send via EmailService (Flask parity)
+        if data.channel in ['email', 'both']:
+            from services.email_service import email_service
+            
+            # Determine recipients
+            if data.targetType == 'tenant' and data.targetId:
+                tenant = db.get(Tenant, data.targetId)
+                if not tenant:
+                    raise HTTPException(status_code=404, detail="Tenant not found")
+                # Get tenant admins/owners
+                admin_users = db.query(User).filter_by(tenant_id=data.targetId, role='owner').all()
+                email_recipients = [u.email for u in admin_users if u.email]
+            elif data.targetType == 'all':
+                # Get all tenant owners
+                admin_users = db.query(User).filter_by(role='owner').all()
+                email_recipients = [u.email for u in admin_users if u.email]
+            else:
+                raise HTTPException(status_code=400, detail="Invalid target type")
+            
+            # Send emails
+            email_count = 0
+            for email in email_recipients:
+                success = email_service.send_email(
+                    to=email,
+                    subject=data.title,
+                    body_html=f"<html><body>{data.message}</body></html>",
+                    body_text=data.message
+                )
+                if success:
+                    email_count += 1
+            
+            # If only email channel, return here
+            if data.channel == 'email':
+                return {"success": True, "data": {"count": email_count, "channel": "email"}, "message": f"Email notification sent to {email_count} recipients"}
+        
+        # For push notifications (or 'both' channel)
         recipients = []
         if data.targetType == "tenant" and data.targetId:
             users = db.query(User).filter(User.tenant_id == data.targetId).all()
@@ -116,7 +152,7 @@ async def send_notification(
             users = db.query(User).all()
             recipients = [u.id for u in users]
         
-        count = 0
+        push_count = 0
         for user_id in recipients:
             user = db.get(User, user_id)
             if not user:
@@ -126,10 +162,15 @@ async def send_notification(
             )
             notification.tenant_id = user.tenant_id
             db.add(notification)
-            count += 1
+            push_count += 1
         
         db.commit()
-        return {"success": True, "data": {"count": count, "channel": "push"}, "message": f"Notification sent to {count} users"}
+        
+        # Return combined result for 'both' channel
+        if data.channel == 'both':
+            return {"success": True, "data": {"push_count": push_count, "email_count": email_count, "channel": "both"}, "message": f"Notification sent to {push_count} users (push) and {email_count} recipients (email)"}
+        
+        return {"success": True, "data": {"count": push_count, "channel": "push"}, "message": f"Notification sent to {push_count} users"}
     except HTTPException:
         raise
     except Exception as e:
@@ -139,16 +180,25 @@ async def send_notification(
 
 # --- Template Endpoints (Migrated from Flask) ---
 
-@router.get("/templates", response_model=NotificationListResponse)
+@router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=NotificationListResponse)
 async def get_templates(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
+    category: Optional[str] = Query(None, description="Filter by template category"),
+    channel: Optional[str] = Query(None, description="Filter by channel (push, email)"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.read", admin_only=True))
 ):
-    """Get notification templates"""
+    """Get notification templates - Flask parity with category/channel filters"""
     try:
         query = db.query(NotificationTemplate)
+        
+        # Apply filters (Flask parity)
+        if category:
+            query = query.filter(NotificationTemplate.template_category == category)
+        if channel:
+            query = query.filter(NotificationTemplate.channel == channel)
+        
         total = query.count()
         templates = query.order_by(NotificationTemplate.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
@@ -163,7 +213,7 @@ async def get_templates(
         logger.error(f"Get templates error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/templates", response_model=NotificationDetailResponse)
+@router.post("/templates", operation_id="createAdminNotificationTemplates", response_model=NotificationDetailResponse)
 async def create_template(
     data: TemplateCreate,
     db: Session = Depends(get_db),
@@ -205,7 +255,7 @@ async def create_template(
         logger.error(f"Create template error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/templates/{template_id}", response_model=NotificationDetailResponse)
+@router.put("/templates/{template_id}", operation_id="updateAdminNotificationTemplate", response_model=NotificationDetailResponse)
 async def update_template(
     template_id: str,
     data: TemplateCreate,
@@ -260,7 +310,7 @@ async def update_template(
         logger.error(f"Update template error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/templates/{template_id}", response_model=ResponseEnvelope)
+@router.delete("/templates/{template_id}", operation_id="deleteAdminNotificationTemplate", response_model=ResponseEnvelope)
 async def delete_template(
     template_id: str,
     db: Session = Depends(get_db),

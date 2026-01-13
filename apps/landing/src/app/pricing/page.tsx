@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CheckCircle2, Menu } from "lucide-react";
 import AppHeader from "../AppHeader";
 import { useState, useEffect } from "react";
-import { apiClient } from "@/lib/api/api-client";
+import { apiClient } from "@/lib/api-client";
 
 export default function Pricing() {
     const [plans, setPlans] = useState<any[]>([]);
