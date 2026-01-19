@@ -136,7 +136,7 @@ export const AIChatWidget: React.FC = () => {
         onClick={() => setIsOpen(false)}
       />
       
-      {/* Chat Panel */}
+      {/* Chat Panel - Sidebar'ı hesaba kat */}
       <div 
         className={`
           fixed z-50 bg-white shadow-2xl
@@ -144,6 +144,10 @@ export const AIChatWidget: React.FC = () => {
           inset-0 md:inset-auto
           flex flex-col
         `}
+        style={{
+          // Desktop'ta sidebar varsa sağdan 0, yoksa 0
+          // Mobilde tam ekran
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-primary-700 text-white">
@@ -162,8 +166,9 @@ export const AIChatWidget: React.FC = () => {
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-primary-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-primary-800 rounded-lg transition-colors flex-shrink-0"
             aria-label="Kapat"
+            type="button"
           >
             <X className="h-5 w-5" />
           </button>
