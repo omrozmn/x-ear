@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
+import { AIChatWidget } from './ai/AIChatWidget'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -34,6 +35,7 @@ if (!rootElement.innerHTML) {
                     <AuthProvider>
                         <RouterProvider router={router} />
                         <Toaster position="top-right" />
+                        <AIChatWidget />
                     </AuthProvider>
                 </QueryClientProvider>
             </HelmetProvider>

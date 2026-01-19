@@ -109,10 +109,10 @@ export const AIChatWidget: React.FC = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-4 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all hover:scale-110 z-50"
+        className="fixed bottom-6 right-6 p-5 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all hover:scale-110 z-50"
         aria-label="AI Asistan"
       >
-        <MessageCircle className="h-6 w-6" />
+        <MessageCircle className="h-8 w-8" />
       </button>
     );
   }
