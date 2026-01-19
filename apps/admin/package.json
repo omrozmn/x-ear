@@ -104,8 +104,5 @@
     "vite": "^4.5.0",
     "vite-plugin-pwa": "^1.1.0",
     "vitest": "^0.34.6"
-  },
-  "resolutions": {
-    "csstype": "3.1.3"
   }
 }

@@ -2,12 +2,12 @@
  * AI Chat Client
  * 
  * Wrapper for AI chat endpoints following best practices:
- * - Uses Orval-generated hooks
+ * - Uses axios instance from orval-mutator
  * - Proper error handling
  * - Turkish error messages
  */
 
-import { apiClient } from '../client';
+import { apiClient } from '../orval-mutator';
 
 export interface ChatRequest {
   prompt: string;
