@@ -477,8 +477,11 @@ def login(
         # Use 'system' tenant for admin users
         tenant_id = 'system' if is_admin_user else getattr(user, 'tenant_id', None)
         
+        # CRITICAL: Admin users need admin_ prefix in token identity for UnifiedAccess middleware
+        token_identity = f'admin_{user.id}' if is_admin_user else user.id
+        
         access_token = create_access_token(
-            identity=user.id,
+            identity=token_identity,
             additional_claims={
                 'tenant_id': tenant_id,
                 'role': user_role,
@@ -488,7 +491,7 @@ def login(
             }
         )
         refresh_token = create_refresh_token(
-            identity=user.id,
+            identity=token_identity,
             additional_claims={
                 'tenant_id': tenant_id,
                 'role': user_role,
@@ -563,10 +566,17 @@ def refresh_token(
                     ).model_dump(mode="json")
                 )
             
-            admin_identity = f'admin_{admin.id}' if not admin.id.startswith('admin_') else admin.id
+            # Get role permissions for admin
+            role_permissions = ['*']  # Admin has all permissions
+            
             access_token = create_access_token(
-                identity=admin_identity,
-                additional_claims={'role': admin.role, 'user_type': 'admin'}
+                identity=f'admin_{admin.id}',
+                additional_claims={
+                    'tenant_id': 'system',
+                    'role': admin.role,
+                    'role_permissions': role_permissions,
+                    'is_admin': True
+                }
             )
             
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))

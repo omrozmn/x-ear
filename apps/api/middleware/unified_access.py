@@ -80,6 +80,11 @@ class UnifiedAccess:
     # Raw JWT claims (for advanced use)
     claims: dict = field(default_factory=dict)
     
+    @property
+    def principal_id(self) -> Optional[str]:
+        """Alias for user_id for backward compatibility"""
+        return self.user_id
+    
     def has_permission(self, permission: str) -> bool:
         """Check if user has specific permission"""
         if self.is_super_admin:
