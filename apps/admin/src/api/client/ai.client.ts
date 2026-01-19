@@ -37,7 +37,11 @@ export interface ChatResponse {
  * Send a chat message to AI
  */
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
-  const response = await apiClient.post<{ data: ChatResponse }>('/ai/chat', request);
+  const response = await apiClient.post<{ data: ChatResponse }>('/ai/chat', request, {
+    headers: {
+      'Idempotency-Key': `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    }
+  });
   return response.data.data;
 }
 
