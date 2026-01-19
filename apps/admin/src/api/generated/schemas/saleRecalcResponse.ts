@@ -12,5 +12,4 @@ export interface SaleRecalcResponse {
   updated: number;
   processed: number;
   errors: SaleRecalcResponseErrorsItem[];
-  timestamp: string;
 }

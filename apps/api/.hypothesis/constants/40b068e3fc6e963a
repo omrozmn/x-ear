@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/notification.py
+# hypothesis_version: 6.150.1
+
+[100, 200, 500, 'actionLabel', 'actionUrl', 'action_label', 'action_url', 'body', 'expiresAt', 'expires_at', 'extraData', 'extra_data', 'id', 'info', 'isRead', 'is_read', 'ix_notification_read', 'ix_notification_type', 'ix_notification_user', 'level', 'message', 'normal', 'notif', 'notificationId', 'notification_type', 'notifications', 'priority', 'readAt', 'subject', 'system', 'tenants.id', 'title', 'type', 'user', 'userId', 'user_id']

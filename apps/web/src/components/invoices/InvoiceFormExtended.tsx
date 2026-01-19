@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@x-ear/ui-web';
-import { Invoice, CreateInvoiceData } from '../../types/invoice';
+import { Invoice, CreateInvoiceData, InvoiceStatus } from '../../types/invoice';
 import { InvoiceScenarioSection } from './InvoiceScenarioSection';
 import { InvoiceTypeSection } from './InvoiceTypeSection';
 import { InvoiceDateTimeSection } from './InvoiceDateTimeSection';
@@ -16,9 +16,67 @@ import { GovernmentInvoiceModal } from './GovernmentInvoiceModal';
 import { SGKInvoiceData } from '../../types/invoice';
 import { ExportDetailsModal, ExportDetailsData } from './ExportDetailsModal';
 import MedicalDeviceModal from './MedicalDeviceModal';
-import { MedicalDeviceData } from '../../types/invoice';
+import {
+  MedicalDeviceData,
+  InvoiceScenarioData,
+  SpecialTaxBaseData,
+  ReturnInvoiceDetailsData,
+  GovernmentInvoiceData,
+  WithholdingData,
+  OrderInfo,
+  DeliveryInfo,
+  ShipmentInfoData,
+  BankInfoData,
+  PaymentTermsData,
+  CustomerLabelData
+} from '../../types/invoice';
 import { getAutoCurrency } from '../../utils/currencyManager';
 import { ProductLinesSection } from './ProductLinesSection';
+
+// Local form state interface to replace 'any'
+interface InvoiceFormState {
+  // Base fields from Invoice or CreateInvoiceData
+  invoiceType: string;
+  scenario: string;
+  currency: string;
+  totalDiscount: number;
+  issueTime: string;
+  notes?: string;
+  items: any[]; // Ideally strict typed but depends on product lines
+
+  // Nested structure objects
+  scenarioData?: InvoiceScenarioData;
+  specialTaxBase?: SpecialTaxBaseData;
+  returnInvoiceDetails?: ReturnInvoiceDetailsData;
+  governmentData?: GovernmentInvoiceData;
+  withholdingData?: WithholdingData;
+  sgkData?: SGKInvoiceData;
+  exportDetails?: ExportDetailsData;
+  medicalDeviceData?: MedicalDeviceData;
+
+  // Additional Info fields
+  orderInfo?: OrderInfo;
+  deliveryInfo?: DeliveryInfo;
+  shipmentInfo?: ShipmentInfoData;
+  bankInfo?: BankInfoData;
+  paymentTerms?: PaymentTermsData;
+
+  // Customer/Party fields (some are legacy/form specific)
+  customerId?: string;
+  customerName?: string;
+  customerTcNumber?: string;
+  customerTaxNumber?: string;
+  customerAddress?: string; // or object
+  customerCity?: string;
+  customerDistrict?: string;
+
+  // Helper fields
+  customerLabel?: CustomerLabelData;
+  governmentExemptionReason?: string;
+
+  // Index signature to allow dynamic access if absolutely necessary, but preferred to be explicit
+  [key: string]: unknown;
+}
 
 interface InvoiceFormExtendedProps {
   invoice?: Invoice;
@@ -40,7 +98,7 @@ export function InvoiceFormExtended({
   onRequestLineEditor,
 }: InvoiceFormExtendedProps) {
   const isModal = !onDataChange; // quick-invoice modal if parent didn't provide onDataChange
-  const [extendedData, setExtendedData] = useState({
+  const [extendedData, setExtendedData] = useState<InvoiceFormState>({
     ...initialData,
     scenarioData: invoice?.scenarioData || initialData?.scenarioData,
     specialTaxBase: invoice?.specialTaxBase,
@@ -50,14 +108,14 @@ export function InvoiceFormExtended({
     bankInfo: invoice?.bankInfo,
     paymentTerms: invoice?.paymentTerms,
     issueTime: invoice?.issueTime || new Date().toTimeString().slice(0, 5),
-    
+
     orderInfo: invoice?.orderInfo,
     deliveryInfo: invoice?.deliveryInfo,
     governmentData: invoice?.governmentData,
     withholdingData: invoice?.withholdingData,
-    sgkData: (invoice as any)?.sgkData as SGKInvoiceData | undefined,
-    exportDetails: (invoice as any)?.exportDetails as ExportDetailsData | undefined,
-    medicalDeviceData: (invoice as any)?.medicalDeviceData as MedicalDeviceData | undefined,
+    sgkData: invoice?.sgkData,
+    exportDetails: invoice?.exportDetails,
+    medicalDeviceData: invoice?.medicalDeviceData,
     invoiceType: initialData?.invoiceType || invoice?.type || '',
     scenario: initialData?.scenario || invoice?.scenarioData?.scenario || 'other',
     currency: initialData?.currency || invoice?.currency || 'TRY',
@@ -91,7 +149,7 @@ export function InvoiceFormExtended({
     if (extendedData.invoiceType && !allowed.includes(String(extendedData.invoiceType))) {
       handleExtendedFieldChange('invoiceType', '');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extendedData.scenario, extendedData.scenarioData?.scenario]);
 
   // Özel durumlar
@@ -109,7 +167,7 @@ export function InvoiceFormExtended({
     if (autoCurrency !== extendedData.currency) {
       handleExtendedFieldChange('currency', autoCurrency);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extendedData.scenario, extendedData.invoiceType]);
 
   // Tip 14, 15, 35 için otomatik Temel'e geçiş
@@ -120,26 +178,28 @@ export function InvoiceFormExtended({
         currentScenarioType: '2'
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldForceBasic, extendedData.scenarioData?.currentScenarioType]);
 
   // İhracat tipi (13) seçildiğinde sidebar'ı aç
   // Removed auto-opening export modal when invoice type is 13.
   // Export details should be shown in the right-hand sidebar instead.
 
-  const handleExtendedFieldChange = useCallback((field: string, value: any) => {
+  const handleExtendedFieldChange = useCallback((field: string, value: unknown) => {
     setExtendedData(prev => {
       if (field === 'scenarioData') {
-        const newScenario = value?.scenario || prev.scenario || 'other';
-        return { ...prev, scenarioData: value, scenario: newScenario };
+        const val = value as InvoiceScenarioData;
+        const newScenario = val?.scenario || prev.scenario || 'other';
+        return { ...prev, scenarioData: val, scenario: newScenario };
       }
       return { ...prev, [field]: value };
     });
 
     if (onDataChange) {
       if (field === 'scenarioData') {
+        const val = value as InvoiceScenarioData;
         onDataChange('scenarioData', value);
-        onDataChange('scenario', value?.scenario || 'other');
+        onDataChange('scenario', val?.scenario || 'other');
       } else {
         onDataChange(field, value);
       }
@@ -214,7 +274,7 @@ export function InvoiceFormExtended({
                     {extendedData.scenarioData?.scenario && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex items-start">
-                          <svg className="text-blue-400 mr-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM11 10h2v6h-2v-6zm0-4h2v2h-2V6z" fill="currentColor"/></svg>
+                          <svg className="text-blue-400 mr-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM11 10h2v6h-2v-6zm0-4h2v2h-2V6z" fill="currentColor" /></svg>
                           <div>
                             <h4 className="text-sm font-medium text-blue-800 mb-1">
                               {extendedData.scenarioData.scenarioName}
@@ -231,11 +291,11 @@ export function InvoiceFormExtended({
                     {extendedData.scenarioData?.scenario === 'other' && (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                         <div className="flex items-start">
-                          <svg className="text-amber-400 mr-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        <div>
-                          <h4 className="text-sm font-medium text-amber-800 mb-1">E-Arşiv Fatura Bilgilendirmesi</h4>
-                          <p className="text-sm text-amber-700">Alıcı E-Fatura mükellefi değilse, fatura otomatik olarak E-Arşiv fatura olarak düzenlenir.</p>
-                        </div>
+                          <svg className="text-amber-400 mr-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                          <div>
+                            <h4 className="text-sm font-medium text-amber-800 mb-1">E-Arşiv Fatura Bilgilendirmesi</h4>
+                            <p className="text-sm text-amber-700">Alıcı E-Fatura mükellefi değilse, fatura otomatik olarak E-Arşiv fatura olarak düzenlenir.</p>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -253,12 +313,12 @@ export function InvoiceFormExtended({
                         customerId={extendedData.customerId}
                         customerFirstName={(extendedData.customerName || '').split(' ')[0] || ''}
                         customerLastName={(extendedData.customerName || '').split(' ').slice(1).join(' ') || ''}
-                        customerTcNumber={(extendedData as any).customerTcNumber || ''}
-                        customerTaxNumber={(extendedData as any).customerTaxNumber || ''}
-                        customerAddress={(extendedData as any).customerAddress || ''}
-                        customerCity={(extendedData as any).customerCity || ''}
-                        customerDistrict={(extendedData as any).customerDistrict || ''}
-                        onChange={(field: string, value: any) => handleExtendedFieldChange(field, value)}
+                        customerTcNumber={extendedData.customerTcNumber || ''}
+                        customerTaxNumber={extendedData.customerTaxNumber || ''}
+                        customerAddress={extendedData.customerAddress || ''}
+                        customerCity={extendedData.customerCity || ''}
+                        customerDistrict={extendedData.customerDistrict || ''}
+                        onChange={(field: string, value: unknown) => handleExtendedFieldChange(field, value)}
                       />
                     )}
 
@@ -292,7 +352,7 @@ export function InvoiceFormExtended({
                             </div>
                             <div className="p-4">
                               <GovernmentSection
-                                formData={extendedData}
+                                formData={extendedData as any}
                                 onChange={(data: any) => handleExtendedFieldChange('governmentData', data)}
                               />
                             </div>
@@ -309,8 +369,8 @@ export function InvoiceFormExtended({
                             <div>
                               <Select
                                 label="İstisna Sebebi"
-                                value={(extendedData as any).governmentExemptionReason || '0'}
-                                onChange={(e: any) => handleExtendedFieldChange('governmentExemptionReason', e.target.value)}
+                                value={extendedData.governmentExemptionReason || '0'}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => handleExtendedFieldChange('governmentExemptionReason', e.target.value)}
                                 options={GOVERNMENT_EXEMPTION_REASONS}
                                 fullWidth
                               />
@@ -343,9 +403,9 @@ export function InvoiceFormExtended({
                                 <input
                                   type="number"
                                   step="0.01"
-                                  value={(extendedData as any).specialTaxBase?.amount || ''}
+                                  value={extendedData.specialTaxBase?.amount || ''}
                                   onChange={(e) => handleExtendedFieldChange('specialTaxBase', {
-                                    ...(extendedData as any).specialTaxBase,
+                                    ...extendedData.specialTaxBase,
                                     hasSpecialTaxBase: true,
                                     amount: parseFloat(e.target.value)
                                   })}
@@ -357,9 +417,9 @@ export function InvoiceFormExtended({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">KDV Oranı (%)</label>
                                 <input
                                   type="number"
-                                  value={(extendedData as any).specialTaxBase?.taxRate || ''}
+                                  value={extendedData.specialTaxBase?.taxRate || ''}
                                   onChange={(e) => handleExtendedFieldChange('specialTaxBase', {
-                                    ...(extendedData as any).specialTaxBase,
+                                    ...extendedData.specialTaxBase,
                                     taxRate: parseFloat(e.target.value)
                                   })}
                                   className="w-full border rounded px-2 py-1"
@@ -370,9 +430,9 @@ export function InvoiceFormExtended({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
                                 <input
                                   type="text"
-                                  value={(extendedData as any).specialTaxBase?.description || ''}
+                                  value={extendedData.specialTaxBase?.description || ''}
                                   onChange={(e) => handleExtendedFieldChange('specialTaxBase', {
-                                    ...(extendedData as any).specialTaxBase,
+                                    ...extendedData.specialTaxBase,
                                     description: e.target.value
                                   })}
                                   className="w-full border rounded px-2 py-1"
@@ -384,7 +444,7 @@ export function InvoiceFormExtended({
                         )}
 
                         {/* Return Invoice */}
-                        {[ '15', '49', '50' ].includes(String(extendedData.invoiceType)) && (
+                        {['15', '49', '50'].includes(String(extendedData.invoiceType)) && (
                           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                             <div className="mb-3">
                               <h3 className="text-sm font-bold text-gray-900">İade Fatura Bilgileri</h3>
@@ -394,9 +454,9 @@ export function InvoiceFormExtended({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
                                 <input
                                   type="text"
-                                  value={(extendedData as any).returnInvoiceDetails?.returnInvoiceNumber || ''}
+                                  value={extendedData.returnInvoiceDetails?.returnInvoiceNumber || ''}
                                   onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
-                                    ...(extendedData as any).returnInvoiceDetails,
+                                    ...extendedData.returnInvoiceDetails,
                                     returnInvoiceNumber: e.target.value
                                   })}
                                   className="w-full border rounded px-2 py-1"
@@ -407,9 +467,9 @@ export function InvoiceFormExtended({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura Tarihi</label>
                                 <input
                                   type="date"
-                                  value={(extendedData as any).returnInvoiceDetails?.returnInvoiceDate || ''}
+                                  value={extendedData.returnInvoiceDetails?.returnInvoiceDate || ''}
                                   onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
-                                    ...(extendedData as any).returnInvoiceDetails,
+                                    ...extendedData.returnInvoiceDetails,
                                     returnInvoiceDate: e.target.value
                                   })}
                                   className="w-full border rounded px-2 py-1"
@@ -419,9 +479,9 @@ export function InvoiceFormExtended({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
                                 <input
                                   type="text"
-                                  value={(extendedData as any).returnInvoiceDetails?.returnReason || ''}
+                                  value={extendedData.returnInvoiceDetails?.returnReason || ''}
                                   onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
-                                    ...(extendedData as any).returnInvoiceDetails,
+                                    ...extendedData.returnInvoiceDetails,
                                     returnReason: e.target.value
                                   })}
                                   className="w-full border rounded px-2 py-1"
@@ -445,10 +505,10 @@ export function InvoiceFormExtended({
                                 Detaylar
                               </button>
                             </div>
-                            {(extendedData as any).medicalDeviceData ? (
+                            {extendedData.medicalDeviceData ? (
                               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                                 <div className="flex items-center gap-2">
-                                  <svg className="text-green-600" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  <svg className="text-green-600" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                   <p className="text-xs text-green-800">Tıbbi cihaz bilgileri kaydedildi</p>
                                 </div>
                               </div>
@@ -459,7 +519,7 @@ export function InvoiceFormExtended({
                         )}
 
                         {/* Special Operations / Withholding */}
-                        {(['11','18','24','32'].includes(String(extendedData.invoiceType))) && (
+                        {(['11', '18', '24', '32'].includes(String(extendedData.invoiceType))) && (
                           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                             <h3 className="text-sm font-bold text-gray-900 mb-3">Özel İşlemler</h3>
                             <div className="space-y-3">
@@ -470,8 +530,8 @@ export function InvoiceFormExtended({
                                 </p>
                               </div>
                               <WithholdingCard
-                                value={(extendedData as any).withholdingData}
-                                onChange={(data: any) => handleExtendedFieldChange('withholdingData', data)}
+                                value={extendedData.withholdingData}
+                                onChange={(data: WithholdingData) => handleExtendedFieldChange('withholdingData', data)}
                               />
                             </div>
                           </div>
@@ -534,49 +594,84 @@ export function InvoiceFormExtended({
             onRequestLineEditor={onRequestLineEditor}
           />
 
-              {/* Actions */}
-              <div className="flex items-center justify-end gap-3 p-6 border-t bg-white">
-                <Button type="button" variant="outline" onClick={onCancel} className="px-4 py-2">
-                  İptal
-                </Button>
-                <Button type="button" onClick={() => onSubmit(extendedData as any)} className="px-4 py-2 bg-blue-600 text-white">
-                  {isLoading ? 'Kaydediliyor...' : 'Fatura Oluştur'}
-                </Button>
-              </div>
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 p-6 border-t bg-white">
+            <Button type="button" variant="outline" onClick={onCancel} className="px-4 py-2">
+              İptal
+            </Button>
+            <Button type="button" onClick={() => {
+              const submissionData: CreateInvoiceData = {
+                invoiceNumber: typeof extendedData.invoiceNumber === 'string' ? extendedData.invoiceNumber : undefined,
+                type: (typeof extendedData.type === 'string' ? extendedData.type : 'sales') as any, // fallback
+                customerId: extendedData.customerId?.toString(),
+                customerName: typeof extendedData.customerName === 'string' ? extendedData.customerName : undefined,
+                customerTaxNumber: typeof extendedData.customerTaxNumber === 'string' ? extendedData.customerTaxNumber : undefined,
+                customerAddress: extendedData.customerAddress && typeof extendedData.customerAddress === 'object' ? extendedData.customerAddress as any : undefined,
+                billingAddress: (extendedData.billingAddress || extendedData.customerAddress) as any,
+                shippingAddress: extendedData.shippingAddress as any,
+                partyId: typeof extendedData.partyId === 'string' ? extendedData.partyId : undefined,
+                partyName: typeof extendedData.partyName === 'string' ? extendedData.partyName : undefined,
+                partyPhone: typeof extendedData.partyPhone === 'string' ? extendedData.partyPhone : undefined,
+                partyTcNumber: typeof extendedData.partyTcNumber === 'string' ? extendedData.partyTcNumber : undefined,
+                issueDate: typeof extendedData.issueDate === 'string' ? extendedData.issueDate : new Date().toISOString().split('T')[0],
+                dueDate: typeof extendedData.dueDate === 'string' ? extendedData.dueDate : undefined,
+                paymentMethod: extendedData.paymentMethod as any,
+                currency: typeof extendedData.currency === 'string' ? extendedData.currency : 'TRY',
+                exchangeRate: typeof extendedData.exchangeRate === 'number' ? extendedData.exchangeRate : 1,
+                notes: (extendedData.notes as any)?.note || (typeof extendedData.notes === 'string' ? extendedData.notes : undefined),
+                items: Array.isArray(extendedData.items) ? extendedData.items.map((item: any) => ({
+                  name: typeof item.name === 'string' ? item.name : '',
+                  description: typeof item.description === 'string' ? item.description : undefined,
+                  quantity: Number(item.quantity || 1),
+                  unitPrice: Number(item.unitPrice || 0),
+                  discount: Number(item.discount || 0),
+                  discountType: typeof item.discountType === 'string' ? item.discountType : 'percentage',
+                  taxRate: Number(item.taxRate || 0),
+                  unit: typeof item.unit === 'string' ? item.unit : 'ADET'
+                })) : [],
+                subtotal: Number(extendedData.subtotal || 0),
+                totalAmount: Number(extendedData.totalAmount || extendedData.grandTotal || 0),
+                status: typeof extendedData.status === 'string' ? extendedData.status as any : 'draft',
+              };
+              onSubmit(submissionData);
+            }} className="px-4 py-2 bg-blue-600 text-white">
+              {isLoading ? 'Kaydediliyor...' : 'Fatura Oluştur'}
+            </Button>
+          </div>
 
-              {/* Modals */}
-      <WithholdingModal
-        isOpen={withholdingModalOpen}
-        onClose={() => setWithholdingModalOpen(false)}
-        onSave={handleSaveWithholding}
-        itemIndex={currentItemIndex}
-      />
+          {/* Modals */}
+          <WithholdingModal
+            isOpen={withholdingModalOpen}
+            onClose={() => setWithholdingModalOpen(false)}
+            onSave={handleSaveWithholding}
+            itemIndex={currentItemIndex}
+          />
 
-      <GovernmentInvoiceModal
-        isOpen={governmentModalOpen}
-        onClose={() => setGovernmentModalOpen(false)}
-        onSave={handleSaveGovernment}
-        initialData={extendedData.governmentData}
-      />
+          <GovernmentInvoiceModal
+            isOpen={governmentModalOpen}
+            onClose={() => setGovernmentModalOpen(false)}
+            onSave={handleSaveGovernment}
+            initialData={extendedData.governmentData}
+          />
 
-      <ExportDetailsModal
-        isOpen={exportModalOpen}
-        onClose={() => setExportModalOpen(false)}
-        onSave={handleSaveExport}
-        initialData={extendedData.exportDetails}
-      />
+          <ExportDetailsModal
+            isOpen={exportModalOpen}
+            onClose={() => setExportModalOpen(false)}
+            onSave={handleSaveExport}
+            initialData={extendedData.exportDetails}
+          />
 
-      <MedicalDeviceModal
-        isOpen={medicalModalOpen}
-        onClose={() => setMedicalModalOpen(false)}
-        onSave={handleSaveMedical}
-        initialData={extendedData.medicalDeviceData}
-        lineIndex={0}
-        itemName="Genel"
-      />
+          <MedicalDeviceModal
+            isOpen={medicalModalOpen}
+            onClose={() => setMedicalModalOpen(false)}
+            onSave={handleSaveMedical}
+            initialData={extendedData.medicalDeviceData}
+            lineIndex={0}
+            itemName="Genel"
+          />
+        </div>
       </div>
     </div>
-  </div>
   );
 }
 

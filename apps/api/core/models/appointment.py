@@ -1,4 +1,4 @@
-# Appointment Model with Improved DateTime Handling
+# Appointment Models (formerly Patient appointment models)
 from .base import db, BaseModel, gen_id
 from .enums import AppointmentStatus
 import sqlalchemy as sa
@@ -15,7 +15,7 @@ class Appointment(BaseModel):
             self.id = gen_id("apt")
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     clinician_id = db.Column(db.String(50))
     branch_id = db.Column(db.String(50))
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
@@ -41,15 +41,15 @@ class Appointment(BaseModel):
     def to_dict(self):
         base_dict = self.to_dict_base()
         
-        # Fetch patient name if available
-        patient_name = None
-        if self.patient_id:
+        # Fetch party name if available
+        party_name = None
+        if self.party_id:
             try:
-                # Use relationship backref (defined in Patient model as backref='patient')
-                if self.patient:
-                     patient_name = f"{self.patient.first_name or ''} {self.patient.last_name or ''}".strip() or 'Hasta bilgisi yok'
+                # Use relationship backref (defined in Party model as backref='party')
+                if self.party:
+                     party_name = f"{self.party.first_name or ''} {self.party.last_name or ''}".strip() or 'Bilgi yok'
             except Exception:
-                patient_name = 'Hasta bilgisi yok'
+                party_name = 'Bilgi yok'
         
         # Normalize appointment_type to valid enum values
         apt_type = self.appointment_type or 'consultation'
@@ -77,8 +77,8 @@ class Appointment(BaseModel):
         appointment_dict = {
             'id': self.id,
             'tenantId': self.tenant_id,  # Required by AppointmentRead schema
-            'patientId': self.patient_id,
-            'patientName': patient_name,
+            'partyId': self.party_id,
+            'partyName': party_name,
             'clinicianId': self.clinician_id,
             'branchId': self.branch_id,
             'date': date_iso,
@@ -95,6 +95,6 @@ class Appointment(BaseModel):
     # Index suggestions for future migration
     __table_args__ = (
         db.Index('ix_appointment_date', 'date'),
-        db.Index('ix_appointment_patient', 'patient_id'),
+        db.Index('ix_appointment_patient', 'party_id'),
         db.Index('ix_appointment_status', 'status'),
     )

@@ -7,7 +7,7 @@
  */
 import type { TargetAudienceReadCreatedAt } from './targetAudienceReadCreatedAt';
 import type { TargetAudienceReadUpdatedAt } from './targetAudienceReadUpdatedAt';
-import type { SMSSourceType } from './sMSSourceType';
+import type { SmsSourceType } from './smsSourceType';
 import type { TargetAudienceReadFilterCriteria } from './targetAudienceReadFilterCriteria';
 
 export interface TargetAudienceRead {
@@ -18,7 +18,7 @@ export interface TargetAudienceRead {
   /** Unique identifier for the resource */
   id: string;
   name: string;
-  sourceType: SMSSourceType;
+  sourceType: SmsSourceType;
   filterCriteria?: TargetAudienceReadFilterCriteria;
   tenantId: string;
   totalRecords?: number;

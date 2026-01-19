@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/audit.py
+# hypothesis_version: 6.150.1
+
+[200, 500, '/api/audit', 'Audit', 'audit.read', 'data', 'listAudit', 'success']

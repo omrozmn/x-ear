@@ -51,6 +51,10 @@ class User(BaseModel):
         """Check password against hash"""
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}" if self.first_name and self.last_name else self.username
+
     def to_dict(self):
         base_dict = self.to_dict_base()
         user_dict = {
@@ -60,7 +64,7 @@ class User(BaseModel):
             'email': self.email,
             'firstName': self.first_name,
             'lastName': self.last_name,
-            'fullName': f"{self.first_name} {self.last_name}" if self.first_name and self.last_name else self.username,
+            'fullName': self.full_name,
             'role': self.role,
             'phone': self.phone,
             'isPhoneVerified': self.is_phone_verified,

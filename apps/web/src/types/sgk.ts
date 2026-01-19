@@ -48,7 +48,7 @@ export type DeliveryStatus =
 // Core SGK Document interface
 export interface SGKDocument {
   id: string;
-  patientId: string;
+  partyId: string;
   filename: string;
   documentType: SGKDocumentType;
   fileUrl?: string;
@@ -77,7 +77,7 @@ export interface SGKDocument {
 
 // Information extracted from SGK documents via OCR
 export interface SGKExtractedInfo {
-  patientName?: string;
+  partyName?: string;
   tcNumber?: string;
   birthDate?: string;
   diagnosis?: string;
@@ -107,7 +107,7 @@ export interface ExtractedMaterial {
 export interface SGKWorkflow {
   id: string;
   documentId: string;
-  patientId: string;
+  partyId: string;
   currentStatus: SGKWorkflowStatus;
   statusHistory: SGKStatusEntry[];
   
@@ -162,7 +162,7 @@ export interface ApprovedMaterial {
 // E-Receipt (E-Reçete) interfaces
 export interface EReceipt {
   id: string;
-  patientId: string;
+  partyId: string;
   receiptNumber: string;
   prescriptionNumber?: string;
   
@@ -252,7 +252,7 @@ export interface UTSRecord {
   totalAmount?: number;
   
   // Related records
-  patientId?: string;
+  partyId?: string;
   eReceiptId?: string;
   materialId?: string;
   
@@ -267,8 +267,8 @@ export interface UTSRecord {
   notes?: string;
 }
 
-// SGK Patient Information (extended from Patient type)
-export interface SGKPatientInfo {
+// SGK Party Information (extended from Party type)
+export interface SGKPartyInfo {
   hasInsurance: boolean;
   insuranceNumber?: string;
   insuranceType?: InsuranceType;
@@ -301,7 +301,7 @@ export interface SGKEntitlement {
 
 // Search and filtering
 export interface SGKDocumentFilters {
-  patientId?: string;
+  partyId?: string;
   documentType?: SGKDocumentType;
   status?: SGKWorkflowStatus;
   dateRange?: { start: string; end: string };
@@ -335,7 +335,7 @@ export interface OCRProcessingRequest {
   imageUrl?: string;
   imagePath?: string;
   documentType?: SGKDocumentType;
-  patientId?: string;
+  partyId?: string;
   autoCrop?: boolean;
   enhanceImage?: boolean;
 }
@@ -348,14 +348,14 @@ export interface OCRProcessingResult {
   processingTime: number;
   error?: string;
   
-  // Patient matching
-  patientMatches?: PatientMatch[];
-  suggestedPatientId?: string;
+  // Party matching
+  partyMatches?: PartyMatch[];
+  suggestedPartyId?: string;
 }
 
-export interface PatientMatch {
-  patientId: string;
-  patientName: string;
+export interface PartyMatch {
+  partyId: string;
+  partyName: string;
   matchScore: number;
   matchedFields: string[];
   confidence: 'high' | 'medium' | 'low';
@@ -363,7 +363,7 @@ export interface PatientMatch {
 
 // Form data types
 export interface SGKDocumentFormData {
-  patientId: string;
+  partyId: string;
   documentType: SGKDocumentType;
   file?: File;
   notes?: string;
@@ -371,7 +371,7 @@ export interface SGKDocumentFormData {
 }
 
 export interface EReceiptFormData {
-  patientId: string;
+  partyId: string;
   tcNumber: string;
   prescriptionNumber: string;
   doctorName?: string;

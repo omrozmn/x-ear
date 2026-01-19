@@ -1,7 +1,7 @@
 import { Button } from '@x-ear/ui-web';
 import React, { useState } from 'react';
 import { Appointment, CalendarView } from '../../types/appointment';
-import { patientApiService } from '../../services/patient/patient-api.service';
+import { partyApiService } from '../../services/party/party-api.service';
 import { useAppointments } from '../../hooks/useAppointments';
 import { AppointmentModal } from './AppointmentModal';
 import { CalendarMonth } from './CalendarView/CalendarMonth';
@@ -44,7 +44,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     if (updated) setSelectedAppointment(updated);
   }, [appointments, selectedAppointment]);
 
-  // Handle appointment click — open modal immediately and enrich patient name asynchronously
+  // Handle appointment click — open modal immediately and enrich party name asynchronously
   const handleAppointmentClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setQuickAppointmentData(null);
@@ -53,13 +53,13 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     setShowModal(true);
     onAppointmentClick?.(appointment);
 
-    // Best-effort: fetch patient name and update the selected appointment afterwards
+    // Best-effort: fetch party name and update the selected appointment afterwards
     (async () => {
       try {
-        if (!appointment.patientName && appointment.patientId) {
-          const patient = await patientApiService.fetchPatient(appointment.patientId);
-          if (patient) {
-            setSelectedAppointment(prev => prev && prev.id === appointment.id ? { ...prev, patientName: patient.name } : prev);
+        if (!appointment.partyName && appointment.partyId) {
+          const party = await partyApiService.fetchParty(appointment.partyId);
+          if (party) {
+            setSelectedAppointment(prev => prev && prev.id === appointment.id ? { ...prev, partyName: `${party.firstName} ${party.lastName}` } : prev);
           }
         }
       } catch (err) {

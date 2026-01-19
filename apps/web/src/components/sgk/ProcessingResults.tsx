@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
 import { CheckCircle, XCircle, FileText, User, Search } from 'lucide-react';
 import DocumentPreview from './DocumentPreview';
-import PatientSearch from './PatientSearch';
+import PartySearch from './PartySearch';
 import DocumentTypeSelector from './DocumentTypeSelector';
 
 interface ProcessingResult {
   fileName: string;
   status: 'processed' | 'error';
   result?: {
-    matched_patient?: any;
+    matched_party?: any;
     pdf_generated?: boolean;
     pdf_filename?: string;
     document_type?: string;
@@ -30,16 +30,16 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
   onRetry,
 }) => {
   const [selectedResult, setSelectedResult] = useState<ProcessingResult | null>(null);
-  const [showPatientSearch, setShowPatientSearch] = useState(false);
+  const [showPartySearch, setShowPartySearch] = useState(false);
   const [showDocumentTypeSelector, setShowDocumentTypeSelector] = useState(false);
 
   const successfulResults = results.filter(r => r.status === 'processed');
   const errorResults = results.filter(r => r.status === 'error');
 
-  const handlePatientSelect = (result: ProcessingResult, patient: any) => {
-    // TODO: Update result with selected patient
-    console.log('Patient selected:', patient, 'for result:', result);
-    setShowPatientSearch(false);
+  const handlePartySelect = (result: ProcessingResult, party: any) => {
+    // TODO: Update result with selected party
+    console.log('Party selected:', party, 'for result:', result);
+    setShowPartySearch(false);
   };
 
   const handleDocumentTypeSelect = (result: ProcessingResult, docType: string) => {
@@ -113,11 +113,11 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
                     <span className="text-sm">İşlendi</span>
                   </div>
 
-                  {result.result?.matched_patient ? (
+                  {result.result?.matched_party ? (
                     <div className="flex items-center gap-2 text-blue-600">
                       <User className="w-4 h-4" />
                       <span className="text-sm">
-                        {result.result.matched_patient.patient?.fullName || 'Hasta bulundu'}
+                        {result.result.matched_party.party?.fullName || 'Hasta bulundu'}
                       </span>
                     </div>
                   ) : (
@@ -126,7 +126,7 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
                       variant="outline"
                       onClick={() => {
                         setSelectedResult(result);
-                        setShowPatientSearch(true);
+                        setShowPartySearch(true);
                       }}
                       className="w-full"
                     >
@@ -182,11 +182,11 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
         />
       )}
 
-      {showPatientSearch && selectedResult && (
-        <PatientSearch
-          isOpen={showPatientSearch}
-          onClose={() => setShowPatientSearch(false)}
-          onSelect={(patient) => handlePatientSelect(selectedResult, patient)}
+      {showPartySearch && selectedResult && (
+        <PartySearch
+          isOpen={showPartySearch}
+          onClose={() => setShowPartySearch(false)}
+          onSelect={(party) => handlePartySelect(selectedResult, party)}
           ocrResult={selectedResult.result}
         />
       )}

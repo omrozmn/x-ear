@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_appointments.py
+# hypothesis_version: 6.150.1
+
+[100, 500, '+00:00', 'Admin Appointments', 'Z', 'appointments', 'appointments.read', 'data', 'limit', 'page', 'pagination', 'patientName', 'success', 'tenantName', 'total', 'totalPages']

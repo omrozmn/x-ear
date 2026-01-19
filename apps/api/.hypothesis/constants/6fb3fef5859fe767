@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/data_retention.py
+# hypothesis_version: 6.150.1
+
+['[DELETED]', 'actionsDeleted', 'anonymized', 'anonymized_at', 'auditLogsDeleted', 'completed', 'completedAt', 'createdAt', 'errorMessage', 'errors', 'failed', 'id', 'in_progress', 'partially_completed', 'pending', 'recordsDeleted', 'request', 'requestedBy', 'requestsDeleted', 'scope', 'session', 'status', 'targetId', 'tenant', 'tenantId', 'totalDeleted', 'usageRecordsDeleted', 'user']

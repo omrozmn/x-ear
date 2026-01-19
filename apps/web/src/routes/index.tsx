@@ -12,7 +12,7 @@ import { useDashboardData } from '../hooks/useDashboardData';
 import { usePermissions } from '../hooks/usePermissions';
 import { getEnvVar } from '../utils/env';
 import PieChartSimple from '../components/charts/PieChartSimple';
-import { usePatientDistribution } from '../api/dashboard';
+import { usePartyDistribution } from '../api/dashboard';
 import { formatActivitySentence } from '../utils/activity';
 import { NoPermissionPlaceholder } from '../components/ui/NoPermissionPlaceholder';
 
@@ -44,7 +44,7 @@ function DesktopDashboard() {
   const { hasPermission, isSuperAdmin, isLoading: permissionsLoading } = usePermissions();
 
   // Check individual permissions for dashboard sections
-  const canViewPatients = isSuperAdmin || hasPermission('patients.view');
+  const canViewParties = isSuperAdmin || hasPermission('parties.view');
   const canViewFinance = isSuperAdmin || hasPermission('finance.view');
   const canViewAppointments = isSuperAdmin || hasPermission('appointments.view');
   const canViewCashRegister = isSuperAdmin || hasPermission('finance.cash_register');
@@ -55,12 +55,12 @@ function DesktopDashboard() {
 
   const handleCardClick = (cardType: string) => {
     switch (cardType) {
-      case 'patients':
-        window.location.href = '/patients';
+      case 'parties':
+        window.location.href = '/parties';
         break;
       case 'trials':
-        // Navigate to patients with trial filter
-        window.location.href = '/patients?filter=trial';
+        // Navigate to parties with trial filter
+        window.location.href = '/parties?filter=trial';
         break;
       case 'revenue':
         // Navigate to reports
@@ -139,10 +139,10 @@ function DesktopDashboard() {
       {/* KPI Cards - Show with masked values for restricted metrics */}
       <DashboardStats
         stats={{
-          totalPatients: canViewPatients ? stats.totalPatients : 0,
+          totalParties: canViewParties ? stats.totalParties : 0,
           todayAppointments: canViewAppointments ? stats.todayAppointments : 0,
           monthlyRevenue: canViewFinance ? stats.monthlyRevenue : 0,
-          activeTrials: canViewPatients ? stats.activeTrials : 0,
+          activeTrials: canViewParties ? stats.activeTrials : 0,
         }}
         onCardClick={handleCardClick}
       />
@@ -167,21 +167,21 @@ function DesktopDashboard() {
         {/* Quick Stats Card - Show with permission-masked values */}
         <QuickStatsCard
           stats={{
-            activePatients: canViewPatients ? stats.activePatients : 0,
+            activeParties: canViewParties ? stats.activeParties : 0,
             dailyRevenue: canViewFinance ? stats.dailyRevenue : 0,
             pendingAppointments: canViewAppointments ? stats.pendingAppointments : 0,
-            endingTrials: canViewPatients ? stats.endingTrials : 0,
+            endingTrials: canViewParties ? stats.endingTrials : 0,
           }}
         />
       </div>
-      {/* Patient distribution + Recent activity (keeps only these two) */}
+      {/* Party distribution + Recent activity (keeps only these two) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Patient Distribution - Only show if user has analytics permission */}
+        {/* Party Distribution - Only show if user has analytics permission */}
         {canViewAnalytics ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Dağılımı</h3>
             <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-lg flex items-center justify-center">
-              <PatientDistribution />
+              <PartyDistribution />
             </div>
           </div>
         ) : (
@@ -231,13 +231,13 @@ function DesktopDashboard() {
   );
 }
 
-function PatientDistribution() {
-  const { data, isLoading, isError } = usePatientDistribution();
+function PartyDistribution() {
+  const { data, isLoading, isError } = usePartyDistribution();
   const raw = (data as any)?.data || [];
   const list = Array.isArray(raw) ? raw : [];
 
   // Convert to pie slices by summing breakdowns per branch (use status counts as primary)
-  const patientTrends = list.map((b: any) => {
+  const partyTrends = list.map((b: any) => {
     const status = b?.breakdown?.status || {};
     // sum status counts as branch total
     const total = Object.values(status).reduce((s: number, v: any) => s + Number(v || 0), 0);
@@ -247,8 +247,8 @@ function PatientDistribution() {
   if (isLoading) return <div className="text-gray-500">Yükleniyor...</div>;
   if (isError) return <div className="text-red-500">Hata yüklenirken</div>;
 
-  const slices = patientTrends.filter(p => Number(p.value) > 0).slice(0, 6);
+  const slices = partyTrends.filter(p => Number(p.value) > 0).slice(0, 6);
   return (
-    <PieChartSimple data={slices.length ? slices : patientTrends.slice(0, 6).map(d => ({ label: d.label, value: d.value }))} />
+    <PieChartSimple data={slices.length ? slices : partyTrends.slice(0, 6).map(d => ({ label: d.label, value: d.value }))} />
   );
 }

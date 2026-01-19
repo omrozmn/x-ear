@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SchemasPatientsBulkUploadResponse } from './schemasPatientsBulkUploadResponse';
+import type { SchemasPartiesBulkUploadResponse } from './schemasPartiesBulkUploadResponse';
 
-export type SchemasBaseResponseEnvelopeBulkUploadResponse1Data = SchemasPatientsBulkUploadResponse | null;
+export type SchemasBaseResponseEnvelopeBulkUploadResponse1Data = SchemasPartiesBulkUploadResponse | null;

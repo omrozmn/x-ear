@@ -9,7 +9,7 @@ from database import get_db
 from models.invoice import Invoice
 from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from schemas.invoices import InvoiceCreate
+from schemas.invoices import InvoiceCreate, InvoiceRead
 from schemas.base import ResponseEnvelope
 
 logger = logging.getLogger(__name__)
@@ -49,19 +49,18 @@ async def get_admin_invoices(
         
         invoice_list = []
         for inv in invoices:
-            inv_dict = inv.to_dict()
+            inv_dict = InvoiceRead.model_validate(inv).model_dump(by_alias=True)
             tenant = db.get(Tenant, inv.tenant_id)
             if tenant:
-                inv_dict["tenant_name"] = tenant.name
+                inv_dict["tenantName"] = tenant.name
             invoice_list.append(inv_dict)
         
-        return {
-            "success": True,
-            "data": {
-                "invoices": invoice_list,
+        return ResponseEnvelope(
+            data={
+                "items": invoice_list,
                 "pagination": {"total": total, "page": page, "limit": limit, "totalPages": (total + limit - 1) // limit}
             }
-        }
+        )
     except Exception as e:
         logger.error(f"Get invoices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -87,7 +86,7 @@ async def create_admin_invoice(
         db.add(new_invoice)
         db.commit()
         db.refresh(new_invoice)
-        return {"success": True, "data": {"invoice": new_invoice.to_dict()}}
+        return ResponseEnvelope(data={"invoice": InvoiceRead.model_validate(new_invoice).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:
@@ -107,11 +106,11 @@ async def get_admin_invoice(
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
-        inv_dict = invoice.to_dict()
+        inv_dict = InvoiceRead.model_validate(invoice).model_dump(by_alias=True)
         tenant = db.get(Tenant, invoice.tenant_id)
         if tenant:
-            inv_dict["tenant_name"] = tenant.name
-        return {"success": True, "data": {"invoice": inv_dict}}
+            inv_dict["tenantName"] = tenant.name
+        return ResponseEnvelope(data={"invoice": inv_dict})
     except HTTPException:
         raise
     except Exception as e:
@@ -131,7 +130,7 @@ async def record_payment(
         
         invoice.status = "paid"
         db.commit()
-        return {"success": True, "data": {"invoice": invoice.to_dict()}}
+        return ResponseEnvelope(data={"invoice": InvoiceRead.model_validate(invoice).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:

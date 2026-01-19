@@ -43,7 +43,7 @@ import type { DeviceAssignmentReadLoanerSerialNumberLeft } from './deviceAssignm
 import type { DeviceAssignmentReadLoanerSerialNumberRight } from './deviceAssignmentReadLoanerSerialNumberRight';
 
 export interface DeviceAssignmentRead {
-  patientId: string;
+  partyId: string;
   deviceId?: DeviceAssignmentReadDeviceId;
   inventoryId?: DeviceAssignmentReadInventoryId;
   ear?: DeviceAssignmentReadEar;

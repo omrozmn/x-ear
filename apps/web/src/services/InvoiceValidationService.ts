@@ -31,19 +31,19 @@ export class InvoiceValidationService {
 
   private initializeValidationRules(): void {
     this.validationRules = [
-      // Patient Information Validation
+      // Party Information Validation
       {
-        field: 'patientName',
+        field: 'partyName',
         message: 'Hasta adı gereklidir',
         validator: (value: string) => !!value && value.trim().length >= 2
       },
       {
-        field: 'patientTcNumber',
+        field: 'partyTcNumber',
         message: 'Geçerli bir T.C. kimlik numarası giriniz',
         validator: (value: string) => !value || InvoiceValidationUtils.validateTCKN(value)
       },
       {
-        field: 'patientPhone',
+        field: 'partyPhone',
         message: 'Geçerli bir telefon numarası giriniz',
         validator: (value: string) => !value || InvoiceValidationUtils.validateTurkishPhone(value)
       },
@@ -193,8 +193,8 @@ export class InvoiceValidationService {
 
     // SGK invoice validations
     if (formData.type === 'sgk') {
-      if (!formData.patientTcNumber) {
-        errors['patientTcNumber'] = 'SGK faturası için T.C. kimlik numarası gereklidir';
+      if (!formData.partyTcNumber) {
+        errors['partyTcNumber'] = 'SGK faturası için T.C. kimlik numarası gereklidir';
       }
 
       // Check if all items have SGK codes
@@ -383,8 +383,8 @@ export class InvoiceValidationService {
 
   private isOptionalField(fieldName: string): boolean {
     const optionalFields = [
-      'patientPhone',
-      'patientTcNumber',
+      'partyPhone',
+      'partyTcNumber',
       'dueDate',
       'referenceNumber',
       'orderNumber',

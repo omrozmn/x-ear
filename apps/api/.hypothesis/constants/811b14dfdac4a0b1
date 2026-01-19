@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/invoice.py
+# hypothesis_version: 6.150.1
+
+[100, 200, 500, 'Device', 'Invoice', 'Party', 'Sale', 'active', 'birfaturaApprovedAt', 'birfaturaSentAt', 'branchId', 'branches.id', 'companyName', 'convertedToInvoiceId', 'createdAt', 'createdBy', 'deviceId', 'deviceName', 'devicePrice', 'deviceSerial', 'devices', 'devices.id', 'draft', 'edocumentStatus', 'edocumentType', 'ettn', 'gibPdfLink', 'hasGibPdf', 'hasGibXml', 'id', 'invoiceNumber', 'invoiceTypeCode', 'invoices', 'invoices.id', 'notes', 'parties.id', 'patientId', 'patientName', 'patientTC', 'pending', 'profileId', 'proformaNumber', 'proformas', 'saleId', 'sales.id', 'sentToGib', 'sentToGibAt', 'source_proforma', 'status', 'tenants.id', 'updatedAt', 'validUntil']

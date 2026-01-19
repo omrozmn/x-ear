@@ -11,7 +11,7 @@ import type { PromissoryNoteData } from './promissoryNoteData';
 import type { PromissoryNotesCreateTenantId } from './promissoryNotesCreateTenantId';
 
 export interface PromissoryNotesCreate {
-  patientId: string;
+  partyId: string;
   saleId?: PromissoryNotesCreateSaleId;
   totalAmount?: PromissoryNotesCreateTotalAmount;
   notes: PromissoryNoteData[];

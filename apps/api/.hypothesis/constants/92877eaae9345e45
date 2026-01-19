@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/user.py
+# hypothesis_version: 6.150.1
+
+[100, 120, 255, 500, 'Branch', 'Tenant', 'action', 'activity_logs', 'branchId', 'branchName', 'branch_id', 'branches', 'branches.id', 'created_at', 'data', 'details', 'dynamic', 'email', 'entityId', 'entityType', 'entity_id', 'entity_type', 'firstName', 'fullName', 'id', 'ipAddress', 'isActive', 'isCritical', 'isPhoneVerified', 'ix_activity_action', 'ix_activity_created', 'ix_activity_entity', 'ix_activity_user', 'lastLogin', 'lastName', 'log', 'message', 'patient', 'patientName', 'pbkdf2:sha256', 'phone', 'realUserId', 'role', 'subquery', 'tenantId', 'tenantName', 'tenant_id', 'tenants.id', 'user', 'userAgent', 'userEmail', 'userId', 'userName', 'user_branches', 'user_id', 'username', 'users', 'users.id', 'usr']

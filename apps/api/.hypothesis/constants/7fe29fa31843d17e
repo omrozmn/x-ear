@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py
+# hypothesis_version: 6.150.1
+
+[200, 500, 1000, 'INTERNAL_ERROR', 'X-Request-ID', 'X-Request-Id', 'X-Response-Time-Ms', 'json']

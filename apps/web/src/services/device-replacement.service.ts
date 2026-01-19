@@ -1,12 +1,12 @@
 import {
-  listPatientReplacements,
-  createPatientReplacements,
+  listReplacements as listPartyReplacements,
+  createReplacement as createPartyReplacements,
   getReplacement,
   updateReplacementStatus as updateReplacementStatusApi,
   createReplacementInvoice as createReplacementInvoiceApi
-} from '@/api/generated/replacements/replacements';
+} from '@/api/client/replacements.client';
 import type { ReplacementCreate, ReplacementStatusUpdate } from '@/api/generated/schemas';
-import { getInventory } from '@/api/generated';
+import { getInventory } from '@/api/client/inventory.client';
 import { getCurrentUserId } from '@/utils/auth-utils';
 import type {
   DeviceReplacementRequest,
@@ -37,10 +37,9 @@ export class DeviceReplacementService {
       };
 
       // Call the backend API
-      const response = await createPatientReplacements(request.patientId, apiPayload);
+      const response = await createPartyReplacements(request.partyId, apiPayload);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const responseData = response as any;
+      const responseData = response as Record<string, unknown>;
 
       if (responseData?.success && responseData?.data) {
         const replacement = this.normalizeReplacementData(responseData.data);
@@ -74,14 +73,13 @@ export class DeviceReplacementService {
   }
 
   /**
-   * Get replacement history for a patient
+   * Get replacement history for a party
    */
-  async getPatientReplacements(patientId: string): Promise<DeviceReplacementHistory[]> {
+  async getPartyReplacements(partyId: string): Promise<DeviceReplacementHistory[]> {
     try {
-      const response = await listPatientReplacements(patientId);
+      const response = await listPartyReplacements(partyId);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const responseData = response as any;
+      const responseData = response as Record<string, unknown>;
 
       if (responseData?.success && Array.isArray(responseData?.data)) {
         return responseData.data.map((d: unknown) => this.normalizeReplacementData(d));
@@ -92,7 +90,7 @@ export class DeviceReplacementService {
 
     } catch (error) {
       console.warn('Backend API unavailable for replacements, using local storage fallback:', error);
-      return this.getFromLocalStorage().filter(r => r.patientId === patientId);
+      return this.getFromLocalStorage().filter(r => r.partyId === partyId);
     }
   }
 
@@ -127,8 +125,7 @@ export class DeviceReplacementService {
 
       const response = await updateReplacementStatusApi(replacementId, updatePayload);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const responseData = response as any;
+      const responseData = response as Record<string, unknown>;
 
       if (responseData?.success && responseData?.data) {
         return {
@@ -188,13 +185,13 @@ export class DeviceReplacementService {
         notes: `Return invoice for replacement ${replacement.id}`
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const responseData = response as any;
+      const responseData = response as Record<string, unknown>;
 
-      if (responseData?.success && responseData?.data?.invoice) {
-        replacement.returnInvoiceId = responseData.data.invoice.id;
+      if (responseData?.success && (responseData?.data as Record<string, unknown>)?.invoice) {
+        const invoice = (responseData.data as Record<string, unknown>).invoice as Record<string, unknown>;
+        replacement.returnInvoiceId = invoice.id as string;
         replacement.returnInvoiceStatus = 'created';
-        console.log('Return invoice created:', responseData.data.invoice);
+        console.log('Return invoice created:', invoice);
       }
     } catch (error) {
       console.error('Error creating return invoice:', error);
@@ -228,13 +225,13 @@ export class DeviceReplacementService {
     try {
       const response = await getInventory(inventoryId);
       if (response) {
-        const item = response as { brand?: string; model?: string; availableSerials?: string[]; category?: string; price?: number };
+        const item = response as Record<string, unknown>;
         return {
-          brand: item.brand || '',
-          model: item.model || '',
-          serialNumber: item.availableSerials?.[0] || '',
-          deviceType: item.category || '',
-          price: item.price || 0
+          brand: (item.brand as string) || '',
+          model: (item.model as string) || '',
+          serialNumber: ((item.availableSerials as string[])?.[0]) || '',
+          deviceType: (item.category as string) || '',
+          price: (item.price as number) || 0
         };
       }
     } catch (error) {
@@ -258,7 +255,7 @@ export class DeviceReplacementService {
 
     const replacement: DeviceReplacementHistory = {
       id: replacementId,
-      patientId: request.patientId,
+      partyId: request.partyId,
       oldDeviceId: request.oldDeviceId,
       newDeviceId: request.newInventoryId || `NEW-${Date.now()}`,
       oldDeviceInfo: await this.getDeviceInfo(request.oldDeviceId),
@@ -310,29 +307,29 @@ export class DeviceReplacementService {
   /**
    * Normalize replacement data from API
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private normalizeReplacementData(data: any): DeviceReplacementHistory {
+  private normalizeReplacementData(data: unknown): DeviceReplacementHistory {
+    const d = data as Record<string, unknown>;
     return {
-      id: data.id,
-      patientId: data.patient_id || data.patientId,
-      oldDeviceId: data.old_device_id || data.oldDeviceId,
-      newDeviceId: data.new_device_id || data.newDeviceId,
-      oldDeviceInfo: typeof data.old_device_info === 'string'
-        ? JSON.parse(data.old_device_info)
-        : data.old_device_info || data.oldDeviceInfo,
-      newDeviceInfo: typeof data.new_device_info === 'string'
-        ? JSON.parse(data.new_device_info)
-        : data.new_device_info || data.newDeviceInfo,
-      replacementReason: data.replacement_reason || data.replacementReason || 'other',
-      replacementDate: data.replacement_date || data.replacementDate || new Date().toISOString(),
-      status: data.status || 'pending',
-      priceDifference: data.price_difference || data.priceDifference || 0,
-      notes: data.notes,
-      replacedBy: data.replaced_by || data.replacedBy || data.created_by || data.createdBy || 'unknown',
-      createdAt: data.created_at || data.createdAt || new Date().toISOString(),
-      updatedAt: data.updated_at || data.updatedAt || new Date().toISOString(),
-      returnInvoiceId: data.return_invoice?.id || data.returnInvoiceId || data.return_invoice_id,
-      returnInvoiceStatus: data.return_invoice?.status || data.returnInvoiceStatus || 'pending'
+      id: d.id as string,
+      partyId: (d.party_id || d.partyId) as string,
+      oldDeviceId: (d.old_device_id || d.oldDeviceId) as string,
+      newDeviceId: (d.new_device_id || d.newDeviceId) as string,
+      oldDeviceInfo: typeof d.old_device_info === 'string'
+        ? JSON.parse(d.old_device_info)
+        : (d.old_device_info || d.oldDeviceInfo) as DeviceInfo,
+      newDeviceInfo: typeof d.new_device_info === 'string'
+        ? JSON.parse(d.new_device_info)
+        : (d.new_device_info || d.newDeviceInfo) as DeviceInfo,
+      replacementReason: (d.replacement_reason || d.replacementReason || 'other') as DeviceReplacementHistory['replacementReason'],
+      replacementDate: (d.replacement_date || d.replacementDate || new Date().toISOString()) as string,
+      status: (d.status || 'pending') as DeviceReplacementHistory['status'],
+      priceDifference: (d.price_difference || d.priceDifference || 0) as number,
+      notes: d.notes as string | undefined,
+      replacedBy: (d.replaced_by || d.replacedBy || d.created_by || d.createdBy || 'unknown') as string,
+      createdAt: (d.created_at || d.createdAt || new Date().toISOString()) as string,
+      updatedAt: (d.updated_at || d.updatedAt || new Date().toISOString()) as string,
+      returnInvoiceId: ((d.return_invoice as Record<string, unknown>)?.id || d.returnInvoiceId || d.return_invoice_id) as string | undefined,
+      returnInvoiceStatus: ((d.return_invoice as Record<string, unknown>)?.status || d.returnInvoiceStatus || 'pending') as DeviceReplacementHistory['returnInvoiceStatus']
     };
   }
 }

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_inventory.py
+# hypothesis_version: 6.150.1
+
+[100, 500, '/api/admin/inventory', 'Admin Inventory', 'data', 'inventory', 'inventory.read', 'limit', 'listAdminInventory', 'page', 'pagination', 'success', 'tenantName', 'total', 'totalPages']

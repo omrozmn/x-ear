@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { EReceiptQueryRequestTcNumber } from './eReceiptQueryRequestTcNumber';
-import type { EReceiptQueryRequestPatientId } from './eReceiptQueryRequestPatientId';
+import type { EReceiptQueryRequestPartyId } from './eReceiptQueryRequestPartyId';
 
 export interface EReceiptQueryRequest {
   receiptNumber: string;
   tcNumber?: EReceiptQueryRequestTcNumber;
-  patientId?: EReceiptQueryRequestPatientId;
+  partyId?: EReceiptQueryRequestPartyId;
 }

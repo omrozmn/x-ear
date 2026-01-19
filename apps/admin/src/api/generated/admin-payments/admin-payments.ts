@@ -23,7 +23,7 @@ import type {
 import type {
   HTTPValidationError,
   ListAdminPaymentPoTransactionsParams,
-  PaymentListResponse
+  ResponseEnvelopeListPaymentRecordRead
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -41,7 +41,7 @@ export const listAdminPaymentPoTransactions = (
 ) => {
       
       
-      return adminApi<PaymentListResponse>(
+      return adminApi<ResponseEnvelopeListPaymentRecordRead>(
       {url: `/api/admin/payments/pos/transactions`, method: 'GET',
         params, signal
     },

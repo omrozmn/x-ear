@@ -13,8 +13,8 @@ import type { SimilarityRequestTextA } from './similarityRequestTextA';
 import type { SimilarityRequestTextB } from './similarityRequestTextB';
 
 export interface SimilarityRequest {
-  image_path1?: SimilarityRequestImagePath1;
-  image_path2?: SimilarityRequestImagePath2;
+  imagePath1?: SimilarityRequestImagePath1;
+  imagePath2?: SimilarityRequestImagePath2;
   text1?: SimilarityRequestText1;
   text2?: SimilarityRequestText2;
   textA?: SimilarityRequestTextA;

@@ -86,7 +86,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:5003',
+        target: 'http://127.0.0.1:5003',
         changeOrigin: true,
         secure: false,
       },
@@ -100,5 +100,12 @@ export default defineConfig({
   // Strip console.log and debugger statements in production builds
   esbuild: {
     drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+    css: true,
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', 'src/tests/e2e/**', '**/*.e2e.spec.ts'],
   },
 })

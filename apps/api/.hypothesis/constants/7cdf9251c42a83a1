@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/suppliers.py
+# hypothesis_version: 6.150.1
+
+[0.0, 100, 201, 400, 404, 409, 500, '/suppliers', '/suppliers/search', '/suppliers/stats', 'DUPLICATE', 'SUPPLIER_NOT_FOUND', 'Supplier not found', 'Suppliers', 'TENANT_REQUIRED', 'TRY', 'Türkiye', 'activeSuppliers', 'asc', 'averageRating', 'companyCode', 'companyName', 'company_name', 'contactPerson', 'createSuppliers', 'deleteSupplier', 'desc', 'getSupplier', 'inactiveSuppliers', 'isActive', 'json', 'listSupplierSearch', 'listSupplierStats', 'listSuppliers', 'page', 'paymentTerms', 'perPage', 'postalCode', 'products', 'suppliers', 'taxNumber', 'taxOffice', 'tenantId', 'tenant_id', 'total', 'totalPages', 'totalSuppliers', 'updateSupplier']

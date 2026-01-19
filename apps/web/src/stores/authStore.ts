@@ -1,35 +1,18 @@
 import { create } from 'zustand';
-import { apiClient } from '../api/orval-mutator';
 import { persist } from 'zustand/middleware';
 import {
+  createAuthLogin,
   createAuthRefresh as refreshTokenApi,
   createAuthVerifyOtp as verifyOtpApi,
   createAuthSendVerificationOtp as sendVerificationOtpApi,
-  createAuthForgotPassword as forgotPasswordApi
-} from '@/api/generated/auth/auth';
-import { createAdminAuthLogin as adminLogin } from '@/api/generated/admin/admin';
+  createAuthForgotPassword as forgotPasswordApi,
+  createAuthLookupPhone as lookupPhoneApi,
+  createAuthResetPassword as resetPasswordApi
+} from '@/api/client/auth.client';
+import type { AuthUserRead, LoginRequest, ResponseEnvelopeLoginResponse, ResponseEnvelopeVerifyOtpResponse, ResponseEnvelopeLookupPhoneResponse, ResponseEnvelopeRefreshTokenResponse } from '@/api/client/auth.client';
 import { DEV_CONFIG } from '../config/dev-config';
 import { subscriptionService } from '../services/subscription.service';
 import { tokenManager } from '../utils/token-manager';
-
-// Manual auth functions not in generated API
-const authLookupPhone = async (data: { identifier: string }) => {
-  return apiClient({
-    url: '/api/auth/lookup-phone',
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data
-  });
-};
-
-const authResetPassword = async (data: { identifier: string; otp: string; newPassword: string }) => {
-  return apiClient({
-    url: '/api/auth/reset-password',
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data
-  });
-};
 
 // Extend Window interface to include __AUTH_TOKEN__
 declare global {
@@ -38,22 +21,17 @@ declare global {
   }
 }
 
-interface User {
-  id: string;
-  username?: string;
-  email: string;
-  name: string;
-  role?: string;
-  phone?: string;
-  isPhoneVerified?: boolean;
+// Extended user type for client-side state
+export interface AuthStateUser extends AuthUserRead {
   isImpersonating?: boolean;
   realUserEmail?: string;
-  // Super admin flag
   is_super_admin?: boolean;
-  // Tenant impersonation
   effectiveTenantId?: string;
   tenantName?: string;
   isImpersonatingTenant?: boolean;
+  // Previously we had 'name', but AuthUserRead has firstName/lastName/fullName
+  name?: string; // Keep for backward compatibility if needed, or migrate
+  role: string; // Explicitly match AuthUserRead mandatory role
 }
 
 interface SubscriptionStatus {
@@ -63,7 +41,7 @@ interface SubscriptionStatus {
 }
 
 interface AuthState {
-  user: User | null;
+  user: AuthStateUser | null;
   token: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
@@ -77,13 +55,13 @@ interface AuthState {
 }
 
 interface AuthActions {
-  setAuth: (user: User, token: string, refreshToken?: string | null) => void;
-  setUser: (user: User) => void;
+  setAuth: (user: AuthStateUser, token: string, refreshToken?: string | null) => void;
+  setUser: (user: AuthStateUser) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   login: (credentials: LoginCredentials) => Promise<void>;
-  verifyOtp: (otp: string) => Promise<void>;
+  verifyOtp: (otp: string, identifier?: string) => Promise<void>;
   sendOtp: (phone: string) => Promise<void>;
   forgotPassword: (phone: string) => Promise<void>;
   verifyResetOtp: (phone: string, otp: string) => Promise<void>;
@@ -119,7 +97,7 @@ export const useAuthStore = create<AuthStore>()(
       maskedPhone: null,
 
       // Actions
-      setAuth: (user: User, token: string, refreshToken?: string | null) => {
+      setAuth: (user: AuthStateUser, token: string, refreshToken?: string | null) => {
         set({
           user,
           token,
@@ -135,7 +113,7 @@ export const useAuthStore = create<AuthStore>()(
         get().checkSubscription();
       },
 
-      setUser: (user: User) => {
+      setUser: (user: AuthStateUser) => {
         set({ user });
       },
 
@@ -183,7 +161,7 @@ export const useAuthStore = create<AuthStore>()(
               subscription: {
                 isExpired: Boolean(subInfo.isExpired),
                 daysRemaining: subInfo.daysRemaining ?? 0,
-                planName: subInfo.plan?.name || 'Unknown'
+                planName: (subInfo.plan?.name || 'Unknown') as string
               }
             });
           }
@@ -199,38 +177,39 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          // Use admin login endpoint for admin panel
-          const response = await adminLogin({ email: credentials.username, password: credentials.password });
+          // Use standard auth login endpoint
+          // LoginRequest uses 'identifier' for username/email/phone
+          const loginRequest: LoginRequest = {
+            identifier: credentials.username,
+            password: credentials.password
+          };
 
-          // customInstance extracts axios response.data, which contains our backend response
-          const responseData = response as any;
+          const response = await createAuthLogin(loginRequest);
 
-          // Backend response: { success, data: { token, user, requires_mfa, refreshToken } }
-          if (responseData && responseData.success && responseData.data) {
-            const { token, user: userData, requires_mfa, refreshToken } = responseData.data;
+          // customInstance extracts axios response.data
+          // The return type is ResponseEnvelopeLoginResponse
+          const responseEnvelope = response as ResponseEnvelopeLoginResponse;
 
-            if (requires_mfa) {
-              // Handle MFA requirement
-              set({ requiresOtp: true, isLoading: false });
-              return;
-            }
+          // Data is ResponseEnvelopeLoginResponseData which is LoginResponse | null
+          // LoginResponse: { accessToken, refreshToken, user: AuthUserRead, requiresPhoneVerification }
 
-            if (token && userData) {
-              const user: User = {
-                id: userData.id,
-                email: userData.email,
-                name: userData.first_name && userData.last_name
-                  ? `${userData.first_name} ${userData.last_name}`.trim()
-                  : userData.email,
-                role: userData.role || 'user',
-                phone: undefined, // Admin users don't have phone
-                isPhoneVerified: true, // Admin users are always verified
-                is_super_admin: userData.is_super_admin || userData.role === 'super_admin'
+          if (responseEnvelope && responseEnvelope.success && responseEnvelope.data) {
+            const loginData = responseEnvelope.data;
+            const { accessToken, refreshToken, user: userData, requiresPhoneVerification } = loginData;
+
+            // Map AuthUserRead to AuthStateUser and handle missing fields
+            if (accessToken && userData) {
+              const user: AuthStateUser = {
+                ...userData,
+                // Ensure name is present if components use it (AuthUserRead has fullName)
+                name: userData.fullName || `${userData.firstName} ${userData.lastName}`.trim(),
+                is_super_admin: userData.role === 'super_admin' || userData.role === 'admin', // Basic check
+                isPhoneVerified: !requiresPhoneVerification // Inferred
               };
 
               // Check if tenant has changed (extract from JWT token)
               const previousTenantId = localStorage.getItem('current_tenant_id');
-              const newToken = token;
+              const newToken = accessToken;
               let newTenantId: string | null = null;
 
               try {
@@ -298,14 +277,14 @@ export const useAuthStore = create<AuthStore>()(
               }
             } else {
               console.error('Missing required fields:', {
-                success: responseData?.success,
-                token: !!token,
+                success: responseEnvelope?.success,
+                token: !!accessToken,
                 userData: !!userData
               });
               throw new Error('Sunucudan geçersiz yanıt alındı - eksik token veya kullanıcı bilgisi');
             }
           } else {
-            console.error('Invalid response structure:', { responseData });
+            console.error('Invalid response structure:', { response: responseEnvelope });
             throw new Error('Sunucudan geçersiz yanıt alındı');
           }
         } catch (error: any) {
@@ -350,8 +329,8 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      verifyOtp: async (otp: string) => {
-        const { token, setLoading, setError, checkSubscription } = get();
+      verifyOtp: async (otp: string, identifier?: string) => {
+        const { token, user, setLoading, setError, checkSubscription } = get();
         // We might be logged in but unverified, so we have a token.
         // Or we might be in a pre-auth state (legacy).
         // With the new flow, we are logged in, so we have a token.
@@ -365,38 +344,45 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          // Use Orval-generated function
-          const data = await verifyOtpApi({ otp }) as any;
+          // Use Orval-generated function and include identifier
+          // If identifier is not provided, try to use user's phone or email
+          const targetIdentifier = identifier || user?.phone || user?.email || '';
 
-          if (data?.success) {
-            const { access_token: newToken, refreshToken, data: userData } = data;
+          if (!targetIdentifier) {
+            throw new Error('Kullanıcı bilgisi (telefon veya e-posta) bulunamadı');
+          }
+
+          const envelope = await verifyOtpApi({ otp, identifier: targetIdentifier }) as ResponseEnvelopeVerifyOtpResponse;
+
+          if (envelope?.success && envelope.data) {
+            const { accessToken: newToken, refreshToken: newRefreshToken, user: userData } = envelope.data;
 
             // Update user with verified status
-            const user: User = {
-              id: userData.id,
-              username: userData.username,
-              email: userData.email,
-              name: userData.fullName || userData.firstName || userData.username,
-              role: userData.role || 'user',
-              phone: userData.phone,
-              isPhoneVerified: true // Explicitly set to true
-            };
+            if (userData) {
+              const user: AuthStateUser = {
+                ...userData,
+                name: (userData.fullName || userData.firstName) ? (userData.fullName || `${userData.firstName || ''} ${userData.lastName || ''}`) : (userData.username || ''),
+                isPhoneVerified: true
+              };
 
-            set({
-              user,
-              token: newToken,
-              refreshToken: refreshToken || null,
-              isAuthenticated: true,
-              error: null,
-              requiresOtp: false,
-              requiresPhone: false,
-              maskedPhone: null
-            });
+              set({
+                user,
+                token: newToken || null,
+                refreshToken: newRefreshToken || null,
+                isAuthenticated: true,
+                error: null,
+                requiresOtp: false,
+                requiresPhone: false,
+                maskedPhone: null
+              });
 
-            // Use TokenManager for token storage (single source of truth)
-            tokenManager.setTokens(newToken, refreshToken || null);
+              // Use TokenManager for token storage (single source of truth)
+              if (newToken) {
+                tokenManager.setTokens(newToken, newRefreshToken || null);
+              }
 
-            await checkSubscription();
+              await checkSubscription();
+            }
           } else {
             setError('Doğrulama başarısız');
           }
@@ -501,15 +487,16 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          const response = await authLookupPhone({ identifier });
+          // Use Orval-generated API (G-03: Auth Boundary Migration)
+          const response = await lookupPhoneApi({ identifier }) as ResponseEnvelopeLookupPhoneResponse;
 
-          if (response?.status === 200 && response?.data?.success) {
+          if (response?.success && response?.data) {
             return {
-              maskedPhone: response.data.masked_phone,
-              isPhoneInput: response.data.is_phone_input
+              maskedPhone: response.data.maskedPhone,
+              isPhoneInput: response.data.isPhoneInput
             };
           } else {
-            throw new Error(response?.data?.error || 'Kullanıcı bulunamadı');
+            throw new Error('Kullanıcı bulunamadı');
           }
         } catch (error: any) {
           // Handle "not found" explicitly
@@ -560,7 +547,8 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          const data = await authResetPassword({
+          // Use Orval-generated API (G-03: Auth Boundary Migration)
+          const data = await resetPasswordApi({
             identifier: phone,
             otp: otp,
             newPassword: newPassword
@@ -588,6 +576,15 @@ export const useAuthStore = create<AuthStore>()(
           console.log('IndexedDB cleared on logout');
         } catch (error) {
           console.error('Failed to clear IndexedDB on logout:', error);
+        }
+
+        // Clear AI session data on logout (Requirement 20: Chat History Retention Policy)
+        try {
+          const { clearAISessionOnLogout } = await import('../ai/stores/aiSessionStore');
+          clearAISessionOnLogout();
+          console.log('AI session cleared on logout');
+        } catch (error) {
+          console.error('Failed to clear AI session on logout:', error);
         }
 
         get().clearAuth();
@@ -658,18 +655,21 @@ export const useAuthStore = create<AuthStore>()(
 
               // Admin users are always phone verified (they don't need phone verification)
               const isAdmin = tokenManager.isAdmin();
-              const isPhoneVerified = isAdmin ? true : userData.isPhoneVerified === true;
+              const isPhoneVerified = isAdmin ? true : (userData.isPhoneVerified === true);
 
-              const transformedUser: User = {
+              // Type assertion or mapping might be needed if UserRead and AuthUserRead differ
+              const transformedUser: AuthStateUser = {
+                ...(userData as any), // Spread base properties from UserRead
                 id: userData.id || '',
                 email: userData.email || '',
+                // Ensure name is present
                 name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.fullName || userData.username || '',
                 role: userData.role || 'user',
                 phone: userData.phone,
                 isPhoneVerified,
                 isImpersonating,
                 realUserEmail,
-                is_super_admin: userData.is_super_admin || userData.role === 'super_admin',
+                is_super_admin: userData.role === 'super_admin',
                 // Preserve tenant impersonation details from token
                 effectiveTenantId: payload?.effective_tenant_id as string | undefined,
                 // If tenant name is in token, use it. Backend doesn't strictly put name in token usually, 

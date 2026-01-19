@@ -22,7 +22,7 @@ import type { SaleCreateReportStatus } from './saleCreateReportStatus';
 import type { SaleCreateSaleDate } from './saleCreateSaleDate';
 
 export interface SaleCreate {
-  patientId: string;
+  partyId: string;
   productId: string;
   salesPrice?: SaleCreateSalesPrice;
   quantity?: number;

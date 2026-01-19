@@ -12,17 +12,13 @@ from models.tenant import Tenant
 from models.user import User
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.notifications import NotificationRead, NotificationTemplateRead, NotificationTemplateCreate
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/notifications", tags=["Admin Notifications"])
 
-# Response models
-class NotificationListResponse(ResponseEnvelope):
-    data: Optional[dict] = None
-
-class NotificationDetailResponse(ResponseEnvelope):
-    data: Optional[dict] = None
+# Response models removed in favor of generics
 
 class NotificationSend(BaseModel):
     targetType: str  # 'tenant', 'all'
@@ -61,12 +57,12 @@ async def init_db(
         Notification.__table__.create(db.get_bind(), checkfirst=True)
         NotificationTemplate.__table__.create(db.get_bind(), checkfirst=True)
         db.commit()
-        return {"success": True, "message": "Notification tables initialized"}
+        return ResponseEnvelope(message="Notification tables initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", operation_id="listAdminNotifications", response_model=NotificationListResponse)
+@router.get("", operation_id="listAdminNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 async def get_notifications(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -86,13 +82,10 @@ async def get_notifications(
         total = query.count()
         notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
-        return {
-            "success": True,
-            "data": {
-                "notifications": [n.to_dict() for n in notifications],
-                "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
-            }
-        }
+        return ResponseEnvelope(
+            data=[NotificationRead.model_validate(n) for n in notifications],
+            meta={"page": page, "limit": limit, "total": total, "total_pages": (total + limit - 1) // limit}
+        )
     except Exception as e:
         logger.error(f"Get notifications error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -141,7 +134,7 @@ async def send_notification(
             
             # If only email channel, return here
             if data.channel == 'email':
-                return {"success": True, "data": {"count": email_count, "channel": "email"}, "message": f"Email notification sent to {email_count} recipients"}
+                return ResponseEnvelope(data={"count": email_count, "channel": "email"}, message=f"Email notification sent to {email_count} recipients")
         
         # For push notifications (or 'both' channel)
         recipients = []
@@ -168,9 +161,9 @@ async def send_notification(
         
         # Return combined result for 'both' channel
         if data.channel == 'both':
-            return {"success": True, "data": {"push_count": push_count, "email_count": email_count, "channel": "both"}, "message": f"Notification sent to {push_count} users (push) and {email_count} recipients (email)"}
+            return ResponseEnvelope(data={"push_count": push_count, "email_count": email_count, "channel": "both"}, message=f"Notification sent to {push_count} users (push) and {email_count} recipients (email)")
         
-        return {"success": True, "data": {"count": push_count, "channel": "push"}, "message": f"Notification sent to {push_count} users"}
+        return ResponseEnvelope(data={"count": push_count, "channel": "push"}, message=f"Notification sent to {push_count} users")
     except HTTPException:
         raise
     except Exception as e:
@@ -180,7 +173,7 @@ async def send_notification(
 
 # --- Template Endpoints (Migrated from Flask) ---
 
-@router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=NotificationListResponse)
+@router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=ResponseEnvelope[List[NotificationTemplateRead]])
 async def get_templates(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -202,18 +195,15 @@ async def get_templates(
         total = query.count()
         templates = query.order_by(NotificationTemplate.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
-        return {
-            "success": True,
-            "data": {
-                "templates": [t.to_dict() for t in templates],
-                "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
-            }
-        }
+        return ResponseEnvelope(
+            data=[NotificationTemplateRead.model_validate(t) for t in templates],
+            meta={"page": page, "limit": limit, "total": total, "total_pages": (total + limit - 1) // limit}
+        )
     except Exception as e:
         logger.error(f"Get templates error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/templates", operation_id="createAdminNotificationTemplates", response_model=NotificationDetailResponse)
+@router.post("/templates", operation_id="createAdminNotificationTemplates", response_model=ResponseEnvelope[NotificationTemplateRead])
 async def create_template(
     data: TemplateCreate,
     db: Session = Depends(get_db),
@@ -249,13 +239,14 @@ async def create_template(
         db.commit()
         db.refresh(template)
         
-        return {"success": True, "data": template.to_dict()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=NotificationTemplateRead.model_validate(template))
     except Exception as e:
         db.rollback()
         logger.error(f"Create template error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/templates/{template_id}", operation_id="updateAdminNotificationTemplate", response_model=NotificationDetailResponse)
+@router.put("/templates/{template_id}", operation_id="updateAdminNotificationTemplate", response_model=ResponseEnvelope[NotificationTemplateRead])
 async def update_template(
     template_id: str,
     data: TemplateCreate,
@@ -302,7 +293,7 @@ async def update_template(
         db.commit()
         db.refresh(template)
         
-        return {"success": True, "data": template.to_dict()}
+        return ResponseEnvelope(data=NotificationTemplateRead.model_validate(template))
     except HTTPException:
         raise
     except Exception as e:
@@ -325,7 +316,7 @@ async def delete_template(
         db.delete(template)
         db.commit()
         
-        return {"success": True, "message": "Template deleted"}
+        return ResponseEnvelope(message="Template deleted")
     except HTTPException:
         raise
     except Exception as e:

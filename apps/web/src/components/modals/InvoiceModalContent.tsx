@@ -11,7 +11,7 @@ interface InvoiceModalContentProps {
   onSuccess?: (invoice: any) => void;
   onError?: (error: string) => void;
   initialData?: any;
-  patientId?: string;
+  partyId?: string;
   deviceId?: string;
   mode?: 'create' | 'quick' | 'template' | 'edit';
   title?: string;
@@ -24,7 +24,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
   onSuccess,
   onError,
   initialData,
-  patientId,
+  partyId,
   deviceId,
   mode = 'create',
   title
@@ -53,9 +53,9 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
     setSubmitError(null);
 
     try {
-      // Add patient and device IDs if provided
-      if (patientId) {
-        formData.patientId = patientId;
+      // Add party and device IDs if provided
+      if (partyId) {
+        formData.partyId = partyId;
       }
       if (deviceId) {
         formData.deviceId = deviceId;

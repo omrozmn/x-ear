@@ -9,6 +9,13 @@ from sqlalchemy import func
 import logging
 
 from schemas.base import ResponseEnvelope
+from schemas.admin import (
+    AdminAnalyticsData, RevenueAnalytics, 
+    UserAnalytics, TenantAnalytics,
+    AnalyticsOverview, RevenueTrendItem,
+    UserEngagementItem, PlanDistributionItem,
+    TopTenantItem
+)
 from models.admin_user import AdminUser
 from models.tenant import Tenant
 from models.user import User
@@ -21,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/analytics", tags=["Admin Analytics"])
 
-@router.get("", operation_id="getAdminAnalytics")
-@router.get("/overview", operation_id="listAdminAnalyticOverview")
+@router.get("", operation_id="getAdminAnalytics", response_model=ResponseEnvelope[AdminAnalyticsData])
+@router.get("/overview", operation_id="listAdminAnalyticOverview", response_model=ResponseEnvelope[AdminAnalyticsData])
 def get_admin_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -138,27 +145,27 @@ def get_admin_analytics(
         
         try:
             from models.appointment import Appointment
-            from models.patient import Patient
+            from core.models.party import Party
             
             domain_metrics["appointment_count"] = db_session.query(Appointment).count()
-            domain_metrics["patient_count"] = db_session.query(Patient).count()
+            domain_metrics["patient_count"] = db_session.query(Party).count()
         except Exception:
             pass
         
-        return ResponseEnvelope(data={
-            "overview": overview,
-            "revenue_trend": final_revenue_trend,
-            "user_engagement": user_engagement,
-            "plan_distribution": plan_distribution,
-            "top_tenants": top_tenants,
-            "domain_metrics": domain_metrics
-        })
+        return ResponseEnvelope(data=AdminAnalyticsData(
+            overview=AnalyticsOverview(**overview),
+            revenue_trend=[RevenueTrendItem(**item) for item in final_revenue_trend],
+            user_engagement=[UserEngagementItem(**item) for item in user_engagement],
+            plan_distribution=[PlanDistributionItem(**item) for item in plan_distribution],
+            top_tenants=[TopTenantItem(**item) for item in top_tenants],
+            domain_metrics=domain_metrics
+        ))
     except Exception as e:
         logger.error(f"Analytics error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/revenue", operation_id="listAdminAnalyticRevenue")
+@router.get("/revenue", operation_id="listAdminAnalyticRevenue", response_model=ResponseEnvelope[RevenueAnalytics])
 def get_revenue_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -189,16 +196,16 @@ def get_revenue_analytics(
                 "revenue": float(rev or 0)
             })
         
-        return ResponseEnvelope(data={
-            "total_revenue": float(total_revenue),
-            "revenue_trend": revenue_trend
-        })
+        return ResponseEnvelope(data=RevenueAnalytics(
+            total_revenue=float(total_revenue),
+            revenue_trend=[RevenueTrendItem(**item) for item in revenue_trend]
+        ))
     except Exception as e:
         logger.error(f"Revenue analytics error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/users", operation_id="listAdminAnalyticUsers")
+@router.get("/users", operation_id="listAdminAnalyticUsers", response_model=ResponseEnvelope[UserAnalytics])
 def get_user_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -212,17 +219,17 @@ def get_user_analytics(
         active_users = db_session.query(User).filter_by(is_active=True).count()
         monthly_active = db_session.query(User).filter(User.last_login >= thirty_days_ago).count()
         
-        return ResponseEnvelope(data={
-            "total_users": total_users,
-            "active_users": active_users,
-            "monthly_active_users": monthly_active
-        })
+        return ResponseEnvelope(data=UserAnalytics(
+            total_users=total_users,
+            active_users=active_users,
+            monthly_active_users=monthly_active
+        ))
     except Exception as e:
         logger.error(f"User analytics error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/tenants", operation_id="listAdminAnalyticTenants")
+@router.get("/tenants", operation_id="listAdminAnalyticTenants", response_model=ResponseEnvelope[TenantAnalytics])
 def get_tenant_analytics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -236,11 +243,11 @@ def get_tenant_analytics(
             Tenant.status, func.count(Tenant.id)
         ).group_by(Tenant.status).all()
         
-        return ResponseEnvelope(data={
-            "total_tenants": total_tenants,
-            "active_tenants": active_tenants,
-            "by_status": {status: count for status, count in tenants_by_status}
-        })
+        return ResponseEnvelope(data=TenantAnalytics(
+            total_tenants=total_tenants,
+            active_tenants=active_tenants,
+            by_status={status: count for status, count in tenants_by_status}
+        ))
     except Exception as e:
         logger.error(f"Tenant analytics error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

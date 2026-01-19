@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/audit_service.py
+# hypothesis_version: 6.150.1
+
+[100, 'AuditService', '_entry_hash', '_missing_fields', 'action_id', 'action_plan_hash', 'auditEntries', 'audit_id', 'block', 'bundleHash', 'bundleId', 'bundle_id', 'count', 'createdAt', 'createdBy', 'created_at', 'created_by', 'diff_snapshot', 'entryCount', 'entryHashes', 'entry_count', 'entry_hashes', 'entry_not_found', 'error_code', 'error_message', 'event_timestamp', 'event_type', 'extra_data', 'id', 'incidentTag', 'incident_bundle_id', 'incident_reason', 'incident_tag', 'intent_confidence', 'intent_type', 'model_id', 'model_version', 'outcome', 'policy_decision', 'policy_rule_id', 'policy_version', 'prompt_template_hash', 'prompt_template_id', 'reason', 'request_id', 'request_received', 'risk_level', 'session_id', 'success', 'tenant_id', 'unknown', 'user_id']

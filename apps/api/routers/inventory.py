@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from schemas.inventory import (
     InventoryItemRead, InventoryItemCreate, InventoryItemUpdate,
-    InventoryStats, StockMovementRead
+    InventoryStats, StockMovementRead, InventorySearchResponse
 )
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
 from models.inventory import InventoryItem
@@ -85,7 +85,7 @@ def get_all_inventory(
     total_pages = (total + per_page - 1) // per_page
     
     return ResponseEnvelope(
-        data=[item.to_dict() for item in items],
+        data=items,
         meta={
             "total": total,
             "page": page,
@@ -94,7 +94,7 @@ def get_all_inventory(
         }
     )
 
-@router.get("/inventory/search", operation_id="listInventorySearch") # Note: No strict response model due to dynamic meta 'filters'
+@router.get("/inventory/search", operation_id="listInventorySearch", response_model=ResponseEnvelope[InventorySearchResponse])
 def advanced_search(
     q: Optional[str] = None,
     category: Optional[str] = None,
@@ -184,7 +184,7 @@ def advanced_search(
     
     return ResponseEnvelope(
         data={
-            "items": [i.to_dict() for i in items],
+            "items": items,
             "pagination": {
                 "page": page,
                 "limit": limit,
@@ -245,7 +245,7 @@ def get_low_stock(
     query = db.query(InventoryItem)
     if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
     items = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).all()
-    return ResponseEnvelope(data=[item.to_dict() for item in items])
+    return ResponseEnvelope(data=items)
 
 @router.get("/inventory/units", operation_id="listInventoryUnits", response_model=ResponseEnvelope[Dict[str, List[str]]])
 def get_units(
@@ -306,7 +306,7 @@ def create_inventory(
                 item.add_serial_number(s)
             db.commit()
             
-        return ResponseEnvelope(data=item.to_dict())
+        return ResponseEnvelope(data=item)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -319,7 +319,7 @@ def get_inventory_item(
 ):
     """Get item"""
     item = get_inventory_or_404(db, item_id, access)
-    return ResponseEnvelope(data=item.to_dict())
+    return ResponseEnvelope(data=item)
 
 @router.put("/inventory/{item_id}", operation_id="updateInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def update_inventory(
@@ -337,7 +337,7 @@ def update_inventory(
             setattr(item, k, v)
             
     db.commit()
-    return ResponseEnvelope(data=item.to_dict())
+    return ResponseEnvelope(data=item)
 
 @router.delete("/inventory/{item_id}", operation_id="deleteInventory")
 def delete_inventory(
@@ -381,7 +381,7 @@ def get_movements(
 ):
     """Get movements with patient enrichment (Flask parity)"""
     from models.sales import DeviceAssignment, Sale
-    from models.patient import Patient
+    from core.models.party import Party
     
     item = get_inventory_or_404(db, item_id, access)
     query = item.movements
@@ -401,27 +401,28 @@ def get_movements(
     # Enrich with patient info (Flask parity)
     results = []
     for m in movements:
-        m_dict = m.to_dict()
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        m_dict = StockMovementRead.model_validate(m).model_dump(by_alias=True)
         
         # Enrich with patient info from transaction
         if m.transaction_id:
             try:
-                # If transaction is a device assignment, get patient info
+                # If transaction is a device assignment, get party info
                 if m.transaction_id.startswith('assign_'):
                     assignment = db.get(DeviceAssignment, m.transaction_id)
-                    if assignment and assignment.patient_id:
-                        patient = db.get(Patient, assignment.patient_id)
-                        if patient:
-                            m_dict['patientId'] = patient.id
-                            m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+                    if assignment and assignment.party_id:
+                        party = db.get(Party, assignment.party_id)
+                        if party:
+                            m_dict['partyId'] = party.id
+                            m_dict['partyName'] = f"{party.first_name} {party.last_name}".strip()
                 # If transaction is a sale
                 elif m.transaction_id.startswith('sale_'):
                     sale = db.get(Sale, m.transaction_id)
-                    if sale and sale.patient_id:
-                        patient = db.get(Patient, sale.patient_id)
-                        if patient:
-                            m_dict['patientId'] = patient.id
-                            m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+                    if sale and sale.party_id:
+                        party = db.get(Party, sale.party_id)
+                        if party:
+                            m_dict['partyId'] = party.id
+                            m_dict['partyName'] = f"{party.first_name} {party.last_name}".strip()
             except Exception as enrich_err:
                 logger.warning(f"Failed to enrich movement {m.id}: {enrich_err}")
         

@@ -5,16 +5,12 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { NotificationStatsByType } from './notificationStatsByType';
 
 /**
  * Notification statistics
  */
 export interface NotificationStats {
-  /** Total notifications */
-  total?: number;
-  /** Unread notifications */
-  unread?: number;
-  /** Count by type */
-  byType?: NotificationStatsByType;
+  total: number;
+  unread: number;
+  read: number;
 }

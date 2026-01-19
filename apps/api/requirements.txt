@@ -22,6 +22,9 @@ requests
 Werkzeug
 passlib
 
+# Encryption for AI Layer
+cryptography>=41.0.0
+
 # Environment variables
 python-dotenv
 

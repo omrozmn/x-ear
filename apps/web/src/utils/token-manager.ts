@@ -196,7 +196,7 @@ class TokenManager {
 
     // Set window global for legacy compatibility
     if (typeof window !== 'undefined') {
-      (window as any).__AUTH_TOKEN__ = accessToken;
+      window.__AUTH_TOKEN__ = accessToken;
     }
 
     // Notify listeners
@@ -219,7 +219,7 @@ class TokenManager {
     this.persistToStorage();
 
     if (typeof window !== 'undefined') {
-      (window as any).__AUTH_TOKEN__ = accessToken;
+      window.__AUTH_TOKEN__ = accessToken;
     }
 
     this.notifyListeners({
@@ -245,7 +245,7 @@ class TokenManager {
 
     // Clear window global
     if (typeof window !== 'undefined') {
-      delete (window as any).__AUTH_TOKEN__;
+      delete window.__AUTH_TOKEN__;
     }
 
     this.notifyListeners({
@@ -336,7 +336,7 @@ class TokenManager {
         this._accessPayload = this.decodeToken(accessToken);
 
         // Set window global
-        (window as any).__AUTH_TOKEN__ = accessToken;
+        window.__AUTH_TOKEN__ = accessToken;
 
         // Always write to canonical key to ensure consistency
         try {
@@ -476,7 +476,7 @@ class TokenManager {
       this._accessPayload = event.newValue ? this.decodeToken(event.newValue) : null;
 
       if (event.newValue && typeof window !== 'undefined') {
-        (window as any).__AUTH_TOKEN__ = event.newValue;
+        window.__AUTH_TOKEN__ = event.newValue;
       }
 
       this.notifyListeners({

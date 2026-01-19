@@ -13,16 +13,17 @@ from .base import (
     EmptyResponse,
 )
 
-# Patient schemas
-from .patients import (
-    PatientStatus,
+# Party schemas
+from .parties import (
+    PartyStatus,
     Gender,
     AddressSchema,
-    PatientBase,
-    PatientCreate,
-    PatientUpdate,
-    PatientRead,
-    PatientSearchFilters,
+    PartyBase,
+    PartyCreate,
+    PartyUpdate,
+    PartyRead,
+    PartySearchFilters,
+
 )
 
 # Inventory schemas
@@ -199,6 +200,54 @@ from .activity_logs import (
     ActivityLog,
 )
 
+# AI Layer schemas
+from .ai import (
+    # Enums
+    AIPhaseEnum,
+    RequestStatusEnum,
+    ActionStatusEnum,
+    RiskLevelEnum,
+    IncidentTagEnum,
+    UsageTypeEnum,
+    AuditEventTypeEnum,
+    # Chat
+    AIChatRequest,
+    AIChatResponse,
+    # Request
+    AIRequestBase,
+    AIRequestRead,
+    # Action
+    ToolOperation,
+    ActionPlan,
+    RollbackPlan,
+    AIActionCreate,
+    AIActionRead,
+    AIActionApproveRequest,
+    AIActionRejectRequest,
+    AIActionExecuteRequest,
+    AIActionExecuteResponse,
+    # Audit
+    AIAuditLogRead,
+    AIAuditLogFilters,
+    # Usage
+    AIUsageRead,
+    AIUsageSummary,
+    # Status
+    AIStatusResponse,
+    # Admin
+    AIKillSwitchRequest,
+    AIKillSwitchResponse,
+    AIConfigUpdate,
+    # Incident
+    AIIncidentTagRequest,
+    AIIncidentBundleExport,
+    # List responses
+    AIRequestListResponse,
+    AIActionListResponse,
+    AIAuditLogListResponse,
+    AIUsageListResponse,
+)
+
 __all__ = [
     # Base
     "AppBaseModel",
@@ -208,15 +257,15 @@ __all__ = [
     "ResponseEnvelope",
     "ApiError",
     "EmptyResponse",
-    # Patient
-    "PatientStatus",
+    # Party
+    "PartyStatus",
     "Gender",
     "AddressSchema",
-    "PatientBase",
-    "PatientCreate",
-    "PatientUpdate",
-    "PatientRead",
-    "PatientSearchFilters",
+    "PartyBase",
+    "PartyCreate",
+    "PartyUpdate",
+    "PartyRead",
+    "PartySearchFilters",
     # Inventory
     "InventoryItemBase",
     "InventoryItemCreate",
@@ -264,6 +313,8 @@ __all__ = [
     "SupplierCreate",
     "SupplierUpdate",
     "SupplierRead",
+    "Supplier",
+    "SupplierInput",
     # Invoice
     "InvoiceStatus",
     "InvoiceType",
@@ -273,6 +324,8 @@ __all__ = [
     "InvoiceCreate",
     "InvoiceUpdate",
     "InvoiceRead",
+    "Invoice",
+    "InvoiceInput",
     # Notification
     "NotificationType",
     "NotificationChannel",
@@ -280,6 +333,9 @@ __all__ = [
     "NotificationCreate",
     "NotificationUpdate",
     "NotificationRead",
+    "NotificationStats",
+    "NotificationSettings",
+    "Notification",
     # Tenant
     "TenantStatus",
     "TenantBase",
@@ -326,4 +382,39 @@ __all__ = [
     "ActivityLogRead",
     "ActivityLogStats",
     "ActivityLog",
+    # AI Layer
+    "AIPhaseEnum",
+    "RequestStatusEnum",
+    "ActionStatusEnum",
+    "RiskLevelEnum",
+    "IncidentTagEnum",
+    "UsageTypeEnum",
+    "AuditEventTypeEnum",
+    "AIChatRequest",
+    "AIChatResponse",
+    "AIRequestBase",
+    "AIRequestRead",
+    "ToolOperation",
+    "ActionPlan",
+    "RollbackPlan",
+    "AIActionCreate",
+    "AIActionRead",
+    "AIActionApproveRequest",
+    "AIActionRejectRequest",
+    "AIActionExecuteRequest",
+    "AIActionExecuteResponse",
+    "AIAuditLogRead",
+    "AIAuditLogFilters",
+    "AIUsageRead",
+    "AIUsageSummary",
+    "AIStatusResponse",
+    "AIKillSwitchRequest",
+    "AIKillSwitchResponse",
+    "AIConfigUpdate",
+    "AIIncidentTagRequest",
+    "AIIncidentBundleExport",
+    "AIRequestListResponse",
+    "AIActionListResponse",
+    "AIAuditLogListResponse",
+    "AIUsageListResponse",
 ]

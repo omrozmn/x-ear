@@ -9,7 +9,7 @@ import type { PatientExtractionRequestImagePath } from './patientExtractionReque
 import type { PatientExtractionRequestText } from './patientExtractionRequestText';
 
 export interface PatientExtractionRequest {
-  image_path?: PatientExtractionRequestImagePath;
+  imagePath?: PatientExtractionRequestImagePath;
   text?: PatientExtractionRequestText;
-  auto_crop?: boolean;
+  autoCrop?: boolean;
 }

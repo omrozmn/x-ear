@@ -151,7 +151,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
                 ))}
               </div>
             ) : (
-              // Full view - show appointment cards with patient names
+              // Full view - show appointment cards with party names
               day.appointments.slice(0, 3).map((appointment) => (
                 <div
                   key={appointment.id}
@@ -162,7 +162,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
                   }}
                 >
                   <div className="font-medium truncate">
-                    {appointment.time} {appointment.patientName || 'Hasta bilgisi yok'}
+                    {appointment.time} {appointment.partyName || 'Hasta bilgisi yok'}
                   </div>
                 </div>
               ))

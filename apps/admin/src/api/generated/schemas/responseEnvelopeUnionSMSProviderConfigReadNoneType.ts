@@ -5,18 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeData } from './responseEnvelopeUnionSMSProviderConfigReadNoneTypeData';
-import type { ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeMessage } from './responseEnvelopeUnionSMSProviderConfigReadNoneTypeMessage';
-import type { ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeError } from './responseEnvelopeUnionSMSProviderConfigReadNoneTypeError';
-import type { ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeMeta } from './responseEnvelopeUnionSMSProviderConfigReadNoneTypeMeta';
-import type { ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeRequestId } from './responseEnvelopeUnionSMSProviderConfigReadNoneTypeRequestId';
+import type { ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeData } from './responseEnvelopeUnionSmsProviderConfigReadNoneTypeData';
+import type { ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeMessage } from './responseEnvelopeUnionSmsProviderConfigReadNoneTypeMessage';
+import type { ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeError } from './responseEnvelopeUnionSmsProviderConfigReadNoneTypeError';
+import type { ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeMeta } from './responseEnvelopeUnionSmsProviderConfigReadNoneTypeMeta';
+import type { ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeRequestId } from './responseEnvelopeUnionSmsProviderConfigReadNoneTypeRequestId';
 
-export interface ResponseEnvelopeUnionSMSProviderConfigReadNoneType {
+export interface ResponseEnvelopeUnionSmsProviderConfigReadNoneType {
   success?: boolean;
-  data?: ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeData;
-  message?: ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeMessage;
-  error?: ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeError;
-  meta?: ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeMeta;
-  requestId?: ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeRequestId;
+  data?: ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeData;
+  message?: ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeMessage;
+  error?: ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeError;
+  meta?: ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeMeta;
+  requestId?: ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeRequestId;
   timestamp?: string;
 }

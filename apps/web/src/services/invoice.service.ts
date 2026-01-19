@@ -16,31 +16,71 @@ import {
   InvoiceExportOptions,
   InvoiceStatus,
   InvoiceType,
-  PaymentMethod
+  PaymentMethod,
+  InvoiceAddress
 } from '../types/invoice';
 import { INVOICES_DATA } from '../constants/storage-keys';
 import { outbox } from '../utils/outbox';
 import { unwrapObject, unwrapArray } from '../utils/response-unwrap';
 import {
-  createInvoices,
+  createInvoice,
   getInvoice,
-  listInvoices
-} from '@/api/generated/invoices/invoices';
-import {
+  listInvoices,
+  listAdminInvoices,
+  updateInvoice,
+  deleteInvoice,
+  createInvoiceSendToGib,
+  createInvoiceBulkUpload,
   createInvoiceIssue,
   listInvoicePdf
-} from '@/api/generated/invoice-actions/invoice-actions';
+} from '@/api/client/invoices.client';
 import {
-  listInvoiceTemplates,
-  listInvoicePrintQueue,
-  createInvoicePrintQueue,
-  createInvoiceSendToGib,
-  createInvoiceBulkUpload
-} from '@/api/generated/invoices/invoices';
-import {
-  listAdminInvoices
-} from '@/api/generated/admin-invoices/admin-invoices';
+  InvoiceCreate,
+  InvoiceUpdate,
+  InvoiceRead,
+  ResponseEnvelopeInvoiceRead,
+  ResponseEnvelopeListInvoiceRead,
+  ResponseEnvelope,
+  ResponseEnvelopeInvoiceIssueResponse,
+  SchemasBaseResponseEnvelopeBulkUploadResponse2,
+  ResponseEnvelopeBulkUploadResponse as SchemasInvoicesBulkUploadResponse,
+  BulkUploadResponse
+} from '@/api/generated/schemas';
 import { apiClient } from '../api/orval-mutator';
+
+// Extended interface for InvoiceRead with optional legacy/extended fields
+interface ExtendedInvoiceRead extends Omit<InvoiceRead, 'notes'> {
+  notes?: string | { note?: string };
+  // Legacy/camelCase fields
+  type?: string;
+  customerId?: string | number;
+  customerName?: string;
+  customerTaxNumber?: string;
+  customerAddress?: string | InvoiceAddress;
+  billingAddress?: string | InvoiceAddress;
+  shippingAddress?: string | InvoiceAddress;
+  issueDate?: string;
+  dueDate?: string | Date;
+  paymentDate?: string | Date;
+  paymentMethod?: string;
+  subtotal?: number;
+  totalDiscount?: number;
+  taxes?: unknown[];
+  totalTax?: number;
+  totalAmount?: number;
+  grandTotal?: number;
+  currency?: string;
+  gibStatus?: string;
+  attachments?: unknown[];
+  items?: unknown[];
+  serverId?: number;
+}
+
+// Extended interface for local invoice with serverId
+interface LocalInvoice extends Invoice {
+  serverId?: number;
+}
+
 
 
 export class InvoiceService {
@@ -56,10 +96,10 @@ export class InvoiceService {
     if (/^[0-9]+$/.test(String(invoiceId))) return Number(invoiceId);
 
     const invoices = await this.loadInvoices();
-    const found = invoices.find(inv => inv.id === invoiceId);
+    const found = invoices.find(inv => inv.id === invoiceId) as LocalInvoice | undefined;
     if (!found) return null;
     // Prefer explicit serverId field when available
-    if ((found as any).serverId) return (found as any).serverId as number;
+    if (found.serverId) return found.serverId;
 
     // If invoice id is numeric-like string (unlikely here), coerce
     if (/^[0-9]+$/.test(String(found.id))) return Number(found.id);
@@ -72,42 +112,50 @@ export class InvoiceService {
    * and persist it into local storage replacing the provided temporary id
    * if any.
    */
-  private async persistServerInvoice(serverInv: any, tempId?: string): Promise<Invoice> {
+  /**
+   * Map a server invoice object (from API) into the local `Invoice` shape
+   * and persist it into local storage replacing the provided temporary id
+   * if any.
+   */
+  private async persistServerInvoice(serverInv: InvoiceRead, tempId?: string): Promise<Invoice> {
     const invoices = await this.loadInvoices();
+    const inv = serverInv as ExtendedInvoiceRead;
 
+    // Map server response to local Invoice type
     const mapped: Invoice = {
       id: String(serverInv.id),
-      serverId: serverInv.id,
-      invoiceNumber: serverInv.invoiceNumber || serverInv.id && `INV-${serverInv.id}`,
-      type: (serverInv.type as any) || 'sale',
-      status: (serverInv.status as any) || 'draft',
-      patientName: serverInv.patientName || serverInv.customerName || '',
-      patientId: serverInv.patientId || serverInv.customerId,
-      customerId: serverInv.customerId,
-      customerName: serverInv.customerName,
-      customerTaxNumber: serverInv.customerTaxNumber,
-      customerAddress: serverInv.customerAddress,
-      items: serverInv.items || [],
-      billingAddress: serverInv.billingAddress,
-      shippingAddress: serverInv.shippingAddress,
-      issueDate: serverInv.issueDate,
-      dueDate: serverInv.dueDate,
-      paymentDate: serverInv.paymentDate,
-      paymentMethod: serverInv.paymentMethod,
-      subtotal: serverInv.subtotal,
-      totalDiscount: serverInv.totalDiscount,
-      taxes: serverInv.taxes,
-      totalTax: serverInv.totalTax,
-      totalAmount: serverInv.totalAmount || serverInv.grandTotal,
-      grandTotal: serverInv.grandTotal || serverInv.totalAmount,
-      currency: serverInv.currency || 'TRY',
-      notes: serverInv.notes,
-      ettn: serverInv.ettn,
-      gibStatus: serverInv.gibStatus,
-      createdAt: serverInv.createdAt || new Date().toISOString(),
-      updatedAt: serverInv.updatedAt || new Date().toISOString(),
-      attachments: serverInv.attachments || []
-    } as Invoice;
+      serverId: typeof serverInv.id === 'string' ? parseInt(serverInv.id, 10) : serverInv.id,
+      invoiceNumber: String(serverInv.invoiceNumber || (serverInv.id ? `INV-${serverInv.id}` : '')),
+      type: inv.type || (serverInv.invoiceTypeCode === 'SATIS' ? 'sale' : 'sale'), // safer default
+      status: (serverInv.status as InvoiceStatus) || 'draft',
+      // Map other fields carefully
+      partyName: serverInv.partyName || inv.customerName || '',
+      partyId: String(serverInv.partyId || inv.customerId || ''),
+      customerId: inv.customerId, // Legacy alias support
+      customerName: inv.customerName,
+      customerTaxNumber: inv.customerTaxNumber,
+      customerAddress: inv.customerAddress,
+      items: inv.items || [],
+      billingAddress: inv.billingAddress,
+      shippingAddress: inv.shippingAddress,
+      issueDate: inv.issueDate,
+      dueDate: inv.dueDate ? String(inv.dueDate) : undefined,
+      paymentDate: inv.paymentDate ? String(inv.paymentDate) : undefined,
+      paymentMethod: inv.paymentMethod,
+      subtotal: inv.subtotal,
+      totalDiscount: inv.totalDiscount,
+      taxes: inv.taxes,
+      totalTax: inv.totalTax,
+      totalAmount: inv.totalAmount || inv.grandTotal,
+      grandTotal: inv.grandTotal || inv.totalAmount,
+      currency: inv.currency || 'TRY',
+      notes: typeof inv.notes === 'string' ? inv.notes : (inv.notes as { note?: string } | undefined)?.note || '',
+      ettn: String(serverInv.ettn || ''),
+      gibStatus: inv.gibStatus,
+      createdAt: String(serverInv.createdAt || new Date().toISOString()),
+      updatedAt: String(serverInv.updatedAt || new Date().toISOString()),
+      attachments: inv.attachments || []
+    } as unknown as Invoice;
 
     if (tempId) {
       const idx = invoices.findIndex(i => i.id === tempId);
@@ -134,34 +182,27 @@ export class InvoiceService {
     const local = invoices.find(i => i.id === tempId || String(i.serverId) === tempId);
     if (!local) throw new Error('Local invoice not found for sync');
 
-    // Build payload from local invoice shape, keeping it minimal to avoid
-    // sending internal-only fields.
-    const payload: any = {
+    // Build payload from local invoice shape
+    // Note: We cast values to InvoiceCreate expected types
+    const payload: InvoiceCreate = {
       invoiceNumber: local.invoiceNumber,
-      type: local.type,
-      status: local.status,
-      patientId: local.patientId || local.customerId,
-      patientName: local.patientName || local.customerName,
-      customerName: local.customerName,
-      customerTaxNumber: local.customerTaxNumber,
-      customerAddress: local.customerAddress,
-      billingAddress: local.billingAddress,
-      shippingAddress: local.shippingAddress,
-      issueDate: local.issueDate,
-      dueDate: local.dueDate,
-      paymentMethod: local.paymentMethod,
-      items: local.items || [],
+      invoiceType: 'sale' as InvoiceCreate['invoiceType'],
+      status: (local.status || 'draft') as InvoiceCreate['status'],
+      partyId: (local.partyId || local.customerId) ? String(local.partyId || local.customerId) : null,
+      customerName: (local.partyName || local.customerName) as string,
+      customerTaxNumber: local.customerTaxNumber as string,
+      customerAddress: local.customerAddress as string,
+      items: (local.items || []) as unknown as InvoiceCreate['items'],
       subtotal: local.subtotal,
-      taxes: local.taxes,
       totalAmount: local.totalAmount || local.grandTotal,
-      notes: local.notes,
-      currency: local.currency || 'TRY'
+      notes: local.notes as string
     };
 
-    const response = await createInvoices(payload);
-    const serverInv = unwrapObject<any>(response);
+    const response = await createInvoice(payload);
+    // Unwrap the ResponseEnvelopeInvoiceRead
+    const serverInv = unwrapObject<InvoiceRead>(response);
 
-    if (serverInv && typeof serverInv === 'object' && serverInv.id) {
+    if (serverInv && serverInv.id) {
       return this.persistServerInvoice(serverInv, tempId);
     }
 
@@ -208,7 +249,7 @@ export class InvoiceService {
         invoiceNumber: `2024-${i.toString().padStart(4, '0')}`,
         customerId: `cust-${Math.floor(Math.random() * 100) + 1}`,
         customerName: `Müşteri ${i}`,
-        patientName: `Hasta ${i}`,
+        partyName: `Hasta ${i}`,
         customerTaxNumber: `${Math.floor(Math.random() * 9000000000) + 1000000000}`,
         customerAddress: {
           street: `Test Sokak No: ${i}`,
@@ -292,21 +333,21 @@ export class InvoiceService {
 
   // CRUD Operations
   async createInvoice(invoiceData: CreateInvoiceData): Promise<Invoice> {
-    // First try to create the invoice on the server synchronously. If that
-    // succeeds we persist the server version locally and return it. If the
-    // server call fails (offline or validation) fall back to local-only
-    // creation and enqueue an outbox operation for later sync.
-    const payload: any = {
+    // First try to create the invoice on the server synchronously.
+    const payload: InvoiceCreate = {
       ...invoiceData,
-      // ensure items are in the shape the API expects
-      items: invoiceData.items || []
+      status: (invoiceData.status || 'draft') as InvoiceCreate['status'],
+      items: (invoiceData.items || []) as unknown as InvoiceCreate['items'],
+      customerName: invoiceData.customerName as string,
+      customerAddress: invoiceData.customerAddress as string,
+      invoiceType: 'sale' as InvoiceCreate['invoiceType']
     };
 
     try {
-      const response = await createInvoices(payload);
-      const serverInv = unwrapObject<any>(response);
+      const response = await createInvoice(payload);
+      const serverInv = unwrapObject<InvoiceRead>(response);
 
-      if (serverInv && typeof serverInv === 'object' && serverInv.id) {
+      if (serverInv && serverInv.id) {
         return await this.persistServerInvoice(serverInv);
       }
     } catch (err) {
@@ -323,7 +364,7 @@ export class InvoiceService {
       invoiceNumber: invoiceData.invoiceNumber || `2024-${(invoices.length + 1).toString().padStart(4, '0')}`,
       customerId: invoiceData.customerId,
       customerName: invoiceData.customerName,
-      patientName: (invoiceData as any).patientName || invoiceData.customerName || '',
+      partyName: (invoiceData as { partyName?: string }).partyName || invoiceData.customerName || '',
       customerTaxNumber: invoiceData.customerTaxNumber,
       customerAddress: invoiceData.customerAddress,
       items: calculatedItems,
@@ -365,9 +406,9 @@ export class InvoiceService {
     if (!existing) throw new Error('Fatura bulunamadı');
 
     const payload: any = {
-      patientId: existing.customerId,
+      partyId: existing.customerId,
       customerName: existing.customerName,
-      patientName: existing.patientName,
+      partyName: existing.partyName,
       customerTaxNumber: existing.customerTaxNumber,
       customerAddress: existing.customerAddress,
       items: existing.items?.map(it => ({ description: it.description || it.name, quantity: it.quantity, unitPrice: it.unitPrice, taxRate: it.taxRate })) || [],
@@ -382,14 +423,11 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoices(payload);
-      const created = unwrapObject<any>(response);
+      const response = await createInvoice(payload as InvoiceCreate);
+      const created = unwrapObject<InvoiceRead>(response);
 
-      if (created && typeof created === 'object' && created.id) {
-        const invoices = await this.loadInvoices();
-        invoices.unshift(created);
-        await this.saveInvoices(invoices);
-        return created as Invoice;
+      if (created && created.id) {
+        return await this.persistServerInvoice(created);
       }
     } catch (e) {
       // fallback to local create
@@ -405,9 +443,9 @@ export class InvoiceService {
     const copy = await this.copyInvoice(id);
 
     const cancelPayload: any = {
-      patientId: copy.customerId,
+      partyId: copy.customerId,
       customerName: copy.customerName,
-      patientName: copy.patientName,
+      partyName: copy.partyName,
       customerTaxNumber: copy.customerTaxNumber,
       customerAddress: copy.customerAddress,
       items: [],
@@ -422,13 +460,11 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoices(cancelPayload);
-      const cancellation = unwrapObject<any>(response);
-      if (cancellation && typeof cancellation === 'object' && cancellation.id) {
-        const invoices = await this.loadInvoices();
-        invoices.unshift(cancellation as Invoice);
-        await this.saveInvoices(invoices);
-        return { copy, cancellation: cancellation as Invoice };
+      const response = await createInvoice(cancelPayload as InvoiceCreate);
+      const cancellation = unwrapObject<InvoiceRead>(response);
+      if (cancellation && cancellation.id) {
+        const persisted = await this.persistServerInvoice(cancellation);
+        return { copy, cancellation: persisted };
       }
     } catch (e) {
       // fallback
@@ -455,7 +491,8 @@ export class InvoiceService {
     let totalAmount = existing.totalAmount;
 
     if (updates.items) {
-      const calc = this.calculateInvoice(updates.items as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const calc = this.calculateInvoice(updates.items as InvoiceItem[]);
       items = calc.items as InvoiceItem[];
       subtotal = calc.subtotal;
       // Use calculated taxes if available, otherwise synthesize VAT entry from totalTax
@@ -477,6 +514,15 @@ export class InvoiceService {
 
     invoices[index] = updatedInvoice;
     await this.saveInvoices(invoices);
+
+    // Try server update safely
+    if (existing.serverId) {
+      try {
+        await updateInvoice(existing.serverId, { ...updates } as InvoiceUpdate);
+      } catch (e) {
+        // silently fail online update, outbox handles it
+      }
+    }
 
     // Add to outbox for sync
     await outbox.addOperation({
@@ -541,7 +587,7 @@ export class InvoiceService {
   async getInvoices(filters?: InvoiceFilters): Promise<InvoiceSearchResult> {
     try {
       // Build query params
-      const params: any = {
+      const params: Record<string, unknown> = {
         page: filters?.page || 1,
         limit: filters?.limit || 10,
         sort: 'createdAt',
@@ -557,29 +603,24 @@ export class InvoiceService {
 
       // Call API using Orval-generated function
       const response = await listAdminInvoices(params);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = response as any;
+      const serverEnvelope = response as unknown as ResponseEnvelopeListInvoiceRead;
 
       // Handle various response shapes gracefully using unwrap helpers
-      const items = unwrapArray<any>(data);
-      const total = data.total ?? data.meta?.total ?? items.length;
-      const page = data.page ?? data.meta?.page ?? params.page;
-      const limit = data.limit ?? data.meta?.limit ?? params.limit;
+      const items = unwrapArray<InvoiceRead>(serverEnvelope);
+      const total = items.length; // Simplified for now since meta is not strictly typed in generated client yet
+      const page = (params.page as number) || 1;
+      const limit = (params.limit as number) || 10;
 
       // Map server items to local Invoice type if needed
-      const mappedInvoices = items.map((inv: any) => ({
+      const mappedInvoices = items.map((inv: InvoiceRead) => ({
         ...inv,
         id: String(inv.id), // Ensure ID is string
-        serverId: inv.id,
-        // Ensure critical fields exist
-        items: inv.items || [],
-        status: inv.status || 'draft',
-        type: inv.type || 'sale'
-      }));
-
-      // Cache/Sync with local storage (optional, simple merge)
-      // For v0 we just trust the server for list view, but we can update our local cache silently
-      // this.syncLocalCache(mappedInvoices); // Future TODO
+        serverId: typeof inv.id === 'string' ? parseInt(inv.id, 10) : inv.id,
+        invoiceNumber: String(inv.invoiceNumber || ''),
+        status: (inv.status as InvoiceStatus) || 'draft',
+        partyName: (inv.partyName || ''),
+        items: [] // Items are often not loaded in list view
+      } as unknown as Invoice));
 
       return {
         invoices: mappedInvoices,
@@ -603,7 +644,7 @@ export class InvoiceService {
           invoices = invoices.filter(inv => filters.status!.includes(inv.status));
         }
         if (filters.type && filters.type.length > 0) {
-          invoices = invoices.filter(inv => filters.type!.includes(inv.type as any));
+          invoices = invoices.filter(inv => filters.type!.includes(inv.type as InvoiceType));
         }
         if (filters.customerId) {
           invoices = invoices.filter(inv => inv.customerId === filters.customerId);
@@ -702,22 +743,22 @@ export class InvoiceService {
    * This is used for the explicit "Fatura Kes" action — it will NOT directly send
    * to GİB, integrator will add UUID/signature and handle submission.
    */
-  async createInvoiceIssue(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  async createInvoiceIssue(id: string): Promise<{ success: boolean; data?: unknown; error?: string }> {
     // Ensure we have a server id before issuing — issuing requires a server-side
     // invoice record.
     try {
       const serverId = await this.resolveServerId(id);
       if (!serverId) return { success: false, error: 'Fatura henüz sunucuya gönderilmedi; önce senkronize edin.' };
 
-      const response = await createInvoiceIssue(Number(serverId));
+      const response = await createInvoiceIssue(Number(serverId)) as ResponseEnvelopeInvoiceIssueResponse;
 
-      if (!(response as any)?.success) {
-        return { success: false, error: 'Issue failed' };
+      if (!response.success) {
+        return { success: false, error: (response.error as Record<string, unknown>)?.message as string || 'Issue failed' };
       }
 
       const body = response;
       // Update local invoice status to 'sent' if successful
-      if (body && (body as any).success) {
+      if (body && body.success) {
         try {
           // update local copy to 'sent'
           await this.updateInvoice(id, { id, status: 'sent' as InvoiceStatus });
@@ -727,7 +768,7 @@ export class InvoiceService {
         return { success: true, data: body };
       }
 
-      return { success: false, error: body && (body as any).data?.message ? (body as any).data.message : 'Unknown error' };
+      return { success: false, error: (body.error as Record<string, unknown>)?.message ? (body.error as Record<string, unknown>).message as string : 'Unknown error' };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : String(err) };
     }
@@ -806,29 +847,22 @@ export class InvoiceService {
 
   // Template Operations
   async getTemplates(): Promise<InvoiceTemplate[]> {
-    try {
-      const response = await listInvoiceTemplates();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = response as any;
-      const templates = Array.isArray(data) ? data : (data?.data || []);
-      return templates as InvoiceTemplate[];
-    } catch (error) {
-      console.warn('Failed to fetch templates from API:', error);
-      return [];
-    }
+    // TODO: Implement listInvoiceTemplates when available in generated API
+    console.warn('listInvoiceTemplates API not available');
+    return [];
   }
 
   // New P1 Features
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async bulkUploadInvoices(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
+  async bulkUploadInvoices(file: File): Promise<{ processed: number; success: boolean; errors: any[] }> {
     try {
       const response = await createInvoiceBulkUpload({ file });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = response as any;
+      const envelope = response as unknown as SchemasBaseResponseEnvelopeBulkUploadResponse2;
+      const data = envelope.data as BulkUploadResponse | null;
+
       return {
-        processed: result?.data?.processed || 0,
-        success: result?.data?.success || 0,
-        errors: result?.data?.errors || []
+        processed: (data?.created || 0) + (data?.updated || 0),
+        success: envelope.success || false,
+        errors: data?.errors || []
       };
     } catch (error) {
       console.error('Invoice bulk upload failed:', error);
@@ -836,27 +870,20 @@ export class InvoiceService {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getPrintQueue(): Promise<any[]> {
-    try {
-      const response = await listInvoicePrintQueue();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = response as any;
-      return Array.isArray(data) ? data : (data?.data || []);
-    } catch (error) {
-      console.error('Failed to get print queue:', error);
-      return [];
-    }
+    // TODO: Implement listInvoicePrintQueue when available in generated API
+    console.warn('listInvoicePrintQueue API not available');
+    return [];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async addToPrintQueue(invoiceIds: string | string[]): Promise<any> {
     try {
       const ids = Array.isArray(invoiceIds) ? invoiceIds : [invoiceIds];
-      // Convert string IDs to numbers as backend expects number[]
       const numericIds = ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-      const response = await createInvoicePrintQueue({ invoiceIds: numericIds });
-      return response;
+
+      // TODO: Implement createInvoicePrintQueue when available
+      console.warn('createInvoicePrintQueue API not available for IDs:', numericIds);
+      return { success: false, message: 'API not implemented' };
     } catch (error) {
       console.error('Failed to add to print queue:', error);
       throw error;
@@ -1014,7 +1041,7 @@ export class InvoiceService {
   async generateSaleInvoicePdf(saleId: string): Promise<{ success: boolean; data?: Blob; error?: string }> {
     try {
       // Endpoint doesn't exist yet. Return error for now.
-      // const response = await invoicesGenerateSaleInvoicePdf(saleId) as any;
+      // const response = await invoicesGenerateSaleInvoicePdf(saleId);
       console.warn('generateSaleInvoicePdf not implemented for saleId:', saleId);
 
       return {

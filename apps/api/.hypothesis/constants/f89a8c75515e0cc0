@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/patient_subresources.py
+# hypothesis_version: 6.150.1
+
+[0.0, 0.01, 201, 403, 404, 500, 'Access denied', 'Patient not found', 'PatientSubresources', 'User-Agent', 'amount', 'barcode', 'brand', 'createPatientNotes', 'deletePatientNote', 'deviceCount', 'devices', 'ear', 'genel', 'general', 'id', 'installmentCount', 'invoice', 'invoiceNumber', 'listPatientDevices', 'listPatientEreceipts', 'listPatientNotes', 'listPatientSales', 'listPrice', 'model', 'name', 'notes', 'paid', 'patientId', 'patientName', 'patientPayment', 'paymentDate', 'paymentMethod', 'paymentPlan', 'paymentRecords', 'paymentType', 'pending', 'referenceNumber', 'salePrice', 'salesCount', 'serialNumber', 'sgkCoverage', 'sgkCoverageAmount', 'sgkReduction', 'status', 'system', 'to_dict', 'total', 'totalAmount', 'updatePatientNote']

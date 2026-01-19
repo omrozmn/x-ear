@@ -1,4 +1,4 @@
-# Medical-related Models: PatientNote, EReceipt, HearingTest
+# Medical Models (formerly Patient medical models)
 from .base import db, BaseModel, gen_id, JSONMixin
 import json
 
@@ -9,7 +9,7 @@ class PatientNote(BaseModel, JSONMixin):
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("note"))
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     author_id = db.Column(db.String(50), nullable=False)
     appointment_id = db.Column(db.String(50))
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
@@ -25,7 +25,7 @@ class PatientNote(BaseModel, JSONMixin):
         base_dict = self.to_dict_base()
         note_dict = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'authorId': self.author_id,
             'appointmentId': self.appointment_id,
             'type': self.note_type,
@@ -44,7 +44,7 @@ class EReceipt(BaseModel, JSONMixin):
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("ercp"))
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Receipt details
@@ -82,7 +82,7 @@ class EReceipt(BaseModel, JSONMixin):
         base_dict = self.to_dict_base()
         ereceipt_dict = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'receiptNumber': self.receipt_number,
             'receiptDate': self.receipt_date.isoformat() if self.receipt_date else None,
             'doctorName': self.doctor_name,
@@ -103,7 +103,7 @@ class HearingTest(BaseModel, JSONMixin):
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("test"))
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Test details
@@ -127,7 +127,7 @@ class HearingTest(BaseModel, JSONMixin):
         base_dict = self.to_dict_base()
         test_dict = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'testDate': self.test_date.isoformat() if self.test_date else None,
             'testType': self.test_type,
             'conductedBy': self.conducted_by,
@@ -139,6 +139,6 @@ class HearingTest(BaseModel, JSONMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_hearing_test_patient', 'patient_id'),
+        db.Index('ix_hearing_test_patient', 'party_id'),
         db.Index('ix_hearing_test_date', 'test_date'),
     )

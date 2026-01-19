@@ -6,10 +6,11 @@ import {
   useListAdminDebugAvailableRoles,
   useCreateAdminDebugSwitchRole,
   useCreateAdminDebugExitImpersonation,
-} from '@/api/generated';
+  getListAdminDebugAvailableRolesQueryKey,
+} from '@/api/client/admin.client';
 import { useAuthStore } from '../../stores/authStore';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
-import { patientService } from '../../services/patient.service';
+import { partyService } from '../../services/party.service';
 import { indexedDBManager } from '../../utils/indexeddb';
 
 interface DebugRoleSwitcherProps {
@@ -22,13 +23,17 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   const [isOpen, setIsOpen] = useState(false);
 
   // Check if current user is super admin (can use debug features)
-  const isDebugAdmin = (user as any)?.is_super_admin === true || 
-                       (user as any)?.role === 'super_admin' || 
-                       user?.isImpersonating === true;
+  interface AdminUser { is_super_admin?: boolean; role?: string; isImpersonating?: boolean; }
+  const adminUser = user as unknown as AdminUser;
+
+  const isDebugAdmin = adminUser?.is_super_admin === true ||
+    adminUser?.role === 'super_admin' ||
+    adminUser?.isImpersonating === true;
 
   // Fetch available roles only if debug admin AND dropdown is open
   const { data: rolesResponse, isLoading: rolesLoading } = useListAdminDebugAvailableRoles({
     query: {
+      queryKey: getListAdminDebugAvailableRolesQueryKey(),
       enabled: isDebugAdmin && isOpen,
       staleTime: 5 * 60 * 1000, // 5 dakika
       refetchOnWindowFocus: false,
@@ -51,10 +56,10 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
 
         // CRITICAL: Clear ALL caches to prevent data leakage between tenant contexts
         console.log('[DebugRoleSwitcher] Clearing ALL caches for tenant isolation...');
-        
-        // 1. Clear patient service cache
-        await patientService.reset();
-        
+
+        // 1. Clear party service cache
+        await partyService.reset();
+
         // 2. Clear IndexedDB
         try {
           await indexedDBManager.clearAll();
@@ -116,10 +121,10 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
 
         // CRITICAL: Clear ALL caches to prevent data leakage between tenant contexts
         console.log('[DebugRoleSwitcher] Clearing ALL caches for tenant isolation...');
-        
-        // 1. Clear patient service cache
-        await patientService.reset();
-        
+
+        // 1. Clear party service cache
+        await partyService.reset();
+
         // 2. Clear IndexedDB
         try {
           await indexedDBManager.clearAll();

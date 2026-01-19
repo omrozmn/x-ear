@@ -36,7 +36,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
   const [showAll, setShowAll] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'patient' | 'status'>('date');
+  const [sortBy, setSortBy] = useState<'date' | 'party' | 'status'>('date');
 
   // Get week range for list view
   const weekStart = useMemo(() => {
@@ -59,11 +59,11 @@ export const CalendarList: React.FC<CalendarListProps> = ({
       // Search filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        const matchesPatient = apt.patientName?.toLowerCase().includes(searchLower);
+        const matchesParty = apt.partyName?.toLowerCase().includes(searchLower);
         const matchesType = apt.type?.toLowerCase().includes(searchLower);
         const matchesNotes = apt.notes?.toLowerCase().includes(searchLower);
 
-        if (!matchesPatient && !matchesType && !matchesNotes) {
+        if (!matchesParty && !matchesType && !matchesNotes) {
           return false;
         }
       }
@@ -79,8 +79,8 @@ export const CalendarList: React.FC<CalendarListProps> = ({
     // Sort appointments
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'patient':
-          return (a.patientName || '').localeCompare(b.patientName || '');
+        case 'party':
+          return (a.partyName || '').localeCompare(b.partyName || '');
         case 'status':
           return a.status.localeCompare(b.status);
         case 'date':
@@ -212,11 +212,11 @@ export const CalendarList: React.FC<CalendarListProps> = ({
 
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'date' | 'patient' | 'status')}
+              onChange={(e) => setSortBy(e.target.value as 'date' | 'party' | 'status')}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
             >
               <option value="date" className="dark:bg-slate-800">Tarihe Göre</option>
-              <option value="patient" className="dark:bg-slate-800">Hastaya Göre</option>
+              <option value="party" className="dark:bg-slate-800">Hastaya Göre</option>
               <option value="status" className="dark:bg-slate-800">Duruma Göre</option>
             </select>
           </div>
@@ -282,7 +282,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
                               <div className="flex items-center space-x-2">
                                 <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                 <Text className="font-medium dark:text-gray-200">
-                                  {appointment.patientName || 'Hasta bilgisi yok'}
+                                  {appointment.partyName || 'Hasta bilgisi yok'}
                                 </Text>
                               </div>
 

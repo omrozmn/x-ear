@@ -30,6 +30,7 @@ import type {
   DeviceUpdate,
   HTTPValidationError,
   ListDevicesParams,
+  ResponseEnvelopeDeviceLowStockResponse,
   ResponseEnvelopeDeviceRead,
   ResponseEnvelopeListDeviceRead,
   StockUpdateRequest
@@ -460,7 +461,7 @@ export const listDeviceLowStock = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeDeviceLowStockResponse>(
       {url: `/api/devices/low-stock`, method: 'GET', signal
     },
       );

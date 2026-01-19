@@ -1,15 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   listSuppliers,
-  createSuppliers,
+  createSupplier,
   deleteSupplier,
   getSupplier,
   updateSupplier,
   getListSuppliersQueryKey,
-} from '@/api/generated/suppliers/suppliers';
+} from '@/api/client/suppliers.client';
 import {
-  useListInventory
-} from '@/api/generated/inventory/inventory';
+  useListInventory,
+  getListInventoryQueryKey
+} from '@/api/client/inventory.client';
 import type {
   SupplierRead,
   SupplierCreate,
@@ -76,7 +77,7 @@ export const useCreateSupplier = () => {
   return useMutation({
     mutationFn: async (newSupplier: SupplierFormData) => {
       const apiData = mapFormDataToApiSchema(newSupplier);
-      return createSuppliers(apiData);
+      return createSupplier(apiData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
@@ -124,6 +125,7 @@ export const useSupplierProducts = (supplierName?: string): any => {
     { supplier: supplierName, per_page: 100 },
     {
       query: {
+        queryKey: getListInventoryQueryKey({ supplier: supplierName, per_page: 100 }),
         enabled: !!supplierName,
         select: (data) => {
           // We need to return data in a structure that matches { data: { products: [...] } }
@@ -133,7 +135,7 @@ export const useSupplierProducts = (supplierName?: string): any => {
             data: {
               products: items
             }
-          };
+          } as any;
         }
       }
     }

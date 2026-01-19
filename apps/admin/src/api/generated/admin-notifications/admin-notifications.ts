@@ -28,10 +28,11 @@ import type {
   HTTPValidationError,
   ListAdminNotificationTemplatesParams,
   ListAdminNotificationsParams,
-  NotificationDetailResponse,
-  NotificationListResponse,
   NotificationSend,
   ResponseEnvelope,
+  ResponseEnvelopeListNotificationRead,
+  ResponseEnvelopeListNotificationTemplateRead,
+  ResponseEnvelopeNotificationTemplateRead,
   RoutersAdminNotificationsTemplateCreate
 } from '.././schemas';
 
@@ -113,7 +114,7 @@ export const listAdminNotifications = (
 ) => {
       
       
-      return adminApi<NotificationListResponse>(
+      return adminApi<ResponseEnvelopeListNotificationRead>(
       {url: `/api/admin/notifications`, method: 'GET',
         params, signal
     },
@@ -272,7 +273,7 @@ export const listAdminNotificationTemplates = (
 ) => {
       
       
-      return adminApi<NotificationListResponse>(
+      return adminApi<ResponseEnvelopeListNotificationTemplateRead>(
       {url: `/api/admin/notifications/templates`, method: 'GET',
         params, signal
     },
@@ -366,7 +367,7 @@ export const createAdminNotificationTemplates = (
 ) => {
       
       
-      return adminApi<NotificationDetailResponse>(
+      return adminApi<ResponseEnvelopeNotificationTemplateRead>(
       {url: `/api/admin/notifications/templates`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminNotificationsTemplateCreate, signal
@@ -431,7 +432,7 @@ export const updateAdminNotificationTemplate = (
  ) => {
       
       
-      return adminApi<NotificationDetailResponse>(
+      return adminApi<ResponseEnvelopeNotificationTemplateRead>(
       {url: `/api/admin/notifications/templates/${templateId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminNotificationsTemplateCreate

@@ -8,7 +8,7 @@
 import type { UploadSGKDocumentRequestContent } from './uploadSGKDocumentRequestContent';
 
 export interface UploadSGKDocumentRequest {
-  patientId: string;
+  partyId: string;
   filename: string;
   documentType: string;
   content?: UploadSGKDocumentRequestContent;

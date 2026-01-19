@@ -2,7 +2,8 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, desc
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
+from pydantic.alias_generators import to_camel
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
 import logging
@@ -10,13 +11,179 @@ import logging
 from database import get_db
 from models.communication import EmailLog, CommunicationTemplate, CommunicationHistory
 from models.campaign import SMSLog
-from models.patient import Patient
+from core.models.party import Party
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from schemas.campaigns import SMSLogRead
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/communications", tags=["Communications"])
+
+
+# ============================================================================
+# Read Schemas for type-safe serialization (NO to_dict())
+# ============================================================================
+
+class EmailLogRead(BaseModel):
+    """Schema for reading EmailLog - replaces to_dict()"""
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+    
+    id: str
+    campaign_id: Optional[str] = Field(None, alias="campaignId")
+    party_id: Optional[str] = Field(None, alias="partyId")
+    template_id: Optional[str] = Field(None, alias="templateId")
+    to_email: str = Field(..., alias="toEmail")
+    from_email: str = Field(..., alias="fromEmail")
+    cc_emails: Optional[List[str]] = Field(default=[], alias="ccEmails")
+    bcc_emails: Optional[List[str]] = Field(default=[], alias="bccEmails")
+    subject: str
+    body_text: Optional[str] = Field(None, alias="bodyText")
+    body_html: Optional[str] = Field(None, alias="bodyHtml")
+    attachments: Optional[List[Dict[str, Any]]] = Field(default=[])
+    status: str
+    provider_response: Optional[Dict[str, Any]] = Field(None, alias="providerResponse")
+    provider_message_id: Optional[str] = Field(None, alias="providerMessageId")
+    sent_at: Optional[datetime] = Field(None, alias="sentAt")
+    delivered_at: Optional[datetime] = Field(None, alias="deliveredAt")
+    opened_at: Optional[datetime] = Field(None, alias="openedAt")
+    clicked_at: Optional[datetime] = Field(None, alias="clickedAt")
+    bounced_at: Optional[datetime] = Field(None, alias="bouncedAt")
+    error_message: Optional[str] = Field(None, alias="errorMessage")
+    retry_count: int = Field(0, alias="retryCount")
+    cost: Optional[float] = None
+    created_at: Optional[datetime] = Field(None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(None, alias="updatedAt")
+    
+    @classmethod
+    def from_orm_with_json(cls, obj: EmailLog) -> "EmailLogRead":
+        """Create from ORM object, handling JSON fields"""
+        return cls(
+            id=obj.id,
+            campaign_id=obj.campaign_id,
+            party_id=obj.party_id,
+            template_id=obj.template_id,
+            to_email=obj.to_email,
+            from_email=obj.from_email,
+            cc_emails=obj.cc_emails_json,
+            bcc_emails=obj.bcc_emails_json,
+            subject=obj.subject,
+            body_text=obj.body_text,
+            body_html=obj.body_html,
+            attachments=obj.attachments_json,
+            status=obj.status,
+            provider_response=obj.provider_response_json,
+            provider_message_id=obj.provider_message_id,
+            sent_at=obj.sent_at,
+            delivered_at=obj.delivered_at,
+            opened_at=obj.opened_at,
+            clicked_at=obj.clicked_at,
+            bounced_at=obj.bounced_at,
+            error_message=obj.error_message,
+            retry_count=obj.retry_count or 0,
+            cost=float(obj.cost) if obj.cost else None,
+            created_at=obj.created_at,
+            updated_at=obj.updated_at
+        )
+
+
+class CommunicationTemplateRead(BaseModel):
+    """Schema for reading CommunicationTemplate - replaces to_dict()"""
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+    
+    id: str
+    name: str
+    description: Optional[str] = None
+    template_type: str = Field(..., alias="templateType")
+    category: Optional[str] = None
+    subject: Optional[str] = None
+    body_text: str = Field(..., alias="bodyText")
+    body_html: Optional[str] = Field(None, alias="bodyHtml")
+    variables: Optional[List[str]] = Field(default=[])
+    is_active: bool = Field(True, alias="isActive")
+    is_system: bool = Field(False, alias="isSystem")
+    usage_count: int = Field(0, alias="usageCount")
+    last_used_at: Optional[datetime] = Field(None, alias="lastUsedAt")
+    created_at: Optional[datetime] = Field(None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(None, alias="updatedAt")
+    
+    @classmethod
+    def from_orm_with_json(cls, obj: CommunicationTemplate) -> "CommunicationTemplateRead":
+        """Create from ORM object, handling JSON fields"""
+        return cls(
+            id=obj.id,
+            name=obj.name,
+            description=obj.description,
+            template_type=obj.template_type,
+            category=obj.category,
+            subject=obj.subject,
+            body_text=obj.body_text,
+            body_html=obj.body_html,
+            variables=obj.variables_json,
+            is_active=obj.is_active,
+            is_system=obj.is_system,
+            usage_count=obj.usage_count or 0,
+            last_used_at=obj.last_used_at,
+            created_at=obj.created_at,
+            updated_at=obj.updated_at
+        )
+
+
+class CommunicationHistoryRead(BaseModel):
+    """Schema for reading CommunicationHistory - replaces to_dict()"""
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+    
+    id: str
+    party_id: str = Field(..., alias="partyId")
+    campaign_id: Optional[str] = Field(None, alias="campaignId")
+    template_id: Optional[str] = Field(None, alias="templateId")
+    sms_log_id: Optional[str] = Field(None, alias="smsLogId")
+    email_log_id: Optional[str] = Field(None, alias="emailLogId")
+    communication_type: str = Field(..., alias="communicationType")
+    direction: str
+    subject: Optional[str] = None
+    content: Optional[str] = None
+    contact_method: Optional[str] = Field(None, alias="contactMethod")
+    status: str = "completed"
+    priority: str = "normal"
+    metadata: Optional[Dict[str, Any]] = Field(default={})
+    initiated_by: Optional[str] = Field(None, alias="initiatedBy")
+    created_at: Optional[datetime] = Field(None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(None, alias="updatedAt")
+    
+    @classmethod
+    def from_orm_with_json(cls, obj: CommunicationHistory) -> "CommunicationHistoryRead":
+        """Create from ORM object, handling JSON fields"""
+        return cls(
+            id=obj.id,
+            party_id=obj.party_id,
+            campaign_id=obj.campaign_id,
+            template_id=obj.template_id,
+            sms_log_id=obj.sms_log_id,
+            email_log_id=obj.email_log_id,
+            communication_type=obj.communication_type,
+            direction=obj.direction,
+            subject=obj.subject,
+            content=obj.content,
+            contact_method=obj.contact_method,
+            status=obj.status,
+            priority=obj.priority,
+            metadata=obj.metadata_json,
+            initiated_by=obj.initiated_by,
+            created_at=obj.created_at,
+            updated_at=obj.updated_at
+        )
 
 def now_utc():
     return datetime.now(timezone.utc)
@@ -24,7 +191,7 @@ def now_utc():
 class SendSMS(BaseModel):
     phoneNumber: str
     message: str
-    patientId: Optional[str] = None
+    partyId: Optional[str] = None
     campaignId: Optional[str] = None
 
 class SendEmail(BaseModel):
@@ -36,7 +203,7 @@ class SendEmail(BaseModel):
     ccEmails: Optional[List[str]] = []
     bccEmails: Optional[List[str]] = []
     attachments: Optional[List[Dict]] = []
-    patientId: Optional[str] = None
+    partyId: Optional[str] = None
     campaignId: Optional[str] = None
     templateId: Optional[str] = None
 
@@ -52,7 +219,7 @@ class TemplateCreate(BaseModel):
     isActive: Optional[bool] = True
 
 class HistoryCreate(BaseModel):
-    patientId: str
+    partyId: str
     communicationType: str
     direction: str
     subject: Optional[str] = None
@@ -69,7 +236,7 @@ async def list_messages(
     per_page: int = Query(20, ge=1, le=100),
     type: Optional[str] = None,
     status: Optional[str] = None,
-    patient_id: Optional[str] = None,
+    party_id: Optional[str] = None,
     campaign_id: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
@@ -85,8 +252,8 @@ async def list_messages(
             sms_query = db.query(SMSLog)
             if status:
                 sms_query = sms_query.filter(SMSLog.status == status)
-            if patient_id:
-                sms_query = sms_query.filter(SMSLog.patient_id == patient_id)
+            if party_id:
+                sms_query = sms_query.filter(SMSLog.party_id == party_id)
             if campaign_id:
                 sms_query = sms_query.filter(SMSLog.campaign_id == campaign_id)
             if date_from:
@@ -100,7 +267,8 @@ async def list_messages(
                 ))
             
             for sms in sms_query.order_by(desc(SMSLog.created_at)).all():
-                msg_dict = sms.to_dict()
+                # Use Pydantic schema for type-safe serialization (NO to_dict())
+                msg_dict = SMSLogRead.model_validate(sms).model_dump(by_alias=True)
                 msg_dict["messageType"] = "sms"
                 messages.append(msg_dict)
         
@@ -108,8 +276,8 @@ async def list_messages(
             email_query = db.query(EmailLog)
             if status:
                 email_query = email_query.filter(EmailLog.status == status)
-            if patient_id:
-                email_query = email_query.filter(EmailLog.patient_id == patient_id)
+            if party_id:
+                email_query = email_query.filter(EmailLog.party_id == party_id)
             if campaign_id:
                 email_query = email_query.filter(EmailLog.campaign_id == campaign_id)
             if date_from:
@@ -124,7 +292,8 @@ async def list_messages(
                 ))
             
             for email in email_query.order_by(desc(EmailLog.created_at)).all():
-                msg_dict = email.to_dict()
+                # Use Pydantic schema for type-safe serialization (NO to_dict())
+                msg_dict = EmailLogRead.from_orm_with_json(email).model_dump(by_alias=True)
                 msg_dict["messageType"] = "email"
                 messages.append(msg_dict)
         
@@ -151,7 +320,7 @@ async def send_sms(
     """Send SMS message"""
     try:
         sms_log = SMSLog()
-        sms_log.patient_id = data.patientId
+        sms_log.party_id = data.partyId
         sms_log.campaign_id = data.campaignId
         sms_log.phone_number = data.phoneNumber
         sms_log.message = data.message
@@ -162,9 +331,9 @@ async def send_sms(
         db.commit()
         db.refresh(sms_log)
         
-        if data.patientId:
+        if data.partyId:
             comm_history = CommunicationHistory()
-            comm_history.patient_id = data.patientId
+            comm_history.party_id = data.partyId
             comm_history.sms_log_id = sms_log.id
             comm_history.communication_type = "sms"
             comm_history.direction = "outbound"
@@ -174,7 +343,8 @@ async def send_sms(
             db.add(comm_history)
             db.commit()
         
-        return {"success": True, "data": sms_log.to_dict(), "timestamp": now_utc().isoformat()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": SMSLogRead.model_validate(sms_log).model_dump(by_alias=True), "timestamp": now_utc().isoformat()}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -188,7 +358,7 @@ async def send_email(
     """Send Email message"""
     try:
         email_log = EmailLog()
-        email_log.patient_id = data.patientId
+        email_log.party_id = data.partyId
         email_log.campaign_id = data.campaignId
         email_log.template_id = data.templateId
         email_log.to_email = data.toEmail
@@ -206,9 +376,9 @@ async def send_email(
         db.commit()
         db.refresh(email_log)
         
-        if data.patientId:
+        if data.partyId:
             comm_history = CommunicationHistory()
-            comm_history.patient_id = data.patientId
+            comm_history.party_id = data.partyId
             comm_history.email_log_id = email_log.id
             comm_history.communication_type = "email"
             comm_history.direction = "outbound"
@@ -219,7 +389,9 @@ async def send_email(
             db.add(comm_history)
             db.commit()
         
-        return {"success": True, "data": email_log.to_dict(), "timestamp": now_utc().isoformat()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        db.refresh(email_log)
+        return {"success": True, "data": EmailLogRead.from_orm_with_json(email_log).model_dump(by_alias=True), "timestamp": now_utc().isoformat()}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -255,9 +427,10 @@ async def list_templates(
         total = query.count()
         templates = query.order_by(CommunicationTemplate.name).offset((page - 1) * per_page).limit(per_page).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {
             "success": True,
-            "data": [t.to_dict() for t in templates],
+            "data": [CommunicationTemplateRead.from_orm_with_json(t).model_dump(by_alias=True) for t in templates],
             "meta": {"total": total, "page": page, "per_page": per_page, "total_pages": (total + per_page - 1) // per_page},
             "timestamp": now_utc().isoformat()
         }
@@ -291,7 +464,8 @@ async def create_template(
         db.commit()
         db.refresh(template)
         
-        return {"success": True, "data": template.to_dict(), "timestamp": now_utc().isoformat()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": CommunicationTemplateRead.from_orm_with_json(template).model_dump(by_alias=True), "timestamp": now_utc().isoformat()}
     except HTTPException:
         raise
     except Exception as e:
@@ -304,7 +478,8 @@ async def get_template(template_id: str, db: Session = Depends(get_db), access: 
     template = db.get(CommunicationTemplate, template_id)
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
-    return {"success": True, "data": template.to_dict(), "timestamp": now_utc().isoformat()}
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return {"success": True, "data": CommunicationTemplateRead.from_orm_with_json(template).model_dump(by_alias=True), "timestamp": now_utc().isoformat()}
 
 @router.put("/templates/{template_id}", operation_id="updateCommunicationTemplate")
 async def update_template(
@@ -349,7 +524,8 @@ async def update_template(
         db.commit()
         db.refresh(template)
         
-        return {"success": True, "data": template.to_dict(), "timestamp": now_utc().isoformat()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": CommunicationTemplateRead.from_orm_with_json(template).model_dump(by_alias=True), "timestamp": now_utc().isoformat()}
     except HTTPException:
         raise
     except Exception as e:
@@ -373,7 +549,7 @@ async def delete_template(template_id: str, db: Session = Depends(get_db), acces
 async def list_communication_history(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    patient_id: Optional[str] = None,
+    party_id: Optional[str] = None,
     type: Optional[str] = None,
     direction: Optional[str] = None,
     status: Optional[str] = None,
@@ -387,8 +563,8 @@ async def list_communication_history(
     try:
         query = db.query(CommunicationHistory)
         
-        if patient_id:
-            query = query.filter(CommunicationHistory.patient_id == patient_id)
+        if party_id:
+            query = query.filter(CommunicationHistory.party_id == party_id)
         if type:
             query = query.filter(CommunicationHistory.communication_type == type)
         if direction:
@@ -409,9 +585,10 @@ async def list_communication_history(
         total = query.count()
         history = query.order_by(desc(CommunicationHistory.created_at)).offset((page - 1) * per_page).limit(per_page).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {
             "success": True,
-            "data": [h.to_dict() for h in history],
+            "data": [CommunicationHistoryRead.from_orm_with_json(h).model_dump(by_alias=True) for h in history],
             "meta": {"total": total, "page": page, "per_page": per_page, "total_pages": (total + per_page - 1) // per_page},
             "timestamp": now_utc().isoformat()
         }
@@ -426,12 +603,12 @@ async def create_communication_history(
 ):
     """Create a manual communication history entry"""
     try:
-        patient = db.get(Patient, data.patientId)
-        if not patient:
-            raise HTTPException(status_code=404, detail="Patient not found")
+        party = db.get(Party, data.partyId)
+        if not party:
+            raise HTTPException(status_code=404, detail="Party not found")
         
         history = CommunicationHistory()
-        history.patient_id = data.patientId
+        history.party_id = data.partyId
         history.communication_type = data.communicationType
         history.direction = data.direction
         history.subject = data.subject
@@ -446,7 +623,8 @@ async def create_communication_history(
         db.commit()
         db.refresh(history)
         
-        return {"success": True, "data": history.to_dict(), "timestamp": now_utc().isoformat()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": CommunicationHistoryRead.from_orm_with_json(history).model_dump(by_alias=True), "timestamp": now_utc().isoformat()}
     except HTTPException:
         raise
     except Exception as e:

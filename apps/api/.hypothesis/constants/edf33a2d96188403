@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/notifications.py
+# hypothesis_version: 6.150.1
+
+['Action URL', 'Additional data', 'Count by type', 'Is notification read', 'Notification channel', 'Notification message', 'Notification title', 'Notification type', 'Read timestamp', 'Target user ID', 'Total notifications', 'Unread notifications', 'User preferences', 'actionUrl', 'byType', 'email', 'error', 'in_app', 'info', 'isRead', 'push', 'readAt', 'reminder', 'sms', 'success', 'tenantId', 'userId', 'warning']

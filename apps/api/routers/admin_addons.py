@@ -52,7 +52,8 @@ def list_addons(
         addons = query.offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(data={
-            "addons": [a.to_dict() for a in addons],
+            # Use Pydantic schema for type-safe serialization (NO to_dict())
+            "addons": [AddonRead.model_validate(a).model_dump(by_alias=True) for a in addons],
             "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
         })
     except Exception as e:
@@ -86,7 +87,9 @@ def create_addon(
         )
         db_session.add(addon)
         db_session.commit()
-        return ResponseEnvelope(data={"addon": addon.to_dict()})
+        db_session.refresh(addon)  # Refresh to get updated fields
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data={"addon": AddonRead.model_validate(addon).model_dump(by_alias=True)})
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create addon error: {e}")
@@ -102,7 +105,8 @@ def get_addon(
     addon = db_session.get(AddOn, addon_id)
     if not addon:
         raise HTTPException(status_code=404, detail={"message": "Add-on not found", "code": "NOT_FOUND"})
-    return ResponseEnvelope(data={"addon": addon.to_dict()})
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return ResponseEnvelope(data={"addon": AddonRead.model_validate(addon).model_dump(by_alias=True)})
 
 @router.put("/{addon_id}", operation_id="updateAdminAddon", response_model=AddonDetailResponse)
 def update_addon(
@@ -127,7 +131,9 @@ def update_addon(
         
         addon.updated_at = datetime.utcnow()
         db_session.commit()
-        return ResponseEnvelope(data={"addon": addon.to_dict()})
+        db_session.refresh(addon)  # Refresh to get updated fields
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data={"addon": AddonRead.model_validate(addon).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:

@@ -10,12 +10,16 @@ import logging
 import json
 
 from schemas.base import ResponseEnvelope
+from schemas.admin import (
+    AdminDashboardMetrics, AdminDashboardStats,
+    RecentTenantItem, RecentErrorItem
+)
 from models.admin_user import AdminUser
 from models.user import User
 from models.tenant import Tenant
 from models.plan import Plan
 from models.appointment import Appointment
-from models.patient import Patient
+from core.models.party import Party
 from models.device import Device
 from models.invoice import Invoice
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -25,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/dashboard", tags=["Admin Dashboard"])
 
-@router.get("", operation_id="getAdminDashboard")
+@router.get("", operation_id="getAdminDashboard", response_model=ResponseEnvelope[AdminDashboardMetrics])
 def get_dashboard_metrics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -66,7 +70,7 @@ def get_dashboard_metrics(
         ).count()
         
         # Fitted patients
-        fitted_patients = db_session.query(Patient).join(Device).distinct().count()
+        fitted_patients = db_session.query(Party).join(Device).distinct().count()
         
         # Activity logs
         daily_uploads = 0
@@ -120,8 +124,8 @@ def get_dashboard_metrics(
             Invoice.status != 'cancelled'
         ).scalar() or 0.0
         
-        return ResponseEnvelope(data={
-            "metrics": {
+        return ResponseEnvelope(data=AdminDashboardMetrics(
+            metrics={
                 "overview": {
                     "total_tenants": total_tenants,
                     "active_tenants": status_breakdown.get('active', 0),
@@ -142,17 +146,22 @@ def get_dashboard_metrics(
                 "health_metrics": {"churn_rate_percent": 0, "avg_seat_utilization_percent": 0},
                 "recent_activity": {"new_tenants_7d": 0, "expiring_memberships_30d": 0}
             },
-            "recent_tenants": [
-                {"id": t.id, "name": t.name, "status": t.status, "current_plan": t.current_plan, "created_at": t.created_at.isoformat()}
-                for t in recent_tenants
+            recent_tenants=[
+                RecentTenantItem(
+                    id=t.id, 
+                    name=t.name, 
+                    status=t.status, 
+                    current_plan=t.current_plan, 
+                    created_at=t.created_at.isoformat()
+                ) for t in recent_tenants
             ]
-        })
+        ))
     except Exception as e:
         logger.error(f"Dashboard metrics error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stats", operation_id="listAdminDashboardStats")
+@router.get("/stats", operation_id="listAdminDashboardStats", response_model=ResponseEnvelope[AdminDashboardStats])
 def get_dashboard_stats(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -166,7 +175,7 @@ def get_dashboard_stats(
             Tenant.status == 'active'
         ).count()
         total_users = db_session.query(User).filter_by(is_active=True).count()
-        total_patients = db_session.query(Patient).count()
+        total_patients = db_session.query(Party).count()
         
         # Today's stats
         today = datetime.now().date()
@@ -185,14 +194,14 @@ def get_dashboard_stats(
             Invoice.status != 'cancelled'
         ).scalar() or 0.0
         
-        return ResponseEnvelope(data={
-            "totalTenants": total_tenants,
-            "activeTenants": active_tenants,
-            "totalUsers": total_users,
-            "totalPatients": total_patients,
-            "todayAppointments": today_appointments,
-            "monthlyRevenue": float(monthly_revenue)
-        })
+        return ResponseEnvelope(data=AdminDashboardStats(
+            total_tenants=total_tenants,
+            active_tenants=active_tenants,
+            total_users=total_users,
+            total_patients=total_patients,
+            today_appointments=today_appointments,
+            monthly_revenue=float(monthly_revenue)
+        ))
     except Exception as e:
         logger.error(f"Dashboard stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

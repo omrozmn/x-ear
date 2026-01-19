@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/party_service.py
+# hypothesis_version: 6.150.1
+
+[0.0, 100, 200, 400, 404, '1=0', 'Bilinmiyor', 'Note not found', 'PATIENT_NOT_FOUND', 'Patient not found', 'address', 'assigned', 'assignedDate', 'barcode', 'birthDate', 'branchId', 'brand', 'category', 'city', 'content', 'deviceName', 'deviceType', 'district', 'downPayment', 'down_payment', 'earSide', 'email', 'firstName', 'fullAddress', 'gender', 'genel', 'general', 'hearing_aid', 'isPrivate', 'json', 'lastName', 'listPrice', 'model', 'noteType', 'note_created', 'party', 'patientPayment', 'phone', 'salePrice', 'segment', 'serialNumber', 'sgkInfo', 'sgkReduction', 'sgkSupportType', 'status', 'tags', 'tcNumber', 'title', 'to_dict', 'type', 'value']

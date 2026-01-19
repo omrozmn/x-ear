@@ -16,7 +16,7 @@ export const appointmentsApi = {
   // Get appointments with optional filters
   async getAppointments(filters: {
     date?: string;
-    patientId?: string;
+    partyId?: string;
     status?: string;
     type?: string;
     branchId?: string;
@@ -133,20 +133,24 @@ export const appointmentsApi = {
     return response.data || [];
   },
 
-  // Search patients for appointment booking
-  async searchPatients(query: string): Promise<Array<{
+  // Search parties for appointment booking
+  async searchParties(query: string): Promise<Array<{
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
+    fullName?: string;
     phone?: string;
     email?: string;
   }>> {
     const response = await customInstance<ApiResponse<Array<{
       id: string;
-      name: string;
+      firstName: string;
+      lastName: string;
+      fullName?: string;
       phone?: string;
       email?: string;
     }>>>({
-      url: `/api/patients/search?q=${encodeURIComponent(query)}`,
+      url: `/api/parties/search?q=${encodeURIComponent(query)}`,
       method: 'GET',
     });
     return response.data || [];

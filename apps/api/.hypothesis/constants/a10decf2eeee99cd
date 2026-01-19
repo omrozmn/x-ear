@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/models/ai_action.py
+# hypothesis_version: 6.150.1
+
+[128, 'actionPlan', 'actionPlanHash', 'ai_actions', 'ai_requests.id', 'approvalExpiresAt', 'approval_expires_at', 'approved', 'approvedAt', 'approvedBy', 'completed', 'createdAt', 'created_at', 'critical', 'draft', 'dryRunResult', 'executing', 'executionCompletedAt', 'executionError', 'executionResult', 'executionStartedAt', 'expired', 'failed', 'high', 'id', 'low', 'medium', 'pending_approval', 'rejected', 'rejectionReason', 'requestId', 'requiredPermissions', 'riskLevel', 'riskReasoning', 'rollbackPlan', 'rolled_back', 'status', 'tenantId', 'tenant_id', 'toolSchemaVersions', 'updatedAt', 'userId']

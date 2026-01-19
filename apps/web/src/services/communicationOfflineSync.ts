@@ -1,5 +1,9 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { apiClient } from '../api/orval-mutator';
+import {
+  ListCommunicationMessagesParams,
+  ListCommunicationTemplatesParams
+} from '@/api/generated/schemas';
 
 // Database schema interfaces
 interface CommunicationMessage {
@@ -7,7 +11,7 @@ interface CommunicationMessage {
   type: 'sms' | 'email';
   recipient: string;
   recipientName?: string;
-  patientId?: string;
+  partyId?: string;
   subject?: string;
   content: string;
   templateId?: string;
@@ -48,7 +52,7 @@ interface OutboxItem {
   action: 'create' | 'update' | 'delete';
   entityType: 'message' | 'template';
   entityId: string;
-  data: any;
+  data: unknown;
   createdAt: string;
   retryCount: number;
   lastRetryAt?: string;
@@ -72,7 +76,7 @@ interface CommunicationDB extends DBSchema {
       'by-status': string;
       'by-sync-status': string;
       'by-created-at': string;
-      'by-patient-id': string;
+      'by-party-id': string;
     };
   };
   templates: {
@@ -118,7 +122,7 @@ class CommunicationOfflineSync {
             messagesStore.createIndex('by-status', 'status');
             messagesStore.createIndex('by-sync-status', 'syncStatus');
             messagesStore.createIndex('by-created-at', 'createdAt');
-            messagesStore.createIndex('by-patient-id', 'patientId');
+            messagesStore.createIndex('by-party-id', 'partyId');
           }
 
           // Templates store
@@ -211,7 +215,7 @@ class CommunicationOfflineSync {
   async getMessages(filters?: {
     type?: 'sms' | 'email';
     status?: string;
-    patientId?: string;
+    partyId?: string;
     limit?: number;
     offset?: number;
   }): Promise<CommunicationMessage[]> {
@@ -226,8 +230,8 @@ class CommunicationOfflineSync {
     if (filters?.status) {
       messages = messages.filter(m => m.status === filters.status);
     }
-    if (filters?.patientId) {
-      messages = messages.filter(m => m.patientId === filters.patientId);
+    if (filters?.partyId) {
+      messages = messages.filter(m => m.partyId === filters.partyId);
     }
 
     // Sort by created date (newest first)
@@ -337,7 +341,7 @@ class CommunicationOfflineSync {
     action: 'create' | 'update' | 'delete',
     entityType: 'message' | 'template',
     entityId: string,
-    data: any
+    data: unknown
   ): Promise<void> {
     if (!this.db) return;
 
@@ -414,7 +418,7 @@ class CommunicationOfflineSync {
         'Idempotency-Key': `offline_${item.id}`
       },
       data: item.action !== 'delete' ? item.data : undefined
-    }) as any;
+    }) as unknown as { data?: unknown; success?: boolean; Success?: boolean; status: number };
 
     if (!response.data && !response.Success && !response.success && response.status >= 400) {
       throw new Error(`Request failed with status ${response.status}`);
@@ -445,7 +449,7 @@ class CommunicationOfflineSync {
         'Idempotency-Key': `offline_${item.id}`
       },
       data: item.action !== 'delete' ? item.data : undefined
-    }) as any;
+    }) as unknown as { data?: unknown; success?: boolean; Success?: boolean; status: number };
 
     if (!response.data && !response.Success && !response.success && response.status >= 400) {
       throw new Error(`Request failed with status ${response.status}`);
@@ -481,21 +485,32 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'messages');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { listCommunicationMessages } = await import('@/api/generated');
-    const response = await listCommunicationMessages({ since, limit: 1000 } as any);
+    const { listCommunicationMessages } = await import('@/api/generated/communications/communications');
+    // Using date_from instead of since as supported by the schema
+    const response = await listCommunicationMessages({
+      date_from: since,
+      per_page: 100
+    } as ListCommunicationMessagesParams);
 
     // Orval response structure handling
-    const result = (response as any).data || response;
+    const result = response as unknown as { data?: unknown; success?: boolean };
     // Check if result has 'data' property (standard response envelope) or is the array itself
-    const dataList = Array.isArray(result) ? result : (result.data || []);
+    const dataList = Array.isArray(result) ? result : ((result as Record<string, unknown>).data || []);
 
     // If wrapped in success/message envelope
     if (result.success === false) return;
 
-    const messages: CommunicationMessage[] = dataList.map((msg: any) => ({
+    const messages: CommunicationMessage[] = (dataList as Record<string, unknown>[]).map((msg: Record<string, unknown>) => ({
       ...msg,
+      id: msg.id as string,
+      type: msg.type as 'sms' | 'email',
+      recipient: msg.recipient as string,
+      content: msg.content as string,
+      status: msg.status as 'draft' | 'scheduled' | 'sent' | 'delivered' | 'failed',
+      messageType: msg.messageType as 'manual' | 'appointment_reminder' | 'campaign' | 'automated',
+      createdAt: msg.createdAt as string,
       syncStatus: 'synced' as const
-    }));
+    })) as unknown as CommunicationMessage[];
 
     // Update local storage
     for (const message of messages) {
@@ -516,19 +531,31 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'templates');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { listCommunicationTemplates } = await import('@/api/generated');
-    const response = await listCommunicationTemplates({ since, limit: 1000 } as any);
+    const { listCommunicationTemplates } = await import('@/api/generated/communications/communications');
+    const response = await listCommunicationTemplates({
+      per_page: 100
+    } as ListCommunicationTemplatesParams);
 
     // Orval response structure handling
-    const result = (response as any).data || response;
-    const dataList = Array.isArray(result) ? result : (result.data || []);
+    const result = response as unknown as { data?: unknown; success?: boolean };
+    const dataList = Array.isArray(result) ? result : ((result as Record<string, unknown>).data || []);
 
     if (result.success === false) return;
 
-    const templates: CommunicationTemplate[] = dataList.map((tpl: any) => ({
+    const templates: CommunicationTemplate[] = (dataList as Record<string, unknown>[]).map((tpl: Record<string, unknown>) => ({
       ...tpl,
+      id: tpl.id as string,
+      name: tpl.name as string,
+      templateType: tpl.templateType as 'sms' | 'email',
+      bodyText: tpl.bodyText as string,
+      isActive: tpl.isActive as boolean,
+      isSystem: tpl.isSystem as boolean,
+      usageCount: tpl.usageCount as number,
+      createdAt: tpl.createdAt as string,
+      updatedAt: tpl.updatedAt as string,
+      variables: (tpl.variables as string[]) || [],
       syncStatus: 'synced' as const
-    }));
+    })) as unknown as CommunicationTemplate[];
 
     // Update local storage
     for (const template of templates) {

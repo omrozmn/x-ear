@@ -24,13 +24,13 @@ import {
   AlertDescription,
 } from '@x-ear/ui-web';
 import { Appointment, AppointmentStatus, AppointmentType } from '../../types/appointment';
-import { PatientAutocomplete } from './PatientAutocomplete';
-import { Patient } from '../../types/patient/patient-base.types';
+import { PartyAutocomplete } from './PartyAutocomplete';
+import { Party } from '../../types/party/party-base.types';
 
 // Validation schema
 const appointmentSchema = z.object({
-  patientId: z.string().min(1, 'Hasta seçimi zorunludur'),
-  patientName: z.string().min(1, 'Hasta adı zorunludur'),
+  partyId: z.string().min(1, 'Hasta seçimi zorunludur'),
+  partyName: z.string().min(1, 'Hasta adı zorunludur'),
   date: z.date({ required_error: 'Tarih seçimi zorunludur' }),
   time: z.string().min(1, 'Saat seçimi zorunludur'),
   type: z.enum(['consultation', 'hearing-test', 'device-trial', 'follow-up'], { required_error: 'Randevu türü seçimi zorunludur' }),
@@ -127,8 +127,8 @@ export function AppointmentFormModal({
   } = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
-      patientId: '',
-      patientName: '',
+      partyId: '',
+      partyName: '',
       date: new Date(),
       time: '09:00',
       type: 'consultation',
@@ -144,8 +144,8 @@ export function AppointmentFormModal({
     if (open) {
       if (initialData) {
         reset({
-          patientId: initialData.patientId,
-          patientName: initialData.patientName || '',
+          partyId: initialData.partyId,
+          partyName: initialData.partyName || '',
           date: new Date(initialData.date),
           time: initialData.time,
           type: initialData.type,
@@ -156,8 +156,8 @@ export function AppointmentFormModal({
         });
       } else {
         reset({
-          patientId: '',
-          patientName: '',
+          partyId: '',
+          partyName: '',
           date: initialDate || new Date(),
           time: initialTime || '09:00',
           type: 'consultation',
@@ -209,21 +209,21 @@ export function AppointmentFormModal({
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <VStack spacing="md">
-            {/* Patient Information */}
+            {/* Party Information */}
             <FormControl className="w-full">
               <FormLabel className="text-gray-700 dark:text-gray-300">Hasta Arama *</FormLabel>
               <Controller
-                name="patientName"
+                name="partyName"
                 control={control}
                 render={({ field }) => (
-                  <PatientAutocomplete
+                  <PartyAutocomplete
                     value={field.value}
-                    onSelect={(patient: Patient) => {
-                      setValue('patientId', patient.id || '');
-                      setValue('patientName', patient.firstName + ' ' + patient.lastName);
+                    onSelect={(party: Party) => {
+                      setValue('partyId', party.id || '');
+                      setValue('partyName', party.firstName + ' ' + party.lastName);
                     }}
                     placeholder="Hasta adı veya TC ile arayın..."
-                    error={errors.patientName?.message}
+                    error={errors.partyName?.message}
                     className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
                   />
                 )}

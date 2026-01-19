@@ -1,4 +1,4 @@
-# Communication Models - Email, Templates, and Communication History
+# Communication Models (formerly Patient communication models)
 from .base import db, BaseModel, gen_id, JSONMixin
 from datetime import datetime, timezone
 
@@ -11,7 +11,7 @@ class EmailLog(BaseModel, JSONMixin):
     
     # Foreign keys
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
     template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
@@ -47,7 +47,7 @@ class EmailLog(BaseModel, JSONMixin):
     cost = db.Column(db.Float)
 
     # Relationships
-    patient = db.relationship('Patient', backref='email_logs', lazy=True)
+    party = db.relationship('Party', backref='email_logs', lazy=True)
     template = db.relationship('CommunicationTemplate', backref='email_logs', lazy=True)
 
     @property
@@ -87,7 +87,7 @@ class EmailLog(BaseModel, JSONMixin):
         email_dict = {
             'id': self.id,
             'campaignId': self.campaign_id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'templateId': self.template_id,
             'toEmail': self.to_email,
             'fromEmail': self.from_email,
@@ -115,7 +115,7 @@ class EmailLog(BaseModel, JSONMixin):
     # Index suggestions
     __table_args__ = (
         db.Index('ix_email_campaign', 'campaign_id'),
-        db.Index('ix_email_patient', 'patient_id'),
+        db.Index('ix_email_patient', 'party_id'),
         db.Index('ix_email_template', 'template_id'),
         db.Index('ix_email_status', 'status'),
         db.Index('ix_email_sent_at', 'sent_at'),
@@ -203,7 +203,7 @@ class CommunicationHistory(BaseModel, JSONMixin):
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("comm"))
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
     template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
@@ -232,7 +232,7 @@ class CommunicationHistory(BaseModel, JSONMixin):
     initiated_by = db.Column(db.String(50))  # user_id
 
     # Relationships
-    patient = db.relationship('Patient', backref='communication_history', lazy=True)
+    party = db.relationship('Party', backref='communication_history', lazy=True)
     sms_log = db.relationship('SMSLog', backref='communication_history', lazy=True)
     email_log = db.relationship('EmailLog', backref='communication_history', lazy=True)
     template = db.relationship('CommunicationTemplate', backref='communication_history', lazy=True)
@@ -249,7 +249,7 @@ class CommunicationHistory(BaseModel, JSONMixin):
         base_dict = self.to_dict_base()
         history_dict = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'campaignId': self.campaign_id,
             'templateId': self.template_id,
             'smsLogId': self.sms_log_id,
@@ -269,7 +269,7 @@ class CommunicationHistory(BaseModel, JSONMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_comm_history_patient', 'patient_id'),
+        db.Index('ix_comm_history_patient', 'party_id'),
         db.Index('ix_comm_history_type', 'communication_type'),
         db.Index('ix_comm_history_direction', 'direction'),
         db.Index('ix_comm_history_status', 'status'),

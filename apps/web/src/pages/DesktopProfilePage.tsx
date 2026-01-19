@@ -7,8 +7,9 @@ import { generateUsername } from '../utils/stringUtils';
 import {
     useListUserMe,
     useUpdateUserMe,
-    useCreateUserMePassword
-} from '@/api/generated';
+    useCreateUserMePassword,
+    getListUserMeQueryKey
+} from '@/api/client/users.client';
 
 
 export const DesktopProfilePage: React.FC = () => {
@@ -51,6 +52,7 @@ export const DesktopProfilePage: React.FC = () => {
     // API Hooks (Query & Mutations)
     const { data: userDataResponse, isError, isLoading, error } = useListUserMe({
         query: {
+            queryKey: getListUserMeQueryKey(),
             retry: 1,
             refetchOnWindowFocus: false
         }
@@ -58,28 +60,47 @@ export const DesktopProfilePage: React.FC = () => {
 
     // DEBUG: Log the API call state
     React.useEffect(() => {
+        interface ApiError {
+            message?: string;
+            response?: {
+                status?: number;
+                data?: unknown;
+            };
+        }
+        const apiError = error as ApiError | null;
         console.log('[DesktopProfilePage] useUsersGetCurrentUser state:', {
             isLoading,
             isError,
             hasData: !!userDataResponse,
-            error: error ? {
-                message: (error as any).message,
-                response: (error as any).response,
-                status: (error as any).response?.status
+            error: apiError ? {
+                message: apiError.message,
+                response: apiError.response,
+                status: apiError.response?.status
             } : null
         });
     }, [isLoading, isError, userDataResponse, error]);
 
+    interface UserData {
+        id?: string;
+        email?: string;
+        fullName?: string;
+        firstName?: string;
+        lastName?: string;
+        username?: string;
+        phone?: string;
+    }
+
     const updateMeMutation = useUpdateUserMe({
         mutation: {
-            onSuccess: (data: any) => {
+            onSuccess: (data: unknown) => {
                 toast.success('Profil bilgileri güncellendi');
-                const updatedUser = data?.data || data;
-                if (updatedUser) {
+                const responseData = data as { data?: UserData } | UserData;
+                const updatedUser = 'data' in responseData ? responseData.data : responseData;
+                if (updatedUser && user) {
                     setUser({
-                        ...user!,
+                        ...user,
                         ...updatedUser,
-                    } as any);
+                    });
                 }
             },
             onError: () => {
@@ -96,12 +117,19 @@ export const DesktopProfilePage: React.FC = () => {
                 setNewPassword('');
                 setConfirmPassword('');
             },
-            onError: (error: any) => {
-                const status = error.response?.status;
+            onError: (error: unknown) => {
+                interface PasswordError {
+                    response?: {
+                        status?: number;
+                        data?: { error?: string };
+                    };
+                }
+                const passwordError = error as PasswordError;
+                const status = passwordError.response?.status;
                 if (status === 403 || status === 401) {
                     toast.error('Mevcut şifreniz hatalı.');
                 } else {
-                    toast.error(error.response?.data?.error || 'Şifre değiştirilemedi');
+                    toast.error(passwordError.response?.data?.error || 'Şifre değiştirilemedi');
                 }
             }
         }

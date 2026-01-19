@@ -2,12 +2,37 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
 import { getCurrentUserId } from '@/utils/auth-utils';
-import { listInventory } from '@/api/generated';
+import { listInventory } from '@/api/client/inventory.client';
+
+// Interface representing raw backend assignment data with both camelCase and snake_case variants
+interface RawAssignmentData extends Partial<DeviceAssignment> {
+  // Snake_case variants from backend
+  report_status?: string;
+  is_loaner?: boolean;
+  loaner_inventory_id?: string;
+  loaner_serial_number?: string;
+  loaner_serial_number_left?: string;
+  loaner_serial_number_right?: string;
+  loaner_brand?: string;
+  loaner_model?: string;
+  sgk_scheme?: string;
+  down_payment?: number;
+  discount_value?: number;
+  discount_type?: string;
+  list_price?: number;
+  payment_method?: string;
+  delivery_status?: string;
+  ear_side?: string;
+  device_name?: string;
+  deviceName?: string;
+  deviceBrand?: string;
+  deviceModel?: string;
+}
 
 
 interface UseDeviceAssignmentProps {
-  patientId: string;
-  assignment?: DeviceAssignment | null;
+  partyId: string;
+  assignment?: RawAssignmentData | null;
   isOpen: boolean;
 }
 
@@ -35,7 +60,7 @@ interface UseDeviceAssignmentReturn {
   calculatedPricing: {
     salePrice: number;
     sgkReduction: number;
-    patientPayment: number;
+    partyPayment: number;
     remainingAmount: number;
     monthlyInstallment: number;
   };
@@ -45,13 +70,13 @@ interface UseDeviceAssignmentReturn {
 }
 
 export const useDeviceAssignment = ({
-  patientId,
+  partyId,
   assignment,
   isOpen
 }: UseDeviceAssignmentProps): UseDeviceAssignmentReturn => {
   // Form state
   const [formData, setFormData] = useState<Partial<DeviceAssignment>>({
-    patientId,
+    partyId,
     assignedDate: new Date().toISOString().split('T')[0],
     status: 'assigned',
     assignedBy: getCurrentUserId(),
@@ -97,7 +122,7 @@ export const useDeviceAssignment = ({
     if (isOpen) {
       if (assignment) {
         // Normalize reportStatus to match dropdown options
-        const rawReportStatus = String(assignment.reportStatus || (assignment as any).report_status || '').toLowerCase().trim();
+        const rawReportStatus = String(assignment.reportStatus || assignment.report_status || '').toLowerCase().trim();
 
         // Debug logging disabled to reduce console noise
         // console.log('🔍 [useDeviceAssignment] RELOADED DEBUG:', {...});
@@ -111,16 +136,16 @@ export const useDeviceAssignment = ({
         // Initialize loaner fields if present in the incoming assignment
         // This ensures that when editing a loaner assignment, the loaner data is pre-filled
         const loanerFields = {
-          isLoaner: (assignment as any).isLoaner || (assignment as any).is_loaner || false,
-          loanerInventoryId: (assignment as any).loanerInventoryId || (assignment as any).loaner_inventory_id,
-          loanerSerialNumber: (assignment as any).loanerSerialNumber || (assignment as any).loaner_serial_number,
-          loanerSerialNumberLeft: (assignment as any).loanerSerialNumberLeft || (assignment as any).loaner_serial_number_left,
-          loanerSerialNumberRight: (assignment as any).loanerSerialNumberRight || (assignment as any).loaner_serial_number_right,
-          loanerBrand: (assignment as any).loanerBrand || (assignment as any).loaner_brand,
-          loanerModel: (assignment as any).loanerModel || (assignment as any).loaner_model,
+          isLoaner: assignment.isLoaner || assignment.is_loaner || false,
+          loanerInventoryId: assignment.loanerInventoryId || assignment.loaner_inventory_id,
+          loanerSerialNumber: assignment.loanerSerialNumber || assignment.loaner_serial_number,
+          loanerSerialNumberLeft: assignment.loanerSerialNumberLeft || assignment.loaner_serial_number_left,
+          loanerSerialNumberRight: assignment.loanerSerialNumberRight || assignment.loaner_serial_number_right,
+          loanerBrand: assignment.loanerBrand || assignment.loaner_brand,
+          loanerModel: assignment.loanerModel || assignment.loaner_model,
           // Also capture any snake_case variants from backend just in case
-          loaner_inventory_id: (assignment as any).loaner_inventory_id,
-          loaner_serial_number: (assignment as any).loaner_serial_number
+          loaner_inventory_id: assignment.loaner_inventory_id,
+          loaner_serial_number: assignment.loaner_serial_number
         };
 
         // Debug logging disabled to reduce console noise
@@ -131,19 +156,19 @@ export const useDeviceAssignment = ({
           ...assignment,
           ...loanerFields,
           // Explicitly map pricing/payment fields to ensure they persist over spread
-          sgkSupportType: (assignment as any).sgkSupportType || (assignment as any).sgkScheme || (assignment as any).sgk_scheme || '',
-          downPayment: (assignment as any).downPayment || (assignment as any).down_payment || 0,
-          discountValue: (assignment as any).discountValue || (assignment as any).discount_value || 0,
-          discountType: (assignment as any).discountType || (assignment as any).discount_type || 'none',
-          listPrice: (assignment as any).listPrice || (assignment as any).list_price || 0,
-          paymentMethod: (assignment as any).paymentMethod || (assignment as any).payment_method || '',
-          reason: (assignment as any).reason || 'sale',
+          sgkSupportType: assignment.sgkSupportType || assignment.sgk_scheme || '',
+          downPayment: assignment.downPayment || assignment.down_payment || 0,
+          discountValue: assignment.discountValue || assignment.discount_value || 0,
+          discountType: (assignment.discountType || assignment.discount_type || 'none') as DeviceAssignment['discountType'],
+          listPrice: assignment.listPrice || assignment.list_price || 0,
+          paymentMethod: (assignment.paymentMethod || assignment.payment_method || '') as DeviceAssignment['paymentMethod'],
+          reason: (assignment.reason || 'sale') as DeviceAssignment['reason'],
 
-          assignedDate: (assignment as any).assignedDate?.split('T')[0] || (assignment as any).createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+          assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0],
           reportStatus: normalizedReportStatus, // Explicitly set normalized value
-          deliveryStatus: (assignment.deliveryStatus || (assignment as any).delivery_status || 'pending').toLowerCase(),
+          deliveryStatus: (assignment.deliveryStatus || assignment.delivery_status || 'pending').toLowerCase() as DeviceAssignment['deliveryStatus'],
           // Ensure ear is normalized (backend might send LEFT/RIGHT uppercase)
-          ear: (assignment.ear || (assignment as any).ear_side || 'left').toLowerCase() as 'left' | 'right' | 'both',
+          ear: (assignment.ear || assignment.ear_side || 'left').toLowerCase() as 'left' | 'right' | 'both',
         });
 
         // If assignment has deviceId, find and select the device
@@ -153,7 +178,7 @@ export const useDeviceAssignment = ({
       } else {
         // Create mode
         setFormData({
-          patientId,
+          partyId,
           assignedDate: new Date().toISOString().split('T')[0],
           status: 'assigned',
           assignedBy: getCurrentUserId(),
@@ -169,7 +194,7 @@ export const useDeviceAssignment = ({
         setSelectedDevice(null);
       }
     }
-  }, [isOpen, assignment, patientId]);
+  }, [isOpen, assignment, partyId]);
 
   // Load available devices from inventory
   useEffect(() => {
@@ -230,19 +255,19 @@ export const useDeviceAssignment = ({
             console.warn('Device not found in loaded inventory, using assignment data fallback');
 
             // Extract brand and model from various possible field names
-            const assignmentAny = assignment as any;
-            let brand = assignmentAny.brand || assignmentAny.deviceBrand;
-            let model = assignmentAny.model || assignmentAny.deviceModel;
+            // Extract brand and model from various possible field names
+            let brand = assignment.brand || assignment.deviceBrand;
+            let model = assignment.model || assignment.deviceModel;
 
             // For loaner devices, check loaner-specific fields
-            if (assignmentAny.isLoaner || assignmentAny.is_loaner) {
-              brand = brand || assignmentAny.loanerBrand || assignmentAny.loaner_brand;
-              model = model || assignmentAny.loanerModel || assignmentAny.loaner_model;
+            if (assignment.isLoaner || assignment.is_loaner) {
+              brand = brand || assignment.loanerBrand || assignment.loaner_brand;
+              model = model || assignment.loanerModel || assignment.loaner_model;
             }
 
             // Extract from deviceName if available (e.g., "ReSound hb-2477")
             if (!brand || !model) {
-              const deviceName = assignmentAny.deviceName || assignmentAny.device_name;
+              const deviceName = assignment.deviceName || assignment.device_name;
               if (deviceName) {
                 const parts = deviceName.split(' ');
                 if (parts.length >= 2) {
@@ -301,7 +326,7 @@ export const useDeviceAssignment = ({
       return {
         salePrice: 0,
         sgkReduction: 0,
-        patientPayment: 0,
+        partyPayment: 0,
         remainingAmount: 0,
         monthlyInstallment: 0
       };
@@ -348,9 +373,9 @@ export const useDeviceAssignment = ({
     // Total SGK reduction across quantity
     const totalSgkReduction = sgkReductionPerUnit * quantity;
 
-    // Patient payment is final sale price per unit times quantity
-    const patientPayment = Math.max(0, finalSalePricePerUnit * quantity);
-    const remainingAmount = Math.max(0, patientPayment - (formData.downPayment || 0));
+    // Party payment is final sale price per unit times quantity
+    const partyPayment = Math.max(0, finalSalePricePerUnit * quantity);
+    const remainingAmount = Math.max(0, partyPayment - (formData.downPayment || 0));
 
     // Monthly installment if applicable
     let monthlyInstallment = 0;
@@ -361,46 +386,46 @@ export const useDeviceAssignment = ({
     return {
       salePrice: finalSalePricePerUnit,
       sgkReduction: totalSgkReduction,
-      patientPayment,
+      partyPayment,
       remainingAmount,
       monthlyInstallment
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.listPrice, formData.sgkSupportType, formData.discountType, formData.discountValue, formData.downPayment, formData.ear, formData.paymentMethod, formData.installmentCount, sgkAmounts]);
 
   // Sync calculated pricing back into formData so UI components read the canonical values
   // Use a ref to track if we're in the middle of a pricing sync to prevent loops
   const pricingSyncRef = useRef(false);
-  
+
   useEffect(() => {
     // Prevent re-entry during sync
     if (pricingSyncRef.current) return;
-    
+
     // Only update when calculated values differ from formData to avoid loops
     setFormData(prev => {
       const updates: Partial<DeviceAssignment> = {};
-      
+
       // Use tolerance for floating point comparison
       const tolerance = 0.01;
-      const isDifferent = (a: number | undefined, b: number) => 
+      const isDifferent = (a: number | undefined, b: number) =>
         a === undefined || Math.abs((a || 0) - b) > tolerance;
-      
+
       if (isDifferent(prev.salePrice, calculatedPricing.salePrice)) updates.salePrice = calculatedPricing.salePrice;
       if (isDifferent(prev.sgkReduction, calculatedPricing.sgkReduction)) updates.sgkReduction = calculatedPricing.sgkReduction;
-      if (isDifferent(prev.patientPayment, calculatedPricing.patientPayment)) updates.patientPayment = calculatedPricing.patientPayment;
+      if (isDifferent(prev.partyPayment, calculatedPricing.partyPayment)) updates.partyPayment = calculatedPricing.partyPayment;
       if (isDifferent(prev.remainingAmount, calculatedPricing.remainingAmount)) updates.remainingAmount = calculatedPricing.remainingAmount;
       if (isDifferent(prev.monthlyInstallment, calculatedPricing.monthlyInstallment)) updates.monthlyInstallment = calculatedPricing.monthlyInstallment;
 
       if (Object.keys(updates).length === 0) return prev;
-      
+
       pricingSyncRef.current = true;
       // Reset the flag after the state update is processed
       setTimeout(() => { pricingSyncRef.current = false; }, 0);
-      
+
       return { ...prev, ...updates };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calculatedPricing.salePrice, calculatedPricing.sgkReduction, calculatedPricing.patientPayment, calculatedPricing.remainingAmount, calculatedPricing.monthlyInstallment]);
+  }, [calculatedPricing.salePrice, calculatedPricing.sgkReduction, calculatedPricing.partyPayment, calculatedPricing.remainingAmount, calculatedPricing.monthlyInstallment]);
 
   // Handle device selection
   const handleDeviceSelect = (device: DeviceInventoryItem) => {
@@ -464,7 +489,7 @@ export const useDeviceAssignment = ({
   // Reset form
   const resetForm = () => {
     setFormData({
-      patientId,
+      partyId,
       assignedDate: new Date().toISOString().split('T')[0],
       status: 'assigned',
       assignedBy: getCurrentUserId(),

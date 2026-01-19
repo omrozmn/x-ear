@@ -1,0 +1,140 @@
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+🚀 GLOBAL SETUP: Seeding Data to http://localhost:5003...
+
+⚠️ Could not acquire Admin Token. Seeding might be limited.
+🚨 SKIP SEEDING: Authentication failed. Tests rely on existing data.
+
+✅ Global Setup Complete.
+
+
+Running 4 tests using 4 workers
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+[LOGIN FAILURE] Step 1: Lookup Phone Failed
+URL: http://localhost:5003/api/auth/lookup-phone
+Status: [33m500[39m
+Body: {"success":false,"data":null,"message":null,"error":{"success":false,"message":"(sqlite3.OperationalError) no such column: users.password_reset_token\n[SQL: SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.phone AS users_phone, users.tenant_id AS users_tenant_id, users.password_hash AS users_password_hash, users.first_name AS users_first_name, users.last_name AS users_last_name, users.role AS users_role, users.is_active AS users_is_active, users.is_phone_verified AS users_is_phone_verified, users.permissions_version AS users_permissions_version, users.last_login AS users_last_login, users.password_reset_token AS users_password_reset_token, users.password_reset_expires AS users_password_reset_expires, users.affiliate_code AS users_affiliate_code, users.created_at AS users_created_at, users.updated_at AS users_updated_at \nFROM users \nWHERE users.username = ?\n LIMIT ? OFFSET ?]\n[parameters: ('+905551234567', 1, 0)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"f6a29162-0bfb-4606-a4dd-2d7c4185cd22","timestamp":"2026-01-18T22:00:05.092548+00:00"}
+[LOGIN FAILURE] Step 1: Lookup Phone Failed
+URL: http://localhost:5003/api/auth/lookup-phone
+[LOGIN FAILURE] Step 1: Lookup Phone Failed
+URL: http://localhost:5003/api/auth/lookup-phone
+Status: [33m500[39m
+Status: [33m500[39m
+[LOGIN FAILURE] Step 1: Lookup Phone Failed
+URL: http://localhost:5003/api/auth/lookup-phone
+Status: [33m500[39m
+Body: {"success":false,"data":null,"message":null,"error":{"success":false,"message":"(sqlite3.OperationalError) no such column: users.password_reset_token\n[SQL: SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.phone AS users_phone, users.tenant_id AS users_tenant_id, users.password_hash AS users_password_hash, users.first_name AS users_first_name, users.last_name AS users_last_name, users.role AS users_role, users.is_active AS users_is_active, users.is_phone_verified AS users_is_phone_verified, users.permissions_version AS users_permissions_version, users.last_login AS users_last_login, users.password_reset_token AS users_password_reset_token, users.password_reset_expires AS users_password_reset_expires, users.affiliate_code AS users_affiliate_code, users.created_at AS users_created_at, users.updated_at AS users_updated_at \nFROM users \nWHERE users.username = ?\n LIMIT ? OFFSET ?]\n[parameters: ('+905551234567', 1, 0)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"8b903437-8877-489a-953b-f9077d85bfc6","timestamp":"2026-01-18T22:00:05.093675+00:00"}
+Body: {"success":false,"data":null,"message":null,"error":{"success":false,"message":"(sqlite3.OperationalError) no such column: users.password_reset_token\n[SQL: SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.phone AS users_phone, users.tenant_id AS users_tenant_id, users.password_hash AS users_password_hash, users.first_name AS users_first_name, users.last_name AS users_last_name, users.role AS users_role, users.is_active AS users_is_active, users.is_phone_verified AS users_is_phone_verified, users.permissions_version AS users_permissions_version, users.last_login AS users_last_login, users.password_reset_token AS users_password_reset_token, users.password_reset_expires AS users_password_reset_expires, users.affiliate_code AS users_affiliate_code, users.created_at AS users_created_at, users.updated_at AS users_updated_at \nFROM users \nWHERE users.username = ?\n LIMIT ? OFFSET ?]\n[parameters: ('+905551234567', 1, 0)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"2c3d0319-c486-4747-8072-78d0f917c0da","timestamp":"2026-01-18T22:00:05.093800+00:00"}
+Body: {"success":false,"data":null,"message":null,"error":{"success":false,"message":"(sqlite3.OperationalError) no such column: users.password_reset_token\n[SQL: SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.phone AS users_phone, users.tenant_id AS users_tenant_id, users.password_hash AS users_password_hash, users.first_name AS users_first_name, users.last_name AS users_last_name, users.role AS users_role, users.is_active AS users_is_active, users.is_phone_verified AS users_is_phone_verified, users.permissions_version AS users_permissions_version, users.last_login AS users_last_login, users.password_reset_token AS users_password_reset_token, users.password_reset_expires AS users_password_reset_expires, users.affiliate_code AS users_affiliate_code, users.created_at AS users_created_at, users.updated_at AS users_updated_at \nFROM users \nWHERE users.username = ?\n LIMIT ? OFFSET ?]\n[parameters: ('+905551234567', 1, 0)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"a0c486e8-594c-404d-9a62-4fdab52f1f2b","timestamp":"2026-01-18T22:00:05.093645+00:00"}
+  ✘  3 [web] › tests/e2e/web/inventory.spec.ts:5:5 › Inventory Management › should list inventory items (701ms)
+  ✘  4 [web] › tests/e2e/web/inventory.spec.ts:34:5 › Inventory Management › should manage serial numbers via modal (713ms)
+  ✘  1 [web] › tests/e2e/web/inventory.spec.ts:19:5 › Inventory Management › should calculate tax vs vatIncludedPrice correctly (712ms)
+  ✘  2 [web] › tests/e2e/web/inventory.spec.ts:53:5 › Inventory Management › should persist KDV preferences (726ms)
+
+
+  1) [web] › tests/e2e/web/inventory.spec.ts:5:5 › Inventory Management › should list inventory items 
+
+    Error: Login Step 1 Failed: 500
+
+       at web/helpers/test-utils.ts:39
+
+      37 |     console.error('Status:', lookupResponse.status());
+      38 |     console.error('Body:', await lookupResponse.text());
+    > 39 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
+         |           ^
+      40 |   }
+      41 |   expect(lookupResponse.ok()).toBeTruthy();
+      42 |
+        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:39:11)
+        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Management-should-list-inventory-items-web/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Management-should-list-inventory-items-web/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [web] › tests/e2e/web/inventory.spec.ts:19:5 › Inventory Management › should calculate tax vs vatIncludedPrice correctly 
+
+    Error: Login Step 1 Failed: 500
+
+       at web/helpers/test-utils.ts:39
+
+      37 |     console.error('Status:', lookupResponse.status());
+      38 |     console.error('Body:', await lookupResponse.text());
+    > 39 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
+         |           ^
+      40 |   }
+      41 |   expect(lookupResponse.ok()).toBeTruthy();
+      42 |
+        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:39:11)
+        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Manage-97861--vatIncludedPrice-correctly-web/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Manage-97861--vatIncludedPrice-correctly-web/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [web] › tests/e2e/web/inventory.spec.ts:34:5 › Inventory Management › should manage serial numbers via modal 
+
+    Error: Login Step 1 Failed: 500
+
+       at web/helpers/test-utils.ts:39
+
+      37 |     console.error('Status:', lookupResponse.status());
+      38 |     console.error('Body:', await lookupResponse.text());
+    > 39 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
+         |           ^
+      40 |   }
+      41 |   expect(lookupResponse.ok()).toBeTruthy();
+      42 |
+        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:39:11)
+        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Manage-4b1d7-ge-serial-numbers-via-modal-web/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Manage-4b1d7-ge-serial-numbers-via-modal-web/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [web] › tests/e2e/web/inventory.spec.ts:53:5 › Inventory Management › should persist KDV preferences 
+
+    Error: Login Step 1 Failed: 500
+
+       at web/helpers/test-utils.ts:39
+
+      37 |     console.error('Status:', lookupResponse.status());
+      38 |     console.error('Body:', await lookupResponse.text());
+    > 39 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
+         |           ^
+      40 |   }
+      41 |   expect(lookupResponse.ok()).toBeTruthy();
+      42 |
+        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:39:11)
+        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Manage-09356-uld-persist-KDV-preferences-web/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/inventory-Inventory-Manage-09356-uld-persist-KDV-preferences-web/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [web] › tests/e2e/web/inventory.spec.ts:5:5 › Inventory Management › should list inventory items 
+    [web] › tests/e2e/web/inventory.spec.ts:19:5 › Inventory Management › should calculate tax vs vatIncludedPrice correctly 
+    [web] › tests/e2e/web/inventory.spec.ts:34:5 › Inventory Management › should manage serial numbers via modal 
+    [web] › tests/e2e/web/inventory.spec.ts:53:5 › Inventory Management › should persist KDV preferences 

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Sale price
+ */
 export type DeviceCreatePrice = number | null;

@@ -3,7 +3,7 @@ import { Users, Calendar, TrendingUp, Activity } from 'lucide-react';
 
 interface DashboardStatsProps {
   stats: {
-    totalPatients: number;
+    totalParties: number;
     activeTrials: number;
     monthlyRevenue: number;
     todayAppointments: number;
@@ -18,11 +18,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   const cards = [
     {
       title: "Toplam Hasta",
-      value: stats.totalPatients.toString(),
+      value: stats.totalParties.toString(),
       icon: <Users className="w-6 h-6 text-white" />,
       color: "bg-gradient-to-br from-blue-600 to-blue-700", // Medical Trust Blue
       trend: "+12%",
-      key: 'patients'
+      key: 'parties'
     },
     {
       title: "Aktif Denemeler",

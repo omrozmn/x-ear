@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSProviderConfigCreateApiPassword = string | null;
+export type SmsProviderConfigCreateApiPassword = string | null;

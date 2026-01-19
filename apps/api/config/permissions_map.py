@@ -40,8 +40,8 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     ('POST', '/auth/login'): 'public',
     ('POST', '/auth/forgot-password'): 'public',
-    ('POST', '/auth/send-verification-otp'): 'auth.edit',
-    ('POST', '/api/auth/send-verification-otp'): 'auth.edit',
+    ('POST', '/auth/send-verification-otp'): None,
+    ('POST', '/api/auth/send-verification-otp'): None,
     ('POST', '/auth/verify-otp'): 'public',
     ('POST', '/auth/refresh'): None,  # JWT yeterli
     
@@ -135,7 +135,7 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     ('GET', '/sales'): 'sales.view',
     ('GET', '/sales/<sale_id>'): 'sales.view',
-    ('POST', '/sales'): 'sales.edit',
+    ('POST', '/sales'): 'sales.create',
     ('PUT', '/sales/<sale_id>'): 'sales.edit',
     ('PATCH', '/sales/<sale_id>'): 'sales.edit',
     ('DELETE', '/sales/<sale_id>'): 'sales.delete',
@@ -209,6 +209,7 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/paytr/config'): 'pos.view',
     ('POST', '/api/payments/pos/paytr/initiate'): 'finance.payments',
     ('POST', '/api/payments/pos/paytr/callback'): 'public',
+    ('POST', '/api/pos/commission/installment-options'): 'sales.view',
     
     # Promissory Notes
     ('GET', '/patients/<patient_id>/promissory-notes'): 'payments.view',
@@ -341,8 +342,8 @@ ENDPOINT_PERMISSIONS = {
     ('POST', '/api/products'): 'inventory.manage',
     ('PUT', '/api/products/<product_id>'): 'inventory.manage',
     ('DELETE', '/api/products/<product_id>'): 'inventory.manage',
-    ('GET', '/api/products/<product_id>/suppliers'): 'suppliers.view',
-    ('POST', '/api/products/<product_id>/suppliers'): 'suppliers.edit',
+    ('GET', '/api/products/<product_id>/suppliers'): 'inventory.view',
+    ('POST', '/api/products/<product_id>/suppliers'): 'inventory.edit',
     
     # =========================================================================
     # SUPPLIERS - Tedarikçi Yönetimi
@@ -352,16 +353,16 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/suppliers/<int:supplier_id>'): 'suppliers.view',
     ('POST', '/api/suppliers'): 'suppliers.edit',
     ('PUT', '/api/suppliers/<int:supplier_id>'): 'suppliers.edit',
-    ('DELETE', '/api/suppliers/<int:supplier_id>'): 'suppliers.edit',
+    ('DELETE', '/api/suppliers/<int:supplier_id>'): 'suppliers.delete',
     ('POST', '/api/suppliers/bulk_upload'): 'inventory.manage',
     ('GET', '/api/suppliers/<int:supplier_id>/products'): 'suppliers.view',
     ('GET', '/api/suppliers/stats'): 'suppliers.view',
     ('GET', '/api/suppliers/<int:supplier_id>/invoices'): 'suppliers.view',
     ('GET', '/api/suppliers/suggested'): 'suppliers.view',
     ('POST', '/api/suppliers/suggested/<int:suggested_id>/accept'): 'suppliers.edit',
-    ('DELETE', '/api/suppliers/suggested/<int:suggested_id>'): 'suppliers.edit',
+    ('DELETE', '/api/suppliers/suggested/<int:suggested_id>'): 'suppliers.delete',
     ('PUT', '/api/product-suppliers/<int:ps_id>'): 'suppliers.edit',
-    ('DELETE', '/api/product-suppliers/<int:ps_id>'): 'suppliers.edit',
+    ('DELETE', '/api/product-suppliers/<int:ps_id>'): 'suppliers.delete',
     
     # =========================================================================
     # CAMPAIGNS - Kampanya Yönetimi
@@ -371,6 +372,15 @@ ENDPOINT_PERMISSIONS = {
     ('POST', '/campaigns/<campaign_id>/send'): 'campaigns.send_sms',
     ('GET', '/api/campaigns'): 'campaigns.view',
     ('GET', '/api/campaigns/<campaign_id>'): 'campaigns.view',
+
+    # =========================================================================
+    # PURCHASES - Alışlar
+    # =========================================================================
+    ('GET', '/api/purchases'): 'purchases.view',
+    ('POST', '/api/purchases'): 'purchases.create',
+    ('GET', '/api/purchases/<purchase_id>'): 'purchases.view',
+    ('PUT', '/api/purchases/<purchase_id>'): 'purchases.edit',
+    ('DELETE', '/api/purchases/<purchase_id>'): 'purchases.delete',
     ('POST', '/api/campaigns'): 'campaigns.create',
     ('PUT', '/api/campaigns/<campaign_id>'): 'campaigns.edit',
     ('DELETE', '/api/campaigns/<campaign_id>'): 'campaigns.delete',
@@ -464,14 +474,14 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/permissions/my'): None,
     
     # Tenant Users
-    ('GET', '/tenant/users'): 'tenant_users.view',
-    ('POST', '/tenant/users'): 'tenant_users.edit',
-    ('PUT', '/tenant/users/<user_id>'): 'tenant_users.edit',
-    ('DELETE', '/tenant/users/<user_id>'): 'tenant_users.delete',
-    ('GET', '/tenant/company'): 'tenant_users.view',
-    ('PUT', '/tenant/company'): 'tenant_users.edit',
-    ('POST', '/tenant/company/upload/<asset_type>'): 'tenant_users.edit',
-    ('DELETE', '/tenant/company/upload/<asset_type>'): 'tenant_users.delete',
+    ('GET', '/tenant/users'): 'users.view',
+    ('POST', '/tenant/users'): 'users.edit',
+    ('PUT', '/tenant/users/<user_id>'): 'users.edit',
+    ('DELETE', '/tenant/users/<user_id>'): 'users.delete',
+    ('GET', '/tenant/company'): 'users.view',
+    ('PUT', '/tenant/company'): 'users.edit',
+    ('POST', '/tenant/company/upload/<asset_type>'): 'users.edit',
+    ('DELETE', '/tenant/company/upload/<asset_type>'): 'users.delete',
     ('GET', '/tenant/assets/<tenant_id>/<filename>'): 'users.view',
     
     # =========================================================================

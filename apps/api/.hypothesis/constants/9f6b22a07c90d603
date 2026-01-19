@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/medical.py
+# hypothesis_version: 6.150.1
+
+[100, 200, 'appointmentId', 'audiometry', 'authorId', 'category', 'clinical', 'conductedBy', 'content', 'doctorName', 'documents', 'ercp', 'ereceipts', 'general', 'hearing_tests', 'hospitalName', 'id', 'isPrivate', 'ix_hearing_test_date', 'materials', 'note', 'notes', 'patientId', 'patient_id', 'patient_notes', 'patients.id', 'pending', 'processedAt', 'receiptDate', 'receiptNumber', 'results', 'status', 'tenants.id', 'test', 'testDate', 'testType', 'test_date', 'title', 'type']

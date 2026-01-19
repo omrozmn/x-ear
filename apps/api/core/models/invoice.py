@@ -1,4 +1,4 @@
-# Invoice and Proforma Models
+# Invoice and Proforma Models (formerly Patient related)
 from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, ForeignKey, Numeric
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -12,7 +12,7 @@ class Invoice(BaseModel):
     id = Column(Integer, primary_key=True)
     invoice_number = Column(String(50), unique=True, nullable=False, index=True)
     sale_id = Column(String(50), ForeignKey('sales.id'), nullable=True, index=True)  # Link to sale
-    patient_id = Column(String(50), ForeignKey('patients.id'), nullable=True, index=True)  # Nullable - iade faturaları, cari hesap faturaları için hasta olmayabilir
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=True, index=True)  # Nullable - iade faturaları, cari hesap faturaları için hasta olmayabilir
     device_id = Column(String(50), ForeignKey('devices.id'), nullable=True)
     tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
@@ -51,7 +51,7 @@ class Invoice(BaseModel):
     birfatura_approved_at = Column(DateTime)  # GİB onay tarihi
     
     # Relationships
-    patient = relationship('Patient')
+    party = relationship('Party')
     device = relationship('Device')
     sale = relationship('Sale')
     
@@ -61,7 +61,7 @@ class Invoice(BaseModel):
             'invoiceNumber': self.invoice_number,
             'saleId': self.sale_id,
             'branchId': self.branch_id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'deviceId': self.device_id,
             'deviceName': self.device_name,
             'deviceSerial': self.device_serial,
@@ -94,7 +94,7 @@ class Proforma(BaseModel):
     
     id = Column(Integer, primary_key=True)
     proforma_number = Column(String(50), unique=True, nullable=False, index=True)
-    patient_id = Column(String(50), ForeignKey('patients.id'), nullable=True, index=True)  # Nullable - cari hesap teklifleri için hasta olmayabilir
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=True, index=True)  # Nullable - cari hesap teklifleri için hasta olmayabilir
     tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
@@ -120,7 +120,7 @@ class Proforma(BaseModel):
     created_by = Column(String(100))
     
     # Relationships
-    patient = relationship('Patient', back_populates='proformas')
+    party = relationship('Party', back_populates='proformas')
     converted_invoice = relationship('Invoice', foreign_keys=[converted_to_invoice_id], backref='source_proforma')
     
     def to_dict(self):
@@ -135,7 +135,7 @@ class Proforma(BaseModel):
             'id': self.id,
             'proformaNumber': self.proforma_number,
             'branchId': self.branch_id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'companyName': self.company_name,
             'deviceName': self.device_name,
             'deviceSerial': self.device_serial,

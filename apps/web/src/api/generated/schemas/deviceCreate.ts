@@ -14,25 +14,38 @@ import type { DeviceCreateModel } from './deviceCreateModel';
 import type { DeviceCreateType } from './deviceCreateType';
 import type { DeviceCreateCategory } from './deviceCreateCategory';
 import type { DeviceCreateEar } from './deviceCreateEar';
+import type { DeviceCreateStatus } from './deviceCreateStatus';
 import type { DeviceCreatePrice } from './deviceCreatePrice';
 import type { DeviceCreateNotes } from './deviceCreateNotes';
 import type { DeviceCreateTrialPeriod } from './deviceCreateTrialPeriod';
 import type { DeviceCreateWarranty } from './deviceCreateWarranty';
 
+/**
+ * Schema for creating a device - matches frontend expectations
+ */
 export interface DeviceCreate {
-  patientId: string;
+  partyId: string;
   inventoryId?: DeviceCreateInventoryId;
   serialNumber?: DeviceCreateSerialNumber;
   serialNumberLeft?: DeviceCreateSerialNumberLeft;
   serialNumberRight?: DeviceCreateSerialNumberRight;
+  /** Device brand */
   brand?: DeviceCreateBrand;
+  /** Device model */
   model?: DeviceCreateModel;
+  /** Device type (e.g., hearing_aid) */
   type?: DeviceCreateType;
+  /** Device category */
   category?: DeviceCreateCategory;
+  /** Ear side: left, right, both */
   ear?: DeviceCreateEar;
-  status?: string;
+  /** Device status */
+  status?: DeviceCreateStatus;
+  /** Sale price */
   price?: DeviceCreatePrice;
+  /** Notes */
   notes?: DeviceCreateNotes;
   trialPeriod?: DeviceCreateTrialPeriod;
+  /** Warranty info */
   warranty?: DeviceCreateWarranty;
 }

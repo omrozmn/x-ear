@@ -38,7 +38,7 @@ export const createEfaturaSenddocument = (
       
       
       return customInstance<unknown>(
-      {url: `/api/EFatura/sendDocument`, method: 'POST', signal
+      {url: `/EFatura/sendDocument`, method: 'POST', signal
     },
       );
     }
@@ -101,7 +101,7 @@ export const createEfaturaSendbasicinvoice = (
       
       
       return customInstance<unknown>(
-      {url: `/api/EFatura/sendBasicInvoice`, method: 'POST', signal
+      {url: `/EFatura/sendBasicInvoice`, method: 'POST', signal
     },
       );
     }
@@ -164,7 +164,7 @@ export const createEfaturaCreate = (
       
       
       return customInstance<unknown>(
-      {url: `/api/EFatura/Create`, method: 'POST', signal
+      {url: `/EFatura/Create`, method: 'POST', signal
     },
       );
     }
@@ -227,7 +227,7 @@ export const createEfaturaRetry = (
       
       
       return customInstance<unknown>(
-      {url: `/api/EFatura/Retry/${invoiceId}`, method: 'POST', signal
+      {url: `/EFatura/Retry/${invoiceId}`, method: 'POST', signal
     },
       );
     }
@@ -290,7 +290,7 @@ export const createEfaturaCancel = (
       
       
       return customInstance<unknown>(
-      {url: `/api/EFatura/Cancel/${invoiceId}`, method: 'POST', signal
+      {url: `/EFatura/Cancel/${invoiceId}`, method: 'POST', signal
     },
       );
     }
@@ -353,7 +353,7 @@ export const createBirfaturaSyncInvoices = (
       
       
       return customInstance<unknown>(
-      {url: `/api/birfatura/sync-invoices`, method: 'POST',
+      {url: `/birfatura/sync-invoices`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: invoiceSyncRequest, signal
     },
@@ -418,7 +418,7 @@ export const createOutebelgev2Senddocument = (
       
       
       return customInstance<unknown>(
-      {url: `/api/OutEBelgeV2/SendDocument`, method: 'POST', signal
+      {url: `/OutEBelgeV2/SendDocument`, method: 'POST', signal
     },
       );
     }
@@ -481,7 +481,7 @@ export const createOutebelgev2Sendbasicinvoicefrommodel = (
       
       
       return customInstance<unknown>(
-      {url: `/api/OutEBelgeV2/SendBasicInvoiceFromModel`, method: 'POST', signal
+      {url: `/OutEBelgeV2/SendBasicInvoiceFromModel`, method: 'POST', signal
     },
       );
     }
@@ -544,7 +544,7 @@ export const createMusteriFirmamusterigetir = (
       
       
       return customInstance<unknown>(
-      {url: `/api/Musteri/FirmaMusteriGetir`, method: 'POST',
+      {url: `/Musteri/FirmaMusteriGetir`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: mockSearchRequest, signal
     },
@@ -609,7 +609,7 @@ export const createFirmaFirmapkbilgisigetir = (
       
       
       return customInstance<unknown>(
-      {url: `/api/Firma/FirmaPKBilgisiGetir`, method: 'POST',
+      {url: `/Firma/FirmaPKBilgisiGetir`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: mockDetailRequest, signal
     },
@@ -674,7 +674,7 @@ export const createFirmaFirmaadresbilgisigetir = (
       
       
       return customInstance<unknown>(
-      {url: `/api/Firma/FirmaAdresBilgisiGetir`, method: 'POST',
+      {url: `/Firma/FirmaAdresBilgisiGetir`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: mockDetailRequest, signal
     },

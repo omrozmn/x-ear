@@ -27,7 +27,7 @@ const navigationItems = [
   },
   {
     name: 'Hastalar',
-    href: '/patients',
+    href: '/parties',
     icon: Users,
   },
   {

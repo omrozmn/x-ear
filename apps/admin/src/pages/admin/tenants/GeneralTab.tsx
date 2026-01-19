@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useUpdateAdminTenant } from '@/lib/api-client';
+import { PRODUCT_REGISTRY } from '@/config/productRegistry';
 
 interface ExtendedTenant {
     id?: string;
@@ -8,6 +9,7 @@ interface ExtendedTenant {
     owner_email?: string;
     status?: string;
     max_users?: number;
+    product_code?: string;
     [key: string]: any;
 }
 
@@ -22,7 +24,8 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
         name: tenant.name || '',
         owner_email: tenant.owner_email || '',
         status: tenant.status || 'active',
-        max_users: tenant.max_users || 5
+        max_users: tenant.max_users || 5,
+        product_code: tenant.product_code || 'xear_hearing'
     });
 
     useEffect(() => {
@@ -30,7 +33,8 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
             name: tenant.name || '',
             owner_email: tenant.owner_email || '',
             status: tenant.status || 'active',
-            max_users: tenant.max_users || 5
+            max_users: tenant.max_users || 5,
+            product_code: tenant.product_code || 'xear_hearing'
         });
     }, [tenant]);
 
@@ -84,6 +88,22 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                         <option value="trial">Deneme</option>
                         <option value="suspended">Askıya Alınmış</option>
                         <option value="cancelled">İptal Edilmiş</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Ürün</label>
+                    <select
+                        value={formData.product_code}
+                        onChange={e => setFormData({ ...formData, product_code: e.target.value })}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                    >
+                        {Object.entries(PRODUCT_REGISTRY)
+                            .filter(([_, config]) => config.enabled && config.creatable)
+                            .map(([key, config]) => (
+                                <option key={key} value={key}>{config.name}</option>
+                            ))
+                        }
                     </select>
                 </div>
 

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/status.py
+# hypothesis_version: 6.150.1
+
+[200, 503, '/ai', '/capabilities', '/health', '/status', 'AI Status', 'AI health check', 'AI service unhealthy', 'AI status retrieved', 'Check timestamp', 'Current usage count', 'Get AI layer status', 'Health check passed', 'Health status', 'Kill switch status', 'Model ID', 'Model provider', 'Model status', 'Phase status', 'Quota status by type', 'Remaining quota', 'Status timestamp', 'Total requests today', 'Type of usage', 'Usage status', 'available', 'blocked', 'capabilities', 'degraded', 'description', 'disabled', 'execution_allowed', 'healthy', 'phase', 'tenant_id', 'tenant_placeholder', 'unknown', 'user_id', 'user_placeholder']

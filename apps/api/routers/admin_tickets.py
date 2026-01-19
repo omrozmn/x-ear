@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import logging
 
@@ -34,8 +34,8 @@ MOCK_TICKETS = [
         "tenant_id": "tenant-1",
         "tenant_name": "Acme Corp",
         "created_by": "John Doe",
-        "created_at": datetime.utcnow().isoformat(),
-        "sla_due_date": datetime.utcnow().isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "sla_due_date": datetime.now(timezone.utc).isoformat()
     }
 ]
 
@@ -81,7 +81,7 @@ async def create_admin_ticket(
     """Create a new ticket"""
     new_ticket = {
         "id": str(uuid.uuid4()),
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "status": "open",
         "title": data.title,
         "description": data.description,

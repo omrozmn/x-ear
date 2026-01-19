@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Modal, Button, Textarea, Select } from '@x-ear/ui-web';
-import type { Patient } from '../../../types/patient/patient-base.types';
+import type { Party } from '../../../types/party/party-base.types';
 
 interface SGKApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApprove: (approvalData: SGKApprovalData) => void;
-  patient: Patient | null;
+  party: Party | null;
   requestId?: string;
   requestType?: string;
   title?: string;
@@ -14,7 +14,7 @@ interface SGKApprovalModalProps {
 
 interface SGKApprovalData {
   requestId: string;
-  patientId: string;
+  partyId: string;
   approvalType: 'approve' | 'reject' | 'request_info';
   notes: string;
   approvedBy: string;
@@ -25,7 +25,7 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
   isOpen,
   onClose,
   onApprove,
-  patient,
+  party,
   requestId = '',
   requestType = 'İşitme Cihazı Talebi',
   title = 'SGK Onay İşlemi'
@@ -41,13 +41,13 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
   ];
 
   const handleSubmit = async () => {
-    if (!patient || !requestId) return;
+    if (!party || !requestId) return;
 
     setIsSubmitting(true);
     try {
       const approvalData: SGKApprovalData = {
         requestId,
-        patientId: patient.id || '',
+        partyId: party.id || '',
         approvalType,
         notes,
         approvedBy: 'Mevcut Kullanıcı', // Gerçek uygulamada auth context'ten gelecek
@@ -118,17 +118,17 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
     >
       <div className="space-y-6">
         {/* Hasta ve Talep Bilgileri */}
-        {patient && (
+        {party && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium text-gray-900 mb-3">Talep Bilgileri</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">Hasta:</span>
-                <span className="font-medium">{patient.firstName} {patient.lastName}</span>
+                <span className="font-medium">{party.firstName} {party.lastName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">TC Kimlik No:</span>
-                <span className="font-medium">{patient.tcNumber}</span>
+                <span className="font-medium">{party.tcNumber}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Talep Türü:</span>

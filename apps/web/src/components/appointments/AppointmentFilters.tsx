@@ -26,7 +26,7 @@ const filterSchema = z.object({
   endDate: z.string().optional(),
   clinician: z.string().optional(),
   branchId: z.string().optional(),
-  patientId: z.string().optional(),
+  partyId: z.string().optional(),
 });
 
 type FilterFormData = z.infer<typeof filterSchema>;
@@ -103,7 +103,7 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
       endDate: initialFilters.endDate || '',
       clinician: initialFilters.clinician || '',
       branchId: initialFilters.branchId || '',
-      patientId: initialFilters.patientId || '',
+      partyId: initialFilters.partyId || '',
     },
   });
 
@@ -120,7 +120,7 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
       endDate: data.endDate || undefined,
       clinician: data.clinician || undefined,
       branchId: data.branchId || undefined,
-      patientId: data.patientId || undefined,
+      partyId: data.partyId || undefined,
     };
 
     // Remove undefined values
@@ -144,7 +144,7 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
       endDate: '',
       clinician: '',
       branchId: '',
-      patientId: '',
+      partyId: '',
     });
     setSelectedStatuses([]);
     setSelectedTypes([]);
@@ -181,7 +181,7 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
     if (watchedValues.endDate) count++;
     if (watchedValues.clinician) count++;
     if (watchedValues.branchId) count++;
-    if (watchedValues.patientId) count++;
+    if (watchedValues.partyId) count++;
     return count;
   }, [watchedValues, selectedStatuses, selectedTypes]);
 
@@ -242,7 +242,7 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
               render={({ field }) => (
                 <Input
                   {...field}
-                  placeholder="Search appointments, patients, or notes..."
+                  placeholder="Search appointments, parties, or notes..."
                   className="w-full"
                   disabled={isLoading}
                 />
@@ -374,15 +374,15 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
                   </div>
                 </HStack>
 
-                {/* Patient ID (for specific patient filtering) */}
+                {/* Party ID (for specific party filtering) */}
                 <Controller
-                  name="patientId"
+                  name="partyId"
                   control={control}
                   render={({ field }) => (
                     <Input
                       {...field}
-                      label="Patient ID"
-                      placeholder="Enter patient ID"
+                      label="Party ID"
+                      placeholder="Enter party ID"
                       disabled={isLoading}
                     />
                   )}

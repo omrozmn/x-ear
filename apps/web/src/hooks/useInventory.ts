@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listInventory } from '@/api/generated';
+import { listInventory } from '@/api/client/inventory.client';
 import type { InventoryItemCreate } from '@/api/generated/schemas';
 import { unwrapArray } from '../utils/response-unwrap';
 

@@ -26,12 +26,12 @@ import {
     X,
     Zap
 } from 'lucide-react';
-import { useListSmHeaders, getListSmHeadersQueryKey } from '@/api/generated';
+import {useListSmHeaders, getListSmHeadersQueryKey} from '@/api/client/sms.client';
 import { useAuthStore } from '@/stores/authStore';
 
 // SMS Automation Trigger Types
 type TriggerType =
-    | 'new_patient'           // Yeni hasta kaydı
+    | 'new_party'           // Yeni hasta kaydı
     | 'device_sale'           // Cihaz satışı
     | 'device_delivery'       // Cihaz teslimi
     | 'promissory_created'    // Senet oluşturma
@@ -77,15 +77,15 @@ const TRIGGER_CONFIG: Record<TriggerType, {
     label: string;
     description: string;
     icon: React.ReactNode;
-    category: 'patient' | 'sales' | 'appointment' | 'payment' | 'other';
+    category: 'party' | 'sales' | 'appointment' | 'payment' | 'other';
     defaultTiming: { type: 'immediate' | 'before' | 'after'; value?: number; unit?: 'minutes' | 'hours' | 'days' };
     dynamicFields: string[];
 }> = {
-    new_patient: {
+    new_party: {
         label: 'Yeni Hasta Kaydı',
         description: 'Sisteme yeni hasta eklendiğinde otomatik hoşgeldiniz mesajı gönderilir.',
         icon: <UserPlus className="w-5 h-5" />,
-        category: 'patient',
+        category: 'party',
         defaultTiming: { type: 'immediate' },
         dynamicFields: ['{{AD}}', '{{SOYAD}}', '{{AD_SOYAD}}', '{{TELEFON}}', '{{SUBE}}']
     },
@@ -196,7 +196,7 @@ const TRIGGER_CONFIG: Record<TriggerType, {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-    patient: 'Hasta Yönetimi',
+    party: 'Hasta Yönetimi',
     sales: 'Satış & Cihaz',
     appointment: 'Randevu',
     payment: 'Ödeme & Fatura',
@@ -210,7 +210,7 @@ const SAMPLE_RULES: AutomationRule[] = [
     {
         id: 'auto_1',
         name: 'Hoşgeldiniz Mesajı',
-        trigger: 'new_patient',
+        trigger: 'new_party',
         templateName: 'Yeni Hasta Hoşgeldiniz',
         templateContent: 'Sayın {{AD}} {{SOYAD}}, X-Ear ailesine hoş geldiniz! Sağlıklı bir duyuş yolculuğu diliyoruz.',
         isActive: true,
@@ -315,7 +315,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
         timing: { type: 'immediate' | 'before' | 'after'; value?: number; unit?: 'minutes' | 'hours' | 'days' };
     }>({
         name: '',
-        trigger: 'new_patient',
+        trigger: 'new_party',
         templateContent: '',
         headerId: '',
         timing: { type: 'immediate' }
@@ -382,7 +382,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
 
         setShowCreateModal(false);
         setEditingRule(null);
-        setFormData({ name: '', trigger: 'new_patient', templateContent: '', headerId: '', timing: { type: 'immediate' } });
+        setFormData({ name: '', trigger: 'new_party', templateContent: '', headerId: '', timing: { type: 'immediate' } });
     };
 
     const handleEditRule = (rule: AutomationRule) => {
@@ -502,7 +502,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                         className="w-full h-full flex items-center justify-center gap-2"
                         onClick={() => {
                             setEditingRule(null);
-                            setFormData({ name: '', trigger: 'new_patient', templateContent: '', headerId: '', timing: { type: 'immediate' } });
+                            setFormData({ name: '', trigger: 'new_party', templateContent: '', headerId: '', timing: { type: 'immediate' } });
                             setShowCreateModal(true);
                         }}
                     >

@@ -5,5 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { AppointmentStatus } from './appointmentStatus';
 
-export type AppointmentUpdateStatus = string | null;
+export type AppointmentUpdateStatus = AppointmentStatus | null;

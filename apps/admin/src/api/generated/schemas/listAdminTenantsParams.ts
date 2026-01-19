@@ -5,10 +5,12 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { ProductCode } from './productCode';
 
 export type ListAdminTenantsParams = {
 page?: number;
 limit?: number;
 status?: string;
 search?: string;
+product_code?: ProductCode | null;
 };

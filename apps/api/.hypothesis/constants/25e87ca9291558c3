@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/unified_cash.py
+# hypothesis_version: 6.150.1
+
+[200, 500, 1000, 999999, '+00:00', 'Nakit işlem', 'UnifiedCash', 'Z', 'amount', 'batarya', 'breakdown', 'cash', 'cashExpense', 'cashIncome', 'category', 'date', 'description', 'diger', 'endDate', 'expense', 'filtre', 'id', 'income', 'kalip', 'kalıp', 'kaparo', 'kapora', 'mixed', 'month', 'netAmount', 'onarım', 'originalId', 'paid', 'patientId', 'patientName', 'payment', 'paymentMethod', 'payments', 'paymentsExpense', 'paymentsIncome', 'pending', 'period', 'pil', 'recordType', 'recordTypes', 'referenceNumber', 'sale', 'sales', 'startDate', 'status', 'summary', 'tamir', 'teslim', 'teslimat', 'today', 'totalCount', 'totalExpense', 'totalIncome', 'transactionType', 'unknown', 'week', 'year']

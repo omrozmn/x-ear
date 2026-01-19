@@ -8,6 +8,6 @@
 import type { BulkRegistrationPriority } from './bulkRegistrationPriority';
 
 export interface BulkRegistration {
-  device_ids: string[];
+  deviceIds: string[];
   priority?: BulkRegistrationPriority;
 }

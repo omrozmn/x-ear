@@ -9,6 +9,7 @@ from database import get_db
 from models.production_order import ProductionOrder
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.production import ProductionOrderRead
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,8 @@ async def init_db(
     """Initialize Production Orders table"""
     try:
         ProductionOrder.__table__.create(db.get_bind(), checkfirst=True)
-        return {"success": True, "message": "Production Orders table initialized"}
+
+        return ResponseEnvelope(message="Production Orders table initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -42,7 +44,8 @@ async def get_orders(
         if status:
             query = query.filter(ProductionOrder.status == status)
         orders = query.order_by(ProductionOrder.created_at.desc()).all()
-        return {"success": True, "data": [o.to_dict() for o in orders]}
+
+        return ResponseEnvelope(data=[ProductionOrderRead.model_validate(o).model_dump(by_alias=True) for o in orders])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -62,7 +65,8 @@ async def update_order_status(
         if data.status:
             order.status = data.status
             db.commit()
-        return {"success": True, "data": order.to_dict(), "message": "Order status updated"}
+
+        return ResponseEnvelope(data=ProductionOrderRead.model_validate(order).model_dump(by_alias=True), message="Order status updated")
     except HTTPException:
         raise
     except Exception as e:

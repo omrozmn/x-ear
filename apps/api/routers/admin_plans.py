@@ -53,8 +53,9 @@ def list_plans(
         total = query.count()
         plans = query.offset((page - 1) * limit).limit(limit).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data={
-            "plans": [p.to_dict() for p in plans],
+            "items": [PlanRead.model_validate(p) for p in plans],
             "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
         })
     except Exception as e:
@@ -85,7 +86,8 @@ def create_plan(
         )
         db_session.add(plan)
         db_session.commit()
-        return ResponseEnvelope(data={"plan": plan.to_dict()})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data={"plan": PlanRead.model_validate(plan)})
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create plan error: {e}")
@@ -101,7 +103,8 @@ def get_plan(
     plan = db_session.get(Plan, plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail={"message": "Plan not found", "code": "NOT_FOUND"})
-    return ResponseEnvelope(data={"plan": plan.to_dict(include_relationships=True)})
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return ResponseEnvelope(data={"plan": PlanRead.model_validate(plan).model_dump(by_alias=True, include_relationships=True)})
 
 @router.put("/{plan_id}", operation_id="updateAdminPlan", response_model=PlanDetailResponse)
 def update_plan(
@@ -128,7 +131,8 @@ def update_plan(
         
         plan.updated_at = datetime.utcnow()
         db_session.commit()
-        return ResponseEnvelope(data={"plan": plan.to_dict()})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data={"plan": PlanRead.model_validate(plan)})
     except HTTPException:
         raise
     except Exception as e:

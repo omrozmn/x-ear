@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/sms_packages.py
+# hypothesis_version: 6.150.1
+
+[100, 201, 403, 404, 500, '/admin/sms/packages', '/sms-packages', 'Package deleted', 'Package not found', 'SMSPackages', 'current_page', 'deleteAdminSmPackage', 'id', 'listAdminSmPackages', 'listSmsPackages', 'name', 'pages', 'per_page', 'price', 'to_dict', 'total', 'updateAdminSmPackage']

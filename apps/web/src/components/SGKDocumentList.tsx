@@ -21,7 +21,7 @@ import DocumentViewer from './sgk/DocumentViewer';
 type SGKProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 interface SGKDocumentListProps {
-  patientId?: string;
+  partyId?: string;
   filters?: SGKDocumentFilters;
   onDocumentSelect?: (document: SGKDocument) => void;
   onDocumentEdit?: (document: SGKDocument) => void;
@@ -32,7 +32,7 @@ interface SGKDocumentListProps {
 }
 
 export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
-  patientId,
+  partyId,
   filters: _externalFilters,
   onDocumentSelect,
   onDocumentEdit,
@@ -62,13 +62,13 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
 
   const loadDocuments = useCallback(async () => {
-    if (!patientId) return;
+    if (!partyId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const result = await sgkService.listDocuments(patientId);
+      const result = await sgkService.listDocuments(partyId);
       const documents = ((result as unknown) as SGKSearchResult).documents || [];
       setDocuments(documents);
     } catch (err) {
@@ -76,7 +76,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [patientId]);
+  }, [partyId]);
 
   const sortedDocuments = useMemo(() => {
     const sorted = [...documents];

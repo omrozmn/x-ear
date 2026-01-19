@@ -5,19 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { UserProfileBranchId } from './userProfileBranchId';
+import type { UserProfileFirstName } from './userProfileFirstName';
+import type { UserProfileLastName } from './userProfileLastName';
+import type { UserProfilePhone } from './userProfilePhone';
+import type { UserProfileRole } from './userProfileRole';
 
 /**
  * User profile schema
  */
 export interface UserProfile {
-  id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  role: string;
-  tenantId: string;
-  branchId?: UserProfileBranchId;
-  permissions?: string[];
+  firstName?: UserProfileFirstName;
+  lastName?: UserProfileLastName;
+  phone?: UserProfilePhone;
+  role?: UserProfileRole;
 }

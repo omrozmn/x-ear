@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSProviderConfigRead } from './sMSProviderConfigRead';
+import type { SmsProviderConfigRead } from './smsProviderConfigRead';
 
-export type ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeData = SMSProviderConfigRead | null;
+export type ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeData = SmsProviderConfigRead | null;

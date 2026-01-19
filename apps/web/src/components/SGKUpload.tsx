@@ -10,7 +10,7 @@ import {
 import sgkService from '../services/sgk/sgk.service';
 
 interface SGKUploadProps {
-  patientId?: string;
+  partyId?: string;
   onUploadComplete?: (document: SGKDocument) => void;
   onUploadError?: (error: string) => void;
   allowedTypes?: SGKDocumentType[];
@@ -20,7 +20,7 @@ interface SGKUploadProps {
 }
 
 export const SGKUpload: React.FC<SGKUploadProps> = ({
-  patientId,
+  partyId,
   onUploadComplete,
   onUploadError,
   allowedTypes = ['recete', 'rapor', 'belge', 'fatura', 'teslim', 'iade'],
@@ -29,7 +29,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
   compact = false
 }) => {
   const [formData, setFormData] = useState<SGKDocumentFormData>({
-    patientId: patientId || '',
+    partyId: partyId || '',
     documentType: 'recete',
     autoProcess
   });
@@ -135,7 +135,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
       const result = await sgkService.processDocument({
         imagePath: URL.createObjectURL(file),
         documentType: formData.documentType,
-        patientId: formData.patientId,
+        partyId: formData.partyId,
         autoCrop: true,
         enhanceImage: true
       });
@@ -171,7 +171,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
 
       // Create document
       const documentData: Omit<SGKDocument, 'id' | 'createdAt' | 'updatedAt'> = {
-        patientId: formData.patientId,
+        partyId: formData.partyId,
         filename: selectedFile?.name || 'document',
         documentType: formData.documentType,
         fileSize: selectedFile?.size || 0,
@@ -187,13 +187,13 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
       const document = await sgkService.createDocument(documentData);
       
       // Create workflow
-      await sgkService.createWorkflow(document.id, document.patientId);
+      await sgkService.createWorkflow(document.id, document.partyId);
 
       onUploadComplete?.(document);
       
       // Reset form
       setFormData({
-        patientId: patientId || '',
+        partyId: partyId || '',
         documentType: 'recete',
         autoProcess
       });
@@ -225,23 +225,23 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Patient Selection */}
-        {!patientId && (
+        {/* Party Selection */}
+        {!partyId && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Hasta <span className="text-red-500">*</span>
             </label>
             <Input
               type="text"
-              value={formData.patientId}
-              onChange={(e) => setFormData(prev => ({ ...prev, patientId: e.target.value }))}
+              value={formData.partyId}
+              onChange={(e) => setFormData(prev => ({ ...prev, partyId: e.target.value }))}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                validation?.errors.patientId ? 'border-red-300' : 'border-gray-300'
+                validation?.errors.partyId ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Hasta ID'si girin"
             />
-            {validation?.errors.patientId && (
-              <p className="mt-1 text-sm text-red-600">{validation.errors.patientId}</p>
+            {validation?.errors.partyId && (
+              <p className="mt-1 text-sm text-red-600">{validation.errors.partyId}</p>
             )}
           </div>
         )}
@@ -374,8 +374,8 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
                 
                 {ocrResult.extractedInfo && (
                   <div className="space-y-1">
-                    {ocrResult.extractedInfo.patientName && (
-                      <div><span className="font-medium">Hasta Adı:</span> {ocrResult.extractedInfo.patientName}</div>
+                    {ocrResult.extractedInfo.partyName && (
+                      <div><span className="font-medium">Hasta Adı:</span> {ocrResult.extractedInfo.partyName}</div>
                     )}
                     {ocrResult.extractedInfo.tcNumber && (
                       <div><span className="font-medium">TC No:</span> {ocrResult.extractedInfo.tcNumber}</div>

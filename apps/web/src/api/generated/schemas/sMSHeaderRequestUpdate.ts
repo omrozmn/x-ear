@@ -5,10 +5,10 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSHeaderRequestUpdateStatus } from './sMSHeaderRequestUpdateStatus';
-import type { SMSHeaderRequestUpdateRejectionReason } from './sMSHeaderRequestUpdateRejectionReason';
+import type { SmsHeaderRequestUpdateStatus } from './smsHeaderRequestUpdateStatus';
+import type { SmsHeaderRequestUpdateRejectionReason } from './smsHeaderRequestUpdateRejectionReason';
 
-export interface SMSHeaderRequestUpdate {
-  status?: SMSHeaderRequestUpdateStatus;
-  rejectionReason?: SMSHeaderRequestUpdateRejectionReason;
+export interface SmsHeaderRequestUpdate {
+  status?: SmsHeaderRequestUpdateStatus;
+  rejectionReason?: SmsHeaderRequestUpdateRejectionReason;
 }

@@ -8,7 +8,7 @@
 import type { SMSLogReadCreatedAt } from './sMSLogReadCreatedAt';
 import type { SMSLogReadUpdatedAt } from './sMSLogReadUpdatedAt';
 import type { SMSLogReadCampaignId } from './sMSLogReadCampaignId';
-import type { SMSLogReadPatientId } from './sMSLogReadPatientId';
+import type { SMSLogReadPartyId } from './sMSLogReadPartyId';
 import type { SMSLogStatus } from './sMSLogStatus';
 import type { SMSLogReadSentAt } from './sMSLogReadSentAt';
 import type { SMSLogReadDeliveredAt } from './sMSLogReadDeliveredAt';
@@ -23,7 +23,7 @@ export interface SMSLogRead {
   /** Unique identifier for the resource */
   id: string;
   campaignId?: SMSLogReadCampaignId;
-  patientId?: SMSLogReadPatientId;
+  partyId?: SMSLogReadPartyId;
   phoneNumber: string;
   message: string;
   status: SMSLogStatus;

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Patient } from '../../types/patient/patient-base.types';
+import { Party } from '../../types/party/party-base.types';
 import { Button, Input, Select } from '@x-ear/ui-web';
 
 interface SGKQueryFormProps {
-  patient: Patient;
+  party: Party;
   onSubmit?: (data: SGKQueryData) => void;
   onCancel?: () => void;
 }
 
 interface SGKQueryData {
-  patientId: string;
+  partyId: string;
   tcNumber: string;
   queryType: string;
   queryDate: string;
@@ -17,13 +17,13 @@ interface SGKQueryData {
 }
 
 export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
-  patient,
+  party,
   onSubmit,
   onCancel,
 }) => {
   const [formData, setFormData] = useState<SGKQueryData>({
-    patientId: patient.id || '',
-    tcNumber: patient.tcNumber || '',
+    partyId: party.id || '',
+    tcNumber: party.tcNumber || '',
     queryType: '',
     queryDate: new Date().toISOString().split('T')[0],
     notes: '',
@@ -100,7 +100,7 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Hasta Adı"
-              value={`${patient.firstName} ${patient.lastName}`}
+              value={`${party.firstName} ${party.lastName}`}
               fullWidth
               readOnly
             />

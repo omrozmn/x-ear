@@ -3,7 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Ban, CheckCircle, Users, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/ui/Pagination';
-import { TenantEditModal } from './tenants';
+import { TenantEditModal, TenantCreateModal } from './tenants';
+import { PRODUCT_REGISTRY, getProductConfig } from '@/config/productRegistry';
 import {
     useListAdminTenants,
     useUpdateAdminTenantStatus
@@ -14,6 +15,7 @@ type TenantStatus = 'active' | 'trial' | 'suspended' | 'cancelled';
 export default function TenantsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [productFilter, setProductFilter] = useState<string>('all');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
@@ -24,8 +26,10 @@ export default function TenantsPage() {
         page,
         limit,
         search: searchTerm || undefined,
-        status: statusFilter !== 'all' ? (statusFilter as TenantStatus) : undefined
-    });
+        status: statusFilter !== 'all' ? (statusFilter as TenantStatus) : undefined,
+        // @ts-ignore - API client not regenerated yet
+        product_code: productFilter !== 'all' ? productFilter : undefined
+    } as any);
 
     const tenants = (tenantsData as any)?.data?.tenants || (tenantsData as any)?.tenants || [];
     const pagination = (tenantsData as any)?.data?.pagination || (tenantsData as any)?.pagination;
@@ -105,6 +109,18 @@ export default function TenantsPage() {
                         <option value="cancelled">İptal Edilmiş</option>
                     </select>
                 </div>
+                <div className="w-full sm:w-48">
+                    <select
+                        value={productFilter}
+                        onChange={(e) => setProductFilter(e.target.value)}
+                        className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                    >
+                        <option value="all">Tüm Ürünler</option>
+                        {Object.entries(PRODUCT_REGISTRY).map(([key, config]) => (
+                            <option key={key} value={key}>{config.name}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             <div className="mt-8 flex flex-col">
@@ -119,6 +135,9 @@ export default function TenantsPage() {
                                         </th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                             Durum
+                                        </th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                            Ürün
                                         </th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                             Plan
@@ -137,84 +156,97 @@ export default function TenantsPage() {
                                 <tbody className="divide-y divide-gray-200 bg-white">
                                     {isLoading ? (
                                         <tr>
-                                            <td colSpan={6} className="text-center py-4">Yükleniyor...</td>
+                                            <td colSpan={7} className="text-center py-4">Yükleniyor...</td>
                                         </tr>
                                     ) : tenants.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="text-center py-4 text-gray-500">Kayıt bulunamadı</td>
+                                            <td colSpan={7} className="text-center py-4 text-gray-500">Kayıt bulunamadı</td>
                                         </tr>
                                     ) : (
-                                        tenants.map((tenant) => (
-                                            <tr
-                                                key={tenant.id}
-                                                className="hover:bg-gray-50 cursor-pointer"
-                                                onClick={() => setSelectedTenantId(tenant.id!)}
-                                            >
-                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                                    <div className="flex items-center">
-                                                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                                                            {tenant.name?.charAt(0).toUpperCase()}
+                                        tenants.map((tenant: any) => {
+                                            const productConfig = getProductConfig(tenant.product_code);
+                                            return (
+                                                <tr
+                                                    key={tenant.id}
+                                                    className="hover:bg-gray-50 cursor-pointer"
+                                                    onClick={() => setSelectedTenantId(tenant.id!)}
+                                                >
+                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                                        <div className="flex items-center">
+                                                            <div className="h-10 w-10 flex-shrink-0 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                                                {tenant.name?.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="ml-4">
+                                                                <div className="font-medium text-gray-900">{tenant.name}</div>
+                                                                <div className="text-gray-500">{tenant.owner_email}</div>
+                                                            </div>
                                                         </div>
-                                                        <div className="ml-4">
-                                                            <div className="font-medium text-gray-900">{tenant.name}</div>
-                                                            <div className="text-gray-500">{tenant.owner_email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 
                                                         ${tenant.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                            tenant.status === 'trial' ? 'bg-blue-100 text-blue-800' :
-                                                                tenant.status === 'suspended' ? 'bg-yellow-100 text-yellow-800' :
-                                                                    'bg-red-100 text-red-800'}`}>
-                                                        {tenant.status === 'active' ? 'Aktif' :
-                                                            tenant.status === 'trial' ? 'Deneme' :
-                                                                tenant.status === 'suspended' ? 'Askıda' : 'İptal'}
-                                                    </span>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    {tenant.current_plan || 'Plan Yok'}
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    <div className="flex items-center">
-                                                        <Users className="mr-1.5 h-4 w-4 text-gray-400" />
-                                                        Max: {tenant.max_users}
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    {tenant.created_at ? new Date(tenant.created_at).toLocaleDateString('tr-TR') : '-'}
-                                                </td>
-                                                <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                    <div className="flex justify-end space-x-2">
-                                                        {tenant.status !== 'active' && (
+                                                                tenant.status === 'trial' ? 'bg-blue-100 text-blue-800' :
+                                                                    tenant.status === 'suspended' ? 'bg-yellow-100 text-yellow-800' :
+                                                                        'bg-red-100 text-red-800'}`}>
+                                                            {tenant.status === 'active' ? 'Aktif' :
+                                                                tenant.status === 'trial' ? 'Deneme' :
+                                                                    tenant.status === 'suspended' ? 'Askıda' : 'İptal'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${productConfig.badge === 'purple' ? 'bg-purple-50 text-purple-700 ring-purple-600/20' :
+                                                            productConfig.badge === 'green' ? 'bg-green-50 text-green-700 ring-green-600/20' :
+                                                                productConfig.badge === 'red' ? 'bg-red-50 text-red-700 ring-red-600/20' :
+                                                                    productConfig.badge === 'orange' ? 'bg-orange-50 text-orange-700 ring-orange-600/20' :
+                                                                        'bg-blue-50 text-blue-700 ring-blue-600/20'
+                                                            }`}>
+                                                            {productConfig.name}
+                                                        </span>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        {tenant.current_plan || 'Plan Yok'}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        <div className="flex items-center">
+                                                            <Users className="mr-1.5 h-4 w-4 text-gray-400" />
+                                                            Max: {tenant.max_users}
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        {tenant.created_at ? new Date(tenant.created_at).toLocaleDateString('tr-TR') : '-'}
+                                                    </td>
+                                                    <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                                        <div className="flex justify-end space-x-2">
+                                                            {tenant.status !== 'active' && (
+                                                                <button
+                                                                    onClick={(e) => handleStatusChange(tenant.id!, 'active', e)}
+                                                                    className="text-green-600 hover:text-green-900"
+                                                                    title="Aktifleştir"
+                                                                >
+                                                                    <CheckCircle className="h-5 w-5" />
+                                                                </button>
+                                                            )}
+                                                            {tenant.status === 'active' && (
+                                                                <button
+                                                                    onClick={(e) => handleStatusChange(tenant.id!, 'suspended', e)}
+                                                                    className="text-yellow-600 hover:text-yellow-900"
+                                                                    title="Askıya Al"
+                                                                >
+                                                                    <Ban className="h-5 w-5" />
+                                                                </button>
+                                                            )}
                                                             <button
-                                                                onClick={(e) => handleStatusChange(tenant.id!, 'active', e)}
-                                                                className="text-green-600 hover:text-green-900"
-                                                                title="Aktifleştir"
+                                                                onClick={(e) => handleDelete(tenant.id!, e)}
+                                                                className="text-red-600 hover:text-red-900"
+                                                                title="Sil"
                                                             >
-                                                                <CheckCircle className="h-5 w-5" />
+                                                                <Trash2 className="h-5 w-5" />
                                                             </button>
-                                                        )}
-                                                        {tenant.status === 'active' && (
-                                                            <button
-                                                                onClick={(e) => handleStatusChange(tenant.id!, 'suspended', e)}
-                                                                className="text-yellow-600 hover:text-yellow-900"
-                                                                title="Askıya Al"
-                                                            >
-                                                                <Ban className="h-5 w-5" />
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={(e) => handleDelete(tenant.id!, e)}
-                                                            className="text-red-600 hover:text-red-900"
-                                                            title="Sil"
-                                                        >
-                                                            <Trash2 className="h-5 w-5" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
                                     )}
                                 </tbody>
                             </table>
@@ -236,6 +268,11 @@ export default function TenantsPage() {
                 tenantId={selectedTenantId}
                 isOpen={!!selectedTenantId}
                 onClose={() => setSelectedTenantId(null)}
+            />
+
+            <TenantCreateModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
             />
         </div>
     );

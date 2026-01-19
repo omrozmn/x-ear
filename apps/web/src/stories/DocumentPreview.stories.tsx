@@ -17,8 +17,8 @@ const mockResult = {
   fileName: 'IMG_0227.JPG',
   status: 'processed' as const,
   result: {
-    matched_patient: {
-      patient: {
+    matched_party: {
+      party: {
         id: 'pat_123',
         fullName: 'Ahmet Yılmaz',
       },
@@ -46,13 +46,13 @@ export const Default: Story = {
   },
 };
 
-export const NoPatientMatch: Story = {
+export const NoPartyMatch: Story = {
   args: {
     result: {
       ...mockResult,
       result: {
         ...mockResult.result,
-        matched_patient: null,
+        matched_party: null,
       },
     },
     isOpen: true,

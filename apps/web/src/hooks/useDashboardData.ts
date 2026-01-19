@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useListDashboard } from '@/api/generated';
+import { useListDashboard } from '@/api/client/dashboard.client';
 
 interface DashboardStats {
-  totalPatients: number;
+  totalParties: number;
   todayAppointments: number;
   monthlyRevenue: number;
   activeTrials: number;
-  activePatients: number;
+  activeParties: number;
   dailyRevenue: number;
   pendingAppointments: number;
   endingTrials: number;
@@ -56,11 +56,11 @@ interface DashboardPayload {
 export const useDashboardData = (): DashboardData => {
   const [data, setData] = useState<DashboardData>({
     stats: {
-      totalPatients: 0,
+      totalParties: 0,
       todayAppointments: 0,
       monthlyRevenue: 0,
       activeTrials: 0,
-      activePatients: 0,
+      activeParties: 0,
       dailyRevenue: 0,
       pendingAppointments: 0,
       endingTrials: 0,
@@ -80,18 +80,18 @@ export const useDashboardData = (): DashboardData => {
       return;
     }
 
-    // Response structure: { totalPatients, totalDevices, ... }
+    // Response structure: { totalParties, totalDevices, ... }
     const responseBody = (query.data || {}) as DashboardPayload;
     // Check if the body has a 'data' property (our API envelope), otherwise use body directly
     const payload = responseBody?.data || responseBody || {};
     const kpis = payload?.kpis || payload || {};
 
     const mappedStats: DashboardStats = {
-      totalPatients: Number(kpis.totalPatients || kpis.totalPatientsCount || 0),
+      totalParties: Number(kpis.totalParties || kpis.totalPartiesCount || 0),
       todayAppointments: Number(kpis.todayAppointments || kpis.todaysAppointments || 0),
       monthlyRevenue: Number(kpis.estimatedRevenue || kpis.monthlyRevenue || 0),
       activeTrials: Number(kpis.activeTrials || 0),
-      activePatients: Number(kpis.activePatients || kpis.totalPatients || 0),
+      activeParties: Number(kpis.activeParties || kpis.totalParties || 0),
       dailyRevenue: Number(kpis.dailyRevenue || 0),
       pendingAppointments: Number(kpis.pendingAppointments || 0),
       endingTrials: Number(kpis.endingTrials || 0),

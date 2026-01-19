@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeRequestId = string | null;
+export type ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeRequestId = string | null;

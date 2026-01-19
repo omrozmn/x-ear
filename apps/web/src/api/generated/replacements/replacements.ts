@@ -26,9 +26,12 @@ import type {
 
 import type {
   HTTPValidationError,
-  InvoiceCreateRequest,
   ReplacementCreate,
-  ReplacementStatusUpdate
+  ReplacementInvoiceCreate,
+  ReplacementStatusUpdate,
+  ResponseEnvelopeListReplacementRead,
+  ResponseEnvelopeReplacementInvoiceResponse,
+  ResponseEnvelopeReplacementRead
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -41,13 +44,13 @@ import { customInstance } from '../../orval-mutator';
  * @summary Get Patient Replacements
  */
 export const listPatientReplacements = (
-    patientId: string,
+    partyId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/replacements`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeListReplacementRead>(
+      {url: `/parties/${partyId}/replacements`, method: 'GET', signal
     },
       );
     }
@@ -55,29 +58,29 @@ export const listPatientReplacements = (
 
 
 
-export const getListPatientReplacementsQueryKey = (patientId?: string,) => {
+export const getListPatientReplacementsQueryKey = (partyId?: string,) => {
     return [
-    `/api/patients/${patientId}/replacements`
+    `/parties/${partyId}/replacements`
     ] as const;
     }
 
     
-export const getListPatientReplacementsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
+export const getListPatientReplacementsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPatientReplacementsQueryKey(patientId);
+  const queryKey =  queryOptions?.queryKey ?? getListPatientReplacementsQueryKey(partyId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientReplacements>>> = ({ signal }) => listPatientReplacements(patientId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientReplacements>>> = ({ signal }) => listPatientReplacements(partyId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
 export type ListPatientReplacementsQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientReplacements>>>
@@ -85,7 +88,7 @@ export type ListPatientReplacementsQueryError = HTTPValidationError
 
 
 export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>> & Pick<
+ partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listPatientReplacements>>,
           TError,
@@ -95,7 +98,7 @@ export function useListPatientReplacements<TData = Awaited<ReturnType<typeof lis
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>> & Pick<
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listPatientReplacements>>,
           TError,
@@ -105,7 +108,7 @@ export function useListPatientReplacements<TData = Awaited<ReturnType<typeof lis
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
@@ -113,11 +116,11 @@ export function useListPatientReplacements<TData = Awaited<ReturnType<typeof lis
  */
 
 export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListPatientReplacementsQueryOptions(patientId,options)
+  const queryOptions = getListPatientReplacementsQueryOptions(partyId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -134,14 +137,14 @@ export function useListPatientReplacements<TData = Awaited<ReturnType<typeof lis
  * @summary Create Patient Replacement
  */
 export const createPatientReplacements = (
-    patientId: string,
+    partyId: string,
     replacementCreate: ReplacementCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/replacements`, method: 'POST',
+      return customInstance<ResponseEnvelopeReplacementRead>(
+      {url: `/parties/${partyId}/replacements`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: replacementCreate, signal
     },
@@ -151,8 +154,8 @@ export const createPatientReplacements = (
 
 
 export const getCreatePatientReplacementsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{patientId: string;data: ReplacementCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{patientId: string;data: ReplacementCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{partyId: string;data: ReplacementCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{partyId: string;data: ReplacementCreate}, TContext> => {
 
 const mutationKey = ['createPatientReplacements'];
 const {mutation: mutationOptions} = options ?
@@ -164,10 +167,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientReplacements>>, {patientId: string;data: ReplacementCreate}> = (props) => {
-          const {patientId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientReplacements>>, {partyId: string;data: ReplacementCreate}> = (props) => {
+          const {partyId,data} = props ?? {};
 
-          return  createPatientReplacements(patientId,data,)
+          return  createPatientReplacements(partyId,data,)
         }
 
         
@@ -183,11 +186,11 @@ const {mutation: mutationOptions} = options ?
  * @summary Create Patient Replacement
  */
 export const useCreatePatientReplacements = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{patientId: string;data: ReplacementCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{partyId: string;data: ReplacementCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createPatientReplacements>>,
         TError,
-        {patientId: string;data: ReplacementCreate},
+        {partyId: string;data: ReplacementCreate},
         TContext
       > => {
 
@@ -205,8 +208,8 @@ export const getReplacement = (
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/replacements/${replacementId}`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeReplacementRead>(
+      {url: `/replacements/${replacementId}`, method: 'GET', signal
     },
       );
     }
@@ -216,7 +219,7 @@ export const getReplacement = (
 
 export const getGetReplacementQueryKey = (replacementId?: string,) => {
     return [
-    `/api/replacements/${replacementId}`
+    `/replacements/${replacementId}`
     ] as const;
     }
 
@@ -298,8 +301,8 @@ export const updateReplacementStatus = (
  ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/replacements/${replacementId}/status`, method: 'PATCH',
+      return customInstance<ResponseEnvelopeReplacementRead>(
+      {url: `/replacements/${replacementId}/status`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: replacementStatusUpdate
     },
@@ -359,15 +362,15 @@ export const useUpdateReplacementStatus = <TError = HTTPValidationError,
  */
 export const createReplacementInvoice = (
     replacementId: string,
-    invoiceCreateRequest: InvoiceCreateRequest,
+    replacementInvoiceCreate: ReplacementInvoiceCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/replacements/${replacementId}/invoice`, method: 'POST',
+      return customInstance<ResponseEnvelopeReplacementInvoiceResponse>(
+      {url: `/replacements/${replacementId}/invoice`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: invoiceCreateRequest, signal
+      data: replacementInvoiceCreate, signal
     },
       );
     }
@@ -375,8 +378,8 @@ export const createReplacementInvoice = (
 
 
 export const getCreateReplacementInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: InvoiceCreateRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: InvoiceCreateRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: ReplacementInvoiceCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: ReplacementInvoiceCreate}, TContext> => {
 
 const mutationKey = ['createReplacementInvoice'];
 const {mutation: mutationOptions} = options ?
@@ -388,7 +391,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReplacementInvoice>>, {replacementId: string;data: InvoiceCreateRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReplacementInvoice>>, {replacementId: string;data: ReplacementInvoiceCreate}> = (props) => {
           const {replacementId,data} = props ?? {};
 
           return  createReplacementInvoice(replacementId,data,)
@@ -400,18 +403,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateReplacementInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof createReplacementInvoice>>>
-    export type CreateReplacementInvoiceMutationBody = InvoiceCreateRequest
+    export type CreateReplacementInvoiceMutationBody = ReplacementInvoiceCreate
     export type CreateReplacementInvoiceMutationError = HTTPValidationError
 
     /**
  * @summary Create Replacement Invoice
  */
 export const useCreateReplacementInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: InvoiceCreateRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: ReplacementInvoiceCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createReplacementInvoice>>,
         TError,
-        {replacementId: string;data: InvoiceCreateRequest},
+        {replacementId: string;data: ReplacementInvoiceCreate},
         TContext
       > => {
 
@@ -430,7 +433,7 @@ export const createReturnInvoiceSendToGib = (
       
       
       return customInstance<unknown>(
-      {url: `/api/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
+      {url: `/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
     },
       );
     }

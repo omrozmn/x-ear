@@ -20,7 +20,7 @@ export interface PricingCalculation {
   vatAmount: number;
   sgkDeduction: number;
   grandTotal: number;
-  patientPayment: number;
+  partyPayment: number;
   sgkPayment: number;
   items: PricingItem[];
   sgkCalculation?: SGKCalculationResult;
@@ -29,7 +29,7 @@ export interface PricingCalculation {
 export interface PricingOptions {
   vatRate?: number;
   sgkSchemeId?: string;
-  patientAge?: number;
+  partyAge?: number;
   isBilateral?: boolean;
   globalDiscount?: number;
   globalDiscountType?: 'percentage' | 'fixed';
@@ -127,13 +127,13 @@ export function usePricingCalculator(initialOptions: PricingOptions = {}) {
     let sgkDeduction = 0;
     let sgkPayment = 0;
 
-    if (options.sgkSchemeId && options.patientAge !== undefined) {
+    if (options.sgkSchemeId && options.partyAge !== undefined) {
       // For bilateral devices, check if we have both ears
       const hasBothEars = items.some(item => item.ear === 'both') || 
         (items.some(item => item.ear === 'left') && items.some(item => item.ear === 'right'));
 
       sgkCalculation = sgkService.calculateSGKDeduction({
-        patientAge: options.patientAge,
+        partyAge: options.partyAge,
         devicePrice: discountedSubtotal,
         isBilateral: options.isBilateral || hasBothEars,
         schemeId: options.sgkSchemeId
@@ -147,7 +147,7 @@ export function usePricingCalculator(initialOptions: PricingOptions = {}) {
 
     // Calculate final amounts
     const grandTotal = taxableAmount + vatAmount;
-    const patientPayment = Math.max(0, grandTotal - sgkPayment);
+    const partyPayment = Math.max(0, grandTotal - sgkPayment);
 
     return {
       subtotal,
@@ -156,7 +156,7 @@ export function usePricingCalculator(initialOptions: PricingOptions = {}) {
       vatAmount,
       sgkDeduction,
       grandTotal,
-      patientPayment,
+      partyPayment,
       sgkPayment,
       items: [...items],
       sgkCalculation
@@ -216,7 +216,7 @@ export function usePricingCalculator(initialOptions: PricingOptions = {}) {
     formattedVat: formatCurrency(calculation.vatAmount),
     formattedSGK: formatCurrency(calculation.sgkDeduction),
     formattedTotal: formatCurrency(calculation.grandTotal),
-    formattedPatientPayment: formatCurrency(calculation.patientPayment)
+    formattedPartyPayment: formatCurrency(calculation.partyPayment)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [calculation, formatCurrency]);
 

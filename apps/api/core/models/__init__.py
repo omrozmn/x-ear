@@ -9,7 +9,9 @@ from .permission import Permission
 from .branch import Branch
 
 # Patient & Medical
-from .patient import Patient
+from .party import Party
+from .party_role import PartyRole
+from .hearing_profile import HearingProfile
 from .medical import PatientNote, EReceipt
 from .appointment import Appointment
 

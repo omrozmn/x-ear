@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSHeaderStatus = typeof SMSHeaderStatus[keyof typeof SMSHeaderStatus];
+export type SmsHeaderStatus = typeof SmsHeaderStatus[keyof typeof SmsHeaderStatus];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SMSHeaderStatus = {
+export const SmsHeaderStatus = {
   pending: 'pending',
   approved: 'approved',
   rejected: 'rejected',

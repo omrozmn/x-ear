@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/graceful_degradation.py
+# hypothesis_version: 6.150.1
+
+['Model is unreachable', 'T', 'Unknown error', 'actions', 'available', 'chat', 'circuit_open', 'config_disabled', 'degraded', 'disabled', 'fallback_used', 'features_available', 'internal_error', 'kill_switch', 'last_check', 'message', 'model_available', 'model_timeout', 'model_unreachable', 'none', 'ocr', 'original_error', 'quota_exceeded', 'rate_limited', 'reason', 'status', 'success', 'unavailable']

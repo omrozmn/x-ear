@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/app.py
+# hypothesis_version: 6.150.1
+
+[150, 'User', 'app', 'apps', 'description', 'dynamic', 'id', 'name', 'owned_apps', 'ownerUserId', 'slug', 'users.id']

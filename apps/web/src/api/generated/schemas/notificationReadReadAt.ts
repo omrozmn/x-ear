@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Read timestamp
- */
 export type NotificationReadReadAt = string | null;

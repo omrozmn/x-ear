@@ -50,7 +50,7 @@ export const SGKPage: React.FC = () => {
     // Load workflow for the document
     try {
       const workflow = await sgkService.getWorkflow(document.id);
-      setSelectedWorkflow(workflow);
+      setSelectedWorkflow(workflow as SGKWorkflowType);
       setActiveTab('workflow');
     } catch (err) {
       console.error('Failed to load workflow:', err);

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/plan.py
+# hypothesis_version: 6.150.1
+
+[100, 255, 365, '-', 'BASIC', 'CUSTOM', 'ENTERPRISE', 'MONTHLY', 'PRO', 'QUARTERLY', 'YEARLY', '[-\\s]+', '[^\\w\\s-]', 'billing_interval', 'created_at', 'description', 'features', 'id', 'idx_plans_is_active', 'idx_plans_is_public', 'idx_plans_name', 'idx_plans_plan_type', 'idx_plans_slug', 'is_active', 'is_public', 'limit', 'max_storage_gb', 'max_users', 'monthly_price', 'name', 'plan_type', 'plans', 'price', 'slug', 'updated_at', 'yearly_price']

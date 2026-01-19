@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/sms.py
+# hypothesis_version: 6.150.1
+
+[201, 404, '/admin/sms/packages', 'Package not found', 'SMS', 'json', 'listAdminSmPackages', 'page', 'perPage', 'total', 'totalPages', 'updateAdminSmPackage']

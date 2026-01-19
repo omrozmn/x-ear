@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/branches.py
+# hypothesis_version: 6.150.1
+
+[201, 400, 403, 404, 500, '/branches', 'BRANCH_LIMIT_REACHED', 'BRANCH_NOT_FOUND', 'Branch deleted', 'Branch not found', 'Branches', 'FORBIDDEN', 'NAME_REQUIRED', 'TENANT_NOT_FOUND', 'TENANT_REQUIRED', 'Tenant not found', 'address', 'branches', 'createBranches', 'deleteBranch', 'email', 'json', 'listBranches', 'name', 'phone', 'tenantId', 'updateBranch']

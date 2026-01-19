@@ -7,13 +7,16 @@
  */
 import type { UserReadCreatedAt } from './userReadCreatedAt';
 import type { UserReadUpdatedAt } from './userReadUpdatedAt';
+import type { UserReadTenantId } from './userReadTenantId';
+import type { UserReadFirstName } from './userReadFirstName';
+import type { UserReadLastName } from './userReadLastName';
 import type { UserReadPhone } from './userReadPhone';
-import type { UserReadBranchId } from './userReadBranchId';
+import type { UserReadRole } from './userReadRole';
+import type { UserReadIsActive } from './userReadIsActive';
 import type { UserReadLastLogin } from './userReadLastLogin';
-import type { UserReadUsername } from './userReadUsername';
 
 /**
- * Schema for reading a user
+ * Schema for reading User - replaces to_dict()
  */
 export interface UserRead {
   /** Creation timestamp */
@@ -22,25 +25,12 @@ export interface UserRead {
   updatedAt?: UserReadUpdatedAt;
   /** Unique identifier for the resource */
   id: string;
-  /** User email */
+  tenantId?: UserReadTenantId;
   email: string;
-  /** First name */
-  firstName: string;
-  /** Last name */
-  lastName: string;
-  /** Phone number */
+  firstName?: UserReadFirstName;
+  lastName?: UserReadLastName;
   phone?: UserReadPhone;
-  /** User role */
-  role?: string;
-  /** Is user active */
-  isActive?: boolean;
-  tenantId: string;
-  branchId?: UserReadBranchId;
-  /** Full name */
-  fullName: string;
+  role?: UserReadRole;
+  isActive?: UserReadIsActive;
   lastLogin?: UserReadLastLogin;
-  /** Username */
-  username?: UserReadUsername;
-  /** User permissions */
-  permissions?: string[];
 }

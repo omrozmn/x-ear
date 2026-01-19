@@ -13,7 +13,7 @@ import type { DeviceAssignmentCreateAccessories } from './deviceAssignmentCreate
 import type { DeviceAssignmentCreateServices } from './deviceAssignmentCreateServices';
 
 /**
- * Request body for POST /patients/{patient_id}/device-assignments endpoint.
+ * Request body for POST /parties/{party_id}/device-assignments endpoint.
  */
 export interface DeviceAssignmentCreate {
   deviceAssignments: DeviceAssignmentItemCreate[];

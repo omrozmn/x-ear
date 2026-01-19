@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { listInventory } from '@/api/generated';
+import {listInventory} from '@/api/client/inventory.client';
 import { unwrapObject, unwrapArray } from '@/utils/response-unwrap';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
@@ -7,7 +7,7 @@ import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } 
 export interface DeviceAssignment {
   id?: string;
   deviceId: string;
-  patientId: string;
+  partyId: string;
   assignedDate: string;
   assignedBy: string;
   status: 'assigned' | 'trial' | 'returned' | 'defective';
@@ -27,7 +27,7 @@ export interface DeviceAssignment {
   sgkReduction?: number;
   discountType?: 'none' | 'percentage' | 'amount';
   discountValue?: number;
-  patientPayment?: number;
+  partyPayment?: number;
   downPayment?: number;
   remainingAmount?: number;
   paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment';
@@ -51,6 +51,15 @@ export interface DeviceAssignment {
 
   // Report
   reportStatus?: 'received' | 'pending' | 'none';
+
+  // Submission/Mode fields (used during save)
+  mode?: 'inventory' | 'manual';
+  inventoryId?: string;
+  manualBrand?: string;
+  manualModel?: string;
+  brand?: string;
+  model?: string;
+  deviceType?: string;
 }
 
 interface AssignmentDetailsFormProps {
@@ -86,11 +95,13 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             category: 'hearing_aid'
           });
           // Response is wrapped in ResponseEnvelope: { data: [...], meta: {...} }
-          // unwrapObject returns the inner object, but we need the data array
-          const unwrapped = unwrapObject(response) as any;
-          // If unwrapped has 'data' property (from ResponseEnvelope), use it
-          // Otherwise check if unwrapped itself is an array
-          let items: any[] = [];
+          // Typed response handling
+          interface InventoryResponseEnvelope {
+            data?: Array<{ id: string; brand?: string; model?: string; barcode?: string }>;
+            items?: Array<{ id: string; brand?: string; model?: string; barcode?: string }>;
+          }
+          const unwrapped = unwrapObject(response) as unknown as InventoryResponseEnvelope | Array<{ id: string; brand?: string; model?: string; barcode?: string }>;
+          let items: Array<{ id: string; brand?: string; model?: string; barcode?: string }> = [];
           if (unwrapped) {
             if (Array.isArray(unwrapped)) {
               items = unwrapped;

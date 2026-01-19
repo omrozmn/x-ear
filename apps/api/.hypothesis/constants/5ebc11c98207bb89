@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/activity_logs.py
+# hypothesis_version: 6.150.1
+
+[100, 500, '+00:00', '/activity-logs', '/activity-logs/stats', 'ActivityLogs', 'Z', 'action', 'actions', 'count', 'createdAt', 'critical', 'entityId', 'entityType', 'entityTypes', 'id', 'last24Hours', 'limit', 'listActivityLogStats', 'listActivityLogs', 'message', 'name', 'page', 'pageSize', 'tenantId', 'to_dict', 'topActions', 'total', 'totalPages', 'userId', 'users']

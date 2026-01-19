@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetAdminDashboard } from '@/lib/api-client';
+import { KillSwitchRecommendation } from '@/ai';
+import { PermissionGate } from '@/hooks/useAdminPermission';
+import { AdminPermissions } from '@/types';
 import {
     Users,
     CreditCard,
@@ -132,6 +135,14 @@ export default function AdminDashboardPage() {
                     <RefreshCw className={`w-5 h-5 ${metricsLoading ? 'animate-spin' : ''}`} />
                 </button>
             </div>
+
+            {/* AI Kill Switch Recommendation Banner - Shows when high-severity AI alerts exist */}
+            <PermissionGate
+                permissions={[AdminPermissions.AI_KILL_SWITCH, AdminPermissions.AI_MANAGE, AdminPermissions.SYSTEM_MANAGE]}
+                mode="any"
+            >
+                <KillSwitchRecommendation />
+            </PermissionGate>
 
             {/* Error State */}
             {errorMessage && (

@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSHeaderStatus } from './sMSHeaderStatus';
+import type { SmsHeaderStatus } from './smsHeaderStatus';
 
-export type SMSHeaderRequestUpdateStatus = SMSHeaderStatus | null;
+export type SmsHeaderRequestUpdateStatus = SmsHeaderStatus | null;

@@ -1,0 +1,3 @@
+# Versioned prompt templates directory
+# Each template has: template_id, version, content, created_at, author
+# Templates are hash-bound for audit traceability

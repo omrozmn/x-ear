@@ -6,7 +6,7 @@ interface SearchAnalytics {
   executionTime: number;
   selectedResult?: string;
   userAction?: 'click' | 'select' | 'dismiss';
-  context: string; // e.g., 'inventory', 'products', 'patients'
+  context: string; // e.g., 'inventory', 'products', 'parties'
 }
 
 interface SearchPerformanceMetrics {

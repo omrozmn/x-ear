@@ -12,13 +12,19 @@ from models.user import ActivityLog
 from models.efatura_outbox import EFaturaOutbox
 from utils.efatura import build_return_invoice_xml, write_outbox_file
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from schemas.invoices import (
+    InvoiceRead, InvoiceIssueResponse, 
+    InvoiceCopyCancelResponse
+)
+from schemas.efatura import EFaturaOutboxRead
+from schemas.base import ResponseEnvelope
 from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/invoices", tags=["Invoice Actions"])
 
-@router.post("/{invoice_id}/issue", operation_id="createInvoiceIssue")
+@router.post("/{invoice_id}/issue", operation_id="createInvoiceIssue", response_model=ResponseEnvelope[InvoiceIssueResponse])
 async def issue_invoice(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -77,14 +83,17 @@ async def issue_invoice(
         
         db.commit()
         
-        return {"success": True, "data": {"invoice": invoice.to_dict(), "outbox": outbox.to_dict()}}
+        return ResponseEnvelope(data=InvoiceIssueResponse(
+            invoice=InvoiceRead.model_validate(invoice),
+            outbox=EFaturaOutboxRead.model_validate(outbox)
+        ))
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{invoice_id}/copy", operation_id="createInvoiceCopy")
+@router.post("/{invoice_id}/copy", operation_id="createInvoiceCopy", response_model=ResponseEnvelope[InvoiceRead])
 async def copy_invoice(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -98,7 +107,7 @@ async def copy_invoice(
         
         new_inv = Invoice()
         new_inv.invoice_number = f"{getattr(invoice, 'invoice_number', 'COPY')}-COPY-{int(datetime.utcnow().timestamp())}"
-        new_inv.patient_id = invoice.patient_id
+        new_inv.party_id = invoice.party_id
         new_inv.patient_name = getattr(invoice, "patient_name", None)
         new_inv.device_price = getattr(invoice, "device_price", getattr(invoice, "total_amount", 0))
         new_inv.status = "draft"
@@ -110,14 +119,14 @@ async def copy_invoice(
         db.commit()
         db.refresh(new_inv)
         
-        return {"success": True, "data": new_inv.to_dict()}
+        return ResponseEnvelope(data=InvoiceRead.model_validate(new_inv))
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{invoice_id}/copy-cancel", operation_id="createInvoiceCopyCancel")
+@router.post("/{invoice_id}/copy-cancel", operation_id="createInvoiceCopyCancel", response_model=ResponseEnvelope[InvoiceCopyCancelResponse])
 async def copy_invoice_cancel(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -131,7 +140,7 @@ async def copy_invoice_cancel(
         
         copy_inv = Invoice()
         copy_inv.invoice_number = f"{getattr(invoice, 'invoice_number', 'COPY')}-COPY-{int(datetime.utcnow().timestamp())}"
-        copy_inv.patient_id = invoice.patient_id
+        copy_inv.party_id = invoice.party_id
         copy_inv.status = "draft"
         copy_inv.created_at = datetime.utcnow()
         copy_inv.updated_at = datetime.utcnow()
@@ -140,7 +149,7 @@ async def copy_invoice_cancel(
         
         cancel_inv = Invoice()
         cancel_inv.invoice_number = f"CNL-{copy_inv.invoice_number}"
-        cancel_inv.patient_id = copy_inv.patient_id
+        cancel_inv.party_id = copy_inv.party_id
         cancel_inv.status = "draft"
         cancel_inv.notes = f"Cancellation draft for {copy_inv.invoice_number}"
         cancel_inv.created_at = datetime.utcnow()
@@ -149,7 +158,10 @@ async def copy_invoice_cancel(
         
         db.commit()
         
-        return {"success": True, "data": {"copy": copy_inv.to_dict(), "cancellation": cancel_inv.to_dict()}}
+        return ResponseEnvelope(data=InvoiceCopyCancelResponse(
+            copy=InvoiceRead.model_validate(copy_inv),
+            cancellation=InvoiceRead.model_validate(cancel_inv)
+        ))
     except HTTPException:
         raise
     except Exception as e:

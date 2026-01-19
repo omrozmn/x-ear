@@ -28,7 +28,9 @@ import type {
   DeleteUploadFilesParams,
   HTTPValidationError,
   ListUploadFilesParams,
-  PresignedUploadRequest
+  PresignedUploadRequest,
+  ResponseEnvelopeFileListResponse,
+  ResponseEnvelopePresignedUploadResponse
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -58,7 +60,7 @@ export const createUploadPresigned = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopePresignedUploadResponse>(
       {url: `/api/upload/presigned`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: presignedUploadRequest, signal
@@ -126,7 +128,7 @@ export const listUploadFiles = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeFileListResponse>(
       {url: `/api/upload/files`, method: 'GET',
         params, signal
     },

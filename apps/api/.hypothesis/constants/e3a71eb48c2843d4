@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/appointment.py
+# hypothesis_version: 6.150.1
+
+['Hasta bilgisi yok', 'appointmentType', 'appointments', 'apt', 'branchId', 'check-up', 'checkup', 'clinicianId', 'consultation', 'control', 'date', 'device_fitting', 'device_trial', 'duration', 'fitting', 'follow-up', 'followup', 'hearing_test', 'id', 'ix_appointment_date', 'notes', 'other', 'parties.id', 'party_id', 'patientId', 'patientName', 'repair', 'scheduled', 'status', 'tenantId', 'tenants.id', 'test', 'time', 'trial', 'type']

@@ -7,7 +7,7 @@ import {
   SGKStatusEntry,
   EReceipt,
   UTSRecord,
-  SGKPatientInfo,
+  SGKPartyInfo,
   SGKDocumentFilters,
   SGKSearchResult,
   SGKStats,
@@ -29,12 +29,13 @@ import { apiClient } from '../api/orval-mutator';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { SGK_DATA, SGK_DOCUMENTS } from '../constants/storage-keys';
 import {
-  listPatientSgkDocuments,
+  listSgkDocuments,
   createSgkWorkflowCreate,
   updateSgkWorkflowStatus,
   getSgkWorkflow,
   listSgkEReceiptDownloadPatientForm
-} from '@/api/generated';
+} from '@/api/client/sgk.client';
+import { WorkflowStatusUpdate, WorkflowCreateRequest } from '@/api/generated/schemas';
 import { unwrapObject } from '../utils/response-unwrap';
 
 export class SGKService {
@@ -89,7 +90,7 @@ export class SGKService {
     const sampleDocuments: SGKDocument[] = [
       {
         id: 'sgk-doc-1',
-        patientId: 'patient-1',
+        partyId: 'party-1',
         filename: 'sgk-rapor-001.pdf',
         documentType: 'rapor',
         fileUrl: '/uploads/sgk-rapor-001.pdf',
@@ -97,7 +98,7 @@ export class SGKService {
         mimeType: 'application/pdf',
         ocrText: 'SGK Raporu - Hasta: Ahmet Yılmaz - TC: 12345678901',
         extractedInfo: {
-          patientName: 'Ahmet Yılmaz',
+          partyName: 'Ahmet Yılmaz',
           tcNumber: '12345678901',
           reportNumber: 'RPT-2024-001',
           reportDate: '2024-01-15',
@@ -118,7 +119,7 @@ export class SGKService {
       {
         id: 'workflow-1',
         documentId: 'sgk-doc-1',
-        patientId: 'patient-1',
+        partyId: 'party-1',
         currentStatus: 'approved',
         statusHistory: [
           {
@@ -179,8 +180,8 @@ export class SGKService {
     let filteredDocuments = [...this.documents];
 
     if (filters) {
-      if (filters.patientId) {
-        filteredDocuments = filteredDocuments.filter(doc => doc.patientId === filters.patientId);
+      if (filters.partyId) {
+        filteredDocuments = filteredDocuments.filter(doc => doc.partyId === filters.partyId);
       }
 
       if (filters.documentType) {
@@ -203,7 +204,7 @@ export class SGKService {
         filteredDocuments = filteredDocuments.filter(doc =>
           doc.filename.toLowerCase().includes(searchLower) ||
           doc.ocrText?.toLowerCase().includes(searchLower) ||
-          doc.extractedInfo?.patientName?.toLowerCase().includes(searchLower)
+          doc.extractedInfo?.partyName?.toLowerCase().includes(searchLower)
         );
       }
 
@@ -343,7 +344,7 @@ export class SGKService {
       confidence: 0.85,
       processingTime: 2500,
       extractedInfo: {
-        patientName: 'Mock Patient',
+        partyName: 'Mock Party',
         confidence: 0.85,
         extractionMethod: 'ocr'
       }
@@ -404,11 +405,11 @@ export class SGKService {
   }
 
   // E-Receipt Management
-  async getEReceipts(patientId?: string): Promise<EReceipt[]> {
+  async getEReceipts(partyId?: string): Promise<EReceipt[]> {
     await this.init();
 
-    if (patientId) {
-      return this.eReceipts.filter(receipt => receipt.patientId === patientId);
+    if (partyId) {
+      return this.eReceipts.filter(receipt => receipt.partyId === partyId);
     }
 
     return [...this.eReceipts];
@@ -435,7 +436,7 @@ export class SGKService {
     // Queue API call
     const operation: OutboxOperation = {
       method: 'POST',
-      endpoint: `/api/patients/${data.patientId}/ereceipts`,
+      endpoint: `/api/parties/${data.partyId}/ereceipts`,
       data: eReceipt,
       headers: {
         'Idempotency-Key': `create-ereceipt-${eReceipt.id}-${Date.now()}`
@@ -466,7 +467,7 @@ export class SGKService {
     // Queue API call
     const operation: OutboxOperation = {
       method: 'PUT',
-      endpoint: `/api/patients/${updatedReceipt.patientId}/ereceipts/${id}`,
+      endpoint: `/api/parties/${updatedReceipt.partyId}/ereceipts/${id}`,
       data: updatedReceipt,
       headers: {
         'Idempotency-Key': `update-ereceipt-${id}-${Date.now()}`
@@ -520,7 +521,7 @@ export class SGKService {
     // Queue API call
     const operation: OutboxOperation = {
       method: 'PUT',
-      endpoint: `/api/patients/${receipt.patientId}/ereceipts/${receiptId}/materials/${materialId}/deliver`,
+      endpoint: `/api/parties/${receipt.partyId}/ereceipts/${receiptId}/materials/${materialId}/deliver`,
       data: deliveryData,
       headers: {
         'Idempotency-Key': `deliver-material-${materialId}-${Date.now()}`
@@ -596,11 +597,11 @@ export class SGKService {
     return stats;
   }
 
-  // Patient SGK Info Management
-  async getPatientSGKInfo(_patientId: string): Promise<SGKPatientInfo | null> {
+  // Party SGK Info Management
+  async getPartySGKInfo(_partyId: string): Promise<SGKPartyInfo | null> {
     await this.init();
 
-    // This would typically come from the patient service
+    // This would typically come from the party service
     // For now, return a mock implementation
     return {
       hasInsurance: true,
@@ -630,8 +631,8 @@ export class SGKService {
     const errors: Record<string, string> = {};
     const warnings: Record<string, string> = {};
 
-    if (!data.patientId) {
-      errors.patientId = 'Patient is required';
+    if (!data.partyId) {
+      errors.partyId = 'Party is required';
     }
 
     if (!data.documentType) {
@@ -657,8 +658,8 @@ export class SGKService {
     const errors: Record<string, string> = {};
     const warnings: Record<string, string> = {};
 
-    if (!data.patientId) {
-      errors.patientId = 'Patient is required';
+    if (!data.partyId) {
+      errors.partyId = 'Party is required';
     }
 
     if (!data.tcNumber) {
@@ -730,7 +731,7 @@ export class SGKService {
 
   // Hasta işlem formu indirme
   // Hasta işlem formu indirme
-  async downloadPatientForm(receiptId: string): Promise<Blob> {
+  async downloadPartyForm(receiptId: string): Promise<Blob> {
     try {
       const response = await listSgkEReceiptDownloadPatientForm(receiptId);
       // If the response is already a Blob, return it directly
@@ -747,30 +748,29 @@ export class SGKService {
   }
 
   // Hasta hakları sorgulama
-  async createSgkQueryRightsMethod(patientId: string, tcNumber: string): Promise<any> {
+  async createSgkQueryRightsMethod(partyId: string, tcNumber: string): Promise<any> {
     try {
       // Gerçek API çağrısı - using apiClient since createSgkQueryRights doesn't exist
       const response = await apiClient({
         url: '/api/sgk/query-rights',
         method: 'POST',
-        data: { tcNumber, patientId }
+        data: { tcNumber, partyId }
       });
       return response;
     } catch (error) {
-      console.error('Patient rights query error:', error);
+      console.error('Party rights query error:', error);
       throw error;
     }
   }
 
   // SGK Workflow Management
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async createWorkflow(patientId: string, documentId?: string, workflowType: string = 'approval'): Promise<any> {
+  async createWorkflow(partyId: string, documentId?: string, workflowType: string = 'approval'): Promise<unknown> {
     try {
       const response = await createSgkWorkflowCreate({
-        patientId,
+        partyId,
         documentId,
         workflowType
-      });
+      } as WorkflowCreateRequest);
       return response;
     } catch (error) {
       console.error('SGK workflow creation error:', error);
@@ -778,13 +778,13 @@ export class SGKService {
     }
   }
 
-  async updateWorkflow(workflowId: string, stepId: string, status: string, notes?: string): Promise<any> {
+  async updateWorkflow(workflowId: string, _stepId: string, status: string, notes?: string): Promise<unknown> {
     try {
       // Gerçek API çağrısı
       const response = await updateSgkWorkflowStatus(workflowId, {
         status,
         notes
-      } as any);
+      } as WorkflowStatusUpdate);
       return response;
     } catch (error) {
       console.error('SGK workflow update error:', error);
@@ -792,7 +792,7 @@ export class SGKService {
     }
   }
 
-  async getWorkflow(workflowId: string): Promise<any> {
+  async getWorkflow(workflowId: string): Promise<unknown> {
     try {
       // Gerçek API çağrısı
       const response = await getSgkWorkflow(workflowId);

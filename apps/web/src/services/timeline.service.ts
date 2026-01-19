@@ -1,4 +1,4 @@
-import { createPatientTimeline as createPatientTimelineApi } from '@/api/generated/timeline/timeline';
+import { createPartyTimeline as createPartyTimelineApi } from '@/api/client/parties.client';
 import type { TimelineEventCreate } from '@/api/generated/schemas';
 import { outbox } from '../utils/outbox';
 
@@ -24,17 +24,17 @@ export interface TimelineServiceResponse {
 }
 
 /**
- * Timeline Service - Handles adding timeline events for patients
- * Replaces the global window.createPatientTimeline function with proper API integration
+ * Timeline Service - Handles adding timeline events for parties
+ * Replaces the global window.createPartyTimeline function with proper API integration
  */
 class TimelineService {
   /**
-   * Add a timeline event for a patient
-   * @param patientId - The patient ID
+   * Add a timeline event for a party
+   * @param partyId - The party ID
    * @param eventData - The event data to add
    * @returns Promise with the result
    */
-  async createPatientTimeline(patientId: string, eventData: TimelineEventData): Promise<TimelineServiceResponse> {
+  async createPartyTimeline(partyId: string, eventData: TimelineEventData): Promise<TimelineServiceResponse> {
     try {
       // Prepare the request body according to the API schema
       const requestBody: TimelineEventCreate = {
@@ -53,7 +53,7 @@ class TimelineService {
 
       // Try to make the API call
       try {
-        const response = await createPatientTimelineApi(patientId, requestBody);
+        const response = await createPartyTimelineApi(partyId, requestBody);
 
         return {
           success: true,
@@ -66,11 +66,11 @@ class TimelineService {
         // Queue the operation for offline sync
         await outbox.addOperation({
           method: 'POST',
-          endpoint: `/api/patients/${patientId}/timeline`,
+          endpoint: `/api/parties/${partyId}/timeline`,
           data: requestBody,
           priority: 'normal',
           headers: {
-            'Idempotency-Key': `timeline-${patientId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            'Idempotency-Key': `timeline-${partyId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
           }
         });
 
@@ -92,11 +92,11 @@ class TimelineService {
 
   /**
    * Add a device-related timeline event
-   * @param patientId - The patient ID
+   * @param partyId - The party ID
    * @param eventType - The type of device event
    * @param details - Device-specific details
    */
-  async addDeviceEvent(patientId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
+  async addDeviceEvent(partyId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
     const eventTitles: Record<string, string> = {
       'device_assigned': 'Cihaz Atandı',
       'device_removed': 'Cihaz Kaldırıldı',
@@ -118,16 +118,16 @@ class TimelineService {
       category: 'device'
     };
 
-    return this.createPatientTimeline(patientId, eventData);
+    return this.createPartyTimeline(partyId, eventData);
   }
 
   /**
    * Add an appointment-related timeline event
-   * @param patientId - The patient ID
+   * @param partyId - The party ID
    * @param eventType - The type of appointment event
    * @param details - Appointment-specific details
    */
-  async addAppointmentEvent(patientId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
+  async addAppointmentEvent(partyId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
     const eventTitles: Record<string, string> = {
       'appointment_scheduled': 'Randevu Planlandı',
       'appointment_completed': 'Randevu Tamamlandı',
@@ -145,16 +145,16 @@ class TimelineService {
       category: 'appointment'
     };
 
-    return this.createPatientTimeline(patientId, eventData);
+    return this.createPartyTimeline(partyId, eventData);
   }
 
   /**
    * Add a payment-related timeline event
-   * @param patientId - The patient ID
+   * @param partyId - The party ID
    * @param eventType - The type of payment event
    * @param details - Payment-specific details
    */
-  async addPaymentEvent(patientId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
+  async addPaymentEvent(partyId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
     const eventTitles: Record<string, string> = {
       'payment_received': 'Ödeme Alındı',
       'payment_refunded': 'Ödeme İade Edildi',
@@ -171,7 +171,7 @@ class TimelineService {
       category: 'payment'
     };
 
-    return this.createPatientTimeline(patientId, eventData);
+    return this.createPartyTimeline(partyId, eventData);
   }
 
   /**
@@ -250,7 +250,7 @@ class TimelineService {
 // Export singleton instance
 export const timelineService = new TimelineService();
 
-// Export for backward compatibility with window.createPatientTimeline
-export const createPatientTimeline = (patientId: string, eventType: string, details: Record<string, unknown>) => {
-  return timelineService.addDeviceEvent(patientId, eventType, details);
+// Export for backward compatibility with window.createPartyTimeline
+export const createPartyTimeline = (partyId: string, eventType: string, details: Record<string, unknown>) => {
+  return timelineService.addDeviceEvent(partyId, eventType, details);
 };

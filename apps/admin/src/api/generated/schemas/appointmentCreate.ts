@@ -7,16 +7,19 @@
  */
 import type { AppointmentCreateClinicianId } from './appointmentCreateClinicianId';
 import type { AppointmentCreateBranchId } from './appointmentCreateBranchId';
+import type { AppointmentType } from './appointmentType';
+import type { AppointmentStatus } from './appointmentStatus';
 import type { AppointmentCreateNotes } from './appointmentCreateNotes';
 
 export interface AppointmentCreate {
-  patientId: string;
+  partyId: string;
   clinicianId?: AppointmentCreateClinicianId;
   branchId?: AppointmentCreateBranchId;
   date: string;
+  /** @pattern ^\d{2}:\d{2}$ */
   time: string;
   duration?: number;
-  type?: string;
-  status?: string;
+  appointmentType?: AppointmentType;
+  status?: AppointmentStatus;
   notes?: AppointmentCreateNotes;
 }

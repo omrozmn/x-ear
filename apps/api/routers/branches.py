@@ -93,7 +93,7 @@ def get_branches(
                 query = query.filter(Branch.id.in_(user_branch_ids))
         
         branches = query.all()
-        return ResponseEnvelope(data=[b.to_dict() for b in branches])
+        return ResponseEnvelope(data=[BranchRead.model_validate(b) for b in branches])
     except Exception as e:
         logger.error(f"Get branches error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -165,7 +165,7 @@ def create_branch(
         db_session.commit()
         
         logger.info(f"Branch created: {branch.id} by {access.user_id}")
-        return ResponseEnvelope(data=branch.to_dict())
+        return ResponseEnvelope(data=BranchRead.model_validate(branch))
     except HTTPException:
         raise
     except Exception as e:
@@ -203,7 +203,7 @@ def update_branch(
         db_session.commit()
         
         logger.info(f"Branch updated: {branch.id} by {access.user_id}")
-        return ResponseEnvelope(data=branch.to_dict())
+        return ResponseEnvelope(data=BranchRead.model_validate(branch))
     except HTTPException:
         raise
     except Exception as e:

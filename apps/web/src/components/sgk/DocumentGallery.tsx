@@ -674,7 +674,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                file_size: previewDocument.fileSize,
                created_at: previewDocument.uploadedAt,
                image_url: previewDocument.fileUrl,
-               matched_patient: undefined
+               matched_party: undefined
              }
            }}
            isOpen={!!previewDocument}

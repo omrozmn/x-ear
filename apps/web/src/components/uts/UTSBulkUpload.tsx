@@ -9,7 +9,7 @@ type UtsPayload = {
   serial: string;
   manufacturer: string;
   model: string;
-  patientTc: string;
+  partyTc: string;
 };
 
 type UtsCsvPreview = {
@@ -85,7 +85,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
                   <th>Serial</th>
                   <th>Manufacturer</th>
                   <th>Model</th>
-                  <th>Patient TC</th>
+                  <th>Party TC</th>
                 </tr>
               </thead>
               <tbody>
@@ -94,7 +94,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
                     <td>{m.mapped.serial}</td>
                     <td>{m.mapped.manufacturer}</td>
                     <td>{m.mapped.model}</td>
-                    <td>{m.mapped.patientTc}</td>
+                    <td>{m.mapped.partyTc}</td>
                   </tr>
                 ))}
               </tbody>

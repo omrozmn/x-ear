@@ -26,7 +26,10 @@ import type {
 
 import type {
   HTTPValidationError,
-  ListAutomationLogsParams
+  ListAutomationLogsParams,
+  ResponseEnvelopeAutomationJobResponse,
+  ResponseEnvelopeAutomationLogsResponse,
+  ResponseEnvelopeAutomationStatusResponse
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -44,7 +47,7 @@ export const listAutomationStatus = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAutomationStatusResponse>(
       {url: `/api/automation/status`, method: 'GET', signal
     },
       );
@@ -137,7 +140,7 @@ export const createAutomationSgkProcess = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAutomationJobResponse>(
       {url: `/api/automation/sgk/process`, method: 'POST', signal
     },
       );
@@ -200,7 +203,7 @@ export const createAutomationBackup = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAutomationJobResponse>(
       {url: `/api/automation/backup`, method: 'POST', signal
     },
       );
@@ -263,7 +266,7 @@ export const listAutomationLogs = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAutomationLogsResponse>(
       {url: `/api/automation/logs`, method: 'GET',
         params, signal
     },

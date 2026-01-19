@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/__init__.py
+# hypothesis_version: 6.150.1
+
+[0.0, 1000, '\n\n---\n\n', '  (no parameters)', 'RiskLevel', 'ToolCategory', 'ToolDefinition', 'ToolExecutionMode', 'ToolExecutionResult', 'ToolNotAllowedError', 'ToolNotFoundError', 'ToolParameter', 'ToolRegistry', 'ToolSchemaDriftError', 'ToolValidationError', 'admin', 'array', 'boolean', 'category', 'config', 'critical', 'default', 'description', 'enum', 'error', 'execute', 'executionTimeMs', 'get_tool_registry', 'high', 'integer', 'low', 'medium', 'mode', 'name', 'not in allowlist', 'notification', 'object', 'optional', 'parameters', 'read', 'register_tool', 'report', 'required', 'requiresApproval', 'requiresPermissions', 'result', 'returns', 'riskLevel', 'schemaVersion', 'schema_version', 'simulate', 'simulatedChanges', 'string', 'success', 'toolId', 'tool_id', 'type']

@@ -7,7 +7,7 @@
  */
 
 /**
- * Refresh token response schema
+ * Response for token refresh endpoint.
  */
 export interface RefreshTokenResponse {
   /** New JWT access token */

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/errors.py
+# hypothesis_version: 6.150.1
+
+['1 minute', 'AI_DISABLED', 'AI_UNAVAILABLE', 'APPROVAL_EXPIRED', 'APPROVAL_INVALID', 'APPROVAL_REQUIRED', 'DUPLICATE_REQUEST', 'EXECUTION_FAILED', 'GUARDRAIL_VIOLATION', 'INFERENCE_ERROR', 'INFERENCE_TIMEOUT', 'INTERNAL_ERROR', 'INVALID_REQUEST', 'NOT_FOUND', 'PERMISSION_DENIED', 'PHASE_BLOCKED', 'PLAN_DRIFT', 'QUOTA_EXCEEDED', 'RATE_LIMITED', 'ROLLBACK_FAILED', 'Resource not found', 'SCHEMA_DRIFT', 'TENANT_VIOLATION', 'TOOL_NOT_ALLOWED', 'TOOL_NOT_FOUND', 'Unknown error', 'VALIDATION_ERROR', 'chat_abc123', 'details', 'error_code', 'example', 'json_schema_extra', 'limit', 'message', 'request_id', 'retry_after', 'window']

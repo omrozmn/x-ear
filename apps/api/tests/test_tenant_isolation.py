@@ -128,12 +128,14 @@ def test_no_tenant_context(tenants_and_data):
     with app.app_context():
         u1, u2 = tenants_and_data['users']
         
-        # No tenant set
-        set_current_tenant_id(None)
-        
-        # Should still work but return unfiltered results
-        user = db.session.get(User, u1.id)
-        assert user is not None
+        # No tenant set - use token-based reset instead of set_current_tenant_id(None)
+        token = _current_tenant_id.set(None)
+        try:
+            # Should still work but return unfiltered results
+            user = db.session.get(User, u1.id)
+            assert user is not None
+        finally:
+            _current_tenant_id.reset(token)
 
 
 def test_tenant_isolation_comprehensive(tenants_and_data):

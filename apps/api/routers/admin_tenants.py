@@ -23,6 +23,7 @@ from schemas.tenants import TenantCreate, TenantUpdate, TenantRead, TenantStatus
 from schemas.users import UserRead, UserListResponse, UserResponse
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
+from core.models.enums import ProductCode
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,7 @@ def list_tenants(
     limit: int = 20,
     status: str = "",
     search: str = "",
+    product_code: Optional[ProductCode] = None,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
@@ -82,6 +84,8 @@ def list_tenants(
         
         if status:
             query = query.filter_by(status=status)
+        if product_code:
+            query = query.filter_by(product_code=product_code.value)
         if search:
             query = query.filter(
                 (Tenant.name.ilike(f'%{search}%')) |
@@ -103,8 +107,9 @@ def list_tenants(
             counts_map = {t_id: count for t_id, count in user_counts}
             
             for t in tenants:
-                t_dict = t.to_dict()
-                t_dict['current_users'] = counts_map.get(t.id, 0)
+                # Use Pydantic schema for type-safe serialization (NO to_dict())
+                t_dict = TenantRead.model_validate(t).model_dump(by_alias=True)
+                t_dict['currentUsers'] = counts_map.get(t.id, 0)
                 tenants_list.append(t_dict)
         
         return ResponseEnvelope(data={
@@ -135,11 +140,15 @@ def create_tenant(
             max_users=request_data.max_users,
             current_users=request_data.current_users,
             company_info=request_data.company_info,
-            settings=request_data.settings
+            settings=request_data.settings,
+            product_code=request_data.product_code.value if request_data.product_code else ProductCode.XEAR_HEARING.value
         )
         db_session.add(tenant)
         db_session.commit()
-        return ResponseEnvelope(data=tenant.to_dict())
+        db_session.refresh(tenant)
+
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=TenantRead.model_validate(tenant).model_dump(by_alias=True))
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create tenant error: {e}")
@@ -155,7 +164,8 @@ def get_tenant(
     tenant = db_session.get(Tenant, tenant_id)
     if not tenant or tenant.deleted_at:
         raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
-    return ResponseEnvelope(data={"tenant": tenant.to_dict()})
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return ResponseEnvelope(data={"tenant": TenantRead.model_validate(tenant).model_dump(by_alias=True)})
 
 @router.put("/{tenant_id}", operation_id="updateAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def update_tenant(
@@ -177,7 +187,9 @@ def update_tenant(
         
         tenant.updated_at = datetime.utcnow()
         db_session.commit()
-        return ResponseEnvelope(data=tenant.to_dict())
+        db_session.refresh(tenant)
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=TenantRead.model_validate(tenant).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
@@ -354,8 +366,10 @@ def subscribe_tenant(
         
         tenant.feature_usage = feature_usage
         db_session.commit()
+        db_session.refresh(tenant)
         
-        return ResponseEnvelope(message="Subscription updated successfully", data={"tenant": tenant.to_dict()})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(message="Subscription updated successfully", data={"tenant": TenantRead.model_validate(tenant).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:
@@ -405,8 +419,10 @@ def add_tenant_addon(
         
         tenant.feature_usage = usage
         db_session.commit()
+        db_session.refresh(tenant)
         
-        return ResponseEnvelope(message="Addon added successfully", data={"tenant": tenant.to_dict(), "added_addon": purchased_addons[-1]})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(message="Addon added successfully", data={"tenant": TenantRead.model_validate(tenant).model_dump(by_alias=True), "addedAddon": purchased_addons[-1]})
     except HTTPException:
         raise
     except Exception as e:
@@ -453,7 +469,9 @@ def remove_tenant_addon(
             tenant.feature_usage = usage
         
         db_session.commit()
-        return ResponseEnvelope(message="Addon removed and limits decreased", data={"tenant": tenant.to_dict()})
+        db_session.refresh(tenant)
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(message="Addon removed and limits decreased", data={"tenant": TenantRead.model_validate(tenant).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:
@@ -477,8 +495,10 @@ def update_tenant_status(
         tenant.status = request_data.status
         tenant.updated_at = datetime.utcnow()
         db_session.commit()
+        db_session.refresh(tenant)
         
-        return ResponseEnvelope(data={"tenant": tenant.to_dict()})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data={"tenant": TenantRead.model_validate(tenant).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:

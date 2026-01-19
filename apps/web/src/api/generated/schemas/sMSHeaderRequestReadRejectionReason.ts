@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSHeaderRequestReadRejectionReason = string | null;
+export type SmsHeaderRequestReadRejectionReason = string | null;

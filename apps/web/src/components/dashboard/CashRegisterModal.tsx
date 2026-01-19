@@ -12,7 +12,7 @@ interface CashRegisterModalProps {
 interface CashRegisterData {
   type: 'income' | 'expense';
   recordType: 'cash' | 'card' | 'transfer';
-  patientId?: string;
+  partyId?: string;
   amount: number;
   description: string;
 }
@@ -113,14 +113,14 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
           </div>
         </div>
 
-        {/* Patient Selection (Optional) */}
+        {/* Party Selection (Optional) */}
         <div>
           <div className="relative">
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Select
               label="Hasta (Opsiyonel)"
-              value={formData.patientId || ''}
-              onChange={(e) => setFormData({ ...formData, patientId: e.target.value || undefined })}
+              value={formData.partyId || ''}
+              onChange={(e) => setFormData({ ...formData, partyId: e.target.value || undefined })}
               options={[
                 { value: "", label: "Hasta seçin..." },
                 { value: "1", label: "Ahmet Yılmaz" },

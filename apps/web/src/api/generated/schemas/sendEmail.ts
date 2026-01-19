@@ -10,7 +10,7 @@ import type { SendEmailFromEmail } from './sendEmailFromEmail';
 import type { SendEmailCcEmails } from './sendEmailCcEmails';
 import type { SendEmailBccEmails } from './sendEmailBccEmails';
 import type { SendEmailAttachments } from './sendEmailAttachments';
-import type { SendEmailPatientId } from './sendEmailPatientId';
+import type { SendEmailPartyId } from './sendEmailPartyId';
 import type { SendEmailCampaignId } from './sendEmailCampaignId';
 import type { SendEmailTemplateId } from './sendEmailTemplateId';
 
@@ -23,7 +23,7 @@ export interface SendEmail {
   ccEmails?: SendEmailCcEmails;
   bccEmails?: SendEmailBccEmails;
   attachments?: SendEmailAttachments;
-  patientId?: SendEmailPatientId;
+  partyId?: SendEmailPartyId;
   campaignId?: SendEmailCampaignId;
   templateId?: SendEmailTemplateId;
 }

@@ -36,10 +36,12 @@ class ResponseMeta(AppBaseModel):
     """Metadata for response envelopes (pagination, etc.)"""
     total: Optional[int] = None
     page: Optional[int] = None
-    per_page: Optional[int] = None
-    total_pages: Optional[int] = None
-    has_next: Optional[bool] = None
-    next_cursor: Optional[str] = None
+    per_page: Optional[int] = Field(None, alias="perPage")
+    total_pages: Optional[int] = Field(None, alias="totalPages")
+    has_next: Optional[bool] = Field(None, alias="hasNext")
+    next_cursor: Optional[str] = Field(None, alias="nextCursor")
+
+    model_config = ConfigDict(extra='allow')
 
 class ResponseEnvelope(BaseModel, Generic[T]):
     """

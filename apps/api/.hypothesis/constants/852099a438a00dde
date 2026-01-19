@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_birfatura.py
+# hypothesis_version: 6.150.1
+
+[100, 500, '/api/admin/birfatura', '/invoices', '/logs', '/stats', 'Admin BirFatura', 'birfatura.%', 'birfatura.read', 'incoming', 'invoice.%', 'invoices', 'limit', 'logs', 'outgoing', 'page', 'pagination', 'to_dict_with_user', 'total', 'totalIncoming', 'totalOutgoing', 'totalPages']

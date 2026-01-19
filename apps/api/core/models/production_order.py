@@ -7,7 +7,7 @@ class ProductionOrder(BaseModel):
     
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('prod'))
     tenant_id = db.Column(db.String(50), nullable=False)
-    patient_id = db.Column(db.String(50), nullable=False)
+    party_id = db.Column(db.String(50), nullable=False)
     
     order_number = db.Column(db.String(50), unique=True, nullable=False)
     product_type = db.Column(db.String(50)) # mold, filter, device
@@ -24,7 +24,7 @@ class ProductionOrder(BaseModel):
         d = {
             'id': self.id,
             'tenantId': self.tenant_id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'orderNumber': self.order_number,
             'productType': self.product_type,
             'status': self.status,

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Device type (e.g., hearing_aid)
+ */
 export type DeviceCreateType = string | null;

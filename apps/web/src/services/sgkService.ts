@@ -15,7 +15,7 @@ export interface SGKScheme {
 }
 
 export interface SGKCalculationInput {
-  patientAge: number;
+  partyAge: number;
   devicePrice: number;
   isBilateral: boolean;
   schemeId: string;
@@ -26,7 +26,7 @@ export interface SGKCalculationInput {
 export interface SGKCalculationResult {
   isEligible: boolean;
   deductionAmount: number;
-  patientPayment: number;
+  partyPayment: number;
   sgkPayment: number;
   reason?: string;
   warnings: string[];
@@ -97,13 +97,13 @@ class SGKService {
     return this.schemes.find(scheme => scheme.id === id) || null;
   }
 
-  getEligibleSchemes(patientAge: number): SGKScheme[] {
+  getEligibleSchemes(partyAge: number): SGKScheme[] {
     return this.schemes.filter(scheme => {
       const { minAge, maxAge } = scheme.eligibilityRules;
       
-      if (minAge && patientAge < minAge) return false;
-      if (maxAge && patientAge > maxAge) return false;
-      if (scheme.ageLimit && patientAge > scheme.ageLimit) return false;
+      if (minAge && partyAge < minAge) return false;
+      if (maxAge && partyAge > maxAge) return false;
+      if (scheme.ageLimit && partyAge > scheme.ageLimit) return false;
       
       return true;
     });
@@ -116,7 +116,7 @@ class SGKService {
       return {
         isEligible: false,
         deductionAmount: 0,
-        patientPayment: input.devicePrice,
+        partyPayment: input.devicePrice,
         sgkPayment: 0,
         reason: 'Geçersiz SGK şeması',
         warnings: [],
@@ -130,15 +130,15 @@ class SGKService {
 
     // Age eligibility check
     const { minAge, maxAge } = scheme.eligibilityRules;
-    if (minAge && input.patientAge < minAge) {
+    if (minAge && input.partyAge < minAge) {
       isEligible = false;
       reason = `Minimum yaş gereksinimi: ${minAge}`;
     }
-    if (maxAge && input.patientAge > maxAge) {
+    if (maxAge && input.partyAge > maxAge) {
       isEligible = false;
       reason = `Maksimum yaş sınırı: ${maxAge}`;
     }
-    if (scheme.ageLimit && input.patientAge > scheme.ageLimit) {
+    if (scheme.ageLimit && input.partyAge > scheme.ageLimit) {
       isEligible = false;
       reason = `Yaş sınırı aşıldı: ${scheme.ageLimit}`;
     }
@@ -160,7 +160,7 @@ class SGKService {
       return {
         isEligible: false,
         deductionAmount: 0,
-        patientPayment: input.devicePrice,
+        partyPayment: input.devicePrice,
         sgkPayment: 0,
         reason,
         warnings,
@@ -195,12 +195,12 @@ class SGKService {
     }
 
     const sgkPayment = Math.round(finalDeduction);
-    const patientPayment = Math.round(input.devicePrice - sgkPayment);
+    const partyPayment = Math.round(input.devicePrice - sgkPayment);
 
     return {
       isEligible: true,
       deductionAmount: sgkPayment,
-      patientPayment,
+      partyPayment,
       sgkPayment,
       warnings,
       scheme
@@ -210,7 +210,7 @@ class SGKService {
   // Real-time pricing preview
   calculatePricing(
     devicePrice: number,
-    patientAge: number,
+    partyAge: number,
     schemeId?: string,
     isBilateral: boolean = false
   ) {
@@ -220,12 +220,12 @@ class SGKService {
         sgkDeduction: 0,
         finalPrice: devicePrice,
         savings: 0,
-        eligibleSchemes: this.getEligibleSchemes(patientAge)
+        eligibleSchemes: this.getEligibleSchemes(partyAge)
       };
     }
 
     const calculation = this.calculateSGKDeduction({
-      patientAge,
+      partyAge,
       devicePrice,
       isBilateral,
       schemeId
@@ -234,10 +234,10 @@ class SGKService {
     return {
       originalPrice: devicePrice,
       sgkDeduction: calculation.sgkPayment,
-      finalPrice: calculation.patientPayment,
+      finalPrice: calculation.partyPayment,
       savings: calculation.sgkPayment,
       calculation,
-      eligibleSchemes: this.getEligibleSchemes(patientAge)
+      eligibleSchemes: this.getEligibleSchemes(partyAge)
     };
   }
 

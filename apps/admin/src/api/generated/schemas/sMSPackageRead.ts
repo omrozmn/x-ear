@@ -5,19 +5,19 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSPackageReadCreatedAt } from './sMSPackageReadCreatedAt';
-import type { SMSPackageReadUpdatedAt } from './sMSPackageReadUpdatedAt';
-import type { SMSPackageReadDescription } from './sMSPackageReadDescription';
+import type { SmsPackageReadCreatedAt } from './smsPackageReadCreatedAt';
+import type { SmsPackageReadUpdatedAt } from './smsPackageReadUpdatedAt';
+import type { SmsPackageReadDescription } from './smsPackageReadDescription';
 
-export interface SMSPackageRead {
+export interface SmsPackageRead {
   /** Creation timestamp */
-  createdAt?: SMSPackageReadCreatedAt;
+  createdAt?: SmsPackageReadCreatedAt;
   /** Last update timestamp */
-  updatedAt?: SMSPackageReadUpdatedAt;
+  updatedAt?: SmsPackageReadUpdatedAt;
   /** Unique identifier for the resource */
   id: string;
   name: string;
-  description?: SMSPackageReadDescription;
+  description?: SmsPackageReadDescription;
   /** */
   smsCount: number;
   /** */

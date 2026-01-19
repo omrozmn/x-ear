@@ -7,18 +7,17 @@ import uuid
 import logging
 
 from database import get_db
+from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
+from schemas.uts import (
+    BulkRegistration, UtsRegistrationListResponse, UtsJobStartResponse,
+    UtsJobStatusResponse, UtsCancelResponse
+)
 
-logger = logging.getLogger(__name__)
+router = APIRouter(tags=["UTS"])
 
-router = APIRouter(prefix="/api/uts", tags=["UTS"])
-
-class BulkRegistration(BaseModel):
-    device_ids: List[str]
-    priority: Optional[str] = "normal"
-
-@router.get("/registrations", operation_id="listUtRegistrations")
+@router.get("/registrations", operation_id="listUtRegistrations", response_model=ResponseEnvelope[UtsRegistrationListResponse])
 async def list_registrations(
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
@@ -33,13 +32,13 @@ async def list_registrations(
     # TODO: Implement actual UTS registration query
     registrations = []
     
-    return {
-        "success": True,
-        "data": registrations,
-        "meta": {"total": len(registrations), "page": page, "per_page": per_page}
-    }
+    return ResponseEnvelope(data=UtsRegistrationListResponse(
+        success=True,
+        data=registrations,
+        meta={"total": len(registrations), "page": page, "per_page": per_page}
+    ))
 
-@router.post("/registrations/bulk", operation_id="createUtRegistrationBulk")
+@router.post("/registrations/bulk", operation_id="createUtRegistrationBulk", response_model=ResponseEnvelope[UtsJobStartResponse])
 async def start_bulk_registration(
     data: BulkRegistration,
     db: Session = Depends(get_db),
@@ -54,13 +53,13 @@ async def start_bulk_registration(
     
     job_id = f"uts_job_{uuid.uuid4().hex[:8]}"
     
-    return {
-        "success": True,
-        "data": {"job_id": job_id},
-        "message": f"Bulk registration job started for {len(data.device_ids)} devices"
-    }
+    return ResponseEnvelope(data=UtsJobStartResponse(
+        success=True,
+        data={"job_id": job_id},
+        message=f"Bulk registration job started for {len(data.device_ids)} devices"
+    ))
 
-@router.get("/jobs/{job_id}", operation_id="getUtJob")
+@router.get("/jobs/{job_id}", operation_id="getUtJob", response_model=ResponseEnvelope[UtsJobStatusResponse])
 async def get_job_status(
     job_id: str,
     db: Session = Depends(get_db),
@@ -81,9 +80,9 @@ async def get_job_status(
         "errors": []
     }
     
-    return {"success": True, "data": job_status}
+    return ResponseEnvelope(data=UtsJobStatusResponse(success=True, data=job_status))
 
-@router.post("/jobs/{job_id}/cancel", operation_id="createUtJobCancel")
+@router.post("/jobs/{job_id}/cancel", operation_id="createUtJobCancel", response_model=ResponseEnvelope[UtsCancelResponse])
 async def cancel_job(
     job_id: str,
     db: Session = Depends(get_db),
@@ -93,4 +92,4 @@ async def cancel_job(
     if not access.tenant_id:
         raise HTTPException(status_code=400, detail="Tenant context required")
     
-    return {"success": True, "message": f"Job {job_id} cancellation requested"}
+    return ResponseEnvelope(data=UtsCancelResponse(success=True, message=f"Job {job_id} cancellation requested"))

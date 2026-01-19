@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { InvoicePrintQueueItemInvoiceNumber } from './invoicePrintQueueItemInvoiceNumber';
-import type { InvoicePrintQueueItemPatientName } from './invoicePrintQueueItemPatientName';
+import type { InvoicePrintQueueItemPartyName } from './invoicePrintQueueItemPartyName';
 import type { InvoicePrintQueueItemAmount } from './invoicePrintQueueItemAmount';
 import type { InvoicePrintQueueItemQueuedAt } from './invoicePrintQueueItemQueuedAt';
 import type { InvoicePrintQueueItemStatus } from './invoicePrintQueueItemStatus';
@@ -14,7 +14,7 @@ import type { InvoicePrintQueueItemStatus } from './invoicePrintQueueItemStatus'
 export interface InvoicePrintQueueItem {
   id: number;
   invoiceNumber?: InvoicePrintQueueItemInvoiceNumber;
-  patientName?: InvoicePrintQueueItemPatientName;
+  partyName?: InvoicePrintQueueItemPartyName;
   amount?: InvoicePrintQueueItemAmount;
   queuedAt?: InvoicePrintQueueItemQueuedAt;
   priority?: string;

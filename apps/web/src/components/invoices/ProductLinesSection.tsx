@@ -9,23 +9,28 @@ import SpecialBaseModal, { SpecialBaseData } from './SpecialBaseModal';
 import MedicalDeviceModal from './MedicalDeviceModal';
 // import { SearchableSelect } from '../ui/SearchableSelect';
 import type { MedicalDeviceData, LineWithholdingData } from '../../types/invoice';
-import type { InventoryItem as LocalInventoryItem, InventoryCategory } from '../../types/inventory';
+import type { InventoryItem as LocalInventoryItem, InventoryCategory, EarDirection } from '../../types/inventory';
 import {
   listInventory,
   getInventory,
   createInventory,
-} from '@/api/generated/inventory/inventory';
+} from '@/api/client/inventory.client';
 import { AUTH_TOKEN } from '../../constants/storage-keys';
 
 // Local InventoryItem type for API responses
-interface ApiInventoryItem {
-  id?: string;
-  name: string;
-  category?: string;
-  brand?: string;
-  price: number;
-  availableInventory?: number;
-  inventory?: number;
+// Replacing loose interface with generated type alias where possible
+import type {
+  InventoryItemRead,
+  ResponseEnvelopeListInventoryItemRead
+} from '@/api/generated/schemas';
+
+// Minimal interface for what we expect from API if generated type is complex/union
+interface ApiInventoryItem extends Partial<InventoryItemRead> {
+  // Add any fields that might be missing dynamically or purely local
+  inventory?: number; // alias for availableInventory
+  stock?: number;     // alias for availableInventory
+  vatRate?: number;
+  kdv?: number;
 }
 
 interface ProductLine {
@@ -171,7 +176,7 @@ export function ProductLinesSection({
         onChange(updatedLines);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReturnWithholdingType, invoiceType]);
 
   // KDV oranları
@@ -192,29 +197,34 @@ export function ProductLinesSection({
       try {
         const params = {}; // Define empty params
         const resp = await listInventory(params);
-        const apiItems: ApiInventoryItem[] = (resp as any)?.data?.data ?? [];
+
+        // Strictly typed response handling
+        const envelope = resp as unknown as ResponseEnvelopeListInventoryItemRead;
+        const apiItems = (envelope?.data || []) as unknown as ApiInventoryItem[];
+
         console.log('✅ API inventory response', { status: (resp as any)?.status, itemsCount: apiItems.length });
 
         const nowIso = new Date().toISOString();
-        const mapped: LocalInventoryItem[] = apiItems.map((item: any) => ({
+        const mapped: LocalInventoryItem[] = apiItems.map((item) => ({
           id: String(item.id ?? ''),
-          name: item.name,
-          brand: item.brand,
-          model: item.model,
+          name: item.name || '',
+          brand: item.brand || '',
+          model: item.model || '',
           category: normalizeCategory(item.category),
-          barcode: item.barcode,
+          barcode: String(item.barcode || ''),
           stockCode: undefined,
-          supplier: item.supplier,
+          // Extract supplier name if it's an object, or use as is if string (though schema says object)
+          supplier: typeof item.supplier === 'object' ? (item.supplier as any)?.name || '' : String(item.supplier || ''),
           unit: undefined,
-          description: item.description,
+          description: String(item.description || ''),
           availableInventory: item.availableInventory ?? item.inventory ?? item.stock ?? 0,
           totalInventory: item.totalInventory ?? 0,
           usedInventory: item.usedInventory ?? 0,
           onTrial: item.onTrial,
-          reorderLevel: item.reorderLevel ?? item.minInventory ?? 0,
+          reorderLevel: item.reorderLevel ?? 0,
           availableSerials: item.availableSerials,
           availableBarcodes: undefined,
-          price: item.price,
+          price: Number(item.price || 0),
           taxRate: Number(item.vatRate ?? item.kdv ?? 18),
           cost: undefined,
           wholesalePrice: undefined,
@@ -222,8 +232,8 @@ export function ProductLinesSection({
           vatIncludedPrice: item.vatIncludedPrice,
           totalValue: undefined,
           features: item.features,
-          ear: item.ear,
-          direction: item.direction,
+          ear: item.ear as unknown as EarDirection,
+          direction: item.direction as unknown as EarDirection,
           sgkCode: undefined,
           isMinistryTracked: undefined,
           warranty: item.warranty,
@@ -255,7 +265,8 @@ export function ProductLinesSection({
       const subtotal = qty * price;
 
       let discountAmount = 0;
-      const disc = (line.discount as any) === '' ? 0 : safeForCompute(line.discount);
+      const discVal = line.discount;
+      const disc = (discVal === undefined || discVal === null) ? 0 : safeForCompute(discVal);
       if (disc) {
         discountAmount = (line.discountType === 'percentage')
           ? (subtotal * disc) / 100
@@ -293,18 +304,23 @@ export function ProductLinesSection({
       if (!product) {
         try {
           const resp = await getInventory(productIdOrObject);
-          const it = (resp as any)?.data?.data ?? (resp as any)?.data ?? null;
+          // Strictly handle response
+          const envelope = resp as unknown as { data: ApiInventoryItem }; // Or use generated type
+          const it = envelope?.data;
+
           if (it) {
+            // Safe mapping
+            const taxRateVal = it.vatRate ?? it.kdv ?? 18;
             product = {
               id: it.id || productIdOrObject,
-              name: it.name,
+              name: it.name || '',
               code: it.barcode,
-              brand: it.brand,
-              model: it.model,
-              price: it.price,
+              brand: it.brand || '',
+              model: it.model || '',
+              price: Number(it.price || 0),
               stockQuantity: it.availableInventory ?? it.inventory ?? it.stock ?? 0,
               unit: it.unit || 'Adet',
-              taxRate: Number(it.vatRate ?? it.kdv ?? 18),
+              taxRate: Number(taxRateVal),
               description: it.description,
             } as unknown as LocalInventoryItem;
             // Optionally add to allProducts cache
@@ -318,7 +334,8 @@ export function ProductLinesSection({
       if (product && (product.taxRate === undefined || product.taxRate === null)) {
         try {
           const resp = await getInventory(product.id);
-          const it = (resp as any)?.data?.data ?? (resp as any)?.data ?? null;
+          const envelope = resp as unknown as { data: ApiInventoryItem };
+          const it = envelope?.data;
           if (it) {
             product.taxRate = Number(it.vatRate ?? it.kdv ?? product.taxRate ?? 18);
             // Update cache
@@ -345,7 +362,8 @@ export function ProductLinesSection({
     line.unitPrice = product.price;
     line.unit = product.unit || 'Adet';
     // Local item may not include explicit taxRate; prefer vatRate if present, else default
-    const rawVat = (product.taxRate ?? (product as any).vatRate ?? (product as any).kdv);
+    const pAny = product as unknown as ApiInventoryItem;
+    const rawVat = (product.taxRate ?? pAny.vatRate ?? pAny.kdv);
     const normalizedVat = normalizeVatRate(rawVat);
     const allowedRates = [0, 1, 8, 10, 18, 20];
     const chosenVat = allowedRates.reduce((prev, curr) => {
@@ -353,7 +371,7 @@ export function ProductLinesSection({
     }, allowedRates[0]);
     line.taxRate = isReturnType ? 0 : chosenVat;
     line.description = product.description;
-    line.productServiceCode = (product as any).productServiceCode;
+    line.productServiceCode = (product as unknown as Record<string, unknown>).productServiceCode as string | undefined;
     line.aliciStokKodu = product.barcode;
 
     if (product.gtipCode) {
@@ -378,7 +396,7 @@ export function ProductLinesSection({
     onChange(newLines);
     // Hide suggestions after selecting a product
     setFocusedLineIndex(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allProducts, lines, onChange]);
 
   const addLine = () => {
@@ -427,8 +445,8 @@ export function ProductLinesSection({
     };
 
     try {
-      const resp = await createInventory(body as any);
-      const created: any = (resp as any)?.data;
+      const resp = await createInventory(body as any); // Create body might need Strict type
+      const created = (resp as unknown as { data: ApiInventoryItem })?.data;
       console.log('✅ Envanter’e eklendi', { id: created?.id, name: created?.name });
 
       // Update the line with the new product ID and details
@@ -442,7 +460,7 @@ export function ProductLinesSection({
       // ... (logic to update allProducts could go here, or just rely on handleProductSelect fetching it)
 
     } catch (err) {
-      const ax = err as any;
+      const ax = err as { message: string, response?: { status: number, data: unknown } };
       console.error('❌ Envanter’e ekleme hatası', {
         message: ax?.message,
         status: ax?.response?.status,

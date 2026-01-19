@@ -34,6 +34,7 @@ import type {
   ListInventorySearchParams,
   ResponseEnvelopeDictStrListStr,
   ResponseEnvelopeInventoryItemRead,
+  ResponseEnvelopeInventorySearchResponse,
   ResponseEnvelopeInventoryStats,
   ResponseEnvelopeListDictStrAny,
   ResponseEnvelopeListInventoryItemRead,
@@ -214,7 +215,7 @@ export const listInventorySearch = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeInventorySearchResponse>(
       {url: `/api/inventory/search`, method: 'GET',
         params, signal
     },

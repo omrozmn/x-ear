@@ -8,7 +8,7 @@
 import type { AppointmentUpdateDate } from './appointmentUpdateDate';
 import type { AppointmentUpdateTime } from './appointmentUpdateTime';
 import type { AppointmentUpdateDuration } from './appointmentUpdateDuration';
-import type { AppointmentUpdateType } from './appointmentUpdateType';
+import type { AppointmentUpdateAppointmentType } from './appointmentUpdateAppointmentType';
 import type { AppointmentUpdateStatus } from './appointmentUpdateStatus';
 import type { AppointmentUpdateNotes } from './appointmentUpdateNotes';
 import type { AppointmentUpdateClinicianId } from './appointmentUpdateClinicianId';
@@ -18,7 +18,7 @@ export interface AppointmentUpdate {
   date?: AppointmentUpdateDate;
   time?: AppointmentUpdateTime;
   duration?: AppointmentUpdateDuration;
-  type?: AppointmentUpdateType;
+  appointmentType?: AppointmentUpdateAppointmentType;
   status?: AppointmentUpdateStatus;
   notes?: AppointmentUpdateNotes;
   clinicianId?: AppointmentUpdateClinicianId;

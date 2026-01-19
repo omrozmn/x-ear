@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Textarea, DatePicker, Card, CardHeader, CardContent } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { Calendar, FileText, User, Stethoscope, Building2, Hash, Save, X } from 'lucide-react';
-import { Patient } from '../../types/patient/patient-base.types';
+import { Party } from '../../types/party/party-base.types';
 import { SGKDocument, SGKDocumentType, CreateSGKDocumentData } from '../../types/sgk';
 import { sgkService } from '../../services/sgk.service';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface SGKReportFormProps {
-  patient?: Patient;
+  party?: Party;
   onSubmit?: (document: SGKDocument) => void;
   onCancel?: () => void;
   initialData?: Partial<CreateSGKDocumentData>;
@@ -41,16 +41,16 @@ const REPORT_PRIORITIES = [
 ];
 
 export const SGKReportForm: React.FC<SGKReportFormProps> = ({
-  patient,
+  party,
   onSubmit,
   onCancel,
   initialData,
   mode = 'create'
 }) => {
   const [formData, setFormData] = useState({
-    patientId: patient?.id || '',
-    patientName: patient ? `${patient.firstName} ${patient.lastName}` : '',
-    tcNumber: patient?.tcNumber || '',
+    partyId: party?.id || '',
+    partyName: party ? `${party.firstName} ${party.lastName}` : '',
+    tcNumber: party?.tcNumber || '',
     documentType: 'rapor' as SGKDocumentType,
     reportNumber: '',
     reportDate: new Date().toISOString().split('T')[0],
@@ -105,8 +105,8 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.patientId) newErrors.patientId = 'Hasta seçimi zorunludur';
-    if (!formData.patientName) newErrors.patientName = 'Hasta adı zorunludur';
+    if (!formData.partyId) newErrors.partyId = 'Hasta seçimi zorunludur';
+    if (!formData.partyName) newErrors.partyName = 'Hasta adı zorunludur';
     if (!formData.tcNumber) newErrors.tcNumber = 'TC Kimlik No zorunludur';
     if (!formData.reportNumber) newErrors.reportNumber = 'Rapor numarası zorunludur';
     if (!formData.reportDate) newErrors.reportDate = 'Rapor tarihi zorunludur';
@@ -139,11 +139,11 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
     setLoading(true);
     try {
       const documentData: CreateSGKDocumentData = {
-        patientId: formData.patientId,
+        partyId: formData.partyId,
         filename: `${formData.reportNumber}.pdf`,
         documentType: formData.documentType,
         extractedInfo: {
-          patientName: formData.patientName,
+          partyName: formData.partyName,
           tcNumber: formData.tcNumber,
           reportNumber: formData.reportNumber,
           reportDate: formData.reportDate,
@@ -198,7 +198,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Patient Information */}
+          {/* Party Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
@@ -206,11 +206,11 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
                 Hasta Adı *
               </label>
               <Input
-                value={formData.patientName}
-                onChange={(e) => handleInputChange('patientName', e.target.value)}
+                value={formData.partyName}
+                onChange={(e) => handleInputChange('partyName', e.target.value)}
                 placeholder="Hasta adı ve soyadı"
-                error={errors.patientName}
-                disabled={!!patient}
+                error={errors.partyName}
+                disabled={!!party}
               />
             </div>
 
@@ -225,7 +225,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
                 placeholder="11 haneli TC kimlik numarası"
                 maxLength={11}
                 error={errors.tcNumber}
-                disabled={!!patient}
+                disabled={!!party}
               />
             </div>
           </div>

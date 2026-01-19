@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/efatura.py
+# hypothesis_version: 6.150.1
+
+['  <cac:InvoiceLines>', '</Invoice>', 'description', 'invoiceNumber', 'items', 'malHizmet', 'miktar', 'name', 'quantity', 'utf-8', 'w']

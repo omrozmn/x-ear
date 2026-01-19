@@ -213,12 +213,12 @@ class DeviceAssignmentService:
     def assign_device(
         session: Session,
         tenant_id: str,
-        patient_id: str,
+        party_id: str,
         device: Device,
         assigned_by_user_id: str
     ) -> Tuple[Optional[DeviceAssignment], Optional[str]]:
         """
-        Assign an EXISTING device to a patient.
+        Assign an EXISTING device to a party.
         - Stock deduction (Serialized vs Quantity)
         - Bilateral logic (x2 deduction)
         - Full field population (assignment_uid, brands, etc)
@@ -246,7 +246,7 @@ class DeviceAssignmentService:
             assignment = DeviceAssignment(
                 id=f"assign_{uuid4().hex}",
                 tenant_id=tenant_id,
-                patient_id=patient_id,
+                party_id=party_id,
                 device_id=device.id,
                 inventory_id=inventory_id,
                 assignment_uid=assignment_uid,

@@ -7,15 +7,15 @@
  */
 import type { NotificationReadCreatedAt } from './notificationReadCreatedAt';
 import type { NotificationReadUpdatedAt } from './notificationReadUpdatedAt';
-import type { NotificationType } from './notificationType';
-import type { NotificationChannel } from './notificationChannel';
 import type { NotificationReadUserId } from './notificationReadUserId';
-import type { NotificationReadActionUrl } from './notificationReadActionUrl';
-import type { NotificationReadData } from './notificationReadData';
+import type { NotificationReadTenantId } from './notificationReadTenantId';
+import type { NotificationReadNotificationType } from './notificationReadNotificationType';
+import type { NotificationReadIsRead } from './notificationReadIsRead';
 import type { NotificationReadReadAt } from './notificationReadReadAt';
+import type { NotificationReadData } from './notificationReadData';
 
 /**
- * Schema for reading a notification
+ * Schema for reading Notification - replaces to_dict()
  */
 export interface NotificationRead {
   /** Creation timestamp */
@@ -24,23 +24,12 @@ export interface NotificationRead {
   updatedAt?: NotificationReadUpdatedAt;
   /** Unique identifier for the resource */
   id: string;
-  /** Notification title */
-  title: string;
-  /** Notification message */
-  message: string;
-  /** Notification type */
-  type?: NotificationType;
-  /** Notification channel */
-  channel?: NotificationChannel;
-  /** Target user ID */
   userId?: NotificationReadUserId;
-  /** Action URL */
-  actionUrl?: NotificationReadActionUrl;
-  /** Additional data */
-  data?: NotificationReadData;
-  tenantId: string;
-  /** Is notification read */
-  isRead?: boolean;
-  /** Read timestamp */
+  tenantId?: NotificationReadTenantId;
+  title: string;
+  message: string;
+  notificationType?: NotificationReadNotificationType;
+  isRead?: NotificationReadIsRead;
   readAt?: NotificationReadReadAt;
+  data?: NotificationReadData;
 }

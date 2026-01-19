@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-  listCommunicationTemplates,
+import {listCommunicationTemplates,
   updateCommunicationTemplate,
   createCommunicationTemplates,
-  deleteCommunicationTemplate
-} from '@/api/generated';
+  deleteCommunicationTemplate} from '@/api/client/communications.client';
 // CommunicationTemplate type defined locally since schema may not export it
 import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
 

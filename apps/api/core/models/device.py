@@ -14,10 +14,14 @@ class Device(BaseModel):
         super().__init__(**kwargs)
         if not self.id:
             self.id = gen_id("dev")
+
+    @property
+    def name(self):
+        return f"{self.brand} {self.model}".strip()
     
     # Foreign keys
     tenant_id = db.Column(db.String(50), db.ForeignKey('tenants.id'), nullable=True)
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
     inventory_id = db.Column(db.String(50))
     
     # Device identification
@@ -61,7 +65,7 @@ class Device(BaseModel):
         device_dict = {
             'id': self.id,
             'tenantId': self.tenant_id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'inventoryId': self.inventory_id,
             'serialNumber': self.serial_number,
             'serialNumberLeft': self.serial_number_left,
@@ -92,7 +96,7 @@ class Device(BaseModel):
             'warrantyMonths': 24, # Default or calc
             'barcode': None,
             'branchId': None,
-            'isAssigned': self.patient_id is not None and self.patient_id != 'inventory',
+            'isAssigned': self.party_id is not None and self.party_id != 'inventory',
             'notes': self.notes
         }
         device_dict.update(base_dict)
@@ -105,5 +109,5 @@ class Device(BaseModel):
         db.Index('ix_device_serial_right', 'serial_number_right'),
         db.Index('ix_device_category', 'category'),
         db.Index('ix_device_status', 'status'),
-        db.Index('ix_device_patient', 'patient_id'),
+        db.Index('ix_device_patient', 'party_id'),
     )

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/runtime/model_client.py
+# hypothesis_version: 6.150.1
+
+[0.7, 0.9, 5.0, 60.0, 200, 1000, 2048, '0.7', '0.9', '2048', '60', 'AI_MAX_TOKENS', 'AI_MODEL_NAME', 'AI_MODEL_TIMEOUT', 'AI_OLLAMA_URL', 'AI_TEMPERATURE', 'AI_TOP_P', 'ModelConfig', 'available', 'content', 'createdAt', 'degraded', 'done', 'error', 'evalCount', 'eval_count', 'message', 'messages', 'model', 'models', 'name', 'num_predict', 'options', 'prompt', 'promptEvalCount', 'prompt_eval_count', 'qwen2.5:7b-instruct', 'response', 'stop', 'stream', 'system', 'temperature', 'top_p', 'totalDurationMs', 'unavailable', 'unknown']

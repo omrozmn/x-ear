@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSProviderConfigUpdateIsActive = boolean | null;
+export type SmsProviderConfigUpdateIsActive = boolean | null;

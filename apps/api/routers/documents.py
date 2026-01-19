@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from schemas.documents import DocumentRead, DocumentCreate
 
 logger = logging.getLogger(__name__)
 
@@ -29,48 +29,22 @@ STORAGE_BASE_PATH = os.getenv('DOCUMENT_STORAGE_PATH', './storage/documents')
 # Ensure storage directory exists
 Path(STORAGE_BASE_PATH).mkdir(parents=True, exist_ok=True)
 
-# --- Schemas ---
 
-class DocumentCreate(BaseModel):
-    id: Optional[str] = None
-    fileName: str
-    originalName: Optional[str] = None
-    type: str
-    content: str  # Base64 encoded
-    metadata: Optional[dict] = None
-    mimeType: Optional[str] = "application/octet-stream"
-    uploadedAt: Optional[str] = None
-    createdBy: Optional[str] = "system"
-    status: Optional[str] = "completed"
-
-class DocumentResponse(BaseModel):
-    id: str
-    patientId: str
-    fileName: str
-    originalName: Optional[str] = None
-    type: str
-    filePath: str
-    metadata: Optional[dict] = None
-    mimeType: str
-    size: int
-    uploadedAt: str
-    createdBy: str
-    status: str
 
 # --- Routes ---
 
-@router.get("/patients/{patient_id}/documents", operation_id="listPatientDocuments")
+@router.get("/parties/{party_id}/documents", operation_id="listPatientDocuments", response_model=ResponseEnvelope[List[DocumentRead]])
 def get_patient_documents(
-    patient_id: str,
+    party_id: str,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get all documents for a patient"""
     try:
-        from models.patient import Patient
+        from core.models.party import Party
         
-        patient = db.get(Patient, patient_id)
-        if not patient:
+        party = db.get(Party, party_id)
+        if not party:
             raise HTTPException(status_code=404, detail="Patient not found")
         
         # Tenant check
@@ -80,7 +54,7 @@ def get_patient_documents(
         # Get documents from patient's custom data field
         documents = []
         try:
-            custom_data = patient.custom_data_json or {}
+            custom_data = party.custom_data_json or {}
             documents = custom_data.get('documents', [])
         except Exception as e:
             logger.error(f"Error parsing patient custom data: {e}")
@@ -89,7 +63,7 @@ def get_patient_documents(
             data=documents,
             meta={
                 'total': len(documents),
-                'patient_id': patient_id
+                'party_id': party_id
             }
         )
         
@@ -99,9 +73,9 @@ def get_patient_documents(
         logger.error(f"Error getting patient documents: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/documents", operation_id="createPatientDocuments", status_code=201)
+@router.post("/parties/{party_id}/documents", operation_id="createPatientDocuments", status_code=201, response_model=ResponseEnvelope[DocumentRead])
 def add_patient_document(
-    patient_id: str,
+    party_id: str,
     request_data: DocumentCreate,
     request: Request,
     access: UnifiedAccess = Depends(require_access()),
@@ -109,23 +83,23 @@ def add_patient_document(
 ):
     """Add a new document to patient - stores file locally"""
     try:
-        from models.patient import Patient
+        from core.models.party import Party
         from models.user import ActivityLog
         
-        patient = db.get(Patient, patient_id)
-        if not patient:
-            raise HTTPException(status_code=404, detail="Patient not found")
+        party = db.get(Party, party_id)
+        if not party:
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
-        if access.tenant_id and patient.tenant_id != access.tenant_id:
+        if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Generate document ID
         doc_id = request_data.id or str(uuid.uuid4())
         
-        # Create patient-specific directory
-        patient_dir = Path(STORAGE_BASE_PATH) / patient.tenant_id / patient_id
-        patient_dir.mkdir(parents=True, exist_ok=True)
+        # Create party-specific directory
+        party_dir = Path(STORAGE_BASE_PATH) / party.tenant_id / party_id
+        party_dir.mkdir(parents=True, exist_ok=True)
         
         # Decode base64 content and save to file
         try:
@@ -134,8 +108,8 @@ def add_patient_document(
             raise HTTPException(status_code=400, detail=f"Invalid base64 content: {str(e)}")
         
         # Use original filename or generate safe filename
-        file_name = request_data.fileName or f'document_{doc_id}'
-        file_path = patient_dir / f"{doc_id}_{file_name}"
+        file_name = request_data.file_name or f'document_{doc_id}'
+        file_path = party_dir / f"{doc_id}_{file_name}"
         
         # Write file to disk
         with open(file_path, 'wb') as f:
@@ -144,21 +118,21 @@ def add_patient_document(
         # Create document metadata (no base64 content stored in DB)
         document = {
             'id': doc_id,
-            'patientId': patient_id,
-            'fileName': request_data.fileName,
-            'originalName': request_data.originalName or request_data.fileName,
+            'partyId': party_id,
+            'fileName': request_data.file_name,
+            'originalName': request_data.original_name or request_data.file_name,
             'type': request_data.type,
             'filePath': str(file_path.relative_to(STORAGE_BASE_PATH)),
             'metadata': request_data.metadata or {},
-            'mimeType': request_data.mimeType,
+            'mimeType': request_data.mime_type,
             'size': len(file_content),
-            'uploadedAt': request_data.uploadedAt or datetime.now(timezone.utc).isoformat(),
-            'createdBy': request_data.createdBy,
+            'uploadedAt': request_data.uploaded_at or datetime.now(timezone.utc).isoformat(),
+            'createdBy': request_data.created_by,
             'status': request_data.status
         }
         
         # Get or initialize custom_data
-        custom_data = patient.custom_data_json or {}
+        custom_data = party.custom_data_json or {}
         
         # Add document to documents array
         if 'documents' not in custom_data:
@@ -166,7 +140,7 @@ def add_patient_document(
         custom_data['documents'].append(document)
         
         # Save back to patient
-        patient.custom_data_json = custom_data
+        party.custom_data_json = custom_data
         db.commit()
         
         # Create Activity Log
@@ -175,7 +149,7 @@ def add_patient_document(
                 user_id=request_data.createdBy,
                 action='document_upload',
                 entity_type='patient',
-                entity_id=patient_id,
+                entity_id=party_id,
                 details=f"Document uploaded: {document['fileName']}",
                 ip_address=request.client.host if request.client else None,
                 user_agent=request.headers.get('User-Agent', ''),
@@ -188,7 +162,7 @@ def add_patient_document(
         
         logger.info(f"✅ Document saved to disk: {file_path}")
         
-        return ResponseEnvelope(data=document)
+        return ResponseEnvelope(data=DocumentRead.model_validate(document))
         
     except HTTPException:
         raise
@@ -197,19 +171,19 @@ def add_patient_document(
         logger.error(f"Error adding patient document: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/documents/{document_id}", operation_id="getPatientDocument")
+@router.get("/parties/{party_id}/documents/{document_id}", operation_id="getPatientDocument")
 def get_patient_document(
-    patient_id: str,
+    party_id: str,
     document_id: str,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get a specific document - returns file for download"""
     try:
-        from models.patient import Patient
+        from core.models.party import Party
         
-        patient = db.get(Patient, patient_id)
-        if not patient:
+        party = db.get(Party, party_id)
+        if not party:
             raise HTTPException(status_code=404, detail="Patient not found")
         
         # Tenant check
@@ -217,7 +191,7 @@ def get_patient_document(
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from custom_data
-        custom_data = patient.custom_data_json or {}
+        custom_data = party.custom_data_json or {}
         documents = custom_data.get('documents', [])
         
         # Find specific document
@@ -244,19 +218,19 @@ def get_patient_document(
         logger.error(f"Error getting patient document: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/documents/{document_id}", operation_id="deletePatientDocument")
+@router.delete("/parties/{party_id}/documents/{document_id}", operation_id="deletePatientDocument")
 def delete_patient_document(
-    patient_id: str,
+    party_id: str,
     document_id: str,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Delete a document - removes file from disk and DB"""
     try:
-        from models.patient import Patient
+        from core.models.party import Party
         
-        patient = db.get(Patient, patient_id)
-        if not patient:
+        party = db.get(Party, party_id)
+        if not party:
             raise HTTPException(status_code=404, detail="Patient not found")
         
         # Tenant check
@@ -264,7 +238,7 @@ def delete_patient_document(
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from custom_data
-        custom_data = patient.custom_data_json or {}
+        custom_data = party.custom_data_json or {}
         documents = custom_data.get('documents', [])
         
         # Find the document to delete
@@ -284,7 +258,7 @@ def delete_patient_document(
         # Remove from documents list
         documents = [d for d in documents if d.get('id') != document_id]
         custom_data['documents'] = documents
-        patient.custom_data_json = custom_data
+        party.custom_data_json = custom_data
         db.commit()
         
         logger.info(f"✅ Document deleted: {document_id}")

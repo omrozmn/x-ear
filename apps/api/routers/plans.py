@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
+# Use Pydantic schema for type-safe serialization (NO to_dict())
 from schemas.plans import PlanRead, PlanCreate, PlanUpdate
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 
@@ -29,11 +30,9 @@ def get_plans(db: Session = Depends(get_db)):
         
         results = []
         for plan in plans:
-            plan_dict = plan.to_dict() if hasattr(plan, 'to_dict') else {
-                'id': plan.id,
-                'name': plan.name,
-                'price': float(plan.price) if plan.price else 0
-            }
+            # Use Pydantic schema for type-safe serialization (NO to_dict())
+            plan_data = PlanRead.model_validate(plan)
+            plan_dict = plan_data.model_dump(by_alias=True)
             # Filter features if they are a list of dicts
             if isinstance(plan_dict.get('features'), list):
                 plan_dict['features'] = [f for f in plan_dict['features'] if f.get('is_visible', True)]
@@ -59,8 +58,9 @@ def get_admin_plans(
         
         plans = db.query(Plan).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[
-            p.to_dict() if hasattr(p, 'to_dict') else {'id': p.id, 'name': p.name}
+            PlanRead.model_validate(p).model_dump(by_alias=True)
             for p in plans
         ])
         
@@ -98,8 +98,10 @@ def create_plan(
         
         db.add(plan)
         db.commit()
+        db.refresh(plan)
         
-        return ResponseEnvelope(data=plan.to_dict() if hasattr(plan, 'to_dict') else {'id': plan.id})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=PlanRead.model_validate(plan).model_dump(by_alias=True))
         
     except HTTPException:
         raise
@@ -142,8 +144,10 @@ def update_plan(
             plan.max_users = request_data.max_users
         
         db.commit()
+        db.refresh(plan)
         
-        return ResponseEnvelope(data=plan.to_dict() if hasattr(plan, 'to_dict') else {'id': plan.id})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=PlanRead.model_validate(plan).model_dump(by_alias=True))
         
     except HTTPException:
         raise

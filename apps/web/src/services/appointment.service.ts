@@ -5,6 +5,7 @@ import {
   AppointmentFilters,
   AppointmentStats,
   AppointmentType,
+  AppointmentStatus,
   AppointmentSearchResult,
   AvailabilityRequest,
   AvailabilityResponse,
@@ -43,23 +44,23 @@ class AppointmentService {
       // Use the generated API client
       const { appointmentsApi } = await import('../api/appointments');
       console.log('[appointment.service] bootstrapFromServer - calling API...');
-      const response = await appointmentsApi.getAppointments({ per_page: 100 } as any);
-      
+      const response = await appointmentsApi.getAppointments({ per_page: 100 } as Record<string, unknown>);
+
       console.log('[appointment.service] bootstrapFromServer - raw response:', response);
-      
+
       // Handle both array and wrapped response formats
       // Response is ResponseEnvelope: { success: true, data: [...], meta: {...} }
-      let items: any[] = [];
+      let items: unknown[] = [];
       if (Array.isArray(response)) {
         items = response;
       } else if (response && typeof response === 'object') {
         // Response is ResponseEnvelope, so .data is the array
-        const envelope = response as any;
+        const envelope = response as Record<string, unknown>;
         if (Array.isArray(envelope.data)) {
-          items = envelope.data;
-        } else if (envelope.data && typeof envelope.data === 'object' && Array.isArray(envelope.data.data)) {
+          items = envelope.data as unknown[];
+        } else if (envelope.data && typeof envelope.data === 'object' && Array.isArray((envelope.data as Record<string, unknown>).data)) {
           // Double wrapped (shouldn't happen but handle it)
-          items = envelope.data.data;
+          items = (envelope.data as Record<string, unknown>).data as unknown[];
         }
       }
 
@@ -70,42 +71,47 @@ class AppointmentService {
         return;
       }
 
-      // Try to fetch patient names to enrich appointments (best-effort)
-      let patientMap: Record<string, string> = {};
+      // Try to fetch party names to enrich appointments (best-effort)
+      let partyMap: Record<string, string> = {};
       try {
-        const { patientApiService } = await import('./patient/patient-api.service');
-        const patients = await patientApiService.fetchAllPatients(1000);
-        patientMap = patients.reduce((acc: Record<string, string>, p: any) => {
-          if (p && p.id) acc[p.id] = p.name || '';
+        const { partyApiService } = await import('./party/party-api.service');
+        const parties = await partyApiService.fetchAllParties(1000);
+        partyMap = parties.reduce((acc: Record<string, string>, p: unknown) => {
+          const party = p as Record<string, unknown>;
+          if (party && party.id) acc[party.id as string] = (party.name as string) || '';
           return acc;
-        }, {});
+        }, {} as Record<string, string>);
       } catch (err) {
-        console.warn('Could not fetch patients for bootstrap:', err);
+        console.warn('Could not fetch parties for bootstrap:', err);
       }
 
       // Map backend shape to local Appointment type
-      this.appointments = items.map((d: any) => ({
-        id: d.id,
-        patientId: d.patient_id || d.patientId,
-        patientName: d.patient_name || d.patientName || patientMap[d.patient_id || d.patientId] || '',
-        date: d.date,
-        time: d.time,
-        startTime: d.startTime || (d.date && d.time ? `${d.date}T${d.time}:00.000Z` : ''),
-        endTime: d.endTime || (d.date && d.time ? this.calculateEndTime(d.date, d.time, d.duration || 30) : ''),
-        duration: d.duration || 30,
-        title: d.title || this.generateTitle(d.appointment_type || d.type || 'consultation'),
-        type: d.appointment_type || d.type || 'consultation',
-        status: (d.status || 'scheduled').toLowerCase(),
-        notes: d.notes,
-        clinician: d.clinician || undefined,
-        clinicianId: d.clinician_id || d.clinicianId || undefined,
-        location: d.location || undefined,
-        branchId: d.branch_id || d.branchId || undefined,
-        reminderSent: d.reminderSent || false,
-        createdBy: d.created_by || d.createdBy || undefined,
-        createdAt: d.created_at || d.createdAt || new Date().toISOString(),
-        updatedAt: d.updated_at || d.updatedAt || new Date().toISOString()
-      }));
+      this.appointments = items.map((data: unknown) => {
+        const d = data as Record<string, unknown>;
+        const pId = (d.party_id || d.partyId) as string;
+        return {
+          id: d.id as string,
+          partyId: pId,
+          partyName: ((d.party_name || d.partyName || partyMap[pId]) as string) || '',
+          date: d.date as string,
+          time: d.time as string,
+          startTime: (d.startTime as string) || (d.date && d.time ? `${d.date}T${d.time}:00.000Z` : ''),
+          endTime: (d.endTime as string) || (d.date && d.time ? this.calculateEndTime(d.date as string, d.time as string, (d.duration as number) || 30) : ''),
+          duration: (d.duration as number) || 30,
+          title: (d.title as string) || this.generateTitle(((d.appointment_type || d.type || 'consultation') as string).toLowerCase() as AppointmentType),
+          type: ((d.appointment_type || d.type || 'consultation') as string).toLowerCase() as AppointmentType,
+          status: ((d.status as string) || 'scheduled').toLowerCase() as AppointmentStatus,
+          notes: d.notes as string,
+          clinician: d.clinician as string | undefined,
+          clinicianId: (d.clinician_id || d.clinicianId) as string | undefined,
+          location: d.location as string | undefined,
+          branchId: (d.branch_id || d.branchId) as string | undefined,
+          reminderSent: (d.reminderSent as boolean) || false,
+          createdBy: (d.created_by || d.createdBy) as string | undefined,
+          createdAt: (d.created_at || d.createdAt || new Date().toISOString()) as string,
+          updatedAt: (d.updated_at || d.updatedAt || new Date().toISOString()) as string
+        };
+      });
 
       this.saveAppointments();
       this.notify();
@@ -161,7 +167,7 @@ class AppointmentService {
 
       // Transform to AppointmentFormData format expected by backend
       const backendData = {
-        patientId: data.patientId,
+        partyId: data.partyId,
         date: data.date,
         time: data.time,
         duration: data.duration || 30,
@@ -177,8 +183,8 @@ class AppointmentService {
       // Also save to localStorage for offline access
       const appointment: Appointment = {
         id: backendAppointment.id,
-        patientId: backendAppointment.patientId,
-        patientName: backendAppointment.patientName,
+        partyId: backendAppointment.partyId,
+        partyName: backendAppointment.partyName,
         date: backendAppointment.date,
         time: backendAppointment.time,
         startTime: backendAppointment.startTime || `${backendAppointment.date}T${backendAppointment.time}:00.000Z`,
@@ -288,8 +294,8 @@ class AppointmentService {
     let filtered = [...this.appointments];
 
     if (filters) {
-      if (filters.patientId) {
-        filtered = filtered.filter(a => a.patientId === filters.patientId);
+      if (filters.partyId) {
+        filtered = filtered.filter(a => a.partyId === filters.partyId);
       }
       if (filters.status) {
         filtered = filtered.filter(a => a.status === filters.status);
@@ -312,7 +318,7 @@ class AppointmentService {
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
         filtered = filtered.filter(a =>
-          a.patientName?.toLowerCase().includes(searchTerm) ||
+          a.partyName?.toLowerCase().includes(searchTerm) ||
           a.title?.toLowerCase().includes(searchTerm) ||
           a.notes?.toLowerCase().includes(searchTerm) ||
           a.clinician?.toLowerCase().includes(searchTerm)
@@ -327,8 +333,8 @@ class AppointmentService {
     });
   }
 
-  getAppointmentsByPatient(patientId: string): Appointment[] {
-    return this.getAppointments({ patientId });
+  getAppointmentsByParty(partyId: string): Appointment[] {
+    return this.getAppointments({ partyId });
   }
 
   getAppointmentsByDate(date: string): Appointment[] {
@@ -517,7 +523,7 @@ class AppointmentService {
   async markNoShow(id: string): Promise<Appointment> {
     return this.updateAppointment(id, {
       status: 'no_show',
-      notes: 'Patient did not show up'
+      notes: 'Party did not show up'
     });
   }
 
@@ -577,8 +583,8 @@ class AppointmentService {
     };
 
     // Required fields
-    if (!appointment.patientId) {
-      validation.errors.push('Patient ID is required');
+    if (!appointment.partyId) {
+      validation.errors.push('Party ID is required');
     }
     if (!appointment.date) {
       validation.errors.push('Date is required');

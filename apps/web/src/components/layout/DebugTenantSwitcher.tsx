@@ -2,14 +2,31 @@ import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { Building2, ChevronDown, Check, Loader2, Search, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  useListAdminTenants,
+import {useListAdminTenants,
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
-} from '@/api/generated';
+  getListAdminTenantsQueryKey,} from '@/api/client/admin-tenants.client';
+import type { TenantRead } from '@/api/generated/schemas';
+import type { AuthStateUser } from '../../stores/authStore';
 import { useAuthStore } from '../../stores/authStore';
-import { patientService } from '../../services/patient.service';
+import { partyService } from '../../services/party.service';
 import { indexedDBManager } from '../../utils/indexeddb';
+
+interface TenantListResponse {
+  data: {
+    tenants: TenantRead[];
+  };
+}
+
+interface SwitchTenantResponse {
+  data: {
+    accessToken: string;
+    createAuthRefresh?: string | null;
+    effectiveTenantId: string;
+    tenantName: string;
+    isImpersonatingTenant: boolean;
+  };
+}
 
 interface DebugTenantSwitcherProps {
   darkMode?: boolean;
@@ -23,9 +40,10 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Check if current user is super admin (can use debug features)
-  const isDebugAdmin = (user as any)?.is_super_admin === true || 
-                       (user as any)?.role === 'super_admin' || 
-                       (user as any)?.isImpersonatingTenant === true;
+  const authUser = user as AuthStateUser | null;
+  const isDebugAdmin = authUser?.is_super_admin === true ||
+    authUser?.role === 'super_admin' ||
+    authUser?.isImpersonatingTenant === true;
 
   // Debounce search (300ms)
   useEffect(() => {
@@ -40,6 +58,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
     { search: debouncedSearch, limit: 50 },
     {
       query: {
+        queryKey: getListAdminTenantsQueryKey({ search: debouncedSearch, limit: 50 }),
         enabled: isDebugAdmin && isOpen,
         staleTime: 5 * 60 * 1000, // 5 minutes
       },
@@ -54,11 +73,11 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
 
         // CRITICAL: Clear ALL caches to prevent data leakage between tenants
         console.log('[DebugTenantSwitcher] Clearing ALL caches for tenant isolation...');
-        
-        // 1. Clear patient service cache
-        await patientService.reset();
-        
-        // 2. Clear IndexedDB (contains offline patient data, appointments, etc.)
+
+        // 1. Clear party service cache
+        await partyService.reset();
+
+        // 2. Clear IndexedDB (contains offline party data, appointments, etc.)
         try {
           await indexedDBManager.clearAll();
           console.log('[DebugTenantSwitcher] IndexedDB cleared');
@@ -66,7 +85,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
           console.error('[DebugTenantSwitcher] Failed to clear IndexedDB:', e);
         }
 
-        const data = (response as any)?.data;
+        const data = (response as unknown as SwitchTenantResponse)?.data;
 
         if (data?.accessToken && user) {
           const updatedUser = {
@@ -107,10 +126,10 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
 
         // CRITICAL: Clear ALL caches to prevent data leakage between tenants
         console.log('[DebugTenantSwitcher] Clearing ALL caches for tenant isolation...');
-        
-        // 1. Clear patient service cache
-        await patientService.reset();
-        
+
+        // 1. Clear party service cache
+        await partyService.reset();
+
         // 2. Clear IndexedDB
         try {
           await indexedDBManager.clearAll();
@@ -119,7 +138,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
           console.error('[DebugTenantSwitcher] Failed to clear IndexedDB:', e);
         }
 
-        const data = (response as any)?.data;
+        const data = (response as unknown as SwitchTenantResponse)?.data;
 
         if (data?.accessToken && user) {
           const updatedUser = {
@@ -164,18 +183,18 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
     return null;
   }
 
-  const tenants = (tenantsResponse as any)?.data?.tenants || [];
-  const currentTenantId = (user as any)?.effectiveTenantId;
+  const tenants = (tenantsResponse as unknown as TenantListResponse)?.data?.tenants || [];
+  const currentTenantId = authUser?.effectiveTenantId;
 
   // Try to get tenant name: first from user, then lookup from tenants list
-  let currentTenantName = (user as any)?.tenantName;
+  let currentTenantName = authUser?.tenantName;
   if (!currentTenantName && currentTenantId && tenants.length > 0) {
-    const matchingTenant = tenants.find((t: any) => t.id === currentTenantId);
+    const matchingTenant = tenants.find((t) => t.id === currentTenantId);
     currentTenantName = matchingTenant?.name;
   }
   currentTenantName = currentTenantName || (currentTenantId ? 'Tenant: ' + currentTenantId.slice(0, 8) + '...' : 'No Tenant');
 
-  const isImpersonating = (user as any)?.isImpersonatingTenant === true || !!currentTenantId;
+  const isImpersonating = authUser?.isImpersonatingTenant === true || !!currentTenantId;
 
   return (
     <div style={{ position: 'relative' }}>
@@ -343,7 +362,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
                 Tenant bulunamadı
               </div>
             ) : (
-              tenants.map((tenant: any) => {
+              tenants.map((tenant) => {
                 const isCurrentTenant = tenant.id === currentTenantId;
                 return (
                   <button
@@ -389,7 +408,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
                           marginTop: '0.125rem',
                         }}
                       >
-                        {tenant.owner_email} • {tenant.user_count || 0} users • {tenant.status}
+                        {tenant.ownerEmail} • {tenant.userCount || 0} users • {tenant.status}
                       </div>
                     </div>
                     {isCurrentTenant && (

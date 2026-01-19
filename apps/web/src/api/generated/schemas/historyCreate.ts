@@ -14,7 +14,7 @@ import type { HistoryCreateMetadata } from './historyCreateMetadata';
 import type { HistoryCreateInitiatedBy } from './historyCreateInitiatedBy';
 
 export interface HistoryCreate {
-  patientId: string;
+  partyId: string;
   communicationType: string;
   direction: string;
   subject?: HistoryCreateSubject;

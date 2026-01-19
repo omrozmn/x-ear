@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/admin.py
+# hypothesis_version: 6.150.1
+
+[200, 400, 403, 500, '/ai/admin', '/cleanup-expired', '/kill-switch', '/pending-approvals', '/settings', 'AI Admin', 'Action ID', 'Activation reason', 'Activation timestamp', 'Cleanup completed', 'Creation timestamp', 'Current phase', 'Current status', 'Expiration timestamp', 'Filter by tenant ID', 'Get AI settings', 'Invalid request', 'Manage kill switch', 'Model ID', 'Model provider', 'Pending approvals', 'Queue item ID', 'Requesting user ID', 'Risk level', 'Risk reasoning', 'Scope affected', 'Settings retrieved', 'Tenant ID', 'Tenant kill switches', 'Total count', 'User who activated', 'activate', 'activated_at', 'activated_by', 'active', 'admin_placeholder', 'capability', 'cleaned_count', 'deactivate', 'description', 'is_admin', 'reason', 'success', 'tenant_id', 'tenant_placeholder', 'timestamp', 'unknown', 'user_id']

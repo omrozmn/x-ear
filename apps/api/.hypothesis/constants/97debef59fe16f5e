@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/birfatura/service.py
+# hypothesis_version: 6.150.1
+
+[0.3, 500, 502, 503, 504, '/', '/api/EFatura/Create', '0', '1', '</p></body></html>', 'BIRFATURA_BASE_URL', 'BIRFATURA_MOCK', 'BIRFATURA_X_API_KEY', 'Content-Type', 'FLASK_ENV', 'Message', 'Payload', 'Reason', 'Received', 'RequestPath', 'Result', 'Success', 'UNKNOWN', 'X-Api-Key', 'X-Integration-Key', 'X-Secret-Key', 'XER2024', 'XML', '_ettn', '_mock', 'application/json', 'content', 'documentType', 'htmlString', 'http://', 'https://', 'id', 'invoiceId', 'invoiceNo', 'pdfLink', 'production', 'reason', 'text', 'utf-8', 'uuid', 'zipped']

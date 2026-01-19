@@ -4,6 +4,7 @@ import useUtsRegistrations, { useStartBulkUtsRegistration, usePollUtsJob } from 
 import { Button, Textarea } from '@x-ear/ui-web';
 import UTSBulkUpload from '@/components/uts/UTSBulkUpload';
 import UTSRegisterModal from '@/components/uts/UTSRegisterModal';
+import type { BulkRegistration } from '@/api/generated/schemas';
 
 export const UTSPage: React.FC = () => {
   const { data, isLoading } = useUtsRegistrations();
@@ -15,7 +16,8 @@ export const UTSPage: React.FC = () => {
 
   const handleStart = () => {
     // Simple scaffold: parse CSV externally; here we send raw CSV as payload for server to parse
-    startBulk.mutate({ csv } as any);
+    // Force cast because generated schema might not include 'csv' field yet
+    startBulk.mutate({ csv } as unknown as BulkRegistration);
   };
 
   return (
@@ -24,7 +26,7 @@ export const UTSPage: React.FC = () => {
       <div style={{ margin: '1rem 0' }}>
         <Textarea value={csv} onChange={(e) => setCsv(e.target.value)} rows={8} style={{ width: '100%' }} />
         <div style={{ marginTop: '0.5rem' }}>
-          <Button onClick={handleStart} disabled={(startBulk as any).isLoading || (startBulk as any).isMutating}>
+          <Button onClick={handleStart} disabled={startBulk.isPending}>
             Toplu Kayıt Başlat
           </Button>
         </div>
@@ -52,7 +54,7 @@ export const UTSPage: React.FC = () => {
         {jobId && (
           <div style={{ marginTop: 12 }}>
             <strong>İş ID:</strong> {jobId} <br />
-            <strong>Durum:</strong> {(jobStatus?.data as any)?.status || (jobStatus.isFetching ? 'Çalışıyor' : 'Bekleniyor')}
+            <strong>Durum:</strong> {(jobStatus?.data as unknown as { status?: string })?.status || (jobStatus.isFetching ? 'Çalışıyor' : 'Bekleniyor')}
           </div>
         )}
       </section>

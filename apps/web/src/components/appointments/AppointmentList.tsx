@@ -5,7 +5,7 @@ import { useAppointments } from '../../hooks/useAppointments';
 import { useAppointmentListKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 
 interface AppointmentListProps {
-  patientId?: string;
+  partyId?: string;
   showFilters?: boolean;
   showActions?: boolean;
   onAppointmentClick?: (appointment: Appointment) => void;
@@ -15,7 +15,7 @@ interface AppointmentListProps {
 }
 
 export const AppointmentList: React.FC<AppointmentListProps> = ({
-  patientId,
+  partyId,
   showFilters = true,
   showActions = true,
   onAppointmentClick,
@@ -24,7 +24,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   className = ''
 }) => {
   const [filters, setFilters] = useState<AppointmentFilters>({
-    patientId,
+    partyId,
     status: undefined,
     type: undefined,
     startDate: '',
@@ -303,16 +303,16 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                             <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                              {appointment.patientName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'N/A'}
+                              {appointment.partyName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'N/A'}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {appointment.patientName || 'İsimsiz Hasta'}
+                            {appointment.partyName || 'İsimsiz Hasta'}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
-                            ID: {appointment.patientId}
+                            ID: {appointment.partyId}
                           </div>
                         </div>
                       </div>

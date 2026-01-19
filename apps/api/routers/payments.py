@@ -12,12 +12,20 @@ import logging
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope, ApiError
+from schemas.sales import PaymentRecordRead
 
 from models.sales import Sale, PaymentRecord
 from models.promissory_note import PromissoryNote
-from models.patient import Patient
+from core.models.party import Party
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
+from schemas.sales import (
+    PaymentRecordRead, PromissoryNoteRead,
+    PromissoryNoteCollectionResponse
+)
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +52,7 @@ def get_or_404_scoped(session: Session, access: UnifiedAccess, model, record_id:
 # --- Request Schemas ---
 
 class PaymentRecordCreate(BaseModel):
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
     promissory_note_id: Optional[str] = Field(None, alias="promissoryNoteId")
     amount: float
@@ -83,7 +91,7 @@ class PromissoryNoteData(BaseModel):
     notes: Optional[str] = None
 
 class PromissoryNotesCreate(BaseModel):
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
     total_amount: Optional[float] = Field(None, alias="totalAmount")
     notes: List[PromissoryNoteData]
@@ -103,7 +111,7 @@ class CollectPaymentRequest(BaseModel):
 
 # --- Routes ---
 
-@router.post("/payment-records", operation_id="createPaymentRecords", status_code=201)
+@router.post("/payment-records", operation_id="createPaymentRecords", status_code=201, response_model=ResponseEnvelope[PaymentRecordRead])
 def create_payment_record(
     payment_in: PaymentRecordCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -121,7 +129,7 @@ def create_payment_record(
         payment = PaymentRecord()
         payment.tenant_id = access.tenant_id
         payment.branch_id = payment_in.branch_id
-        payment.patient_id = payment_in.patient_id
+        payment.party_id = payment_in.party_id
         payment.sale_id = payment_in.sale_id
         payment.promissory_note_id = payment_in.promissory_note_id
         payment.amount = float(payment_in.amount)
@@ -161,9 +169,11 @@ def create_payment_record(
                 db_session.add(sale)
         
         db_session.commit()
+        db_session.refresh(payment)  # Refresh to get all fields after commit
         logger.info(f"Payment record created: {payment.id}")
         
-        return ResponseEnvelope(data=payment.to_dict(), message="Payment record created successfully")
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=PaymentRecordRead.model_validate(payment), message="Payment record created successfully")
     except HTTPException:
         raise
     except Exception as e:
@@ -171,23 +181,24 @@ def create_payment_record(
         logger.error(f"Create payment record error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/payment-records", operation_id="listPatientPaymentRecords")
-def get_patient_payment_records(
-    patient_id: str,
+@router.get("/parties/{party_id}/payment-records", operation_id="listPartyPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
+def get_party_payment_records(
+    party_id: str,
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
-    """Get all payment records for a patient"""
+    """Get all payment records for a party"""
     try:
-        query = tenant_scoped_query(access, PaymentRecord, db_session).filter_by(patient_id=patient_id)
+        query = tenant_scoped_query(access, PaymentRecord, db_session).filter_by(party_id=party_id)
         
         total = query.count()
         payment_records = query.order_by(PaymentRecord.payment_date.desc()).offset((page - 1) * per_page).limit(per_page).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[record.to_dict() for record in payment_records],
+            data=[PaymentRecordRead.model_validate(record).model_dump(by_alias=True) for record in payment_records],
             meta={
                 "total": total,
                 "page": page,
@@ -199,7 +210,7 @@ def get_patient_payment_records(
         logger.error(f"Get patient payment records error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.patch("/payment-records/{record_id}", operation_id="updatePaymentRecord")
+@router.patch("/payment-records/{record_id}", operation_id="updatePaymentRecord", response_model=ResponseEnvelope[PaymentRecordRead])
 def update_payment_record(
     record_id: str,
     payment_in: PaymentRecordUpdate,
@@ -225,8 +236,10 @@ def update_payment_record(
             payment.payment_date = datetime.fromisoformat(data['paid_date'].replace('Z', '+00:00'))
         
         db_session.commit()
+        db_session.refresh(payment)  # Refresh to get all fields after commit
         
-        return ResponseEnvelope(data=payment.to_dict(), message="Payment record updated successfully")
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=PaymentRecordRead.model_validate(payment), message="Payment record updated successfully")
     except HTTPException:
         raise
     except Exception as e:
@@ -234,31 +247,32 @@ def update_payment_record(
         logger.error(f"Update payment record error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/promissory-notes", operation_id="listPatientPromissoryNotes")
-def get_patient_promissory_notes(
-    patient_id: str,
+@router.get("/parties/{party_id}/promissory-notes", operation_id="listPartyPromissoryNotes", response_model=ResponseEnvelope[List[PromissoryNoteRead]])
+def get_party_promissory_notes(
+    party_id: str,
     sale_id: Optional[str] = Query(None, alias="sale_id"),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
-    """Get all promissory notes for a patient"""
+    """Get all promissory notes for a party"""
     try:
-        query = tenant_scoped_query(access, PromissoryNote, db_session).filter_by(patient_id=patient_id)
+        query = tenant_scoped_query(access, PromissoryNote, db_session).filter_by(party_id=party_id)
         
         if sale_id:
             query = query.filter_by(sale_id=sale_id)
         
         notes = query.order_by(PromissoryNote.due_date.asc()).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[note.to_dict() for note in notes],
+            data=[serialize_promissory_note(note) for note in notes],
             meta={"count": len(notes)}
         )
     except Exception as e:
         logger.error(f"Get patient promissory notes error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/promissory-notes", operation_id="createPromissoryNotes", status_code=201)
+@router.post("/promissory-notes", operation_id="createPromissoryNotes", status_code=201, response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def create_promissory_notes(
     notes_in: PromissoryNotesCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -286,7 +300,7 @@ def create_promissory_notes(
             
             note = PromissoryNote()
             note.tenant_id = access.tenant_id
-            note.patient_id = notes_in.patient_id
+            note.party_id = notes_in.party_id
             note.sale_id = notes_in.sale_id
             note.note_number = data['note_number']
             note.total_notes = len(notes_in.notes)
@@ -320,8 +334,13 @@ def create_promissory_notes(
         
         db_session.commit()
         
+        # Refresh all notes to get updated fields after commit
+        for note in created_notes:
+            db_session.refresh(note)
+        
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[note.to_dict() for note in created_notes],
+            data=[PromissoryNoteRead.model_validate(note) for note in created_notes],
             message=f"{len(created_notes)} promissory notes created successfully"
         )
     except HTTPException:
@@ -331,7 +350,7 @@ def create_promissory_notes(
         logger.error(f"Create promissory notes error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.patch("/promissory-notes/{note_id}", operation_id="updatePromissoryNote")
+@router.patch("/promissory-notes/{note_id}", operation_id="updatePromissoryNote", response_model=ResponseEnvelope[PromissoryNoteRead])
 def update_promissory_note(
     note_id: str,
     note_in: PromissoryNoteUpdate,
@@ -357,8 +376,10 @@ def update_promissory_note(
             note.notes = data['notes']
         
         db_session.commit()
+        db_session.refresh(note)  # Refresh to get all fields after commit
         
-        return ResponseEnvelope(data=note.to_dict(), message="Promissory note updated successfully")
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=PromissoryNoteRead.model_validate(note), message="Promissory note updated successfully")
     except HTTPException:
         raise
     except Exception as e:
@@ -366,7 +387,7 @@ def update_promissory_note(
         logger.error(f"Update promissory note error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/promissory-notes/{note_id}/collect", operation_id="createPromissoryNoteCollect", status_code=201)
+@router.post("/promissory-notes/{note_id}/collect", operation_id="createPromissoryNoteCollect", status_code=201, response_model=ResponseEnvelope[PromissoryNoteCollectionResponse])
 def collect_promissory_note(
     note_id: str,
     collect_in: CollectPaymentRequest,
@@ -406,7 +427,7 @@ def collect_promissory_note(
         
         payment = PaymentRecord()
         payment.tenant_id = access.tenant_id
-        payment.patient_id = note.patient_id
+        payment.party_id = note.party_id
         payment.sale_id = note.sale_id
         payment.promissory_note_id = note_id
         payment.amount = Decimal(str(payment_amount))
@@ -452,13 +473,16 @@ def collect_promissory_note(
                 db_session.add(sale)
         
         db_session.commit()
+        db_session.refresh(note)  # Refresh to get all fields after commit
+        db_session.refresh(payment)  # Refresh to get all fields after commit
         logger.info(f"Promissory note {note_id} payment collected: {payment_amount} TL")
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data={
-                "note": note.to_dict(),
-                "payment": payment.to_dict()
-            },
+            data=PromissoryNoteCollectionResponse(
+                note=PromissoryNoteRead.model_validate(note),
+                payment=PaymentRecordRead.model_validate(payment)
+            ),
             message="Payment collected successfully"
         )
     except HTTPException:
@@ -468,7 +492,7 @@ def collect_promissory_note(
         logger.error(f"Collect promissory note error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/sales/{sale_id}/promissory-notes", operation_id="listSalePromissoryNotes")
+@router.get("/sales/{sale_id}/promissory-notes", operation_id="listSalePromissoryNotes", response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def get_sale_promissory_notes(
     sale_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -478,8 +502,9 @@ def get_sale_promissory_notes(
     try:
         notes = tenant_scoped_query(access, PromissoryNote, db_session).filter_by(sale_id=sale_id).order_by(PromissoryNote.note_number.asc()).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[note.to_dict() for note in notes],
+            data=[PromissoryNoteRead.model_validate(note) for note in notes],
             meta={"count": len(notes)}
         )
     except Exception as e:

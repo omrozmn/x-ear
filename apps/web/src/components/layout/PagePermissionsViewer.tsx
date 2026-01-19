@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useMemo } from 'react';
 import { Eye, X, Check, Lock, Shield } from 'lucide-react';
-import { useListPermissions, getListPermissionsQueryKey } from '@/api/generated/permissions/permissions';
+import { useListPermissions, getListPermissionsQueryKey } from '@/api/client/permissions.client';
 import { useAuthStore } from '../../stores/authStore';
 
 // Page permission mappings - maps pageKey to required permissions
@@ -10,11 +10,11 @@ const PAGE_PERMISSION_MAP: Record<string, Array<{ code: string; label: string }>
     { code: 'dashboard.view', label: 'Dashboard Görüntüleme' },
     { code: 'dashboard.analytics', label: 'Analytics Görüntüleme' },
   ],
-  patients: [
-    { code: 'patients.list', label: 'Hasta Listesi' },
-    { code: 'patients.create', label: 'Hasta Oluşturma' },
-    { code: 'patients.update', label: 'Hasta Güncelleme' },
-    { code: 'patients.delete', label: 'Hasta Silme' },
+  parties: [
+    { code: 'parties.list', label: 'Hasta Listesi' },
+    { code: 'parties.create', label: 'Hasta Oluşturma' },
+    { code: 'parties.update', label: 'Hasta Güncelleme' },
+    { code: 'parties.delete', label: 'Hasta Silme' },
   ],
   inventory: [
     { code: 'inventory.list', label: 'Envanter Listesi' },

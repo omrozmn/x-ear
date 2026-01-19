@@ -57,7 +57,8 @@ async def get_api_keys(
         return {
             "success": True,
             "data": {
-                "keys": [k.to_dict() for k in keys],
+                # Use Pydantic schema for type-safe serialization (NO to_dict())
+                "keys": [ApiKeyRead.model_validate(k).model_dump(by_alias=True) for k in keys],
                 "pagination": {
                     "page": page,
                     "limit": limit,
@@ -93,7 +94,8 @@ async def create_api_key(
         db.commit()
         db.refresh(api_key)
         
-        return {"success": True, "data": api_key.to_dict()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": ApiKeyRead.model_validate(api_key).model_dump(by_alias=True)}
     except HTTPException:
         raise
     except Exception as e:

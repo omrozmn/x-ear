@@ -33,7 +33,7 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
     try {
       setLoading(true);
       const workflowData = await sgkService.getWorkflow(document.id);
-      setWorkflow(workflowData);
+      setWorkflow(workflowData as SGKWorkflowType);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load workflow');
     } finally {
@@ -208,9 +208,9 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
             <Button
               onClick={async () => {
                 try {
-                  const newWorkflow = await sgkService.createWorkflow(document.id, document.patientId);
-                  setWorkflow(newWorkflow);
-                  onWorkflowUpdate?.(newWorkflow);
+                  const newWorkflow = await sgkService.createWorkflow(document.id, document.partyId);
+                  setWorkflow(newWorkflow as SGKWorkflowType);
+                  onWorkflowUpdate?.(newWorkflow as SGKWorkflowType);
                 } catch (err) {
                   setError(err instanceof Error ? err.message : 'Failed to create workflow');
                 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useListAdminPatients } from '@/lib/api-client';
+import { useListAdminParties } from '@/lib/api-client';
 import {
     UserIcon,
     MagnifyingGlassIcon,
@@ -9,13 +9,13 @@ import {
 const AdminPatientsPage: React.FC = () => {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
-    const { data: patientsData, isLoading, refetch } = useListAdminPatients({
+    const { data: patientsData, isLoading, refetch } = useListAdminParties({
         page,
         limit: 10,
         search
     });
 
-    const patients = (patientsData as any)?.data?.patients || [];
+    const patients = (patientsData as any)?.data?.parties || (patientsData as any)?.data?.patients || [];
     const pagination = (patientsData as any)?.data?.pagination;
 
     return (

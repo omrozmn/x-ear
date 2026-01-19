@@ -1,11 +1,8 @@
-// IndexedDB utility for patient data caching
-// Replaces localStorage usage to comply with rule: "Large data/binary in localStorage ❌"
+import { Party } from '../types/party';
 
-import { Patient } from '../types/patient';
-
-const DB_NAME = 'XEarPatientDB';
+const DB_NAME = 'XEarPartyDB';
 const DB_VERSION = 1;
-const PATIENTS_STORE = 'patients';
+const PARTIES_STORE = 'parties';
 const CACHE_STORE = 'cache';
 const BLOBS_STORE = 'blobs';
 
@@ -40,12 +37,12 @@ class IndexedDBManager {
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
 
-        // Create patients store
-        if (!db.objectStoreNames.contains(PATIENTS_STORE)) {
-          const patientsStore = db.createObjectStore(PATIENTS_STORE, { keyPath: 'id' });
-          patientsStore.createIndex('tcNumber', 'tcNumber', { unique: false });
-          patientsStore.createIndex('status', 'status', { unique: false });
-          patientsStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+        // Create parties store
+        if (!db.objectStoreNames.contains(PARTIES_STORE)) {
+          const partiesStore = db.createObjectStore(PARTIES_STORE, { keyPath: 'id' });
+          partiesStore.createIndex('tcNumber', 'tcNumber', { unique: false });
+          partiesStore.createIndex('status', 'status', { unique: false });
+          partiesStore.createIndex('updatedAt', 'updatedAt', { unique: false });
         }
 
         // Create cache store for general caching
@@ -73,23 +70,23 @@ class IndexedDBManager {
     return this.db;
   }
 
-  // Patient-specific methods
-  async savePatients(patients: Patient[]): Promise<void> {
+  // Party-specific methods
+  async saveParties(parties: Party[]): Promise<void> {
     const db = await this.ensureDB();
-    const transaction = db.transaction([PATIENTS_STORE], 'readwrite');
-    const store = transaction.objectStore(PATIENTS_STORE);
+    const transaction = db.transaction([PARTIES_STORE], 'readwrite');
+    const store = transaction.objectStore(PARTIES_STORE);
 
-    // Clear existing patients
+    // Clear existing parties
     await new Promise<void>((resolve, reject) => {
       const clearRequest = store.clear();
       clearRequest.onsuccess = () => resolve();
       clearRequest.onerror = () => reject(clearRequest.error);
     });
 
-    // Add new patients
-    for (const patient of patients) {
+    // Add new parties
+    for (const party of parties) {
       await new Promise<void>((resolve, reject) => {
-        const addRequest = store.add(patient);
+        const addRequest = store.add(party);
         addRequest.onsuccess = () => resolve();
         addRequest.onerror = () => reject(addRequest.error);
       });
@@ -101,46 +98,46 @@ class IndexedDBManager {
     });
   }
 
-  async getPatients(): Promise<Patient[]> {
+  async getParties(): Promise<Party[]> {
     const db = await this.ensureDB();
-    const transaction = db.transaction([PATIENTS_STORE], 'readonly');
-    const store = transaction.objectStore(PATIENTS_STORE);
+    const transaction = db.transaction([PARTIES_STORE], 'readonly');
+    const store = transaction.objectStore(PARTIES_STORE);
 
-    return new Promise<Patient[]>((resolve, reject) => {
+    return new Promise<Party[]>((resolve, reject) => {
       const request = store.getAll();
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
     });
   }
 
-  async getPatient(id: string): Promise<Patient | null> {
+  async getParty(id: string): Promise<Party | null> {
     const db = await this.ensureDB();
-    const transaction = db.transaction([PATIENTS_STORE], 'readonly');
-    const store = transaction.objectStore(PATIENTS_STORE);
+    const transaction = db.transaction([PARTIES_STORE], 'readonly');
+    const store = transaction.objectStore(PARTIES_STORE);
 
-    return new Promise<Patient | null>((resolve, reject) => {
+    return new Promise<Party | null>((resolve, reject) => {
       const request = store.get(id);
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
   }
 
-  async updatePatient(patient: Patient): Promise<void> {
+  async updateParty(party: Party): Promise<void> {
     const db = await this.ensureDB();
-    const transaction = db.transaction([PATIENTS_STORE], 'readwrite');
-    const store = transaction.objectStore(PATIENTS_STORE);
+    const transaction = db.transaction([PARTIES_STORE], 'readwrite');
+    const store = transaction.objectStore(PARTIES_STORE);
 
     return new Promise<void>((resolve, reject) => {
-      const request = store.put(patient);
+      const request = store.put(party);
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
   }
 
-  async deletePatient(id: string): Promise<void> {
+  async deleteParty(id: string): Promise<void> {
     const db = await this.ensureDB();
-    const transaction = db.transaction([PATIENTS_STORE], 'readwrite');
-    const store = transaction.objectStore(PATIENTS_STORE);
+    const transaction = db.transaction([PARTIES_STORE], 'readwrite');
+    const store = transaction.objectStore(PARTIES_STORE);
 
     return new Promise<void>((resolve, reject) => {
       const request = store.delete(id);
@@ -251,11 +248,11 @@ class IndexedDBManager {
   // Clear all data from all stores (for tenant change or logout)
   async clearAll(): Promise<void> {
     const db = await this.ensureDB();
-    const transaction = db.transaction([PATIENTS_STORE, CACHE_STORE, BLOBS_STORE], 'readwrite');
+    const transaction = db.transaction([PARTIES_STORE, CACHE_STORE, BLOBS_STORE], 'readwrite');
 
     const promises = [
       new Promise<void>((resolve, reject) => {
-        const request = transaction.objectStore(PATIENTS_STORE).clear();
+        const request = transaction.objectStore(PARTIES_STORE).clear();
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       }),

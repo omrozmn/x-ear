@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Permission description
- */
 export type SchemasUsersPermissionReadDescription = string | null;

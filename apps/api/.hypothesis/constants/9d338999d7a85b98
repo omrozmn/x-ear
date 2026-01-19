@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/dashboard.py
+# hypothesis_version: 6.150.1
+
+[0.0, 500, '%Y-%m', '/dashboard', '/dashboard/kpis', 'Dashboard', 'IN_STOCK', 'SCHEDULED', 'TRIAL', 'acquisitionType', 'activePatients', 'activeTrials', 'activity', 'admin', 'availableDevices', 'branch', 'branchId', 'breakdown', 'completed', 'dailyRevenue', 'endingTrials', 'estimatedRevenue', 'kpis', 'labels', 'listDashboard', 'listDashboardKpis', 'manager', 'monthly', 'monthlyRevenue', 'owner', 'pendingAppointments', 'platform_admin', 'recentActivity', 'segment', 'status', 'todayAppointments', 'todaysAppointments', 'totalDevices', 'totalPatients', 'value']

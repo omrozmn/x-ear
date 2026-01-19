@@ -17,6 +17,7 @@ import type { TenantReadDescription } from './tenantReadDescription';
 import type { TenantReadTaxNumber } from './tenantReadTaxNumber';
 import type { TenantReadTaxOffice } from './tenantReadTaxOffice';
 import type { TenantStatus } from './tenantStatus';
+import type { ProductCode } from './productCode';
 import type { TenantReadPlanId } from './tenantReadPlanId';
 import type { TenantReadPlanName } from './tenantReadPlanName';
 import type { TenantReadSubscriptionEnd } from './tenantReadSubscriptionEnd';
@@ -52,6 +53,7 @@ export interface TenantRead {
   /** Tax office */
   taxOffice?: TenantReadTaxOffice;
   status?: TenantStatus;
+  productCode: ProductCode;
   planId?: TenantReadPlanId;
   planName?: TenantReadPlanName;
   subscriptionEnd?: TenantReadSubscriptionEnd;

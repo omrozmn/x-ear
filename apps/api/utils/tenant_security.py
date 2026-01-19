@@ -1,9 +1,27 @@
+"""
+DEPRECATED: This module is for Flask compatibility only.
+
+For FastAPI, use:
+- core/database.py: set_tenant_context(), reset_tenant_context(), unbound_session()
+- utils/background_task.py: @tenant_task decorator
+- utils/async_context.py: gather_with_tenant_context()
+
+This file will be removed after Flask migration is complete.
+"""
 from contextvars import ContextVar
 from flask import g, request, current_app
 from sqlalchemy import event, inspect
 from sqlalchemy.orm import Session, Query
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
 import logging
+import warnings
+
+# Emit deprecation warning on import
+warnings.warn(
+    "utils.tenant_security is deprecated. Use core.database for tenant context management.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 # Import Single Source of Truth from database.py
 from database import (
@@ -118,8 +136,9 @@ def setup_tenant_security(app, db):
     @app.before_request
     def identify_tenant():
         """Identify and set current tenant from JWT"""
-        # Reset context at start of request
-        set_current_tenant_id(None)
+        # Reset context at start of request using token-based reset
+        # CRITICAL: Never use set_current_tenant_id(None) - use token-based reset instead
+        token = _current_tenant_id.set(None)
         
         try:
             # Check if JWT is present
@@ -148,6 +167,9 @@ def setup_tenant_security(app, db):
             # No valid JWT or other error
             logger.debug(f"Tenant identification failed: {e}")
             pass
+        finally:
+            # Reset token to restore previous context (usually None)
+            _current_tenant_id.reset(token)
 
 
 def check_tenant_access(entity):

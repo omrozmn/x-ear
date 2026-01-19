@@ -195,7 +195,7 @@ export interface InventoryReport {
 export interface SerialNumberAssignment {
   serialNumber: string;
   itemId: string;
-  patientId?: string;
+  partyId?: string;
   assignedAt?: string;
   status: 'available' | 'assigned' | 'trial' | 'sold' | 'returned';
   notes?: string;

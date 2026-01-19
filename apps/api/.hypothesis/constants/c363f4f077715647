@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/communications.py
+# hypothesis_version: 6.150.1
+
+[100, 365, 400, 403, 404, 500, '/api/communications', '/history', '/messages', '/messages/send-email', '/messages/send-sms', '/stats', '/templates', 'Communications', 'Patient not found', 'Template not found', 'active', 'completed', 'createdAt', 'data', 'days', 'email', 'failed', 'from', 'history', 'is_system', 'message', 'messageType', 'meta', 'noreply@x-ear.com', 'normal', 'outbound', 'page', 'per_page', 'period', 'sent', 'sms', 'success', 'successRate', 'templates', 'timestamp', 'to', 'total', 'total_pages', 'true']

@@ -41,6 +41,7 @@ export interface Tenant {
     current_plan?: string;
     seat_limit?: number;
     user_count?: number;
+    product_code?: string; // Should be keyof PRODUCT_REGISTRY, but loose for now to match backend strings
     created_at: string;
     updated_at: string;
 }
@@ -258,43 +259,49 @@ export const AdminPermissions = {
     // Tenant Management
     TENANTS_READ: 'platform.tenants.read',
     TENANTS_MANAGE: 'platform.tenants.manage',
-    
+
     // User Management
     USERS_READ: 'platform.users.read',
     USERS_MANAGE: 'platform.users.manage',
-    
+
     // Role Management
     ROLES_READ: 'platform.roles.read',
     ROLES_MANAGE: 'platform.roles.manage',
-    
+
     // Billing & Invoices
     BILLING_READ: 'platform.billing.read',
     BILLING_MANAGE: 'platform.billing.manage',
-    
+
     // System Settings
     SETTINGS_READ: 'platform.settings.read',
     SETTINGS_MANAGE: 'platform.settings.manage',
-    
+
     // Integrations
     INTEGRATIONS_READ: 'platform.integrations.read',
     INTEGRATIONS_MANAGE: 'platform.integrations.manage',
-    
+
     // Logs & Audit
     ACTIVITY_LOGS_READ: 'platform.activity_logs.read',
     AUDIT_READ: 'platform.audit.read',
-    
+
     // System
     SYSTEM_READ: 'platform.system.read',
     SYSTEM_MANAGE: 'platform.system.manage',
-    
+
     // Special
     IMPERSONATION: 'platform.impersonation.use',
     DEBUG: 'platform.debug.use',
-    
+
     // Service Specific
     SMS_MANAGE: 'platform.sms.manage',
     EFATURA_MANAGE: 'platform.efatura.manage',
     ECOMMERCE_MANAGE: 'platform.ecommerce.manage',
+
+    // AI Management
+    AI_READ: 'platform.ai.read',
+    AI_MANAGE: 'platform.ai.manage',
+    AI_KILL_SWITCH: 'platform.ai.kill_switch',
+    AI_APPROVALS: 'platform.ai.approvals',
 } as const;
 
 export type AdminPermissionCode = typeof AdminPermissions[keyof typeof AdminPermissions];

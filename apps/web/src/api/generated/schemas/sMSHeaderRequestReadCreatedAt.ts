@@ -9,4 +9,4 @@
 /**
  * Creation timestamp
  */
-export type SMSHeaderRequestReadCreatedAt = string | null;
+export type SmsHeaderRequestReadCreatedAt = string | null;

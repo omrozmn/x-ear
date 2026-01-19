@@ -23,7 +23,8 @@ import {
     Zap,
     Truck,
     Megaphone,
-    Wallet
+    Wallet,
+    Bot,
 } from 'lucide-react'
 
 const navigation = [
@@ -46,6 +47,7 @@ const navigation = [
     { name: 'Eklentiler', href: '/addons', icon: PlusCircle },
     { name: 'SMS Başlıkları', href: '/sms/headers', icon: MessageSquare },
     { name: 'SMS Paketleri', href: '/sms/packages', icon: Package },
+    { name: 'AI Yönetimi', href: '/ai', icon: Bot },
     { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
     { name: 'Dosyalar', href: '/files', icon: Folder },
     { name: 'OCR Kuyruğu', href: '/ocr-queue', icon: FileText },

@@ -3,9 +3,9 @@ import { z } from 'zod';
 const invoicesSchema = z.object({
   // legacy/local names
   invoiceNumber: z.string().optional(),
-  patientName: z.string().min(1, 'Hasta adı gerekli').optional(),
-  patientPhone: z.string().optional(),
-  patientTcNumber: z.string().optional(),
+  partyName: z.string().min(1, 'Hasta adı gerekli').optional(),
+  partyPhone: z.string().optional(),
+  partyTcNumber: z.string().optional(),
   issueDate: z.string().optional(),
   dueDate: z.string().optional(),
   currency: z.string().optional(),

@@ -13,7 +13,7 @@ class PlanBase(AppBaseModel):
     plan_type: str = Field("BASIC", alias="planType", description="Plan type")
     price: float = Field(..., description="Plan price")
     billing_interval: str = Field("YEARLY", alias="billingInterval", description="Billing interval")
-    features: Optional[List[Dict[str, Any]]] = Field(None, description="Plan features")
+    features: Optional[Dict[str, str]] = Field(None, description="Plan features")
     max_users: Optional[int] = Field(None, alias="maxUsers", description="Max users")
     max_storage_gb: Optional[int] = Field(None, alias="maxStorageGb", description="Max storage in GB")
     is_active: bool = Field(True, alias="isActive", description="Is plan active")
@@ -30,7 +30,7 @@ class PlanUpdate(AppBaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
-    features: Optional[List[Dict[str, Any]]] = None
+    features: Optional[Dict[str, str]] = None
     is_active: Optional[bool] = Field(None, alias="isActive")
     is_public: Optional[bool] = Field(None, alias="isPublic")
     max_users: Optional[int] = Field(None, alias="maxUsers")

@@ -25,16 +25,18 @@ import {
   Trash2
 } from 'lucide-react';
 import {
-  useListPatientPaymentRecords,
+  useListPartyPaymentRecords,
   useCreatePaymentRecords,
-  useListSalePromissoryNotes
+  useListSalePromissoryNotes,
+  getListPartyPaymentRecordsQueryKey,
+  getListSalePromissoryNotesQueryKey
 } from '../../api/generated/payments/payments';
-import { RoutersPaymentsPaymentRecordCreate } from '../../api/generated/schemas';
+import type { PaymentRecordCreate } from '@/api/generated/schemas';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
 // Local Sale interface as it is missing in exports
 interface Sale {
   id?: string;
-  patientId: string;
+  partyId: string;
   totalAmount?: number;
   [key: string]: any;
 }
@@ -123,12 +125,18 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   });
 
   // Orval Hooks for real data
-  const { data: paymentRecordsResponse } = useListPatientPaymentRecords(sale.patientId, undefined, {
-    query: { enabled: isOpen && !!sale.patientId }
+  const { data: paymentRecordsResponse } = useListPartyPaymentRecords(sale.partyId, undefined, {
+    query: {
+      queryKey: getListPartyPaymentRecordsQueryKey(sale.partyId),
+      enabled: isOpen && !!sale.partyId
+    }
   });
 
   const { data: promissoryNotesResponse } = useListSalePromissoryNotes(sale.id || '', {
-    query: { enabled: isOpen && !!sale.id }
+    query: {
+      queryKey: getListSalePromissoryNotesQueryKey(sale.id || ''),
+      enabled: isOpen && !!sale.id
+    }
   });
 
   const createPaymentMutation = useCreatePaymentRecords();
@@ -207,13 +215,13 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
     setIsLoading(true);
     try {
-      const paymentData: RoutersPaymentsPaymentRecordCreate = {
-        patientId: sale.patientId,
+      const paymentData: PaymentRecordCreate = {
+        partyId: sale.partyId,
         amount: newPayment.amount,
         paymentDate: newPayment.paymentDate,
         paymentMethod: newPayment.paymentMethod,
         notes: newPayment.notes
-      } as any;
+      };
 
       await createPaymentMutation.mutateAsync({ data: paymentData });
 

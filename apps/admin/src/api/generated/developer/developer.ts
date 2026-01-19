@@ -21,7 +21,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPatientSearchFiltersPaymentPlanCreatePermissionReadSMSHeaderRequestUpdateSMSLogReadSMSProviderConfigCreateTenantStatsUserProfile
+  ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPartySearchFiltersPaymentPlanCreatePermissionReadSmsHeaderRequestUpdateSMSLogReadSmsProviderConfigCreateTenantStatsUserProfile
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -41,7 +41,7 @@ export const listDeveloperSchemaRegistry = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPatientSearchFiltersPaymentPlanCreatePermissionReadSMSHeaderRequestUpdateSMSLogReadSMSProviderConfigCreateTenantStatsUserProfile>(
+      return adminApi<ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPartySearchFiltersPaymentPlanCreatePermissionReadSmsHeaderRequestUpdateSMSLogReadSmsProviderConfigCreateTenantStatsUserProfile>(
       {url: `/api/developer/schema-registry`, method: 'GET', signal
     },
       );

@@ -22,8 +22,8 @@ import type {
 
 import type {
   HTTPValidationError,
-  InventoryListResponse,
-  ListAdminInventoryParams
+  ListAdminInventoryParams,
+  ResponseEnvelopeListDeviceRead
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -41,7 +41,7 @@ export const listAdminInventory = (
 ) => {
       
       
-      return adminApi<InventoryListResponse>(
+      return adminApi<ResponseEnvelopeListDeviceRead>(
       {url: `/api/admin/inventory`, method: 'GET',
         params, signal
     },

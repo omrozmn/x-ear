@@ -10,7 +10,7 @@ class PromissoryNote(BaseModel):
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("note"))
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'))  # Optional: link to sale
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
@@ -59,7 +59,7 @@ class PromissoryNote(BaseModel):
         base_dict = self.to_dict_base()
         note_dict = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'saleId': self.sale_id,
             'noteNumber': self.note_number,
             'totalNotes': self.total_notes,
@@ -90,7 +90,7 @@ class PromissoryNote(BaseModel):
     
     # Indexes for performance
     __table_args__ = (
-        db.Index('ix_promissory_note_patient', 'patient_id'),
+        db.Index('ix_promissory_note_patient', 'party_id'),
         db.Index('ix_promissory_note_sale', 'sale_id'),
         db.Index('ix_promissory_note_status', 'status'),
         db.Index('ix_promissory_note_due_date', 'due_date'),

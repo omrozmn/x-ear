@@ -11,6 +11,11 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope, ApiError
+from schemas.roles import (
+    PermissionRead, RoleRead, 
+    PermissionListResponse, UserPermissionsResponse,
+    RolePermissionsResponse
+)
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 
@@ -45,7 +50,7 @@ class RolePermissionsUpdate(BaseModel):
 
 # --- Routes ---
 
-@router.get("/permissions", operation_id="listPermissions")
+@router.get("/permissions", operation_id="listPermissions", response_model=ResponseEnvelope[PermissionListResponse])
 def list_permissions(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -65,7 +70,8 @@ def list_permissions(
         ungrouped = []
         
         for p in perms:
-            pdict = p.to_dict() if hasattr(p, 'to_dict') else {'id': p.id, 'name': p.name, 'description': p.description}
+            # Use Pydantic schema for type-safe serialization (NO to_dict())
+            pdict = PermissionRead.model_validate(p).model_dump(by_alias=True)
             if '.' in p.name:
                 category = p.name.split('.')[0]
                 if category in PERMISSION_CATEGORIES:
@@ -91,16 +97,17 @@ def list_permissions(
                 'permissions': ungrouped
             })
         
-        return ResponseEnvelope(data={
-            'data': result,
-            'all': [p.to_dict() if hasattr(p, 'to_dict') else {'name': p.name} for p in perms]
-        })
+        return ResponseEnvelope(data=PermissionListResponse(
+            data=result,
+            all=[PermissionRead.model_validate(p) for p in perms],
+            total=len(perms)
+        ))
         
     except Exception as e:
         logger.error(f"Error listing permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/permissions/my", operation_id="listPermissionMy")
+@router.get("/permissions/my", operation_id="listPermissionMy", response_model=ResponseEnvelope[UserPermissionsResponse])
 def get_my_permissions(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -113,11 +120,11 @@ def get_my_permissions(
         # Check if admin user
         if access.is_super_admin:
             perms = db.query(Permission).order_by(Permission.name).all()
-            return ResponseEnvelope(data={
-                'permissions': [p.name for p in perms],
-                'role': access.role,
-                'isSuperAdmin': True
-            })
+            return ResponseEnvelope(data=UserPermissionsResponse(
+                permissions=[p.name for p in perms],
+                role=access.role,
+                is_super_admin=True
+            ))
         
         # Regular tenant user
         user = access.user
@@ -127,28 +134,28 @@ def get_my_permissions(
         # Super admin checks (users table with super_admin role)
         if user.role == 'super_admin':
             perms = db.query(Permission).order_by(Permission.name).all()
-            return ResponseEnvelope(data={
-                'permissions': [p.name for p in perms],
-                'role': user.role,
-                'isSuperAdmin': True
-            })
+            return ResponseEnvelope(data=UserPermissionsResponse(
+                permissions=[p.name for p in perms],
+                role=user.role,
+                is_super_admin=True
+            ))
 
         if user.role == 'admin':
             # Tenant Admin - return full tenant permissions
-            return ResponseEnvelope(data={
-                'permissions': list(_FULL_ADMIN_PERMISSIONS),
-                'role': user.role,
-                'isSuperAdmin': False
-            })
+            return ResponseEnvelope(data=UserPermissionsResponse(
+                permissions=list(_FULL_ADMIN_PERMISSIONS),
+                role=user.role,
+                is_super_admin=False
+            ))
 
         # For Tenant Users, verify against role map in code
         mapped_perms = get_permissions_for_role(user.role)
         
-        return ResponseEnvelope(data={
-            'permissions': list(mapped_perms),
-            'role': user.role,
-            'isSuperAdmin': False
-        })
+        return ResponseEnvelope(data=UserPermissionsResponse(
+            permissions=list(mapped_perms),
+            role=user.role,
+            is_super_admin=False
+        ))
         
     except HTTPException:
         raise
@@ -156,7 +163,7 @@ def get_my_permissions(
         logger.error(f"Error getting my permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/permissions/role/{role_name}", operation_id="getPermissionRole")
+@router.get("/permissions/role/{role_name}", operation_id="getPermissionRole", response_model=ResponseEnvelope[RolePermissionsResponse])
 def get_role_permissions(
     role_name: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -170,10 +177,10 @@ def get_role_permissions(
         if not role:
             raise HTTPException(status_code=404, detail="Role not found")
         
-        return ResponseEnvelope(data={
-            'role': role.to_dict() if hasattr(role, 'to_dict') else {'id': role.id, 'name': role.name},
-            'permissions': [p.name for p in role.permissions] if hasattr(role, 'permissions') else []
-        })
+        return ResponseEnvelope(data=RolePermissionsResponse(
+            role=RoleRead.model_validate(role),
+            permissions=[p.name for p in role.permissions] if hasattr(role, 'permissions') else []
+        ))
         
     except HTTPException:
         raise
@@ -181,7 +188,7 @@ def get_role_permissions(
         logger.error(f"Error getting role permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/permissions/role/{role_name}", operation_id="updatePermissionRole")
+@router.put("/permissions/role/{role_name}", operation_id="updatePermissionRole", response_model=ResponseEnvelope[RolePermissionsResponse])
 def update_role_permissions(
     role_name: str,
     request_data: RolePermissionsUpdate,
@@ -207,11 +214,12 @@ def update_role_permissions(
                 role.permissions.append(perm)
         
         db.commit()
+        db.refresh(role)
         
-        return ResponseEnvelope(data={
-            'role': role.to_dict() if hasattr(role, 'to_dict') else {'id': role.id, 'name': role.name},
-            'permissions': [p.name for p in role.permissions]
-        })
+        return ResponseEnvelope(data=RolePermissionsResponse(
+            role=RoleRead.model_validate(role),
+            permissions=[p.name for p in role.permissions]
+        ))
         
     except HTTPException:
         raise
@@ -220,7 +228,7 @@ def update_role_permissions(
         logger.error(f"Error updating role permissions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/permissions", operation_id="createPermissions", status_code=201)
+@router.post("/permissions", operation_id="createPermissions", status_code=201, response_model=ResponseEnvelope[PermissionRead])
 def create_permission(
     request_data: PermissionCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -247,9 +255,11 @@ def create_permission(
         p.description = request_data.description
         db.add(p)
         db.commit()
+        db.refresh(p)
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=p.to_dict() if hasattr(p, 'to_dict') else {'id': p.id, 'name': p.name}
+            data=PermissionRead.model_validate(p)
         )
         
     except HTTPException:

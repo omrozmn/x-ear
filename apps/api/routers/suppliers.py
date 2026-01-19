@@ -12,7 +12,8 @@ from sqlalchemy import or_, func
 
 from schemas.base import ResponseEnvelope, ApiError
 from schemas.suppliers import SupplierCreate as SupplierCreateSchema
-from schemas.suppliers import SupplierRead, SupplierUpdate as SupplierUpdateSchema
+from schemas.suppliers import SupplierRead, SupplierUpdate as SupplierUpdateSchema, ProductSupplierRead
+from schemas.suppliers import SupplierStats, SupplierSearchResponse
 
 from models.suppliers import Supplier, ProductSupplier
 from models.tenant import Tenant
@@ -133,8 +134,9 @@ def get_suppliers(
         total = query.count()
         suppliers = query.offset((page - 1) * per_page).limit(per_page).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[s.to_dict() for s in suppliers],
+            data=[SupplierRead.model_validate(s) for s in suppliers],
             meta={
                 "page": page,
                 "perPage": per_page,
@@ -146,7 +148,7 @@ def get_suppliers(
         logger.error(f"Get suppliers error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/suppliers/search", operation_id="listSupplierSearch")
+@router.get("/suppliers/search", operation_id="listSupplierSearch", response_model=ResponseEnvelope[SupplierSearchResponse])
 def search_suppliers(
     q: str = Query("", min_length=0),
     limit: int = Query(10, ge=1, le=50),
@@ -170,12 +172,15 @@ def search_suppliers(
         
         suppliers = query.all()
         
-        return ResponseEnvelope(data={"suppliers": [s.to_dict() for s in suppliers]})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=SupplierSearchResponse(
+            suppliers=[SupplierRead.model_validate(s) for s in suppliers]
+        ))
     except Exception as e:
         logger.error(f"Search suppliers error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/suppliers/stats", operation_id="listSupplierStats")
+@router.get("/suppliers/stats", operation_id="listSupplierStats", response_model=ResponseEnvelope[SupplierStats])
 def get_supplier_stats(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -207,13 +212,13 @@ def get_supplier_stats(
         avg_rating = float(avg_rating_result) if avg_rating_result else 0.0
         
         return ResponseEnvelope(
-            data={
-                "totalSuppliers": total_suppliers,
-                "activeSuppliers": active_suppliers,
-                "inactiveSuppliers": inactive_suppliers,
-                "totalProductRelationships": total_relationships,
-                "averageRating": round(avg_rating, 1)
-            }
+            data=SupplierStats(
+                total_suppliers=total_suppliers,
+                active_suppliers=active_suppliers,
+                inactive_suppliers=inactive_suppliers,
+                total_product_relationships=total_relationships,
+                average_rating=round(avg_rating, 1)
+            )
         )
     except Exception as e:
         logger.error(f"Get supplier stats error: {e}")
@@ -234,14 +239,26 @@ def get_supplier(
                 detail=ApiError(message="Supplier not found", code="SUPPLIER_NOT_FOUND").model_dump(mode="json")
             )
         
-        supplier_dict = supplier.to_dict()
-        supplier_dict['products'] = [
-            ps.to_dict(include_product=True)
-            for ps in supplier.products
-            if ps.is_active
-        ]
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        supplier_data = SupplierRead.model_validate(supplier).model_dump(by_alias=True)
         
-        return ResponseEnvelope(data=supplier_dict)
+        products_data = []
+        for ps in supplier.products:
+            if not ps.is_active:
+                continue
+            ps_data = ProductSupplierRead.model_validate(ps).model_dump(by_alias=True)
+            if ps.product:
+                 ps_data['product'] = {
+                    'id': ps.product.id,
+                    'name': ps.product.name,
+                    'sku': ps.product.sku
+                }
+            products_data.append(ps_data)
+            
+        supplier_data['products'] = products_data
+        
+        return ResponseEnvelope(data=supplier_data)
     except HTTPException:
         raise
     except Exception as e:

@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSSourceType = typeof SMSSourceType[keyof typeof SMSSourceType];
+export type SmsSourceType = typeof SmsSourceType[keyof typeof SmsSourceType];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SMSSourceType = {
+export const SmsSourceType = {
   excel: 'excel',
   filter: 'filter',
 } as const;

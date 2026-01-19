@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/uts.py
+# hypothesis_version: 6.150.1
+
+[100, 400, '/api/uts', '/jobs/{job_id}', '/registrations', '/registrations/bulk', 'UTS', 'completed', 'completed_at', 'createUtJobCancel', 'data', 'errors', 'failed', 'getUtJob', 'job_id', 'listUtRegistrations', 'message', 'meta', 'normal', 'page', 'per_page', 'processed', 'started_at', 'status', 'success', 'total']

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/addons.py
+# hypothesis_version: 6.150.1
+
+[201, 400, 403, 404, 500, '/addons', '/admin', '/{addon_id}', 'Addon not found', 'Addons', 'admin', 'createAddon', 'deleteAddon', 'id', 'listAddonAdmin', 'listAddons', 'name', 'super_admin', 'to_dict', 'updateAddon']

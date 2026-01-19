@@ -29,6 +29,7 @@ import type {
   ListUsersParams,
   PasswordChange,
   ResponseEnvelopeListUserRead,
+  ResponseEnvelopeUserMeRead,
   ResponseEnvelopeUserRead,
   UserCreate,
   UserUpdate
@@ -208,7 +209,7 @@ export const listUserMe = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeUserRead>(
+      return customInstance<ResponseEnvelopeUserMeRead>(
       {url: `/api/users/me`, method: 'GET', signal
     },
       );

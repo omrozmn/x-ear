@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/devices.py
+# hypothesis_version: 6.150.1
+
+[0.0, 18.0, 'Barcode', 'Cost price', 'Device brand', 'Device category', 'Device features', 'Device model', 'Device name', 'Device status', 'Notes', 'Sale price', 'Serial number', 'VAT rate', 'Warranty in months', 'Warranty info', 'available', 'branchId', 'hearing_aid', 'in_stock', 'inventoryId', 'isAssigned', 'kdvRate', 'patientId', 'patientName', 'saleId', 'serialNumber', 'serialNumberLeft', 'serialNumberRight', 'tenantId', 'trialPeriod', 'warrantyMonths']

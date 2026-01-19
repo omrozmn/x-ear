@@ -27,7 +27,7 @@ import {
   MessageSquare,
   CreditCard
 } from 'lucide-react';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, AuthStateUser } from '../../stores/authStore';
 import { DebugRoleSwitcher } from './DebugRoleSwitcher';
 import { DebugTenantSwitcher } from './DebugTenantSwitcher';
 import { PagePermissionsViewer } from './PagePermissionsViewer';
@@ -35,6 +35,9 @@ import { useTheme } from '../theme-provider';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { GlobalOfflineAlert } from '../common/GlobalOfflineAlert';
+// AI Components - conditionally rendered based on AI availability
+import { AIChatWidget, AIFeatureWrapper, AIStatusIndicator, PhaseABanner } from '../../ai/components';
+import { useAIStatus, useAIContextSync } from '../../ai/hooks';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -43,7 +46,7 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 // Route'tan page key mapping
 const getPageKeyFromPath = (pathname: string): { key: string; title: string } | null => {
   const pathMap: Record<string, { key: string; title: string }> = {
-    '/patients': { key: 'patients', title: 'Hastalar' },
+    '/parties': { key: 'parties', title: 'Hastalar' },
     '/appointments': { key: 'appointments', title: 'Randevular' },
     '/sales': { key: 'sales', title: 'Satışlar' },
     '/finance': { key: 'finance', title: 'Finans' },
@@ -81,11 +84,18 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const { user, subscription } = useAuthStore();
+  const { user: rawUser, subscription } = useAuthStore();
+  const user = rawUser as AuthStateUser | null;
   console.log('MainLayout render - user:', user);
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  // AI Status for header indicator
+  const { data: aiStatus } = useAIStatus({ enabled: !!user });
+
+  // AI Context Sync - monitors tenant/party changes and clears AI stores
+  useAIContextSync();
 
   useEffect(() => {
     if (subscription?.isExpired) {
@@ -103,7 +113,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // but usually 'dark' class is enough for CSS. 
   // For JS logic passed to children, we approximate.
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const darkMode = isDark;
+
+  // Define MenuItem interface locally
+  interface MenuItem {
+    key: string;
+    label: string;
+    icon: any; // Lucide icon component
+    href?: string;
+    submenu?: { label: string; href: string }[];
+  }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
@@ -140,7 +158,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   const menuItems = [
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/' },
-    { key: 'patients', label: 'Hastalar', icon: Users, href: '/patients' },
+    { key: 'parties', label: 'Hastalar', icon: Users, href: '/parties' },
     { key: 'appointments', label: 'Randevular', icon: Calendar, href: '/appointments' },
     {
       key: 'invoices',
@@ -186,7 +204,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   ];
 
-  const renderMenuItem = (item: any) => {
+  const renderMenuItem = (item: MenuItem) => {
     const hasSubmenu = item.submenu && item.submenu.length > 0;
     const isExpanded = expandedMenus[item.key];
 
@@ -223,9 +241,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           )}
         </div>
 
-        {hasSubmenu && !sidebarCollapsed && isExpanded && (
+        {hasSubmenu && !sidebarCollapsed && isExpanded && item.submenu && (
           <ul className="list-none p-0 m-0 mt-1 ml-8 border-l-2 border-gray-200 dark:border-gray-700">
-            {item.submenu.map((subItem: any, index: number) => (
+            {item.submenu.map((subItem, index) => (
               <li key={index}>
                 <Link
                   to={subItem.href}
@@ -247,9 +265,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   // Make toggleSidebar available globally for legacy compatibility
   useEffect(() => {
-    (window as any).toggleSidebar = toggleSidebar;
+    window.toggleSidebar = toggleSidebar;
     return () => {
-      delete (window as any).toggleSidebar;
+      delete window.toggleSidebar;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -318,6 +336,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </Button>
 
+              {/* AI Status Indicator - Shows AI availability status */}
+              <AIFeatureWrapper hideWhenUnavailable showLoading={false}>
+                <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700/50" title="AI Durumu">
+                  <Bot size={16} className="text-gray-600 dark:text-gray-400" />
+                  <AIStatusIndicator status={aiStatus} size="sm" showLabel />
+                </div>
+              </AIFeatureWrapper>
+
               {/* Debug Switchers (admin@x-ear.com only) */}
               <DebugTenantSwitcher darkMode={isDark} />
               <DebugRoleSwitcher darkMode={isDark} />
@@ -373,7 +399,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             localStorage.removeItem('auth_token');
                             localStorage.removeItem('refresh_token');
                             localStorage.removeItem('x-ear.auth.token@v1');
-                            delete (window as any).__AUTH_TOKEN__;
+                            delete window.__AUTH_TOKEN__;
                           } catch {
                             // Ignore localStorage errors during logout
                           }
@@ -394,14 +420,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
         {/* Content */}
         <main className="flex-1 p-8 bg-gray-50 dark:bg-gray-950 min-h-[calc(100vh-80px)]">
-          {((user as any)?.isImpersonatingTenant || (user as any)?.isImpersonating) && (
+          {(user?.isImpersonatingTenant || user?.isImpersonating) && (
             <div className="mb-4 p-3 rounded-lg flex items-center justify-between border-2 bg-emerald-100 dark:bg-emerald-900/30 border-emerald-600 dark:border-emerald-500">
               <div className="flex items-center gap-2">
                 <Building2 size={16} className="text-emerald-800 dark:text-emerald-400" />
                 <span className="font-semibold text-sm text-emerald-800 dark:text-emerald-400">
-                  {(user as any)?.isImpersonatingTenant && `🏢 Impersonating: ${(user as any)?.tenantName}`}
-                  {(user as any)?.isImpersonating && !((user as any)?.isImpersonatingTenant) && `👤 Impersonating Role: ${user?.role}`}
-                  {(user as any)?.isImpersonatingTenant && (user as any)?.isImpersonating && ` • Role: ${user?.role}`}
+                  {user?.isImpersonatingTenant && `🏢 Impersonating: ${user?.tenantName}`}
+                  {user?.isImpersonating && !(user?.isImpersonatingTenant) && `👤 Impersonating Role: ${user?.role}`}
+                  {user?.isImpersonatingTenant && user?.isImpersonating && ` • Role: ${user?.role}`}
                 </span>
               </div>
               <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
@@ -411,6 +437,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           )}
 
           <GlobalOfflineAlert />
+
+          {/* Phase A Banner - Shows when AI is in read-only mode */}
+          {/* Dismissable per session, reappears on new session */}
+          <PhaseABanner
+            className="mb-4"
+            storageKey="main-layout-phase-a-dismissed"
+          />
 
           {children}
 
@@ -430,6 +463,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           })()}
         </main>
       </div>
+
+      {/* AI Chat Widget - Conditionally rendered based on AI availability */}
+      {/* Uses AIFeatureWrapper for graceful degradation - hides when AI unavailable */}
+      <AIFeatureWrapper
+        capability="chat"
+        hideWhenUnavailable
+        showLoading={false}
+      >
+        <AIChatWidget />
+      </AIFeatureWrapper>
     </div>
   );
 };

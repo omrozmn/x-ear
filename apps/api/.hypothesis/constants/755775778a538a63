@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/addons.py
+# hypothesis_version: 6.150.1
+
+['Addon description', 'Addon name', 'Addon price', 'Addon slug', 'Addon type', 'Currency', 'FEATURE', 'Is addon active', 'Limit amount', 'TRY', 'Unit name', 'addonType', 'isActive', 'limitAmount', 'tenantCount', 'unitName']

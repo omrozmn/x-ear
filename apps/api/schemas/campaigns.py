@@ -112,7 +112,7 @@ class SMSLogStatus(str, Enum):
 
 class SMSLogRead(IDMixin, TimestampMixin):
     campaign_id: Optional[str] = Field(None, alias="campaignId")
-    patient_id: Optional[str] = Field(None, alias="patientId")
+    party_id: Optional[str] = Field(None, alias="partyId")
     phone_number: str = Field(..., alias="phoneNumber")
     message: str
     status: SMSLogStatus

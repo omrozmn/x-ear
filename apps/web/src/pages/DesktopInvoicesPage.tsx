@@ -140,8 +140,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       const query = state.filters.search.toLowerCase();
       filtered = filtered.filter(invoice =>
         invoice.invoiceNumber.toLowerCase().includes(query) ||
-        invoice.patientName.toLowerCase().includes(query) ||
-        invoice.patientPhone?.toLowerCase().includes(query) ||
+        invoice.partyName.toLowerCase().includes(query) ||
+        invoice.partyPhone?.toLowerCase().includes(query) ||
         invoice.billingAddress?.taxNumber?.toLowerCase().includes(query)
       );
     }
@@ -426,7 +426,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           onClose={closeModal}
           onSuccess={handleModalSubmit}
           initialData={modalState.invoice ? {
-            patientName: modalState.invoice.patientName,
+            partyName: modalState.invoice.partyName,
             invoiceNumber: modalState.invoice.invoiceNumber,
             type: modalState.invoice.type,
             issueDate: modalState.invoice.issueDate,
@@ -461,11 +461,11 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           // keep legacy keys for backend compatibility plus integrator names
           { key: 'invoiceNumber', label: 'Fatura No' },
           { key: 'eInvoiceId', label: 'Fatura No (eInvoiceId)' },
-          { key: 'patientName', label: 'Hasta / Alıcı Adı' },
+          { key: 'partyName', label: 'Hasta / Alıcı Adı' },
           { key: 'billingName', label: 'Alıcı / İsim (billingName)' },
-          { key: 'patientPhone', label: 'Telefon' },
+          { key: 'partyPhone', label: 'Telefon' },
           { key: 'billingMobilePhone', label: 'Telefon (mobil)' },
-          { key: 'patientTcNumber', label: 'TC Kimlik No' },
+          { key: 'partyTcNumber', label: 'TC Kimlik No' },
           { key: 'taxNo', label: 'Vergi No (TC/VKN)' },
           { key: 'issueDate', label: 'Düzenlenme Tarihi' },
           { key: 'invoiceDate', label: 'Fatura Tarihi (invoiceDate)' },

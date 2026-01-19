@@ -11,8 +11,8 @@ import {
   useDeleteInventory,
   useUpdateInventory,
   getListInventoryQueryKey
-} from '@/api/generated/inventory/inventory';
-import type { ListInventoryParams } from '@/api/generated/schemas';
+} from '@/api/client/inventory.client';
+import type { ListInventoryParams } from '../../api/generated/schemas';
 
 // Alias for backward compatibility
 type InventoryItemSchema = Record<string, unknown>;
@@ -98,6 +98,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     refetch
   } = useListInventory(queryParams as ListInventoryParams, {
     query: {
+      queryKey: getListInventoryQueryKey(queryParams as ListInventoryParams),
       staleTime: 5000
     }
   });
@@ -285,7 +286,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
               // Status might be strict enum in TS but mostly string in API
               await updateItemMutation.mutateAsync({
                 itemId: id,
-                data: { status: operation.data?.status } as any
+                data: { status: operation.data?.status } as unknown as InventoryItemSchema
               });
               break;
             case 'update_price':
@@ -504,7 +505,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   }
 
   if (fetchError) {
-    const errorMsg = (fetchError as any)?.message || 'Bir hata oluştu';
+    const errorMsg = (fetchError as AxiosError)?.message || 'Bir hata oluştu';
     return (
       <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 ${className}`}>
         <div className="flex">
@@ -547,7 +548,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         </div>
       )}
       <DataTable
-        columns={columns as any}
+        columns={columns}
         data={items}
         actions={actions}
         loading={isLoading || deleteItemMutation.isPending || updateItemMutation.isPending}

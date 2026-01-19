@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/notifications.py
+# hypothesis_version: 6.150.1
+
+[100, 201, 400, 404, 500, '/notifications', '/notifications/stats', 'MISSING_PREFERENCES', 'Notification deleted', 'Notifications', 'Preferences updated', 'createNotifications', 'deleteNotification', 'is_read', 'json', 'listNotifications', 'notifications', 'page', 'perPage', 'preferences required', 'system', 'total', 'totalPages', 'unread', 'updateNotification', 'userId', 'userNotifications', 'user_id']

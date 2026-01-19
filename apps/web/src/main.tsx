@@ -19,7 +19,7 @@ function syncTokensFromZustand() {
       const parsed = JSON.parse(authStorage);
       const zustandToken = parsed?.state?.token;
       const zustandRefresh = parsed?.state?.createAuthRefresh;
-      
+
       if (zustandToken && !tokenManager.accessToken) {
         console.log('[main.tsx] Syncing tokens from Zustand persist storage...');
         tokenManager.setTokens(zustandToken, zustandRefresh || null);
@@ -54,12 +54,12 @@ console.log('Starting migration and auth init...');
   try {
     // Run migration in background (non-blocking) - only for non-token data
     storageMigrator.migrate().catch(e => console.warn('Migration failed:', e));
-    
+
     // Initialize auth in background (non-blocking)
     useAuthStore.getState().initializeAuth().catch(e => console.warn('Auth init failed:', e));
-    
+
     console.log('Rendering App...');
-    
+
     // Render immediately
     ReactDOM.createRoot(document.getElementById('root')!).render(
       <React.StrictMode>
@@ -68,11 +68,11 @@ console.log('Starting migration and auth init...');
         </MantineProvider>
       </React.StrictMode>,
     );
-    
+
     console.log('App rendered');
   } catch (error) {
     console.error('Fatal error:', error);
-    
+
     // Fallback render
     ReactDOM.createRoot(document.getElementById('root')!).render(
       <React.StrictMode>

@@ -5,7 +5,7 @@ import {
     Alert,
     Loading
 } from '@x-ear/ui-web';
-import { useCreatePaymentPoPaytrInitiate } from '@/api/generated';
+import {useCreatePaymentPoPaytrInitiate} from '@/api/client/payments.client';
 
 interface PosPaymentFormProps {
     saleId: string;

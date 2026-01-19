@@ -4,50 +4,17 @@ import { outbox, OutboxOperation } from '../utils/outbox';
 import { tokenManager } from '../utils/token-manager';
 
 // Hybrid Converter: Adds CamelCase keys while preserving SnakeCase keys
-const hybridCamelize = (data: any): any => {
+// Canonical Case Converter: Strictly camelCase
+// Replaces previous hybrid approach to ensure idempotency and type consistency
+// We keep the name 'hybridCamelize' for backward compatibility with imports
+export const hybridCamelize = (data: any): any => {
   if (Array.isArray(data)) {
     return data.map(hybridCamelize);
   }
   if (data && typeof data === 'object' && data !== null && !(data instanceof Date)) {
-    // 1. Get camelCased version
-    const camelized = humps.camelizeKeys(data);
-
-    // 2. Merge preserving original keys (priority to original if collision, but usually keys differ)
-    // We want the result to have BOTH `first_name` and `firstName`.
-    // If we just return { ...data, ...camelized }, we get both.
-    // We need to do this recursively? 
-    // actually humps.camelizeKeys IS recursive.
-    // But simplistic merge only works for top level.
-    // For deep hybrid, we need a custom walker.
-
-    // HOWEVER, for safety and performance, let's rely on humps.camelizeKeys for the "New Standard".
-    // AND keep the original data for "Legacy Access" simply by returning a proxy or just merging.
-    // Deep merging thousands of objects might be slow.
-
-    // Let's implement a shallow merge for now? No, deep access like patient.address.city_name vs address.cityName
-    // We probably need deep hybrid.
-
-    // Let's stick to a simpler strategy first:
-    // If generated types expect camelCase, we MUST provide it.
-    // If legacy code expects snake_case, we MUST provide it.
-
-    // Custom recursive hybridizer:
-    const result: any = {};
-    for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        const value = data[key];
-        const camelKey = humps.camelize(key);
-
-        // Recurse
-        const newValue = hybridCamelize(value);
-
-        result[key] = newValue; // Keep original key
-        if (camelKey !== key) {
-          result[camelKey] = newValue; // Add camel key
-        }
-      }
-    }
-    return result;
+    // Strictly return camelized keys - NO hybrid snake_case keys
+    // This ensures data shape is deterministic for idempotency hashing
+    return humps.camelizeKeys(data);
   }
   return data;
 };
@@ -158,6 +125,11 @@ async function retryRequest<T>(
   }
 }
 
+// Standalone Key Generator for universal use
+export const generateIdempotencyKey = (): string => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
 // Idempotency manager for request deduplication
 class IdempotencyManager {
   private cache = new Map<string, Promise<unknown>>();
@@ -208,14 +180,14 @@ async function queueOfflineRequest(config: AxiosRequestConfig): Promise<void> {
 
 // Enhanced error handling for resource constraints
 function handleResourceError(error: any, config: AxiosRequestConfig): Error {
-  const resourceError = new Error('Resource limit exceeded. Please try again in a moment.');
+  const resourceError = new Error('Kaynak limiti aşıldı. Lütfen bir süre sonra tekrar deneyin.');
   resourceError.name = 'ResourceError';
 
   // Add retry suggestion
   (resourceError as any).retryAfter = 5000; // Suggest retry after 5 seconds
   (resourceError as any).originalError = error;
 
-  console.warn('Resource constraint detected:', {
+  console.warn('Kaynak kısıtlaması tespit edildi:', {
     url: config.url,
     method: config.method,
     error: error.code || error.message
@@ -247,7 +219,7 @@ apiClient.interceptors.request.use(
         isExpired: tokenManager.isAccessTokenExpired()
       });
     } else {
-      console.warn('[orval-mutator] No token found for request:', config.url);
+      console.warn('[orval-mutator] İstek için token bulunamadı:', config.url);
     }
 
     // URL rewriting logic has been removed as backend now supports Unified Endpoints.
@@ -256,8 +228,7 @@ apiClient.interceptors.request.use(
 
     // Add idempotency key for non-GET requests
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
-      const idempotencyKey = config.headers['Idempotency-Key'] ||
-        `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const idempotencyKey = config.headers['Idempotency-Key'] || generateIdempotencyKey();
       config.headers['Idempotency-Key'] = idempotencyKey;
     }
 
@@ -269,8 +240,8 @@ apiClient.interceptors.request.use(
 
     // Case Conversion: Convert payload to snake_case for backend
     // DISABLED: Backend expects camelCase as per OpenAPI spec and generated types.
-    // The previous conversion to snake_case was causing 422 Validation Errors (e.g. missing 'patientId')
-    // because the backend received 'patient_id' but validated against 'patientId'.
+    // The previous conversion to snake_case was causing 422 Validation Errors (e.g. missing 'partyId')
+    // because the backend received 'party_id' but validated against 'partyId'.
     /*
     if (config.data && !(config.data instanceof FormData)) {
       config.data = humps.decamelizeKeys(config.data);
@@ -318,8 +289,8 @@ apiClient.interceptors.response.use(
           (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
           try {
             if (!createAuthRefresh) {
-              console.error('[orval-mutator] No refresh token available');
-              throw new Error('No refresh token available');
+              console.error('[orval-mutator] Yenileme token\'ı mevcut değil');
+              throw new Error('Yenileme token\'ı mevcut değil');
             }
 
             console.log('[orval-mutator] Attempting token refresh...');
@@ -412,17 +383,17 @@ apiClient.interceptors.response.use(
     // Only queue non-GET requests - GET requests should be re-fetched by UI when online
     if (!error.response && error.code === 'ERR_NETWORK') {
       const method = config?.method?.toUpperCase() || 'GET';
-      
+
       if (method !== 'GET') {
-        console.warn('Network error detected, queuing request for offline processing');
+        console.warn('Ağ hatası tespit edildi, istek çevrimdışı işleme için sıraya alınıyor');
         await queueOfflineRequest(config);
         // Return a rejected promise with offline error for mutations
-        const offlineError = new Error('Request queued for offline processing');
+        const offlineError = new Error('İstek çevrimdışı işleme için sıraya alındı');
         offlineError.name = 'OfflineError';
         return Promise.reject(offlineError);
       } else {
         // For GET requests, just reject with the original error so react-query can retry
-        console.warn('Network error detected for GET request, not queuing (will be re-fetched by UI)');
+        console.warn('GET isteği için ağ hatası tespit edildi, sıraya alınmıyor (UI tarafından yeniden çekilecek)');
         return Promise.reject(error);
       }
     }

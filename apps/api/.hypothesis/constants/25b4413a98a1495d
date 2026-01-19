@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py
+# hypothesis_version: 6.150.1
+
+[0.0, 'ALL', 'Default message', 'FIXED_AMOUNT', 'NEW_USERS', 'PERCENTAGE', 'PREMIUM_USERS', 'active', 'actualCost', 'all', 'campaignId', 'campaignType', 'cancelled', 'delivered', 'deliveredAt', 'discountType', 'discountValue', 'draft', 'email', 'endDate', 'errorMessage', 'estimatedCost', 'excel', 'failed', 'failedSends', 'filter', 'inactive', 'isActive', 'isPreview', 'messageTemplate', 'notification', 'partyId', 'pending', 'phoneNumber', 'previewPhone', 'scheduled', 'scheduledAt', 'senderId', 'sending', 'sent', 'sentAt', 'sms', 'startDate', 'successfulSends', 'targetAudience', 'targetCriteria', 'targetSegment', 'totalRecipients']

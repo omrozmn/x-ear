@@ -117,7 +117,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
                 }}
               >
                 <div className="font-medium">
-                  {appointment.patientName || 'Hasta bilgisi yok'}
+                  {appointment.partyName || 'Hasta bilgisi yok'}
                 </div>
                 <div className="text-xs text-gray-500">
                   {appointment.time} ({appointment.duration} dk)

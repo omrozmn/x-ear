@@ -18,7 +18,7 @@ export const appointmentKeys = {
 // Fetch appointments with filters
 export const useAppointments = (filters: {
   date?: string;
-  patientId?: string;
+  partyId?: string;
   status?: string;
   type?: string;
   branchId?: string;

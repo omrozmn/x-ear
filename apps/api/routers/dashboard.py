@@ -13,12 +13,20 @@ from sqlalchemy import func
 from schemas.base import ResponseEnvelope, ApiError
 
 from models.user import ActivityLog
-from models.patient import Patient
+from core.models.party import Party
 from models.device import Device
 from models.sales import Sale
 from models.appointment import Appointment
+from models.tenant import Tenant
+from models.branch import Branch
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
+
+from schemas.audit import ActivityLogRead
+from schemas.dashboard import (
+    DashboardData, DashboardKPIs, ChartData, 
+    RecentActivityResponse, BranchDistribution
+)
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +41,44 @@ def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
         query = query.filter_by(tenant_id=access.tenant_id)
     return query
 
+def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict[str, Any]]:
+    """Enrich activity logs with user, tenant, branch details (replacing to_dict_with_user)"""
+    results = []
+    # Collect IDs for bulk fetch could be optimized here, but keeping it simple for now (N+1) as per original implementation
+    for log in logs:
+        data = ActivityLogRead.model_validate(log).model_dump(by_alias=True)
+        
+        # User details
+        if log.user_id:
+            user = session.get(User, log.user_id)
+            if user:
+                data['userName'] = f"{user.first_name} {user.last_name}" if user.first_name else user.username
+                data['userEmail'] = user.email
+        
+        # Tenant details
+        if log.tenant_id:
+            tenant = session.get(Tenant, log.tenant_id)
+            if tenant:
+                data['tenantName'] = tenant.name
+        
+        # Branch details
+        if log.branch_id:
+            branch = session.get(Branch, log.branch_id)
+            if branch:
+                data['branchName'] = branch.name
+        
+        # Patient details
+        if log.entity_type == 'patient' and log.entity_id:
+            party = session.get(Party, log.entity_id)
+            if party:
+                data['patientName'] = f"{party.first_name} {party.last_name}"
+        
+        results.append(data)
+    return results
+
 # --- Routes ---
 
-@router.get("/dashboard", operation_id="listDashboard")
+@router.get("/dashboard", operation_id="listDashboard", response_model=ResponseEnvelope[DashboardData])
 def get_dashboard(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -44,7 +87,7 @@ def get_dashboard(
     try:
         # KPIs
         try:
-            total_patients = tenant_scoped_query(access, Patient, db_session).count()
+            total_patients = tenant_scoped_query(access, Party, db_session).count()
         except Exception as e:
             logger.error(f"KPI total_patients error: {e}")
             total_patients = 0
@@ -58,8 +101,8 @@ def get_dashboard(
         try:
             available_devices = tenant_scoped_query(access, Device, db_session).filter(
                 (Device.status == 'IN_STOCK') | 
-                (Device.patient_id == None) | 
-                (Device.patient_id == '')
+                (Device.party_id == None) | 
+                (Device.party_id == '')
             ).count()
         except Exception:
             available_devices = 0
@@ -122,7 +165,7 @@ def get_dashboard(
                 log_query = log_query.filter_by(user_id=access.user.id)
             
             logs = log_query.order_by(ActivityLog.id.desc()).limit(20).all()
-            recent_activity = [l.to_dict_with_user() for l in logs]
+            recent_activity = enrich_activity_logs(logs, db_session)
         except Exception:
             recent_activity = []
 
@@ -149,17 +192,17 @@ def get_dashboard(
         logger.error(f"Get dashboard error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/kpis", operation_id="listDashboardKpis")
+@router.get("/dashboard/kpis", operation_id="listDashboardKpis", response_model=ResponseEnvelope[DashboardKPIs])
 def get_kpis(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get KPIs only"""
     try:
-        total_patients = tenant_scoped_query(access, Patient, db_session).count()
+        total_patients = tenant_scoped_query(access, Party, db_session).count()
         total_devices = tenant_scoped_query(access, Device, db_session).count()
         available_devices = tenant_scoped_query(access, Device, db_session).filter(
-            (Device.patient_id == None) | (Device.patient_id == '')
+            (Device.party_id == None) | (Device.party_id == '')
         ).count()
         
         sales = tenant_scoped_query(access, Sale, db_session).all()
@@ -177,7 +220,7 @@ def get_kpis(
         logger.error(f"Get KPIs error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/charts/patient-trends", operation_id="listDashboardChartPatientTrends")
+@router.get("/dashboard/charts/patient-trends", operation_id="listDashboardChartPatientTrends", response_model=ResponseEnvelope[ChartData])
 def patient_trends(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -188,7 +231,7 @@ def patient_trends(
         labels = []
         data = []
         
-        base_query = tenant_scoped_query(access, Patient, db_session)
+        base_query = tenant_scoped_query(access, Party, db_session)
         
         for i in range(5, -1, -1):
             month_dt = (now.replace(day=1) - timedelta(days=30*i))
@@ -196,7 +239,7 @@ def patient_trends(
             labels.append(label)
             try:
                 count = base_query.filter(
-                    func.strftime('%Y-%m', Patient.created_at) == label
+                    func.strftime('%Y-%m', Party.created_at) == label
                 ).count()
                 data.append(int(count or 0))
             except Exception:
@@ -209,7 +252,7 @@ def patient_trends(
         logger.error(f"Patient trends error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/charts/revenue-trends", operation_id="listDashboardChartRevenueTrends")
+@router.get("/dashboard/charts/revenue-trends", operation_id="listDashboardChartRevenueTrends", response_model=ResponseEnvelope[ChartData])
 def revenue_trends(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -243,7 +286,7 @@ def revenue_trends(
         logger.error(f"Revenue trends error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/recent-activity", operation_id="listDashboardRecentActivity")
+@router.get("/dashboard/recent-activity", operation_id="listDashboardRecentActivity", response_model=ResponseEnvelope[RecentActivityResponse])
 def recent_activity(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -252,21 +295,19 @@ def recent_activity(
     try:
         logs = tenant_scoped_query(access, ActivityLog, db_session).order_by(ActivityLog.id.desc()).limit(20).all()
         return ResponseEnvelope(
-            data={"activity": [l.to_dict_with_user() for l in logs]}
+            data={"activity": enrich_activity_logs(logs, db_session)}
         )
     except Exception as e:
         logger.error(f"Recent activity error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/dashboard/charts/patient-distribution", operation_id="listDashboardChartPatientDistribution")
+@router.get("/dashboard/charts/patient-distribution", operation_id="listDashboardChartPatientDistribution", response_model=ResponseEnvelope[List[BranchDistribution]])
 def patient_distribution(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Patient distribution by branch"""
     try:
-        from models.branch import Branch
-        
         branch_query = tenant_scoped_query(access, Branch, db_session)
         branch_objs = branch_query.all()
 
@@ -276,39 +317,39 @@ def patient_distribution(
             
             try:
                 status_counts = db_session.query(
-                    Patient.status, func.count(Patient.id)
-                ).filter(Patient.branch_id == b_id)
+                    Party.status, func.count(Party.id)
+                ).filter(Party.branch_id == b_id)
                 
                 if access.tenant_id:
-                    status_counts = status_counts.filter(Patient.tenant_id == access.tenant_id)
+                    status_counts = status_counts.filter(Party.tenant_id == access.tenant_id)
                 
-                status_counts = status_counts.group_by(Patient.status).all()
+                status_counts = status_counts.group_by(Party.status).all()
                 status_map = {s.value if hasattr(s, 'value') else str(s): int(c) for s, c in status_counts}
             except Exception:
                 status_map = {}
 
             try:
                 seg_counts = db_session.query(
-                    Patient.segment, func.count(Patient.id)
-                ).filter(Patient.branch_id == b_id)
+                    Party.segment, func.count(Party.id)
+                ).filter(Party.branch_id == b_id)
                 
                 if access.tenant_id:
-                    seg_counts = seg_counts.filter(Patient.tenant_id == access.tenant_id)
+                    seg_counts = seg_counts.filter(Party.tenant_id == access.tenant_id)
                 
-                seg_counts = seg_counts.group_by(Patient.segment).all()
+                seg_counts = seg_counts.group_by(Party.segment).all()
                 seg_map = {s: int(c) for s, c in seg_counts}
             except Exception:
                 seg_map = {}
 
             try:
                 acq_counts = db_session.query(
-                    Patient.acquisition_type, func.count(Patient.id)
-                ).filter(Patient.branch_id == b_id)
+                    Party.acquisition_type, func.count(Party.id)
+                ).filter(Party.branch_id == b_id)
                 
                 if access.tenant_id:
-                    acq_counts = acq_counts.filter(Patient.tenant_id == access.tenant_id)
+                    acq_counts = acq_counts.filter(Party.tenant_id == access.tenant_id)
                 
-                acq_counts = acq_counts.group_by(Patient.acquisition_type).all()
+                acq_counts = acq_counts.group_by(Party.acquisition_type).all()
                 acq_map = {s: int(c) for s, c in acq_counts}
             except Exception:
                 acq_map = {}

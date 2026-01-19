@@ -35,29 +35,29 @@ export const THEME_MODE = 'x-ear.ui.themeMode@v1'
 export const LANGUAGE_PREFERENCE = 'x-ear.ui.language@v1'
 
 // Form Drafts
-export const PATIENT_FORM_DRAFT = 'x-ear.forms.patient.draft@v1'
+export const PARTY_FORM_DRAFT = 'x-ear.forms.party.draft@v1'
 export const APPOINTMENT_FORM_DRAFT = 'x-ear.forms.appointment.draft@v1'
 export const INVOICE_FORM_DRAFT = 'x-ear.forms.invoice.draft@v1'
 
-// Patient-specific Storage Keys
-export const PATIENT_SEARCH_FILTERS = 'x-ear.patients.searchFilters@v1'
-export const PATIENT_PAGINATION_STATE = 'x-ear.patients.paginationState@v1'
-export const PATIENT_SORT_PREFERENCES = 'x-ear.patients.sortPreferences@v1'
-export const PATIENT_VIEW_MODE = 'x-ear.patients.viewMode@v1'
-export const PATIENT_SELECTED_COLUMNS = 'x-ear.patients.selectedColumns@v1'
-export const PATIENT_BULK_ACTIONS_STATE = 'x-ear.patients.bulkActionsState@v1'
-export const PATIENT_DETAILS_TAB = 'x-ear.patients.detailsTab@v1'
-export const PATIENT_FORM_VALIDATION_STATE = 'x-ear.patients.formValidationState@v1'
+// Party-specific Storage Keys
+export const PARTY_SEARCH_FILTERS = 'x-ear.parties.searchFilters@v1'
+export const PARTY_PAGINATION_STATE = 'x-ear.parties.paginationState@v1'
+export const PARTY_SORT_PREFERENCES = 'x-ear.parties.sortPreferences@v1'
+export const PARTY_VIEW_MODE = 'x-ear.parties.viewMode@v1'
+export const PARTY_SELECTED_COLUMNS = 'x-ear.parties.selectedColumns@v1'
+export const PARTY_BULK_ACTIONS_STATE = 'x-ear.parties.bulkActionsState@v1'
+export const PARTY_DETAILS_TAB = 'x-ear.parties.detailsTab@v1'
+export const PARTY_FORM_VALIDATION_STATE = 'x-ear.parties.formValidationState@v1'
 
 // Legacy aliases for backward compatibility
-export const PATIENT_SEARCH_FILTERS_LEGACY = PATIENT_SEARCH_FILTERS
-export const PATIENT_PAGINATION_STATE_LEGACY = PATIENT_PAGINATION_STATE
-export const PATIENT_SORT_PREFERENCES_LEGACY = PATIENT_SORT_PREFERENCES
-export const PATIENT_VIEW_MODE_LEGACY = PATIENT_VIEW_MODE
-export const PATIENT_SELECTED_COLUMNS_LEGACY = PATIENT_SELECTED_COLUMNS
-export const PATIENT_BULK_ACTIONS_STATE_LEGACY = PATIENT_BULK_ACTIONS_STATE
-export const PATIENT_DETAILS_TAB_LEGACY = PATIENT_DETAILS_TAB
-export const PATIENT_FORM_VALIDATION_STATE_LEGACY = PATIENT_FORM_VALIDATION_STATE
+export const PARTY_SEARCH_FILTERS_LEGACY = PARTY_SEARCH_FILTERS
+export const PARTY_PAGINATION_STATE_LEGACY = PARTY_PAGINATION_STATE
+export const PARTY_SORT_PREFERENCES_LEGACY = PARTY_SORT_PREFERENCES
+export const PARTY_VIEW_MODE_LEGACY = PARTY_VIEW_MODE
+export const PARTY_SELECTED_COLUMNS_LEGACY = PARTY_SELECTED_COLUMNS
+export const PARTY_BULK_ACTIONS_STATE_LEGACY = PARTY_BULK_ACTIONS_STATE
+export const PARTY_DETAILS_TAB_LEGACY = PARTY_DETAILS_TAB
+export const PARTY_FORM_VALIDATION_STATE_LEGACY = PARTY_FORM_VALIDATION_STATE
 
 // Cache & Performance
 export const API_CACHE_PREFIX = 'x-ear.cache.api@v1'
@@ -74,13 +74,13 @@ export const FEATURE_FLAGS = 'x-ear.features.flags@v1'
 export const IDEMPOTENCY_CACHE = 'x-ear.api.idempotencyCache@v1'
 
 // Legacy Migration Keys (mapped from legacy storage keys)
-export const PATIENTS_DATA = 'x-ear.patients.data@v1' // Legacy: xear_patients_data
-export const PATIENTS_LEGACY = 'x-ear.patients.legacy@v1' // Legacy: xear_patients
-export const CRM_PATIENTS = 'x-ear.patients.crm@v1' // Legacy: xear_crm_patients
+export const PARTYS_DATA = 'x-ear.parties.data@v1' // Legacy: xear_parties_data
+export const PARTYS_LEGACY = 'x-ear.parties.legacy@v1' // Legacy: xear_parties
+export const CRM_PARTYS = 'x-ear.parties.crm@v1' // Legacy: xear_crm_parties
 export const SMS_MESSAGES = 'x-ear.sms.messages@v1' // Legacy: sms_messages
 export const SGK_DATA = 'x-ear.sgk.data@v1' // Legacy: sgkData
 export const SGK_DOCUMENTS = 'x-ear.sgk.documents@v1' // Legacy: sgk_documents, xear_sgk_documents
-export const PATIENT_DOCUMENTS = 'x-ear.patients.documents@v1' // Legacy: patient_documents, xear_patients_documents
+export const PARTY_DOCUMENTS = 'x-ear.parties.documents@v1' // Legacy: party_documents, xear_parties_documents
 export const UNMATCHED_DOCUMENTS = 'x-ear.sgk.unmatchedDocs@v1' // Legacy: unmatched_documents
 export const INVENTORY_FILTER_PRESET = 'x-ear.inventory.filterPreset@v1' // Legacy: inventoryFilterPreset
 export const CASH_RECORDS = 'x-ear.cashflow.records@v1' // Legacy: cashRecords, dashboardCashRecords
@@ -97,8 +97,8 @@ export const AUTOMATION_LOGS = 'x-ear.automation.logs@v1' // Legacy: automationL
 export const INVENTORY_DATA = 'x-ear.inventory.data@v1' // Legacy: inventoryData, xear_crm_inventory
 export const INVOICES_DATA = 'x-ear.invoices.data@v1' // Legacy: invoices, xear_invoices
 export const PURCHASES_DATA = 'x-ear.purchases.data@v1' // Purchase invoices data
-export const PATIENT_SALES_DATA = 'x-ear.patients.salesData@v1' // Patient sales data cache
-export const SAVED_VIEWS = 'x-ear.patients.savedViews@v1' // Legacy: xear_saved_views
+export const PARTY_SALES_DATA = 'x-ear.parties.salesData@v1' // Party sales data cache
+export const SAVED_VIEWS = 'x-ear.parties.savedViews@v1' // Legacy: xear_saved_views
 export const OCR_DYNAMIC_NAMES = 'x-ear.ocr.dynamicNames@v1' // Legacy: ocrDynamicNames
 export const CURRENT_USER = 'x-ear.auth.currentUser@v1' // Legacy: currentUser, currentUserId
 export const SYSTEM_SETTINGS = 'x-ear.system.settings@v1' // Legacy: systemSettings
@@ -120,7 +120,7 @@ export const ALL_STORAGE_KEYS = [
   SIDEBAR_COLLAPSED,
   THEME_MODE,
   LANGUAGE_PREFERENCE,
-  PATIENT_FORM_DRAFT,
+  PARTY_FORM_DRAFT,
   APPOINTMENT_FORM_DRAFT,
   INVOICE_FORM_DRAFT,
   // TODO: Use generated keys from OpenAPI when available
@@ -132,13 +132,13 @@ export const ALL_STORAGE_KEYS = [
   FEATURE_FLAGS,
   IDEMPOTENCY_CACHE,
   // Legacy migration keys
-  PATIENTS_DATA,
-  PATIENTS_LEGACY,
-  CRM_PATIENTS,
+  PARTYS_DATA,
+  PARTYS_LEGACY,
+  CRM_PARTYS,
   SMS_MESSAGES,
   SGK_DATA,
   SGK_DOCUMENTS,
-  PATIENT_DOCUMENTS,
+  PARTY_DOCUMENTS,
   UNMATCHED_DOCUMENTS,
   INVENTORY_FILTER_PRESET,
   CASH_RECORDS,
@@ -155,7 +155,7 @@ export const ALL_STORAGE_KEYS = [
   INVENTORY_DATA,
   INVOICES_DATA,
   PURCHASES_DATA,
-  PATIENT_SALES_DATA,
+  PARTY_SALES_DATA,
   SAVED_VIEWS,
   OCR_DYNAMIC_NAMES,
   CURRENT_USER,

@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { createPaymentRecords } from '@/api/generated';
+import { createPaymentRecords } from '@/api/client/payments.client';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { LoadingSkeleton } from '../common/LoadingSkeleton';
-import { Receipt, CreditCard, Banknote, DollarSign, Calendar } from 'lucide-react';
+import { Receipt, DollarSign, Calendar } from 'lucide-react';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 
 // Local Sale type since it's not exported from schemas
 interface Sale {
   id: string;
-  patientId: string;
+  partyId: string;
   totalAmount?: number;
-  patientPayment?: number;
+  partyPayment?: number;
 }
 
 // Local PaymentRecord type
@@ -22,6 +21,17 @@ interface PaymentRecord {
   paymentDate: string;
   referenceNumber?: string;
   notes?: string;
+}
+
+interface CreatePaymentPayload {
+  party_id: string;
+  sale_id: string;
+  amount: number;
+  payment_method: string;
+  payment_date: string;
+  reference_number?: string;
+  notes?: string;
+  payment_type: 'payment';
 }
 
 interface CollectionModalProps {
@@ -50,7 +60,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
   useEffect(() => {
     if (isOpen && sale) {
       // Calculate remaining amount from sale data
-      const remainingAmount = (sale.totalAmount || 0) - (sale.patientPayment || 0);
+      const remainingAmount = (sale.totalAmount || 0) - (sale.partyPayment || 0);
       setPaymentData(prev => ({
         ...prev,
         amount: remainingAmount
@@ -74,7 +84,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
       return;
     }
 
-    const remainingAmount = (sale.totalAmount || 0) - (sale.patientPayment || 0);
+    const remainingAmount = (sale.totalAmount || 0) - (sale.partyPayment || 0);
     if (paymentData.amount > remainingAmount) {
       setError('Ödeme tutarı kalan tutardan fazla olamaz');
       return;
@@ -83,20 +93,8 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      // Create payment plan for the sale
-      const paymentPlanData = {
-        amount: paymentData.amount,
-        paymentMethod: paymentData.paymentMethod,
-        paymentDate: paymentData.paymentDate,
-        referenceNumber: paymentData.referenceNumber,
-        notes: paymentData.notes,
-        status: 'COMPLETED' as const,
-        paymentType: 'COLLECTION'
-      };
-
-      // Use Orval-generated function
-      const resp = await createPaymentRecords({
-        patient_id: sale.patientId,
+      const payload: CreatePaymentPayload = {
+        party_id: sale.partyId,
         sale_id: sale.id,
         amount: paymentData.amount,
         payment_method: paymentData.paymentMethod,
@@ -104,9 +102,13 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
         reference_number: paymentData.referenceNumber,
         notes: paymentData.notes,
         payment_type: 'payment'
-      } as any);
+      };
 
-      const result = (resp as any)?.data || resp;
+      // Use Orval-generated function with typed payload
+      // @ts-expect-error - Generated types might trigger conflict until regen
+      const resp = await createPaymentRecords(payload);
+
+      const result = (resp as { data?: any })?.data || resp;
 
       // Call the callback if provided
       if (onCollectPayment) {
@@ -126,17 +128,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
     }
   };
 
-  const getPaymentMethodText = (method: string) => {
-    switch (method) {
-      case 'cash': return 'Nakit';
-      case 'card': return 'Kredi Kartı';
-      case 'transfer': return 'Havale/EFT';
-      case 'check': return 'Çek';
-      default: return method;
-    }
-  };
-
-  const remainingAmount = (sale?.totalAmount || 0) - (sale?.patientPayment || 0);
+  const remainingAmount = (sale?.totalAmount || 0) - (sale?.partyPayment || 0);
 
   return (
     <Modal
@@ -164,7 +156,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
             </div>
             <div className="flex justify-between">
               <span>Ödenen Tutar:</span>
-              <span className="font-medium">{formatCurrency(sale?.patientPayment || 0)}</span>
+              <span className="font-medium">{formatCurrency(sale?.partyPayment || 0)}</span>
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="font-medium">Kalan Tutar:</span>

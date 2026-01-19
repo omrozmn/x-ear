@@ -44,3 +44,23 @@ class BirFaturaInvoicesResponse(AppBaseModel):
     """BirFatura invoices response"""
     invoices: List[Any] = []
     pagination: Dict[str, int] = {}
+
+class InvoiceSyncRequest(AppBaseModel):
+    start_date: Optional[str] = Field(None, alias="startDate")
+    end_date: Optional[str] = Field(None, alias="endDate")
+    direction: Optional[str] = "incoming"
+
+class BirfaturaResponse(AppBaseModel):
+    success: bool = True
+    message: Optional[str] = None
+    data: Optional[Any] = None
+
+class InvoiceSyncResponse(AppBaseModel):
+    synced_count: int = 0
+    errors: List[str] = []
+
+class MockSearchRequest(AppBaseModel):
+    query: Optional[str] = None
+
+class MockDetailRequest(AppBaseModel):
+    id: str

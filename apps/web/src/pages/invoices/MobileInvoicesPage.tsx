@@ -43,7 +43,7 @@ export const MobileInvoicesPage: React.FC = () => {
         const q = searchValue.toLowerCase();
         return (
             inv.invoiceNumber?.toLowerCase().includes(q) ||
-            inv.patientName?.toLowerCase().includes(q)
+            inv.partyName?.toLowerCase().includes(q)
         );
     });
 
@@ -117,7 +117,7 @@ export const MobileInvoicesPage: React.FC = () => {
                                             <FileText className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">{inv.patientName}</h3>
+                                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">{inv.partyName}</h3>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">{inv.invoiceNumber}</p>
                                         </div>
                                     </div>

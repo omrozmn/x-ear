@@ -19,8 +19,8 @@ class PaymentRecordBase(AppBaseModel):
     due_date: Optional[datetime] = Field(None, alias="dueDate")
 
 class PaymentRecordRead(IDMixin, TimestampMixin, PaymentRecordBase):
-    sale_id: str = Field(..., alias="saleId")
-    patient_id: Optional[str] = Field(None, alias="patientId")
+    sale_id: Optional[str] = Field(None, alias="saleId")
+    party_id: Optional[str] = Field(None, alias="partyId")
 
 class PaymentRecordCreate(PaymentRecordBase):
     pass
@@ -66,7 +66,7 @@ class InstallmentPayment(AppBaseModel):
 # ==================== DEVICE ASSIGNMENT SCHEMAS ====================
 
 class DeviceAssignmentBase(AppBaseModel):
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     device_id: Optional[str] = Field(None, alias="deviceId")
     inventory_id: Optional[str] = Field(None, alias="inventoryId")
     ear: Optional[str] = None # L, R, B
@@ -132,7 +132,7 @@ class DeviceAssignmentItemCreate(AppBaseModel):
 
 
 class DeviceAssignmentCreate(AppBaseModel):
-    """Request body for POST /patients/{patient_id}/device-assignments endpoint."""
+    """Request body for POST /parties/{party_id}/device-assignments endpoint."""
     device_assignments: List[DeviceAssignmentItemCreate] = Field(..., alias="deviceAssignments")
     
     # SGK scheme for all assignments (can be overridden per item)
@@ -245,7 +245,7 @@ class DeviceAssignmentUpdate(AppBaseModel):
 # ==================== SALE SCHEMAS ====================
 
 class SaleBase(AppBaseModel):
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     sale_date: datetime = Field(default_factory=datetime.utcnow, alias="saleDate")
     status: str = Field("completed")
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
@@ -266,7 +266,7 @@ class SaleBase(AppBaseModel):
 
 class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     """Schema for reading a sale - matches Sale.to_dict() output"""
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     product_id: Optional[str] = Field(None, alias="productId")
     tenant_id: Optional[str] = Field(None, alias="tenantId")
     branch_id: Optional[str] = Field(None, alias="branchId")
@@ -291,8 +291,16 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     
     report_status: Optional[str] = Field(None, alias="reportStatus")
 
+    # Enriched Data (for include_details=True)
+    patient: Optional[Dict[str, Any]] = None
+    devices: Optional[List[Dict[str, Any]]] = None
+    payment_plan: Optional[Dict[str, Any]] = Field(None, alias="paymentPlan")
+    payment_records: Optional[List[Dict[str, Any]]] = Field(None, alias="paymentRecords")  # alias="payments" handled by frontend adaptation if needed, but standardizing here
+    payments: Optional[List[Dict[str, Any]]] = None # Backward compatibility alias
+    invoice: Optional[Dict[str, Any]] = None
+
 class SaleCreate(AppBaseModel):
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     product_id: str = Field(..., alias="productId")
     
     # Optional overrides
@@ -331,7 +339,7 @@ class SaleUpdate(AppBaseModel):
     notes: Optional[str] = None
 
 class SaleRecalcRequest(AppBaseModel):
-    patient_id: Optional[str] = Field(None, alias="patientId")
+    party_id: Optional[str] = Field(None, alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
     limit: Optional[int] = None
 
@@ -340,4 +348,48 @@ class SaleRecalcResponse(AppBaseModel):
     updated: int
     processed: int
     errors: List[Dict[str, Any]]
-    timestamp: datetime
+
+# ==================== PROMISSORY NOTE SCHEMAS ====================
+
+class PromissoryNoteBase(AppBaseModel):
+    party_id: str = Field(..., alias="partyId")
+    sale_id: Optional[str] = Field(None, alias="saleId")
+    tenant_id: Optional[str] = Field(None, alias="tenantId")
+    note_number: int = Field(..., alias="noteNumber")
+    total_notes: int = Field(..., alias="totalNotes")
+    amount: float
+    paid_amount: float = Field(0.0, alias="paidAmount")
+    total_amount: Optional[float] = Field(None, alias="totalAmount")
+    
+    issue_date: Optional[datetime] = Field(None, alias="issueDate")
+    due_date: Optional[datetime] = Field(None, alias="dueDate")
+    status: str = "active"
+    paid_date: Optional[datetime] = Field(None, alias="paidDate")
+    
+    # Debtor Info
+    debtor_name: str = Field(..., alias="debtorName")
+    debtor_tc: Optional[str] = Field(None, alias="debtorTc")
+    debtor_address: Optional[str] = Field(None, alias="debtorAddress")
+    debtor_tax_office: Optional[str] = Field(None, alias="debtorTaxOffice")
+    debtor_phone: Optional[str] = Field(None, alias="debtorPhone")
+    
+    # Guarantor Info
+    has_guarantor: bool = Field(False, alias="hasGuarantor")
+    guarantor_name: Optional[str] = Field(None, alias="guarantorName")
+    guarantor_tc: Optional[str] = Field(None, alias="guarantorTc")
+    guarantor_address: Optional[str] = Field(None, alias="guarantorAddress")
+    guarantor_phone: Optional[str] = Field(None, alias="guarantorPhone")
+    
+    authorized_court: str = Field("İstanbul (Çağlayan)", alias="authorizedCourt")
+    document_id: Optional[str] = Field(None, alias="documentId")
+    file_name: Optional[str] = Field(None, alias="fileName")
+    notes: Optional[str] = None
+
+class PromissoryNoteRead(IDMixin, TimestampMixin, PromissoryNoteBase):
+    """Schema for reading Promissory Note"""
+    pass
+
+class PromissoryNoteCollectionResponse(AppBaseModel):
+    note: PromissoryNoteRead
+    payment: PaymentRecordRead
+

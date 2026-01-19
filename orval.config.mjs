@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   'x-ear-api': {
-    input: './openapi.yaml',
+    input: './openapi.json',
     output: {
       mode: 'tags-split',
       target: './apps/web/src/api/generated',
@@ -28,14 +28,14 @@ export default defineConfig({
           .filter(dirent => dirent.isDirectory())
           .map(dirent => dirent.name)
           .filter(name => name !== 'schemas');
-        
+
         const exports = dirs.map(dir => `export * from './${dir}/${dir}';`).join('\n');
         const indexContent = `// Auto-generated barrel export file
 // Export all from tag-based modules
 
 ${exports}
 `;
-        
+
         fs.writeFileSync(path.join(generatedDir, 'index.ts'), indexContent);
       }
     }

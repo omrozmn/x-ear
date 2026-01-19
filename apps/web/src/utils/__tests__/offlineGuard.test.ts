@@ -22,9 +22,9 @@ describe('offlineGuard', () => {
             expect(message).toContain('Account deletion requires an active internet connection');
         });
 
-        it('should return appropriate message for DELETE_PATIENT operation', () => {
-            const message = getOfflineBlockMessage(OfflineForbiddenOperation.DELETE_PATIENT);
-            expect(message).toContain('Patient deletion requires an active internet connection');
+        it('should return appropriate message for DELETE_PARTY operation', () => {
+            const message = getOfflineBlockMessage(OfflineForbiddenOperation.DELETE_PARTY);
+            expect(message).toContain('Party deletion requires an active internet connection');
         });
     });
 
@@ -83,7 +83,7 @@ describe('offlineGuard', () => {
         });
 
         it('should update when connection status changes from online to offline', () => {
-            const { result } = renderHook(() => useOfflineGuard(OfflineForbiddenOperation.DELETE_PATIENT));
+            const { result } = renderHook(() => useOfflineGuard(OfflineForbiddenOperation.DELETE_PARTY));
 
             // Initially online
             expect(result.current.isAllowed).toBe(true);
@@ -97,7 +97,7 @@ describe('offlineGuard', () => {
 
             expect(result.current.isAllowed).toBe(false);
             expect(result.current.isOnline).toBe(false);
-            expect(result.current.message).toContain('Patient deletion requires an active internet connection');
+            expect(result.current.message).toContain('Party deletion requires an active internet connection');
         });
 
         it('should update when connection status changes from offline to online', () => {

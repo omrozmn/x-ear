@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/campaign.py
+# hypothesis_version: 6.150.1
+
+[0.0, 200, 'Party', 'actualCost', 'camp', 'campaignId', 'campaignType', 'campaign_id', 'campaigns', 'campaigns.id', 'clickedAt', 'cost', 'deliveredAt', 'description', 'draft', 'errorMessage', 'estimatedCost', 'failedSends', 'id', 'ix_sms_campaign', 'ix_sms_patient', 'ix_sms_sent_at', 'ix_sms_status', 'message', 'messageTemplate', 'name', 'openedAt', 'parties.id', 'party_id', 'patientId', 'pending', 'phoneNumber', 'providerResponse', 'retryCount', 'scheduledAt', 'sentAt', 'sent_at', 'sms', 'sms_logs', 'status', 'subject', 'successfulSends', 'targetCriteria', 'targetSegment', 'tenants.id', 'totalRecipients']

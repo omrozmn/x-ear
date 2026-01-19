@@ -49,7 +49,7 @@ export interface UseAppointmentsReturn {
   searchAppointments: (query: string, limit?: number) => AppointmentSearchResult;
   
   // Specialized queries
-  getAppointmentsByPatient: (patientId: string) => Appointment[];
+  getAppointmentsByParty: (partyId: string) => Appointment[];
   getAppointmentsByDate: (date: string) => Appointment[];
   getTodaysAppointments: () => Appointment[];
   getUpcomingAppointments: (days?: number) => Appointment[];
@@ -200,8 +200,8 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
   }, []);
 
   // Specialized queries
-  const getAppointmentsByPatient = useCallback((patientId: string): Appointment[] => {
-    return appointmentService.getAppointmentsByPatient(patientId);
+  const getAppointmentsByParty = useCallback((partyId: string): Appointment[] => {
+    return appointmentService.getAppointmentsByParty(partyId);
   }, []);
 
   const getAppointmentsByDate = useCallback((date: string): Appointment[] => {
@@ -343,7 +343,7 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     searchAppointments,
     
     // Specialized queries
-    getAppointmentsByPatient,
+    getAppointmentsByParty,
     getAppointmentsByDate,
     getTodaysAppointments,
     getUpcomingAppointments,
@@ -366,10 +366,10 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
 }
 
 // Specialized hooks for common use cases
-export function useAppointmentsByPatient(patientId: string) {
+export function useAppointmentsByParty(partyId: string) {
   return useAppointments({ 
-    filters: { patientId },
-    autoRefresh: false // Disable auto-refresh for patient-specific appointments
+    filters: { partyId },
+    autoRefresh: false // Disable auto-refresh for party-specific appointments
   });
 }
 

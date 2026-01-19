@@ -15,7 +15,7 @@ import type { RoutersPaymentsPaymentRecordCreateBranchId } from './routersPaymen
 import type { RoutersPaymentsPaymentRecordCreateTenantId } from './routersPaymentsPaymentRecordCreateTenantId';
 
 export interface RoutersPaymentsPaymentRecordCreate {
-  patientId: string;
+  partyId: string;
   saleId?: RoutersPaymentsPaymentRecordCreateSaleId;
   promissoryNoteId?: RoutersPaymentsPaymentRecordCreatePromissoryNoteId;
   amount: number;

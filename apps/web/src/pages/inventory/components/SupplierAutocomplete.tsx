@@ -8,8 +8,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useListSuppliers,
   getListSuppliersQueryKey,
-  useCreateSuppliers
-} from '@/api/generated/suppliers/suppliers';
+  useCreateSupplier
+} from '@/api/client/suppliers.client';
 
 
 interface SupplierAutocompleteProps {
@@ -154,7 +154,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     const unique = [...new Set(suppliers)].slice(0, 10); // Limit to 10
     setFilteredSuppliers(unique);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suppliersData, value, isOpen]);
 
   // Check if current value is an exact match (check filtered and defaults)
@@ -235,7 +235,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     inputRef.current?.blur();
   };
 
-  const createSupplierMutation = useCreateSuppliers();
+  const createSupplierMutation = useCreateSupplier();
 
   const handleCreateNew = async () => {
     const newSupplier = value.trim();

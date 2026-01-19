@@ -1,4 +1,4 @@
-import { useListSettings } from '@/api/generated';
+import {useListSettings} from '@/api/client/settings.client';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Input, Select } from '@x-ear/ui-web';
 import { CreditCard, Calculator, Percent, DollarSign } from 'lucide-react';
@@ -11,7 +11,7 @@ export interface DeviceAssignment {
   kdvRate?: number;
   discountType?: 'none' | 'percentage' | 'amount';
   discountValue?: number;
-  patientPayment?: number;
+  partyPayment?: number;
   downPayment?: number;
   remainingAmount?: number;
   paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment';
@@ -75,26 +75,32 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     'over18_retired': 'Over18_Retired'
   };
 
-  const [settingsSchemes, setSettingsSchemes] = useState<Record<string, any>>({});
+  const [settingsSchemes, setSettingsSchemes] = useState<Record<string, SchemeDef>>({});
   const [schemeAmount, setSchemeAmount] = useState<number>(0);
+
+  // Type for settings response
+  interface SettingsResponse {
+    schemes?: Record<string, SchemeDef>;
+    sgk?: { schemes?: Record<string, SchemeDef> };
+    sgkSchemes?: Record<string, SchemeDef>;
+    data?: { schemes?: Record<string, SchemeDef> } | Record<string, SchemeDef>;
+  }
+  interface SchemeDef {
+    amount?: number;
+    maxAmount?: number;
+    max?: number;
+    coveragePercent?: number;
+    coverage?: number;
+  }
 
   const { data: settingsData } = useListSettings();
 
   useEffect(() => {
     if (settingsData) {
-      // Handle different possible response structures or fallback
-      // The generated hook returns void or specific type, but we treat it as any for safety here
-      // consistent with previous logic
-      const j = settingsData as any;
-      const schemes = (j && (j.schemes || j.sgk?.schemes || j.sgkSchemes || j.data?.schemes)) || (j?.data || {});
-      // Note: Backend seems to return { success: true, data: { ... } }
-      // If generated hook unwraps it, we get data directly. 
-      // If not, we check .data
-
-      // Based on previous fetch: r.json() -> j
-      // j.schemes ...
-      // If useListSettings returns the full response object:
-      setSettingsSchemes(schemes);
+      // Handle different possible response structures
+      const j = settingsData as unknown as SettingsResponse;
+      const schemes = (j && (j.schemes || j.sgk?.schemes || j.sgkSchemes || (j.data && 'schemes' in j.data ? j.data.schemes : j.data))) || {};
+      setSettingsSchemes(schemes as Record<string, SchemeDef>);
     }
   }, [settingsData]);
 

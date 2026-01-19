@@ -20,6 +20,14 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  ResponseEnvelopeChartData,
+  ResponseEnvelopeDashboardData,
+  ResponseEnvelopeDashboardKPIs,
+  ResponseEnvelopeListBranchDistribution,
+  ResponseEnvelopeRecentActivityResponse
+} from '.././schemas';
+
 import { adminApi } from '../../orval-mutator';
 
 
@@ -35,7 +43,7 @@ export const listDashboard = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeDashboardData>(
       {url: `/api/dashboard`, method: 'GET', signal
     },
       );
@@ -128,7 +136,7 @@ export const listDashboardKpis = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeDashboardKPIs>(
       {url: `/api/dashboard/kpis`, method: 'GET', signal
     },
       );
@@ -221,7 +229,7 @@ export const listDashboardChartPatientTrends = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeChartData>(
       {url: `/api/dashboard/charts/patient-trends`, method: 'GET', signal
     },
       );
@@ -314,7 +322,7 @@ export const listDashboardChartRevenueTrends = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeChartData>(
       {url: `/api/dashboard/charts/revenue-trends`, method: 'GET', signal
     },
       );
@@ -407,7 +415,7 @@ export const listDashboardRecentActivity = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeRecentActivityResponse>(
       {url: `/api/dashboard/recent-activity`, method: 'GET', signal
     },
       );
@@ -500,7 +508,7 @@ export const listDashboardChartPatientDistribution = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListBranchDistribution>(
       {url: `/api/dashboard/charts/patient-distribution`, method: 'GET', signal
     },
       );

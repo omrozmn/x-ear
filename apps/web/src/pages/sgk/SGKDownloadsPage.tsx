@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@x-ear/ui-web';
 import { Download, Eye, FileText, Calendar, Filter, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { useListSgkEReceiptDelivered } from '../../api/generated/sgk/sgk';
+import { useListSgkEReceiptDelivered } from '../../api/generated/sgk/sgk.ts';
 import { unwrapArray } from '../../utils/response-unwrap';
 
 interface DeliveredEReceipt {
@@ -11,8 +11,8 @@ interface DeliveredEReceipt {
   date: string;
   doctorName: string;
   validUntil: string;
-  patientName: string;
-  patientTcNumber: string;
+  partyName: string;
+  partyTcNumber: string;
   materials: Array<{
     code: string;
     name: string;
@@ -20,11 +20,11 @@ interface DeliveredEReceipt {
     deliveryStatus: 'delivered';
   }>;
   sgkDocumentAvailable: boolean;
-  patientFormAvailable: boolean;
+  partyFormAvailable: boolean;
   sgkStatus: 'success' | 'processing' | 'error';
 }
 
-interface PatientWithEReceipts {
+interface PartyWithEReceipts {
   id: string;
   name: string;
   tcNumber: string;
@@ -35,10 +35,10 @@ interface PatientWithEReceipts {
 
 export const SGKDownloadsPage: React.FC = () => {
   const { success: showSuccess, error: showError } = useToastHelpers();
-  const [patients, setPatients] = useState<PatientWithEReceipts[]>([]);
-  const [filteredPatients, setFilteredPatients] = useState<PatientWithEReceipts[]>([]);
+  const [parties, setParties] = useState<PartyWithEReceipts[]>([]);
+  const [filteredParties, setFilteredParties] = useState<PartyWithEReceipts[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string>('');
-  const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
+  const [selectedParties, setSelectedParties] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showBulkDownload, setShowBulkDownload] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -52,9 +52,9 @@ export const SGKDownloadsPage: React.FC = () => {
 
   // Sync data from API
   useEffect(() => {
-    const data = unwrapArray<PatientWithEReceipts>(apiResponse) || [];
+    const data = unwrapArray<PartyWithEReceipts>(apiResponse) || [];
     if (data.length > 0) {
-      setPatients(data);
+      setParties(data);
     }
     setLoading(isApiLoading);
   }, [apiResponse, isApiLoading]);
@@ -69,40 +69,40 @@ export const SGKDownloadsPage: React.FC = () => {
   // Available months for filtering
   const availableMonths = useMemo(() => {
     const months = new Set<string>();
-    patients.forEach(patient => {
-      patient.currentMonthReceipts.forEach(receipt => {
+    parties.forEach(party => {
+      party.currentMonthReceipts.forEach(receipt => {
         const date = new Date(receipt.date);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         months.add(monthKey);
       });
     });
     return Array.from(months).sort().reverse();
-  }, [patients]);
+  }, [parties]);
 
 
 
   useEffect(() => {
-    filterPatients();
+    filterParties();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patients, selectedMonth]);
+  }, [parties, selectedMonth]);
 
 
 
-  const filterPatients = () => {
+  const filterParties = () => {
     if (!selectedMonth) {
-      setFilteredPatients(patients);
+      setFilteredParties(parties);
       return;
     }
 
-    const filtered = patients.filter(patient => {
-      return patient.currentMonthReceipts.some(receipt => {
+    const filtered = parties.filter(party => {
+      return party.currentMonthReceipts.some(receipt => {
         const date = new Date(receipt.date);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         return monthKey === selectedMonth;
       });
     });
 
-    setFilteredPatients(filtered);
+    setFilteredParties(filtered);
   };
 
   const formatMonthName = (monthKey: string) => {
@@ -111,27 +111,27 @@ export const SGKDownloadsPage: React.FC = () => {
     return date.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' });
   };
 
-  const togglePatientSelection = (patientId: string) => {
-    const newSelected = new Set(selectedPatients);
-    if (newSelected.has(patientId)) {
-      newSelected.delete(patientId);
+  const togglePartySelection = (partyId: string) => {
+    const newSelected = new Set(selectedParties);
+    if (newSelected.has(partyId)) {
+      newSelected.delete(partyId);
     } else {
-      newSelected.add(patientId);
+      newSelected.add(partyId);
     }
-    setSelectedPatients(newSelected);
+    setSelectedParties(newSelected);
   };
 
   const toggleSelectAll = () => {
-    if (selectedPatients.size === filteredPatients.length) {
-      setSelectedPatients(new Set());
+    if (selectedParties.size === filteredParties.length) {
+      setSelectedParties(new Set());
     } else {
-      setSelectedPatients(new Set(filteredPatients.map(p => p.id)));
+      setSelectedParties(new Set(filteredParties.map(p => p.id)));
     }
   };
 
-  const downloadPatientDocument = async (patientId: string, docType: 'report' | 'prescription' | 'form') => {
-    const patient = filteredPatients.find(p => p.id === patientId);
-    if (!patient) return;
+  const downloadPartyDocument = async (partyId: string, docType: 'report' | 'prescription' | 'form') => {
+    const party = filteredParties.find(p => p.id === partyId);
+    if (!party) return;
 
     try {
       // Simulate download
@@ -140,15 +140,15 @@ export const SGKDownloadsPage: React.FC = () => {
       const docName = docType === 'report' ? 'Rapor' :
         docType === 'prescription' ? 'Reçete' : 'İşlem Formu';
 
-      showSuccess('Başarılı', `${patient.name} için ${docName} indirildi`);
+      showSuccess('Başarılı', `${party.name} için ${docName} indirildi`);
     } catch (error) {
       showError('Hata', 'Belge indirilirken bir hata oluştu');
     }
   };
 
-  const downloadAllPatientDocuments = async (patientId: string) => {
-    const patient = filteredPatients.find(p => p.id === patientId);
-    if (!patient) return;
+  const downloadAllPartyDocuments = async (partyId: string) => {
+    const party = filteredParties.find(p => p.id === partyId);
+    if (!party) return;
 
     setDownloading(true);
     setDownloadLogs([]);
@@ -162,15 +162,15 @@ export const SGKDownloadsPage: React.FC = () => {
       setDownloadProgress({ current: 0, total: docs.length });
 
       for (let i = 0; i < docs.length; i++) {
-        setDownloadLogs(prev => [...prev, `${patient.name} - ${docs[i]} hazırlanıyor...`]);
+        setDownloadLogs(prev => [...prev, `${party.name} - ${docs[i]} hazırlanıyor...`]);
         setDownloadProgress({ current: i + 1, total: docs.length });
 
         // Simulate download delay
         await new Promise(resolve => setTimeout(resolve, 800));
-        setDownloadLogs(prev => [...prev.slice(0, -1), `✓ ${patient.name} - ${docs[i]} indirildi`]);
+        setDownloadLogs(prev => [...prev.slice(0, -1), `✓ ${party.name} - ${docs[i]} indirildi`]);
       }
 
-      showSuccess('Başarılı', `${patient.name} için ${docs.length} belge indirildi`);
+      showSuccess('Başarılı', `${party.name} için ${docs.length} belge indirildi`);
     } catch (error) {
       showError('Hata', 'Belgeler indirilirken bir hata oluştu');
     } finally {
@@ -180,8 +180,8 @@ export const SGKDownloadsPage: React.FC = () => {
   };
 
   const startBulkDownload = async () => {
-    const selectedPatientList = filteredPatients.filter(p => selectedPatients.has(p.id));
-    if (selectedPatientList.length === 0) {
+    const selectedPartyList = filteredParties.filter(p => selectedParties.has(p.id));
+    if (selectedPartyList.length === 0) {
       showError('Hata', 'Lütfen en az bir hasta seçin');
       return;
     }
@@ -191,35 +191,35 @@ export const SGKDownloadsPage: React.FC = () => {
     setShowBulkDownload(false);
 
     try {
-      const docsPerPatient = (bulkOptions.reports ? 1 : 0) +
+      const docsPerParty = (bulkOptions.reports ? 1 : 0) +
         (bulkOptions.prescriptions ? 1 : 0) +
         (bulkOptions.processForms ? 1 : 0);
 
-      const totalDocs = selectedPatientList.length * docsPerPatient;
+      const totalDocs = selectedPartyList.length * docsPerParty;
       setDownloadProgress({ current: 0, total: totalDocs });
 
       let completed = 0;
 
-      for (const patient of selectedPatientList) {
+      for (const party of selectedPartyList) {
         const docs: string[] = [];
         if (bulkOptions.reports) docs.push('Rapor');
         if (bulkOptions.prescriptions) docs.push('Reçete');
         if (bulkOptions.processForms) docs.push('İşlem Formu');
 
         for (const doc of docs) {
-          setDownloadLogs(prev => [...prev, `${patient.name} - ${doc} hazırlanıyor...`]);
+          setDownloadLogs(prev => [...prev, `${party.name} - ${doc} hazırlanıyor...`]);
           setDownloadProgress({ current: completed + 1, total: totalDocs });
 
           // Simulate download delay
           await new Promise(resolve => setTimeout(resolve, 600));
 
           completed++;
-          setDownloadLogs(prev => [...prev.slice(0, -1), `✓ ${patient.name} - ${doc} indirildi`]);
+          setDownloadLogs(prev => [...prev.slice(0, -1), `✓ ${party.name} - ${doc} indirildi`]);
         }
       }
 
-      showSuccess('Başarılı', `${selectedPatientList.length} hasta için ${totalDocs} belge indirildi`);
-      setSelectedPatients(new Set());
+      showSuccess('Başarılı', `${selectedPartyList.length} hasta için ${totalDocs} belge indirildi`);
+      setSelectedParties(new Set());
     } catch (error) {
       showError('Hata', 'Toplu indirme sırasında bir hata oluştu');
     } finally {
@@ -291,11 +291,11 @@ export const SGKDownloadsPage: React.FC = () => {
               </div>
               <Button
                 onClick={() => setShowBulkDownload(!showBulkDownload)}
-                disabled={selectedPatients.size === 0}
+                disabled={selectedParties.size === 0}
                 className="bg-primary hover:bg-primary-dark text-white"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Toplu İndir ({selectedPatients.size})
+                Toplu İndir ({selectedParties.size})
               </Button>
             </div>
           </div>
@@ -346,7 +346,7 @@ export const SGKDownloadsPage: React.FC = () => {
           </div>
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Toplam <span className="font-semibold">{selectedPatients.size}</span> hasta için belgeler indirilecek
+              Toplam <span className="font-semibold">{selectedParties.size}</span> hasta için belgeler indirilecek
             </p>
             <div className="space-x-2">
               <Button
@@ -403,13 +403,13 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 E-Reçete Belgeleri
-                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">({filteredPatients.length})</span>
+                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">({filteredParties.length})</span>
               </h2>
               <div className="flex items-center space-x-2">
                 <label className="flex items-center text-sm">
                   <input
                     type="checkbox"
-                    checked={selectedPatients.size === filteredPatients.length && filteredPatients.length > 0}
+                    checked={selectedParties.size === filteredParties.length && filteredParties.length > 0}
                     onChange={toggleSelectAll}
                     className="mr-2"
                   />
@@ -420,30 +420,30 @@ export const SGKDownloadsPage: React.FC = () => {
           </div>
 
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredPatients.length > 0 ? (
-              filteredPatients.map((patient) => (
-                <div key={patient.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            {filteredParties.length > 0 ? (
+              filteredParties.map((party) => (
+                <div key={party.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <label className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={selectedPatients.has(patient.id)}
-                          onChange={() => togglePatientSelection(patient.id)}
+                          checked={selectedParties.has(party.id)}
+                          onChange={() => togglePartySelection(party.id)}
                           className="mr-3"
                         />
                       </label>
                       <div>
-                        <h3 className="font-medium text-gray-900 dark:text-white">{patient.name}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">TC: {patient.tcNumber}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{patient.currentMonthReceipts.length} e-reçete</p>
+                        <h3 className="font-medium text-gray-900 dark:text-white">{party.name}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">TC: {party.tcNumber}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{party.currentMonthReceipts.length} e-reçete</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => downloadPatientDocument(patient.id, 'report')}
+                        onClick={() => downloadPartyDocument(party.id, 'report')}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         📄 Rapor
@@ -451,7 +451,7 @@ export const SGKDownloadsPage: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => downloadPatientDocument(patient.id, 'prescription')}
+                        onClick={() => downloadPartyDocument(party.id, 'prescription')}
                         className="bg-green-600 hover:bg-green-700 text-white"
                       >
                         📋 Reçete
@@ -459,14 +459,14 @@ export const SGKDownloadsPage: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => downloadPatientDocument(patient.id, 'form')}
+                        onClick={() => downloadPartyDocument(party.id, 'form')}
                         className="bg-purple-600 hover:bg-purple-700 text-white"
                       >
                         📝 İşlem Formu
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => downloadAllPatientDocuments(patient.id)}
+                        onClick={() => downloadAllPartyDocuments(party.id)}
                         className="bg-orange-600 hover:bg-orange-700 text-white"
                       >
                         <Download className="w-3 h-3 mr-1" />
@@ -479,10 +479,10 @@ export const SGKDownloadsPage: React.FC = () => {
                   <div className="mt-3 pl-7">
                     <details className="text-sm">
                       <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
-                        E-reçete detayları ({patient.currentMonthReceipts.length})
+                        E-reçete detayları ({party.currentMonthReceipts.length})
                       </summary>
                       <div className="mt-2 space-y-2">
-                        {patient.currentMonthReceipts.map((receipt) => (
+                        {party.currentMonthReceipts.map((receipt) => (
                           <div key={receipt.id} className="bg-gray-50 dark:bg-gray-900 p-2 rounded border-l-4 border-blue-400 dark:border-blue-500">
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
@@ -542,11 +542,11 @@ export const SGKDownloadsPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hasta</label>
-                    <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.patientName}</p>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.partyName}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TC Kimlik</label>
-                    <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.patientTcNumber}</p>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.partyTcNumber}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Doktor</label>
@@ -592,9 +592,9 @@ export const SGKDownloadsPage: React.FC = () => {
 
                 {/* Action Buttons */}
                 <div className="flex justify-end space-x-3 pt-4 border-t">
-                  {selectedEReceipt.patientFormAvailable && (
+                  {selectedEReceipt.partyFormAvailable && (
                     <Button
-                      onClick={() => downloadPatientDocument(selectedEReceipt.patientTcNumber, 'form')}
+                      onClick={() => downloadPartyDocument(selectedEReceipt.partyTcNumber, 'form')}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Download className="w-4 h-4 mr-2" />

@@ -15,7 +15,10 @@ export const PhoneVerificationModal: React.FC = () => {
 
     useEffect(() => {
         // Show modal if user is authenticated but phone is not verified
-        if (isAuthenticated && user && !user.isPhoneVerified) {
+        // Skip for admin users (they don't have phone verification)
+        const isAdminUser = user?.role === 'super_admin' || user?.role === 'support' || user?.role === 'finance' || user?.role === 'content';
+        
+        if (isAuthenticated && user && !isAdminUser && !user.isPhoneVerified) {
             setIsOpen(true);
             if (!user.phone) {
                 setStep('phone');
@@ -54,7 +57,7 @@ export const PhoneVerificationModal: React.FC = () => {
 
         try {
             setIsLoading(true);
-            await verifyOtp(otpCode);
+            await verifyOtp(otpCode, phoneNumber);
             toast.success('Telefon numarası başarıyla doğrulandı');
             setIsOpen(false);
         } catch (error: any) {

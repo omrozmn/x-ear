@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSProviderConfigCreateDocumentsEmail = string | null;
+export type SmsProviderConfigCreateDocumentsEmail = string | null;

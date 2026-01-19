@@ -31,9 +31,9 @@ import type {
   ListCommunicationMessagesParams,
   ListCommunicationStatsParams,
   ListCommunicationTemplatesParams,
-  RoutersCommunicationsTemplateCreate,
   SendEmail,
-  SendSMS
+  SendSMS,
+  TemplateCreate
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -364,7 +364,7 @@ export function useListCommunicationTemplates<TData = Awaited<ReturnType<typeof 
  * @summary Create Template
  */
 export const createCommunicationTemplates = (
-    routersCommunicationsTemplateCreate: RoutersCommunicationsTemplateCreate,
+    templateCreate: TemplateCreate,
  signal?: AbortSignal
 ) => {
       
@@ -372,7 +372,7 @@ export const createCommunicationTemplates = (
       return customInstance<unknown>(
       {url: `/api/communications/templates`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: routersCommunicationsTemplateCreate, signal
+      data: templateCreate, signal
     },
       );
     }
@@ -380,8 +380,8 @@ export const createCommunicationTemplates = (
 
 
 export const getCreateCommunicationTemplatesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: TemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: TemplateCreate}, TContext> => {
 
 const mutationKey = ['createCommunicationTemplates'];
 const {mutation: mutationOptions} = options ?
@@ -393,7 +393,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationTemplates>>, {data: RoutersCommunicationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationTemplates>>, {data: TemplateCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createCommunicationTemplates(data,)
@@ -405,18 +405,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateCommunicationTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunicationTemplates>>>
-    export type CreateCommunicationTemplatesMutationBody = RoutersCommunicationsTemplateCreate
+    export type CreateCommunicationTemplatesMutationBody = TemplateCreate
     export type CreateCommunicationTemplatesMutationError = HTTPValidationError
 
     /**
  * @summary Create Template
  */
 export const useCreateCommunicationTemplates = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: TemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createCommunicationTemplates>>,
         TError,
-        {data: RoutersCommunicationsTemplateCreate},
+        {data: TemplateCreate},
         TContext
       > => {
 
@@ -523,14 +523,14 @@ export function useGetCommunicationTemplate<TData = Awaited<ReturnType<typeof ge
  */
 export const updateCommunicationTemplate = (
     templateId: string,
-    routersCommunicationsTemplateCreate: RoutersCommunicationsTemplateCreate,
+    templateCreate: TemplateCreate,
  ) => {
       
       
       return customInstance<unknown>(
       {url: `/api/communications/templates/${templateId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: routersCommunicationsTemplateCreate
+      data: templateCreate
     },
       );
     }
@@ -538,8 +538,8 @@ export const updateCommunicationTemplate = (
 
 
 export const getUpdateCommunicationTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: TemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: TemplateCreate}, TContext> => {
 
 const mutationKey = ['updateCommunicationTemplate'];
 const {mutation: mutationOptions} = options ?
@@ -551,7 +551,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCommunicationTemplate>>, {templateId: string;data: RoutersCommunicationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCommunicationTemplate>>, {templateId: string;data: TemplateCreate}> = (props) => {
           const {templateId,data} = props ?? {};
 
           return  updateCommunicationTemplate(templateId,data,)
@@ -563,18 +563,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateCommunicationTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof updateCommunicationTemplate>>>
-    export type UpdateCommunicationTemplateMutationBody = RoutersCommunicationsTemplateCreate
+    export type UpdateCommunicationTemplateMutationBody = TemplateCreate
     export type UpdateCommunicationTemplateMutationError = HTTPValidationError
 
     /**
  * @summary Update Template
  */
 export const useUpdateCommunicationTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: TemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateCommunicationTemplate>>,
         TError,
-        {templateId: string;data: RoutersCommunicationsTemplateCreate},
+        {templateId: string;data: TemplateCreate},
         TContext
       > => {
 

@@ -196,6 +196,7 @@ export function LoginForm() {
                     className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
+                    aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -239,7 +240,7 @@ export function LoginForm() {
                     localStorage.clear();
                     sessionStorage.clear();
                     if (typeof window !== 'undefined') {
-                      delete (window as any).__AUTH_TOKEN__;
+                      delete window.__AUTH_TOKEN__;
                     }
                   } catch (e) {
                     console.error('Logout failed:', e);

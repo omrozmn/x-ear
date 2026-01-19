@@ -16,8 +16,8 @@ export type AppointmentType =
 
 export interface Appointment {
   id: string;
-  patientId: string;
-  patientName?: string;
+  partyId: string;
+  partyName?: string;
   
   // Date and time
   date: string; // YYYY-MM-DD format
@@ -49,7 +49,7 @@ export interface Appointment {
 }
 
 export interface AppointmentFilters {
-  patientId?: string;
+  partyId?: string;
   status?: AppointmentStatus;
   type?: AppointmentType;
   clinician?: string;
@@ -96,7 +96,7 @@ export interface AvailabilityResponse {
 export interface AppointmentReminder {
   id: string;
   appointmentId: string;
-  patientId: string;
+  partyId: string;
   reminderType: 'sms' | 'email' | 'call';
   scheduledFor: string; // ISO string
   sent: boolean;
@@ -138,7 +138,7 @@ export interface CalendarEvent {
   textColor?: string;
   extendedProps?: {
     appointment: Appointment;
-    patientName: string;
+    partyName: string;
     status: AppointmentStatus;
     type: AppointmentType;
   };
@@ -168,7 +168,7 @@ export interface BulkOperationResult {
 
 // Form data types
 export interface AppointmentFormData {
-  patientId: string;
+  partyId: string;
   date: string;
   time: string;
   duration: number;

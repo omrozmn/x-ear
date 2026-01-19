@@ -149,8 +149,8 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
                 </label>
                 <Input
                   type="text"
-                  value={filters.patientName || ''}
-                  onChange={(e) => handleFilterChange('patientName', e.target.value)}
+                  value={filters.partyName || ''}
+                  onChange={(e) => handleFilterChange('partyName', e.target.value)}
                   placeholder="Hasta adı..."
                   className="w-full"
                 />

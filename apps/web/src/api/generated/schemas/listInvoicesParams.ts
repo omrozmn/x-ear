@@ -10,5 +10,5 @@ export type ListInvoicesParams = {
 page?: number;
 per_page?: number;
 status?: string | null;
-patient_id?: string | null;
+party_id?: string | null;
 };

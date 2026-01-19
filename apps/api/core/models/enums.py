@@ -212,3 +212,12 @@ class TenantType(str, Enum):
     """
     B2B = "B2B"
     CONSUMER = "CONSUMER"
+
+
+class AppErrorCode(str, Enum):
+    """
+    Standardized application error codes for determinstic frontend handling.
+    """
+    PRODUCT_NOT_ALLOWED = "PRODUCT_NOT_ALLOWED"
+    FEATURE_LIMIT_EXCEEDED = "FEATURE_LIMIT_EXCEEDED"
+    TENANT_SUSPENDED = "TENANT_SUSPENDED"

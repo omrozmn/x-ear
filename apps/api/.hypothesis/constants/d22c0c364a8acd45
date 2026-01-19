@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/birfatura/mappers.py
+# hypothesis_version: 6.150.1
+
+['0', 'Address', 'Buyer', 'Currency', 'Description', 'InvoiceNumber', 'IssueDate', 'LineTotal', 'Lines', 'Name', 'Quantity', 'Seller', 'TRY', 'TaxAmount', 'TaxNumber', 'TaxPercent', 'TotalAmount', 'UnitPrice', 'amount', 'ascii', 'buyer_address', 'buyer_name', 'buyer_tax_number', 'company_name', 'company_tax_number', 'currency', 'description', 'id', 'invoiceNumber', 'invoice_number', 'issue_date', 'items', 'lines', 'name', 'price', 'quantity', 'seller_address', 'seller_name', 'seller_tax_number', 'tax_amount', 'tax_percent', 'total_amount', 'unit_price', 'utf-8', 'vat']

@@ -16,6 +16,7 @@ class IdempotencyKey(db.Model):
     idempotency_key = db.Column(db.String(128), nullable=False)
     endpoint = db.Column(db.String(256), nullable=False)
     user_id = db.Column(db.String(128), nullable=True)
+    request_hash = db.Column(db.String(64), nullable=True)  # SHA256 hex digest
 
     processing = db.Column(db.Boolean, nullable=False, default=False)
     status_code = db.Column(db.Integer, nullable=True)
@@ -26,7 +27,7 @@ class IdempotencyKey(db.Model):
     updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc, nullable=False)
 
     __table_args__ = (
-        db.UniqueConstraint('idempotency_key', 'endpoint', 'user_id', name='uix_idempotency_key_endpoint_user'),
+        db.UniqueConstraint('idempotency_key', 'endpoint', 'user_id', 'request_hash', name='uix_idempotency_full_context'),
     )
 
     def to_dict(self):

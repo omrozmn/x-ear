@@ -18,8 +18,8 @@ export interface CashRecord {
   date: string;
   transactionType: TransactionType;
   recordType: RecordType;
-  patientId?: string | null;
-  patientName?: string;
+  partyId?: string | null;
+  partyName?: string;
   inventoryItemId?: string;
   inventoryItemName?: string;
   amount: number;
@@ -29,8 +29,8 @@ export interface CashRecord {
 export interface CashRecordFormData {
   transactionType: TransactionType;
   recordType: RecordType;
-  patientId?: string;
-  patientName?: string;
+  partyId?: string;
+  partyName?: string;
   inventoryItemId?: string;
   inventoryItemName?: string;
   amount: number;

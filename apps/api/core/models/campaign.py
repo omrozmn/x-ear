@@ -75,7 +75,7 @@ class SMSLog(BaseModel, JSONMixin):
     
     # Foreign keys
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # SMS details
@@ -100,7 +100,7 @@ class SMSLog(BaseModel, JSONMixin):
     cost = db.Column(db.Float)
 
     # Relationships
-    patient = db.relationship('Patient', backref='sms_logs', lazy=True)
+    party = db.relationship('Party', backref='sms_logs', lazy=True)
 
     @property
     def provider_response_json(self):
@@ -115,7 +115,7 @@ class SMSLog(BaseModel, JSONMixin):
         sms_dict = {
             'id': self.id,
             'campaignId': self.campaign_id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'phoneNumber': self.phone_number,
             'message': self.message,
             'status': self.status,
@@ -134,7 +134,7 @@ class SMSLog(BaseModel, JSONMixin):
     # Index suggestions
     __table_args__ = (
         db.Index('ix_sms_campaign', 'campaign_id'),
-        db.Index('ix_sms_patient', 'patient_id'),
+        db.Index('ix_sms_patient', 'party_id'),
         db.Index('ix_sms_status', 'status'),
         db.Index('ix_sms_sent_at', 'sent_at'),
     )

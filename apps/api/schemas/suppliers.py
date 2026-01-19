@@ -1,7 +1,7 @@
 """
 Supplier Schemas - Pydantic models for Supplier domain
 """
-from typing import Optional, List, Union, Any
+from typing import Optional, List, Union, Any, Dict
 from pydantic import Field, field_validator, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
@@ -131,6 +131,42 @@ class SupplierRead(SupplierBase, TimestampMixin):
     
     name: str = Field(..., description="Frontend alias for companyName")
 
+
+class ProductSupplierRead(AppBaseModel, TimestampMixin):
+    """Schema for reading ProductSupplier"""
+    id: int
+    product_id: str = Field(..., alias="productId")
+    supplier_id: int = Field(..., alias="supplierId")
+    tenant_id: str = Field(..., alias="tenantId")
+    
+    supplier_product_code: Optional[str] = Field(None, alias="supplierProductCode")
+    supplier_product_name: Optional[str] = Field(None, alias="supplierProductName")
+    
+    unit_cost: Optional[float] = Field(None, alias="unitCost")
+    currency: str = Field("TRY")
+    minimum_order_quantity: int = Field(1, alias="minimumOrderQuantity")
+    
+    lead_time_days: Optional[int] = Field(None, alias="leadTimeDays")
+    is_primary: bool = Field(False, alias="isPrimary")
+    priority: int = 1
+    
+    is_active: bool = Field(True, alias="isActive")
+    notes: Optional[str] = None
+    last_order_date: Optional[str] = Field(None, alias="lastOrderDate")
+    
+    # Enriched fields
+    product: Optional[Dict[str, Any]] = None
+    supplier: Optional[Dict[str, Any]] = None
+
+class SupplierStats(AppBaseModel):
+    total_suppliers: int = Field(0, alias="totalSuppliers")
+    active_suppliers: int = Field(0, alias="activeSuppliers")
+    inactive_suppliers: int = Field(0, alias="inactiveSuppliers")
+    total_product_relationships: int = Field(0, alias="totalProductRelationships")
+    average_rating: float = Field(0.0, alias="averageRating")
+
+class SupplierSearchResponse(AppBaseModel):
+    suppliers: List[SupplierRead]
 
 # Type aliases for frontend compatibility
 Supplier = SupplierRead

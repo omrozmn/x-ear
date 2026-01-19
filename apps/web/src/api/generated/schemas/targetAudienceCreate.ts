@@ -5,13 +5,13 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSSourceType } from './sMSSourceType';
+import type { SmsSourceType } from './smsSourceType';
 import type { TargetAudienceCreateFilterCriteria } from './targetAudienceCreateFilterCriteria';
 import type { TargetAudienceCreateFilePath } from './targetAudienceCreateFilePath';
 
 export interface TargetAudienceCreate {
   name: string;
-  sourceType: SMSSourceType;
+  sourceType: SmsSourceType;
   filterCriteria?: TargetAudienceCreateFilterCriteria;
   filePath?: TargetAudienceCreateFilePath;
   totalRecords?: number;

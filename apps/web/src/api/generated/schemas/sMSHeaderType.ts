@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSHeaderType = typeof SMSHeaderType[keyof typeof SMSHeaderType];
+export type SmsHeaderType = typeof SmsHeaderType[keyof typeof SmsHeaderType];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SMSHeaderType = {
+export const SmsHeaderType = {
   company_title: 'company_title',
   trademark: 'trademark',
   domain: 'domain',

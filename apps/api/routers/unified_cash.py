@@ -45,7 +45,7 @@ def derive_record_type(notes: str) -> str:
 def get_unified_cash_records(
     limit: int = Query(200, ge=1, le=1000),
     record_type: Optional[str] = None,
-    patient_id: Optional[str] = None,
+    party_id: Optional[str] = None,
     status: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
@@ -62,7 +62,7 @@ def get_unified_cash_records(
     """
     try:
         from models.sales import Sale, PaymentRecord
-        from models.patient import Patient
+        from core.models.party import Party
         
         # Parse date filters
         start_dt = None
@@ -88,8 +88,8 @@ def get_unified_cash_records(
             if access.tenant_id:
                 sales_query = sales_query.filter(Sale.tenant_id == access.tenant_id)
             
-            if patient_id:
-                sales_query = sales_query.filter(Sale.patient_id == patient_id)
+            if party_id:
+                sales_query = sales_query.filter(Sale.party_id == party_id)
             if status:
                 sales_query = sales_query.filter(Sale.status == status)
             if start_dt:
@@ -100,7 +100,7 @@ def get_unified_cash_records(
             sales = sales_query.order_by(Sale.created_at.desc()).limit(limit // 3).all()
             
             for sale in sales:
-                patient = db.get(Patient, sale.patient_id) if sale.patient_id else None
+                patient = db.get(Party, sale.party_id) if sale.party_id else None
                 patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
                 
                 record = {
@@ -109,7 +109,7 @@ def get_unified_cash_records(
                     'recordType': 'sale',
                     'date': sale.created_at.isoformat() if sale.created_at else datetime.now(timezone.utc).isoformat(),
                     'transactionType': 'income',
-                    'patientId': sale.patient_id,
+                    'partyId': sale.party_id,
                     'patientName': patient_name,
                     'amount': float(sale.total_amount or 0),
                     'status': sale.status or 'pending',
@@ -126,8 +126,8 @@ def get_unified_cash_records(
             if access.tenant_id:
                 payments_query = payments_query.filter(PaymentRecord.tenant_id == access.tenant_id)
             
-            if patient_id:
-                payments_query = payments_query.filter(PaymentRecord.patient_id == patient_id)
+            if party_id:
+                payments_query = payments_query.filter(PaymentRecord.party_id == party_id)
             if status:
                 payments_query = payments_query.filter(PaymentRecord.status == status)
             if start_dt:
@@ -138,7 +138,7 @@ def get_unified_cash_records(
             payments = payments_query.order_by(PaymentRecord.payment_date.desc()).limit(limit // 3).all()
             
             for payment in payments:
-                patient = db.get(Patient, payment.patient_id) if payment.patient_id else None
+                patient = db.get(Party, payment.party_id) if payment.party_id else None
                 patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
                 
                 transaction_type = 'income' if (payment.amount or 0) >= 0 else 'expense'
@@ -149,7 +149,7 @@ def get_unified_cash_records(
                     'recordType': 'payment',
                     'date': payment.payment_date.isoformat() if payment.payment_date else datetime.now(timezone.utc).isoformat(),
                     'transactionType': transaction_type,
-                    'patientId': payment.patient_id,
+                    'partyId': payment.party_id,
                     'patientName': patient_name,
                     'amount': float(payment.amount or 0),
                     'status': payment.status or 'paid',
@@ -166,8 +166,8 @@ def get_unified_cash_records(
             if access.tenant_id:
                 cash_query = cash_query.filter(PaymentRecord.tenant_id == access.tenant_id)
             
-            if patient_id:
-                cash_query = cash_query.filter(PaymentRecord.patient_id == patient_id)
+            if party_id:
+                cash_query = cash_query.filter(PaymentRecord.party_id == party_id)
             if status:
                 cash_query = cash_query.filter(PaymentRecord.status == status)
             if start_dt:
@@ -183,7 +183,7 @@ def get_unified_cash_records(
                 if any(r['id'] == existing_payment_id for r in unified_records):
                     continue
                 
-                patient = db.get(Patient, cash_record.patient_id) if cash_record.patient_id else None
+                patient = db.get(Party, cash_record.party_id) if cash_record.party_id else None
                 patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
                 
                 transaction_type = 'income' if (cash_record.amount or 0) >= 0 else 'expense'
@@ -194,7 +194,7 @@ def get_unified_cash_records(
                     'recordType': 'cash',
                     'date': cash_record.payment_date.isoformat() if cash_record.payment_date else datetime.now(timezone.utc).isoformat(),
                     'transactionType': transaction_type,
-                    'patientId': cash_record.patient_id,
+                    'partyId': cash_record.party_id,
                     'patientName': patient_name,
                     'amount': float(cash_record.amount or 0),
                     'status': cash_record.status or 'paid',

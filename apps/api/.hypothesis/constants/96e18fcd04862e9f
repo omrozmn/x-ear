@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/registration.py
+# hypothesis_version: 6.150.1
+
+[201, 300, 400, 500, 100000, 900000, '+', '/config/turnstile', '/register-phone', 'OZMN TIBCHZ', 'Phone required', 'Registration', 'TURNSTILE_SITE_KEY', 'VATANSMS_PASSWORD', 'VATANSMS_SENDER', 'VATANSMS_USERNAME', 'VATAN_API_ID', 'VATAN_API_KEY', 'VATAN_SENDER', 'access_token', 'createRegisterPhone', 'listConfigTurnstile', 'siteKey', 'temp_password', 'user_id', 'username']

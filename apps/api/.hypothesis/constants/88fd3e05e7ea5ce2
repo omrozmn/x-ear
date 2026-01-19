@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_patients.py
+# hypothesis_version: 6.150.1
+
+[100, 404, 500, '/api/admin/patients', '/{patient_id}', '/{patient_id}/sales', 'Admin Patients', 'Patient not found', 'custom_data_json', 'data', 'devices', 'documents', 'getAdminPatient', 'limit', 'listAdminPatients', 'page', 'pagination', 'patients', 'patients.read', 'sales', 'success', 'tenant_name', 'timeline', 'total', 'totalPages']

@@ -129,7 +129,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
               }}
             >
               <div className="font-medium truncate text-gray-900 dark:text-gray-200">
-                {appointment.patientName || 'Hasta bilgisi yok'}
+                {appointment.partyName || 'Hasta bilgisi yok'}
               </div>
               <div className="text-gray-500 dark:text-gray-400">
                 {appointment.time}

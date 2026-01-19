@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { listInventoryStats } from '@/api/generated';
+import {listInventoryStats} from '@/api/client/inventory.client';
 
 interface InventoryStatsProps {
   className?: string;

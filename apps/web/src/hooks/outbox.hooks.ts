@@ -8,7 +8,7 @@ export interface OutboxItem {
   type: string;
   endpoint: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  data: any;
+  data: unknown;
   idempotencyKey: string;
   retryCount: number;
   maxRetries?: number;
@@ -210,7 +210,8 @@ export const useOutbox = () => {
         } catch (error) {
           // Network error or HTTP error (axios throws on non-2xx)
           // Increment retry count
-          const isNetworkError = (error as any)?.code === 'ERR_NETWORK' || (error as any)?.message === 'Network Error';
+          const err = error as Record<string, unknown>;
+          const isNetworkError = err?.code === 'ERR_NETWORK' || err?.message === 'Network Error';
           const updatedItem: OutboxItem = {
             ...item,
             retryCount: item.retryCount + 1,

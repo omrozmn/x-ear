@@ -5,36 +5,58 @@ import { indexedDBManager } from '@/utils/indexeddb';
 
 const generateIdempotencyKey = () => `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-const QUERY_KEY = (patientId: string) => ['patients', patientId, 'sgk-documents'] as const;
+const QUERY_KEY = (partyId: string) => ['parties', partyId, 'sgk-documents'] as const;
 
-export function useSgkDocuments(patientId: string) {
-  return useQuery({ queryKey: QUERY_KEY(patientId), queryFn: () => sgkService.listDocuments(patientId) });
+export function useSgkDocuments(partyId: string) {
+  return useQuery({ queryKey: QUERY_KEY(partyId), queryFn: () => sgkService.listDocuments(partyId) });
 }
 
-export function useUploadSgkDocument(patientId: string) {
+export function useUploadSgkDocument(partyId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (formData: FormData | Record<string, any> & { idempotencyKey?: string }) => {
-      const idempotencyKey = (formData as any).idempotencyKey || generateIdempotencyKey();
+    mutationFn: async (input: FormData | { file: File; idempotencyKey?: string }) => {
+      let documentData: FormData;
+      let file: File | null = null;
+      let idempotencyKey: string;
+
+      if (input instanceof FormData) {
+        documentData = input;
+        const potentialFile = input.get('file');
+        file = potentialFile instanceof File ? potentialFile : null;
+        idempotencyKey = (input.get('idempotencyKey') as string) || generateIdempotencyKey();
+      } else {
+        // Construct FormData from object
+        documentData = new FormData();
+        documentData.append('file', input.file);
+        file = input.file;
+        idempotencyKey = input.idempotencyKey || generateIdempotencyKey();
+      }
 
       try {
-        // Upload document - sgkService.uploadDocument only takes body parameter
-        return await sgkService.uploadDocument(formData as any);
+        // Upload document - sgkService.uploadDocument takes BodySgkCreateSgkDocuments which is { file: Blob }
+        const body: any = { file: file as Blob }; // Service expects object with file property, assuming generated client structure
+
+        // Actually sgkService.uploadDocument likely takes the generated body type.
+        // We pass the object wrapper as expected by generated clients usually.
+        return await sgkService.uploadDocument({ file: file as Blob });
       } catch (err) {
         // On network/offline failure, serialize file blob to IndexedDB and enqueue outbox operation
         try {
-          const file = (formData as any).get ? (formData as FormData).get('file') : (formData as any).file || (formData as any)[0];
-          if (file instanceof Blob) {
-            const blobId = await indexedDBManager.saveFileBlob(file as Blob, { filename: (file as any).name, mime: (file as any).type });
+          if (file && ((file as any) instanceof File || (file as any) instanceof Blob)) {
+            const fileObj = file as File; // Blob might not have name, but input says File
+            const filename = fileObj.name || 'unknown_file';
+            const mime = fileObj.type || 'application/octet-stream';
+
+            const blobId = await indexedDBManager.saveFileBlob(fileObj, { filename, mime });
             await outbox.addOperation({
               method: 'POST',
-              endpoint: `/api/sgk/documents?patientId=${encodeURIComponent(patientId)}`,
-              data: { blobId, filename: (file as any).name, mime: (file as any).type },
+              endpoint: `/api/sgk/documents?partyId=${encodeURIComponent(partyId)}`,
+              data: { blobId, filename, mime },
               headers: { 'Idempotency-Key': idempotencyKey },
               maxRetries: 5,
             });
             // Return a temporary response to the UI so it can show optimistic state
-            return { data: { id: `temp-${Date.now()}`, filename: (file as any).name, status: 'queued' } };
+            return { data: { id: `temp-${Date.now()}`, filename, status: 'queued' } };
           }
         } catch (e) {
           console.warn('Failed to enqueue upload to outbox:', e);
@@ -43,7 +65,7 @@ export function useUploadSgkDocument(patientId: string) {
         throw err;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY(patientId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY(partyId) }),
   });
 }
 
@@ -55,13 +77,13 @@ export function useUploadSgkDocuments() {
   });
 }
 
-export function useDeleteSgkDocument(patientId: string) {
+export function useDeleteSgkDocument(partyId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: { id: string; idempotencyKey?: string }) => {
       return await sgkService.deleteDocument(data.id);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY(patientId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY(partyId) }),
   });
 }
 

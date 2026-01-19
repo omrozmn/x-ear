@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-12T10:42:05.076Z
+ * Generated: 2026-01-18T18:25:36.145Z
  */
 
 // ACTIVITY_LOGS
@@ -93,14 +93,6 @@ export {
   useListAdminInvoicePdf,
 } from './admin-invoices/admin-invoices';
 
-// ADMIN_MARKETPLACES
-export {
-  useCreateAdminMarketplaceInitDb,
-  useListAdminMarketplaceIntegrations,
-  useCreateAdminMarketplaceIntegrations,
-  useCreateAdminMarketplaceIntegrationSync,
-} from './admin-marketplaces/admin-marketplaces';
-
 // ADMIN_NOTIFICATIONS
 export {
   useCreateAdminNotificationInitDb,
@@ -112,15 +104,15 @@ export {
   useDeleteAdminNotificationTemplate,
 } from './admin-notifications/admin-notifications';
 
-// ADMIN_PATIENTS
+// ADMIN_PARTIES
 export {
-  useListAdminPatients,
-  useGetAdminPatient,
-  useListAdminPatientDevices,
-  useListAdminPatientSales,
-  useListAdminPatientTimeline,
-  useListAdminPatientDocuments,
-} from './admin-patients/admin-patients';
+  useListAdminParties,
+  useGetAdminParty,
+  useListAdminPartyDevices,
+  useListAdminPartySales,
+  useListAdminPartyTimeline,
+  useListAdminPartyDocuments,
+} from './admin-parties/admin-parties';
 
 // ADMIN_PAYMENTS
 export {
@@ -237,6 +229,46 @@ export {
   useListAffiliateLookup,
 } from './affiliates/affiliates';
 
+// AI_ACTIONS
+export {
+  useCreateActionApiAiActionsPost as useCreateActionAiActionsPost,
+  useGetActionApiAiActionsActionIdGet as useGetActionAiActionsActionIdGet,
+  useApproveActionApiAiActionsActionIdApprovePost as useApproveActionAiActionsActionIdApprovePost,
+  useExecuteActionApiAiActionsActionIdExecutePost as useExecuteActionAiActionsActionIdExecutePost,
+} from './ai-actions/ai-actions';
+
+// AI_ADMIN
+export {
+  useGetKillSwitchStatusApiAiAdminKillSwitchGet as useGetKillSwitchStatusAiAdminKillSwitchGet,
+  useManageKillSwitchApiAiAdminKillSwitchPost as useManageKillSwitchAiAdminKillSwitchPost,
+  useGetPendingApprovalsApiAiAdminPendingApprovalsGet as useGetPendingApprovalsAiAdminPendingApprovalsGet,
+  useCleanupExpiredApprovalsApiAiAdminCleanupExpiredPost as useCleanupExpiredApprovalsAiAdminCleanupExpiredPost,
+  useGetAiSettingsApiAiAdminSettingsGet as useGetAiSettingsAiAdminSettingsGet,
+} from './ai-admin/ai-admin';
+
+// AI_AUDIT
+export {
+  useListAuditLogsApiAiAuditGet as useListAuditLogsAiAuditGet,
+  useGetAuditStatsApiAiAuditStatsGet as useGetAuditStatsAiAuditStatsGet,
+  useGetAuditEntryApiAiAuditAuditIdGet as useGetAuditEntryAiAuditAuditIdGet,
+} from './ai-audit/ai-audit';
+
+// AI_CHAT
+export {
+  useChatApiAiChatPost as useChatAiChatPost,
+} from './ai-chat/ai-chat';
+
+// AI_STATUS
+export {
+  useGetStatusApiAiStatusGet as useGetStatusAiStatusGet,
+  useHealthCheckApiAiHealthGet as useHealthCheckAiHealthGet,
+  useGetCapabilitiesApiAiCapabilitiesGet as useGetCapabilitiesAiCapabilitiesGet,
+  useGetMetricsApiAiMetricsGet as useGetMetricsAiMetricsGet,
+  useGetAlertsApiAiAlertsGet as useGetAlertsAiAlertsGet,
+  useAcknowledgeAlertApiAiAlertsAlertIdAcknowledgePost as useAcknowledgeAlertAiAlertsAlertIdAcknowledgePost,
+  useTriggerAlertCheckApiAiAlertsCheckPost as useTriggerAlertCheckAiAlertsCheckPost,
+} from './ai-status/ai-status';
+
 // APPOINTMENTS
 export {
   useListAppointments,
@@ -275,7 +307,7 @@ export {
   useCreateAuthResetPassword,
   useCreateAuthLogin,
   useCreateAuthRefresh,
-  useListAuthMe,
+  useGetAuthMe,
   useCreateAuthSendVerificationOtp,
   useCreateAuthSetPassword,
 } from './auth/auth';
@@ -406,6 +438,18 @@ export {
   useReadinessCheckReadinessGet,
 } from './health/health';
 
+// HEARING_PROFILES
+export {
+  useListHearingTests,
+  useCreateHearingTest,
+  useUpdateHearingTest,
+  useDeleteHearingTest,
+  useListHearingEReceipts,
+  useCreateHearingEReceipt,
+  useUpdateHearingEReceipt,
+  useDeleteHearingEReceipt,
+} from './hearing-profiles/hearing-profiles';
+
 // INVENTORY
 export {
   useListInventory,
@@ -453,7 +497,7 @@ export {
   useGetInvoice,
   useUpdateInvoice,
   useDeleteInvoice,
-  useListPatientInvoices,
+  useListPartyInvoices,
   useCreateInvoiceSendToGib,
   useCreateInvoiceBulkUpload,
 } from './invoices/invoices';
@@ -485,36 +529,28 @@ export {
   useGetOcrJob,
 } from './ocr/ocr';
 
-// PATIENT_SUBRESOURCES
+// PARTIES
 export {
-  useListPatientDevices,
-  useListPatientHearingTests,
-  useCreatePatientHearingTests,
-  useUpdatePatientHearingTest,
-  useDeletePatientHearingTest,
-  useListPatientNotes,
-  useCreatePatientNotes,
-  useUpdatePatientNote,
-  useDeletePatientNote,
-  useListPatientEreceipts,
-  useCreatePatientEreceipts,
-  useUpdatePatientEreceipt,
-  useDeletePatientEreceipt,
-  useListPatientSales,
-  useListPatientAppointments,
-} from './patient-subresources/patient-subresources';
+  useListParties,
+  useCreateParties,
+  useListPartyExport,
+  useListPartyCount,
+  useGetParty,
+  useUpdateParty,
+  useDeleteParty,
+  useCreatePartyBulkUpload,
+} from './parties/parties';
 
-// PATIENTS
+// PARTY_SUBRESOURCES
 export {
-  useListPatients as useListPatientsApiPatientsGet,
-  useCreatePatients,
-  useListPatientExport,
-  useListPatientCount,
-  useGetPatient,
-  useUpdatePatient,
-  useDeletePatient,
-  useCreatePatientBulkUpload,
-} from './patients/patients';
+  useListPartyDevices,
+  useListPartyNotes,
+  useCreatePartyNotes,
+  useUpdatePartyNote,
+  useDeletePartyNote,
+  useListPartySales,
+  useListPartyAppointments,
+} from './party-subresources/party-subresources';
 
 // PAYMENT_INTEGRATIONS
 export {
@@ -528,9 +564,9 @@ export {
 // PAYMENTS
 export {
   useCreatePaymentRecords,
-  useListPatientPaymentRecords,
+  useListPartyPaymentRecords,
   useUpdatePaymentRecord,
-  useListPatientPromissoryNotes,
+  useListPartyPromissoryNotes,
   useCreatePromissoryNotes,
   useUpdatePromissoryNote,
   useCreatePromissoryNoteCollect,
@@ -622,7 +658,7 @@ export {
   useCreateSalePaymentPlan,
   useCreateSaleInstallmentPay,
   useCreateSaleRecalc,
-  useCreatePatientDeviceAssignments,
+  useCreatePartyDeviceAssignments,
   useUpdateDeviceAssignment,
   useCreateDeviceAssignmentReturnLoaner,
   useCreatePricingPreview,
@@ -642,7 +678,7 @@ export {
   useGetSgkDocument,
   useDeleteSgkDocument,
   useCreateSgkUpload,
-  useListPatientSgkDocuments,
+  useListPartySgkDocuments,
   useCreateSgkEReceiptQuery,
   useListSgkEReceiptDelivered,
   useCreateSgkPatientRightQuery,
@@ -675,14 +711,14 @@ export {
   useGetSmDocumentFile,
 } from './sms-integration/sms-integration';
 
-// SMSPACKAGES
+// SMS
 export {
+  useListSmsPackages as useListSmsPackagesApiSmsPackagesGet,
   useListAdminSmPackages,
   useCreateAdminSmPackages,
   useUpdateAdminSmPackage,
-  useListSmsPackages as useListSmsPackagesApiSmsPackagesGet,
   useDeleteAdminSmPackage,
-} from './smspackages/smspackages';
+} from './sms/sms';
 
 // SUBSCRIPTIONS
 export {
@@ -706,24 +742,18 @@ export {
 // TENANT_USERS
 export {
   useListTenantUsers,
-  useCreateTenantUsers,
+  useCreateTenantUser,
   useDeleteTenantUser,
   useUpdateTenantUser,
-  useListTenantCompany,
-  useUpdateTenantCompany,
-  useCreateTenantCompanyUpload,
-  useDeleteTenantCompanyUpload,
-  useGetTenantAsset,
-  useListTenantCompanyAssetUrl,
 } from './tenant-users/tenant-users';
 
 // TIMELINE
 export {
   useListTimeline,
-  useListPatientTimeline,
-  useCreatePatientTimeline,
-  useCreatePatientActivities,
-  useDeletePatientTimeline,
+  useListPartyTimeline,
+  useCreatePartyTimeline,
+  useCreatePartyActivities,
+  useDeletePartyTimeline,
 } from './timeline/timeline';
 
 // UNIFIED_CASH
@@ -760,6 +790,3 @@ export {
 
 // SCHEMAS - All types and interfaces
 export * from './schemas';
-
-// TYPE ALIASES - Frontend compatibility
-export type { ListPatientsParams as CountPatientsApiPatientsCountGetParams } from './schemas';

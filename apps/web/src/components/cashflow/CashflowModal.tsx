@@ -1,12 +1,12 @@
 /**
  * CashflowModal Component
- * Modal for creating new cash records with patient search and product selection
+ * Modal for creating new cash records with party search and product selection
  */
 import React, { useState } from 'react';
 import { Button } from '@x-ear/ui-web';
 import { TrendingUp, TrendingDown, X } from 'lucide-react';
 import type { CashRecordFormData, TransactionType, RecordType } from '../../types/cashflow';
-import { PatientSearchInput } from './PatientSearchInput';
+import { PartySearchInput } from './PartySearchInput';
 import { ProductSearchInput } from './ProductSearchInput';
 import { RecordTypeSelector } from './RecordTypeSelector';
 
@@ -17,7 +17,7 @@ interface CashflowModalProps {
   isLoading?: boolean;
 }
 
-interface Patient {
+interface Party {
   id?: string;
   firstName: string;
   lastName: string;
@@ -36,7 +36,7 @@ export function CashflowModal({
 }: CashflowModalProps) {
   const [transactionType, setTransactionType] = useState<TransactionType | ''>('');
   const [recordType, setRecordType] = useState<RecordType | ''>('');
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<InventoryItem | null>(null);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -45,7 +45,7 @@ export function CashflowModal({
   const handleClose = () => {
     setTransactionType('');
     setRecordType('');
-    setSelectedPatient(null);
+    setSelectedParty(null);
     setSelectedProduct(null);
     setAmount('');
     setDescription('');
@@ -83,9 +83,9 @@ export function CashflowModal({
       transactionType: transactionType as TransactionType,
       recordType: recordType as RecordType,
       amount: parseFloat(amount),
-      patientId: selectedPatient?.id,
-      patientName: selectedPatient
-        ? `${selectedPatient.firstName} ${selectedPatient.lastName}`
+      partyId: selectedParty?.id,
+      partyName: selectedParty
+        ? `${selectedParty.firstName} ${selectedParty.lastName}`
         : undefined,
       inventoryItemId: selectedProduct?.id,
       inventoryItemName: selectedProduct?.name,
@@ -166,14 +166,14 @@ export function CashflowModal({
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.recordType}</p>
             )}
 
-            {/* Patient Search */}
+            {/* Party Search */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Hasta (İsteğe Bağlı)
               </label>
-              <PatientSearchInput
-                selectedPatient={selectedPatient}
-                onSelectPatient={setSelectedPatient}
+              <PartySearchInput
+                selectedParty={selectedParty}
+                onSelectParty={setSelectedParty}
               />
             </div>
 

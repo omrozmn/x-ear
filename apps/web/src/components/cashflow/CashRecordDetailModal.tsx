@@ -7,7 +7,7 @@ import { Modal, Button, Input } from '@x-ear/ui-web';
 import { Edit2, Save, X } from 'lucide-react';
 import type { CashRecord, TransactionType, RecordType } from '../../types/cashflow';
 import { RECORD_TYPE_LABELS } from '../../types/cashflow';
-import { PatientSearchInput } from './PatientSearchInput';
+import { PartySearchInput } from './PartySearchInput';
 import { ProductSearchInput } from './ProductSearchInput';
 import { RecordTypeSelector } from './RecordTypeSelector';
 
@@ -19,7 +19,7 @@ interface CashRecordDetailModalProps {
   isLoading?: boolean;
 }
 
-interface Patient {
+interface Party {
   id?: string;
   firstName: string;
   lastName: string;
@@ -40,7 +40,7 @@ export function CashRecordDetailModal({
   const [isEditing, setIsEditing] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType | ''>('');
   const [recordType, setRecordType] = useState<RecordType | ''>('');
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<InventoryItem | null>(null);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -52,15 +52,15 @@ export function CashRecordDetailModal({
       setAmount(Math.abs(record.amount).toString());
       setDescription(record.description || '');
 
-      if (record.patientName) {
-        const [firstName, ...lastNameParts] = record.patientName.split(' ');
-        setSelectedPatient({
-          id: record.patientId ?? undefined,
+      if (record.partyName) {
+        const [firstName, ...lastNameParts] = record.partyName.split(' ');
+        setSelectedParty({
+          id: record.partyId ?? undefined,
           firstName: firstName || '',
           lastName: lastNameParts.join(' ') || '',
         });
       } else {
-        setSelectedPatient(null);
+        setSelectedParty(null);
       }
     }
   }, [record]);
@@ -77,9 +77,9 @@ export function CashRecordDetailModal({
       transactionType: transactionType as TransactionType,
       recordType: recordType as RecordType,
       amount: parseFloat(amount),
-      patientId: selectedPatient?.id,
-      patientName: selectedPatient
-        ? `${selectedPatient.firstName} ${selectedPatient.lastName}`
+      partyId: selectedParty?.id,
+      partyName: selectedParty
+        ? `${selectedParty.firstName} ${selectedParty.lastName}`
         : undefined,
       description: description.trim() || undefined,
     };
@@ -173,10 +173,10 @@ export function CashRecordDetailModal({
                   {formatCurrency(record.amount)}
                 </p>
               </div>
-              {record.patientName && (
+              {record.partyName && (
                 <div>
                   <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Hasta</label>
-                  <p className="text-base text-gray-900 dark:text-white">{record.patientName}</p>
+                  <p className="text-base text-gray-900 dark:text-white">{record.partyName}</p>
                 </div>
               )}
               {record.inventoryItemName && (
@@ -206,9 +206,9 @@ export function CashRecordDetailModal({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Hasta (İsteğe Bağlı)
               </label>
-              <PatientSearchInput
-                selectedPatient={selectedPatient}
-                onSelectPatient={setSelectedPatient}
+              <PartySearchInput
+                selectedParty={selectedParty}
+                onSelectParty={setSelectedParty}
               />
             </div>
 

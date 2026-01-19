@@ -3,6 +3,7 @@ from models.user import User
 from models.patient import Patient
 from models.tenant import Tenant
 from utils.tenant_security import set_current_tenant_id, UnboundSession
+from core.database import _current_tenant_id
 import uuid
 
 def test_filter():
@@ -34,15 +35,18 @@ def test_filter():
         
         # Test 1: UnboundSession (Super Admin view)
         print("\n=== Test 1: UnboundSession ===")
-        set_current_tenant_id(None)
-        with UnboundSession():
-            users_all = User.query.all()
-            print(f"Unfiltered query: {len(users_all)} users")
-            assert len(users_all) >= 2
-            
-            user_get = db.session.get(User, u1.id)
-            print(f"Unfiltered get: {user_get}")
-            assert user_get is not None
+        token = _current_tenant_id.set(None)
+        try:
+            with UnboundSession():
+                users_all = User.query.all()
+                print(f"Unfiltered query: {len(users_all)} users")
+                assert len(users_all) >= 2
+                
+                user_get = db.session.get(User, u1.id)
+                print(f"Unfiltered get: {user_get}")
+                assert user_get is not None
+        finally:
+            _current_tenant_id.reset(token)
         
         # Test 2: Correct tenant context - session.get()
         print("\n=== Test 2: Correct Tenant (get) ===")

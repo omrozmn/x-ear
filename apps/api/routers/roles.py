@@ -72,7 +72,8 @@ def list_roles(
     """Get all roles"""
     try:
         roles = db_session.query(Role).order_by(Role.name).all()
-        return ResponseEnvelope(data=[r.to_dict() for r in roles])
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=[RoleRead.model_validate(r) for r in roles])
     except Exception as e:
         logger.error(f"List roles error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -110,8 +111,10 @@ def create_role(
         
         db_session.add(role)
         db_session.commit()
+        db_session.refresh(role)
         
-        return ResponseEnvelope(data=role.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=RoleRead.model_validate(role))
     except HTTPException:
         raise
     except Exception as e:
@@ -156,8 +159,10 @@ def update_role(
         
         db_session.add(role)
         db_session.commit()
+        db_session.refresh(role)
         
-        return ResponseEnvelope(data=role.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=RoleRead.model_validate(role))
     except HTTPException:
         raise
     except Exception as e:
@@ -231,7 +236,9 @@ def add_permission_to_role(
             # Invalidate tokens for users with this role
             invalidate_role_permissions(db_session, role.name)
         
-        return ResponseEnvelope(data=role.to_dict())
+        db_session.refresh(role)
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=RoleRead.model_validate(role))
     except HTTPException:
         raise
     except Exception as e:
@@ -309,7 +316,9 @@ def set_role_permissions(
         # Invalidate tokens for users with this role
         invalidate_role_permissions(db_session, role.name)
         
-        return ResponseEnvelope(data=role.to_dict())
+        db_session.refresh(role)
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=RoleRead.model_validate(role))
     except HTTPException:
         raise
     except Exception as e:

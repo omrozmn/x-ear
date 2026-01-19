@@ -5,16 +5,12 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { NotificationSettingsPreferences } from './notificationSettingsPreferences';
-import type { NotificationSettingsSettings } from './notificationSettingsSettings';
 
 /**
- * User notification settings
+ * Notification settings
  */
 export interface NotificationSettings {
-  userId: string;
-  /** User preferences */
-  preferences?: NotificationSettingsPreferences;
-  /** Notification settings */
-  settings?: NotificationSettingsSettings;
+  emailEnabled?: boolean;
+  pushEnabled?: boolean;
+  smsEnabled?: boolean;
 }

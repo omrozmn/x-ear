@@ -54,10 +54,11 @@ async def get_campaigns(
         total = query.count()
         campaigns = query.order_by(Campaign.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {
             "success": True,
             "data": {
-                "campaigns": [c.to_dict() for c in campaigns],
+                "campaigns": [CampaignRead.model_validate(c).model_dump(by_alias=True) for c in campaigns],
                 "pagination": {
                     "page": page,
                     "limit": limit,
@@ -104,7 +105,8 @@ async def create_campaign(
         db.commit()
         db.refresh(new_campaign)
         
-        return {"success": True, "data": {"campaign": new_campaign.to_dict()}}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": {"campaign": CampaignRead.model_validate(new_campaign).model_dump(by_alias=True)}}
     except HTTPException:
         raise
     except Exception as e:
@@ -124,7 +126,8 @@ async def get_campaign(
         if not campaign:
             raise HTTPException(status_code=404, detail="Campaign not found")
         
-        return {"success": True, "data": {"campaign": campaign.to_dict()}}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": {"campaign": CampaignRead.model_validate(campaign).model_dump(by_alias=True)}}
     except HTTPException:
         raise
     except Exception as e:
@@ -165,7 +168,8 @@ async def update_campaign(
         db.commit()
         db.refresh(campaign)
         
-        return {"success": True, "data": {"campaign": campaign.to_dict()}}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": {"campaign": CampaignRead.model_validate(campaign).model_dump(by_alias=True)}}
     except HTTPException:
         raise
     except Exception as e:

@@ -5,9 +5,9 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { PlanCreateFeaturesAnyOfItem } from './planCreateFeaturesAnyOfItem';
+import type { PlanCreateFeaturesAnyOf } from './planCreateFeaturesAnyOf';
 
 /**
  * Plan features
  */
-export type PlanCreateFeatures = PlanCreateFeaturesAnyOfItem[] | null;
+export type PlanCreateFeatures = PlanCreateFeaturesAnyOf | null;

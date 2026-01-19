@@ -12,21 +12,27 @@ import random
 from sqlalchemy.orm import Session, load_only
 from sqlalchemy import or_
 
-from schemas.base import ResponseEnvelope, ApiError
-from schemas.devices import DeviceRead
+from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from schemas.devices import (
+    DeviceRead, DeviceCreate, DeviceUpdate, 
+    StockUpdateRequest, BrandCreate, TrialPeriod, Warranty,
+    DeviceLowStockResponse
+)
 from schemas.auth import PasswordChangeRequest
 from schemas.notifications import NotificationUpdate
 from schemas.campaigns import CampaignUpdate, SMSLogRead
 from schemas.sales import DeviceAssignmentUpdate, InstallmentPayment, PaymentPlanCreate
 from schemas.inventory import StockMovementRead
-from schemas.sms import SMSHeaderRequestUpdate, SMSProviderConfigCreate
+from schemas.sms import SmsHeaderRequestUpdate, SmsProviderConfigCreate
 from schemas.tenants import TenantCreate, TenantRead, TenantStats, TenantUpdate
 from schemas.users import PermissionRead, RoleRead, UserProfile
-from schemas.patients import PatientSearchFilters
+from schemas.parties import PartySearchFilters
 
-from models.device import Device
 from models.inventory import InventoryItem
 from models.enums import DeviceSide, DeviceStatus, DeviceCategory
+from core.models.device import Device
+from core.models.enums import ProductCode, AppErrorCode
+from models.tenant import Tenant
 from constants import CANONICAL_CATEGORY_HEARING_AID
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
@@ -34,6 +40,32 @@ from database import get_db
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Devices"])
+
+def ensure_hearing_product(db_session: Session, tenant_id: str):
+    """Ensure tenant is using a hearing product"""
+    if not tenant_id:
+        return # Admin or system context
+        
+    tenant = db_session.get(Tenant, tenant_id)
+    if not tenant:
+        return # Should be handled by other logic if tenant missing
+        
+    if not ProductCode.is_xear(tenant.product_code or ProductCode.XEAR_HEARING):
+         # Allow all XEar for now? Or strictly Hearing?
+         # User requirement: != XEAR_HEARING -> 403
+         pass
+
+    if tenant.product_code and tenant.product_code != ProductCode.XEAR_HEARING.value:
+         raise HTTPException(
+            status_code=403,
+            detail={
+                "error_code": AppErrorCode.PRODUCT_NOT_ALLOWED,
+                "message": "Feature not available for this product",
+                "product_code": tenant.product_code,
+                "required_product": ProductCode.XEAR_HEARING,
+            }
+        )
+
 
 @router.get(
     "/__internal/openapi-schema-registry",
@@ -46,13 +78,13 @@ router = APIRouter(tags=["Devices"])
                 InstallmentPayment,
                 NotificationUpdate,
                 PasswordChangeRequest,
-                PatientSearchFilters,
+                PartySearchFilters,
                 PaymentPlanCreate,
                 PermissionRead,
                 RoleRead,
-                SMSHeaderRequestUpdate,
+                SmsHeaderRequestUpdate,
                 SMSLogRead,
-                SMSProviderConfigCreate,
+                SmsProviderConfigCreate,
                 StockMovementRead,
                 TenantCreate,
                 TenantRead,
@@ -66,59 +98,6 @@ router = APIRouter(tags=["Devices"])
 def _openapi_schema_registry():
     return ResponseEnvelope(data=[])
 
-# --- Request Schemas ---
-
-class TrialPeriod(BaseModel):
-    start_date: Optional[str] = Field(None, alias="startDate")
-    end_date: Optional[str] = Field(None, alias="endDate")
-    extended_until: Optional[str] = Field(None, alias="extendedUntil")
-
-class Warranty(BaseModel):
-    start_date: Optional[str] = Field(None, alias="startDate")
-    end_date: Optional[str] = Field(None, alias="endDate")
-    terms: Optional[str] = None
-
-class DeviceCreate(BaseModel):
-    patient_id: str = Field(..., alias="patientId")
-    inventory_id: Optional[str] = Field(None, alias="inventoryId")
-    serial_number: Optional[str] = Field(None, alias="serialNumber")
-    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
-    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
-    # Made optional - will be auto-filled from inventory if inventoryId provided
-    brand: Optional[str] = None
-    model: Optional[str] = None
-    type: Optional[str] = None
-    category: Optional[str] = None
-    ear: Optional[str] = None
-    status: str = "in_stock"
-    price: Optional[float] = None
-    notes: Optional[str] = None
-    trial_period: Optional[TrialPeriod] = Field(None, alias="trialPeriod")
-    warranty: Optional[Warranty] = None
-
-class DeviceUpdate(BaseModel):
-    brand: Optional[str] = None
-    model: Optional[str] = None
-    type: Optional[str] = None
-    category: Optional[str] = None
-    ear: Optional[str] = None
-    status: Optional[str] = None
-    price: Optional[float] = None
-    notes: Optional[str] = None
-    serial_number: Optional[str] = Field(None, alias="serialNumber")
-    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
-    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
-    trial_period: Optional[TrialPeriod] = Field(None, alias="trialPeriod")
-    warranty: Optional[Warranty] = None
-
-class StockUpdateRequest(BaseModel):
-    operation: str
-    quantity: int = 0
-    reason: Optional[str] = None
-    notes: Optional[str] = None
-
-class BrandCreate(BaseModel):
-    name: str
 
 # --- Helper Functions ---
 
@@ -153,6 +132,9 @@ def get_devices(
 ):
     """Get devices with filtering"""
     try:
+        if access.tenant_id:
+            ensure_hearing_product(db_session, access.tenant_id)
+            
         query = db_session.query(Device)
         
         # Tenant scope
@@ -161,7 +143,7 @@ def get_devices(
         
         # Inventory only filter
         if inventory_only:
-            query = query.filter(or_(Device.patient_id.is_(None), Device.patient_id == 'inventory'))
+            query = query.filter(or_(Device.party_id.is_(None), Device.party_id == 'inventory'))
         
         # Category filter
         if category:
@@ -193,8 +175,11 @@ def get_devices(
         total = query.count()
         devices = query.offset((page - 1) * per_page).limit(per_page).all()
         
+        # Explicitly convert to DeviceRead Pydantic models
+        device_reads = [DeviceRead.model_validate(d) for d in devices]
+        
         return ResponseEnvelope(
-            data=devices,
+            data=device_reads,
             meta={
                 "total": total,
                 "page": page,
@@ -215,6 +200,9 @@ def create_device(
 ):
     """Create a new device"""
     try:
+        if access.tenant_id:
+            ensure_hearing_product(db_session, access.tenant_id)
+
         data = device_in.model_dump(by_alias=False)
         logger.info(f"CREATE_DEVICE REQUEST: {data}")
         
@@ -259,7 +247,7 @@ def create_device(
         device = Device()
         device.id = device_id
         device.tenant_id = access.tenant_id
-        device.patient_id = data['patient_id']
+        device.party_id = data['party_id']
         device.inventory_id = inventory_id
         
         serial_num = data.get('serial_number')
@@ -315,7 +303,7 @@ def create_device(
         logger.info(f"Device created: {device.id}")
         
         # Create DeviceAssignment if assigned to a patient
-        if device.patient_id and device.patient_id != 'inventory':
+        if device.party_id and device.party_id != 'inventory':
             try:
                 from services.device_assignment_service import DeviceAssignmentService
                 
@@ -327,7 +315,7 @@ def create_device(
                 assignment, error = DeviceAssignmentService.assign_device(
                     session=db_session,
                     tenant_id=assignment_tenant_id,
-                    patient_id=device.patient_id,
+                    party_id=device.party_id,
                     device=device,
                     assigned_by_user_id=access.principal_id
                 )
@@ -343,7 +331,7 @@ def create_device(
                 logger.error(f"Failed to auto-create assignment: {e}")
                 # Don't fail the request, just log it.
         
-        return ResponseEnvelope(data=device.to_dict())
+        return ResponseEnvelope(data=DeviceRead.model_validate(device))
     except HTTPException:
         raise
     except Exception as e:
@@ -473,7 +461,7 @@ def create_device_brand(
             category="aksesuar",
             device_type="aksesuar",
             status='IN_STOCK',
-            patient_id="inventory",
+            party_id="inventory",
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
@@ -496,7 +484,7 @@ def create_device_brand(
         logger.error(f"Create device brand error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/devices/low-stock", operation_id="listDeviceLowStock")
+@router.get("/devices/low-stock", operation_id="listDeviceLowStock", response_model=ResponseEnvelope[DeviceLowStockResponse])
 def get_low_stock_devices(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -511,7 +499,7 @@ def get_low_stock_devices(
         
         return ResponseEnvelope(
             data={
-                'devices': [device.to_dict() for device in devices],
+                'devices': devices,
                 'count': len(devices)
             }
         )
@@ -527,7 +515,7 @@ def get_device(
 ):
     """Get a specific device"""
     device = get_device_or_404(db_session, device_id, access)
-    return ResponseEnvelope(data=device.to_dict())
+    return ResponseEnvelope(data=DeviceRead.model_validate(device))
 
 @router.put("/devices/{device_id}", operation_id="updateDevice")
 def update_device(
@@ -586,7 +574,7 @@ def update_device(
             device.warranty_terms = warranty.get('terms')
         
         db_session.commit()
-        return ResponseEnvelope(data=device.to_dict())
+        return ResponseEnvelope(data=DeviceRead.model_validate(device))
     except HTTPException:
         raise
     except Exception as e:

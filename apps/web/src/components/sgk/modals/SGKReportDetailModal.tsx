@@ -1,11 +1,11 @@
 import React from 'react';
 import { Modal, Button } from '@x-ear/ui-web';
-import type { Patient } from '../../../types/patient/patient-base.types';
+import type { Party } from '../../../types/party/party-base.types';
 
 interface SGKReportDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  patient: Patient | null;
+  party: Party | null;
   reportId?: string;
   title?: string;
 }
@@ -13,7 +13,7 @@ interface SGKReportDetailModalProps {
 // Mock SGK rapor detayları
 interface SGKReportDetail {
   id: string;
-  patientId: string;
+  partyId: string;
   reportType: string;
   reportDate: string;
   doctorName: string;
@@ -28,7 +28,7 @@ interface SGKReportDetail {
 
 const mockReportDetail: SGKReportDetail = {
   id: 'sgk_report_001',
-  patientId: 'pat_001',
+  partyId: 'pat_001',
   reportType: 'İşitme Cihazı Raporu',
   reportDate: '2024-01-15',
   doctorName: 'Dr. Ahmet Özkan',
@@ -44,7 +44,7 @@ const mockReportDetail: SGKReportDetail = {
 export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
   isOpen,
   onClose,
-  patient,
+  party,
   reportId,
   title = 'SGK Rapor Detayları'
 }) => {
@@ -96,17 +96,17 @@ export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
     >
       <div className="space-y-6">
         {/* Hasta Bilgileri */}
-        {patient && (
+        {party && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium text-gray-900 mb-2">Hasta Bilgileri</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-500">Ad Soyad:</span>
-                <span className="ml-2 font-medium">{patient.firstName} {patient.lastName}</span>
+                <span className="ml-2 font-medium">{party.firstName} {party.lastName}</span>
               </div>
               <div>
                 <span className="text-gray-500">TC Kimlik No:</span>
-                <span className="ml-2 font-medium">{patient.tcNumber}</span>
+                <span className="ml-2 font-medium">{party.tcNumber}</span>
               </div>
             </div>
           </div>

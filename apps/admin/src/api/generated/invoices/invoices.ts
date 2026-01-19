@@ -809,17 +809,17 @@ export const useDeleteInvoice = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get all invoices for a patient
- * @summary Get Patient Invoices
+ * Get all invoices for a party
+ * @summary Get Party Invoices
  */
-export const listPatientInvoices = (
-    patientId: string,
+export const listPartyInvoices = (
+    partyId: string,
  signal?: AbortSignal
 ) => {
       
       
       return adminApi<ResponseEnvelopeListInvoiceRead>(
-      {url: `/api/patients/${patientId}/invoices`, method: 'GET', signal
+      {url: `/api/parties/${partyId}/invoices`, method: 'GET', signal
     },
       );
     }
@@ -827,69 +827,69 @@ export const listPatientInvoices = (
 
 
 
-export const getListPatientInvoicesQueryKey = (patientId?: string,) => {
+export const getListPartyInvoicesQueryKey = (partyId?: string,) => {
     return [
-    `/api/patients/${patientId}/invoices`
+    `/api/parties/${partyId}/invoices`
     ] as const;
     }
 
     
-export const getListPatientInvoicesQueryOptions = <TData = Awaited<ReturnType<typeof listPatientInvoices>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientInvoices>>, TError, TData>>, }
+export const getListPartyInvoicesQueryOptions = <TData = Awaited<ReturnType<typeof listPartyInvoices>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyInvoices>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPatientInvoicesQueryKey(patientId);
+  const queryKey =  queryOptions?.queryKey ?? getListPartyInvoicesQueryKey(partyId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientInvoices>>> = ({ signal }) => listPatientInvoices(patientId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPartyInvoices>>> = ({ signal }) => listPartyInvoices(partyId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientInvoices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPartyInvoices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListPatientInvoicesQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientInvoices>>>
-export type ListPatientInvoicesQueryError = HTTPValidationError
+export type ListPartyInvoicesQueryResult = NonNullable<Awaited<ReturnType<typeof listPartyInvoices>>>
+export type ListPartyInvoicesQueryError = HTTPValidationError
 
 
-export function useListPatientInvoices<TData = Awaited<ReturnType<typeof listPatientInvoices>>, TError = HTTPValidationError>(
- patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientInvoices>>, TError, TData>> & Pick<
+export function useListPartyInvoices<TData = Awaited<ReturnType<typeof listPartyInvoices>>, TError = HTTPValidationError>(
+ partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyInvoices>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientInvoices>>,
+          Awaited<ReturnType<typeof listPartyInvoices>>,
           TError,
-          Awaited<ReturnType<typeof listPatientInvoices>>
+          Awaited<ReturnType<typeof listPartyInvoices>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListPatientInvoices<TData = Awaited<ReturnType<typeof listPatientInvoices>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientInvoices>>, TError, TData>> & Pick<
+export function useListPartyInvoices<TData = Awaited<ReturnType<typeof listPartyInvoices>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyInvoices>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientInvoices>>,
+          Awaited<ReturnType<typeof listPartyInvoices>>,
           TError,
-          Awaited<ReturnType<typeof listPatientInvoices>>
+          Awaited<ReturnType<typeof listPartyInvoices>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListPatientInvoices<TData = Awaited<ReturnType<typeof listPatientInvoices>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientInvoices>>, TError, TData>>, }
+export function useListPartyInvoices<TData = Awaited<ReturnType<typeof listPartyInvoices>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyInvoices>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary Get Patient Invoices
+ * @summary Get Party Invoices
  */
 
-export function useListPatientInvoices<TData = Awaited<ReturnType<typeof listPatientInvoices>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientInvoices>>, TError, TData>>, }
+export function useListPartyInvoices<TData = Awaited<ReturnType<typeof listPartyInvoices>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyInvoices>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListPatientInvoicesQueryOptions(patientId,options)
+  const queryOptions = getListPartyInvoicesQueryOptions(partyId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/device.py
+# hypothesis_version: 6.150.1
+
+[0.0, 18.0, 100, 'HEARING_AID', 'IN_STOCK', 'LEFT', 'barcode', 'branchId', 'brand', 'category', 'cost', 'dev', 'devices', 'ear', 'endDate', 'extendedUntil', 'features', 'id', 'inventory', 'inventoryId', 'isAssigned', 'ix_device_category', 'ix_device_patient', 'ix_device_serial', 'ix_device_status', 'kdvRate', 'model', 'name', 'notes', 'parties.id', 'party_id', 'patientId', 'price', 'serialNumber', 'serialNumberLeft', 'serialNumberRight', 'serial_number', 'serial_number_left', 'serial_number_right', 'startDate', 'status', 'tenantId', 'tenants.id', 'terms', 'trialPeriod', 'type', 'value', 'warranty', 'warrantyMonths']

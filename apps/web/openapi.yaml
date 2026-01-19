@@ -1247,7 +1247,7 @@ paths:
       - Auth
       summary: Lookup Phone
       description: Lookup user by identifier and return masked phone
-      operationId: lookup_phone_api_auth_lookup_phone_post
+      operationId: createAuthLookupPhone
       requestBody:
         content:
           application/json:
@@ -1272,7 +1272,7 @@ paths:
       - Auth
       summary: Forgot Password
       description: Send OTP for password reset
-      operationId: forgot_password_api_auth_forgot_password_post
+      operationId: createAuthForgotPassword
       requestBody:
         content:
           application/json:
@@ -1297,7 +1297,7 @@ paths:
       - Auth
       summary: Verify Otp
       description: Verify OTP for phone verification or password reset
-      operationId: verify_otp_api_auth_verify_otp_post
+      operationId: createAuthVerifyOtp
       parameters:
       - name: authorization
         in: query
@@ -1399,7 +1399,7 @@ paths:
       - Auth
       summary: Get Current User
       description: Get current authenticated user
-      operationId: get_current_user_api_auth_me_get
+      operationId: getAuthMe
       responses:
         '200':
           description: Successful Response

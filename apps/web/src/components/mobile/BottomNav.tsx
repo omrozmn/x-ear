@@ -14,7 +14,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
     { icon: <Home className="h-5 w-5" />, label: 'Ana Sayfa', href: '/' },
-    { icon: <Users className="h-5 w-5" />, label: 'Hastalar', href: '/patients' },
+    { icon: <Users className="h-5 w-5" />, label: 'Hastalar', href: '/parties' },
     { icon: <Calendar className="h-5 w-5" />, label: 'Randevu', href: '/appointments' },
     { icon: <User className="h-5 w-5" />, label: 'Profil', href: '/profile' },
 ];

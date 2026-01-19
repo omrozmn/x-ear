@@ -7,4 +7,4 @@
  */
 import type { ResponseMeta } from './responseMeta';
 
-export type ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeMeta = ResponseMeta | null;
+export type ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeMeta = ResponseMeta | null;

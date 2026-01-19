@@ -33,15 +33,15 @@ import type {
   HTTPValidationError,
   HeaderStatusUpdate,
   ListSmAdminHeadersParams,
-  ResponseEnvelopeListSMSHeaderRequestRead,
-  ResponseEnvelopeListSMSPackageRead,
+  ResponseEnvelopeListSmsHeaderRequestRead,
+  ResponseEnvelopeListSmsPackageRead,
   ResponseEnvelopeListTargetAudienceRead,
-  ResponseEnvelopeSMSHeaderRequestRead,
+  ResponseEnvelopeSmsHeaderRequestRead,
   ResponseEnvelopeTargetAudienceRead,
-  ResponseEnvelopeUnionSMSProviderConfigReadNoneType,
-  ResponseEnvelopeUnionTenantSMSCreditReadNoneType,
-  SMSHeaderRequestCreate,
-  SMSProviderConfigUpdate,
+  ResponseEnvelopeUnionSmsProviderConfigReadNoneType,
+  ResponseEnvelopeUnionTenantSmsCreditReadNoneType,
+  SmsHeaderRequestCreate,
+  SmsProviderConfigUpdate,
   TargetAudienceCreate
 } from '.././schemas';
 
@@ -60,7 +60,7 @@ export const listSmConfig = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeUnionSMSProviderConfigReadNoneType>(
+      return adminApi<ResponseEnvelopeUnionSmsProviderConfigReadNoneType>(
       {url: `/api/sms/config`, method: 'GET', signal
     },
       );
@@ -148,14 +148,14 @@ export function useListSmConfig<TData = Awaited<ReturnType<typeof listSmConfig>>
  * @summary Update Sms Config
  */
 export const updateSmConfig = (
-    sMSProviderConfigUpdate: SMSProviderConfigUpdate,
+    smsProviderConfigUpdate: SmsProviderConfigUpdate,
  ) => {
       
       
-      return adminApi<ResponseEnvelopeUnionSMSProviderConfigReadNoneType>(
+      return adminApi<ResponseEnvelopeUnionSmsProviderConfigReadNoneType>(
       {url: `/api/sms/config`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: sMSProviderConfigUpdate
+      data: smsProviderConfigUpdate
     },
       );
     }
@@ -163,8 +163,8 @@ export const updateSmConfig = (
 
 
 export const getUpdateSmConfigMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SmsProviderConfigUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SmsProviderConfigUpdate}, TContext> => {
 
 const mutationKey = ['updateSmConfig'];
 const {mutation: mutationOptions} = options ?
@@ -176,7 +176,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSmConfig>>, {data: SMSProviderConfigUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSmConfig>>, {data: SmsProviderConfigUpdate}> = (props) => {
           const {data} = props ?? {};
 
           return  updateSmConfig(data,)
@@ -188,18 +188,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateSmConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateSmConfig>>>
-    export type UpdateSmConfigMutationBody = SMSProviderConfigUpdate
+    export type UpdateSmConfigMutationBody = SmsProviderConfigUpdate
     export type UpdateSmConfigMutationError = HTTPValidationError
 
     /**
  * @summary Update Sms Config
  */
 export const useUpdateSmConfig = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SmsProviderConfigUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateSmConfig>>,
         TError,
-        {data: SMSProviderConfigUpdate},
+        {data: SmsProviderConfigUpdate},
         TContext
       > => {
 
@@ -217,7 +217,7 @@ export const listSmHeaders = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeListSMSHeaderRequestRead>(
+      return adminApi<ResponseEnvelopeListSmsHeaderRequestRead>(
       {url: `/api/sms/headers`, method: 'GET', signal
     },
       );
@@ -305,15 +305,15 @@ export function useListSmHeaders<TData = Awaited<ReturnType<typeof listSmHeaders
  * @summary Request Sms Header
  */
 export const createSmHeaders = (
-    sMSHeaderRequestCreate: SMSHeaderRequestCreate,
+    smsHeaderRequestCreate: SmsHeaderRequestCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return adminApi<ResponseEnvelopeSMSHeaderRequestRead>(
+      return adminApi<ResponseEnvelopeSmsHeaderRequestRead>(
       {url: `/api/sms/headers`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: sMSHeaderRequestCreate, signal
+      data: smsHeaderRequestCreate, signal
     },
       );
     }
@@ -321,8 +321,8 @@ export const createSmHeaders = (
 
 
 export const getCreateSmHeadersMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SMSHeaderRequestCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SMSHeaderRequestCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SmsHeaderRequestCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SmsHeaderRequestCreate}, TContext> => {
 
 const mutationKey = ['createSmHeaders'];
 const {mutation: mutationOptions} = options ?
@@ -334,7 +334,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmHeaders>>, {data: SMSHeaderRequestCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmHeaders>>, {data: SmsHeaderRequestCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createSmHeaders(data,)
@@ -346,18 +346,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateSmHeadersMutationResult = NonNullable<Awaited<ReturnType<typeof createSmHeaders>>>
-    export type CreateSmHeadersMutationBody = SMSHeaderRequestCreate
+    export type CreateSmHeadersMutationBody = SmsHeaderRequestCreate
     export type CreateSmHeadersMutationError = HTTPValidationError
 
     /**
  * @summary Request Sms Header
  */
 export const useCreateSmHeaders = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SMSHeaderRequestCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SmsHeaderRequestCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createSmHeaders>>,
         TError,
-        {data: SMSHeaderRequestCreate},
+        {data: SmsHeaderRequestCreate},
         TContext
       > => {
 
@@ -374,7 +374,7 @@ export const updateSmHeaderSetDefault = (
  ) => {
       
       
-      return adminApi<ResponseEnvelopeSMSHeaderRequestRead>(
+      return adminApi<ResponseEnvelopeSmsHeaderRequestRead>(
       {url: `/api/sms/headers/${headerId}/set-default`, method: 'PUT'
     },
       );
@@ -437,7 +437,7 @@ export const listSmPackages = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeListSMSPackageRead>(
+      return adminApi<ResponseEnvelopeListSmsPackageRead>(
       {url: `/api/sms/packages`, method: 'GET', signal
     },
       );
@@ -530,7 +530,7 @@ export const listSmCredit = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeUnionTenantSMSCreditReadNoneType>(
+      return adminApi<ResponseEnvelopeUnionTenantSmsCreditReadNoneType>(
       {url: `/api/sms/credit`, method: 'GET', signal
     },
       );

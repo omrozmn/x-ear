@@ -1,6 +1,6 @@
 import { Input, Button } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
-import { listInventory } from '@/api/generated';
+import {listInventory} from '@/api/client/inventory.client';
 import { AUTH_TOKEN } from '@/constants/storage-keys';
 
 // Local InventoryItem type for API responses

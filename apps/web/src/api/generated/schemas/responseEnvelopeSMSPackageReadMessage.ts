@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseEnvelopeSMSPackageReadMessage = string | null;
+export type ResponseEnvelopeSmsPackageReadMessage = string | null;

@@ -3,7 +3,7 @@ import { Users, DollarSign, Calendar, Clock, ChevronRight } from 'lucide-react';
 
 interface QuickStatsCardProps {
   stats: {
-    activePatients: number;
+    activeParties: number;
     dailyRevenue: number;
     pendingAppointments: number;
     endingTrials: number;
@@ -23,7 +23,7 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
   const quickStats = [
     {
       label: 'Aktif Hastalar',
-      value: stats.activePatients,
+      value: stats.activeParties,
       icon: Users,
       color: 'blue',
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',

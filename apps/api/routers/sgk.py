@@ -20,8 +20,18 @@ import hashlib
 
 from schemas.base import ResponseEnvelope
 from models.user import User
-from models.patient import Patient
+from core.models.party import Party
+from schemas.parties import PartyRead
+from schemas.sgk import SgkDocumentRead
 
+from schemas.sgk import (
+    SgkDocumentRead, UploadSGKDocumentRequest, EReceiptQueryRequest,
+    PatientRightsQueryRequest, WorkflowCreateRequest, WorkflowUpdateRequest,
+    WorkflowStatusUpdate,
+    SgkDocumentListResponse, SgkDocumentResponse, SgkUploadResponse,
+    SgkEReceiptResponse, SgkEReceiptListResponse, SgkPatientRightsResponse,
+    SgkWorkflowResponse
+)
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 
@@ -32,13 +42,9 @@ router = APIRouter(tags=["SGK"])
 MAX_UPLOAD_FILES = 50
 ALLOWED_IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp'}
 
-# --- Request Schemas ---
+# --- Helper Functions ---
 
-class UploadSGKDocumentRequest(BaseModel):
-    patientId: str
-    filename: str
-    documentType: str
-    content: Optional[str] = None
+# --- Routes ---
 
 class ProcessOCRRequest(BaseModel):
     image_path: str
@@ -73,15 +79,14 @@ def list_sgk_documents(
             docs = db_session.query(SGKDocument).filter(
                 SGKDocument.tenant_id == access.tenant_id
             ).all()
-            docs = [d.to_dict() for d in docs]
         except Exception:
             pass
         
-        return ResponseEnvelope(data={
-            "documents": docs,
-            "count": len(docs),
-            "timestamp": datetime.now().isoformat()
-        })
+        return ResponseEnvelope(data=SgkDocumentListResponse(
+            documents=[SgkDocumentRead.model_validate(d).model_dump(by_alias=True) for d in docs],
+            count=len(docs),
+            timestamp=datetime.now().isoformat()
+        ))
     except Exception as e:
         logger.error(f"List SGK docs error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -103,9 +108,9 @@ def upload_sgk_document(
             doc = SGKDocument.from_dict(doc_data)
             db_session.add(doc)
             db_session.commit()
-            return ResponseEnvelope(data={"document": doc.to_dict()})
+            return ResponseEnvelope(data=SgkDocumentResponse(document=SgkDocumentRead.model_validate(doc).model_dump(by_alias=True)))
         except Exception:
-            return ResponseEnvelope(data={"document": doc_data})
+            return ResponseEnvelope(data=SgkDocumentResponse(document=doc_data))
     except Exception as e:
         logger.error(f"Upload SGK doc error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -122,7 +127,7 @@ def get_sgk_document(
         doc = db_session.get(SGKDocument, document_id)
         if not doc:
             raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
-        return ResponseEnvelope(data={"document": doc.to_dict()})
+        return ResponseEnvelope(data=SgkDocumentResponse(document=SgkDocumentRead.model_validate(doc).model_dump(by_alias=True)))
     except HTTPException:
         raise
     except Exception as e:
@@ -226,10 +231,10 @@ async def upload_and_process_files(
                         if len(name_parts) >= 2:
                             first_token = name_parts[0]
                             last_token = name_parts[-1]
-                            candidates = db_session.query(Patient).filter(
-                                Patient.tenant_id == access.tenant_id,
-                                Patient.first_name.ilike(f"{first_token}%"),
-                                Patient.last_name.ilike(f"%{last_token}%")
+                            candidates = db_session.query(Party).filter(
+                                Party.tenant_id == access.tenant_id,
+                                Party.first_name.ilike(f"{first_token}%"),
+                                Party.last_name.ilike(f"%{last_token}%")
                             ).limit(5).all()
                             
                             if len(candidates) == 1:
@@ -239,7 +244,7 @@ async def upload_and_process_files(
                 
                 if matched_patient:
                     proc_result['matched_patient'] = {
-                        'patient': matched_patient.to_dict(),
+                        'patient': PartyRead.model_validate(matched_patient).model_dump(by_alias=True),
                         'match_details': {"method": "name_match", "confidence": 0.85}
                     }
                 else:
@@ -262,7 +267,7 @@ async def upload_and_process_files(
                 except Exception:
                     pass
         
-        return ResponseEnvelope(data={"results": results, "timestamp": datetime.now().isoformat()})
+        return ResponseEnvelope(data=SgkUploadResponse(results=results, timestamp=datetime.now().isoformat()))
     except HTTPException:
         raise
     except Exception as e:
@@ -271,24 +276,24 @@ async def upload_and_process_files(
 
 # --- Additional SGK Endpoints (Migrated from Flask) ---
 
-@router.get("/patients/{patient_id}/sgk-documents", operation_id="listPatientSgkDocuments")
-def get_patient_sgk_documents(
-    patient_id: str,
+@router.get("/parties/{party_id}/sgk-documents", operation_id="listPartySgkDocuments")
+def get_party_sgk_documents(
+    party_id: str,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    """Get SGK documents for a specific patient"""
+    """Get SGK documents for a specific party"""
     try:
-        patient = db_session.get(Patient, patient_id)
-        if not patient:
-            raise HTTPException(status_code=404, detail={"message": "Patient not found", "code": "NOT_FOUND"})
+        party = db_session.get(Party, party_id)
+        if not party:
+            raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         
         # Get documents from patient's custom_data if available
         documents = []
         if hasattr(patient, 'custom_data_json') and patient.custom_data_json:
             documents = patient.custom_data_json.get('documents', [])
         
-        return ResponseEnvelope(data={"documents": documents})
+        return ResponseEnvelope(data=SgkDocumentListResponse(documents=documents, count=len(documents), timestamp=datetime.now().isoformat()))
     except HTTPException:
         raise
     except Exception as e:
@@ -298,7 +303,7 @@ def get_patient_sgk_documents(
 class EReceiptQueryRequest(BaseModel):
     receiptNumber: str
     tcNumber: Optional[str] = None
-    patientId: Optional[str] = None
+    partyId: Optional[str] = None
 
 @router.post("/sgk/e-receipt/query", operation_id="createSgkEReceiptQuery")
 def query_e_receipt(
@@ -334,7 +339,7 @@ def query_e_receipt(
         
         logger.info(f"E-receipt query successful for receipt: {receipt_number}")
         
-        return ResponseEnvelope(data=mock_response)
+        return ResponseEnvelope(data=SgkEReceiptResponse(**mock_response))
     except HTTPException:
         raise
     except Exception as e:
@@ -412,14 +417,14 @@ def list_delivered_ereceipts(
             }
         ]
         
-        return ResponseEnvelope(data={"patients": mock_patients})
+        return ResponseEnvelope(data=SgkEReceiptListResponse(patients=mock_patients))
     except Exception as e:
         logger.error(f"List delivered e-receipts error: {e}") 
         raise HTTPException(status_code=500, detail=str(e))
 
 class PatientRightsQueryRequest(BaseModel):
     tcNumber: str
-    patientId: Optional[str] = None
+    partyId: Optional[str] = None
 
 @router.post("/sgk/patient-rights/query", operation_id="createSgkPatientRightQuery")
 def query_patient_rights(
@@ -430,15 +435,15 @@ def query_patient_rights(
     """SGK hasta hakları sorgulama endpoint'i"""
     try:
         tc_number = request_data.tcNumber
-        patient_id = request_data.patientId
+        party_id = request_data.partyId
         
         if not tc_number:
             raise HTTPException(status_code=400, detail={"message": "TC numarası gerekli", "code": "MISSING_TC"})
         
         # Hasta kaydını kontrol et
         patient = None
-        if patient_id:
-            patient = db_session.get(Patient, patient_id)
+        if party_id:
+            patient = db_session.get(Party, party_id)
         
         # TODO: Gerçek SGK API entegrasyonu
         mock_response = {
@@ -473,7 +478,7 @@ def query_patient_rights(
                 logger.error(f"Error updating patient SGK info: {update_error}")
                 db_session.rollback()
         
-        return ResponseEnvelope(data=mock_response)
+        return ResponseEnvelope(data=SgkPatientRightsResponse(**mock_response))
     except HTTPException:
         raise
     except Exception as e:
@@ -481,7 +486,7 @@ def query_patient_rights(
         raise HTTPException(status_code=500, detail=str(e))
 
 class WorkflowCreateRequest(BaseModel):
-    patientId: str
+    partyId: str
     documentId: Optional[str] = None
     workflowType: Optional[str] = "approval"
 
@@ -493,18 +498,18 @@ def create_sgk_workflow(
 ):
     """SGK workflow oluşturma endpoint'i"""
     try:
-        patient_id = request_data.patientId
+        party_id = request_data.partyId
         
-        if not patient_id:
-            raise HTTPException(status_code=400, detail={"message": "Hasta ID gerekli", "code": "MISSING_PATIENT"})
+        if not party_id:
+            raise HTTPException(status_code=400, detail={"message": "Grup ID gerekli", "code": "MISSING_PARTY"})
         
-        patient = db_session.get(Patient, patient_id)
-        if not patient:
-            raise HTTPException(status_code=404, detail={"message": "Hasta bulunamadı", "code": "NOT_FOUND"})
+        party = db_session.get(Party, party_id)
+        if not party:
+            raise HTTPException(status_code=404, detail={"message": "Grup bulunamadı", "code": "NOT_FOUND"})
         
         workflow_data = {
-            "id": f"workflow_{patient_id}_{datetime.now().timestamp()}",
-            "patientId": patient_id,
+            "id": f"workflow_{party_id}_{datetime.now().timestamp()}",
+            "partyId": party_id,
             "documentId": request_data.documentId,
             "workflowType": request_data.workflowType,
             "status": "pending",
@@ -517,7 +522,16 @@ def create_sgk_workflow(
             "updatedAt": datetime.now().isoformat()
         }
         
-        return ResponseEnvelope(data=workflow_data)
+        return ResponseEnvelope(data=SgkWorkflowResponse(
+            id=workflow_data['id'],
+            party_id=workflow_data['partyId'],
+            document_id=workflow_data['documentId'],
+            workflow_type=workflow_data['workflowType'],
+            status=workflow_data['status'],
+            steps=workflow_data['steps'],
+            created_at=workflow_data['createdAt'],
+            updated_at=workflow_data['updatedAt']
+        ))
     except HTTPException:
         raise
     except Exception as e:
@@ -565,7 +579,7 @@ def get_sgk_workflow(
     try:
         workflow_data = {
             "id": workflow_id,
-            "patientId": "patient_123",
+            "partyId": "party_123",
             "documentId": "doc_456",
             "workflowType": "approval",
             "status": "in_progress",
@@ -579,7 +593,17 @@ def get_sgk_workflow(
             "updatedAt": datetime.now().isoformat()
         }
         
-        return ResponseEnvelope(data=workflow_data)
+        return ResponseEnvelope(data=SgkWorkflowResponse(
+            id=workflow_data['id'],
+            party_id=workflow_data['partyId'],
+            document_id=workflow_data['documentId'],
+            workflow_type=workflow_data['workflowType'],
+            status=workflow_data['status'],
+            steps=workflow_data['steps'],
+            created_at=workflow_data['createdAt'],
+            updated_at=workflow_data['updatedAt'],
+            current_step=workflow_data['currentStep']
+        ))
     except Exception as e:
         logger.error(f"SGK workflow get error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -748,13 +772,13 @@ def seed_test_patients(
                     tc_full = _generate_tc_from_prefix(first_name or '1')
 
                 # Avoid duplicate tc_number
-                existing = db_session.query(Patient).filter(func.replace(func.coalesce(Patient.tc_number, ''), ' ', '') == tc_full).first()
+                existing = db_session.query(Party).filter(func.replace(func.coalesce(Party.tc_number, ''), ' ', '') == tc_full).first()
                 if existing:
                     errors.append({'image': img_path, 'reason': 'tc already exists', 'tc': tc_full})
                     continue
 
                 # Create patient object
-                p = Patient()
+                p = Party()
                 p.tc_number = tc_full
                 p.first_name = first_name or (os.path.splitext(os.path.basename(img_path))[0])
                 p.last_name = last_name or 'Test'
@@ -763,7 +787,7 @@ def seed_test_patients(
                 # Minimal required fields
                 db_session.add(p)
                 db_session.commit()
-                created.append({'image': img_path, 'patient_id': p.id, 'tc': tc_full, 'name': f"{p.first_name} {p.last_name}"})
+                created.append({'image': img_path, 'party_id': p.id, 'tc': tc_full, 'name': f"{p.first_name} {p.last_name}"})
             except Exception as e:
                 db_session.rollback()
                 errors.append({'image': img_path, 'error': str(e)})

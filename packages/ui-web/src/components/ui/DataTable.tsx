@@ -3,7 +3,7 @@ import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucid
 
 export interface Column<T = any> {
   key: string;
-  title: string;
+  title: string | React.ReactNode;
   sortable?: boolean;
   filterable?: boolean;
   render?: (value: any, record: T, index: number) => React.ReactNode;
@@ -96,20 +96,20 @@ export const DataTable = <T extends Record<string, any>>({
 
   const selectedRecords = useMemo(() => {
     if (!rowSelection) return [];
-    return data.filter(record => 
+    return data.filter(record =>
       rowSelection.selectedRowKeys.includes(getRowKey(record, data.indexOf(record)))
     );
   }, [data, rowSelection, getRowKey]);
 
   const handleSort = (key: string) => {
     if (!sortable) return;
-    
+
     let direction: 'asc' | 'desc' | null = 'asc';
-    
+
     if (sortConfig?.key === key) {
       direction = sortConfig.direction === 'asc' ? 'desc' : sortConfig.direction === 'desc' ? null : 'asc';
     }
-    
+
     setSortConfig(direction ? { key, direction } : null);
     onSort?.(key, direction);
   };
@@ -121,7 +121,7 @@ export const DataTable = <T extends Record<string, any>>({
 
   const handleSelectAll = (checked: boolean) => {
     if (!rowSelection) return;
-    
+
     if (checked) {
       const allKeys = data.map((record, index) => getRowKey(record, index));
       rowSelection.onChange(allKeys, data);
@@ -132,20 +132,20 @@ export const DataTable = <T extends Record<string, any>>({
 
   const handleSelectRow = (record: T, checked: boolean) => {
     if (!rowSelection) return;
-    
+
     const key = getRowKey(record, data.indexOf(record));
     let newSelectedKeys = [...rowSelection.selectedRowKeys];
-    
+
     if (checked) {
       newSelectedKeys.push(key);
     } else {
       newSelectedKeys = newSelectedKeys.filter(k => k !== key);
     }
-    
-    const newSelectedRows = data.filter(r => 
+
+    const newSelectedRows = data.filter(r =>
       newSelectedKeys.includes(getRowKey(r, data.indexOf(r)))
     );
-    
+
     rowSelection.onChange(newSelectedKeys, newSelectedRows);
   };
 
@@ -161,24 +161,24 @@ export const DataTable = <T extends Record<string, any>>({
     large: 'px-6 py-4',
   };
 
-  const isAllSelected = rowSelection && data.length > 0 && 
+  const isAllSelected = rowSelection && data.length > 0 &&
     data.every(record => rowSelection.selectedRowKeys.includes(getRowKey(record, data.indexOf(record))));
-  
+
   const isIndeterminate = rowSelection && rowSelection.selectedRowKeys.length > 0 && !isAllSelected;
 
   const renderCell = (column: Column<T>, record: T, index: number) => {
     const value = record[column.key];
-    
+
     if (column.render) {
       return column.render(value, record, index);
     }
-    
+
     return value;
   };
 
   const renderActions = (record: T) => {
     if (!actions || actions.length === 0) return null;
-    
+
     return (
       <div className="flex items-center space-x-2">
         {actions.map(action => (
@@ -188,11 +188,11 @@ export const DataTable = <T extends Record<string, any>>({
             disabled={action.disabled?.(record)}
             className={`
               inline-flex items-center px-2 py-1 text-sm font-medium rounded-md
-              ${action.variant === 'danger' 
-                ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30' 
+              ${action.variant === 'danger'
+                ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30'
                 : action.variant === 'primary'
-                ? 'text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
-                : 'text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
+                  ? 'text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
+                  : 'text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
               }
               disabled:opacity-50 disabled:cursor-not-allowed
             `}
@@ -207,17 +207,17 @@ export const DataTable = <T extends Record<string, any>>({
 
   const renderPagination = () => {
     if (!pagination) return null;
-    
+
     const { current, pageSize, total, showSizeChanger, pageSizeOptions = [10, 20, 50, 100] } = pagination;
     const totalPages = Math.ceil(total / pageSize);
     const startItem = (current - 1) * pageSize + 1;
     const endItem = Math.min(current * pageSize, total);
-    
+
     // Calculate visible page numbers
     const getVisiblePages = () => {
       const maxVisible = 5;
       const pages: number[] = [];
-      
+
       if (totalPages <= maxVisible) {
         for (let i = 1; i <= totalPages; i++) {
           pages.push(i);
@@ -225,11 +225,11 @@ export const DataTable = <T extends Record<string, any>>({
       } else {
         const start = Math.max(1, current - Math.floor(maxVisible / 2));
         const end = Math.min(totalPages, start + maxVisible - 1);
-        
+
         for (let i = start; i <= end; i++) {
           pages.push(i);
         }
-        
+
         // Add ellipsis if needed
         if (start > 1) {
           pages.unshift(-1); // -1 represents ellipsis
@@ -240,12 +240,12 @@ export const DataTable = <T extends Record<string, any>>({
           pages.push(totalPages);
         }
       }
-      
+
       return pages;
     };
-    
+
     const visiblePages = getVisiblePages();
-    
+
     return (
       <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
@@ -264,7 +264,7 @@ export const DataTable = <T extends Record<string, any>>({
             </select>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-1">
           {/* First page button */}
           <button
@@ -275,7 +275,7 @@ export const DataTable = <T extends Record<string, any>>({
           >
             İlk
           </button>
-          
+
           {/* Previous page button */}
           <button
             onClick={() => pagination.onChange(current - 1, pageSize)}
@@ -285,7 +285,7 @@ export const DataTable = <T extends Record<string, any>>({
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          
+
           {/* Page numbers */}
           <div className="flex items-center space-x-1">
             {visiblePages.map((page, index) => {
@@ -296,7 +296,7 @@ export const DataTable = <T extends Record<string, any>>({
                   </span>
                 );
               }
-              
+
               return (
                 <button
                   key={page}
@@ -314,7 +314,7 @@ export const DataTable = <T extends Record<string, any>>({
               );
             })}
           </div>
-          
+
           {/* Next page button */}
           <button
             onClick={() => pagination.onChange(current + 1, pageSize)}
@@ -324,7 +324,7 @@ export const DataTable = <T extends Record<string, any>>({
           >
             <ChevronRight className="w-4 h-4" />
           </button>
-          
+
           {/* Last page button */}
           <button
             onClick={() => pagination.onChange(totalPages, pageSize)}
@@ -357,7 +357,7 @@ export const DataTable = <T extends Record<string, any>>({
                 />
               </div>
             )}
-            
+
             {bulkActions && selectedRecords.length > 0 && (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -370,11 +370,11 @@ export const DataTable = <T extends Record<string, any>>({
                       onClick={() => action.onClick(selectedRecords)}
                       className={`
                         inline-flex items-center px-3 py-1 text-sm font-medium rounded-md
-                        ${action.variant === 'danger' 
-                          ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30' 
+                        ${action.variant === 'danger'
+                          ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30'
                           : action.variant === 'primary'
-                          ? 'text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
-                          : 'text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
+                            ? 'text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
+                            : 'text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
                         }
                       `}
                     >
@@ -407,7 +407,7 @@ export const DataTable = <T extends Record<string, any>>({
                   />
                 </th>
               )}
-              
+
               {columns.map(column => (
                 <th
                   key={column.key}
@@ -423,26 +423,24 @@ export const DataTable = <T extends Record<string, any>>({
                     <span>{column.title}</span>
                     {column.sortable && sortable && (
                       <div className="flex flex-col">
-                        <ChevronUp 
-                          className={`w-3 h-3 ${
-                            sortConfig?.key === column.key && sortConfig.direction === 'asc' 
-                              ? 'text-blue-600' 
+                        <ChevronUp
+                          className={`w-3 h-3 ${sortConfig?.key === column.key && sortConfig.direction === 'asc'
+                              ? 'text-blue-600'
                               : 'text-gray-400'
-                          }`} 
+                            }`}
                         />
-                        <ChevronDown 
-                          className={`w-3 h-3 -mt-1 ${
-                            sortConfig?.key === column.key && sortConfig.direction === 'desc' 
-                              ? 'text-blue-600' 
+                        <ChevronDown
+                          className={`w-3 h-3 -mt-1 ${sortConfig?.key === column.key && sortConfig.direction === 'desc'
+                              ? 'text-blue-600'
                               : 'text-gray-400'
-                          }`} 
+                            }`}
                         />
                       </div>
                     )}
                   </div>
                 </th>
               ))}
-              
+
               {actions && actions.length > 0 && (
                 <th className={`${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider`}>
                   İşlemler
@@ -450,7 +448,7 @@ export const DataTable = <T extends Record<string, any>>({
               )}
             </tr>
           </thead>
-          
+
           <tbody className={`bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 ${striped ? 'divide-y-0' : ''}`}>
             {loading ? (
               <tr>
@@ -472,7 +470,7 @@ export const DataTable = <T extends Record<string, any>>({
                 const key = getRowKey(record, index);
                 const isSelected = rowSelection?.selectedRowKeys.includes(key);
                 const checkboxProps = rowSelection?.getCheckboxProps?.(record) || {};
-                
+
                 return (
                   <tr
                     key={key}
@@ -483,7 +481,7 @@ export const DataTable = <T extends Record<string, any>>({
                       ${onRowClick ? 'cursor-pointer' : ''}
                     `}
                     onClick={() => onRowClick?.(record)}
-                >
+                  >
                     {rowSelection && (
                       <td className={cellPadding[size]}>
                         <input
@@ -496,7 +494,7 @@ export const DataTable = <T extends Record<string, any>>({
                         />
                       </td>
                     )}
-                    
+
                     {columns.map(column => (
                       <td
                         key={column.key}
@@ -509,7 +507,7 @@ export const DataTable = <T extends Record<string, any>>({
                         {renderCell(column, record, index)}
                       </td>
                     ))}
-                    
+
                     {actions && actions.length > 0 && (
                       <td className={cellPadding[size]}>
                         {renderActions(record)}

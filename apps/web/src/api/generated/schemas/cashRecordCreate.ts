@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CashRecordCreateDescription } from './cashRecordCreateDescription';
-import type { CashRecordCreatePatientId } from './cashRecordCreatePatientId';
-import type { CashRecordCreatePatientName } from './cashRecordCreatePatientName';
+import type { CashRecordCreatePartyId } from './cashRecordCreatePartyId';
+import type { CashRecordCreatePartyName } from './cashRecordCreatePartyName';
 import type { CashRecordCreateDate } from './cashRecordCreateDate';
 import type { CashRecordCreateId } from './cashRecordCreateId';
 import type { CashRecordCreateTenantId } from './cashRecordCreateTenantId';
@@ -17,8 +17,8 @@ export interface CashRecordCreate {
   amount: number;
   recordType?: string;
   description?: CashRecordCreateDescription;
-  patientId?: CashRecordCreatePatientId;
-  patientName?: CashRecordCreatePatientName;
+  partyId?: CashRecordCreatePartyId;
+  partyName?: CashRecordCreatePartyName;
   date?: CashRecordCreateDate;
   id?: CashRecordCreateId;
   tenant_id?: CashRecordCreateTenantId;

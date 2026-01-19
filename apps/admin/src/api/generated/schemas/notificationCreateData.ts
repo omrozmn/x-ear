@@ -7,7 +7,4 @@
  */
 import type { NotificationCreateDataAnyOf } from './notificationCreateDataAnyOf';
 
-/**
- * Additional data
- */
 export type NotificationCreateData = NotificationCreateDataAnyOf | null;

@@ -5,16 +5,16 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSProviderConfigCreateDocumentsEmail } from './sMSProviderConfigCreateDocumentsEmail';
-import type { SMSProviderConfigCreateApiUsername } from './sMSProviderConfigCreateApiUsername';
-import type { SMSProviderConfigCreateApiPassword } from './sMSProviderConfigCreateApiPassword';
+import type { SmsProviderConfigCreateDocumentsEmail } from './smsProviderConfigCreateDocumentsEmail';
+import type { SmsProviderConfigCreateApiUsername } from './smsProviderConfigCreateApiUsername';
+import type { SmsProviderConfigCreateApiPassword } from './smsProviderConfigCreateApiPassword';
 
-export interface SMSProviderConfigCreate {
-  documentsEmail?: SMSProviderConfigCreateDocumentsEmail;
-  apiUsername?: SMSProviderConfigCreateApiUsername;
+export interface SmsProviderConfigCreate {
+  documentsEmail?: SmsProviderConfigCreateDocumentsEmail;
+  apiUsername?: SmsProviderConfigCreateApiUsername;
   isActive?: boolean;
   documentsSubmitted?: boolean;
   allDocumentsApproved?: boolean;
   tenantId: string;
-  apiPassword?: SMSProviderConfigCreateApiPassword;
+  apiPassword?: SmsProviderConfigCreateApiPassword;
 }

@@ -27,7 +27,9 @@ import type {
 import type {
   HTTPValidationError,
   ListAdminScanQueueParams,
-  ResponseEnvelope
+  ResponseEnvelope,
+  ResponseEnvelopeListScanQueueRead,
+  ResponseEnvelopeScanQueueRead
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -108,7 +110,7 @@ export const listAdminScanQueue = (
 ) => {
       
       
-      return adminApi<ResponseEnvelope>(
+      return adminApi<ResponseEnvelopeListScanQueueRead>(
       {url: `/api/admin/scan-queue`, method: 'GET',
         params, signal
     },
@@ -202,7 +204,7 @@ export const createAdminScanQueueRetry = (
 ) => {
       
       
-      return adminApi<ResponseEnvelope>(
+      return adminApi<ResponseEnvelopeScanQueueRead>(
       {url: `/api/admin/scan-queue/${scanId}/retry`, method: 'POST', signal
     },
       );

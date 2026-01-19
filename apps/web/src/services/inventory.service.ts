@@ -89,7 +89,8 @@ export class InventoryService {
       // Let's inspect what we have.
 
       // Safe access:
-      const items = (response as any).data || (response as any).items || [];
+      const r = response as Record<string, unknown>;
+      const items = (r.data || r.items || []) as InventoryItem[];
       if (Array.isArray(items)) {
         this.saveInventory(items);
         return items;
@@ -523,7 +524,7 @@ export class InventoryService {
   }
 
   // Serial Number Management
-  async assignSerialNumber(itemId: string, serialNumber: string, patientId?: string): Promise<SerialNumberAssignment> {
+  async assignSerialNumber(itemId: string, serialNumber: string, partyId?: string): Promise<SerialNumberAssignment> {
     const items = this.loadInventory();
     const item = items.find(i => i.id === itemId);
 
@@ -549,16 +550,16 @@ export class InventoryService {
     const assignment: SerialNumberAssignment = {
       serialNumber,
       itemId,
-      patientId,
+      partyId,
       assignedAt: new Date().toISOString(),
-      status: patientId ? 'assigned' : 'trial'
+      status: partyId ? 'assigned' : 'trial'
     };
 
     // Queue for sync
     await outbox.addOperation({
       method: 'POST',
       endpoint: `/api/inventory/${itemId}/serial`,
-      data: { serialNumber, patientId },
+      data: { serialNumber, partyId },
       headers: {
         'Idempotency-Key': `assign-serial-${itemId}-${serialNumber}-${Date.now()}`
       }

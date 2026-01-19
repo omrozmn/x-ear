@@ -25,8 +25,8 @@ const tagDirs = entries
 
 console.log(`📁 Found ${tagDirs.length} tag directories:`, tagDirs.join(', '));
 
-// Generate exports
-const exports = tagDirs.map(tag => `export * from './${tag}/${tag}';`).join('\n');
+// Generate exports with .ts extension for Vite compatibility
+const exports = tagDirs.map(tag => `export * from './${tag}/${tag}.ts';`).join('\n');
 
 // Check if aliases.ts exists
 const aliasesFile = path.join(GENERATED_DIR, 'aliases.ts');

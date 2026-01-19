@@ -27,6 +27,8 @@ import type {
 import type {
   HTTPValidationError,
   RegisterPhoneRequest,
+  ResponseEnvelopeRegistrationVerifyResponse,
+  ResponseEnvelopeTurnstileConfigResponse,
   VerifyRegistrationOTPRequest
 } from '.././schemas';
 
@@ -45,7 +47,7 @@ export const listConfigTurnstile = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeTurnstileConfigResponse>(
       {url: `/api/config/turnstile`, method: 'GET', signal
     },
       );
@@ -203,7 +205,7 @@ export const createVerifyRegistrationOtp = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeRegistrationVerifyResponse>(
       {url: `/api/verify-registration-otp`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: verifyRegistrationOTPRequest, signal

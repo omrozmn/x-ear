@@ -7,11 +7,12 @@
  */
 import type { StockMovementReadCreatedAt } from './stockMovementReadCreatedAt';
 import type { StockMovementReadUpdatedAt } from './stockMovementReadUpdatedAt';
+import type { StockMovementReadSerialNumber } from './stockMovementReadSerialNumber';
 import type { StockMovementReadUserId } from './stockMovementReadUserId';
 import type { StockMovementReadTransactionId } from './stockMovementReadTransactionId';
 import type { StockMovementReadNotes } from './stockMovementReadNotes';
-import type { StockMovementReadPatientId } from './stockMovementReadPatientId';
-import type { StockMovementReadPatientName } from './stockMovementReadPatientName';
+import type { StockMovementReadPartyId } from './stockMovementReadPartyId';
+import type { StockMovementReadPartyName } from './stockMovementReadPartyName';
 
 export interface StockMovementRead {
   /** Creation timestamp */
@@ -24,9 +25,10 @@ export interface StockMovementRead {
   tenantId: string;
   movementType: string;
   quantity: number;
+  serialNumber?: StockMovementReadSerialNumber;
   userId?: StockMovementReadUserId;
   transactionId?: StockMovementReadTransactionId;
   notes?: StockMovementReadNotes;
-  patientId?: StockMovementReadPatientId;
-  patientName?: StockMovementReadPatientName;
+  partyId?: StockMovementReadPartyId;
+  partyName?: StockMovementReadPartyName;
 }

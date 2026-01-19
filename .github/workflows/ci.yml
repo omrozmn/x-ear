@@ -10,6 +10,7 @@ env:
   NODE_VERSION: '18'
   PYTHON_VERSION: '3.11'
   PNPM_VERSION: '8'
+  STORE_PATH: ''
 
 jobs:
   # ============================================
@@ -109,6 +110,30 @@ jobs:
           # Use CI-specific config that only checks critical runtime errors
           # Warnings are for code quality issues that don't cause runtime bugs
           npx eslint . --ext ts,tsx -c .eslintrc.ci.cjs --max-warnings 100
+
+      # G-05: Deep import detection - prevents tight coupling to generated API structure
+      - name: Check deep imports
+        run: |
+          cd apps/web
+          echo "Checking for deep imports from generated API..."
+          if grep -rE "from ['\"]@/api/generated/[^'\"]+/[^'\"]+['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | grep -v "stores/authStore.ts"; then
+            echo "❌ Deep imports from @/api/generated detected!"
+            echo "Use @/api/client/ barrel imports instead."
+            exit 1
+          fi
+          echo "✅ No prohibited deep imports found"
+
+      # G-08: patientId detection - ensures Party migration is complete
+      - name: Check patientId usage
+        run: |
+          cd apps/web
+          echo "Checking for deprecated patientId usage..."
+          if grep -rE "patientId|patient_id" src/ --include="*.ts" --include="*.tsx" | grep -v "// legacy" | grep -v "// @deprecated" | grep -v "node_modules"; then
+            echo "❌ patientId references found (use partyId instead)"
+            echo "Mark legacy code with '// legacy' comment to suppress."
+            exit 1
+          fi
+          echo "✅ No patientId references found"
 
   frontend-tests:
     name: 🧪 Frontend Tests
@@ -256,6 +281,18 @@ jobs:
         run: |
           cd apps/api
           ruff check . --ignore E501,F401,F841 --exclude tests/,migrations/,__pycache__/ || echo "Lint warnings found"
+
+      - name: Check for legacy to_dict usage
+        run: |
+          cd apps/api
+          echo "Checking for legacy .to_dict() usage in routers..."
+          # Exclude commented out lines (starting with optional whitespace and #)
+          if grep -r "\.to_dict()" routers/ | grep -v "^\s*#"; then
+             echo "❌ Legacy .to_dict() calls found in routers/"
+             echo "Use Pydantic schemas instead."
+             exit 1
+          fi
+          echo "✅ No legacy .to_dict() calls found"
 
   backend-tests:
     name: 🧪 Backend Tests

@@ -20,8 +20,8 @@ export function getEnvVar(key: string, fallback?: string): string | undefined {
 
   try {
     // Allow window-level overrides for runtime environments
-    if (typeof window !== 'undefined' && (window as any).__ENV__) {
-      const v = (window as any).__ENV__[key];
+    if (typeof window !== 'undefined' && window.__ENV__) {
+      const v = window.__ENV__[key];
       if (v !== undefined) return v;
     }
   } catch (e) {

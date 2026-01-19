@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Patient } from '../../types/patient/patient-base.types';
+import { Party } from '../../types/party/party-base.types';
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 
 interface SGKUTSFormProps {
-  patient: Patient;
+  party: Party;
   onSubmit?: (data: UTSRegistrationData) => void;
   onCancel?: () => void;
 }
 
 interface UTSRegistrationData {
-  patientId: string;
+  partyId: string;
   registrationType: string;
   registrationDate: string;
   facilityCode: string;
@@ -24,12 +24,12 @@ interface UTSRegistrationData {
 }
 
 export const SGKUTSForm: React.FC<SGKUTSFormProps> = ({
-  patient,
+  party,
   onSubmit,
   onCancel,
 }) => {
   const [formData, setFormData] = useState<UTSRegistrationData>({
-    patientId: patient.id || '',
+    partyId: party.id || '',
     registrationType: '',
     registrationDate: new Date().toISOString().split('T')[0],
     facilityCode: '',
@@ -145,13 +145,13 @@ export const SGKUTSForm: React.FC<SGKUTSFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Hasta Adı"
-              value={`${patient.firstName} ${patient.lastName}`}
+              value={`${party.firstName} ${party.lastName}`}
               fullWidth
               readOnly
             />
             <Input
               label="TC Kimlik No"
-              value={patient.tcNumber || ''}
+              value={party.tcNumber || ''}
               fullWidth
               readOnly
             />

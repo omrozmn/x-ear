@@ -8,7 +8,7 @@ interface PosPaymentModalProps {
     onSuccess: () => void;
     saleId: string;
     amount: number;
-    patientName: string;
+    partyName: string;
 }
 
 export const PosPaymentModal: React.FC<PosPaymentModalProps> = ({
@@ -17,7 +17,7 @@ export const PosPaymentModal: React.FC<PosPaymentModalProps> = ({
     onSuccess,
     saleId,
     amount,
-    patientName
+    partyName
 }) => {
     if (!isOpen) return null;
 
@@ -25,7 +25,7 @@ export const PosPaymentModal: React.FC<PosPaymentModalProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center p-4 border-b">
-                    <h3 className="text-lg font-semibold">Online Ödeme - {patientName}</h3>
+                    <h3 className="text-lg font-semibold">Online Ödeme - {partyName}</h3>
                     <button onClick={onClose}><X size={20} /></button>
                 </div>
 

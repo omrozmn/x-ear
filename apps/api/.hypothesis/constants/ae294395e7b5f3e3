@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_payments.py
+# hypothesis_version: 6.150.1
+
+[100, 500, '/api/admin/payments', '/pos/transactions', 'Admin Payments', 'data', 'payments.read', 'success']

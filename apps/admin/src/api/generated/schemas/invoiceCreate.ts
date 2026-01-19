@@ -13,7 +13,7 @@ import type { InvoiceCreateCustomerTaxNumber } from './invoiceCreateCustomerTaxN
 import type { InvoiceCreateCustomerAddress } from './invoiceCreateCustomerAddress';
 import type { InvoiceStatus } from './invoiceStatus';
 import type { InvoiceCreateNotes } from './invoiceCreateNotes';
-import type { InvoiceCreatePatientId } from './invoiceCreatePatientId';
+import type { InvoiceCreatePartyId } from './invoiceCreatePartyId';
 import type { InvoiceCreateSaleId } from './invoiceCreateSaleId';
 import type { InvoiceItemBase } from './invoiceItemBase';
 
@@ -42,7 +42,7 @@ export interface InvoiceCreate {
   status?: InvoiceStatus;
   /** Notes */
   notes?: InvoiceCreateNotes;
-  patientId?: InvoiceCreatePatientId;
+  partyId?: InvoiceCreatePartyId;
   saleId?: InvoiceCreateSaleId;
   /** Invoice items */
   items?: InvoiceItemBase[];

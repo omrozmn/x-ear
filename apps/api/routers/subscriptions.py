@@ -13,8 +13,11 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from database import get_db
 from schemas.base import ResponseEnvelope
+from schemas.tenants import (
+    SubscriptionResponse, SignupResponse, CurrentSubscriptionResponse,
+    TenantRead, PlanRead
+)
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +94,7 @@ def serialize_plan(plan) -> Optional[dict]:
 
 # --- Routes ---
 
-@router.post("/subscribe", operation_id="createSubscriptionSubscribe")
+@router.post("/subscribe", operation_id="createSubscriptionSubscribe", response_model=ResponseEnvelope[SubscriptionResponse])
 def subscribe(
     request_data: SubscribeRequest,
     access: UnifiedAccess = Depends(require_access()),
@@ -186,13 +189,13 @@ def subscribe(
     
     db.commit()
     
-    return ResponseEnvelope(data={
-        'message': 'Subscription successful',
-        'tenant': tenant.to_dict() if hasattr(tenant, 'to_dict') else serialize_tenant(tenant),
-        'plan': plan.to_dict() if hasattr(plan, 'to_dict') else serialize_plan(plan)
-    })
+    return ResponseEnvelope(data=SubscriptionResponse(
+        message='Subscription successful',
+        tenant=serialize_tenant(tenant),
+        plan=serialize_plan(plan)
+    ))
 
-@router.post("/complete-signup", operation_id="createSubscriptionCompleteSignup")
+@router.post("/complete-signup", operation_id="createSubscriptionCompleteSignup", response_model=ResponseEnvelope[SignupResponse])
 def complete_signup(
     request_data: CompleteSignupRequest,
     access: UnifiedAccess = Depends(require_access()),
@@ -278,14 +281,14 @@ def complete_signup(
     
     db.commit()
     
-    return ResponseEnvelope(data={
-        'message': 'Hesap oluşturma ve abonelik başarılı',
-        'tenant': tenant.to_dict() if hasattr(tenant, 'to_dict') else serialize_tenant(tenant),
-        'user': user.to_dict() if hasattr(user, 'to_dict') else {'id': user.id},
-        'token': request_data.token
-    })
+    return ResponseEnvelope(data=SignupResponse(
+        message='Hesap oluşturma ve abonelik başarılı',
+        tenant=serialize_tenant(tenant),
+        user={'id': user.id, 'email': user.email, 'role': user.role},
+        token=request_data.token
+    ))
 
-@router.get("/current", operation_id="listSubscriptionCurrent")
+@router.get("/current", operation_id="listSubscriptionCurrent", response_model=ResponseEnvelope[CurrentSubscriptionResponse])
 def get_current(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -298,12 +301,12 @@ def get_current(
     
     # Super admin doesn't have tenant subscription
     if not user or access.is_super_admin:
-        return ResponseEnvelope(data={
-            'subscription': None,
-            'plan': None,
-            'is_super_admin': True,
-            'message': 'Super admin - no tenant subscription'
-        })
+        return ResponseEnvelope(data=CurrentSubscriptionResponse(
+            tenant=None,
+            plan=None,
+            is_super_admin=True,
+            message='Super admin - no tenant subscription'
+        ))
     
     tenant = db.get(Tenant, user.tenant_id)
     if not tenant:
@@ -324,14 +327,14 @@ def get_current(
             delta = tenant.subscription_end_date - now
             days_remaining = delta.days
     
-    return ResponseEnvelope(data={
-        'tenant': serialize_tenant(tenant),
-        'plan': serialize_plan(plan),
-        'isExpired': is_expired,
-        'daysRemaining': days_remaining
-    })
+    return ResponseEnvelope(data=CurrentSubscriptionResponse(
+        tenant=serialize_tenant(tenant),
+        plan=serialize_plan(plan),
+        is_expired=is_expired,
+        days_remaining=days_remaining
+    ))
 
-@router.post("/register-and-subscribe", operation_id="createSubscriptionRegisterAndSubscribe")
+@router.post("/register-and-subscribe", operation_id="createSubscriptionRegisterAndSubscribe", response_model=ResponseEnvelope[SignupResponse])
 def register_and_subscribe(
     request_data: RegisterAndSubscribeRequest,
     db: Session = Depends(get_db)
@@ -414,12 +417,12 @@ def register_and_subscribe(
         # Generate Token
         access_token = create_access_token(identity=user.id)
         
-        return ResponseEnvelope(data={
-            'message': 'Registration and subscription successful',
-            'token': access_token,
-            'user': user.to_dict() if hasattr(user, 'to_dict') else {'id': user.id},
-            'tenant': tenant.to_dict() if hasattr(tenant, 'to_dict') else serialize_tenant(tenant)
-        })
+        return ResponseEnvelope(data=SignupResponse(
+            message='Registration and subscription successful',
+            token=access_token,
+            user={'id': user.id, 'email': user.email, 'role': user.role},
+            tenant=serialize_tenant(tenant)
+        ))
         
     except HTTPException:
         raise

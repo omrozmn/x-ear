@@ -80,10 +80,10 @@ export interface InvoiceItem {
   lineWithholding?: LineWithholdingData; // Satır bazında tevkifat
   specialTaxBase?: number; // Özel matrah
   taxFreeAmount?: number;
-  
+
   // KRİTİK EKSİK ALAN
   aliciStokKodu?: string; // Alıcı Stok Kodu
-  
+
   // İlaç/Tıbbi Cihaz Bilgileri
   medicalDeviceData?: MedicalDeviceData;
 }
@@ -118,11 +118,11 @@ export interface Invoice {
   type: InvoiceTypeLegacy;
   status: InvoiceStatus;
 
-  // Patient/Customer information
-  patientId?: string;
-  patientName: string;
-  patientPhone?: string;
-  patientTcNumber?: string;
+  // Party/Customer information
+  partyId?: string;
+  partyName: string;
+  partyPhone?: string;
+  partyTcNumber?: string;
   // Legacy customer fields (some services use customer* names)
   customerId?: string;
   customerName?: string;
@@ -173,6 +173,17 @@ export interface Invoice {
 
   // Withholding fields
   withholdingData?: WithholdingData;
+
+  // SGK Data
+  sgkData?: SGKInvoiceData;
+
+  // Medical Device Data
+  medicalDeviceData?: MedicalDeviceData;
+
+  // Export Details
+  exportDetails?: ExportDetailsData;
+
+
 
   // Additional info
   orderInfo?: OrderInfo;
@@ -261,8 +272,8 @@ export interface InvoiceFilters {
   status?: InvoiceStatus[];
   type?: InvoiceType[];
   paymentMethod?: PaymentMethod[];
-  patientId?: string;
-  patientName?: string;
+  partyId?: string;
+  partyName?: string;
   // legacy
   customerId?: string;
   customerName?: string;
@@ -340,10 +351,10 @@ export interface CreateInvoiceData {
   customerTaxNumber?: string;
   customerAddress?: any;
 
-  patientId?: string;
-  patientName?: string;
-  patientPhone?: string;
-  patientTcNumber?: string;
+  partyId?: string;
+  partyName?: string;
+  partyPhone?: string;
+  partyTcNumber?: string;
   deviceId?: string;
 
   invoiceNumber?: string;
@@ -389,15 +400,15 @@ export interface UpdateInvoiceData extends Partial<CreateInvoiceData> {
 
 export interface InvoiceFormData {
   type: InvoiceType;
-  patientId?: string;
-  patientName: string;
+  partyId?: string;
+  partyName: string;
   // Legacy/customer aliases used by invoice UI
   customerId?: string;
   customerName?: string;
   governmentPayingCustomer?: boolean;
   customerTaxNumber?: string;
-  patientPhone?: string;
-  patientTcNumber?: string;
+  partyPhone?: string;
+  partyTcNumber?: string;
 
   // Address forms
   billingAddress: InvoiceAddress;
@@ -625,6 +636,18 @@ export interface InternetSalesInfo {
   customerIpAddress?: string;
 }
 
+export interface ExportDetailsData {
+  customsDeclarationNumber?: string;
+  customsDeclarationDate?: string;
+  transportMode?: string;
+  deliveryTerms?: string;
+  gtipCode?: string;
+  exportCountry?: string;
+  exportPort?: string;
+  containerNumber?: string;
+  vehicleNumber?: string;
+}
+
 export interface PeriodInfo {
   periodStart?: string;
   periodEnd?: string;
@@ -760,13 +783,13 @@ export interface SGKInvoiceData {
 export interface MedicalDeviceData {
   // Ürün Türü Seçimi (KRİTİK EKSİK ALAN)
   productType?: 'ilac' | 'tibbicihaz';
-  
+
   // Dinamik Alanlar (label'lar productType'a göre değişir)
   urunNo?: string;      // İlaç: GTIN, Tıbbi Cihaz: UNO
   partiNo?: string;     // İlaç: Parti No, Tıbbi Cihaz: LNO
   seriNo?: string;      // İlaç: SN (zorunlu), Tıbbi Cihaz: SNO (LNO boşsa zorunlu)
   tarih?: string;       // İlaç: Son Kullanma, Tıbbi Cihaz: Üretim Tarihi
-  
+
   // Legacy alanlar (geriye dönük uyumluluk)
   licenseNumber?: string;
   serialNumber?: string;

@@ -12,7 +12,7 @@ from sqlalchemy import desc, or_, text
 
 from database import gen_sale_id
 from models.sales import Sale, DeviceAssignment, PaymentPlan, PaymentRecord, PaymentInstallment
-from models.patient import Patient
+from core.models.party import Party
 from models.inventory import InventoryItem
 from models.invoice import Invoice
 from services.stock_service import create_stock_movement
@@ -168,11 +168,16 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     payment_plan = db.query(PaymentPlan).filter_by(sale_id=sale.id).first()
     payment_plan_data = None
     if payment_plan:
-        payment_plan_data = payment_plan.to_dict() if hasattr(payment_plan, 'to_dict') else {
+        # Manual dict construction instead of to_dict serialization
+        payment_plan_data = {
             'id': payment_plan.id,
+            'planName': payment_plan.plan_name,
             'totalAmount': float(payment_plan.total_amount) if payment_plan.total_amount else 0.0,
             'installmentCount': payment_plan.installment_count,
-            'status': payment_plan.status
+            'installments': payment_plan.installment_count, # Alias
+            'installmentAmount': float(payment_plan.installment_amount) if payment_plan.installment_amount else None,
+            'status': payment_plan.status,
+            'startDate': payment_plan.start_date.isoformat() if payment_plan.start_date else None
         }
     
     # Get payment records
@@ -194,10 +199,11 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     invoice = db.query(Invoice).filter_by(sale_id=sale.id).first()
     invoice_data = None
     if invoice:
-        invoice_data = invoice.to_dict() if hasattr(invoice, 'to_dict') else {
+        invoice_data = {
             'id': invoice.id,
             'invoiceNumber': invoice.invoice_number,
-            'status': invoice.status
+            'status': invoice.status,
+            'invoiceDate': invoice.invoice_date.isoformat() if invoice.invoice_date else None
         }
     
     # Calculate SGK coverage (recalc if zero)
@@ -205,25 +211,46 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     
     # Get patient info
     patient_data = None
-    if sale.patient:
+    if sale.party:
         patient_data = {
-            'id': sale.patient.id,
-            'firstName': sale.patient.first_name,
-            'lastName': sale.patient.last_name,
-            'fullName': f"{sale.patient.first_name} {sale.patient.last_name}"
+            'id': sale.party.id,
+            'firstName': sale.party.first_name,
+            'lastName': sale.party.last_name,
+            'fullName': f"{sale.party.first_name} {sale.party.last_name}"
         }
     
-    # Build complete sale data
-    sale_dict = sale.to_dict() if hasattr(sale, 'to_dict') else {}
-    sale_dict.update({
+    # Build complete sale data using SaleRead schema logic (manually to avoid full pydantic overhead here)
+    # Ideally we'd validte through SaleRead.model_validate(sale).model_dump(by_alias=True)
+    # But for parity with existing keys, manual is safer for now.
+    sale_dict = {
+        'id': sale.id,
+        'partyId': sale.party_id,
+        'productId': sale.product_id,
+        'branchId': sale.branch_id,
+        'saleDate': sale.sale_date.isoformat() if sale.sale_date else None,
+        'listPriceTotal': float(sale.list_price_total) if sale.list_price_total else None,
+        'totalAmount': float(sale.total_amount) if sale.total_amount else None,
+        'discountAmount': float(sale.discount_amount) if sale.discount_amount else 0.0,
+        'finalAmount': float(sale.final_amount) if sale.final_amount else None,
+        'paidAmount': float(sale.paid_amount) if sale.paid_amount else 0.0,
+        'rightEarAssignmentId': sale.right_ear_assignment_id,
+        'leftEarAssignmentId': sale.left_ear_assignment_id,
+        'status': sale.status,
+        'paymentMethod': sale.payment_method,
+        'sgkCoverage': float(sale.sgk_coverage) if sale.sgk_coverage else 0.0,
+        'patientPayment': float(sale.patient_payment) if sale.patient_payment else None,
+        'reportStatus': sale.report_status,
+        'notes': sale.notes,
+        
+        # Enriched
         'devices': devices,
         'paymentPlan': payment_plan_data,
         'paymentRecords': payments_data,
-        'payments': payments_data,  # Alias for backwards compatibility
+        'payments': payments_data,
         'invoice': invoice_data,
-        'sgkCoverage': sgk_coverage_value,
-        'patient': patient_data
-    })
+        'patient': patient_data,
+        'sgkCoverage': sgk_coverage_value # Override with recalc check if needed
+    }
     
     return sale_dict
 
@@ -266,10 +293,10 @@ def get_sales(
                     )
                  
     if search:
-        query = query.join(Patient).filter(
+        query = query.join(Party).filter(
             or_(
-                Patient.first_name.ilike(f"%{search}%"),
-                Patient.last_name.ilike(f"%{search}%"),
+                Party.first_name.ilike(f"%{search}%"),
+                Party.last_name.ilike(f"%{search}%"),
                 Sale.id.ilike(f"%{search}%")
             )
         )
@@ -288,17 +315,40 @@ def get_sales(
                 sale_data = _build_full_sale_data(db, sale)
             else:
                 # Basic sale data with patient info
-                sale_data = sale.to_dict() if hasattr(sale, 'to_dict') else {}
-                if sale.patient:
-                    sale_data['patient'] = {
-                        'id': sale.patient.id,
-                        'firstName': sale.patient.first_name,
-                        'lastName': sale.patient.last_name
-                    }
+                # We can return the model directly, but need to attach patient info for Pydantic to pick up if defined in schema
+                # For now, let's trust Pydantic's from_attributes for the base fields, 
+                # but we need to manually inject 'patient' dict if we want it in the basic view without full details
+                # Actually, SaleRead has 'patient' field.
+                
+                # Check if we can just return the model? 
+                # The model 'patient' relationship is loaded.
+                # However, SaleRead defines patient as Optional[Dict].
+                # If we return the SQLAlchemy model, Pydantic might try to serialize 'sale.patient' model to Dict.
+                # Pydantic v2 is smart. Let's try returning validation explicit or just dict.
+                
+                # To be safe and compliant with legacy helper 'patients' manual construction:
+                sale_data = sale
+                # If we return the object, we need to ensure properties like 'patient' are serialized correctly.
+                # The schema expects 'patient' to be Dict. 
+                # Let's construct a cleaner dict or stick to to_dict for the complex transition?
+                # The goal is to REMOVE to_dict.
+                
+                # Let's return the SQLAlchemy object and let Pydantic handle it, 
+                # assuming we update SaleRead to have proper nested models instead of Dict[str, Any].
+                # But I updated it to use Dict[str, Any].
+                
+                # Intermediate step: Manually construct just the needed parts if straightforward, 
+                # or rely on a helper that DOES NOT use to_dict but builds the response structure.
+                
+                # _build_full_sale_data uses to_dict internally. I should refactor IT too later.
+                # For now, let's keep _build_full_sale_data returning dict (it works),
+                # but for the `else` block (basic view):
+                sale_data = sale
+                
             results.append(sale_data)
         except Exception as e:
             logger.warning(f"Error building sale data for {sale.id}: {e}")
-            results.append(sale.to_dict() if hasattr(sale, 'to_dict') else {})
+            results.append(sale)
 
     return ResponseEnvelope(
         data=results,
@@ -311,7 +361,7 @@ def get_sales(
         },
     )
 
-@router.get("/sales/{sale_id}", operation_id="getSale", response_model=ResponseEnvelope[Any])
+@router.get("/sales/{sale_id}", operation_id="getSale", response_model=ResponseEnvelope[SaleRead])
 def get_sale(
     sale_id: str,
     db: Session = Depends(get_db),
@@ -409,7 +459,7 @@ def record_sale_payment(
         
     payment = PaymentRecord(
         id=f"payment_{uuid4().hex[:8]}",
-        patient_id=sale.patient_id,
+        party_id=sale.party_id,
         sale_id=sale_id,
         amount=Decimal(str(amount)),
         payment_method=payment_in.payment_method,
@@ -585,7 +635,7 @@ def pay_installment(
     # Create payment record
     payment = PaymentRecord()
     payment.id = f"payment_{uuid4().hex[:8]}"
-    payment.patient_id = sale.patient_id
+    payment.party_id = sale.party_id
     payment.sale_id = sale_id
     payment.amount = Decimal(str(amount))
     payment.payment_method = payment_method
@@ -662,7 +712,7 @@ def create_sale(
     access.require_permission("sales:create")
     
     # 1. Validate Patient
-    patient = db.get(Patient, sale_in.patient_id)
+    patient = db.get(Party, sale_in.party_id)
     if not patient:
         raise HTTPException(
             status_code=404,
@@ -717,7 +767,7 @@ def create_sale(
         id=sale_id,
         tenant_id=access.tenant_id or patient.tenant_id,
         branch_id=access.branch_id, # If applicable
-        patient_id=sale_in.patient_id,
+        party_id=sale_in.party_id,
         product_id=sale_in.product_id,
         sale_date=sale_in.sale_date or datetime.utcnow(),
         list_price_total=base_price,
@@ -739,7 +789,7 @@ def create_sale(
     assignment = DeviceAssignment(
         tenant_id=sale.tenant_id,
         branch_id=access.branch_id,
-        patient_id=sale.patient_id,
+        party_id=sale.party_id,
         device_id=product.id,
         inventory_id=product.id,
         sale_id=sale.id,
@@ -768,14 +818,14 @@ def create_sale(
 
     return ResponseEnvelope(
         data={
-            "sale": sale.to_dict(),
+            "sale": sale,
             "warnings": warnings,
             "saleId": sale.id,
         },
         message="Sale created successfully",
     )
 
-@router.put("/sales/{sale_id}", operation_id="updateSale")
+@router.put("/sales/{sale_id}", operation_id="updateSale", response_model=ResponseEnvelope[SaleRead])
 def update_sale(
     sale_id: str,
     sale_in: SaleUpdate,
@@ -800,7 +850,7 @@ def update_sale(
     
     db.commit()
 
-    return ResponseEnvelope(data=sale.to_dict(), message="Sale updated")
+    return ResponseEnvelope(data=sale, message="Sale updated")
 
 @router.post("/sales/recalc", operation_id="createSaleRecalc", response_model=ResponseEnvelope[SaleRecalcResponse])
 def recalc_sales(
@@ -822,8 +872,8 @@ def recalc_sales(
     if payload.sale_id:
         query = query.filter(Sale.id == payload.sale_id)
         
-    if payload.patient_id:
-        query = query.filter(Sale.patient_id == payload.patient_id)
+    if payload.party_id:
+        query = query.filter(Sale.party_id == payload.party_id)
         
     query = query.order_by(desc(Sale.sale_date))
     
@@ -959,7 +1009,7 @@ def _get_settings(db: Session, tenant_id: str = None) -> Dict[str, Any]:
 def _create_single_device_assignment(
     db: Session,
     assignment_data: Dict[str, Any],
-    patient_id: str,
+    party_id: str,
     sale_id: str,
     sgk_scheme: str,
     pricing_calculation: Dict[str, Any],
@@ -989,7 +1039,7 @@ def _create_single_device_assignment(
         if manual_brand and manual_model:
             virtual_device = Device(
                 tenant_id=tenant_id,
-                patient_id=patient_id,
+                party_id=party_id,
                 brand=manual_brand,
                 model=manual_model,
                 device_type='HEARING_AID',
@@ -1030,7 +1080,7 @@ def _create_single_device_assignment(
     assignment = DeviceAssignment(
         tenant_id=tenant_id,
         branch_id=branch_id,
-        patient_id=patient_id,
+        party_id=party_id,
         device_id=virtual_device.id if virtual_device else inventory_id,
         sale_id=sale_id,
         ear=assignment_data.get('ear') or 'both',
@@ -1129,15 +1179,15 @@ def _create_single_device_assignment(
     return assignment, None, warning
 
 
-@router.post("/patients/{patient_id}/device-assignments", operation_id="createPatientDeviceAssignments", response_model=ResponseEnvelope[DeviceAssignmentCreateResponse])
+@router.post("/parties/{party_id}/device-assignments", operation_id="createPartyDeviceAssignments", response_model=ResponseEnvelope[DeviceAssignmentCreateResponse])
 def create_device_assignments(
-    patient_id: str,
+    party_id: str,
     data: DeviceAssignmentCreate,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
     """
-    Assign devices to a patient with sale record creation.
+    Assign devices to a party with sale record creation.
     
     This is the main endpoint for device assignment workflow:
     1. Creates a Sale record
@@ -1150,14 +1200,14 @@ def create_device_assignments(
     
     access.require_permission("sales:create")
     
-    # Validate patient
-    patient = db.get(Patient, patient_id)
-    if not patient:
+    # Validate party
+    party = db.get(Party, party_id)
+    if not party:
         raise HTTPException(
             status_code=404,
-            detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
+            detail=ApiError(message="Party not found", code="PARTY_NOT_FOUND").model_dump(mode="json"),
         )
-    if access.tenant_id and patient.tenant_id != access.tenant_id:
+    if access.tenant_id and party.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Access denied", code="FORBIDDEN").model_dump(mode="json"),
@@ -1170,7 +1220,7 @@ def create_device_assignments(
             detail=ApiError(message="At least one device assignment required", code="NO_DEVICES").model_dump(mode="json"),
         )
     
-    tenant_id = access.tenant_id or patient.tenant_id
+    tenant_id = access.tenant_id or party.tenant_id
     branch_id = data.branch_id or access.branch_id
     settings = _get_settings(db, tenant_id)
     sgk_scheme = data.sgk_scheme or settings.get('sgk', {}).get('default_scheme', 'standard')
@@ -1203,7 +1253,7 @@ def create_device_assignments(
         id=sale_id,
         tenant_id=tenant_id,
         branch_id=branch_id,
-        patient_id=patient_id,
+        party_id=party_id,
         list_price_total=pricing_calculation['total_amount'],
         total_amount=pricing_calculation['total_amount'],
         discount_amount=pricing_calculation['total_discount'],
@@ -1229,7 +1279,7 @@ def create_device_assignments(
         assignment, error, warning = _create_single_device_assignment(
             db=db,
             assignment_data=a_dict,
-            patient_id=patient_id,
+            party_id=party_id,
             sale_id=sale.id,
             sgk_scheme=sgk_scheme,
             pricing_calculation=pricing_calculation,
@@ -1277,7 +1327,7 @@ def create_device_assignments(
     
     db.commit()
     
-    logger.info(f"Device assignments created for patient {patient_id}: sale={sale.id}, assignments={created_assignment_ids}")
+    logger.info(f"Device assignments created for party {party_id}: sale={sale.id}, assignments={created_assignment_ids}")
     
     return ResponseEnvelope(
         data={
@@ -1290,7 +1340,7 @@ def create_device_assignments(
     )
 
 
-@router.patch("/device-assignments/{assignment_id}", operation_id="updateDeviceAssignment")
+@router.patch("/device-assignments/{assignment_id}", operation_id="updateDeviceAssignment", response_model=ResponseEnvelope[DeviceAssignmentRead])
 def update_device_assignment(
     assignment_id: str,
     updates: DeviceAssignmentUpdate,
@@ -1463,7 +1513,7 @@ def update_device_assignment(
                                         id=f"pay_{uuid4().hex}",
                                         tenant_id=sale.tenant_id,
                                         branch_id=sale.branch_id,
-                                        patient_id=sale.patient_id,
+                                        party_id=sale.party_id,
                                         sale_id=sale.id,
                                         amount=Decimal(str(down_val)),
                                         payment_date=datetime.utcnow(),
@@ -1763,12 +1813,12 @@ def update_device_assignment(
     db.commit()
     
     return ResponseEnvelope(
-        data=assignment.to_dict(),
+        data=assignment,
         message="Assignment updated"
     )
 
 
-@router.post("/device-assignments/{assignment_id}/return-loaner", operation_id="createDeviceAssignmentReturnLoaner")
+@router.post("/device-assignments/{assignment_id}/return-loaner", operation_id="createDeviceAssignmentReturnLoaner", response_model=ResponseEnvelope[DeviceAssignmentRead])
 def return_loaner_to_stock(
     assignment_id: str,
     db: Session = Depends(get_db),
@@ -1852,7 +1902,7 @@ def return_loaner_to_stock(
     db.commit()
     
     return ResponseEnvelope(
-        data=assignment.to_dict(),
+        data=assignment,
         message="Loaner returned to stock"
     )
 

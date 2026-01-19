@@ -33,6 +33,7 @@ import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as ApiKeysRouteImport } from './routes/api-keys'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AiRouteImport } from './routes/ai'
 import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AddonsRouteImport } from './routes/addons'
 import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
@@ -163,6 +164,11 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiRoute = AiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AffiliatesRoute = AffiliatesRouteImport.update({
   id: '/affiliates',
   path: '/affiliates',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/affiliates': typeof AffiliatesRouteWithChildren
+  '/ai': typeof AiRoute
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/affiliates': typeof AffiliatesRouteWithChildren
+  '/ai': typeof AiRoute
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/affiliates': typeof AffiliatesRouteWithChildren
+  '/ai': typeof AiRoute
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/activity-logs'
     | '/addons'
     | '/affiliates'
+    | '/ai'
     | '/analytics'
     | '/api-keys'
     | '/appointments'
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/activity-logs'
     | '/addons'
     | '/affiliates'
+    | '/ai'
     | '/analytics'
     | '/api-keys'
     | '/appointments'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/activity-logs'
     | '/addons'
     | '/affiliates'
+    | '/ai'
     | '/analytics'
     | '/api-keys'
     | '/appointments'
@@ -429,6 +441,7 @@ export interface RootRouteChildren {
   ActivityLogsRoute: typeof ActivityLogsRoute
   AddonsRoute: typeof AddonsRoute
   AffiliatesRoute: typeof AffiliatesRouteWithChildren
+  AiRoute: typeof AiRoute
   AnalyticsRoute: typeof AnalyticsRoute
   ApiKeysRoute: typeof ApiKeysRoute
   AppointmentsRoute: typeof AppointmentsRoute
@@ -629,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai': {
+      id: '/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/affiliates': {
       id: '/affiliates'
       path: '/affiliates'
@@ -712,6 +732,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityLogsRoute: ActivityLogsRoute,
   AddonsRoute: AddonsRoute,
   AffiliatesRoute: AffiliatesRouteWithChildren,
+  AiRoute: AiRoute,
   AnalyticsRoute: AnalyticsRoute,
   ApiKeysRoute: ApiKeysRoute,
   AppointmentsRoute: AppointmentsRoute,

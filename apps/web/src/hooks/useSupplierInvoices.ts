@@ -3,12 +3,9 @@
  * Supplier invoices are filtered from the main invoices endpoint
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-    useCreateBirfaturaSyncInvoices,
-    getListSuppliersQueryKey,
-    useListInvoices,
-    useListSuppliers,
-} from '@/api/generated';
+import { useCreateBirfaturaSyncInvoices } from '@/api/client/bir-fatura.client';
+import { getListSuppliersQueryKey, useListSuppliers } from '@/api/client/suppliers.client';
+import { useListInvoices } from '@/api/client/invoices.client';
 import type { HTTPValidationError, InvoiceRead, SupplierRead } from '@/api/generated/schemas';
 
 // ========== TYPES ==========
@@ -47,8 +44,8 @@ export interface SuggestedSupplier {
 const transformInvoice = (invoice: InvoiceRead): PurchaseInvoice => ({
     id: String(invoice.id),
     invoiceNumber: invoice.invoiceNumber || '',
-    supplierName: invoice.patientName || '', // Using patientName as supplier name fallback
-    supplierId: String(invoice.patientId || ''),
+    supplierName: invoice.partyName || '', // Using partyName as supplier name fallback
+    supplierId: String(invoice.partyId || ''),
     date: invoice.createdAt || '',
     totalAmount: invoice.devicePrice ? Number(invoice.devicePrice) : 0,
     status: (invoice.status as 'pending' | 'paid' | 'cancelled') || 'pending',
@@ -93,13 +90,13 @@ export const useSupplierInvoices = (params: SupplierInvoicesParams) => {
     // Transform and filter the response
     const response: SupplierInvoicesResponse | undefined = data?.data ? {
         invoices: (Array.isArray(data.data) ? data.data : [])
-            .filter((inv: InvoiceRead) => String(inv.patientId) === supplierId)
+            .filter((inv: InvoiceRead) => String(inv.partyId) === supplierId)
             .map(transformInvoice),
         pagination: {
-            total: (data as any)?.meta?.total || 0,
-            page: (data as any)?.meta?.page || page,
-            perPage: (data as any)?.meta?.perPage || perPage,
-            totalPages: (data as any)?.meta?.totalPages || 1,
+            total: data.meta?.total || 0,
+            page: data.meta?.page || page,
+            perPage: data.meta?.perPage || perPage,
+            totalPages: data.meta?.totalPages || 1,
         },
     } : undefined;
 
@@ -206,8 +203,8 @@ export const useSyncInvoices = () => {
         mutateAsync: async (params?: { startDate?: string; endDate?: string }) => {
             return mutateAsync({
                 data: {
-                    start_date: params?.startDate,
-                    end_date: params?.endDate
+                    startDate: params?.startDate,
+                    endDate: params?.endDate
                 }
             });
         },

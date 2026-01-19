@@ -15,12 +15,20 @@ from jose import jwt
 
 from database import get_db
 from schemas.base import ResponseEnvelope
+from schemas.users import UserRead, AdminUserRead
 from models.admin_user import AdminUser
 from models.user import User
 from models.role import Role
 from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
+
+from schemas.tickets import TicketRead, TicketResponseCreate
+from schemas.admin import (
+    AdminLoginResponse, DebugRoleSwitchResponse, 
+    DebugTenantSwitchResponse, DebugPagePermissionResponse,
+    AvailableRolesResponse
+)
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +141,7 @@ def create_refresh_token(identity: str, additional_claims: dict = None, expires_
 
 # --- Routes ---
 
-@router.post("/auth/login", operation_id="createAdminAuthLogin")
+@router.post("/auth/login", operation_id="createAdminAuthLogin", response_model=ResponseEnvelope[AdminLoginResponse])
 def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
     """Admin login endpoint"""
     try:
@@ -167,19 +175,19 @@ def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
             'is_super_admin': admin.role == 'super_admin'
         }
         
-        return ResponseEnvelope(data={
-            "token": access_token,
-            "refreshToken": refresh_token,
-            "user": user_data,
-            "requires_mfa": False
-        })
+        return ResponseEnvelope(data=AdminLoginResponse(
+            token=access_token,
+            refresh_token=refresh_token,
+            user=user_data,
+            requires_mfa=False
+        ))
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Admin login error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/users", operation_id="createAdminUsers")
+@router.post("/users", operation_id="createAdminUsers", response_model=ResponseEnvelope)
 def create_admin_user(
     request_data: CreateAdminUserRequest,
     db: Session = Depends(get_db),
@@ -212,7 +220,7 @@ def create_admin_user(
             user.set_password(request_data.password)
             db.add(user)
             db.commit()
-            return ResponseEnvelope(data={"user": user.to_dict()})
+            return ResponseEnvelope(data={"user": UserRead.model_validate(user).model_dump(by_alias=True)})
         else:
             # Create Admin User
             if db.query(AdminUser).filter_by(email=request_data.email).first():
@@ -229,7 +237,7 @@ def create_admin_user(
             admin.set_password(request_data.password)
             db.add(admin)
             db.commit()
-            return ResponseEnvelope(data={"user": admin.to_dict()})
+            return ResponseEnvelope(data={"user": AdminUserRead.model_validate(admin).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:
@@ -237,7 +245,7 @@ def create_admin_user(
         logger.error(f"Create user error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/users", operation_id="listAdminUsers")
+@router.get("/users", operation_id="listAdminUsers", response_model=ResponseEnvelope[List[AdminUserRead]])
 def get_admin_users(
     page: int = 1,
     limit: int = 10,
@@ -262,15 +270,15 @@ def get_admin_users(
         total = query.count()
         users = query.offset((page - 1) * limit).limit(limit).all()
         
-        return ResponseEnvelope(data={
-            "users": [u.to_dict() for u in users],
-            "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
-        })
+        return ResponseEnvelope(
+            data=[AdminUserRead.model_validate(u) for u in users],
+            meta={"page": page, "limit": limit, "total": total, "total_pages": (total + limit - 1) // limit}
+        )
     except Exception as e:
         logger.error(f"Get admin users error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/users/all", operation_id="listAdminUserAll")
+@router.get("/users/all", operation_id="listAdminUserAll", response_model=ResponseEnvelope)
 def get_all_tenant_users(
     page: int = 1,
     limit: int = 10,
@@ -295,11 +303,11 @@ def get_all_tenant_users(
         
         users_list = []
         for u in users:
-            u_dict = u.to_dict()
+            u_dict = UserRead.model_validate(u).model_dump(by_alias=True)
             if u.tenant_id:
                 tenant = db.get(Tenant, u.tenant_id)
                 if tenant:
-                    u_dict['tenant_name'] = tenant.name
+                    u_dict['tenantName'] = tenant.name
             users_list.append(u_dict)
         
         return ResponseEnvelope(data={
@@ -310,7 +318,7 @@ def get_all_tenant_users(
         logger.error(f"Get all tenant users error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/users/all/{user_id}", operation_id="updateAdminUserAll")
+@router.put("/users/all/{user_id}", operation_id="updateAdminUserAll", response_model=ResponseEnvelope[UserRead])
 def update_any_tenant_user(
     user_id: str,
     request_data: UpdateTenantUserRequest,
@@ -337,7 +345,7 @@ def update_any_tenant_user(
             user.set_password(request_data.password)
         
         db.commit()
-        return ResponseEnvelope(data=user.to_dict())
+        return ResponseEnvelope(data=UserRead.model_validate(user))
     except HTTPException:
         raise
     except Exception as e:
@@ -346,7 +354,7 @@ def update_any_tenant_user(
 
 # --- Tickets ---
 
-@router.get("/tickets", operation_id="listAdminTickets")
+@router.get("/tickets", operation_id="listAdminTickets", response_model=ResponseEnvelope[List[TicketRead]])
 def get_admin_tickets(
     page: int = 1,
     limit: int = 10,
@@ -357,10 +365,10 @@ def get_admin_tickets(
     start = (page - 1) * limit
     tickets = MOCK_TICKETS[start:start + limit]
     
-    return ResponseEnvelope(data={
-        "tickets": tickets,
-        "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit if limit > 0 else 0}
-    })
+    return ResponseEnvelope(
+        data=tickets,
+        meta={"page": page, "limit": limit, "total": total, "total_pages": (total + limit - 1) // limit if limit > 0 else 0}
+    )
 
 @router.post("/tickets", operation_id="createAdminTickets")
 def create_admin_ticket(
@@ -471,7 +479,7 @@ def debug_switch_role(
         "realUserEmail": access.user.email
     })
 
-@router.get("/debug/available-roles", operation_id="listAdminDebugAvailableRoles")
+@router.get("/debug/available-roles", operation_id="listAdminDebugAvailableRoles", response_model=ResponseEnvelope[AvailableRolesResponse])
 def debug_available_roles(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -568,11 +576,11 @@ def debug_exit_impersonation(
     return ResponseEnvelope(data={
         "accessToken": access_token,
         "refreshToken": refresh_token,
-        "user": access.user.to_dict(),
+        "user": AdminUserRead.model_validate(access.user).model_dump(by_alias=True),
         "isImpersonating": False
     })
 
-@router.get("/debug/page-permissions/{page_key}", operation_id="getAdminDebugPagePermission")
+@router.get("/debug/page-permissions/{page_key}", operation_id="getAdminDebugPagePermission", response_model=ResponseEnvelope[DebugPagePermissionResponse])
 def debug_page_permissions(
     page_key: str,
     db_session: Session = Depends(get_db),
@@ -585,7 +593,7 @@ def debug_page_permissions(
     # Page permission mappings
     PAGE_PERMISSIONS = {
         'dashboard': ['dashboard.view'],
-        'patients': ['patients.view', 'patients.read'],
+        'parties': ['parties.view', 'parties.read'],
         'appointments': ['appointments.view', 'appointments.read'],
         'inventory': ['inventory.view', 'inventory.read'],
         'sales': ['sales.view', 'sales.read'],

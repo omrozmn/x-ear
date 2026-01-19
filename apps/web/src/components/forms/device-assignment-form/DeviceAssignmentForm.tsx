@@ -9,7 +9,7 @@ import { useDeviceAssignment } from './hooks/useDeviceAssignment';
 import { DeviceAssignment } from './components/AssignmentDetailsForm';
 
 export interface DeviceAssignmentFormProps {
-  patientId: string;
+  partyId: string;
   assignment?: DeviceAssignment | null;
   isOpen: boolean;
   onClose: () => void;
@@ -20,7 +20,7 @@ export interface DeviceAssignmentFormProps {
 
 
 export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
-  patientId,
+  partyId,
   assignment,
   isOpen,
   onClose,
@@ -50,7 +50,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     calculatedPricing,
     setSelectedDevice
   } = useDeviceAssignment({
-    patientId,
+    partyId,
     assignment,
     isOpen
   });
@@ -73,15 +73,15 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     setIsSaving(true); // Set saving state to true
     try {
       // Merge canonical calculated pricing into submission payload to ensure saved records
-      // include the SGK reduction, salePrice and patient payment values.
+      // include the SGK reduction, salePrice and party payment values.
       let assignmentData = ({ ...formData, ...calculatedPricing } as DeviceAssignment);
 
       // Inject mode for parent handler compatibility
-      (assignmentData as any).mode = isManualMode ? 'manual' : 'inventory';
+      assignmentData.mode = isManualMode ? 'manual' : 'inventory';
 
       // Map deviceId to inventoryId for parent compatibility if not manual
       if (!isManualMode && formData.deviceId) {
-        (assignmentData as any).inventoryId = formData.deviceId;
+        assignmentData.inventoryId = formData.deviceId;
       }
 
       if (isManualMode) {
@@ -90,12 +90,10 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         assignmentData = {
           ...assignmentData,
           deviceId: '', // No inventory ID
-          // Add these as custom fields that handleDeviceAssignment in PatientDevicesTab will need to map
-          // We cast to any to bypass strict type check for now or extend interface
           manualBrand: manualDevice.brand,
           manualModel: manualDevice.model,
-          serialNumber: formData.serialNumber || (formData as any).serialNumberLeft || (formData as any).serialNumberRight || manualDevice.serialNumber
-        } as any;
+          serialNumber: formData.serialNumber || formData.serialNumberLeft || formData.serialNumberRight || manualDevice.serialNumber
+        };
 
         // Ensure pricing fields are present for manual mode (they might be 0/custom)
         // Since we don't have a base price from inventory, we rely on user input listPrice
@@ -105,9 +103,9 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         }
       } else if (selectedDevice) {
         // Inventory mode: Inject selected device details to avoid lookup failures in parent
-        (assignmentData as any).brand = selectedDevice.brand;
-        (assignmentData as any).model = selectedDevice.model;
-        (assignmentData as any).deviceType = selectedDevice.category;
+        assignmentData.brand = selectedDevice.brand;
+        assignmentData.model = selectedDevice.model;
+        assignmentData.deviceType = selectedDevice.category;
         // If no serial number selected in form, but device is unique/has one, might need to handle it.
         // Usually serial number form handles selection.
       }

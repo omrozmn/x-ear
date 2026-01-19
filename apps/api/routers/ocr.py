@@ -17,6 +17,12 @@ from database import get_db
 from schemas.base import ResponseEnvelope, ApiError
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
+from schemas.ocr import (
+    OcrJobRead, OCRProcessRequest, SimilarityRequest, EntityExtractionRequest,
+    PatientExtractionRequest, DebugNERRequest, CreateJobRequest,
+    OcrHealthResponse, OcrInitResponse, OcrProcessResponse, OcrSimilarityResponse,
+    OcrEntitiesResponse, OcrPatientResponse, OcrDebugResponse
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,38 +30,7 @@ router = APIRouter(prefix="/ocr", tags=["OCR"])
 
 # --- Schemas ---
 
-class OCRProcessRequest(BaseModel):
-    image_path: Optional[str] = None
-    text: Optional[str] = None
-    ocr_text: Optional[str] = None
-    type: str = "medical"
-    auto_crop: bool = True
 
-class SimilarityRequest(BaseModel):
-    image_path1: Optional[str] = None
-    image_path2: Optional[str] = None
-    text1: Optional[str] = None
-    text2: Optional[str] = None
-    textA: Optional[str] = None
-    textB: Optional[str] = None
-
-class EntityExtractionRequest(BaseModel):
-    image_path: Optional[str] = None
-    text: Optional[str] = None
-    ocr_text: Optional[str] = None
-    auto_crop: bool = False
-
-class PatientExtractionRequest(BaseModel):
-    image_path: Optional[str] = None
-    text: Optional[str] = None
-    auto_crop: bool = False
-
-class DebugNERRequest(BaseModel):
-    text: str
-
-class CreateJobRequest(BaseModel):
-    file_path: str
-    type: str = "medical"
 
 # --- Helper Functions ---
 
@@ -93,7 +68,7 @@ def download_image_from_url(url: str) -> Optional[str]:
 
 # --- Routes ---
 
-@router.get("/health", operation_id="listOcrHealth")
+@router.get("/health", operation_id="listOcrHealth", response_model=ResponseEnvelope[OcrHealthResponse])
 def health_check():
     """Health check endpoint (Public)"""
     try:
@@ -102,19 +77,19 @@ def health_check():
         spacy_available = bool(getattr(svc, 'nlp', None)) if svc else False
         hf_ner_available = bool(getattr(svc, 'hf_ner', None)) if svc else False
         
-        return ResponseEnvelope(data={
-            "status": "healthy",
-            "ocr_available": ocr_available,
-            "spacy_available": spacy_available,
-            "hf_ner_available": hf_ner_available,
-            "database_connected": True,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        return ResponseEnvelope(data=OcrHealthResponse(
+            status="healthy",
+            ocr_available=ocr_available,
+            spacy_available=spacy_available,
+            hf_ner_available=hf_ner_available,
+            database_connected=True,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
     except Exception as e:
         logger.error(f"Health check error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/init-db", operation_id="createOcrInitDb")
+@router.post("/init-db", operation_id="createOcrInitDb", response_model=ResponseEnvelope[OcrInitResponse])
 def init_database(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -127,17 +102,17 @@ def init_database(
         from database import Base, engine
         Base.metadata.create_all(bind=engine)
         
-        return ResponseEnvelope(data={
-            "message": "Database initialized successfully",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        return ResponseEnvelope(data=OcrInitResponse(
+            message="Database initialized successfully",
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/initialize", operation_id="createOcrInitialize")
+@router.post("/initialize", operation_id="createOcrInitialize", response_model=ResponseEnvelope[OcrInitResponse])
 def initialize_nlp_endpoint(
     background_tasks: BackgroundTasks,
     access: UnifiedAccess = Depends(require_access())
@@ -157,17 +132,17 @@ def initialize_nlp_endpoint(
         
         background_tasks.add_task(init_background)
         
-        return ResponseEnvelope(data={
-            "message": "NLP service initialization started (background)",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        return ResponseEnvelope(data=OcrInitResponse(
+            message="NLP service initialization started (background)",
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Initialize NLP error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/process", operation_id="createOcrProcess")
+@router.post("/process", operation_id="createOcrProcess", response_model=ResponseEnvelope[OcrProcessResponse])
 def process_document(
     request_data: OCRProcessRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -219,10 +194,10 @@ def process_document(
             except Exception:
                 result['patient_info'] = None
             
-            return ResponseEnvelope(data={
-                "result": result,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
+            return ResponseEnvelope(data=OcrProcessResponse(
+                result=result,
+                timestamp=datetime.now(timezone.utc).isoformat()
+            ))
             
         finally:
             if temp_file_path and os.path.exists(temp_file_path):
@@ -237,7 +212,7 @@ def process_document(
         logger.error(f"OCR processing error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/similarity", operation_id="createOcrSimilarity")
+@router.post("/similarity", operation_id="createOcrSimilarity", response_model=ResponseEnvelope[OcrSimilarityResponse])
 def calculate_similarity(
     request_data: SimilarityRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -270,10 +245,10 @@ def calculate_similarity(
             text2=text2
         )
         
-        return ResponseEnvelope(data={
-            "result": result,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        return ResponseEnvelope(data=OcrSimilarityResponse(
+            result=result,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
         
     except HTTPException:
         raise
@@ -281,7 +256,7 @@ def calculate_similarity(
         logger.error(f"Similarity calculation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/entities", operation_id="createOcrEntities")
+@router.post("/entities", operation_id="createOcrEntities", response_model=ResponseEnvelope[OcrEntitiesResponse])
 def extract_entities(
     request_data: EntityExtractionRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -311,10 +286,10 @@ def extract_entities(
             auto_crop=auto_crop
         )
         
-        return ResponseEnvelope(data={
-            "entities": result.get("entities", []),
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        return ResponseEnvelope(data=OcrEntitiesResponse(
+            entities=result.get("entities", []),
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
         
     except HTTPException:
         raise
@@ -322,7 +297,7 @@ def extract_entities(
         logger.error(f"Entity extraction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/extract_patient", operation_id="createOcrExtractPatient")
+@router.post("/extract_patient", operation_id="createOcrExtractPatient", response_model=ResponseEnvelope[OcrPatientResponse])
 def extract_patient_name(
     request_data: PatientExtractionRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -362,10 +337,10 @@ def extract_patient_name(
             if hasattr(svc, 'extract_patient_name'):
                 patient_info = svc.extract_patient_name(image_path)
         
-        return ResponseEnvelope(data={
-            "patient_info": patient_info,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        return ResponseEnvelope(data=OcrPatientResponse(
+            patient_info=patient_info,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
         
     except HTTPException:
         raise
@@ -373,7 +348,7 @@ def extract_patient_name(
         logger.error(f"Patient extraction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/debug_ner", operation_id="createOcrDebugNer")
+@router.post("/debug_ner", operation_id="createOcrDebugNer", response_model=ResponseEnvelope[OcrDebugResponse])
 def debug_ner(
     request_data: DebugNERRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -433,10 +408,10 @@ def debug_ner(
         except Exception as e:
             response['spacy_error'] = str(e)
         
-        return ResponseEnvelope(data={
-            "result": response,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        return ResponseEnvelope(data=OcrDebugResponse(
+            result=response,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
         
     except HTTPException:
         raise
@@ -446,7 +421,7 @@ def debug_ner(
 
 # --- OCR Job Management ---
 
-@router.get("/jobs", operation_id="listOcrJobs")
+@router.get("/jobs", operation_id="listOcrJobs", response_model=ResponseEnvelope[List[OcrJobRead]])
 def list_jobs(
     status: Optional[str] = None,
     access: UnifiedAccess = Depends(require_access()),
@@ -470,7 +445,7 @@ def list_jobs(
         jobs = query.order_by(OCRJob.created_at.desc()).limit(100).all()
         
         return ResponseEnvelope(data=[
-            job.to_dict() if hasattr(job, 'to_dict') else {'id': job.id}
+            OcrJobRead.model_validate(job)
             for job in jobs
         ])
         
@@ -480,7 +455,7 @@ def list_jobs(
         logger.error(f"List jobs error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/jobs", operation_id="createOcrJobs", status_code=201)
+@router.post("/jobs", operation_id="createOcrJobs", status_code=201, response_model=ResponseEnvelope[OcrJobRead])
 def create_job(
     request_data: CreateJobRequest,
     background_tasks: BackgroundTasks,
@@ -543,7 +518,7 @@ def create_job(
         
         background_tasks.add_task(process_job, job.id)
         
-        return ResponseEnvelope(data=job.to_dict() if hasattr(job, 'to_dict') else {'id': job.id})
+        return ResponseEnvelope(data=OcrJobRead.model_validate(job))
         
     except HTTPException:
         raise
@@ -552,7 +527,7 @@ def create_job(
         logger.error(f"Create job error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/jobs/{job_id}", operation_id="getOcrJob")
+@router.get("/jobs/{job_id}", operation_id="getOcrJob", response_model=ResponseEnvelope[OcrJobRead])
 def get_job(
     job_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -570,7 +545,7 @@ def get_job(
         if access.tenant_id and job.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
-        return ResponseEnvelope(data=job.to_dict() if hasattr(job, 'to_dict') else {'id': job.id})
+        return ResponseEnvelope(data=OcrJobRead.model_validate(job))
         
     except HTTPException:
         raise

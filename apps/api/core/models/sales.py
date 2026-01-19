@@ -1,4 +1,4 @@
-# Sales-related Models: Sale, PaymentPlan, PaymentInstallment, DeviceAssignment, PaymentRecord
+# Sales Models (formerly Patient sales models)
 from .base import db, BaseModel, gen_id, gen_sale_id, JSONMixin
 from .enums import DeviceSide
 from .device import Device
@@ -13,7 +13,7 @@ class PaymentRecord(BaseModel):
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("payment"))
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'))  # Optional: link to sale
     promissory_note_id = db.Column(db.String(50))  # Link to promissory note if applicable
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
@@ -46,7 +46,7 @@ class PaymentRecord(BaseModel):
         base_dict = self.to_dict_base()
         payment_dict = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'saleId': self.sale_id,
             'promissoryNoteId': self.promissory_note_id,
             'branchId': self.branch_id,
@@ -78,7 +78,7 @@ class DeviceAssignment(BaseModel):
     assignment_uid = db.Column(db.String(20), unique=True, nullable=True)
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     device_id = db.Column(db.String(50), nullable=True)  # Can be inventory_id or actual device_id
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=True)  # Link to sale
     inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory item
@@ -167,7 +167,7 @@ class DeviceAssignment(BaseModel):
             'model': model,
             'deviceName': f"{brand or ''} {model or ''}".strip(),
             'barcode': barcode,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'deviceId': self.device_id,
             'saleId': self.sale_id,
             'inventoryId': self.inventory_id,
@@ -209,7 +209,7 @@ class Sale(BaseModel):
     id = db.Column(db.String(50), primary_key=True, default=gen_sale_id)
     
     # Foreign keys
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     product_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory product
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
@@ -223,8 +223,8 @@ class Sale(BaseModel):
     paid_amount = db.Column(sa.Numeric(12,2), default=0.0)  # Track paid amount for partial payments
     
     # Device assignments (will be replaced by sale_items table in future)
-    right_ear_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id'))
-    left_ear_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id'))
+    right_ear_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id', use_alter=True))
+    left_ear_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id', use_alter=True))
     
     # Status and payment
     status = db.Column(db.String(20), default='pending')  # pending, completed, cancelled, refunded
@@ -239,13 +239,13 @@ class Sale(BaseModel):
     notes = db.Column(db.Text)
     
     # Relationships
-    patient = db.relationship('Patient', backref='sales', lazy=True)
+    party = db.relationship('Party', backref=db.backref('sales', cascade='all, delete-orphan'), lazy=True)
 
     def to_dict(self):
         base_dict = self.to_dict_base()
         sale_dict = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'productId': self.product_id,
             'branchId': self.branch_id,
             'saleDate': self.sale_date.isoformat() if self.sale_date else None,

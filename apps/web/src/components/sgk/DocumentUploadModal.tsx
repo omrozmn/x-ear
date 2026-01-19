@@ -7,11 +7,11 @@ import { useUploadSgkDocument } from '@/hooks/sgk/useSgkDocuments';
 
 const schema = z.object({ file: z.any() });
 
-type Props = { patientId: string; isOpen: boolean; onClose: () => void; onUploaded?: () => void };
+type Props = { partyId: string; isOpen: boolean; onClose: () => void; onUploaded?: () => void };
 
-export default function DocumentUploadModal({ patientId, isOpen, onClose, onUploaded }: Props) {
+export default function DocumentUploadModal({ partyId, isOpen, onClose, onUploaded }: Props) {
   const [submitting, setSubmitting] = useState(false);
-  const upload = useUploadSgkDocument(patientId);
+  const upload = useUploadSgkDocument(partyId);
 
   const { register, handleSubmit, setValue } = useForm({ resolver: zodResolver(schema) });
 

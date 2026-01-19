@@ -283,7 +283,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
         // For now, export as CSV as before
         const exportData = resp.data.invoices.map((invoice: any) => ({
           'Fatura No': invoice.invoiceNumber,
-          'Hasta': invoice.patientName,
+          'Hasta': invoice.partyName,
           'Tarih': invoice.issueDate,
           'Tutar': invoice.grandTotal,
           'Durum': invoice.status,

@@ -1,5 +1,5 @@
-from typing import Optional, List, Any, Union
-from pydantic import Field, validator
+from typing import Optional, List, Any, Union, Dict
+from pydantic import Field, field_validator, ValidationInfo, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # --- Inventory Schemas ---
@@ -60,25 +60,36 @@ class InventoryItemRead(InventoryItemBase, IDMixin, TimestampMixin):
     ear: Optional[str] = None
     kdv: Optional[float] = None # Alias for vatRate
     
-    @validator("ear", always=True, pre=True)
-    def set_ear_alias(cls, v, values):
-        return v or values.get("direction")
+    @field_validator("ear", mode="before")
+    @classmethod
+    def set_ear_alias(cls, v, info: ValidationInfo):
+        if v is not None:
+             return v
+        return info.data.get("direction")
 
-    @validator("kdv", always=True, pre=True)
-    def set_kdv_alias(cls, v, values):
-        return v or values.get("kdv_rate")
+    @field_validator("kdv", mode="before")
+    @classmethod
+    def set_kdv_alias(cls, v, info: ValidationInfo):
+        if v is not None:
+             return v
+        return info.data.get("kdv_rate")
 
-    @validator("vat_included_price", always=True)
-    def compute_vat_price(cls, v, values):
-        """Compute if not present (logic mirror from model)"""
-        if v: return v
-        price = values.get('price', 0.0)
-        rate = values.get('kdv_rate', 18.0)
-        includes = values.get('price_includes_kdv', False)
+    @model_validator(mode='after')
+    def compute_fields(self):
+        # Compute vat_included_price
+        if not self.vat_included_price or self.vat_included_price == 0.0:
+            price = self.price or 0.0
+            rate = self.kdv_rate or 18.0
+            includes = self.price_includes_kdv
+            
+            if includes:
+                self.vat_included_price = price
+            else:
+                self.vat_included_price = price * (1 + rate / 100.0)
         
-        if includes:
-            return price
-        return price * (1 + rate / 100.0)
+        # Ensure aliases for ear and kdv are set if missing (though field_validators should handle this)
+        # But 'mode=before' field validators run on input dict/object retrieval.
+        return self
 
 class InventoryStats(AppBaseModel):
     total_items: int = Field(0, alias="totalItems")
@@ -97,5 +108,22 @@ class StockMovementRead(IDMixin, TimestampMixin, AppBaseModel):
     notes: Optional[str] = None
     
     # Enrichment fields (optional)
-    patient_id: Optional[str] = Field(None, alias="patientId")
-    patient_name: Optional[str] = Field(None, alias="patientName")
+    party_id: Optional[str] = Field(None, alias="partyId")
+    party_name: Optional[str] = Field(None, alias="partyName")
+
+class InventoryFilterOptions(AppBaseModel):
+    categories: List[str]
+    brands: List[str]
+    suppliers: List[str]
+    price_range: Dict[str, float] = Field(..., alias="priceRange")
+
+class InventoryPagination(AppBaseModel):
+    page: int
+    limit: int
+    total: int
+    total_pages: int = Field(..., alias="totalPages")
+
+class InventorySearchResponse(AppBaseModel):
+    items: List[InventoryItemRead]
+    pagination: InventoryPagination
+    filters: InventoryFilterOptions

@@ -10,6 +10,7 @@ from database import get_db
 from models.marketplace import MarketplaceIntegration, MarketplaceProduct
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.marketplaces import MarketplaceIntegrationRead, MarketplaceIntegrationCreate
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,8 @@ async def get_integrations(
         if access.tenant_id:
             query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
         integrations = query.all()
-        return {"success": True, "data": [i.to_dict() for i in integrations]}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i) for i in integrations]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -85,7 +87,8 @@ async def create_integration(
         db.add(integration)
         db.commit()
         db.refresh(integration)
-        return {"success": True, "data": integration.to_dict()}
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return {"success": True, "data": MarketplaceIntegrationRead.model_validate(integration)}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))

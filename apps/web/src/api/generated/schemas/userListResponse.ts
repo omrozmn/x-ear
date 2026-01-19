@@ -12,4 +12,5 @@ import type { UserRead } from './userRead';
  */
 export interface UserListResponse {
   users: UserRead[];
+  total: number;
 }

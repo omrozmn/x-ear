@@ -13,6 +13,13 @@ const RETRY_CONFIG = {
 };
 
 /**
+ * Generate a unique Idempotency-Key for write operations (G-06)
+ */
+export const generateIdempotencyKey = (): string => {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
+/**
  * Create axios instance for Orval mutator
  * This is separate from api.ts to avoid import.meta issues during Orval generation
  */
@@ -22,13 +29,23 @@ const axiosInstance = axios.create({
     },
 });
 
-// Request interceptor for auth token
+// Request interceptor for auth token and idempotency
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Add Idempotency-Key for write operations (POST, PUT, PATCH)
+        const method = config.method?.toUpperCase() || 'GET';
+        if (['POST', 'PUT', 'PATCH'].includes(method)) {
+            const existingKey = config.headers['Idempotency-Key'];
+            if (!existingKey) {
+                config.headers['Idempotency-Key'] = generateIdempotencyKey();
+            }
+        }
+
         return config;
     },
     (error) => Promise.reject(error)

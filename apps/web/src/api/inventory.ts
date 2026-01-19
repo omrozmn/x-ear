@@ -1,4 +1,4 @@
-import { updateInventory } from '@/api/generated';
+import { updateInventory } from '@/api/client/inventory.client';
 import type { InventoryItemUpdate } from '@/api/generated/schemas';
 
 export async function updateInventoryItem(itemId: string, payload: Partial<InventoryItemUpdate>) {

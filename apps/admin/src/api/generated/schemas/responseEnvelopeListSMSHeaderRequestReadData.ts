@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSHeaderRequestRead } from './sMSHeaderRequestRead';
+import type { SmsHeaderRequestRead } from './smsHeaderRequestRead';
 
-export type ResponseEnvelopeListSMSHeaderRequestReadData = SMSHeaderRequestRead[] | null;
+export type ResponseEnvelopeListSmsHeaderRequestReadData = SmsHeaderRequestRead[] | null;

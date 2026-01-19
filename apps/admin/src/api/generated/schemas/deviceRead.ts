@@ -11,12 +11,12 @@ import type { DeviceReadModel } from './deviceReadModel';
 import type { DeviceReadSerialNumber } from './deviceReadSerialNumber';
 import type { DeviceReadBarcode } from './deviceReadBarcode';
 import type { DeviceReadEar } from './deviceReadEar';
-import type { DeviceReadPatientId } from './deviceReadPatientId';
+import type { DeviceReadPartyId } from './deviceReadPartyId';
 import type { DeviceReadSaleId } from './deviceReadSaleId';
 import type { DeviceReadTenantId } from './deviceReadTenantId';
 import type { DeviceReadBranchId } from './deviceReadBranchId';
 import type { DeviceReadInventoryId } from './deviceReadInventoryId';
-import type { DeviceReadPatientName } from './deviceReadPatientName';
+import type { DeviceReadPartyName } from './deviceReadPartyName';
 
 /**
  * Schema for reading a device
@@ -54,11 +54,11 @@ export interface DeviceRead {
   features?: string[];
   /** Warranty in months */
   warrantyMonths?: number;
-  patientId?: DeviceReadPatientId;
+  partyId?: DeviceReadPartyId;
   saleId?: DeviceReadSaleId;
   tenantId?: DeviceReadTenantId;
   branchId?: DeviceReadBranchId;
   inventoryId?: DeviceReadInventoryId;
   isAssigned?: boolean;
-  patientName?: DeviceReadPatientName;
+  partyName?: DeviceReadPartyName;
 }

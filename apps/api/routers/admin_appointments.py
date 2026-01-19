@@ -7,10 +7,11 @@ import logging
 
 from database import get_db
 from models.appointment import Appointment
-from models.patient import Patient
+from core.models.party import Party
 from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.appointments import AppointmentRead  # Import AppointmentRead schema
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +35,13 @@ async def get_all_appointments(
 ):
     """Get list of ALL appointments from ALL tenants"""
     try:
-        query = db.query(Appointment).join(Patient)
+        query = db.query(Appointment).join(Party)
         
         if search:
             query = query.filter(
-                (Patient.first_name.ilike(f"%{search}%")) |
-                (Patient.last_name.ilike(f"%{search}%")) |
-                (Patient.phone.ilike(f"%{search}%"))
+                (Party.first_name.ilike(f"%{search}%")) |
+                (Party.last_name.ilike(f"%{search}%")) |
+                (Party.phone.ilike(f"%{search}%"))
             )
         
         if access.tenant_id:
@@ -71,17 +72,20 @@ async def get_all_appointments(
         
         appointments_list = []
         for appt in appointments:
-            appt_dict = appt.to_dict()
+            # Use Pydantic schema for type-safe serialization (NO to_dict())
+            appt_data = AppointmentRead.model_validate(appt).model_dump(by_alias=True)
             
-            if appt.patient:
-                appt_dict["patientName"] = f"{appt.patient.first_name} {appt.patient.last_name}"
+            # Add party name if available (using party relationship, not legacy patient)
+            if appt.party:
+                appt_data["partyName"] = f"{appt.party.first_name} {appt.party.last_name}"
             
+            # Add tenant name for admin view
             if appt.tenant_id:
                 tenant = db.get(Tenant, appt.tenant_id)
                 if tenant:
-                    appt_dict["tenantName"] = tenant.name
+                    appt_data["tenantName"] = tenant.name
             
-            appointments_list.append(appt_dict)
+            appointments_list.append(appt_data)
         
         return {
             "success": True,

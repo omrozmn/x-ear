@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/middleware/kill_switch_middleware.py
+# hypothesis_version: 6.150.1
+
+[503, '/ai', '/ai/action', '/ai/actions', '/ai/chat', '/ai/health', '/ai/ocr', '/ai/status', '3600', 'AI_DISABLED', 'Retry-After', 'X-AI-Kill-Switch', 'X-Tenant-ID', 'activated_at', 'activated_by', 'active', 'code', 'details', 'error', 'message', 'reason', 'retry_after', 'scope', 'target_id', 'tenant_id']

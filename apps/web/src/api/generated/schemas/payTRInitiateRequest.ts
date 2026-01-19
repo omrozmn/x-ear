@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PayTRInitiateRequestSaleId } from './payTRInitiateRequestSaleId';
-import type { PayTRInitiateRequestPatientId } from './payTRInitiateRequestPatientId';
+import type { PayTRInitiateRequestPartyId } from './payTRInitiateRequestPartyId';
 import type { PayTRInitiateRequestDescription } from './payTRInitiateRequestDescription';
 
 export interface PayTRInitiateRequest {
   sale_id?: PayTRInitiateRequestSaleId;
-  patient_id?: PayTRInitiateRequestPatientId;
+  party_id?: PayTRInitiateRequestPartyId;
   installment_count?: number;
   amount: number;
   description?: PayTRInitiateRequestDescription;

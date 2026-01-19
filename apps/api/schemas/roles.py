@@ -77,3 +77,13 @@ class PermissionListResponse(AppBaseModel):
 # Type aliases for frontend compatibility
 Role = RoleRead
 Permission = PermissionRead
+
+
+class UserPermissionsResponse(AppBaseModel):
+    permissions: List[str]
+    role: str
+    is_super_admin: bool = Field(False, alias="isSuperAdmin")
+
+class RolePermissionsResponse(AppBaseModel):
+    role: RoleRead
+    permissions: List[str]

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
 import { getCategoryDisplay, getCategoryValue } from '../../../utils/category-mapping';
-import { useListDeviceCategories } from '@/api/generated/devices/devices';
+import { useListDeviceCategories } from '@/api/client/devices.client';
 
 interface CategoryAutocompleteProps {
   value: string;
@@ -93,7 +93,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
     // Combine all sources: API, local, and defaults
     const combined = [...new Set([...apiCategories, ...localCategories, ...defaultCategories])];
     return combined.sort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoriesData, localCategories]);
 
   useEffect(() => {

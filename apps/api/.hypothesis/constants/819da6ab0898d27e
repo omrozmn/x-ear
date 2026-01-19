@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/commissions.py
+# hypothesis_version: 6.150.1
+
+[400, 404, 500, '/api/commissions', '/audit', '/by-affiliate', '/create', '/update-status', 'Commission Ledger', 'Commission not found', 'New status', 'amount', 'created_at', 'event', 'id', 'listCommissionAudit', 'status', 'tenant_id', 'updated_at']

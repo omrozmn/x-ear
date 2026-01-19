@@ -9,7 +9,7 @@ import type { WorkflowCreateRequestDocumentId } from './workflowCreateRequestDoc
 import type { WorkflowCreateRequestWorkflowType } from './workflowCreateRequestWorkflowType';
 
 export interface WorkflowCreateRequest {
-  patientId: string;
+  partyId: string;
   documentId?: WorkflowCreateRequestDocumentId;
   workflowType?: WorkflowCreateRequestWorkflowType;
 }

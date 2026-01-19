@@ -5,9 +5,9 @@ from schemas.base import ResponseEnvelope
 # Import all missing schemas
 from schemas.sales import DeviceAssignmentUpdate, InstallmentPayment, PaymentPlanCreate
 from schemas.auth import PasswordChangeRequest
-from schemas.patients import PatientSearchFilters
+from schemas.parties import PartySearchFilters
 from schemas.users import PermissionRead, UserProfile
-from schemas.sms import SMSHeaderRequestUpdate, SMSProviderConfigCreate
+from schemas.sms import SmsHeaderRequestUpdate, SmsProviderConfigCreate
 from schemas.campaigns import SMSLogRead
 from schemas.tenants import TenantStats
 
@@ -18,12 +18,12 @@ RegistryType = Union[
     DeviceAssignmentUpdate,
     InstallmentPayment,
     PasswordChangeRequest,
-    PatientSearchFilters,
+    PartySearchFilters,
     PaymentPlanCreate,
     PermissionRead,
-    SMSHeaderRequestUpdate,
+    SmsHeaderRequestUpdate,
     SMSLogRead,
-    SMSProviderConfigCreate,
+    SmsProviderConfigCreate,
     TenantStats,
     UserProfile
 ]

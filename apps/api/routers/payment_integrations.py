@@ -4,7 +4,7 @@ Handles POS/PayTR payment integrations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form
 from fastapi.responses import PlainTextResponse
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 import logging
@@ -16,6 +16,8 @@ from sqlalchemy.orm.attributes import flag_modified
 from database import get_db, gen_id
 from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from schemas.sales import PaymentRecordRead
+from schemas.payment_integrations import PayTRConfigRead, PayTRInitiateResponse
 from database import get_db
 
 logger = logging.getLogger(__name__)
@@ -33,7 +35,7 @@ class PayTRConfigUpdate(BaseModel):
 
 class PayTRInitiateRequest(BaseModel):
     sale_id: Optional[str] = None
-    patient_id: Optional[str] = None
+    party_id: Optional[str] = None
     installment_count: int = 1
     amount: float
     description: Optional[str] = None
@@ -61,7 +63,7 @@ def get_tenant_paytr_settings(db: Session, tenant_id: str) -> Optional[dict]:
 
 # --- Routes ---
 
-@router.get("/paytr/config", operation_id="listPaymentPoPaytrConfig")
+@router.get("/paytr/config", operation_id="listPaymentPoPaytrConfig", response_model=ResponseEnvelope[PayTRConfigRead])
 def get_paytr_config(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -79,13 +81,13 @@ def get_paytr_config(
     masked_key = m_key[:4] + '****' + m_key[-4:] if len(m_key) > 8 else '****'
     masked_salt = m_salt[:4] + '****' + m_salt[-4:] if len(m_salt) > 8 else '****'
     
-    return ResponseEnvelope(data={
-        'merchant_id': settings.get('merchant_id', ''),
-        'merchant_key_masked': masked_key,
-        'merchant_salt_masked': masked_salt,
-        'test_mode': settings.get('test_mode', False),
-        'enabled': bool(settings.get('merchant_id'))
-    })
+    return ResponseEnvelope(data=PayTRConfigRead(
+        merchant_id=settings.get('merchant_id', ''),
+        merchant_key_masked=masked_key,
+        merchant_salt_masked=masked_salt,
+        test_mode=settings.get('test_mode', False),
+        enabled=bool(settings.get('merchant_id'))
+    ))
 
 @router.put("/paytr/config", operation_id="updatePaymentPoPaytrConfig")
 def update_paytr_config(
@@ -135,7 +137,7 @@ def update_paytr_config(
     
     return ResponseEnvelope(message="PayTR config updated")
 
-@router.post("/paytr/initiate", operation_id="createPaymentPoPaytrInitiate")
+@router.post("/paytr/initiate", operation_id="createPaymentPoPaytrInitiate", response_model=ResponseEnvelope[PayTRInitiateResponse])
 def initiate_paytr_payment(
     request_data: PayTRInitiateRequest,
     request: Request,
@@ -147,7 +149,7 @@ def initiate_paytr_payment(
     Supports Sale-linked or Standalone
     """
     from models.sales import Sale, PaymentRecord
-    from models.patient import Patient
+    from core.models.party import Party
     from services.paytr_service import PayTRService
     
     if not access.tenant_id:
@@ -155,7 +157,7 @@ def initiate_paytr_payment(
     
     try:
         sale_id = request_data.sale_id
-        patient_id = request_data.patient_id
+        party_id = request_data.party_id
         installment_count = request_data.installment_count
         amount = request_data.amount
         description = request_data.description or ''
@@ -188,8 +190,8 @@ def initiate_paytr_payment(
                     logger.warning(f"Duplicate payment initiate blocked for sale {sale.id}, amount {amount}")
                     raise HTTPException(status_code=400, detail="Bu satış için bekleyen bir ödeme zaten var.")
         
-        if not patient_id and sale:
-            patient_id = sale.patient_id
+        if not party_id and sale:
+            party_id = sale.party_id
         
         transaction_id = gen_id("ptr")
         current_branch_id = getattr(access.user, 'branch_id', None) if access.user else None
@@ -197,7 +199,7 @@ def initiate_paytr_payment(
         payment_record = PaymentRecord(
             tenant_id=access.tenant_id,
             branch_id=current_branch_id,
-            patient_id=patient_id,
+            party_id=party_id,
             sale_id=sale_id,
             amount=amount,
             payment_date=datetime.now(timezone.utc),
@@ -225,8 +227,8 @@ def initiate_paytr_payment(
         user_phone = "5555555555"
         user_address = "Adres Yok"
         
-        if patient_id:
-            patient = db.get(Patient, patient_id)
+        if party_id:
+            patient = db.get(Party, party_id)
             if patient:
                 user_name = f"{patient.first_name} {patient.last_name}"
                 user_email = patient.email or user_email
@@ -260,11 +262,11 @@ def initiate_paytr_payment(
         token_result = paytr.get_token(payload)
         
         if token_result['success']:
-            return ResponseEnvelope(data={
-                'token': token_result['token'],
-                'iframe_url': 'https://www.paytr.com/odeme/guvenli/' + token_result['token'],
-                'payment_record_id': payment_record.id
-            })
+            return ResponseEnvelope(data=PayTRInitiateResponse(
+                token=token_result['token'],
+                iframe_url='https://www.paytr.com/odeme/guvenli/' + token_result['token'],
+                payment_record_id=payment_record.id
+            ))
         else:
             raise HTTPException(status_code=400, detail=token_result.get('error', 'PayTR error'))
             
@@ -367,7 +369,7 @@ async def paytr_callback(
             logger.error(f"PayTR Callback: Failed to update error status: {inner_e}")
         return "OK"
 
-@router.get("/transactions", operation_id="listPaymentPoTransactions")
+@router.get("/transactions", operation_id="listPaymentPoTransactions", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def get_pos_transactions(
     provider: Optional[str] = None,
     start_date: Optional[str] = None,
@@ -411,6 +413,6 @@ def get_pos_transactions(
     records = query.all()
     
     return ResponseEnvelope(data=[
-        p.to_dict() if hasattr(p, 'to_dict') else {'id': p.id}
+        PaymentRecordRead.model_validate(p).model_dump(by_alias=True)
         for p in records
     ])

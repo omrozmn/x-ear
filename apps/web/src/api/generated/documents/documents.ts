@@ -26,7 +26,9 @@ import type {
 
 import type {
   DocumentCreate,
-  HTTPValidationError
+  HTTPValidationError,
+  ResponseEnvelopeDocumentRead,
+  ResponseEnvelopeListDocumentRead
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -39,13 +41,13 @@ import { customInstance } from '../../orval-mutator';
  * @summary Get Patient Documents
  */
 export const listPatientDocuments = (
-    patientId: string,
+    partyId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/documents`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeListDocumentRead>(
+      {url: `/api/parties/${partyId}/documents`, method: 'GET', signal
     },
       );
     }
@@ -53,29 +55,29 @@ export const listPatientDocuments = (
 
 
 
-export const getListPatientDocumentsQueryKey = (patientId?: string,) => {
+export const getListPatientDocumentsQueryKey = (partyId?: string,) => {
     return [
-    `/api/patients/${patientId}/documents`
+    `/api/parties/${partyId}/documents`
     ] as const;
     }
 
     
-export const getListPatientDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
+export const getListPatientDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPatientDocumentsQueryKey(patientId);
+  const queryKey =  queryOptions?.queryKey ?? getListPatientDocumentsQueryKey(partyId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientDocuments>>> = ({ signal }) => listPatientDocuments(patientId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientDocuments>>> = ({ signal }) => listPatientDocuments(partyId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
 export type ListPatientDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientDocuments>>>
@@ -83,7 +85,7 @@ export type ListPatientDocumentsQueryError = HTTPValidationError
 
 
 export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>> & Pick<
+ partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listPatientDocuments>>,
           TError,
@@ -93,7 +95,7 @@ export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPa
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>> & Pick<
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listPatientDocuments>>,
           TError,
@@ -103,7 +105,7 @@ export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPa
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
@@ -111,11 +113,11 @@ export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPa
  */
 
 export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPatientDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListPatientDocumentsQueryOptions(patientId,options)
+  const queryOptions = getListPatientDocumentsQueryOptions(partyId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -132,14 +134,14 @@ export function useListPatientDocuments<TData = Awaited<ReturnType<typeof listPa
  * @summary Add Patient Document
  */
 export const createPatientDocuments = (
-    patientId: string,
+    partyId: string,
     documentCreate: DocumentCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/documents`, method: 'POST',
+      return customInstance<ResponseEnvelopeDocumentRead>(
+      {url: `/api/parties/${partyId}/documents`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: documentCreate, signal
     },
@@ -149,8 +151,8 @@ export const createPatientDocuments = (
 
 
 export const getCreatePatientDocumentsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{patientId: string;data: DocumentCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{patientId: string;data: DocumentCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{partyId: string;data: DocumentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{partyId: string;data: DocumentCreate}, TContext> => {
 
 const mutationKey = ['createPatientDocuments'];
 const {mutation: mutationOptions} = options ?
@@ -162,10 +164,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientDocuments>>, {patientId: string;data: DocumentCreate}> = (props) => {
-          const {patientId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientDocuments>>, {partyId: string;data: DocumentCreate}> = (props) => {
+          const {partyId,data} = props ?? {};
 
-          return  createPatientDocuments(patientId,data,)
+          return  createPatientDocuments(partyId,data,)
         }
 
         
@@ -181,11 +183,11 @@ const {mutation: mutationOptions} = options ?
  * @summary Add Patient Document
  */
 export const useCreatePatientDocuments = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{patientId: string;data: DocumentCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDocuments>>, TError,{partyId: string;data: DocumentCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createPatientDocuments>>,
         TError,
-        {patientId: string;data: DocumentCreate},
+        {partyId: string;data: DocumentCreate},
         TContext
       > => {
 
@@ -198,14 +200,14 @@ export const useCreatePatientDocuments = <TError = HTTPValidationError,
  * @summary Get Patient Document
  */
 export const getPatientDocument = (
-    patientId: string,
+    partyId: string,
     documentId: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/documents/${documentId}`, method: 'GET', signal
+      {url: `/api/parties/${partyId}/documents/${documentId}`, method: 'GET', signal
     },
       );
     }
@@ -213,31 +215,31 @@ export const getPatientDocument = (
 
 
 
-export const getGetPatientDocumentQueryKey = (patientId?: string,
+export const getGetPatientDocumentQueryKey = (partyId?: string,
     documentId?: string,) => {
     return [
-    `/api/patients/${patientId}/documents/${documentId}`
+    `/api/parties/${partyId}/documents/${documentId}`
     ] as const;
     }
 
     
-export const getGetPatientDocumentQueryOptions = <TData = Awaited<ReturnType<typeof getPatientDocument>>, TError = HTTPValidationError>(patientId: string,
+export const getGetPatientDocumentQueryOptions = <TData = Awaited<ReturnType<typeof getPatientDocument>>, TError = HTTPValidationError>(partyId: string,
     documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocument>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPatientDocumentQueryKey(patientId,documentId);
+  const queryKey =  queryOptions?.queryKey ?? getGetPatientDocumentQueryKey(partyId,documentId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPatientDocument>>> = ({ signal }) => getPatientDocument(patientId,documentId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPatientDocument>>> = ({ signal }) => getPatientDocument(partyId,documentId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId && documentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPatientDocument>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(partyId && documentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPatientDocument>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
 export type GetPatientDocumentQueryResult = NonNullable<Awaited<ReturnType<typeof getPatientDocument>>>
@@ -245,7 +247,7 @@ export type GetPatientDocumentQueryError = HTTPValidationError
 
 
 export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatientDocument>>, TError = HTTPValidationError>(
- patientId: string,
+ partyId: string,
     documentId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocument>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPatientDocument>>,
@@ -256,7 +258,7 @@ export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatie
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatientDocument>>, TError = HTTPValidationError>(
- patientId: string,
+ partyId: string,
     documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocument>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPatientDocument>>,
@@ -267,7 +269,7 @@ export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatie
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatientDocument>>, TError = HTTPValidationError>(
- patientId: string,
+ partyId: string,
     documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocument>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
@@ -276,12 +278,12 @@ export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatie
  */
 
 export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatientDocument>>, TError = HTTPValidationError>(
- patientId: string,
+ partyId: string,
     documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientDocument>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPatientDocumentQueryOptions(patientId,documentId,options)
+  const queryOptions = getGetPatientDocumentQueryOptions(partyId,documentId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -298,13 +300,13 @@ export function useGetPatientDocument<TData = Awaited<ReturnType<typeof getPatie
  * @summary Delete Patient Document
  */
 export const deletePatientDocument = (
-    patientId: string,
+    partyId: string,
     documentId: string,
  ) => {
       
       
       return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/documents/${documentId}`, method: 'DELETE'
+      {url: `/api/parties/${partyId}/documents/${documentId}`, method: 'DELETE'
     },
       );
     }
@@ -312,8 +314,8 @@ export const deletePatientDocument = (
 
 
 export const getDeletePatientDocumentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePatientDocument>>, TError,{patientId: string;documentId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deletePatientDocument>>, TError,{patientId: string;documentId: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePatientDocument>>, TError,{partyId: string;documentId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deletePatientDocument>>, TError,{partyId: string;documentId: string}, TContext> => {
 
 const mutationKey = ['deletePatientDocument'];
 const {mutation: mutationOptions} = options ?
@@ -325,10 +327,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePatientDocument>>, {patientId: string;documentId: string}> = (props) => {
-          const {patientId,documentId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePatientDocument>>, {partyId: string;documentId: string}> = (props) => {
+          const {partyId,documentId} = props ?? {};
 
-          return  deletePatientDocument(patientId,documentId,)
+          return  deletePatientDocument(partyId,documentId,)
         }
 
         
@@ -344,11 +346,11 @@ const {mutation: mutationOptions} = options ?
  * @summary Delete Patient Document
  */
 export const useDeletePatientDocument = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePatientDocument>>, TError,{patientId: string;documentId: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePatientDocument>>, TError,{partyId: string;documentId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deletePatientDocument>>,
         TError,
-        {patientId: string;documentId: string},
+        {partyId: string;documentId: string},
         TContext
       > => {
 

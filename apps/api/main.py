@@ -20,6 +20,10 @@ from fastapi_app.middleware import envelope_error, request_id_middleware
 # Centralized permission enforcement (Flask-free)
 from middleware.permission_middleware import FastAPIPermissionMiddleware
 
+# Tenant context cleanup middleware (G-02 security fix)
+# CRITICAL: Use function-based middleware, NOT BaseHTTPMiddleware
+from middleware.tenant_context import register_tenant_context_middleware
+
 # ============================================================================
 # Structured JSON Logging Setup with Rotation
 # ============================================================================
@@ -108,96 +112,12 @@ async def readiness_check():
 # ============================================================================
 # Idempotency-Key Middleware
 # ============================================================================
-from models.idempotency import IdempotencyKey
-from core.database import SessionLocal
+# ============================================================================
+# Idempotency-Key Middleware (G-04 Spec)
+# ============================================================================
+from middleware.idempotency import IdempotencyMiddleware
 
-async def idempotency_middleware(request: Request, call_next):
-    """
-    Idempotency-Key middleware for POST/PUT/PATCH requests.
-    If a request with the same key was already processed, return cached response.
-    """
-    # Only apply to write methods
-    if request.method not in ("POST", "PUT", "PATCH"):
-        return await call_next(request)
-    
-    idempotency_key = request.headers.get("Idempotency-Key")
-    if not idempotency_key:
-        return await call_next(request)
-    
-    endpoint = str(request.url.path)
-    
-    # Check if key exists
-    db = SessionLocal()
-    try:
-        existing = db.query(IdempotencyKey).filter(
-            IdempotencyKey.idempotency_key == idempotency_key,
-            IdempotencyKey.endpoint == endpoint
-        ).first()
-        
-        if existing and existing.response_json and not existing.processing:
-            # Return cached response
-            return Response(
-                content=existing.response_json,
-                status_code=existing.status_code or 200,
-                media_type="application/json",
-                headers={"X-Idempotency-Replayed": "true"}
-            )
-        
-        if existing and existing.processing:
-            # Request is still being processed
-            return Response(
-                content=json.dumps({"error": "Request is being processed"}),
-                status_code=409,
-                media_type="application/json"
-            )
-        
-        # Mark as processing
-        if not existing:
-            existing = IdempotencyKey(
-                idempotency_key=idempotency_key,
-                endpoint=endpoint,
-                processing=True
-            )
-            db.add(existing)
-            db.commit()
-        else:
-            existing.processing = True
-            db.commit()
-        
-        # Process request
-        response = await call_next(request)
-        
-        # Cache response for successful requests
-        if 200 <= response.status_code < 300:
-            body = b""
-            async for chunk in response.body_iterator:
-                body += chunk
-            
-            existing.status_code = response.status_code
-            existing.response_json = body.decode()
-            existing.processing = False
-            db.commit()
-            
-            return Response(
-                content=body,
-                status_code=response.status_code,
-                media_type=response.media_type,
-                headers=dict(response.headers)
-            )
-        
-        # Mark as not processing on failure
-        existing.processing = False
-        db.commit()
-        
-        return response
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Idempotency middleware error: {e}")
-        return await call_next(request)
-    finally:
-        db.close()
-
-app.middleware("http")(idempotency_middleware)
+app.add_middleware(IdempotencyMiddleware)
 
 # Permission middleware should run early (after request-id) to ensure consistent errors/logs.
 app.add_middleware(FastAPIPermissionMiddleware)
@@ -290,17 +210,25 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"http(s)?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*", "Idempotency-Key", "X-Request-Id", "sentry-trace", "baggage"],
     expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
+# CRITICAL: Tenant context cleanup middleware (G-02 security fix)
+# Must be registered after CORS to ensure it wraps all request processing
+# Ensures ContextVar is cleared after each request to prevent cross-tenant leaks
+# NOTE: Using function-based middleware, NOT BaseHTTPMiddleware (which can cause context leaks)
+register_tenant_context_middleware(app)
+
 # Import all FastAPI routers
-from routers import sms, campaigns, patients, inventory, sales
-from routers import auth, appointments, dashboard, devices
+from routers import parties, auth, users
+from routers import sms, campaigns, inventory, sales
+from routers import appointments, dashboard, devices
 from routers import notifications, branches, reports, roles
-from routers import payments, users, tenant_users, suppliers, settings
+from routers import payments, tenant_users, suppliers, settings
 # Admin routers
 from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics
 # Additional routers
@@ -310,11 +238,11 @@ from routers import activity_logs, permissions, ocr
 from routers import upload, documents
 from routers import cash_records, unified_cash, payment_integrations
 
-# Include FastAPI Routers
+# Include all FastAPI Routers
 # All routers use /api prefix to match existing Flask structure
 app.include_router(sms.router, prefix="/api")
 app.include_router(campaigns.router, prefix="/api")
-app.include_router(patients.router, prefix="/api")
+app.include_router(parties.router, prefix="/api")
 app.include_router(inventory.router, prefix="/api")
 app.include_router(sales.router, prefix="/api")
 
@@ -350,15 +278,16 @@ app.include_router(sgk.router, prefix="/api")
 # Newly migrated routers (Phase 2)
 app.include_router(activity_logs.router, prefix="/api")
 app.include_router(permissions.router, prefix="/api")
-app.include_router(ocr.router, prefix="/api")  # Has /ocr prefix built-in
-app.include_router(upload.router, prefix="/api")  # Has /upload prefix built-in
+app.include_router(ocr.router, prefix="/api")
+app.include_router(upload.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
-# Patient subresources router (devices, notes, hearing tests, ereceipts, appointments)
-from routers import patient_subresources
-app.include_router(patient_subresources.router, prefix="/api")
+# Party subresources router (devices, notes, hearing tests, ereceipts, appointments)
+from routers import party_subresources, hearing_profiles
+app.include_router(party_subresources.router, prefix="/api")
+app.include_router(hearing_profiles.router, prefix="/api")
 app.include_router(cash_records.router, prefix="/api")
 app.include_router(unified_cash.router, prefix="/api")
-app.include_router(payment_integrations.router, prefix="/api")  # Has /payments/pos prefix built-in
+app.include_router(payment_integrations.router, prefix="/api")
 
 # Phase 3 migrated routers
 from routers import timeline, plans, addons, subscriptions
@@ -381,31 +310,32 @@ app.include_router(registration.router, prefix="/api")
 # Phase 6 migrated routers - Admin modules
 from routers import (
     admin_api_keys, admin_appointments, admin_birfatura,
-    admin_integrations, admin_inventory, admin_invoices, admin_marketplaces,
-    admin_notifications, admin_patients, admin_payments, admin_production,
+    admin_integrations, admin_inventory, admin_invoices,
+    admin_marketplaces, admin_notifications, admin_parties, admin_payments, admin_production,
     admin_scan_queue, admin_suppliers
 )
-# admin_campaigns removed - endpoints already in campaigns.py
-# admin_tickets removed - duplicate endpoints
+# Pending Future Implementation:
+# from routers import admin_campaigns, admin_tickets, orders
+
 app.include_router(admin_api_keys.router)
 app.include_router(admin_appointments.router)
 app.include_router(admin_birfatura.router)
-# admin_campaigns.router removed
 app.include_router(admin_integrations.router, prefix="/api")
 app.include_router(admin_inventory.router)
 app.include_router(admin_invoices.router)
 app.include_router(admin_marketplaces.router)
 app.include_router(admin_notifications.router)
-app.include_router(admin_patients.router)
+app.include_router(admin_parties.router)
 app.include_router(admin_payments.router)
 app.include_router(admin_production.router)
 app.include_router(admin_scan_queue.router)
 app.include_router(admin_suppliers.router)
-# admin_tickets.router removed
+# app.include_router(admin_campaigns.router) # Pending - Redundant with campaigns.py?
+# app.include_router(admin_tickets.router) # Pending
 
 # Phase 6 migrated routers - Other modules
 from routers import audit, automation, affiliates, checkout, replacements, birfatura
-from routers import apps, pos_commission, uts
+from routers import apps, pos_commission, uts, sms_packages
 app.include_router(audit.router)
 app.include_router(automation.router)
 app.include_router(affiliates.router)
@@ -415,11 +345,12 @@ app.include_router(birfatura.router)
 app.include_router(apps.router)
 app.include_router(pos_commission.router)
 app.include_router(uts.router)
+app.include_router(sms_packages.router, prefix="/api") # Active: SMS Package Management
+# app.include_router(orders.router, prefix="/api") # Pending: Marketplace Orders
 
 # Phase 7 migrated routers - Final modules
-from routers import invoice_management, invoices_actions, communications, sms_integration, sms_packages
+from routers import invoice_management, invoices_actions, communications, sms_integration
 app.include_router(sms_integration.router)
-app.include_router(sms_packages.router, prefix="/api")
 app.include_router(invoice_management.router)
 app.include_router(invoices_actions.router)
 app.include_router(communications.router)
@@ -428,7 +359,21 @@ from routers import commissions
 app.include_router(commissions.router)
 
 from routers import schema_registry
-app.include_router(schema_registry.router, prefix="/api")
+app.include_router(schema_registry.router, prefix="/api") # Active: Developer Schema Registry
+
+# AI Layer routers
+from ai.api import (
+    chat_router as ai_chat_router,
+    actions_router as ai_actions_router,
+    audit_router as ai_audit_router,
+    status_router as ai_status_router,
+    admin_router as ai_admin_router,
+)
+app.include_router(ai_chat_router, prefix="/api")
+app.include_router(ai_actions_router, prefix="/api")
+app.include_router(ai_audit_router, prefix="/api")
+app.include_router(ai_status_router, prefix="/api")
+app.include_router(ai_admin_router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn

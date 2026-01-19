@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Modal, Button, Input, Select, Textarea } from '@x-ear/ui-web';
-import type { Patient } from '../../../types/patient/patient-base.types';
+import type { Party } from '../../../types/party/party-base.types';
 
 interface SGKEReceiptModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (receiptData: SGKEReceiptData) => void;
-  patient: Patient | null;
+  party: Party | null;
   receiptId?: string;
   mode?: 'view' | 'edit' | 'create';
   title?: string;
@@ -14,7 +14,7 @@ interface SGKEReceiptModalProps {
 
 interface SGKEReceiptData {
   id?: string;
-  patientId: string;
+  partyId: string;
   receiptNumber: string;
   receiptDate: string;
   doctorName: string;
@@ -22,7 +22,7 @@ interface SGKEReceiptData {
   medications: SGKMedication[];
   totalAmount: number;
   sgkCoverage: number;
-  patientPayment: number;
+  partyPayment: number;
   status: 'draft' | 'sent' | 'approved' | 'rejected';
   notes?: string;
 }
@@ -40,7 +40,7 @@ interface SGKMedication {
 // Mock e-reçete verisi
 const mockEReceipt: SGKEReceiptData = {
   id: 'ereceipt_001',
-  patientId: 'pat_001',
+  partyId: 'pat_001',
   receiptNumber: 'ER2024001234',
   receiptDate: '2024-01-15',
   doctorName: 'Dr. Mehmet Yılmaz',
@@ -67,7 +67,7 @@ const mockEReceipt: SGKEReceiptData = {
   ],
   totalAmount: 198.00,
   sgkCoverage: 158.40,
-  patientPayment: 39.60,
+  partyPayment: 39.60,
   status: 'approved',
   notes: 'Düzenli kullanım önerilir'
 };
@@ -76,7 +76,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  patient,
+  party,
   receiptId,
   mode = 'view',
   title = 'SGK E-Reçete Detayları'
@@ -92,13 +92,13 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
   ];
 
   const handleSave = async () => {
-    if (!patient) return;
+    if (!party) return;
 
     setIsSubmitting(true);
     try {
       await onSave({
         ...receiptData,
-        patientId: patient.id || ''
+        partyId: party.id || ''
       });
       onClose();
     } catch (error) {
@@ -144,17 +144,17 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
     >
       <div className="space-y-6">
         {/* Hasta Bilgileri */}
-        {patient && (
+        {party && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium text-gray-900 mb-2">Hasta Bilgileri</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-500">Ad Soyad:</span>
-                <span className="ml-2 font-medium">{patient.firstName} {patient.lastName}</span>
+                <span className="ml-2 font-medium">{party.firstName} {party.lastName}</span>
               </div>
               <div>
                 <span className="text-gray-500">TC Kimlik No:</span>
-                <span className="ml-2 font-medium">{patient.tcNumber}</span>
+                <span className="ml-2 font-medium">{party.tcNumber}</span>
               </div>
             </div>
           </div>
@@ -254,7 +254,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
             </div>
             <div>
               <span className="text-blue-600">Hasta Ödemesi:</span>
-              <p className="font-medium text-blue-900">₺{receiptData.patientPayment.toFixed(2)}</p>
+              <p className="font-medium text-blue-900">₺{receiptData.partyPayment.toFixed(2)}</p>
             </div>
           </div>
         </div>

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/tickets.py
+# hypothesis_version: 6.150.1
+
+['assignedAdminName', 'assignedTo', 'billing', 'closed', 'createdBy', 'feature_request', 'general', 'high', 'in_progress', 'low', 'medium', 'open', 'resolved', 'slaDueDate', 'technical', 'tenantId', 'tenantName', 'urgent']

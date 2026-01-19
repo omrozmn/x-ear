@@ -1,13 +1,14 @@
 """Admin Scan Queue Router - FastAPI"""
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 import logging
 
 from database import get_db
 from models.scan_queue import ScanQueue
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.scan_queue import ScanQueueRead
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +22,12 @@ async def init_db(
     """Initialize Scan Queue table"""
     try:
         ScanQueue.__table__.create(db.get_bind(), checkfirst=True)
-        return {"success": True, "message": "Scan Queue table initialized"}
+        return ResponseEnvelope(message="Scan Queue table initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", operation_id="listAdminScanQueue", response_model=ResponseEnvelope)
+@router.get("", operation_id="listAdminScanQueue", response_model=ResponseEnvelope[List[ScanQueueRead]])
 async def get_scan_queue(
     status: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -38,11 +39,11 @@ async def get_scan_queue(
         if status:
             query = query.filter(ScanQueue.status == status)
         items = query.order_by(ScanQueue.created_at.desc()).all()
-        return {"success": True, "data": [i.to_dict() for i in items]}
+        return ResponseEnvelope(data=[ScanQueueRead.model_validate(i) for i in items])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{scan_id}/retry", operation_id="createAdminScanQueueRetry", response_model=ResponseEnvelope)
+@router.post("/{scan_id}/retry", operation_id="createAdminScanQueueRetry", response_model=ResponseEnvelope[ScanQueueRead])
 async def retry_scan(
     scan_id: str,
     db: Session = Depends(get_db),
@@ -60,8 +61,9 @@ async def retry_scan(
         scan.completed_at = None
         db.commit()
         
-        return {"success": True, "data": scan.to_dict(), "message": "Scan queued for retry"}
+        return ResponseEnvelope(data=ScanQueueRead.model_validate(scan), message="Scan queued for retry")
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+

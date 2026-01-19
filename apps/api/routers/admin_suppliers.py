@@ -53,13 +53,12 @@ async def get_suppliers(
         total = query.count()
         suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
-        return {
-            "success": True,
-            "data": {
-                "suppliers": [s.to_dict() for s in suppliers],
+        return ResponseEnvelope(
+            data={
+                "suppliers": [SupplierRead.model_validate(s).model_dump(by_alias=True) for s in suppliers],
                 "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
             }
-        }
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -88,7 +87,7 @@ async def create_supplier(
         db.add(new_supplier)
         db.commit()
         db.refresh(new_supplier)
-        return {"success": True, "data": {"supplier": new_supplier.to_dict()}}
+        return ResponseEnvelope(data={"supplier": SupplierRead.model_validate(new_supplier).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:
@@ -106,7 +105,7 @@ async def get_supplier(
         supplier = db.get(Supplier, supplier_id)
         if not supplier:
             raise HTTPException(status_code=404, detail="Supplier not found")
-        return {"success": True, "data": {"supplier": supplier.to_dict()}}
+        return ResponseEnvelope(data={"supplier": SupplierRead.model_validate(supplier).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:
@@ -144,7 +143,7 @@ async def update_supplier(
         
         supplier.updated_at = datetime.utcnow()
         db.commit()
-        return {"success": True, "data": {"supplier": supplier.to_dict()}}
+        return ResponseEnvelope(data={"supplier": SupplierRead.model_validate(supplier).model_dump(by_alias=True)})
     except HTTPException:
         raise
     except Exception as e:

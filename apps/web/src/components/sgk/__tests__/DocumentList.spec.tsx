@@ -16,16 +16,16 @@ vi.mock('@x-ear/ui-web', () => ({
 }));
 
 vi.mock('@/hooks/sgk/useSgkDocuments', () => ({
-  useSgkDocuments: (patientId: string) => ({ data: { data: [{ id: 'temp-1', filename: 'f.txt', status: 'queued' }] }, isLoading: false, isError: false }),
-  useUploadSgkDocument: (patientId: string) => ({ mutate: vi.fn(), isLoading: false }),
-  useDeleteSgkDocument: (patientId: string) => ({ mutate: vi.fn() }),
+  useSgkDocuments: (partyId: string) => ({ data: { data: [{ id: 'temp-1', filename: 'f.txt', status: 'queued' }] }, isLoading: false, isError: false }),
+  useUploadSgkDocument: (partyId: string) => ({ mutate: vi.fn(), isLoading: false }),
+  useDeleteSgkDocument: (partyId: string) => ({ mutate: vi.fn() }),
 }));
 
 import DocumentList from '../DocumentList';
 
 describe('DocumentList', () => {
   it('shows queued badge for queued documents', () => {
-    render(<DocumentList patientId="patient-1" />);
+    render(<DocumentList partyId="party-1" />);
     expect(screen.getByText(/Queued/i)).toBeInTheDocument();
   });
 });

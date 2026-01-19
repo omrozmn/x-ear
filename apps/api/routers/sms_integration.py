@@ -13,14 +13,14 @@ from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
 from schemas.sms import (
-    SMSProviderConfigRead,
-    SMSProviderConfigUpdate,
-    SMSHeaderRequestBase,
-    SMSHeaderRequestRead,
-    SMSHeaderRequestCreate,
-    SMSHeaderRequestUpdate,
-    SMSPackageRead,
-    TenantSMSCreditRead,
+    SmsProviderConfigRead,
+    SmsProviderConfigUpdate,
+    SmsHeaderRequestBase,
+    SmsHeaderRequestRead,
+    SmsHeaderRequestCreate,
+    SmsHeaderRequestUpdate,
+    SmsPackageRead,
+    TenantSmsCreditRead,
     TargetAudienceRead,
     TargetAudienceCreate,
 )
@@ -36,7 +36,7 @@ os.makedirs(SMS_DOCUMENTS_FOLDER, exist_ok=True)
 
 # Removed duplicate model definitions locally (using schemas.sms)
 
-@router.get("/config", operation_id="listSmConfig", response_model=ResponseEnvelope[Optional[SMSProviderConfigRead]])
+@router.get("/config", operation_id="listSmConfig", response_model=ResponseEnvelope[Optional[SmsProviderConfigRead]])
 async def get_sms_config(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -52,13 +52,14 @@ async def get_sms_config(
             db.commit()
             db.refresh(config)
         
-        return ResponseEnvelope(data=config.to_dict() if config else None)
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=SmsProviderConfigRead.model_validate(config).model_dump(by_alias=True) if config else None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/config", operation_id="updateSmConfig", response_model=ResponseEnvelope[Optional[SMSProviderConfigRead]])
+@router.put("/config", operation_id="updateSmConfig", response_model=ResponseEnvelope[Optional[SmsProviderConfigRead]])
 async def update_sms_config(
-    data: SMSProviderConfigUpdate,
+    data: SmsProviderConfigUpdate,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
@@ -82,14 +83,16 @@ async def update_sms_config(
             config.documents_email = data.documents_email
         
         db.commit()
-        return ResponseEnvelope(data=config.to_dict())
+        db.refresh(config)
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=SmsProviderConfigRead.model_validate(config).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/headers", operation_id="listSmHeaders", response_model=ResponseEnvelope[List[SMSHeaderRequestRead]])
+@router.get("/headers", operation_id="listSmHeaders", response_model=ResponseEnvelope[List[SmsHeaderRequestRead]])
 async def list_sms_headers(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -103,13 +106,14 @@ async def list_sms_headers(
             query = query.filter(SMSHeaderModel.tenant_id == access.tenant_id)
         
         headers = query.order_by(SMSHeaderModel.created_at.desc()).all()
-        return ResponseEnvelope(data=[h.to_dict() for h in headers])
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=[SmsHeaderRequestRead.model_validate(h).model_dump(by_alias=True) for h in headers])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/headers", operation_id="createSmHeaders", response_model=ResponseEnvelope[SMSHeaderRequestRead])
+@router.post("/headers", operation_id="createSmHeaders", response_model=ResponseEnvelope[SmsHeaderRequestRead])
 async def request_sms_header(
-    data: SMSHeaderRequestCreate,
+    data: SmsHeaderRequestCreate,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
@@ -142,14 +146,15 @@ async def request_sms_header(
         db.commit()
         db.refresh(header)
         
-        return ResponseEnvelope(data=header.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=SmsHeaderRequestRead.model_validate(header).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/headers/{header_id}/set-default", operation_id="updateSmHeaderSetDefault", response_model=ResponseEnvelope[SMSHeaderRequestRead])
+@router.put("/headers/{header_id}/set-default", operation_id="updateSmHeaderSetDefault", response_model=ResponseEnvelope[SmsHeaderRequestRead])
 async def set_default_header(
     header_id: str,
     db: Session = Depends(get_db),
@@ -172,26 +177,29 @@ async def set_default_header(
         db.query(SMSHeaderModel).filter(SMSHeaderModel.tenant_id == access.tenant_id).update({"is_default": False})
         header.is_default = True
         db.commit()
+        db.refresh(header)
         
-        return ResponseEnvelope(data=header.to_dict(), message="Varsayilan baslik olarak ayarlandi")
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=SmsHeaderRequestRead.model_validate(header).model_dump(by_alias=True), message="Varsayilan baslik olarak ayarlandi")
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/packages", operation_id="listSmPackages", response_model=ResponseEnvelope[List[SMSPackageRead]])
+@router.get("/packages", operation_id="listSmPackages", response_model=ResponseEnvelope[List[SmsPackageRead]])
 async def list_sms_packages(db: Session = Depends(get_db)):
     """List available SMS packages (public endpoint)"""
     try:
         from models import SMSPackage
         
         packages = db.query(SMSPackage).filter(SMSPackage.is_active == True).order_by(SMSPackage.price).all()
-        return ResponseEnvelope(data=[p.to_dict() for p in packages])
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=[SmsPackageRead.model_validate(p).model_dump(by_alias=True) for p in packages])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/credit", operation_id="listSmCredit", response_model=ResponseEnvelope[Optional[TenantSMSCreditRead]])
+@router.get("/credit", operation_id="listSmCredit", response_model=ResponseEnvelope[Optional[TenantSmsCreditRead]])
 async def get_sms_credit(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -207,7 +215,8 @@ async def get_sms_credit(
             db.commit()
             db.refresh(credit)
         
-        return ResponseEnvelope(data=credit.to_dict() if credit else None)
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=TenantSmsCreditRead.model_validate(credit).model_dump(by_alias=True) if credit else None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -224,7 +233,8 @@ async def list_target_audiences(
         from models import TargetAudience
         
         audiences = db.query(TargetAudience).filter(TargetAudience.tenant_id == access.tenant_id).order_by(TargetAudience.created_at.desc()).all()
-        return ResponseEnvelope(data=[a.to_dict() for a in audiences])
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=[TargetAudienceRead.model_validate(a).model_dump(by_alias=True) for a in audiences])
     except HTTPException:
         raise
     except Exception as e:
@@ -256,7 +266,8 @@ async def create_target_audience(
         db.commit()
         db.refresh(audience)
         
-        return ResponseEnvelope(data=audience.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=TargetAudienceRead.model_validate(audience).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
@@ -379,7 +390,8 @@ async def upload_audience_file(
         db.commit()
         db.refresh(audience)
         
-        return ResponseEnvelope(data=audience.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=TargetAudienceRead.model_validate(audience).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
@@ -403,8 +415,9 @@ async def list_admin_sms_headers(
         total = query.count()
         headers = query.offset((page - 1) * per_page).limit(per_page).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[h.to_dict() for h in headers],
+            data=[SmsHeaderRequestRead.model_validate(h).model_dump(by_alias=True) for h in headers],
             meta={
                 "total": total,
                 "page": page,
@@ -441,7 +454,8 @@ async def update_header_status(
         db.commit()
         db.refresh(header)
         
-        return ResponseEnvelope(data=header.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=SmsHeaderRequestRead.model_validate(header).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:

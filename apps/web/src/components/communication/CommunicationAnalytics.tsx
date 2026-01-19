@@ -15,7 +15,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Card, Button, Badge, Select } from '@x-ear/ui-web';
-import { listCommunicationStats } from '@/api/generated/communications/communications';
+import { listCommunicationStats } from '@/api/client/communications.client';
 
 interface CommunicationStats {
   totalMessages: number;
@@ -61,6 +61,14 @@ interface CampaignPerformance {
   clicked: number;
   cost: number;
   roi: number;
+}
+
+interface CommunicationStatsResponse {
+  stats: CommunicationStats;
+  timeSeries: TimeSeriesData[];
+  channels: ChannelData[];
+  templates: TemplateUsage[];
+  campaigns: CampaignPerformance[];
 }
 
 interface CommunicationAnalyticsProps {
@@ -110,14 +118,16 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
     setLoading(true);
     try {
       // Real API call using Orval
-      const response = await listCommunicationStats() as any;
+      const response = await listCommunicationStats() as unknown as CommunicationStatsResponse;
 
       // Response is direct data, no wrapper
-      setStats((response?.stats || stats) as CommunicationStats);
-      setTimeSeriesData((response?.timeSeries || []) as any);
-      setChannelData((response?.channels || []) as any);
-      setTemplateUsage((response?.templates || []) as any);
-      setCampaignPerformance((response?.campaigns || []) as any);
+      if (response) {
+        setStats(response.stats || stats);
+        setTimeSeriesData(response.timeSeries || []);
+        setChannelData(response.channels || []);
+        setTemplateUsage(response.templates || []);
+        setCampaignPerformance(response.campaigns || []);
+      }
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
     } finally {
@@ -127,7 +137,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
 
   useEffect(() => {
     fetchAnalytics();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, selectedPeriod]);
 
   // Calculate trends

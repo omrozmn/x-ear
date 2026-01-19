@@ -1,7 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 from datetime import datetime, date
-from pydantic import Field, validator
+from pydantic import Field, field_validator, ValidationInfo
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
@@ -35,7 +35,7 @@ class AppointmentType(str, Enum):
 
 # --- Appointment Schemas ---
 class AppointmentBase(AppBaseModel):
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     clinician_id: Optional[str] = Field(None, alias="clinicianId")
     branch_id: Optional[str] = Field(None, alias="branchId")
     
@@ -46,6 +46,15 @@ class AppointmentBase(AppBaseModel):
     appointment_type: AppointmentType = Field(default=AppointmentType.CONSULTATION, alias="appointmentType")
     status: AppointmentStatus = AppointmentStatus.SCHEDULED
     notes: Optional[str] = None
+    
+    @field_validator("status", mode="before")
+    @classmethod
+    def validate_status(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        if hasattr(v, 'value'): # Handle Enum from core
+            return str(v.value).lower()
+        return v
 
 class AppointmentCreate(AppointmentBase):
     pass
@@ -58,15 +67,27 @@ class AppointmentUpdate(AppBaseModel):
     status: Optional[AppointmentStatus] = None
     notes: Optional[str] = None
     clinician_id: Optional[str] = Field(None, alias="clinicianId")
+    branch_id: Optional[str] = Field(None, alias="branchId")
+
+class RescheduleRequest(AppBaseModel):
+    date: str
+    time: str
+
+class AppointmentAvailability(AppBaseModel):
+    available_slots: List[str] = Field(..., alias="availableSlots")
+    occupied_slots: List[str] = Field(..., alias="occupiedSlots")
+    date: str
 
 class AppointmentRead(AppointmentBase, IDMixin):
     tenant_id: str = Field(..., alias="tenantId")
-    patient_name: Optional[str] = Field(None, alias="patientName")
+    party_name: Optional[str] = Field(None, alias="partyName")
+    tenant_name: Optional[str] = Field(None, alias="tenantName")  # For admin views
     
     # Legacy alias support if needed
     type: Optional[AppointmentType] = None
     
-    @validator("type", always=True, pre=True)
-    def set_type_alias(cls, v, values):
+    @field_validator("type", mode="before")
+    @classmethod
+    def set_type_alias(cls, v, info: ValidationInfo):
         if v: return v
-        return values.get("appointment_type")
+        return info.data.get("appointment_type")

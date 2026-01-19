@@ -8,6 +8,8 @@ from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
+from schemas.efatura import EFaturaOutboxRead
+
 class InvoiceStatus(str, Enum):
     DRAFT = "draft"
     PENDING = "pending"
@@ -64,7 +66,7 @@ class InvoiceBase(AppBaseModel):
 
 class InvoiceCreate(InvoiceBase):
     """Schema for creating an invoice"""
-    patient_id: Optional[str] = Field(None, alias="patientId")
+    party_id: Optional[str] = Field(None, alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
     items: List[InvoiceItemBase] = Field(default=[], description="Invoice items")
 
@@ -83,7 +85,7 @@ class InvoiceRead(AppBaseModel, TimestampMixin):
     invoice_number: Optional[str] = Field(None, alias="invoiceNumber")
     sale_id: Optional[str] = Field(None, alias="saleId")
     branch_id: Optional[str] = Field(None, alias="branchId")
-    patient_id: Optional[str] = Field(None, alias="patientId")
+    party_id: Optional[str] = Field(None, alias="partyId")
     device_id: Optional[str] = Field(None, alias="deviceId")
     tenant_id: Optional[str] = Field(None, alias="tenantId")
     
@@ -93,8 +95,8 @@ class InvoiceRead(AppBaseModel, TimestampMixin):
     device_price: Optional[Any] = Field(None, alias="devicePrice")  # Can be Decimal or float
     
     # Patient info (denormalized)
-    patient_name: Optional[str] = Field(None, alias="patientName")
-    patient_tc: Optional[str] = Field(None, alias="patientTC")
+    party_name: Optional[str] = Field(None, alias="partyName")
+    party_tc: Optional[str] = Field(None, alias="partyTC")
     
     # Status
     status: Optional[str] = None
@@ -143,7 +145,7 @@ class InvoiceTemplate(AppBaseModel):
 class InvoicePrintQueueItem(AppBaseModel):
     id: int
     invoice_number: Optional[str] = Field(None, alias="invoiceNumber")
-    patient_name: Optional[str] = Field(None, alias="patientName")
+    party_name: Optional[str] = Field(None, alias="partyName")
     amount: Optional[Any] = None
     queued_at: Optional[str] = Field(None, alias="queuedAt")
     priority: str = "normal"
@@ -159,6 +161,14 @@ class InvoicePrintQueueResponse(AppBaseModel):
     items: List[InvoicePrintQueueItem]
     total: int
     status: str
+
+class InvoiceIssueResponse(AppBaseModel):
+    invoice: InvoiceRead
+    outbox: EFaturaOutboxRead
+
+class InvoiceCopyCancelResponse(AppBaseModel):
+    copy: InvoiceRead
+    cancellation: InvoiceRead
 
 # Type aliases for frontend compatibility
 Invoice = InvoiceRead

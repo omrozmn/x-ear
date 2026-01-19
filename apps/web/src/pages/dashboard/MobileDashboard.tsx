@@ -18,7 +18,7 @@ export const MobileDashboard: React.FC = () => {
     };
 
     const quickActions = [
-        { icon: <Plus className="h-6 w-6" />, label: 'Hasta Ekle', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', to: '/patients?new=true' },
+        { icon: <Plus className="h-6 w-6" />, label: 'Hasta Ekle', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', to: '/parties?new=true' },
         { icon: <Calendar className="h-6 w-6" />, label: 'Randevu', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', to: '/appointments?new=true' },
         { icon: <Banknote className="h-6 w-6" />, label: 'Satış Yap', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', to: '/invoices/new' },
         { icon: <Clock className="h-6 w-6" />, label: 'Hızlı İşlem', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', to: '/actions' },
@@ -28,7 +28,7 @@ export const MobileDashboard: React.FC = () => {
         { label: 'Bugünkü Randevular', value: stats?.todayAppointments || 0, color: 'bg-blue-500', icon: <Calendar className="h-5 w-5 text-white/80" /> },
         { label: 'Aktif Denemeler', value: stats?.activeTrials || 0, color: 'bg-purple-500', icon: <Clock className="h-5 w-5 text-white/80" /> },
         { label: 'Aylık Gelir', value: formatCurrency(stats?.monthlyRevenue || 0), color: 'bg-green-500', icon: <Banknote className="h-5 w-5 text-white/80" /> },
-        { label: 'Toplam Hasta', value: stats?.totalPatients || 0, color: 'bg-indigo-500', icon: <Users className="h-5 w-5 text-white/80" /> },
+        { label: 'Toplam Hasta', value: stats?.totalParties || 0, color: 'bg-indigo-500', icon: <Users className="h-5 w-5 text-white/80" /> },
     ];
 
     if (loading && !stats) return <div className="flex justify-center p-10 mt-20">Yükleniyor...</div>;

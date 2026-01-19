@@ -9,6 +9,7 @@ import { UsersTab } from './UsersTab';
 import { SubscriptionTab } from './SubscriptionTab';
 import { IntegrationsTab } from './IntegrationsTab';
 import { SmsDocumentsTab } from './SmsDocumentsTab';
+import { ProductGuard } from '@/components/guards/ProductGuard';
 
 interface Tenant {
     id?: string;
@@ -19,6 +20,7 @@ interface Tenant {
     current_plan?: string;
     created_at?: string;
     settings?: any;
+    product_code?: string;
 }
 
 interface ExtendedTenant extends Tenant {
@@ -97,12 +99,14 @@ export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: strin
                                         >
                                             Entegrasyonlar
                                         </Tabs.Trigger>
-                                        <Tabs.Trigger
-                                            value="sms-documents"
-                                            className="pb-3 text-sm font-medium text-gray-500 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 hover:text-gray-700"
-                                        >
-                                            SMS Belgeleri
-                                        </Tabs.Trigger>
+                                        <ProductGuard currentProduct={tenant.product_code || 'xear_hearing'} allowedProducts={['xear_hearing']}>
+                                            <Tabs.Trigger
+                                                value="sms-documents"
+                                                className="pb-3 text-sm font-medium text-gray-500 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 hover:text-gray-700"
+                                            >
+                                                SMS Belgeleri
+                                            </Tabs.Trigger>
+                                        </ProductGuard>
                                     </Tabs.List>
                                 </div>
 
@@ -128,12 +132,14 @@ export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: strin
                                             refetch();
                                         }} />
                                     </Tabs.Content>
-                                    <Tabs.Content value="sms-documents" className="outline-none">
-                                        <SmsDocumentsTab tenantId={tenant.id!} onUpdate={() => {
-                                            queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
-                                            refetch();
-                                        }} />
-                                    </Tabs.Content>
+                                    <ProductGuard currentProduct={tenant.product_code || 'xear_hearing'} allowedProducts={['xear_hearing']}>
+                                        <Tabs.Content value="sms-documents" className="outline-none">
+                                            <SmsDocumentsTab tenantId={tenant.id!} onUpdate={() => {
+                                                queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
+                                                refetch();
+                                            }} />
+                                        </Tabs.Content>
+                                    </ProductGuard>
                                 </div>
                             </Tabs.Root>
                         ) : (

@@ -313,8 +313,8 @@ export function InvoiceList({
                     </div>
 
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{invoice.patientName}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{invoice.billingAddress?.taxNumber ? `VN: ${invoice.billingAddress?.taxNumber}` : invoice.patientPhone}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{invoice.partyName}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{invoice.billingAddress?.taxNumber ? `VN: ${invoice.billingAddress?.taxNumber}` : invoice.partyPhone}</div>
                     </div>
 
                     <div>

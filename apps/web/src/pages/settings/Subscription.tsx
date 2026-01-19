@@ -4,9 +4,10 @@ import { Button } from '@x-ear/ui-web';
 import {
     useListSmPackages,
     useListSmCredit,
-    useListSubscriptionCurrent,
-    useListAddons
-} from '@/api/generated';
+    getListSmCreditQueryKey
+} from '@/api/client/sms-integration.client';
+import { useListSubscriptionCurrent } from '@/api/client/subscriptions.client';
+import { useListAddons } from '@/api/client/sms.client';
 import { useAuthStore } from '@/stores/authStore';
 
 type FeatureUsageStats = {
@@ -18,9 +19,18 @@ const Subscription: React.FC = () => {
     const { token, user } = useAuthStore();
     const { data: subscriptionData, isLoading, isError } = useListSubscriptionCurrent();
     const { data: creditData } = useListSmCredit({
-        query: { enabled: !!token }
+        query: { queryKey: getListSmCreditQueryKey(), enabled: !!token }
     });
-    const info = (subscriptionData as any)?.data?.data;
+    interface SubscriptionResponse {
+        data: {
+            plan?: { name: string; description?: string };
+            tenant?: { subscriptionEndDate?: string; featureUsage?: Record<string, FeatureUsageStats> };
+            isExpired?: boolean;
+            daysRemaining?: number;
+            is_super_admin?: boolean;
+        }
+    }
+    const info = (subscriptionData as unknown as { data: SubscriptionResponse['data'] })?.data;
 
     if (isLoading) return <div className="p-6">Yükleniyor...</div>;
     if (isError) return <div className="p-6">Abonelik bilgisi yüklenirken hata oluştu.</div>;
@@ -51,18 +61,29 @@ const Subscription: React.FC = () => {
     // Handle different response structures for credit balance
     let creditBalance = 0;
     if (creditData) {
-        if (typeof creditData === 'number') {
-            creditBalance = creditData;
-        } else if ((creditData as any)?.balance !== undefined) {
-            creditBalance = (creditData as any).balance;
-        } else if ((creditData as any)?.data) {
-            const innerData = (creditData as any).data;
-            if (typeof innerData === 'number') {
-                creditBalance = innerData;
-            } else if (innerData?.balance !== undefined) {
-                creditBalance = innerData.balance;
-            } else if (innerData?.data?.balance !== undefined) {
-                creditBalance = innerData.data.balance;
+        // creditData could be: number | { balance: number } | { data: number | { balance: number } }
+        const creditDataUnknown = creditData as unknown;
+        if (typeof creditDataUnknown === 'number') {
+            creditBalance = creditDataUnknown;
+        } else if (typeof creditDataUnknown === 'object' && creditDataUnknown !== null) {
+            const creditObj = creditDataUnknown as Record<string, unknown>;
+            if (typeof creditObj.balance === 'number') {
+                creditBalance = creditObj.balance;
+            } else if (creditObj.data !== undefined) {
+                const innerData = creditObj.data;
+                if (typeof innerData === 'number') {
+                    creditBalance = innerData;
+                } else if (typeof innerData === 'object' && innerData !== null) {
+                    const innerObj = innerData as Record<string, unknown>;
+                    if (typeof innerObj.balance === 'number') {
+                        creditBalance = innerObj.balance;
+                    } else if (typeof innerObj.data === 'object' && innerObj.data !== null) {
+                        const deepObj = innerObj.data as Record<string, unknown>;
+                        if (typeof deepObj.balance === 'number') {
+                            creditBalance = deepObj.balance;
+                        }
+                    }
+                }
             }
         }
     }
@@ -171,7 +192,15 @@ function SmsPackagesList() {
     if (isLoading) return <div className="text-gray-500">SMS Paketleri yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">SMS paketleri yüklenemedi.</div>;
 
-    const packages = (packagesData as any)?.data?.data ?? [];
+    // Extract packages from nested response structure
+    interface SmsPackage {
+        id: string;
+        name: string;
+        smsCount?: number;
+        price?: number;
+    }
+    const packagesResponse = packagesData as unknown as { data?: { data?: SmsPackage[] } } | undefined;
+    const packages: SmsPackage[] = packagesResponse?.data?.data ?? [];
     if (packages.length === 0) return <div className="text-gray-500">Mevcut SMS paketi bulunmuyor.</div>;
 
     return (
@@ -206,7 +235,17 @@ function AddOnsList() {
     if (isLoading) return <div className="text-gray-500">Eklentiler yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">Eklentiler yüklenemedi.</div>;
 
-    const addons = ((addonsData as any)?.data?.data || []).filter((addon: any) => addon.isActive);
+    // Extract addons from nested response structure
+    interface Addon {
+        id: string;
+        name: string;
+        price?: number;
+        isActive?: boolean;
+        description?: string;
+        addonType?: string;
+    }
+    const addonsResponse = addonsData as unknown as { data?: { data?: Addon[] } } | undefined;
+    const addons: Addon[] = (addonsResponse?.data?.data || []).filter((addon) => addon.isActive);
     if (addons.length === 0) return <div className="text-gray-500">Mevcut eklenti bulunmuyor.</div>;
 
     return (

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/middleware/permission_middleware.py
+# hypothesis_version: 6.150.1
+
+[401, 403, '/api', '/api/admin/', 'Authorization', 'Bearer ', 'HS256', 'JWT_SECRET_KEY', 'OPTIONS', 'access.tenant_id', 'admin', 'admin_', 'admin_jwt', 'application/json', 'error', 'is_impersonating', 'path', 'public', 'required', 'required_permission', 'role', 'role_permissions', 'sub', 'super_admin', 'tenant_admin', 'tenant_id', 'user_type', 'your_role']

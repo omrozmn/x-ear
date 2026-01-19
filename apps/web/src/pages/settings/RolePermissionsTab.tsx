@@ -12,14 +12,15 @@ import {
   useCreateRoles,
   useUpdateRole,
   getListRolesQueryKey,
-} from '@/api/generated';
+} from '@/api/client/permissions.client';
+import { RoleRead, ResponseEnvelopeListRoleRead } from '@/api/generated/schemas';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
 import { AxiosError } from 'axios';
 
 // Permission categories with icons
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
-  patients: { label: 'Hastalar', icon: <Users className="w-5 h-5" /> },
+  parties: { label: 'Hastalar', icon: <Users className="w-5 h-5" /> },
   sales: { label: 'Satışlar', icon: <ShoppingCart className="w-5 h-5" /> },
   finance: { label: 'Finans', icon: <DollarSign className="w-5 h-5" /> },
   invoices: { label: 'Faturalar', icon: <FileText className="w-5 h-5" /> },
@@ -53,6 +54,7 @@ const ROLE_LABELS: Record<string, string> = {
 // System roles that cannot be deleted (but can be renamed)
 const SYSTEM_ROLES = ['tenant_admin'];
 
+// Local Permission interface - matches actual API response shape
 interface Permission {
   id: string;
   name: string;
@@ -85,12 +87,7 @@ interface RolePermissionsResponse {
   };
 }
 
-interface RoleItem {
-  id: string;
-  name: string;
-  description: string | null;
-  is_system: boolean;
-}
+// RoleItem interface removed in favor of RoleRead
 
 export function RolePermissionsTab() {
   const queryClient = useQueryClient();
@@ -99,39 +96,39 @@ export function RolePermissionsTab() {
   const [hasChanges, setHasChanges] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState<string | null>(null);
-  
+
   // Role edit/create modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
+  const [editingRole, setEditingRole] = useState<RoleRead | null>(null);
   const [newRoleName, setNewRoleName] = useState('');
   const [editRoleName, setEditRoleName] = useState('');
 
   // Fetch roles from backend
   const { data: rolesResponse, isLoading: loadingRoles, refetch: refetchRoles } = useListRoles();
-  
+
   // Extract roles list - handle wrapped response
   const rolesList = useMemo(() => {
     // customInstance returns response.data, which is ResponseEnvelope
     // So rolesResponse = { success: true, data: [...], meta: {...} }
     // rolesResponse.data = RoleRead[]
     console.log('[RolePermissionsTab] rolesResponse:', rolesResponse);
-    
-    let roles: RoleItem[] = [];
-    
-    // rolesResponse is the ResponseEnvelope, so .data is the array
-    if (rolesResponse && typeof rolesResponse === 'object') {
-      const envelope = rolesResponse as any;
-      if (Array.isArray(envelope.data)) {
-        roles = envelope.data;
-      } else if (Array.isArray(envelope)) {
-        // Direct array (shouldn't happen but handle it)
-        roles = envelope;
-      }
+
+    // rolesResponse is UseQueryResult<ResponseEnvelopeListRoleRead | undefined> ?
+    // Actually useListRoles returns UseQueryResult<ResponseEnvelopeListRoleRead> if successful.
+
+    // With strict typing:
+    let roles: RoleRead[] = [];
+
+    // cast to unknown first if we really suspect types are loose, but prefer:
+    const envelope = rolesResponse as unknown as ResponseEnvelopeListRoleRead | undefined;
+
+    if (envelope?.data && Array.isArray(envelope.data)) {
+      roles = envelope.data;
     }
-    
+
     console.log('[RolePermissionsTab] Extracted roles:', roles);
-    
+
     // Filter out tenant_admin from editable list (it has all permissions)
     return roles.filter(r => r.name !== 'tenant_admin');
   }, [rolesResponse]);
@@ -155,11 +152,11 @@ export function RolePermissionsTab() {
       },
       onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
         let errorMessage = 'Rol oluşturulurken bir hata oluştu';
-        
+
         try {
           const errorData = error.response?.data?.error;
           const detail = error.response?.data?.detail;
-          
+
           if (typeof errorData === 'object' && errorData?.message) {
             errorMessage = String(errorData.message);
           } else if (typeof errorData === 'string') {
@@ -174,7 +171,7 @@ export function RolePermissionsTab() {
         } catch (e) {
           console.error('Error parsing error response:', e);
         }
-        
+
         toast.error(errorMessage);
       },
     },
@@ -196,11 +193,11 @@ export function RolePermissionsTab() {
       },
       onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
         let errorMessage = 'Rol güncellenirken bir hata oluştu';
-        
+
         try {
           const errorData = error.response?.data?.error;
           const detail = error.response?.data?.detail;
-          
+
           if (typeof errorData === 'object' && errorData?.message) {
             errorMessage = String(errorData.message);
           } else if (typeof errorData === 'string') {
@@ -215,7 +212,7 @@ export function RolePermissionsTab() {
         } catch (e) {
           console.error('Error parsing error response:', e);
         }
-        
+
         toast.error(errorMessage);
       },
     },
@@ -260,11 +257,11 @@ export function RolePermissionsTab() {
       },
       onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
         let errorMessage = 'İzinler güncellenirken bir hata oluştu';
-        
+
         try {
           const errorData = error.response?.data?.error;
           const detail = error.response?.data?.detail;
-          
+
           if (typeof errorData === 'object' && errorData?.message) {
             errorMessage = String(errorData.message);
           } else if (typeof errorData === 'string') {
@@ -279,7 +276,7 @@ export function RolePermissionsTab() {
         } catch (e) {
           console.error('Error parsing error response:', e);
         }
-        
+
         toast.error(errorMessage);
         console.error('Permission update error:', error);
       },
@@ -304,7 +301,7 @@ export function RolePermissionsTab() {
 
     const groups: Record<string, Permission[]> = {};
 
-    allPermissionsData.all.forEach(perm => {
+    allPermissionsData.all.forEach((perm: Permission) => {
       const category = perm.name.split('.')[0];
       if (!groups[category]) {
         groups[category] = [];
@@ -363,7 +360,7 @@ export function RolePermissionsTab() {
   };
 
   // Role edit handlers
-  const handleEditRole = (role: RoleItem, e: React.MouseEvent) => {
+  const handleEditRole = (role: RoleRead, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingRole(role);
     setEditRoleName(role.name);

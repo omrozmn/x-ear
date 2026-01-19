@@ -3,7 +3,7 @@ import sgkService from '@/services/sgk/sgk.service';
 import type { OCRProcessingRequest } from '@/types/sgk';
 
 // Note: The OpenAPI/Orval-generated client in this repo exposes SGK document endpoints and OCR/processing
-// helpers (sgkGetPatientSgkDocuments, sgkUploadSgkDocument, sgkDeleteSgkDocument, ocrProcessDocument, automationTriggerSgkProcessing).
+// helpers (sgkGetPartySgkDocuments, sgkUploadSgkDocument, sgkDeleteSgkDocument, ocrProcessDocument, automationTriggerSgkProcessing).
 // There are no generic CRUD endpoints for "SGK records" in the generated client. We expose processing hooks
 // and provide clear placeholders for CRUD once backend endpoints exist.
 
@@ -12,8 +12,8 @@ export function useProcessSgkOcr() {
   return useMutation({
     mutationFn: (body: OCRProcessingRequest) => sgkService.processOcr(body),
     onSuccess: () => {
-      // Invalidate potentially affected queries (patient documents may change after OCR)
-      qc.invalidateQueries({ queryKey: ['patients'] });
+      // Invalidate potentially affected queries (party documents may change after OCR)
+      qc.invalidateQueries({ queryKey: ['parties'] });
     },
   });
 }
@@ -21,8 +21,8 @@ export function useProcessSgkOcr() {
 export function useTriggerSgkProcessing() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { patientId: string }) => sgkService.triggerProcessing(body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
+    mutationFn: (body: { partyId: string }) => sgkService.triggerProcessing(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['parties'] }),
   });
 }
 

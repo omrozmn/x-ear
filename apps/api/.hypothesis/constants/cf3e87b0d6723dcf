@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/utils/db_isolation.py
+# hypothesis_version: 6.150.1
+
+['AI_DATABASE_URL', 'INSERT', 'SELECT', 'UPDATE', 'ai_actions', 'ai_audit_logs', 'ai_layer_role', 'ai_requests', 'ai_usage', 'appointments', 'devices', 'feature_flags', 'full', 'insert_only', 'invoices', 'medical_records', 'none', 'patients', 'payments', 'permissions', 'read_only', 'role_name', 'roles', 'sales', 'subscriptions', 'table_name', 'tenants', 'users']

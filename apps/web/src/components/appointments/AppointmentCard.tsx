@@ -106,13 +106,13 @@ export function AppointmentCard({
           <HStack spacing="xs" className="items-center">
             <div className="flex-1 min-w-0">
               <Text className="text-sm font-medium truncate">
-                {appointment.patientName || 'Hasta bilgisi yok'}
+                {appointment.partyName || 'Hasta bilgisi yok'}
               </Text>
               <Text className="text-xs text-gray-500">
                 {appointment.time}
               </Text>
             </div>
-            {/* Status badge removed for compact view - show patient name instead */}
+            {/* Status badge removed for compact view - show party name instead */}
           </HStack>
         </div>
       </Card>
@@ -132,7 +132,7 @@ export function AppointmentCard({
               <HStack spacing="xs" className="items-center mb-1">
                 <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
                 <Text className="font-medium truncate">
-                  {appointment.patientName}
+                  {appointment.partyName}
                 </Text>
               </HStack>
               

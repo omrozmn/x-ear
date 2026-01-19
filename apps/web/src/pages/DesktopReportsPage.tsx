@@ -28,24 +28,23 @@ import {
 import { Button, Input, Select } from '@x-ear/ui-web';
 import { usePermissions } from '../hooks/usePermissions';
 import { unwrapObject, unwrapArray, unwrapPaginated } from '../utils/response-unwrap';
-import {
-  useListReportOverview,
-  useListReportPatients,
+import {useListReportOverview,
+  useListReportPatients as useListReportParties,
   useListReportFinancial,
   useListActivityLogs,
   useListReportPromissoryNotes,
-  useListReportPromissoryNoteByPatient,
+  useListReportPromissoryNoteByPatient as useListReportPromissoryNoteByParty,
   useListReportPromissoryNoteList,
+  getListReportPromissoryNoteListQueryKey,
   useListReportRemainingPayments,
   useListReportCashflowSummary,
   useListReportPosMovements,
   getListReportOverviewQueryKey,
   getListReportFinancialQueryKey,
-  getListReportPatientsQueryKey,
-  useListActivityLogFilterOptions,
-} from '@/api/generated';
+  getListReportPatientsQueryKey as getListReportPartiesQueryKey,
+  useListActivityLogFilterOptions,} from '@/api/client/reports.client';
 
-type TabId = 'overview' | 'sales' | 'patients' | 'promissory' | 'remaining' | 'activity' | 'pos_movements';
+type TabId = 'overview' | 'sales' | 'parties' | 'promissory' | 'remaining' | 'activity' | 'pos_movements';
 
 interface FilterState {
   dateRange: {
@@ -274,11 +273,11 @@ function OverviewTab({ filters }: { filters: FilterState }) {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">Toplam Hasta</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{overview?.total_patients || 0}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{overview?.total_parties || 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">Yeni Hastalar ({filters.days} gün)</span>
-              <span className="font-semibold text-green-600 dark:text-green-400">{overview?.new_patients || 0}</span>
+              <span className="font-semibold text-green-600 dark:text-green-400">{overview?.new_parties || 0}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">Toplam Randevu</span>
@@ -404,11 +403,11 @@ function SalesTab({ filters }: { filters: FilterState }) {
   );
 }
 
-// Patients Tab Content
-function PatientsTab({ filters }: { filters: FilterState }) {
-  const { data: patientsData, isLoading, error, refetch } = useListReportPatients(
+// Parties Tab Content
+function PartiesTab({ filters }: { filters: FilterState }) {
+  const { data: partiesData, isLoading, error, refetch } = useListReportParties(
     { days: filters.days },
-    { query: { queryKey: [...getListReportPatientsQueryKey({ days: filters.days })] } }
+    { query: { queryKey: [...getListReportPartiesQueryKey({ days: filters.days })] } }
   );
 
   if (isLoading) {
@@ -431,50 +430,50 @@ function PatientsTab({ filters }: { filters: FilterState }) {
     );
   }
 
-  const patients = unwrapObject<any>(patientsData);
+  const parties = unwrapObject<any>(partiesData);
 
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900">Hasta Analizi</h3>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Patient Segments */}
+        {/* Party Segments */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Segmentleri</h4>
           <div className="space-y-4">
-            {patients?.patient_segments && (
+            {parties?.party_segments && (
               <>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500" />
                     <span className="text-gray-600 dark:text-gray-400">Yeni Hastalar</span>
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-white">{patients.patient_segments.new || 0}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.new || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500" />
                     <span className="text-gray-600 dark:text-gray-400">Aktif Hastalar</span>
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-white">{patients.patient_segments.active || 0}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.active || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
                     <span className="text-gray-600 dark:text-gray-400">Deneme Aşamasında</span>
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-white">{patients.patient_segments.trial || 0}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.trial || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-gray-400" />
                     <span className="text-gray-600 dark:text-gray-400">Pasif Hastalar</span>
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-white">{patients.patient_segments.inactive || 0}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.inactive || 0}</span>
                 </div>
               </>
             )}
-            {!patients?.patient_segments && (
+            {!parties?.party_segments && (
               <p className="text-gray-400 text-sm">Veri bulunamadı</p>
             )}
           </div>
@@ -484,8 +483,8 @@ function PatientsTab({ filters }: { filters: FilterState }) {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Randevu Durumu Dağılımı</h4>
           <div className="space-y-4">
-            {patients?.status_distribution && Object.keys(patients.status_distribution).length > 0 ? (
-              Object.entries(patients.status_distribution).map(([status, count]: [string, any]) => {
+            {parties?.status_distribution && Object.keys(parties.status_distribution).length > 0 ? (
+              Object.entries(parties.status_distribution).map(([status, count]: [string, any]) => {
                 const statusLabels: Record<string, string> = {
                   'SCHEDULED': 'Planlandı',
                   'COMPLETED': 'Tamamlandı',
@@ -523,7 +522,7 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
     days: 365
   });
 
-  const { data: byPatientData, isLoading: patientLoading } = useListReportPromissoryNoteByPatient({
+  const { data: byPartyData, isLoading: partyLoading } = useListReportPromissoryNoteByParty({
     status: 'active',
     page: 1,
     per_page: 10
@@ -531,7 +530,7 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
 
   const { data: listData, isLoading: listLoading } = useListReportPromissoryNoteList(
     { status: listFilter, page: listPage, per_page: 20 },
-    { query: { enabled: showListModal } }
+    { query: { queryKey: [...getListReportPromissoryNoteListQueryKey({ status: listFilter, page: listPage, per_page: 20 })], enabled: showListModal } }
   );
 
   const formatCurrency = (amount: number) => {
@@ -568,7 +567,7 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
   }
 
   const notes = unwrapObject<any>(notesData);
-  const byPatient = unwrapArray<any>(byPatientData);
+  const byParty = unwrapArray<any>(byPartyData);
   const { data: list, meta: listMeta } = unwrapPaginated<any>(listData);
 
   return (
@@ -690,17 +689,17 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
         </div>
       </div>
 
-      {/* Patients with Notes */}
+      {/* Parties with Notes */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h4 className="text-md font-medium text-gray-900 dark:text-white">Hasta Bazlı Senet Özeti</h4>
           <p className="text-sm text-gray-500 dark:text-gray-400">Aktif senedi olan hastalar</p>
         </div>
-        {patientLoading ? (
+        {partyLoading ? (
           <div className="p-8 flex justify-center">
             <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
           </div>
-        ) : byPatient.length > 0 ? (
+        ) : byParty.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
@@ -713,33 +712,33 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {byPatient.map((patient: any) => (
-                  <tr key={patient.patientId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
+                {byParty.map((party: any) => (
+                  <tr key={party.partyId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900 dark:text-white">{patient.patientName}</p>
-                      {patient.phone && (
+                      <p className="font-medium text-gray-900 dark:text-white">{party.partyName}</p>
+                      {party.phone && (
                         <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {patient.phone}
+                          <Phone className="w-3 h-3" /> {party.phone}
                         </p>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                        {patient.activeNotes}
+                        {party.activeNotes}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {patient.overdueNotes > 0 ? (
+                      {party.overdueNotes > 0 ? (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
-                          {patient.overdueNotes}
+                          {party.overdueNotes}
                         </span>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right">{formatCurrency(patient.totalAmount)}</td>
+                    <td className="px-4 py-3 text-right">{formatCurrency(party.totalAmount)}</td>
                     <td className="px-4 py-3 text-right font-medium text-red-600">
-                      {formatCurrency(patient.remainingAmount)}
+                      {formatCurrency(party.remainingAmount)}
                     </td>
                   </tr>
                 ))}
@@ -820,7 +819,7 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
                           {note.noteNumber}/{note.totalNotes}
                         </td>
                         <td className="px-3 py-2">
-                          <p className="font-medium">{note.patientName}</p>
+                          <p className="font-medium">{note.partyName}</p>
                           <p className="text-xs text-gray-500">{note.debtorName}</p>
                         </td>
                         <td className="px-3 py-2 text-right">{formatCurrency(note.amount)}</td>
@@ -1007,7 +1006,7 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
           </div>
           <div className="text-right">
             <p className="text-sm text-orange-600 dark:text-orange-400">Borçlu Hasta Sayısı</p>
-            <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{summary?.totalPatients || 0}</p>
+            <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{summary?.totalParties || 0}</p>
           </div>
         </div>
       </div>
@@ -1034,7 +1033,7 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
         </div>
       </div>
 
-      {/* Patients with Remaining Payments */}
+      {/* Parties with Remaining Payments */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h4 className="text-md font-medium text-gray-900 dark:text-white">Kalan Ödemeler - Hasta Listesi</h4>
@@ -1055,27 +1054,27 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {payments.map((patient: any) => (
-                    <tr key={patient.patientId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
+                  {payments.map((party: any) => (
+                    <tr key={party.partyId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
                       <td className="px-4 py-3">
-                        <p className="font-medium">{patient.patientName}</p>
-                        {patient.phone && (
+                        <p className="font-medium">{party.partyName}</p>
+                        {party.phone && (
                           <p className="text-xs text-gray-500 flex items-center gap-1">
-                            <Phone className="w-3 h-3" /> {patient.phone}
+                            <Phone className="w-3 h-3" /> {party.phone}
                           </p>
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                          {patient.saleCount}
+                          {party.saleCount}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">{formatCurrency(patient.totalAmount)}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(party.totalAmount)}</td>
                       <td className="px-4 py-3 text-right text-green-600">
-                        {formatCurrency(patient.paidAmount)}
+                        {formatCurrency(party.paidAmount)}
                       </td>
                       <td className="px-4 py-3 text-right font-bold text-red-600">
-                        {formatCurrency(patient.remainingAmount)}
+                        {formatCurrency(party.remainingAmount)}
                       </td>
                     </tr>
                   ))}
@@ -1426,7 +1425,7 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
                         {item.pos_transaction_id}
                       </td>
                       <td className="px-4 py-3">
-                        {item.patient_name}
+                        {item.party_name}
                       </td>
                       <td className="px-4 py-3 font-medium">
                         {formatCurrency(item.amount)}
@@ -1531,7 +1530,7 @@ export function DesktopReportsPage() {
   const tabs = useMemo(() => [
     { id: 'overview' as const, label: 'Genel Bakış', icon: BarChart3, permission: 'reports.view' },
     { id: 'sales' as const, label: 'Satış Raporları', icon: TrendingUp, permission: 'reports.view' },
-    { id: 'patients' as const, label: 'Hasta Raporları', icon: Users, permission: 'reports.view' },
+    { id: 'parties' as const, label: 'Hasta Raporları', icon: Users, permission: 'reports.view' },
     { id: 'promissory' as const, label: 'Senet Raporları', icon: Receipt, permission: 'reports.view' },
     { id: 'remaining' as const, label: 'Kalan Ödemeler', icon: Wallet, permission: 'reports.view' },
     { id: 'pos_movements' as const, label: 'POS Hareketleri', icon: CreditCard, permission: 'reports.view' },
@@ -1671,7 +1670,7 @@ export function DesktopReportsPage() {
           <div className="p-6">
             {activeTab === 'overview' && canViewReports && <OverviewTab filters={filters} />}
             {activeTab === 'sales' && canViewReports && <SalesTab filters={filters} />}
-            {activeTab === 'patients' && canViewReports && <PatientsTab filters={filters} />}
+            {activeTab === 'parties' && canViewReports && <PartiesTab filters={filters} />}
             {activeTab === 'promissory' && canViewReports && <PromissoryNotesTab filters={filters} />}
             {activeTab === 'remaining' && canViewReports && <RemainingPaymentsTab filters={filters} />}
             {activeTab === 'pos_movements' && canViewReports && <PosMovementsTab filters={filters} />}
@@ -1680,7 +1679,7 @@ export function DesktopReportsPage() {
             {/* Show no permission if tab doesn't match permissions */}
             {activeTab === 'overview' && !canViewReports && <NoPermission />}
             {activeTab === 'sales' && !canViewReports && <NoPermission />}
-            {activeTab === 'patients' && !canViewReports && <NoPermission />}
+            {activeTab === 'parties' && !canViewReports && <NoPermission />}
             {activeTab === 'promissory' && !canViewReports && <NoPermission />}
             {activeTab === 'remaining' && !canViewReports && <NoPermission />}
             {activeTab === 'pos_movements' && !canViewReports && <NoPermission />}

@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Production
+dist/
+build/
+
+# Misc
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Storybook
+storybook-static/
+
+# TanStack Router
+.tanstack/
+
+# Vite
+.vite/

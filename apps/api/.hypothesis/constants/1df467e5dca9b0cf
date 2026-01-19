@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/apps.py
+# hypothesis_version: 6.150.1
+
+[400, 404, 409, '-', '/api/apps', '/{app_id}', '/{app_id}/assign', 'App not found', 'Apps', 'Deleted', 'Not found', 'User not found', 'apps.read', 'apps.write', 'createApp', 'createAppAssign', 'data', 'deleteApp', 'getApp', 'listApps', 'message', 'owner', 'owner_id', 'slug already exists', 'success', 'updateApp']

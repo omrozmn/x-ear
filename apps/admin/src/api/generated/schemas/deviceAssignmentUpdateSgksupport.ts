@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type DeviceAssignmentUpdateSgksupport = number | null;
+export type DeviceAssignmentUpdateSgkSupport = number | null;

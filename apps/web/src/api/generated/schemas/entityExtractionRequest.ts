@@ -10,8 +10,8 @@ import type { EntityExtractionRequestText } from './entityExtractionRequestText'
 import type { EntityExtractionRequestOcrText } from './entityExtractionRequestOcrText';
 
 export interface EntityExtractionRequest {
-  image_path?: EntityExtractionRequestImagePath;
+  imagePath?: EntityExtractionRequestImagePath;
   text?: EntityExtractionRequestText;
-  ocr_text?: EntityExtractionRequestOcrText;
-  auto_crop?: boolean;
+  ocrText?: EntityExtractionRequestOcrText;
+  autoCrop?: boolean;
 }

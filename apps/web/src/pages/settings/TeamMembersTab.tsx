@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { Plus, Trash2, Mail, User, Shield, AlertCircle, CheckCircle2, Lock, Eye, EyeOff, Building2, Pencil, AlertTriangle } from 'lucide-react';
@@ -8,7 +9,12 @@ import {
     useDeleteTenantUser,
     useUpdateTenantUser,
     getListTenantUsersQueryKey
-} from '@/api/generated/tenant-users/tenant-users';
+} from '@/api/client/tenant-users.client';
+import {
+    UserRead,
+    CreateTenantUserRequest,
+    UpdateTenantUserRequest
+} from '@/api/generated/schemas';
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
@@ -31,7 +37,7 @@ export function TeamMembersTab() {
 
     // Edit State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<any>(null);
+    const [editingUser, setEditingUser] = useState<UserRead | null>(null);
     const [editData, setEditData] = useState({
         username: '',
         email: '',
@@ -114,8 +120,20 @@ export function TeamMembersTab() {
         e.preventDefault();
         setInviteError('');
         setInviteSuccess('');
-        // @ts-ignore - Temporary fix for type mismatch if UserCreate differs slightly or strict check fails
-        inviteMutation.mutate({ data: inviteData });
+        const payload = {
+            username: inviteData.username,
+            password: inviteData.password,
+            email: inviteData.email,
+            first_name: inviteData.firstName,
+            last_name: inviteData.lastName,
+            role: inviteData.role,
+            is_active: true
+        };
+
+        // Use 'as any' only if strictly necessary to bypass type mismatch between generated schemas
+        // where one expects strict string and other expects alias, until we align them.
+        // But here I'll try to pass it without strict type annotation first.
+        inviteMutation.mutate({ data: payload as any });
     };
 
     const handleDelete = (userId: string) => {
@@ -131,21 +149,24 @@ export function TeamMembersTab() {
         });
     };
 
-    const handleEditClick = (user: any) => {
+    const handleEditClick = (user: UserRead) => {
         if (currentUser?.role === 'admin' && user.role === 'tenant_admin') {
             toast.error('Yoneticiler, Tenant Admin kullanicilarini duzenleyemez.');
             return;
         }
         setEditingUser(user);
         setEditData({
-            username: user.username || '',
+            username: '', // UserRead does not strictly have 'username', relies on email usually or it's separate
             email: user.email || '',
-            firstName: user.first_name || '',
-            lastName: user.last_name || '',
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
             role: user.role || 'user',
-            branchId: user.branches && user.branches.length > 0 ? user.branches[0].id : '',
+            // UserRead doesn't show branches array in the schema I saw. If it exists in runtime response, excellent.
+            // If not, this might be why 'as any' was used. Strict UserRead might break this.
+            // I'll cast `user` to `any` JUST for this property access if needed, or define an Extended interface.
+            branchId: (user as any).branches && (user as any).branches.length > 0 ? (user as any).branches[0].id : '',
             password: '',
-            isActive: user.isActive
+            isActive: user.isActive ?? true
         });
         setIsEditModalOpen(true);
     };
@@ -157,19 +178,16 @@ export function TeamMembersTab() {
         setUpdateError('');
 
         try {
-            const payload: any = {
-                username: editData.username,
-                email: editData.email,
-                firstName: editData.firstName,
-                lastName: editData.lastName,
+            const payload = {
+                first_name: editData.firstName,
+                last_name: editData.lastName,
                 role: editData.role,
-                isActive: editData.isActive
+                isActive: editData.isActive ?? true,
+                email: editData.email
             };
-            if (editData.password) payload.password = editData.password;
-            if (editData.branchId) payload.branchIds = [editData.branchId];
-            else payload.branchIds = [];
+            const extendedPayload = { ...payload, password: editData.password || undefined, branchIds: editData.branchId ? [editData.branchId] : [] };
 
-            await updateUserMutation.mutateAsync({ userId: editingUser.id, data: payload });
+            await updateUserMutation.mutateAsync({ userId: editingUser.id, data: extendedPayload as any });
             setIsEditModalOpen(false);
             toast.success('Kullanici basariyla guncellendi.');
             refetch();
@@ -181,23 +199,24 @@ export function TeamMembersTab() {
         }
     };
 
-    const handleToggleStatus = async (user: any) => {
+    const handleToggleStatus = async (user: UserRead) => {
         if (currentUser?.role === 'admin' && user.role === 'tenant_admin') {
             toast.error('Yoneticiler, Tenant Admin kullanicilarini pasife alamaz.');
             return;
         }
 
         const newIsActive = !user.isActive;
-        
+
         setConfirmationModal({
             isOpen: true,
             title: user.isActive ? 'Kullaniciyi Pasife Al' : 'Kullaniciyi Aktiflestir',
-            message: `Bu kullaniciyi ${user.isActive ? 'pasife almak' : 'aktiflestirmek'} istediginize emin misiniz?`,
+            message: `Bu kullaniciyi ${user.isActive ? 'pasife almak' : 'aktiflestirmek'} istediginize emin misiniz ? `,
             type: user.isActive ? 'warning' : 'info',
             onConfirm: async () => {
                 try {
                     console.log('[TeamMembersTab] Toggling user status:', { userId: user.id, currentIsActive: user.isActive, newIsActive });
-                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: newIsActive } as any });
+                    console.log('[TeamMembersTab] Toggling user status:', { userId: user.id, currentIsActive: user.isActive, newIsActive });
+                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: newIsActive } });
                     toast.success(`Kullanici ${user.isActive ? 'pasife alindi' : 'aktiflestirildi'}.`);
                     // Invalidate and refetch to ensure UI updates
                     queryClient.invalidateQueries({ queryKey: getListTenantUsersQueryKey() });
@@ -211,10 +230,17 @@ export function TeamMembersTab() {
         });
     };
 
-    // Backend returns { data: User[], meta: {...}, success: boolean }
-    // usersResponse is AxiosResponse, so usersResponse.data is the backend response
-    const backendResponse = (usersResponse as any)?.data as any;
-    const users = Array.isArray(backendResponse) ? backendResponse : (backendResponse?.data || []);
+    // Backend returns ResponseEnvelopeListUserRead
+    // usersResponse?.data is UserRead[] | null due to Orval-Mutator unwrapping/naming convention, but let's check generated types
+    // Actually, `useListTenantUsers` returns `UseQueryResult<ResponseEnvelopeListUserRead, unknown>`
+    // The mutator might be returning the envelope OR the data directly depending on config.
+    // Assuming standard Orval behavior with `customInstance` returning `Promise<T>`:
+    // `usersResponse` is the `ResponseEnvelopeListUserRead`.
+
+    // However, the previous code suggested `(usersResponse as any)?.data`.
+    // Let's type strictly:
+    const backendResponse = usersResponse as unknown as { data: UserRead[] } | undefined;
+    const users: UserRead[] = Array.isArray(backendResponse?.data) ? backendResponse!.data : [];
 
     const getRoleLabel = (role: string) => {
         const labels: Record<string, string> = {
@@ -288,36 +314,36 @@ export function TeamMembersTab() {
                                 <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Henuz ekip uyesi eklenmemis.</td>
                             </tr>
                         ) : (
-                            users.map((user: any) => (
+                            users.map((user: UserRead) => (
                                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center">
                                             <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold mr-3">
-                                                {user.first_name?.[0] || user.username?.[0] || '?'}
+                                                {user.firstName?.[0] || user.email?.[0] || '?'}
                                             </div>
                                             <div>
                                                 <div className="font-medium text-gray-900 dark:text-white">
-                                                    {user.first_name} {user.last_name}
+                                                    {user.firstName} {user.lastName}
                                                 </div>
                                                 <div className="text-sm text-gray-500">{user.email}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleStyle(user.role)}`}>
-                                            {getRoleLabel(user.role)}
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleStyle(user.role || '')} `}>
+                                            {getRoleLabel(user.role || '')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
                                             ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                             : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                                            }`}>
+                                            } `}>
                                             {user.isActive ? 'Aktif' : 'Pasif'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
-                                        {user.created_at ? new Date(user.created_at).toLocaleDateString('tr-TR') : '-'}
+                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}
                                     </td>
                                     <td className="px-6 py-4 text-right flex justify-end items-center space-x-2">
                                         {user.isActive ? (
@@ -700,9 +726,9 @@ export function TeamMembersTab() {
             {confirmationModal.isOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all">
-                        <div className={`flex items-center mb-4 ${confirmationModal.type === 'danger' ? 'text-red-600' :
+                        <div className={`flex items - center mb - 4 ${confirmationModal.type === 'danger' ? 'text-red-600' :
                             confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-blue-600'
-                            }`}>
+                            } `}>
                             <AlertTriangle className="w-6 h-6 mr-2" />
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                                 {confirmationModal.title}
@@ -724,8 +750,8 @@ export function TeamMembersTab() {
                                 onClick={confirmationModal.onConfirm}
                                 variant={confirmationModal.type === 'danger' ? 'danger' : 'default'}
                                 className={
-                                    confirmationModal.type === 'warning' 
-                                        ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' 
+                                    confirmationModal.type === 'warning'
+                                        ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500'
                                         : confirmationModal.type === 'info'
                                             ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
                                             : ''

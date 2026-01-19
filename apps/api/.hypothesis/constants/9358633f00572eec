@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/sms.py
+# hypothesis_version: 6.150.1
+
+['TRY', 'activity_cert', 'allDocumentsApproved', 'apiPassword', 'apiUsername', 'approved', 'company_title', 'contract', 'documentsEmail', 'documentsSubmitted', 'documentsSubmittedAt', 'domain', 'excel', 'filePath', 'filter', 'filterCriteria', 'headerText', 'headerType', 'id_card', 'isActive', 'isDefault', 'other', 'pending', 'rejected', 'rejectionReason', 'residence', 'signature_circular', 'smsCount', 'sourceType', 'tax_plate', 'tenantId', 'totalPurchased', 'totalRecords', 'totalUsed', 'trademark']

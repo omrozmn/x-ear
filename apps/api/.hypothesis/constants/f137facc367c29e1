@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_integrations.py
+# hypothesis_version: 6.150.1
+
+[500, '/admin/integrations', '/birfatura/config', '/init-db', '/vatan-sms/config', 'Admin Integrations', 'VatanSMS Password', 'VatanSMS Sender ID', 'VatanSMS Username', 'appApiKey', 'appSecretKey', 'app_api_key', 'app_secret_key', 'approvalEmail', 'available', 'birfatura', 'data', 'emailTemplate', 'false', 'integrationKey', 'integration_key', 'integrations', 'integrations.manage', 'integrations.read', 'isActive', 'is_active', 'message', 'notificationEmail', 'notification_email', 'password', 'senderId', 'sender_id', 'success', 'system.manage', 'true', 'username', 'vatan_sms']

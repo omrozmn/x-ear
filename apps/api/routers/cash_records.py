@@ -27,8 +27,8 @@ class CashRecordCreate(BaseModel):
     amount: float
     recordType: str = "diger"
     description: Optional[str] = None
-    patientId: Optional[str] = None
-    patientName: Optional[str] = None
+    partyId: Optional[str] = None
+    partyName: Optional[str] = None
     date: Optional[str] = None
     id: Optional[str] = None
     tenant_id: Optional[str] = None
@@ -38,8 +38,8 @@ class CashRecordResponse(BaseModel):
     date: str
     transactionType: str
     recordType: str
-    patientId: Optional[str] = None
-    patientName: Optional[str] = None
+    partyId: Optional[str] = None
+    partyName: Optional[str] = None
     amount: float
     description: Optional[str] = None
 
@@ -77,7 +77,7 @@ def get_cash_records(
     """Return cash register records"""
     try:
         from models.sales import PaymentRecord
-        from models.patient import Patient
+        from core.models.party import Party
         
         # Build query with tenant scoping
         query = db.query(PaymentRecord)
@@ -104,26 +104,26 @@ def get_cash_records(
         query = query.order_by(PaymentRecord.payment_date.desc())
         rows = query.limit(limit).all()
         
-        # Get patient info
-        patient_ids = {r.patient_id for r in rows if r.patient_id}
-        patients_map = {}
-        if patient_ids:
-            patients = db.query(Patient).filter(Patient.id.in_(patient_ids)).all()
-            patients_map = {p.id: p for p in patients}
+        # Get party info
+        party_ids = {r.party_id for r in rows if r.party_id}
+        parties_map = {}
+        if party_ids:
+            parties = db.query(Party).filter(Party.id.in_(party_ids)).all()
+            parties_map = {p.id: p for p in parties}
         
         records = []
         for r in rows:
             try:
-                patient = patients_map.get(r.patient_id) if r.patient_id else None
-                patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
+                party = parties_map.get(r.party_id) if r.party_id else None
+                party_name = f"{getattr(party, 'first_name', '')} {getattr(party, 'last_name', '')}".strip() if party else ''
                 
                 record = {
                     'id': r.id,
                     'date': r.payment_date.isoformat() if r.payment_date else datetime.now(timezone.utc).isoformat(),
                     'transactionType': 'income' if (r.amount or 0) >= 0 else 'expense',
                     'recordType': derive_record_type(r.notes or ''),
-                    'patientId': r.patient_id,
-                    'patientName': patient_name,
+                    'partyId': r.party_id,
+                    'partyName': patient_name,
                     'amount': float(r.amount or 0),
                     'description': r.notes or ''
                 }
@@ -136,7 +136,7 @@ def get_cash_records(
         if search:
             search_term = search.lower()
             records = [r for r in records if 
-                      search_term in (r['patientName'] or '').lower() or 
+                      search_term in (r['partyName'] or '').lower() or 
                       search_term in (r['description'] or '').lower()]
         
         return ResponseEnvelope(data=records, meta={'count': len(records)})
@@ -154,7 +154,7 @@ def create_cash_record(
     """Create a new cash record"""
     try:
         from models.sales import PaymentRecord
-        from models.patient import Patient
+        from core.models.party import Party
         from database import gen_id
         
         if not request_data.transactionType:
@@ -173,26 +173,26 @@ def create_cash_record(
                 raise HTTPException(status_code=400, detail="access.tenant_id is required")
         
         # Find patient by name if provided
-        patient_id = request_data.patientId
-        if not patient_id and request_data.patientName and request_data.patientName.strip():
-            patient_name = request_data.patientName.strip()
-            patient_query = db.query(Patient)
+        party_id = request_data.partyId
+        if not party_id and request_data.partyName and request_data.partyName.strip():
+            party_name = request_data.partyName.strip()
+            patient_query = db.query(Party)
             if access.tenant_id:
-                patient_query = patient_query.filter(Patient.tenant_id == access.tenant_id)
+                patient_query = patient_query.filter(Party.tenant_id == access.tenant_id)
             
             patient = patient_query.filter(
                 or_(
-                    Patient.first_name.ilike(f"%{patient_name}%"),
-                    Patient.last_name.ilike(f"%{patient_name}%")
+                    Party.first_name.ilike(f"%{party_name}%"),
+                    Party.last_name.ilike(f"%{party_name}%")
                 )
             ).first()
             if patient:
-                patient_id = patient.id
+                party_id = patient.id
         
         # Create payment record
         payment = PaymentRecord()
         payment.id = request_data.id or gen_id("cash")
-        payment.patient_id = patient_id
+        payment.party_id = party_id
         payment.tenant_id = access.tenant_id
         
         # Handle amount
@@ -218,8 +218,8 @@ def create_cash_record(
         db.add(payment)
         db.commit()
         
-        # Get patient name for response
-        patient = db.get(Patient, payment.patient_id) if payment.patient_id else None
+        # Get party name for response
+        patient = db.get(Party, payment.party_id) if payment.party_id else None
         patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
         
         record = {
@@ -227,8 +227,8 @@ def create_cash_record(
             'date': payment.payment_date.isoformat(),
             'transactionType': request_data.transactionType,
             'recordType': request_data.recordType,
-            'patientId': payment.patient_id,
-            'patientName': patient_name,
+            'partyId': payment.party_id,
+            'partyName': patient_name,
             'amount': float(payment.amount),
             'description': request_data.description or ''
         }

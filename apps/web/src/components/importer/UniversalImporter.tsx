@@ -181,7 +181,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         // still proceed to send validRows if any
       }
 
-      // Upload valid rows to backend as a CSV file using the patients bulk endpoint
+      // Upload valid rows to backend as a CSV file using the parties bulk endpoint
       let created = 0, updated = 0;
       try {
         if (validRows.length > 0) {
@@ -191,7 +191,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           // Backend expects field name 'file'
           form.append('file', blob, 'import.csv');
 
-          const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/patients/bulk_upload';
+          const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk_upload';
           const resp = await apiClient.post(endpoint, form, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });

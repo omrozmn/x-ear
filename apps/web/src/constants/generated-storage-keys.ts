@@ -3,17 +3,17 @@
  * DO NOT EDIT MANUALLY - Use npm run gen:key to add new keys
  */
 
-// Patient-related storage keys
-export const PATIENTS_DATA = 'patients-data' as const;
-export const PATIENT_SEARCH_FILTERS = 'patient-search-filters' as const;
-export const PATIENT_PAGINATION_STATE = 'patient-pagination-state' as const;
-export const PATIENT_SORT_PREFERENCES = 'patient-sort-preferences' as const;
-export const PATIENT_VIEW_MODE = 'patient-view-mode' as const;
-export const PATIENT_SELECTED_COLUMNS = 'patient-selected-columns' as const;
-export const PATIENT_FORM_VALIDATION_STATE = 'patient-form-validation-state' as const;
-export const PATIENT_FORM_DRAFT = 'patient-form-draft' as const;
-export const PATIENT_DETAILS_TAB = 'patient-details-tab' as const;
-export const PATIENT_BULK_ACTIONS_STATE = 'patient-bulk-actions-state' as const;
+// Party-related storage keys
+export const PARTYS_DATA = 'parties-data' as const;
+export const PARTY_SEARCH_FILTERS = 'party-search-filters' as const;
+export const PARTY_PAGINATION_STATE = 'party-pagination-state' as const;
+export const PARTY_SORT_PREFERENCES = 'party-sort-preferences' as const;
+export const PARTY_VIEW_MODE = 'party-view-mode' as const;
+export const PARTY_SELECTED_COLUMNS = 'party-selected-columns' as const;
+export const PARTY_FORM_VALIDATION_STATE = 'party-form-validation-state' as const;
+export const PARTY_FORM_DRAFT = 'party-form-draft' as const;
+export const PARTY_DETAILS_TAB = 'party-details-tab' as const;
+export const PARTY_BULK_ACTIONS_STATE = 'party-bulk-actions-state' as const;
 
 export type StorageKeyType = 'array' | 'object' | 'string';
 
@@ -29,136 +29,136 @@ export interface StorageKeyDefinition {
 }
 
 export const ALL_GENERATED_STORAGE_KEYS = [
-  PATIENTS_DATA,
-  PATIENT_SEARCH_FILTERS,
-  PATIENT_PAGINATION_STATE,
-  PATIENT_SORT_PREFERENCES,
-  PATIENT_VIEW_MODE,
-  PATIENT_SELECTED_COLUMNS,
-  PATIENT_FORM_VALIDATION_STATE,
-  PATIENT_FORM_DRAFT,
-  PATIENT_DETAILS_TAB,
-  PATIENT_BULK_ACTIONS_STATE
+  PARTYS_DATA,
+  PARTY_SEARCH_FILTERS,
+  PARTY_PAGINATION_STATE,
+  PARTY_SORT_PREFERENCES,
+  PARTY_VIEW_MODE,
+  PARTY_SELECTED_COLUMNS,
+  PARTY_FORM_VALIDATION_STATE,
+  PARTY_FORM_DRAFT,
+  PARTY_DETAILS_TAB,
+  PARTY_BULK_ACTIONS_STATE
 ] as const;
 
 export const STORAGE_KEYS_METADATA: Record<string, StorageKeyDefinition> = {
-  PATIENTS_DATA: {
-    key: PATIENTS_DATA,
-    description: 'Cached patient list data',
+  PARTYS_DATA: {
+    key: PARTYS_DATA,
+    description: 'Cached party list data',
     type: 'array',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'GET',
-        operationId: 'patients_get_patients'
+        operationId: 'parties_get_parties'
       }
     ]
   },
-  PATIENT_SEARCH_FILTERS: {
-    key: PATIENT_SEARCH_FILTERS,
+  PARTY_SEARCH_FILTERS: {
+    key: PARTY_SEARCH_FILTERS,
     description: 'User search filter preferences',
     type: 'object',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'GET',
-        operationId: 'patients_get_patients'
+        operationId: 'parties_get_parties'
       }
     ]
   },
-  PATIENT_PAGINATION_STATE: {
-    key: PATIENT_PAGINATION_STATE,
+  PARTY_PAGINATION_STATE: {
+    key: PARTY_PAGINATION_STATE,
     description: 'Current pagination state',
     type: 'object',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'GET',
-        operationId: 'patients_get_patients'
+        operationId: 'parties_get_parties'
       }
     ]
   },
-  PATIENT_SORT_PREFERENCES: {
-    key: PATIENT_SORT_PREFERENCES,
+  PARTY_SORT_PREFERENCES: {
+    key: PARTY_SORT_PREFERENCES,
     description: 'User sorting preferences',
     type: 'object',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'GET',
-        operationId: 'patients_get_patients'
+        operationId: 'parties_get_parties'
       }
     ]
   },
-  PATIENT_VIEW_MODE: {
-    key: PATIENT_VIEW_MODE,
+  PARTY_VIEW_MODE: {
+    key: PARTY_VIEW_MODE,
     description: 'List/grid view mode preference',
     type: 'string',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'GET',
-        operationId: 'patients_get_patients'
+        operationId: 'parties_get_parties'
       }
     ]
   },
-  PATIENT_SELECTED_COLUMNS: {
-    key: PATIENT_SELECTED_COLUMNS,
+  PARTY_SELECTED_COLUMNS: {
+    key: PARTY_SELECTED_COLUMNS,
     description: 'User column visibility preferences',
     type: 'array',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'GET',
-        operationId: 'patients_get_patients'
+        operationId: 'parties_get_parties'
       }
     ]
   },
-  PATIENT_FORM_VALIDATION_STATE: {
-    key: PATIENT_FORM_VALIDATION_STATE,
+  PARTY_FORM_VALIDATION_STATE: {
+    key: PARTY_FORM_VALIDATION_STATE,
     description: 'Form validation state and errors',
     type: 'object',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'POST',
-        operationId: 'patients_create_patient'
+        operationId: 'parties_create_party'
       }
     ]
   },
-  PATIENT_FORM_DRAFT: {
-    key: PATIENT_FORM_DRAFT,
+  PARTY_FORM_DRAFT: {
+    key: PARTY_FORM_DRAFT,
     description: 'Draft form data for auto-save',
     type: 'object',
     endpoints: [
       {
-        path: '/api/patients',
+        path: '/api/parties',
         method: 'POST',
-        operationId: 'patients_create_patient'
+        operationId: 'parties_create_party'
       }
     ]
   },
-  PATIENT_DETAILS_TAB: {
-    key: PATIENT_DETAILS_TAB,
-    description: 'Active tab in patient details view',
+  PARTY_DETAILS_TAB: {
+    key: PARTY_DETAILS_TAB,
+    description: 'Active tab in party details view',
     type: 'string',
     endpoints: [
       {
-        path: '/api/patients/{patient_id}',
+        path: '/api/parties/{party_id}',
         method: 'DELETE',
-        operationId: 'patients_delete_patient'
+        operationId: 'parties_delete_party'
       }
     ]
   },
-  PATIENT_BULK_ACTIONS_STATE: {
-    key: PATIENT_BULK_ACTIONS_STATE,
+  PARTY_BULK_ACTIONS_STATE: {
+    key: PARTY_BULK_ACTIONS_STATE,
     description: 'Bulk actions selection state',
     type: 'object',
     endpoints: [
       {
-        path: '/api/patients/{patient_id}',
+        path: '/api/parties/{party_id}',
         method: 'DELETE',
-        operationId: 'patients_delete_patient'
+        operationId: 'parties_delete_party'
       }
     ]
   }

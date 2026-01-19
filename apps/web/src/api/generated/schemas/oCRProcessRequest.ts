@@ -10,9 +10,9 @@ import type { OCRProcessRequestText } from './oCRProcessRequestText';
 import type { OCRProcessRequestOcrText } from './oCRProcessRequestOcrText';
 
 export interface OCRProcessRequest {
-  image_path?: OCRProcessRequestImagePath;
+  imagePath?: OCRProcessRequestImagePath;
   text?: OCRProcessRequestText;
-  ocr_text?: OCRProcessRequestOcrText;
+  ocrText?: OCRProcessRequestOcrText;
   type?: string;
-  auto_crop?: boolean;
+  autoCrop?: boolean;
 }

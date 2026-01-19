@@ -35,7 +35,7 @@ export function CashflowPage() {
 
   // Extract and filter records from response
   const records = useMemo(() => {
-    const recordData = Array.isArray(data) ? data : ((data as any)?.data || []);
+    const recordData = Array.isArray(data) ? data : ((data as unknown as Record<string, unknown>)?.data as CashRecord[] || []);
     if (!recordData) return [];
 
     // Parse inventory info from description if not present (backend compatibility)
@@ -66,7 +66,7 @@ export function CashflowPage() {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(r =>
-        r.patientName?.toLowerCase().includes(searchLower) ||
+        r.partyName?.toLowerCase().includes(searchLower) ||
         r.description?.toLowerCase().includes(searchLower)
       );
     }
@@ -155,7 +155,7 @@ export function CashflowPage() {
           date,
           type,
           record.recordType,
-          record.patientName || '',
+          record.partyName || '',
           amount,
           record.description || '',
         ]
@@ -304,7 +304,7 @@ export function CashflowPage() {
                 Bu kaydı silmek istediğinizden emin misiniz?
               </h3>
               <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                {recordToDelete?.patientName || 'Kayıt'} - {recordToDelete?.amount} ₺
+                {recordToDelete?.partyName || 'Kayıt'} - {recordToDelete?.amount} ₺
               </p>
             </div>
           </div>

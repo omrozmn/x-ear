@@ -5,9 +5,9 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { PatientRightsQueryRequestPatientId } from './patientRightsQueryRequestPatientId';
+import type { PatientRightsQueryRequestPartyId } from './patientRightsQueryRequestPartyId';
 
 export interface PatientRightsQueryRequest {
   tcNumber: string;
-  patientId?: PatientRightsQueryRequestPatientId;
+  partyId?: PatientRightsQueryRequestPartyId;
 }

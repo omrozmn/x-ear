@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 
-from database import get_db
-from models.app import App
+from schemas.base import ResponseEnvelope
+from schemas.apps import AppRead, AppCreate, AppUpdate
 from models.user import User
 from models.role import Role
 from models.user_app_role import UserAppRole
@@ -40,7 +40,8 @@ async def list_apps(
 ):
     """List all apps"""
     apps = db.query(App).order_by(App.name).all()
-    return {"success": True, "data": [a.to_dict() for a in apps]}
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return {"success": True, "data": [AppRead.model_validate(a) for a in apps]}
 
 @router.post("", operation_id="createApp")
 async def create_app(
@@ -60,7 +61,8 @@ async def create_app(
     db.add(app)
     db.commit()
     db.refresh(app)
-    return {"success": True, "data": app.to_dict()}
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return {"success": True, "data": AppRead.model_validate(app)}
 
 @router.get("/{app_id}", operation_id="getApp")
 async def get_app(
@@ -72,7 +74,8 @@ async def get_app(
     app = db.get(App, app_id)
     if not app:
         raise HTTPException(status_code=404, detail="Not found")
-    return {"success": True, "data": app.to_dict()}
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return {"success": True, "data": AppRead.model_validate(app)}
 
 @router.put("/{app_id}", operation_id="updateApp")
 async def update_app(
@@ -92,7 +95,8 @@ async def update_app(
         app.description = data.description
     
     db.commit()
-    return {"success": True, "data": app.to_dict()}
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return {"success": True, "data": AppRead.model_validate(app)}
 
 @router.delete("/{app_id}", operation_id="deleteApp")
 async def delete_app(

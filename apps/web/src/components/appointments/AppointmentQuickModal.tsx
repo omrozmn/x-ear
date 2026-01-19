@@ -20,7 +20,7 @@ import {
 
 // Quick appointment schema - minimal required fields
 const quickAppointmentSchema = z.object({
-  patientName: z.string().min(1, 'Hasta adı zorunludur'),
+  partyName: z.string().min(1, 'Hasta adı zorunludur'),
   time: z.string().min(1, 'Saat seçimi zorunludur'),
   type: z.enum(['consultation', 'follow_up', 'trial', 'delivery', 'control_visit', 'battery_renewal', 'repair', 'fitting', 'assessment'], { required_error: 'Randevu türü seçimi zorunludur' }),
   duration: z.number().min(15).max(240).default(30),
@@ -99,7 +99,7 @@ export function AppointmentQuickModal({
   } = useForm<QuickAppointmentFormData>({
     resolver: zodResolver(quickAppointmentSchema),
     defaultValues: {
-      patientName: '',
+      partyName: '',
       time: selectedTime || '09:00',
       type: 'consultation',
       duration: 30,
@@ -110,7 +110,7 @@ export function AppointmentQuickModal({
   React.useEffect(() => {
     if (open) {
       reset({
-        patientName: '',
+        partyName: '',
         time: selectedTime || '09:00',
         type: 'consultation',
         duration: 30,
@@ -153,17 +153,17 @@ export function AppointmentQuickModal({
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <VStack spacing="md">
-            {/* Patient Name */}
+            {/* Party Name */}
             <FormControl className="w-full">
               <FormLabel>Hasta Adı *</FormLabel>
               <Controller
-                name="patientName"
+                name="partyName"
                 control={control}
                 render={({ field }) => (
                   <Input
                     {...field}
                     placeholder="Hasta adını girin"
-                    error={errors.patientName?.message}
+                    error={errors.partyName?.message}
                     autoFocus
                   />
                 )}

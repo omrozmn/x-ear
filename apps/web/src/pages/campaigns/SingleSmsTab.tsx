@@ -13,11 +13,9 @@ import {
     User,
     X
 } from 'lucide-react';
-import {
-    useListSmHeaders,
+import {useListSmHeaders,
     getListSmHeadersQueryKey,
-    useCreateCommunicationMessageSendSms,
-} from '@/api/generated';
+    useCreateCommunicationMessageSendSms,} from '@/api/client/sms.client';
 import { useAuthStore } from '@/stores/authStore';
 
 const SMS_SEGMENT_LENGTH = 155;

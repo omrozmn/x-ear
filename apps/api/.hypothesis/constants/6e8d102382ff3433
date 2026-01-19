@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/plans.py
+# hypothesis_version: 6.150.1
+
+['BASIC', 'Billing interval', 'Is plan active', 'Is plan public', 'Max storage in GB', 'Max users', 'Plan description', 'Plan features', 'Plan name', 'Plan price', 'Plan type', 'YEARLY', 'billingInterval', 'isActive', 'isPublic', 'maxStorageGb', 'maxUsers', 'planType', 'tenantCount']

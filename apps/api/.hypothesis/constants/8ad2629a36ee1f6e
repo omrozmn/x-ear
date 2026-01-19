@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/appointments.py
+# hypothesis_version: 6.150.1
+
+['^\\d{2}:\\d{2}$', 'appointmentType', 'appointment_type', 'arrived', 'branchId', 'cancelled', 'clinicianId', 'completed', 'confirmed', 'consultation', 'control', 'deleted', 'device_fitting', 'device_trial', 'hearing_test', 'missed', 'no_show', 'other', 'patientId', 'patientName', 'pending', 'repair', 'rescheduled', 'scheduled', 'tenantId', 'type']

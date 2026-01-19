@@ -1,6 +1,6 @@
 /**
  * Saved Queries Utilities
- * Manages saved search queries for patient search functionality
+ * Manages saved search queries for party search functionality
  */
 
 export interface SavedQuery {
@@ -24,7 +24,7 @@ export interface SavedQueryOptions {
 
 const DEFAULT_OPTIONS: Required<SavedQueryOptions> = {
   maxQueries: 50,
-  storageKey: 'patient-saved-queries'
+  storageKey: 'party-saved-queries'
 };
 
 /**

@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { Modal, Button } from '@x-ear/ui-web';
 import { FileText, Eye, Download, RotateCcw, Scissors, Zap } from 'lucide-react';
-import PatientSearch from './PatientSearch';
+import PartySearch from './PartySearch';
 import DocumentTypeSelector from './DocumentTypeSelector';
-import { type Patient } from '../../types/patient';
+import { type Party } from '../../types/party';
 
 interface ProcessedDocument {
   id: string;
@@ -13,7 +13,7 @@ interface ProcessedDocument {
   ocrResult?: {
     text: string;
     confidence: number;
-    patientInfo?: {
+    partyInfo?: {
       firstName?: string;
       lastName?: string;
       tcNumber?: string;
@@ -29,7 +29,7 @@ interface ProcessedDocument {
     confidence: number;
     applied: boolean;
   };
-  selectedPatient?: Patient;
+  selectedParty?: Party;
   selectedDocumentType?: string;
   finalFileName?: string;
   pdfData?: string;
@@ -52,7 +52,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({
   const [currentStep, setCurrentStep] = useState<'processing' | 'review' | 'complete' | 'generating'>('processing');
   const [processingProgress, setProcessingProgress] = useState(0);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
-  const [showPatientSearch, setShowPatientSearch] = useState(false);
+  const [showPartySearch, setShowPartySearch] = useState(false);
   const [showDocumentTypeSelector, setShowDocumentTypeSelector] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -167,7 +167,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({
   const extractTextFromImage = useCallback(async (imageData: string): Promise<{
     text: string;
     confidence: number;
-    patientInfo?: {
+    partyInfo?: {
       firstName?: string;
       lastName?: string;
       tcNumber?: string;
@@ -192,7 +192,7 @@ Tarih: ${new Date().toLocaleDateString('tr-TR')}
 İlaç Listesi:
 - Aspirin 100mg
 - Vitamin D3`,
-        patientInfo: {
+        partyInfo: {
           firstName: "AHMET",
           lastName: "YILMAZ", 
           tcNumber: "12345678901",
@@ -210,7 +210,7 @@ TC: 98765432109
 Test Tarihi: ${new Date().toLocaleDateString('tr-TR')}
 Sağ Kulak: Normal
 Sol Kulak: Hafif kayıp`,
-        patientInfo: {
+        partyInfo: {
           firstName: "FATMA",
           lastName: "KAYA",
           tcNumber: "98765432109", 
@@ -228,7 +228,7 @@ Hasta: ALİ DEMİR
 TC: 11223344556
 Tanı: Kronik otitis media
 Önerilen tedavi: Antibiyotik`,
-        patientInfo: {
+        partyInfo: {
           firstName: "ALİ",
           lastName: "DEMİR",
           tcNumber: "11223344556",
@@ -248,9 +248,9 @@ Tanı: Kronik otitis media
     return {
       text: randomResult.text,
       confidence: baseConfidence,
-      patientInfo: randomResult.patientInfo ? {
-        ...randomResult.patientInfo,
-        confidence: randomResult.patientInfo.confidence * baseConfidence
+      partyInfo: randomResult.partyInfo ? {
+        ...randomResult.partyInfo,
+        confidence: randomResult.partyInfo.confidence * baseConfidence
       } : undefined,
       documentType: randomResult.documentType ? {
         ...randomResult.documentType,
@@ -259,10 +259,10 @@ Tanı: Kronik otitis media
     };
   }, []);
 
-  // Generate filename based on patient and document type
-  const generateFileName = useCallback((patientInfo: any, documentType: string): string => {
-    const firstName = patientInfo?.firstName || 'Bilinmeyen';
-    const lastName = patientInfo?.lastName || 'Hasta';
+  // Generate filename based on party and document type
+  const generateFileName = useCallback((partyInfo: any, documentType: string): string => {
+    const firstName = partyInfo?.firstName || 'Bilinmeyen';
+    const lastName = partyInfo?.lastName || 'Hasta';
     
     const docType = documentType.replace(/\s+/g, '_');
     const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -304,7 +304,7 @@ Tanı: Kronik otitis media
         const detectedType = detectDocumentType(ocrResult.text);
         
         // Step 5: Generate filename
-        const fileName = generateFileName(ocrResult.patientInfo, detectedType);
+        const fileName = generateFileName(ocrResult.partyInfo, detectedType);
 
         const processedDoc: ProcessedDocument = {
           id: `doc_${Date.now()}_${i}`,
@@ -347,16 +347,16 @@ Tanı: Kronik otitis media
     setCurrentStep('review');
   }, [images, compressImage, detectAndCropDocument, extractTextFromImage, detectDocumentType, generateFileName]);
 
-  // Handle patient selection
-  const handlePatientSelect = useCallback((patient: Patient) => {
+  // Handle party selection
+  const handlePartySelect = useCallback((party: Party) => {
     if (selectedDocumentId) {
       setDocuments(prev => prev.map(doc => 
         doc.id === selectedDocumentId 
-          ? { ...doc, selectedPatient: patient }
+          ? { ...doc, selectedParty: party }
           : doc
       ));
     }
-    setShowPatientSearch(false);
+    setShowPartySearch(false);
     setSelectedDocumentId(null);
   }, [selectedDocumentId]);
 
@@ -368,7 +368,7 @@ Tanı: Kronik otitis media
           ? { 
               ...doc, 
               selectedDocumentType: docType,
-              finalFileName: generateFileName(doc.ocrResult?.patientInfo, docType)
+              finalFileName: generateFileName(doc.ocrResult?.partyInfo, docType)
             }
           : doc
       ));
@@ -389,11 +389,11 @@ Tanı: Kronik otitis media
     pdf.setFontSize(16);
     pdf.text('Belge İşleme Raporu', 20, 20);
     
-    // Add patient info
-    if (doc.selectedPatient) {
+    // Add party info
+    if (doc.selectedParty) {
       pdf.setFontSize(12);
-      pdf.text(`Hasta: ${doc.selectedPatient.firstName} ${doc.selectedPatient.lastName}`, 20, 40);
-      pdf.text(`TC: ${doc.selectedPatient.tcNumber}`, 20, 50);
+      pdf.text(`Hasta: ${doc.selectedParty.firstName} ${doc.selectedParty.lastName}`, 20, 40);
+      pdf.text(`TC: ${doc.selectedParty.tcNumber}`, 20, 50);
     }
     
     // Add document type
@@ -561,15 +561,15 @@ Tanı: Kronik otitis media
                     </div>
                   </div>
 
-                  {selectedDoc.ocrResult.patientInfo && (
+                  {selectedDoc.ocrResult.partyInfo && (
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <div className="text-sm font-medium mb-2">Hasta Bilgileri:</div>
                       <div className="text-sm space-y-1">
-                        <div>Ad: {selectedDoc.ocrResult.patientInfo.firstName}</div>
-                        <div>Soyad: {selectedDoc.ocrResult.patientInfo.lastName}</div>
-                        <div>TC: {selectedDoc.ocrResult.patientInfo.tcNumber}</div>
+                        <div>Ad: {selectedDoc.ocrResult.partyInfo.firstName}</div>
+                        <div>Soyad: {selectedDoc.ocrResult.partyInfo.lastName}</div>
+                        <div>TC: {selectedDoc.ocrResult.partyInfo.tcNumber}</div>
                         <div className="text-xs text-gray-500">
-                          Güven: %{Math.round(selectedDoc.ocrResult.patientInfo.confidence * 100)}
+                          Güven: %{Math.round(selectedDoc.ocrResult.partyInfo.confidence * 100)}
                         </div>
                       </div>
                     </div>
@@ -596,12 +596,12 @@ Tanı: Kronik otitis media
                   className="w-full justify-start"
                   onClick={() => {
                     setSelectedDocumentId(selectedDoc.id);
-                    setShowPatientSearch(true);
+                    setShowPartySearch(true);
                   }}
                 >
                   <Eye className="w-4 h-4 mr-2" />
-                  {selectedDoc.selectedPatient 
-                    ? `${selectedDoc.selectedPatient.firstName} ${selectedDoc.selectedPatient.lastName}`
+                  {selectedDoc.selectedParty 
+                    ? `${selectedDoc.selectedParty.firstName} ${selectedDoc.selectedParty.lastName}`
                     : 'Hasta Seç'
                   }
                 </Button>
@@ -677,14 +677,14 @@ Tanı: Kronik otitis media
         </div>
       </Modal>
 
-      {/* Patient Search Modal */}
-      <PatientSearch
-        isOpen={showPatientSearch}
+      {/* Party Search Modal */}
+      <PartySearch
+        isOpen={showPartySearch}
         onClose={() => {
-          setShowPatientSearch(false);
+          setShowPartySearch(false);
           setSelectedDocumentId(null);
         }}
-        onSelect={handlePatientSelect}
+        onSelect={handlePartySelect}
         ocrResult={selectedDocumentId ? documents.find(d => d.id === selectedDocumentId)?.ocrResult : undefined}
       />
 

@@ -1,4 +1,4 @@
-import { Invoice } from '../types/invoice';
+import { Invoice, InvoiceTax, TaxType } from '../types/invoice';
 import {
   EFaturaXMLData,
   EFaturaXMLOptions,
@@ -17,7 +17,7 @@ import {
 export class EFaturaXMLService {
   private static instance: EFaturaXMLService;
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): EFaturaXMLService {
     if (!EFaturaXMLService.instance) {
@@ -36,10 +36,10 @@ export class EFaturaXMLService {
     try {
       // Convert invoice to E-Fatura format
       const efaturaData = this.convertInvoiceToEFatura(invoice);
-      
+
       // Generate XML content
       const xmlContent = this.buildXMLContent(efaturaData, options);
-      
+
       // Validate XML if requested
       let validationResult;
       if (options.validateXML) {
@@ -56,7 +56,7 @@ export class EFaturaXMLService {
 
       // Generate ETTN (E-Fatura Takip Numarası)
       const ettn = this.generateETTN();
-      
+
       // Generate file name
       const fileName = this.generateFileName(invoice, ettn);
 
@@ -79,11 +79,12 @@ export class EFaturaXMLService {
    * Convert Invoice to E-Fatura format
    */
   private convertInvoiceToEFatura(invoice: Invoice): EFaturaXMLData {
-  const now = new Date();
-  const issueDate = invoice.issueDate ? new Date(invoice.issueDate) : new Date();
+    const now = new Date();
+    const issueDate = invoice.issueDate ? new Date(invoice.issueDate) : new Date();
 
     // Convert invoice basic info
-  const items = Array.isArray((invoice as any).items) ? (invoice as any).items : [];
+    // Convert invoice basic info
+    const items = invoice.items || [];
 
     const efaturaInvoice: EFaturaInvoice = {
       id: invoice.invoiceNumber || (`inv-${Date.now()}`),
@@ -123,11 +124,11 @@ export class EFaturaXMLService {
     // Convert customer
     const customer: EFaturaParty = {
       partyIdentification: {
-        id: (invoice.billingAddress && invoice.billingAddress.taxNumber) || invoice.patientTcNumber || '11111111111',
+        id: (invoice.billingAddress && invoice.billingAddress.taxNumber) || invoice.partyTcNumber || '11111111111',
         schemeID: (invoice.billingAddress && invoice.billingAddress.taxNumber) ? 'VKN' : 'TCKN'
       },
       partyName: {
-        name: (invoice.billingAddress && invoice.billingAddress.name) || invoice.patientName || ''
+        name: (invoice.billingAddress && invoice.billingAddress.name) || invoice.partyName || ''
       },
       postalAddress: {
         streetName: invoice.billingAddress?.address || '',
@@ -144,7 +145,7 @@ export class EFaturaXMLService {
         }
       } : undefined,
       contact: {
-        telephone: invoice.patientPhone || undefined,
+        telephone: invoice.partyPhone || undefined,
         electronicMail: undefined // Add email field to invoice if needed
       }
     };
@@ -203,7 +204,19 @@ export class EFaturaXMLService {
     }));
 
     // Convert tax totals
-  const taxes = Array.isArray((invoice as any).taxes) ? (invoice as any).taxes : [];
+    // Normalize taxes to InvoiceTax shape
+    const taxes: InvoiceTax[] = (invoice.taxes || []).map(t => {
+      if ('baseAmount' in t) return t as InvoiceTax;
+      // If legacy shape { type, rate, amount }, try to infer baseAmount or default to 0
+      const legacyTax = t as Record<string, unknown>;
+      return {
+        type: legacyTax.type as TaxType,
+        rate: t.rate,
+        taxAmount: legacyTax.amount as number,
+        baseAmount: ((legacyTax.amount as number) / t.rate) || 0 // Rough estimation if missing
+      } as InvoiceTax;
+    });
+
     const taxTotals: EFaturaTaxTotal[] = [{
       taxAmount: {
         currencyID: invoice.currency || 'TRY',
@@ -212,17 +225,17 @@ export class EFaturaXMLService {
       taxSubtotals: taxes.map(tax => ({
         taxableAmount: {
           currencyID: invoice.currency || 'TRY',
-          value: Number((tax as any).baseAmount || 0)
+          value: Number(tax.baseAmount || 0)
         },
         taxAmount: {
           currencyID: invoice.currency || 'TRY',
-          value: Number((tax as any).taxAmount || 0)
+          value: Number(tax.taxAmount || 0)
         },
-        percent: (tax as any).rate || 0,
+        percent: tax.rate || 0,
         taxCategory: {
           taxScheme: {
-            name: String((tax as any).type || 'KDV').toUpperCase(),
-            taxTypeCode: EFATURA_TAX_SCHEME_CODES[String((tax as any).type || 'KDV').toUpperCase() as keyof typeof EFATURA_TAX_SCHEME_CODES] || EFATURA_TAX_SCHEME_CODES.KDV
+            name: String(tax.type || 'KDV').toUpperCase(),
+            taxTypeCode: EFATURA_TAX_SCHEME_CODES[String(tax.type || 'KDV').toUpperCase() as keyof typeof EFATURA_TAX_SCHEME_CODES] || EFATURA_TAX_SCHEME_CODES.KDV
           }
         }
       }))
@@ -293,7 +306,7 @@ export class EFaturaXMLService {
     xml += `  <cbc:IssueDate>${data.invoice.issueDate}</cbc:IssueDate>\n`;
     xml += `  <cbc:IssueTime>${data.invoice.issueTime}</cbc:IssueTime>\n`;
     xml += `  <cbc:InvoiceTypeCode>${data.invoice.invoiceTypeCode}</cbc:InvoiceTypeCode>\n`;
-    
+
     if (data.invoice.note) {
       xml += `  <cbc:Note>${this.escapeXML(data.invoice.note)}</cbc:Note>\n`;
     }
@@ -326,7 +339,7 @@ export class EFaturaXMLService {
   private buildPartyXML(party: EFaturaParty, elementName: string): string {
     let xml = `  <cac:${elementName}>\n`;
     xml += `    <cac:Party>\n`;
-    
+
     // Party Identification
     xml += `      <cac:PartyIdentification>\n`;
     xml += `        <cbc:ID schemeID="${party.partyIdentification.schemeID}">${party.partyIdentification.id}</cbc:ID>\n`;
@@ -388,7 +401,7 @@ export class EFaturaXMLService {
   private buildTaxTotalXML(taxTotal: EFaturaTaxTotal): string {
     let xml = `  <cac:TaxTotal>\n`;
     xml += `    <cbc:TaxAmount currencyID="${taxTotal.taxAmount.currencyID}">${taxTotal.taxAmount.value.toFixed(2)}</cbc:TaxAmount>\n`;
-    
+
     taxTotal.taxSubtotals.forEach(subtotal => {
       xml += `    <cac:TaxSubtotal>\n`;
       xml += `      <cbc:TaxableAmount currencyID="${subtotal.taxableAmount.currencyID}">${subtotal.taxableAmount.value.toFixed(2)}</cbc:TaxableAmount>\n`;
@@ -414,18 +427,18 @@ export class EFaturaXMLService {
     xml += `    <cbc:LineExtensionAmount currencyID="${total.lineExtensionAmount.currencyID}">${total.lineExtensionAmount.value.toFixed(2)}</cbc:LineExtensionAmount>\n`;
     xml += `    <cbc:TaxExclusiveAmount currencyID="${total.taxExclusiveAmount.currencyID}">${total.taxExclusiveAmount.value.toFixed(2)}</cbc:TaxExclusiveAmount>\n`;
     xml += `    <cbc:TaxInclusiveAmount currencyID="${total.taxInclusiveAmount.currencyID}">${total.taxInclusiveAmount.value.toFixed(2)}</cbc:TaxInclusiveAmount>\n`;
-    
+
     if (total.allowanceTotalAmount) {
       xml += `    <cbc:AllowanceTotalAmount currencyID="${total.allowanceTotalAmount.currencyID}">${total.allowanceTotalAmount.value.toFixed(2)}</cbc:AllowanceTotalAmount>\n`;
     }
-    
+
     if (total.chargeTotalAmount) {
       xml += `    <cbc:ChargeTotalAmount currencyID="${total.chargeTotalAmount.currencyID}">${total.chargeTotalAmount.value.toFixed(2)}</cbc:ChargeTotalAmount>\n`;
     }
-    
+
     xml += `    <cbc:PayableAmount currencyID="${total.payableAmount.currencyID}">${total.payableAmount.value.toFixed(2)}</cbc:PayableAmount>\n`;
     xml += `  </cac:LegalMonetaryTotal>\n`;
-    
+
     return xml;
   }
 
@@ -484,7 +497,7 @@ export class EFaturaXMLService {
   }
 
   private generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -535,7 +548,7 @@ export class EFaturaXMLService {
       if (!xml.includes('<?xml')) {
         errors.push('XML declaration missing');
       }
-      
+
       if (!xml.includes('<Invoice')) {
         errors.push('Invoice root element missing');
       }

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/api_key.py
+# hypothesis_version: 6.150.1
+
+[100, 255, 1000, ',', 'apiKey', 'api_keys', 'createdBy', 'expiresAt', 'id', 'isActive', 'key', 'lastUsedAt', 'name', 'prefix', 'rateLimit', 'scopes', 'tenantId', 'tenants.id', 'users.id']

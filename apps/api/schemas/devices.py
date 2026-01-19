@@ -6,7 +6,24 @@ from datetime import datetime
 from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
+class TrialPeriod(AppBaseModel):
+    start_date: Optional[str] = Field(None, alias="startDate")
+    end_date: Optional[str] = Field(None, alias="endDate")
+    extended_until: Optional[str] = Field(None, alias="extendedUntil")
 
+class Warranty(AppBaseModel):
+    start_date: Optional[str] = Field(None, alias="startDate")
+    end_date: Optional[str] = Field(None, alias="endDate")
+    terms: Optional[str] = None
+
+class StockUpdateRequest(AppBaseModel):
+    operation: str
+    quantity: int = 0
+    reason: Optional[str] = None
+    notes: Optional[str] = None
+
+class BrandCreate(AppBaseModel):
+    name: str
 class DeviceBase(AppBaseModel):
     """Base device schema"""
     name: str = Field(..., description="Device name")
@@ -28,13 +45,13 @@ class DeviceBase(AppBaseModel):
     warranty_months: int = Field(24, alias="warrantyMonths", description="Warranty in months")
     
     # Assignment
-    patient_id: Optional[str] = Field(None, alias="patientId")
+    party_id: Optional[str] = Field(None, alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
 
 
 class DeviceCreate(AppBaseModel):
     """Schema for creating a device - matches frontend expectations"""
-    patient_id: str = Field(..., alias="patientId")
+    party_id: str = Field(..., alias="partyId")
     inventory_id: Optional[str] = Field(None, alias="inventoryId")
     serial_number: Optional[str] = Field(None, alias="serialNumber")
     serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
@@ -48,8 +65,8 @@ class DeviceCreate(AppBaseModel):
     status: Optional[str] = Field("in_stock", description="Device status")
     price: Optional[float] = Field(None, description="Sale price")
     notes: Optional[str] = Field(None, description="Notes")
-    trial_period: Optional[dict] = Field(None, alias="trialPeriod")
-    warranty: Optional[dict] = Field(None, description="Warranty info")
+    trial_period: Optional[TrialPeriod] = Field(None, alias="trialPeriod")
+    warranty: Optional[Warranty] = Field(None, description="Warranty info")
 
 
 class DeviceUpdate(AppBaseModel):
@@ -60,7 +77,7 @@ class DeviceUpdate(AppBaseModel):
     serial_number: Optional[str] = Field(None, alias="serialNumber")
     status: Optional[str] = None
     price: Optional[float] = None
-    patient_id: Optional[str] = Field(None, alias="patientId")
+    party_id: Optional[str] = Field(None, alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
 
 
@@ -72,4 +89,8 @@ class DeviceRead(DeviceBase, IDMixin, TimestampMixin):
     
     # Computed
     is_assigned: bool = Field(False, alias="isAssigned")
-    patient_name: Optional[str] = Field(None, alias="patientName")
+    party_name: Optional[str] = Field(None, alias="partyName")
+
+class DeviceLowStockResponse(AppBaseModel):
+    devices: List[DeviceRead]
+    count: int

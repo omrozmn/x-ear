@@ -14,8 +14,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
 from schemas.base import ResponseEnvelope
-from models.user import User
-from models.system import Settings
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
+from schemas.system_settings import SystemSettingsResponse, PricingSettingsResponse
 
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
@@ -65,13 +66,9 @@ def get_file_settings():
 
 # --- Routes ---
 
-@router.get("/settings/pricing", operation_id="listSettingPricing")
+@router.get("/settings/pricing", operation_id="listSettingPricing", response_model=ResponseEnvelope[PricingSettingsResponse])
 def get_pricing_settings(
     db_session: Session = Depends(get_db),
-    # access: UnifiedAccess = Depends(require_access()) # Allow public access if needed, or auth required? 
-    # Flask version: @app.route('/api/settings/pricing') - no auth decorator visible in snippet
-    # But usually settings are protected. I'll add auth for safety if it breaks nothing.
-    # The test calls it with auth, so adding auth is safer.
     access: UnifiedAccess = Depends(require_access())
 ):
     """Get pricing settings specifically"""
@@ -103,12 +100,12 @@ def get_pricing_settings(
                 }
             }
             
-        return ResponseEnvelope(data=pricing_settings)
+        return ResponseEnvelope(data=PricingSettingsResponse.model_validate(pricing_settings))
     except Exception as e:
         logger.error(f"Get pricing settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/settings", operation_id="listSettings")
+@router.get("/settings", operation_id="listSettings", response_model=ResponseEnvelope[SystemSettingsResponse])
 def get_settings(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -121,7 +118,7 @@ def get_settings(
         if settings_record:
             db_settings = json.loads(settings_record.settings_data)
             merged = _merge_sgk(db_settings, file_settings)
-            return ResponseEnvelope(data={"settings": merged})
+            return ResponseEnvelope(data=SystemSettingsResponse(settings=merged))
             
         # Default settings
         default_settings = {
@@ -156,13 +153,13 @@ def get_settings(
         db_session.commit()
         
         merged_defaults = _merge_sgk(default_settings, file_settings)
-        return ResponseEnvelope(data={"settings": merged_defaults})
+        return ResponseEnvelope(data=SystemSettingsResponse(settings=merged_defaults))
         
     except Exception as e:
         logger.error(f"Get settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/settings", operation_id="updateSettings")
+@router.put("/settings", operation_id="updateSettings", response_model=ResponseEnvelope[SystemSettingsResponse])
 def update_settings(
     settings_data: Dict[str, Any] = Body(...),
     db_session: Session = Depends(get_db),
@@ -205,7 +202,7 @@ def update_settings(
         settings_record.settings_data = json.dumps(updated_data)
         db_session.commit()
         
-        return ResponseEnvelope(data={"settings": updated_data})
+        return ResponseEnvelope(data=SystemSettingsResponse(settings=updated_data))
         
     except Exception as e:
         db_session.rollback()

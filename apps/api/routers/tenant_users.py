@@ -15,6 +15,10 @@ from io import BytesIO
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope, ApiError
+from schemas.users import UserRead
+from schemas.tenants import (
+    TenantCompanyResponse, TenantAssetResponse, TenantAssetUrlResponse
+)
 
 from models.user import User
 from models.tenant import Tenant
@@ -77,7 +81,7 @@ class AssetUpload(BaseModel):
 
 # --- Routes ---
 
-@router.get("/tenant/users", operation_id="listTenantUsers")
+@router.get("/", operation_id="listTenantUsers", response_model=ResponseEnvelope[List[UserRead]])
 def list_tenant_users(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -101,13 +105,15 @@ def list_tenant_users(
                 from models.user import user_branches
                 query = query.join(user_branches).filter(user_branches.c.branch_id.in_(user_branch_ids))
             else:
-                return ResponseEnvelope(data=[access.user.to_dict()])
+                # Use Pydantic schema for type-safe serialization (NO to_dict())
+                return ResponseEnvelope(data=[UserRead.model_validate(access.user)])
     
     users = query.all()
-    return ResponseEnvelope(data=[u.to_dict() for u in users])
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return ResponseEnvelope(data=[UserRead.model_validate(u) for u in users])
 
-@router.post("/tenant/users", operation_id="createTenantUsers", status_code=201)
-def invite_tenant_user(
+@router.post("/", operation_id="createTenantUser", response_model=ResponseEnvelope[UserRead])
+def create_tenant_user(
     user_in: TenantUserCreate,
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -177,8 +183,10 @@ def invite_tenant_user(
     
     db_session.add(new_user)
     db_session.commit()
+    db_session.refresh(new_user)  # Refresh to get all fields after commit
     
-    return ResponseEnvelope(data=new_user.to_dict())
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return ResponseEnvelope(data=UserRead.model_validate(new_user))
 
 @router.delete("/tenant/users/{user_id}", operation_id="deleteTenantUser")
 def delete_tenant_user(
@@ -224,6 +232,7 @@ def delete_tenant_user(
     db_session.commit()
     
     return ResponseEnvelope(message="User removed")
+
 
 @router.put("/tenant/users/{user_id}", operation_id="updateTenantUser")
 def update_tenant_user(
@@ -318,278 +327,8 @@ def update_tenant_user(
             user_to_update.branches = branches
     
     db_session.commit()
+    db_session.refresh(user_to_update)  # Refresh to get all fields after commit
     
-    return ResponseEnvelope(data=user_to_update.to_dict())
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return ResponseEnvelope(data=UserRead.model_validate(user_to_update))
 
-@router.get("/tenant/company", operation_id="listTenantCompany")
-def get_tenant_company(
-    access: UnifiedAccess = Depends(require_access()),
-    db_session: Session = Depends(get_db)
-):
-    """Get the current tenant's company information"""
-    if not access.tenant_id:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
-        )
-    
-    tenant = db_session.get(Tenant, access.tenant_id)
-    if not tenant:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
-        )
-    
-    company_info = tenant.company_info or {}
-    
-    return ResponseEnvelope(
-        data={
-            'id': tenant.id,
-            'name': tenant.name,
-            'companyInfo': company_info,
-            'settings': tenant.settings or {}
-        }
-    )
-
-@router.put("/tenant/company", operation_id="updateTenantCompany")
-def update_tenant_company(
-    company_in: CompanyInfoUpdate,
-    access: UnifiedAccess = Depends(require_access()),
-    db_session: Session = Depends(get_db)
-):
-    """Update the current tenant's company information"""
-    if not access.tenant_id:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
-        )
-    
-    if access.user and access.user.role != 'tenant_admin':
-        raise HTTPException(
-            status_code=403,
-            detail=ApiError(message="Only Tenant Admin can update company information", code="FORBIDDEN").model_dump(mode="json")
-        )
-    
-    tenant = db_session.get(Tenant, access.tenant_id)
-    if not tenant:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
-        )
-    
-    company_info = tenant.company_info or {}
-    data = company_in.model_dump(exclude_unset=True, by_alias=False)
-    
-    field_mapping = {
-        'tax_id': 'taxId',
-        'tax_office': 'taxOffice',
-        'postal_code': 'postalCode',
-        'bank_name': 'bankName',
-        'account_holder': 'accountHolder'
-    }
-    
-    for key, value in data.items():
-        mapped_key = field_mapping.get(key, key)
-        company_info[mapped_key] = value
-    
-    tenant.company_info = company_info
-    db_session.commit()
-    
-    return ResponseEnvelope(
-        data={
-            'id': tenant.id,
-            'name': tenant.name,
-            'companyInfo': company_info
-        }
-    )
-
-@router.post("/tenant/company/upload/{asset_type}", operation_id="createTenantCompanyUpload", status_code=201)
-def upload_tenant_asset(
-    asset_type: str,
-    asset_in: AssetUpload,
-    access: UnifiedAccess = Depends(require_access()),
-    db_session: Session = Depends(get_db)
-):
-    """Upload a company asset (logo, stamp, or signature)"""
-    if not access.tenant_id:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
-        )
-    
-    if access.user and access.user.role != 'tenant_admin':
-        raise HTTPException(
-            status_code=403,
-            detail=ApiError(message="Only Tenant Admin can upload company assets", code="FORBIDDEN").model_dump(mode="json")
-        )
-    
-    if asset_type not in ['logo', 'stamp', 'signature']:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="Invalid asset type. Use: logo, stamp, signature", code="INVALID_TYPE").model_dump(mode="json")
-        )
-    
-    tenant = db_session.get(Tenant, access.tenant_id)
-    if not tenant:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
-        )
-    
-    try:
-        base64_str = asset_in.data
-        file_ext = 'png'
-        
-        if len(base64_str) > MAX_BASE64_SIZE * 1.4:
-            raise HTTPException(
-                status_code=400,
-                detail=ApiError(message=f"File too large. Maximum size: {MAX_BASE64_SIZE // (1024*1024)}MB", code="FILE_TOO_LARGE").model_dump(mode="json")
-            )
-        
-        if ';base64,' in base64_str:
-            header, base64_str = base64_str.split(';base64,')
-            if 'png' in header:
-                file_ext = 'png'
-            elif 'jpeg' in header or 'jpg' in header:
-                file_ext = 'jpg'
-            elif 'gif' in header:
-                file_ext = 'gif'
-            elif 'webp' in header:
-                file_ext = 'webp'
-        
-        file_data = base64.b64decode(base64_str)
-        
-        if len(file_data) > MAX_BASE64_SIZE:
-            raise HTTPException(
-                status_code=400,
-                detail=ApiError(message=f"File too large. Maximum size: {MAX_BASE64_SIZE // (1024*1024)}MB", code="FILE_TOO_LARGE").model_dump(mode="json")
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message=f"Invalid base64 data: {str(e)}", code="INVALID_DATA").model_dump(mode="json")
-        )
-    
-    company_info = tenant.company_info or {}
-    filename = f"{asset_type}_{uuid_lib.uuid4().hex[:8]}.{file_ext}"
-    
-    # Local storage (simplified)
-    asset_url = f"/api/tenant/assets/{tenant.id}/{filename}"
-    company_info[f"{asset_type}Url"] = asset_url
-    
-    tenant.company_info = company_info
-    db_session.commit()
-    
-    return ResponseEnvelope(
-        data={'url': asset_url, 'type': asset_type, 'storageMode': _get_storage_mode()}
-    )
-
-@router.delete("/tenant/company/upload/{asset_type}", operation_id="deleteTenantCompanyUpload")
-def delete_tenant_asset(
-    asset_type: str,
-    access: UnifiedAccess = Depends(require_access()),
-    db_session: Session = Depends(get_db)
-):
-    """Delete a company asset"""
-    if not access.tenant_id:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
-        )
-    
-    if access.user and access.user.role != 'tenant_admin':
-        raise HTTPException(
-            status_code=403,
-            detail=ApiError(message="Only Tenant Admin can delete company assets", code="FORBIDDEN").model_dump(mode="json")
-        )
-    
-    if asset_type not in ['logo', 'stamp', 'signature']:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="Invalid asset type", code="INVALID_TYPE").model_dump(mode="json")
-        )
-    
-    tenant = db_session.get(Tenant, access.tenant_id)
-    if not tenant:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
-        )
-    
-    company_info = tenant.company_info or {}
-    url_field = f"{asset_type}Url"
-    
-    if url_field in company_info:
-        del company_info[url_field]
-    
-    tenant.company_info = company_info
-    db_session.commit()
-    
-    return ResponseEnvelope(message=f'{asset_type} deleted')
-
-# --- Additional Tenant Endpoints (Migrated from Flask) ---
-
-from fastapi.responses import FileResponse
-import os
-
-@router.get("/tenant/assets/{access.tenant_id}/{filename}", operation_id="getTenantAsset")
-def get_tenant_asset(
-    tenant_id: str,
-    filename: str,
-    db_session: Session = Depends(get_db)
-):
-    """Get tenant asset file"""
-    try:
-        # Check if file exists in uploads directory
-        uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "tenant_assets", access.tenant_id)
-        file_path = os.path.join(uploads_dir, filename)
-        
-        if os.path.exists(file_path):
-            return FileResponse(file_path)
-        
-        # Return placeholder if not found
-        raise HTTPException(status_code=404, detail="Asset not found")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/tenant/company/assets/{asset_type}/url", operation_id="listTenantCompanyAssetUrl")
-def get_tenant_asset_url(
-    asset_type: str,
-    access: UnifiedAccess = Depends(require_access()),
-    db_session: Session = Depends(get_db)
-):
-    """Get URL for a specific tenant asset type"""
-    if not access.tenant_id:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
-        )
-    
-    if asset_type not in ['logo', 'stamp', 'signature']:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="Invalid asset type. Use: logo, stamp, signature", code="INVALID_TYPE").model_dump(mode="json")
-        )
-    
-    tenant = db_session.get(Tenant, access.tenant_id)
-    if not tenant:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
-        )
-    
-    company_info = tenant.company_info or {}
-    url_field = f"{asset_type}Url"
-    asset_url = company_info.get(url_field)
-    
-    return ResponseEnvelope(
-        data={
-            'type': asset_type,
-            'url': asset_url,
-            'exists': asset_url is not None
-        }
-    )

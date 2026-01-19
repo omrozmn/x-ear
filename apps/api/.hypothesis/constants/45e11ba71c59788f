@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/chat.py
+# hypothesis_version: 6.150.1
+
+[0.0, 1.0, 128, 200, 400, 429, 503, 1000, 4096, '/ai', '/chat', 'AI Chat', 'Classified intent', 'Confidence score', 'Extracted entities', 'Invalid request', 'Processing status', 'Rate limit exceeded', 'Response message', 'description', 'permissions', 'prompt_length', 'request_id', 'tenant_id', 'tenant_placeholder', 'unknown', 'user_id', 'user_placeholder']

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/patients.py
+# hypothesis_version: 6.150.1
+
+['F', 'M', 'O', 'acquisitionType', 'active', 'addressCity', 'addressDistrict', 'addressFull', 'archived', 'birthDate', 'branchId', 'branchName', 'conversionStep', 'customer', 'deceased', 'firstName', 'fullAddress', 'fullName', 'identityNumber', 'inactive', 'lastName', 'lead', 'new', 'priorityScore', 'referredBy', 'sgkInfo', 'tcNumber', 'tenantId', 'trial', 'walk-in']

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
-import { useListDeviceBrands, useCreateDeviceBrands, getListDeviceBrandsQueryKey } from '@/api/generated/devices/devices';
+import { useListDeviceBrands, useCreateDeviceBrands, getListDeviceBrandsQueryKey } from '@/api/client/devices.client';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface BrandAutocompleteProps {
@@ -97,7 +97,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     // Combine all sources: API, local, and defaults
     const combined = [...new Set([...apiBrands, ...localBrands, ...defaultBrands])];
     return combined.sort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brandsData, localBrands]);
 
   useEffect(() => {

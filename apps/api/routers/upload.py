@@ -25,9 +25,11 @@ class PresignedUploadRequest(BaseModel):
     folder: str = "uploads"
     content_type: Optional[str] = None
 
+from schemas.upload import PresignedUploadResponse, FileListResponse
+
 # --- Routes ---
 
-@router.post("/presigned", operation_id="createUploadPresigned")
+@router.post("/presigned", operation_id="createUploadPresigned", response_model=ResponseEnvelope[PresignedUploadResponse])
 def get_presigned_upload_url(
     request_data: PresignedUploadRequest,
     request: Request,
@@ -94,7 +96,11 @@ def get_presigned_upload_url(
         except Exception as log_error:
             logger.error(f"Failed to create activity log for file upload: {log_error}")
         
-        return ResponseEnvelope(data=presigned_data)
+        return ResponseEnvelope(data=PresignedUploadResponse(
+            url=presigned_data.get('url'),
+            fields=presigned_data.get('fields'),
+            key=presigned_data.get('key')
+        ))
         
     except HTTPException:
         raise
@@ -102,7 +108,7 @@ def get_presigned_upload_url(
         logger.error(f"Error generating presigned URL: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/files", operation_id="listUploadFiles")
+@router.get("/files", operation_id="listUploadFiles", response_model=ResponseEnvelope[FileListResponse])
 def list_files(
     folder: str = Query("uploads"),
     tenant_id: Optional[str] = None,
@@ -129,7 +135,7 @@ def list_files(
         
         files = s3_service.list_files(folder, str(effective_tenant_id))
         
-        return ResponseEnvelope(data={'files': files})
+        return ResponseEnvelope(data=FileListResponse(files=files))
         
     except Exception as e:
         logger.error(f"Error listing files: {e}")

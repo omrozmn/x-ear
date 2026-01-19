@@ -11,10 +11,22 @@ import {
 import {
     useListActivityLogs,
     useListActivityLogStats
-} from '@/api/generated';
+} from '@/api/client/activity-logs.client';
+import type { ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
+
+// Extended interface to cover properties present in API response but missing from current schema
+interface ExtendedActivityLogRead extends ActivityLogRead {
+    ipAddress?: string;
+    branchName?: string;
+    branchId?: string;
+    role?: string;
+    partyName?: string;
+    data?: any;
+    userAgent?: string;
+}
 
 interface ActivityLogDetailModalProps {
-    log: any;
+    log: ExtendedActivityLogRead;
     onClose: () => void;
 }
 
@@ -33,7 +45,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Tarih</label>
-                                <p className="font-medium dark:text-gray-200">{new Date(log.createdAt).toLocaleString('tr-TR')}</p>
+                                <p className="font-medium dark:text-gray-200">{log.createdAt ? new Date(String(log.createdAt)).toLocaleString('tr-TR') : '-'}</p>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Aksiyon</label>
@@ -55,7 +67,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Varlık</label>
                                 <p className="font-medium dark:text-gray-200">
-                                    {log.entityType} - {log.patientName ? `${log.patientName} (${log.entityId})` : log.entityId}
+                                    {log.entityType} - {log.partyName ? `${log.partyName} (${log.entityId})` : log.entityId}
                                 </p>
                             </div>
                             <div>
@@ -125,9 +137,10 @@ export default function ActivityLogsPage() {
     });
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
-    const [selectedLog, setSelectedLog] = useState<any>(null);
+    const [selectedLog, setSelectedLog] = useState<ExtendedActivityLogRead | null>(null);
 
-    const { data: logsResponse, isLoading } = useListActivityLogs({
+    // Cast params to intersection type to allow extra filters missing from schema but potentially supported
+    const queryParams: ListActivityLogsParams & { branch_id?: string; entity_type?: string; is_critical?: boolean; per_page?: number } = {
         branch_id: filters.branch_id || undefined,
         user_id: filters.user_id || undefined,
         action: filters.action || undefined,
@@ -135,15 +148,17 @@ export default function ActivityLogsPage() {
         is_critical: filters.is_critical,
         search: filters.search || undefined,
         page,
-        per_page: perPage
-    } as any);
+        limit: perPage, // Map perPage to limit as per schema
+        per_page: perPage // Keep per_page for backward compat if backend expects it
+    };
+
+    const { data: logsResponse, isLoading } = useListActivityLogs(queryParams as any);
 
     // Filter options are not available in the new API, use empty defaults
     const filterResponse = { data: { branches: [], users: [], actions: [] } };
 
-    const logsData = logsResponse as any;
-    const logs = logsData?.data || [];
-    const pagination = logsData?.pagination;
+    const logs: ExtendedActivityLogRead[] = (logsResponse?.data as unknown as ExtendedActivityLogRead[]) || [];
+    const pagination = logsResponse?.meta;
     const options = (filterResponse as any)?.data;
 
     return (
@@ -253,7 +268,7 @@ export default function ActivityLogsPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {logs.map((log: any) => (
+                                    {logs.map((log) => (
                                         <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-4 py-3">
                                                 {log.isCritical && (
@@ -265,7 +280,7 @@ export default function ActivityLogsPage() {
                                             <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
                                                 <div className="flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
-                                                    {new Date(log.createdAt).toLocaleString('tr-TR')}
+                                                    {log.createdAt ? new Date(String(log.createdAt)).toLocaleString('tr-TR') : '-'}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
@@ -281,7 +296,7 @@ export default function ActivityLogsPage() {
                                                     {log.action}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[250px] truncate" title={log.message}>
+                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[250px] truncate" title={log.message ?? undefined}>
                                                 {log.message || '-'}
                                             </td>
                                             <td className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500 font-mono">

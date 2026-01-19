@@ -6,7 +6,7 @@ import { customInstance } from '../api/orval-mutator';
 
 // Permission categories
 export const PERMISSION_CATEGORIES = {
-  patients: { label: 'Hastalar', icon: 'users' },
+  parties: { label: 'Hastalar', icon: 'users' },
   sales: { label: 'Satışlar', icon: 'shopping-cart' },
   finance: { label: 'Finans', icon: 'dollar-sign' },
   invoices: { label: 'Faturalar', icon: 'file-text' },

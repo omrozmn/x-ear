@@ -5,18 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeListSMSHeaderRequestReadData } from './responseEnvelopeListSMSHeaderRequestReadData';
-import type { ResponseEnvelopeListSMSHeaderRequestReadMessage } from './responseEnvelopeListSMSHeaderRequestReadMessage';
-import type { ResponseEnvelopeListSMSHeaderRequestReadError } from './responseEnvelopeListSMSHeaderRequestReadError';
-import type { ResponseEnvelopeListSMSHeaderRequestReadMeta } from './responseEnvelopeListSMSHeaderRequestReadMeta';
-import type { ResponseEnvelopeListSMSHeaderRequestReadRequestId } from './responseEnvelopeListSMSHeaderRequestReadRequestId';
+import type { ResponseEnvelopeListSmsHeaderRequestReadData } from './responseEnvelopeListSmsHeaderRequestReadData';
+import type { ResponseEnvelopeListSmsHeaderRequestReadMessage } from './responseEnvelopeListSmsHeaderRequestReadMessage';
+import type { ResponseEnvelopeListSmsHeaderRequestReadError } from './responseEnvelopeListSmsHeaderRequestReadError';
+import type { ResponseEnvelopeListSmsHeaderRequestReadMeta } from './responseEnvelopeListSmsHeaderRequestReadMeta';
+import type { ResponseEnvelopeListSmsHeaderRequestReadRequestId } from './responseEnvelopeListSmsHeaderRequestReadRequestId';
 
-export interface ResponseEnvelopeListSMSHeaderRequestRead {
+export interface ResponseEnvelopeListSmsHeaderRequestRead {
   success?: boolean;
-  data?: ResponseEnvelopeListSMSHeaderRequestReadData;
-  message?: ResponseEnvelopeListSMSHeaderRequestReadMessage;
-  error?: ResponseEnvelopeListSMSHeaderRequestReadError;
-  meta?: ResponseEnvelopeListSMSHeaderRequestReadMeta;
-  requestId?: ResponseEnvelopeListSMSHeaderRequestReadRequestId;
+  data?: ResponseEnvelopeListSmsHeaderRequestReadData;
+  message?: ResponseEnvelopeListSmsHeaderRequestReadMessage;
+  error?: ResponseEnvelopeListSmsHeaderRequestReadError;
+  meta?: ResponseEnvelopeListSmsHeaderRequestReadMeta;
+  requestId?: ResponseEnvelopeListSmsHeaderRequestReadRequestId;
   timestamp?: string;
 }

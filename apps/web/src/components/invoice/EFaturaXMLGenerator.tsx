@@ -143,7 +143,7 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
       <div className="generator-header">
         <h3>E-Fatura XML Oluşturucu</h3>
         <p className="text-sm text-gray-600">
-          Fatura: {invoice.invoiceNumber} - {invoice.patientName}
+          Fatura: {invoice.invoiceNumber} - {invoice.partyName}
         </p>
       </div>
       {/* XML Generation Options */}

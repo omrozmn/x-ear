@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface TenantSMSCreditRead {
+export interface TenantSmsCreditRead {
   /** Unique identifier for the resource */
   id: string;
   tenantId: string;

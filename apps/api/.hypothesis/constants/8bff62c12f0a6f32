@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/sms_integration.py
+# hypothesis_version: 6.150.1
+
+[100, 200, 500, 'TRY', 'allDocumentsApproved', 'apiUsername', 'aud', 'balance', 'createdAt', 'currency', 'description', 'documents', 'documentsEmail', 'documentsSubmitted', 'documentsSubmittedAt', 'excel', 'filterCriteria', 'headerText', 'headerType', 'id', 'isActive', 'isDefault', 'name', 'pending', 'price', 'rejectionReason', 'smsCount', 'sms_header_requests', 'sms_packages', 'sms_provider_configs', 'smsbal', 'smscfg', 'smshdr', 'smspkg', 'sourceType', 'status', 'target_audiences', 'tenantId', 'tenant_sms_credits', 'tenants.id', 'totalPurchased', 'totalRecords', 'totalUsed']

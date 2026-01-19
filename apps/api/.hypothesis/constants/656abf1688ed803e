@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/middleware/rate_limiter.py
+# hypothesis_version: 6.150.1
+
+['RateLimiter', 'X-RateLimit-Limit', 'X-RateLimit-Reset', 'tenant_id', 'user_id']

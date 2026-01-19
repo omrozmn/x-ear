@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Patient } from '../../types/patient/patient-base.types';
+import { Party } from '../../types/party/party-base.types';
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 
 interface SGKEReceiptFormProps {
-  patient: Patient;
+  party: Party;
   onSubmit?: (data: EReceiptData) => void;
   onCancel?: () => void;
 }
 
 interface EReceiptData {
-  patientId: string;
+  partyId: string;
   prescriptionNumber: string;
   doctorName: string;
   hospitalName: string;
@@ -27,12 +27,12 @@ interface EReceiptMedication {
 }
 
 export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
-  patient,
+  party,
   onSubmit,
   onCancel,
 }) => {
   const [formData, setFormData] = useState({
-    patientId: patient.id || '',
+    partyId: party.id || '',
     prescriptionNumber: '',
     doctorName: '',
     hospitalName: '',
@@ -194,13 +194,13 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Hasta Adı"
-              value={`${patient.firstName} ${patient.lastName}`}
+              value={`${party.firstName} ${party.lastName}`}
               fullWidth
               readOnly
             />
             <Input
               label="TC Kimlik No"
-              value={patient.tcNumber || ''}
+              value={party.tcNumber || ''}
               fullWidth
               readOnly
             />

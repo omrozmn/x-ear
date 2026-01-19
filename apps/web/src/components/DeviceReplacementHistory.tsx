@@ -23,12 +23,12 @@ import { DeviceReplacementHistory as ReplacementHistory } from '../types/device-
 import { deviceReplacementService } from '../services/device-replacement.service';
 
 interface DeviceReplacementHistoryProps {
-  patientId: string;
+  partyId: string;
   className?: string;
 }
 
 export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> = ({
-  patientId,
+  partyId,
   className
 }) => {
   const [replacements, setReplacements] = useState<ReplacementHistory[]>([]);
@@ -39,7 +39,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
     try {
       setLoading(true);
       setError(null);
-      const data = await deviceReplacementService.getPatientReplacements(patientId);
+      const data = await deviceReplacementService.getPartyReplacements(partyId);
       setReplacements(data);
     } catch (err) {
       setError('Cihaz değişim geçmişi yüklenirken hata oluştu');
@@ -47,7 +47,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
     } finally {
       setLoading(false);
     }
-  }, [patientId]);
+  }, [partyId]);
 
   useEffect(() => {
     loadReplacements();
@@ -58,8 +58,8 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
     const handler = (e: any) => {
       try {
         const detail = e?.detail;
-        // If event contains patient info, only reload when it matches
-        if (!detail || !detail.patient_id || detail.patient_id === patientId) {
+        // If event contains party info, only reload when it matches
+        if (!detail || !detail.party_id || detail.party_id === partyId) {
           loadReplacements();
         }
       } catch (err) {
@@ -69,7 +69,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
 
     window.addEventListener('replacement:created', handler as EventListener);
     return () => window.removeEventListener('replacement:created', handler as EventListener);
-  }, [patientId, loadReplacements]);
+  }, [partyId, loadReplacements]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

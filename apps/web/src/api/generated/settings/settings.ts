@@ -26,6 +26,8 @@ import type {
 
 import type {
   HTTPValidationError,
+  ResponseEnvelopePricingSettingsResponse,
+  ResponseEnvelopeSystemSettingsResponse,
   UpdateSettingsBody
 } from '.././schemas';
 
@@ -44,7 +46,7 @@ export const listSettingPricing = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopePricingSettingsResponse>(
       {url: `/api/settings/pricing`, method: 'GET', signal
     },
       );
@@ -137,7 +139,7 @@ export const listSettings = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSystemSettingsResponse>(
       {url: `/api/settings`, method: 'GET', signal
     },
       );
@@ -229,7 +231,7 @@ export const updateSettings = (
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSystemSettingsResponse>(
       {url: `/api/settings`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: updateSettingsBody

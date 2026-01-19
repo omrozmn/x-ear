@@ -2,13 +2,13 @@ import { Button, Input, Textarea, Select, useToastHelpers, DatePicker } from '@x
 import React, { useState, useEffect } from 'react';
 import { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentType, AppointmentStatus } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
-import { usePatients } from '../../hooks/usePatients';
-import { PatientAutocomplete } from './PatientAutocomplete';
+import { useParties } from '../../hooks/useParties';
+import { PartyAutocomplete } from './PartyAutocomplete';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
-  patientId?: string;
+  partyId?: string;
   onSave?: (appointment: Appointment) => void;
   onCancel?: () => void;
   mode?: 'create' | 'edit';
@@ -16,8 +16,8 @@ interface AppointmentFormProps {
 }
 
 interface FormData {
-  patientId: string;
-  patientName: string;
+  partyId: string;
+  partyName: string;
   date: string;
   time: string;
   duration: number;
@@ -32,7 +32,7 @@ interface FormData {
 }
 
 interface FormErrors {
-  patientId?: string;
+  partyId?: string;
   date?: string;
   time?: string;
   duration?: string;
@@ -42,20 +42,20 @@ interface FormErrors {
 
 export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   appointment,
-  patientId,
+  partyId,
   onSave,
   onCancel,
   mode = 'create',
   className = ''
 }) => {
   const { createAppointment, updateAppointment, creating, updating, error } = useAppointments();
-  const { data: patientsData, createPatient } = usePatients();
-  const { patients = [] } = patientsData || {};
+  const { data: partiesData, createParty } = useParties();
+  const { parties = [] } = partiesData || {};
   const { success: showSuccess, error: showError } = useToastHelpers();
 
   const [formData, setFormData] = useState<FormData>({
-    patientId: patientId || appointment?.patientId || '',
-    patientName: appointment?.patientName || '',
+    partyId: partyId || appointment?.partyId || '',
+    partyName: appointment?.partyName || '',
     date: appointment?.date || new Date().toISOString().split('T')[0],
     time: appointment?.time || '09:00',
     duration: appointment?.duration || 30,
@@ -72,19 +72,19 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Update patient name when patient is selected
+  // Update party name when party is selected
   useEffect(() => {
-    if (formData.patientId && patients.length > 0) {
-      const selectedPatient = patients.find(p => p.id === formData.patientId);
-      if (selectedPatient) {
-        const patientName = selectedPatient.firstName && selectedPatient.lastName
-          ? `${selectedPatient.firstName} ${selectedPatient.lastName}`
-          : `${selectedPatient.firstName || selectedPatient.lastName || 'İsimsiz Hasta'}`;
+    if (formData.partyId && parties.length > 0) {
+      const selectedParty = parties.find(p => p.id === formData.partyId);
+      if (selectedParty) {
+        const partyName = selectedParty.firstName && selectedParty.lastName
+          ? `${selectedParty.firstName} ${selectedParty.lastName}`
+          : `${selectedParty.firstName || selectedParty.lastName || 'İsimsiz Hasta'}`;
 
-        setFormData(prev => ({ ...prev, patientName }));
+        setFormData(prev => ({ ...prev, partyName }));
       }
     }
-  }, [formData.patientId, patients]);
+  }, [formData.partyId, parties]);
 
   // Auto-generate title based on type
   useEffect(() => {
@@ -112,8 +112,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.patientId) {
-      newErrors.patientId = 'Hasta seçimi zorunludur';
+    if (!formData.partyId) {
+      newErrors.partyId = 'Hasta seçimi zorunludur';
     }
 
     if (!formData.date) {
@@ -159,7 +159,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     }
   };
 
-  const handleAddNewPatient = async (name: string) => {
+  const handleAddNewParty = async (name: string) => {
     try {
       setIsSubmitting(true);
       // Split name into first and last name
@@ -167,7 +167,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
       const lastName = parts.length > 1 ? parts.pop() || '' : '';
       const firstName = parts.join(' ');
 
-      const newPatient = await createPatient({
+      const newParty = await createParty({
         firstName: firstName || name,
         lastName: lastName || '',
         phone: '',
@@ -179,13 +179,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
       setFormData(prev => ({
         ...prev,
-        patientId: newPatient.id || '',
-        patientName: `${newPatient.firstName} ${newPatient.lastName}`.trim()
+        partyId: newParty.id || '',
+        partyName: `${newParty.firstName} ${newParty.lastName}`.trim()
       }));
 
       showSuccess('Yeni hasta oluşturuldu');
     } catch (error) {
-      console.error('Failed to create patient:', error);
+      console.error('Failed to create party:', error);
       showError('Hasta oluşturulamadı');
     } finally {
       setIsSubmitting(false);
@@ -204,8 +204,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     try {
       if (mode === 'create') {
         const appointmentData: CreateAppointmentData = {
-          patientId: formData.patientId,
-          patientName: formData.patientName,
+          partyId: formData.partyId,
+          partyName: formData.partyName,
           date: formData.date,
           time: formData.time,
           duration: formData.duration,
@@ -225,8 +225,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         onSave?.(newAppointment);
       } else if (appointment) {
         const updateData: Partial<UpdateAppointmentData> = {
-          patientId: formData.patientId,
-          patientName: formData.patientName,
+          partyId: formData.partyId,
+          partyName: formData.partyName,
           date: formData.date,
           time: formData.time,
           duration: formData.duration,
@@ -276,21 +276,21 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Patient Selection */}
+              {/* Party Selection */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Hasta *
                 </label>
-                <PatientAutocomplete
-                  value={formData.patientName}
-                  patientId={formData.patientId}
-                  onSelect={(patient) => {
-                    handleInputChange('patientId', patient.id || '');
-                    handleInputChange('patientName', `${patient.firstName} ${patient.lastName}`);
+                <PartyAutocomplete
+                  value={formData.partyName}
+                  partyId={formData.partyId}
+                  onSelect={(party) => {
+                    handleInputChange('partyId', party.id || '');
+                    handleInputChange('partyName', `${party.firstName} ${party.lastName}`);
                   }}
-                  onAddNew={handleAddNewPatient}
+                  onAddNew={handleAddNewParty}
                   placeholder="Hasta adı veya TC ile arayın..."
-                  error={errors.patientId}
+                  error={errors.partyId}
                 />
               </div>
 

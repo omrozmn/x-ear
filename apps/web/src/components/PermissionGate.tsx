@@ -25,14 +25,14 @@ interface PermissionGateProps {
  * 
  * @example
  * // Single permission
- * <PermissionGate permission="patients.create">
- *   <CreatePatientButton />
+ * <PermissionGate permission="parties.create">
+ *   <CreatePartyButton />
  * </PermissionGate>
  * 
  * @example
  * // Any of multiple permissions
- * <PermissionGate anyOf={['patients.edit', 'patients.delete']}>
- *   <PatientActions />
+ * <PermissionGate anyOf={['parties.edit', 'parties.delete']}>
+ *   <PartyActions />
  * </PermissionGate>
  * 
  * @example

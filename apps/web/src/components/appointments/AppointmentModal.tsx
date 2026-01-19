@@ -9,7 +9,7 @@ interface AppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   mode?: 'view' | 'edit' | 'create';
-  patientId?: string;
+  partyId?: string;
   initialDate?: string;
   initialTime?: string;
   quickAppointmentData?: { date: string; time: string } | null;
@@ -20,7 +20,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   isOpen,
   onClose,
   mode = 'view',
-  patientId,
+  partyId,
   initialDate: _initialDate,
   initialTime: _initialTime
 }) => {
@@ -160,11 +160,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {currentMode === 'view' && appointment ? (
             <div className="space-y-6">
-              {/* Patient Info */}
+              {/* Party Info */}
               <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Hasta Bilgileri</h4>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">{appointment.patientName}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">ID: {appointment.patientId}</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">{appointment.partyName}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">ID: {appointment.partyId}</p>
               </div>
 
               {/* Appointment Details */}
@@ -269,7 +269,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           ) : (
             <AppointmentForm
               appointment={currentMode === 'edit' ? appointment : undefined}
-              patientId={patientId}
+              partyId={partyId}
               mode={currentMode === 'create' ? 'create' : 'edit'}
               onSave={handleSave}
               onCancel={handleCancel}
@@ -326,7 +326,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                       </p>
                       {appointment && (
                         <div className="mt-3 p-3 bg-gray-50 rounded-md">
-                          <p className="text-sm font-medium text-gray-900">{appointment.patientName}</p>
+                          <p className="text-sm font-medium text-gray-900">{appointment.partyName}</p>
                           <p className="text-sm text-gray-600">{formatDate(appointment.date)} - {formatTime(appointment.time)}</p>
                           <p className="text-sm text-gray-600">{appointment.title}</p>
                         </div>

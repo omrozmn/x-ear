@@ -25,7 +25,7 @@ from schemas.invoices import (
 )
 from models.user import User
 from models.invoice import Invoice
-from models.patient import Patient
+from core.models.party import Party
 from models.sales import Sale
 from models.efatura_outbox import EFaturaOutbox
 from models.user import ActivityLog
@@ -45,7 +45,7 @@ def get_invoices(
     page: int = 1,
     per_page: int = 20,
     status: Optional[str] = None,
-    patient_id: Optional[str] = None,
+    party_id: Optional[str] = None,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
@@ -58,15 +58,16 @@ def get_invoices(
         
         if status:
             query = query.filter(Invoice.status == status)
-        if patient_id:
-            query = query.filter(Invoice.patient_id == patient_id)
+        if party_id:
+            query = query.filter(Invoice.party_id == party_id)
         
         query = query.order_by(desc(Invoice.created_at))
         total = query.count()
         invoices = query.offset((page - 1) * per_page).limit(per_page).all()
         
         return ResponseEnvelope(
-            data=[inv.to_dict() for inv in invoices],
+            # Use Pydantic schema for type-safe serialization (NO to_dict())
+            data=[InvoiceRead.model_validate(inv) for inv in invoices],
             meta={
                 "page": page,
                 "perPage": per_page,
@@ -96,7 +97,7 @@ def get_print_queue(
             items.append({
                 'id': inv.id,
                 'invoiceNumber': inv.invoice_number,
-                'patientName': inv.patient_name or (inv.patient.full_name if inv.patient else 'Unknown'),
+                'partyName': inv.patient_name or (inv.patient.full_name if inv.patient else 'Unknown'),
                 'amount': inv.device_price,
                 'queuedAt': inv.updated_at.isoformat() if inv.updated_at else inv.created_at.isoformat(),
                 'priority': 'normal',
@@ -280,7 +281,7 @@ def batch_generate_invoices(
                     tenant_id=sale.tenant_id,
                     branch_id=sale.branch_id,
                     invoice_number=invoice_number,
-                    patient_id=sale.patient_id,
+                    party_id=sale.party_id,
                     sale_id=sale_id,
                     device_price=sale.total_amount or 0,
                     status='draft',
@@ -347,7 +348,8 @@ def get_invoice(
     if not invoice or invoice.status == 'deleted':
         raise HTTPException(status_code=404, detail={"message": "Invoice not found", "code": "NOT_FOUND"})
     
-    return ResponseEnvelope(data=invoice.to_dict())
+    # Use Pydantic schema for type-safe serialization (NO to_dict())
+    return ResponseEnvelope(data=InvoiceRead.model_validate(invoice))
 
 @router.post("/invoices", operation_id="createInvoices", response_model=ResponseEnvelope[InvoiceRead], status_code=201)
 def create_invoice(
@@ -359,18 +361,18 @@ def create_invoice(
     try:
         # Verify patient exists
         payload = request_data.model_dump(by_alias=False)
-        patient_id = payload.get("patient_id")
+        party_id = payload.get("party_id")
         sale_id = payload.get("sale_id")
 
         # Patient is optional for some invoice types
-        if patient_id:
-            patient = db_session.query(Patient).filter(
-                Patient.id == patient_id,
-                Patient.tenant_id == access.tenant_id
+        if party_id:
+            party = db_session.query(Party).filter(
+                Party.id == party_id,
+                Party.tenant_id == access.tenant_id
             ).first()
             
-            if not patient:
-                raise HTTPException(status_code=404, detail={"message": "Patient not found", "code": "NOT_FOUND"})
+            if not party:
+                raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         
         # Generate invoice number
         from datetime import datetime
@@ -380,7 +382,7 @@ def create_invoice(
             # id is auto-generated (Integer primary key)
             tenant_id=access.tenant_id,
             invoice_number=invoice_number,
-            patient_id=patient_id,
+            party_id=party_id,
             sale_id=sale_id,
             status=(payload.get("status") or "draft"),
             notes=payload.get("notes"),
@@ -392,7 +394,8 @@ def create_invoice(
         db_session.commit()
         db_session.refresh(invoice)
         
-        return ResponseEnvelope(data=invoice.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=InvoiceRead.model_validate(invoice))
     except HTTPException:
         raise
     except Exception as e:
@@ -426,8 +429,10 @@ def update_invoice(
         
         invoice.updated_at = datetime.utcnow()
         db_session.commit()
+        db_session.refresh(invoice)
         
-        return ResponseEnvelope(data=invoice.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=InvoiceRead.model_validate(invoice))
     except HTTPException:
         raise
     except Exception as e:
@@ -463,29 +468,30 @@ def delete_invoice(
         logger.error(f"Delete invoice error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/patients/{patient_id}/invoices", operation_id="listPatientInvoices", response_model=ResponseEnvelope[List[InvoiceRead]])
-def get_patient_invoices(
-    patient_id: str,
+@router.get("/parties/{party_id}/invoices", operation_id="listPartyInvoices", response_model=ResponseEnvelope[List[InvoiceRead]])
+def get_party_invoices(
+    party_id: str,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    """Get all invoices for a patient"""
+    """Get all invoices for a party"""
     try:
-        patient = db_session.query(Patient).filter(
-            Patient.id == patient_id,
-            Patient.tenant_id == access.tenant_id
+        party = db_session.query(Party).filter(
+            Party.id == party_id,
+            Party.tenant_id == access.tenant_id
         ).first()
         
-        if not patient:
-            raise HTTPException(status_code=404, detail={"message": "Patient not found", "code": "NOT_FOUND"})
+        if not party:
+            raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         
         invoices = db_session.query(Invoice).filter(
-            Invoice.patient_id == patient_id,
+            Invoice.party_id == party_id,
             Invoice.tenant_id == access.tenant_id,
             Invoice.status != 'deleted'
         ).order_by(desc(Invoice.created_at)).all()
         
-        return ResponseEnvelope(data=[inv.to_dict() for inv in invoices])
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=[InvoiceRead.model_validate(inv) for inv in invoices])
     except HTTPException:
         raise
     except Exception as e:
@@ -567,8 +573,20 @@ def send_to_gib(
             pass
 
         db_session.commit()
+        db_session.refresh(invoice)
 
-        return ResponseEnvelope(data={'invoice': invoice.to_dict(), 'outbox': outbox.to_dict()})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data={
+            'invoice': InvoiceRead.model_validate(invoice).model_dump(by_alias=True),
+            'outbox': {
+                'id': outbox.id if hasattr(outbox, 'id') else None,
+                'invoiceId': outbox.invoice_id,
+                'fileName': outbox.file_name,
+                'ettn': outbox.ettn,
+                'uuid': outbox.uuid,
+                'status': outbox.status
+            }
+        })
     except HTTPException:
         raise
     except Exception as e:

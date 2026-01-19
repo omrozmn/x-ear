@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/users.py
+# hypothesis_version: 6.150.1
+
+['First name', 'Full name', 'Is user active', 'Last name', 'Password', 'Permission category', 'Permission name', 'Phone number', 'Role description', 'Role name', 'Role permissions', 'User email', 'User permissions', 'User role', 'Username', 'branchId', 'firstName', 'fullName', 'isActive', 'lastLogin', 'lastName', 'tenantId', 'user', 'userCount']

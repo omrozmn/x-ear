@@ -21,7 +21,7 @@ interface ProcessingResult {
   fileName: string;
   status: 'processed' | 'error';
   result?: {
-    matched_patient?: any;
+    matched_party?: any;
     pdf_generated?: boolean;
     pdf_filename?: string;
     document_type?: string;
@@ -151,18 +151,18 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             </div>
           </div>
 
-          {/* Patient Info */}
+          {/* Party Info */}
           <div className="p-4 bg-green-50 rounded-lg border border-green-200">
             <div className="flex items-center gap-2 mb-2">
               <User className="w-4 h-4 text-green-600" />
               <label className="text-sm font-medium text-green-900">Hasta Bilgisi</label>
             </div>
             <div className="text-sm font-semibold text-green-800">
-              {data.matched_patient?.patient?.fullName || 'Hasta seçilmedi'}
+              {data.matched_party?.party?.fullName || 'Hasta seçilmedi'}
             </div>
-            {data.matched_patient?.patient?.tcNo && (
+            {data.matched_party?.party?.tcNo && (
               <div className="text-xs text-green-600 mt-1">
-                TC: {data.matched_patient.patient.tcNo}
+                TC: {data.matched_party.party.tcNo}
               </div>
             )}
           </div>

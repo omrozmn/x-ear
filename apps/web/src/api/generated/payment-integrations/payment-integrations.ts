@@ -29,7 +29,10 @@ import type {
   HTTPValidationError,
   ListPaymentPoTransactionsParams,
   PayTRConfigUpdate,
-  PayTRInitiateRequest
+  PayTRInitiateRequest,
+  ResponseEnvelopeListPaymentRecordRead,
+  ResponseEnvelopePayTRConfigRead,
+  ResponseEnvelopePayTRInitiateResponse
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -47,7 +50,7 @@ export const listPaymentPoPaytrConfig = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopePayTRConfigRead>(
       {url: `/api/payments/pos/paytr/config`, method: 'GET', signal
     },
       );
@@ -205,7 +208,7 @@ export const createPaymentPoPaytrInitiate = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopePayTRInitiateResponse>(
       {url: `/api/payments/pos/paytr/initiate`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: payTRInitiateRequest, signal
@@ -349,7 +352,7 @@ export const listPaymentPoTransactions = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListPaymentRecordRead>(
       {url: `/api/payments/pos/transactions`, method: 'GET',
         params, signal
     },

@@ -12,6 +12,9 @@ from models.invoice import Invoice
 from models.purchase_invoice import PurchaseInvoice
 from models.user import ActivityLog
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from schemas.invoices import InvoiceRead
+from schemas.purchase_invoices import PurchaseInvoiceRead
+from schemas.audit import ActivityLogRead
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +71,7 @@ async def get_invoices(
             
             total = query.count()
             invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
-            data = [inv.to_dict() for inv in invoices]
+            data = [InvoiceRead.model_validate(inv).model_dump(by_alias=True) for inv in invoices]
         else:
             query = db.query(PurchaseInvoice)
             if status:
@@ -76,7 +79,7 @@ async def get_invoices(
             
             total = query.count()
             invoices = query.order_by(PurchaseInvoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
-            data = [inv.to_dict() for inv in invoices]
+            data = [PurchaseInvoiceRead.model_validate(inv).model_dump(by_alias=True) for inv in invoices]
         
         return ResponseEnvelope(data={
             "invoices": data,
@@ -111,7 +114,7 @@ async def get_logs(
         logs = query.order_by(ActivityLog.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(data={
-            "logs": [log.to_dict_with_user() if hasattr(log, 'to_dict_with_user') else log.to_dict() for log in logs],
+            "logs": [ActivityLogRead.model_validate(log).model_dump(by_alias=True) for log in logs],
             "pagination": {
                 "page": page,
                 "limit": limit,

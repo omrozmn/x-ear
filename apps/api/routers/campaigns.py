@@ -14,7 +14,7 @@ from schemas.campaigns import CampaignCreate, CampaignUpdate, CampaignRead, Camp
 from models.campaign import Campaign as CampaignModel, SMSLog
 from models.sms_integration import SMSProviderConfig, TenantSMSCredit
 from services.sms_service import VatanSMSService
-from models.patient import Patient
+from core.models.party import Party
 
 from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
@@ -47,8 +47,9 @@ def get_campaigns(
         total = query.count()
         campaigns = query.offset((page - 1) * per_page).limit(per_page).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[c.to_dict() for c in campaigns],
+            data=[CampaignRead.model_validate(c).model_dump(by_alias=True) for c in campaigns],
             meta={
                 "total": total,
                 "page": page,
@@ -87,14 +88,16 @@ def create_campaign(
 
         # Calculate recipients
         if camp.target_segment == 'all':
-            camp.total_recipients = db.query(Patient).filter_by(tenant_id=access.tenant_id).count()
+            camp.total_recipients = db.query(Party).filter_by(tenant_id=access.tenant_id).count()
         else:
             camp.total_recipients = 0
 
         db.add(camp)
         db.commit()
+        db.refresh(camp)
         
-        return ResponseEnvelope(data=camp.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=CampaignRead.model_validate(camp).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
@@ -124,7 +127,8 @@ def get_campaign(
                 detail=ApiError(message="Unauthorized", code="AUTH_FORBIDDEN").model_dump(mode="json"),
             )
         
-        return ResponseEnvelope(data=camp.to_dict())
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=CampaignRead.model_validate(camp).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
@@ -164,7 +168,10 @@ def update_campaign(
             camp.message_template = campaign_in.message_template
         
         db.commit()
-        return ResponseEnvelope(data=camp.to_dict())
+        db.refresh(camp)
+        
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=CampaignRead.model_validate(camp).model_dump(by_alias=True))
     except HTTPException:
         raise
     except Exception as e:
@@ -241,11 +248,11 @@ def send_campaign(
         recipients = [] # List of {phone, name, id}
         
         if camp.target_segment == 'all':
-            patients = db.query(Patient).filter_by(tenant_id=access.tenant_id).all()
+            patients = db.query(Party).filter_by(tenant_id=access.tenant_id).all()
             recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
         elif camp.target_segment == 'filter':
             # TODO: Implement complex filtering
-             patients = db.query(Patient).filter_by(tenant_id=access.tenant_id).all()
+             patients = db.query(Party).filter_by(tenant_id=access.tenant_id).all()
              recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
         elif camp.target_segment == 'excel':
              criteria = camp.target_criteria_json or {}
@@ -289,7 +296,7 @@ def send_campaign(
              for r in recipients:
                  log = SMSLog(
                      campaign_id=camp.id,
-                     patient_id=r['id'],
+                     party_id=r['id'],
                      tenant_id=access.tenant_id,
                      phone_number=r['phone'],
                      message=message,
@@ -351,8 +358,9 @@ def admin_get_campaigns(
         total = query.count()
         campaigns = query.offset((page - 1) * limit).limit(limit).all()
         
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(
-            data=[c.to_dict() for c in campaigns],
+            data=[CampaignRead.model_validate(c).model_dump(by_alias=True) for c in campaigns],
             meta={
                 "total": total,
                 "page": page,

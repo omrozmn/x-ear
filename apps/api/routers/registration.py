@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
+from schemas.tenants import TurnstileConfigResponse, RegistrationVerifyResponse
 from routers.auth import create_access_token
 
 logger = logging.getLogger(__name__)
@@ -51,11 +52,11 @@ def get_otp_store():
 
 # --- Routes ---
 
-@router.get("/config/turnstile", operation_id="listConfigTurnstile")
+@router.get("/config/turnstile", operation_id="listConfigTurnstile", response_model=ResponseEnvelope[TurnstileConfigResponse])
 def get_turnstile_config():
     """Get Turnstile configuration"""
     site_key = os.getenv('TURNSTILE_SITE_KEY')
-    return ResponseEnvelope(data={'siteKey': site_key or ''})
+    return ResponseEnvelope(data=TurnstileConfigResponse(site_key=site_key or ''))
 
 @router.post("/register-phone", operation_id="createRegisterPhone")
 def register_phone(
@@ -113,7 +114,7 @@ def register_phone(
         logger.error(f"Register phone error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/verify-registration-otp", operation_id="createVerifyRegistrationOtp", status_code=201)
+@router.post("/verify-registration-otp", operation_id="createVerifyRegistrationOtp", status_code=201, response_model=ResponseEnvelope[RegistrationVerifyResponse])
 def verify_registration_otp(
     request_data: VerifyRegistrationOTPRequest,
     db: Session = Depends(get_db)
@@ -179,12 +180,13 @@ def verify_registration_otp(
         except Exception:
             pass
         
-        return ResponseEnvelope(data={
-            'user_id': user_id,
-            'username': username_saved,
-            'temp_password': temp_password,
-            'access_token': access_token
-        }, message='Registration successful')
+        return ResponseEnvelope(data=RegistrationVerifyResponse(
+            user_id=user_id,
+            username=username_saved,
+            temp_password=temp_password,
+            access_token=access_token,
+            message='Registration successful'
+        ))
         
     except HTTPException:
         raise

@@ -1,7 +1,7 @@
 """Admin Payments Router - FastAPI"""
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 import logging
 
@@ -9,16 +9,13 @@ from database import get_db
 from models.sales import PaymentRecord
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.sales import PaymentRecordRead
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/payments", tags=["Admin Payments"])
 
-# Response models
-class PaymentListResponse(ResponseEnvelope):
-    data: Optional[dict] = None
-
-@router.get("/pos/transactions", operation_id="listAdminPaymentPoTransactions", response_model=PaymentListResponse)
+@router.get("/pos/transactions", operation_id="listAdminPaymentPoTransactions", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 async def get_pos_transactions(
     provider: Optional[str] = None,
     start_date: Optional[str] = None,
@@ -50,7 +47,10 @@ async def get_pos_transactions(
         
         records = query.order_by(PaymentRecord.payment_date.desc()).limit(limit).all()
         
-        return {"success": True, "data": [p.to_dict() for p in records]}
+        return ResponseEnvelope(data=[
+            PaymentRecordRead.model_validate(p)
+            for p in records
+        ])
     except Exception as e:
         logger.error(f"Admin get POS transactions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

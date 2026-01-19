@@ -10,7 +10,7 @@ import { InventoryForm } from '../components/inventory/InventoryForm';
 import { AdvancedFilters, InventoryFilters } from '../components/inventory/AdvancedFilters';
 import { InventoryItem } from '../types/inventory';
 
-import { listInventory, deleteInventory } from '@/api/generated';
+import { listInventory, deleteInventory } from '@/api/client/inventory.client';
 import { apiClient } from '../api/orval-mutator';
 import { unwrapArray } from '../utils/response-unwrap';
 
@@ -444,17 +444,17 @@ export const DesktopInventoryPage: React.FC = () => {
                         <button
                           onClick={() => {
                             // map raw api item to InventoryForm shape as best-effort
-                            const mapped: any = {
+                            const mapped: Partial<InventoryItem> = {
                               id: String(item.id || item.uniqueId),
                               name: item.name || item.productName || '',
                               brand: item.brand || '',
                               model: item.model || '',
                               category: item.category || '',
-                              available_inventory: item.availableInventory ?? item.available_inventory ?? 0,
+                              availableInventory: item.availableInventory ?? item.available_inventory ?? 0,
                               price: item.price ?? 0,
                               barcode: item.barcode || ''
                             };
-                            setSelectedItem(mapped as any);
+                            setSelectedItem(mapped as InventoryItem);
                             setIsEditModalOpen(true);
                           }}
                           className="text-blue-600 hover:text-blue-800 text-sm"

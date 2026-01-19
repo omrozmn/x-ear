@@ -7,7 +7,7 @@ import {
   listCommunicationMessages,
   createCommunicationMessageSendSms,
   createCommunicationMessageSendEmail
-} from '@/api/generated';
+} from '@/api/client/communications.client';
 
 // Simplified types without idb dependency for now
 interface CommunicationMessage {
@@ -15,7 +15,7 @@ interface CommunicationMessage {
   type: 'sms' | 'email';
   recipient: string;
   recipientName?: string;
-  patientId?: string;
+  partyId?: string;
   subject?: string;
   content: string;
   templateId?: string;
@@ -135,7 +135,7 @@ class SimpleCommunicationSync {
   getMessages(filters?: {
     type?: 'sms' | 'email';
     status?: string;
-    patientId?: string;
+    partyId?: string;
     limit?: number;
     offset?: number;
   }): CommunicationMessage[] {
@@ -149,8 +149,8 @@ class SimpleCommunicationSync {
     if (filters?.status) {
       messages = messages.filter(m => m.status === filters.status);
     }
-    if (filters?.patientId) {
-      messages = messages.filter(m => m.patientId === filters.patientId);
+    if (filters?.partyId) {
+      messages = messages.filter(m => m.partyId === filters.partyId);
     }
 
     // Sort by created date (newest first)
@@ -311,14 +311,14 @@ class SimpleCommunicationSync {
             await createCommunicationMessageSendSms({
               phoneNumber: msgData.recipient,
               message: msgData.content,
-              patientId: msgData.patientId
+              partyId: msgData.partyId
             });
           } else if (msgData.type === 'email') {
             await createCommunicationMessageSendEmail({
               toEmail: msgData.recipient,
               subject: msgData.subject || 'No Subject',
               bodyText: msgData.content,
-              patientId: msgData.patientId
+              partyId: msgData.partyId
             });
           }
         }
@@ -368,12 +368,30 @@ class SimpleCommunicationSync {
 
     try {
       const response = await listCommunicationMessages();
-      const result = (response as any).data || response;
+      const result = (response as unknown as { data: unknown })?.data || response;
 
-      if (!result.success) return;
+      if (!(result as Record<string, unknown>).success) return;
 
-      const serverMessages: CommunicationMessage[] = result.data?.map((msg: any) => ({
+      const serverMessages: CommunicationMessage[] = ((result as Record<string, unknown>).data as Record<string, unknown>[])?.map((msg: Record<string, unknown>) => ({
         ...msg,
+        // Ensure properties match CommunicationMessage interface
+        id: msg.id as string,
+        type: msg.type as 'sms' | 'email',
+        recipient: msg.recipient as string,
+        recipientName: msg.recipientName as string,
+        partyId: msg.partyId as string,
+        subject: msg.subject as string,
+        content: msg.content as string,
+        templateId: msg.templateId as string,
+        scheduledAt: msg.scheduledAt as string,
+        sentAt: msg.sentAt as string,
+        deliveredAt: msg.deliveredAt as string,
+        status: msg.status as 'draft' | 'scheduled' | 'sent' | 'delivered' | 'failed',
+        errorMessage: msg.errorMessage as string,
+        campaignId: msg.campaignId as string,
+        messageType: msg.messageType as 'manual' | 'appointment_reminder' | 'campaign' | 'automated',
+        createdAt: msg.createdAt as string,
+        updatedAt: msg.updatedAt as string,
         syncStatus: 'synced' as const
       })) || [];
 
@@ -397,11 +415,26 @@ class SimpleCommunicationSync {
     try {
       const response = await listCommunicationTemplates();
 
-      const result = (response as any).data || response;
-      if (!result.success) return;
+      const result = (response as unknown as { data: unknown })?.data || response;
+      if (!(result as Record<string, unknown>).success) return;
 
-      const serverTemplates: CommunicationTemplate[] = result.data?.map((tmpl: any) => ({
+      const serverTemplates: CommunicationTemplate[] = ((result as Record<string, unknown>).data as Record<string, unknown>[])?.map((tmpl: Record<string, unknown>) => ({
         ...tmpl,
+        // Ensure properties match CommunicationTemplate interface
+        id: tmpl.id as string,
+        name: tmpl.name as string,
+        description: tmpl.description as string,
+        templateType: tmpl.templateType as 'sms' | 'email',
+        category: tmpl.category as string,
+        subject: tmpl.subject as string,
+        bodyText: tmpl.bodyText as string,
+        bodyHtml: tmpl.bodyHtml as string,
+        variables: tmpl.variables as string[],
+        isActive: tmpl.isActive as boolean,
+        isSystem: tmpl.isSystem as boolean,
+        usageCount: tmpl.usageCount as number,
+        createdAt: tmpl.createdAt as string,
+        updatedAt: tmpl.updatedAt as string,
         syncStatus: 'synced' as const
       })) || [];
 
@@ -515,7 +548,7 @@ export const useCommunicationOfflineSync = () => {
   const getMessages = useCallback((filters?: {
     type?: 'sms' | 'email';
     status?: string;
-    patientId?: string;
+    partyId?: string;
     limit?: number;
     offset?: number;
   }) => {

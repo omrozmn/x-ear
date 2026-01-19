@@ -5,32 +5,25 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { DeviceUpdateName } from './deviceUpdateName';
 import type { DeviceUpdateBrand } from './deviceUpdateBrand';
 import type { DeviceUpdateModel } from './deviceUpdateModel';
-import type { DeviceUpdateType } from './deviceUpdateType';
-import type { DeviceUpdateCategory } from './deviceUpdateCategory';
-import type { DeviceUpdateEar } from './deviceUpdateEar';
+import type { DeviceUpdateSerialNumber } from './deviceUpdateSerialNumber';
 import type { DeviceUpdateStatus } from './deviceUpdateStatus';
 import type { DeviceUpdatePrice } from './deviceUpdatePrice';
-import type { DeviceUpdateNotes } from './deviceUpdateNotes';
-import type { DeviceUpdateSerialNumber } from './deviceUpdateSerialNumber';
-import type { DeviceUpdateSerialNumberLeft } from './deviceUpdateSerialNumberLeft';
-import type { DeviceUpdateSerialNumberRight } from './deviceUpdateSerialNumberRight';
-import type { DeviceUpdateTrialPeriod } from './deviceUpdateTrialPeriod';
-import type { DeviceUpdateWarranty } from './deviceUpdateWarranty';
+import type { DeviceUpdatePartyId } from './deviceUpdatePartyId';
+import type { DeviceUpdateSaleId } from './deviceUpdateSaleId';
 
+/**
+ * Schema for updating a device
+ */
 export interface DeviceUpdate {
+  name?: DeviceUpdateName;
   brand?: DeviceUpdateBrand;
   model?: DeviceUpdateModel;
-  type?: DeviceUpdateType;
-  category?: DeviceUpdateCategory;
-  ear?: DeviceUpdateEar;
+  serialNumber?: DeviceUpdateSerialNumber;
   status?: DeviceUpdateStatus;
   price?: DeviceUpdatePrice;
-  notes?: DeviceUpdateNotes;
-  serialNumber?: DeviceUpdateSerialNumber;
-  serialNumberLeft?: DeviceUpdateSerialNumberLeft;
-  serialNumberRight?: DeviceUpdateSerialNumberRight;
-  trialPeriod?: DeviceUpdateTrialPeriod;
-  warranty?: DeviceUpdateWarranty;
+  partyId?: DeviceUpdatePartyId;
+  saleId?: DeviceUpdateSaleId;
 }

@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { TenantSMSCreditRead } from './tenantSMSCreditRead';
+import type { TenantSmsCreditRead } from './tenantSmsCreditRead';
 
-export type ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeData = TenantSMSCreditRead | null;
+export type ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeData = TenantSmsCreditRead | null;

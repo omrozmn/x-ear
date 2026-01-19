@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Target user ID
- */
 export type NotificationReadUserId = string | null;

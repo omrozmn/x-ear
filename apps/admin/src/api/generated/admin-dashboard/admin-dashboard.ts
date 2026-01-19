@@ -20,6 +20,11 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  ResponseEnvelopeAdminDashboardMetrics,
+  ResponseEnvelopeAdminDashboardStats
+} from '.././schemas';
+
 import { adminApi } from '../../orval-mutator';
 
 
@@ -35,7 +40,7 @@ export const getAdminDashboard = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAdminDashboardMetrics>(
       {url: `/api/admin/dashboard`, method: 'GET', signal
     },
       );
@@ -128,7 +133,7 @@ export const listAdminDashboardStats = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAdminDashboardStats>(
       {url: `/api/admin/dashboard/stats`, method: 'GET', signal
     },
       );

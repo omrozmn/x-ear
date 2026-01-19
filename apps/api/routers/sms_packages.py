@@ -11,32 +11,26 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
+from schemas.sms_packages import SmsPackageRead
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+
+# Define list response explicitly here or use List[SmsPackageRead]
+from typing import List
+from schemas.base import ResponseEnvelope, ResponseMeta
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["SMSPackages"])
+router = APIRouter(tags=["SMS"])
 
-# --- Schemas ---
-
-class SMSPackageCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
-    smsCount: int
-    price: float
-    isActive: bool = True
-
-class SMSPackageUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    smsCount: Optional[int] = None
-    price: Optional[float] = None
-    isActive: Optional[bool] = None
+from schemas.sms import (
+    SmsPackageCreate,
+    SmsPackageUpdate,
+    SmsPackageRead
+)
 
 # --- Public Routes ---
 
-@router.get("/sms-packages", operation_id="listSmsPackages")
+@router.get("/sms-packages", operation_id="listSmsPackages", response_model=ResponseEnvelope[List[SmsPackageRead]])
 def list_public_packages(db: Session = Depends(get_db)):
     """List all active SMS packages (Public)"""
     try:
@@ -45,7 +39,7 @@ def list_public_packages(db: Session = Depends(get_db)):
         packages = db.query(SmsPackage).filter_by(is_active=True).order_by(SmsPackage.price).all()
         
         return ResponseEnvelope(data=[
-            p.to_dict() if hasattr(p, 'to_dict') else {'id': p.id, 'name': p.name, 'price': float(p.price)}
+            SmsPackageRead.model_validate(p)
             for p in packages
         ])
         
@@ -55,7 +49,7 @@ def list_public_packages(db: Session = Depends(get_db)):
 
 # --- Admin Routes ---
 
-@router.get("/admin/sms/packages", operation_id="listAdminSmPackages")
+@router.get("/admin/sms/packages", operation_id="listAdminSmPackages", response_model=ResponseEnvelope[List[SmsPackageRead]])
 def list_admin_packages(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -77,15 +71,15 @@ def list_admin_packages(
         
         return ResponseEnvelope(
             data=[
-                p.to_dict() if hasattr(p, 'to_dict') else {'id': p.id, 'name': p.name}
+                SmsPackageRead.model_validate(p)
                 for p in packages
             ],
-            meta={
-                'total': total,
-                'pages': (total + limit - 1) // limit,
-                'current_page': page,
-                'per_page': limit
-            }
+            meta=ResponseMeta(
+                total=total,
+                total_pages=(total + limit - 1) // limit,
+                page=page,
+                per_page=limit
+            )
         )
         
     except HTTPException:
@@ -94,9 +88,9 @@ def list_admin_packages(
         logger.error(f"List admin SMS packages error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/admin/sms/packages", operation_id="createAdminSmPackages", status_code=201)
+@router.post("/admin/sms/packages", operation_id="createAdminSmPackages", status_code=201, response_model=ResponseEnvelope[SmsPackageRead])
 def create_package(
-    request_data: SMSPackageCreate,
+    request_data: SmsPackageCreate,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
@@ -117,7 +111,7 @@ def create_package(
         db.add(pkg)
         db.commit()
         
-        return ResponseEnvelope(data=pkg.to_dict() if hasattr(pkg, 'to_dict') else {'id': pkg.id})
+        return ResponseEnvelope(data=SmsPackageRead.model_validate(pkg).model_dump(by_alias=True))
         
     except HTTPException:
         raise
@@ -126,10 +120,10 @@ def create_package(
         logger.error(f"Create SMS package error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/admin/sms/packages/{package_id}", operation_id="updateAdminSmPackage")
+@router.put("/admin/sms/packages/{package_id}", operation_id="updateAdminSmPackage", response_model=ResponseEnvelope[SmsPackageRead])
 def update_package(
     package_id: str,
-    request_data: SMSPackageUpdate,
+    request_data: SmsPackageUpdate,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
@@ -157,7 +151,7 @@ def update_package(
         
         db.commit()
         
-        return ResponseEnvelope(data=pkg.to_dict() if hasattr(pkg, 'to_dict') else {'id': pkg.id})
+        return ResponseEnvelope(data=SmsPackageRead.model_validate(pkg))
         
     except HTTPException:
         raise

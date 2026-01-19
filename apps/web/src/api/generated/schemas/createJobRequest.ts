@@ -7,6 +7,6 @@
  */
 
 export interface CreateJobRequest {
-  file_path: string;
+  filePath: string;
   type?: string;
 }

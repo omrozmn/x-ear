@@ -5,18 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeSMSPackageReadData } from './responseEnvelopeSMSPackageReadData';
-import type { ResponseEnvelopeSMSPackageReadMessage } from './responseEnvelopeSMSPackageReadMessage';
-import type { ResponseEnvelopeSMSPackageReadError } from './responseEnvelopeSMSPackageReadError';
-import type { ResponseEnvelopeSMSPackageReadMeta } from './responseEnvelopeSMSPackageReadMeta';
-import type { ResponseEnvelopeSMSPackageReadRequestId } from './responseEnvelopeSMSPackageReadRequestId';
+import type { ResponseEnvelopeSmsPackageReadData } from './responseEnvelopeSmsPackageReadData';
+import type { ResponseEnvelopeSmsPackageReadMessage } from './responseEnvelopeSmsPackageReadMessage';
+import type { ResponseEnvelopeSmsPackageReadError } from './responseEnvelopeSmsPackageReadError';
+import type { ResponseEnvelopeSmsPackageReadMeta } from './responseEnvelopeSmsPackageReadMeta';
+import type { ResponseEnvelopeSmsPackageReadRequestId } from './responseEnvelopeSmsPackageReadRequestId';
 
-export interface ResponseEnvelopeSMSPackageRead {
+export interface ResponseEnvelopeSmsPackageRead {
   success?: boolean;
-  data?: ResponseEnvelopeSMSPackageReadData;
-  message?: ResponseEnvelopeSMSPackageReadMessage;
-  error?: ResponseEnvelopeSMSPackageReadError;
-  meta?: ResponseEnvelopeSMSPackageReadMeta;
-  requestId?: ResponseEnvelopeSMSPackageReadRequestId;
+  data?: ResponseEnvelopeSmsPackageReadData;
+  message?: ResponseEnvelopeSmsPackageReadMessage;
+  error?: ResponseEnvelopeSmsPackageReadError;
+  meta?: ResponseEnvelopeSmsPackageReadMeta;
+  requestId?: ResponseEnvelopeSmsPackageReadRequestId;
   timestamp?: string;
 }

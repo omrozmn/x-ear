@@ -7,4 +7,4 @@
  */
 import type { ResponseMeta } from './responseMeta';
 
-export type ResponseEnvelopeListSMSPackageReadMeta = ResponseMeta | null;
+export type ResponseEnvelopeListSmsPackageReadMeta = ResponseMeta | null;

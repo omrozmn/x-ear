@@ -10,13 +10,14 @@ import type { AppointmentReadBranchId } from './appointmentReadBranchId';
 import type { AppointmentType } from './appointmentType';
 import type { AppointmentStatus } from './appointmentStatus';
 import type { AppointmentReadNotes } from './appointmentReadNotes';
-import type { AppointmentReadPatientName } from './appointmentReadPatientName';
+import type { AppointmentReadPartyName } from './appointmentReadPartyName';
+import type { AppointmentReadTenantName } from './appointmentReadTenantName';
 import type { AppointmentReadType } from './appointmentReadType';
 
 export interface AppointmentRead {
   /** Unique identifier for the resource */
   id: string;
-  patientId: string;
+  partyId: string;
   clinicianId?: AppointmentReadClinicianId;
   branchId?: AppointmentReadBranchId;
   date: string;
@@ -27,6 +28,7 @@ export interface AppointmentRead {
   status?: AppointmentStatus;
   notes?: AppointmentReadNotes;
   tenantId: string;
-  patientName?: AppointmentReadPatientName;
+  partyName?: AppointmentReadPartyName;
+  tenantName?: AppointmentReadTenantName;
   type?: AppointmentReadType;
 }

@@ -32,6 +32,7 @@ import type {
   ListAppointmentListParams,
   ListAppointmentsParams,
   RescheduleRequest,
+  ResponseEnvelopeAppointmentAvailability,
   ResponseEnvelopeAppointmentRead,
   ResponseEnvelopeListAppointmentRead
 } from '.././schemas';
@@ -622,7 +623,7 @@ export const listAppointmentAvailability = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeAppointmentAvailability>(
       {url: `/api/appointments/availability`, method: 'GET',
         params, signal
     },

@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseEnvelopeSMSPackageReadError = unknown | null;
+export type ResponseEnvelopeSmsPackageReadError = unknown | null;

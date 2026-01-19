@@ -4,7 +4,7 @@ import { appointmentsApi } from '@/generated/orval';
 
 export type Appointment = {
   id: string;
-  patientId: string;
+  partyId: string;
   startsAt: string; // ISO
   endsAt: string; // ISO
   notes?: string;

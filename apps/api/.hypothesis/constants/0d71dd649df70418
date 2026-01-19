@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/party.py
+# hypothesis_version: 6.150.1
+
+[100, 120, 'Appointment', 'Branch', 'Device', 'EReceipt', 'HearingTest', 'PatientNote', 'Proforma', 'acquisitionType', 'acquisition_type', 'active', 'address', 'addressCity', 'addressDistrict', 'addressFull', 'all, delete-orphan', 'available', 'birthDate', 'branchId', 'branchName', 'branch_id', 'branches.id', 'city', 'conversionStep', 'conversion_step', 'date', 'district', 'dob', 'email', 'firstName', 'fullAddress', 'fullName', 'gender', 'id', 'identityNumber', 'isoformat', 'lastName', 'lead', 'leftEarBattery', 'leftEarDevice', 'parties', 'pat', 'patient', 'patients', 'phone', 'priorityScore', 'referredBy', 'rightEarBattery', 'rightEarDevice', 'segment', 'sgkInfo', 'status', 'tags', 'tcNumber', 'tenantId', 'tenants.id', 'value', 'walk-in', '🔍   address_city: %s', '🔍   address_full: %s']

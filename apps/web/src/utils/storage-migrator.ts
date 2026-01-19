@@ -3,17 +3,17 @@ import {
   USER_PREFERENCES,
   SIDEBAR_COLLAPSED,
   THEME_MODE,
-  PATIENT_FORM_DRAFT,
+  PARTY_FORM_DRAFT,
   APPOINTMENT_FORM_DRAFT,
   API_CACHE_PREFIX,
   // Legacy migration keys
-  PATIENTS_DATA,
-  PATIENTS_LEGACY,
-  CRM_PATIENTS,
+  PARTYS_DATA,
+  PARTYS_LEGACY,
+  CRM_PARTYS,
   SMS_MESSAGES,
   SGK_DATA,
   SGK_DOCUMENTS,
-  PATIENT_DOCUMENTS,
+  PARTY_DOCUMENTS,
   UNMATCHED_DOCUMENTS,
   INVENTORY_FILTER_PRESET,
   CASH_RECORDS,
@@ -112,35 +112,35 @@ const MIGRATION_RULES: MigrationRule[] = [
     version: 'v1'
   },
   
-  // Patient data migrations
+  // Party data migrations
   {
-    from: 'xear_patients_data',
-    to: PATIENTS_DATA,
+    from: 'xear_parties_data',
+    to: PARTYS_DATA,
     version: 'v1'
   },
   {
-    from: 'xear_patients',
-    to: PATIENTS_LEGACY,
+    from: 'xear_parties',
+    to: PARTYS_LEGACY,
     version: 'v1'
   },
   {
-    from: 'patients',
-    to: PATIENTS_LEGACY,
+    from: 'parties',
+    to: PARTYS_LEGACY,
     version: 'v1'
   },
   {
-    from: 'xear_crm_patients',
-    to: CRM_PATIENTS,
+    from: 'xear_crm_parties',
+    to: CRM_PARTYS,
     version: 'v1'
   },
   {
-    from: 'patient_documents',
-    to: PATIENT_DOCUMENTS,
+    from: 'party_documents',
+    to: PARTY_DOCUMENTS,
     version: 'v1'
   },
   {
-    from: 'xear_patients_documents',
-    to: PATIENT_DOCUMENTS,
+    from: 'xear_parties_documents',
+    to: PARTY_DOCUMENTS,
     version: 'v1'
   },
   {
@@ -277,8 +277,8 @@ const MIGRATION_RULES: MigrationRule[] = [
   
   // Form drafts
   {
-    from: 'patient_form_draft',
-    to: PATIENT_FORM_DRAFT,
+    from: 'party_form_draft',
+    to: PARTY_FORM_DRAFT,
     version: 'v1'
   },
   {
@@ -289,8 +289,8 @@ const MIGRATION_RULES: MigrationRule[] = [
   
   // Cache migrations
   {
-    from: 'patients_cache',
-    to: API_CACHE_PREFIX + '.patients',
+    from: 'parties_cache',
+    to: API_CACHE_PREFIX + '.parties',
     version: 'v1'
   },
   {

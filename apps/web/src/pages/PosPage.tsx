@@ -4,8 +4,21 @@ import { Card, Button, Input, useToastHelpers } from '@x-ear/ui-web';
 import {
     useCreatePaymentPoPaytrInitiate,
     useCreatePoCommissionInstallmentOptions
-} from '@/api/generated';
+} from '@/api/client/payments.client';
 import { CreditCard, AlertTriangle, ShieldCheck, Check, TrendingDown, User, X } from 'lucide-react';
+
+interface InitPaymentPayload {
+    amount: number;
+    installment_count: number;
+    description: string;
+    sale_id: string | null;
+    party_id: string | null;
+}
+
+interface InstallmentPayload {
+    amount: number;
+}
+
 
 export default function PosPage() {
     const [iframeUrl, setIframeUrl] = useState<string | null>(null);
@@ -13,46 +26,55 @@ export default function PosPage() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [installmentOptions, setInstallmentOptions] = useState<any[]>([]);
     const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
-    const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-    const [selectedPatientName, setSelectedPatientName] = useState<string>('');
+    const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null);
+    const [selectedPartyName, setSelectedPartyName] = useState<string>('');
     const { success, error } = useToastHelpers();
 
     const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
         defaultValues: {
             amount: '',
             description: '',
-            patientName: ''
+            partyName: ''
         }
     });
 
     const amount = watch('amount');
-    const patientName = watch('patientName');
+    const partyName = watch('partyName');
     const { mutate: initiatePayment, isPending } = useCreatePaymentPoPaytrInitiate();
     const { mutate: getInstallments, isPending: loadingInstallments } = useCreatePoCommissionInstallmentOptions();
 
     // Fetch installment options when amount changes
+    // Fetch installment options when amount changes
     useEffect(() => {
         const numAmount = parseFloat(amount);
         if (numAmount && numAmount > 0) {
-            getInstallments(
-                { data: { amount: numAmount } as any },
-                {
-                    onSuccess: (response: any) => {
-                        const options = response?.data?.options || [];
-                        setInstallmentOptions(options);
-                        if (options.length > 0) {
-                            setSelectedInstallment(options[0].count || 1);
-                        }
-                    },
-                    onError: () => {
-                        // Fallback to single installment
-                        setInstallmentOptions([
-                            { count: 1, total: numAmount, installment_amount: numAmount }
-                        ]);
-                        setSelectedInstallment(1);
+            const payload: InstallmentPayload = { amount: numAmount };
+            getInstallments({ data: payload }, {
+                onSuccess: (response: any) => {
+                    const options = response?.data?.options || [];
+                    setInstallmentOptions(options);
+                    if (options.length > 0) {
+                        setSelectedInstallment(options[0].count || 1);
                     }
+                },
+                onError: () => {
+                    // Fallback to single installment
+                    setInstallmentOptions([
+                        {
+                            installment_count: 1,
+                            label: 'Tek Çekim',
+                            total: numAmount,
+                            installment_amount: numAmount,
+                            net_amount: numAmount,
+                            gross_amount: numAmount,
+                            commission_amount: 0,
+                            commission_rate: 0,
+                            monthly_payment: numAmount
+                        }
+                    ]);
+                    setSelectedInstallment(1);
                 }
-            );
+            });
         } else {
             setInstallmentOptions([]);
         }
@@ -67,6 +89,7 @@ export default function PosPage() {
                     setIframeUrl(null);
                     success('Ödeme başarıyla alındı');
                 } else if (event.data?.type === 'POS_PAYMENT_FAILED') {
+                    setResult('fail');
                     setErrorMessage(event.data?.message || 'Ödeme başarısız');
                     setIframeUrl(null);
                 }
@@ -82,16 +105,16 @@ export default function PosPage() {
         setErrorMessage(null);
         setResult(null);
 
-        const payload = {
+        const payload: InitPaymentPayload = {
             amount: parseFloat(data.amount),
             installment_count: selectedInstallment,
-            description: `${data.patientName || 'Anonim'} - ${data.description || 'Hızlı tahsilat'}`,
+            description: `${data.partyName || 'Anonim'} - ${data.description || 'Hızlı tahsilat'}`,
             sale_id: null,
-            patient_id: selectedPatientId
+            party_id: selectedPartyId
         };
 
         initiatePayment({
-            data: payload as any
+            data: payload
         }, {
             onSuccess: (response: any) => {
                 if (response.data.success && response.data.iframe_url) {
@@ -151,9 +174,9 @@ export default function PosPage() {
                         setResult(null);
                         setValue('amount', '');
                         setValue('description', '');
-                        setValue('patientName', '');
-                        setSelectedPatientId(null);
-                        setSelectedPatientName('');
+                        setValue('partyName', '');
+                        setSelectedPartyId(null);
+                        setSelectedPartyName('');
                         setInstallmentOptions([]);
                     }}>
                         Yeni İşlem
@@ -182,7 +205,7 @@ export default function PosPage() {
                                         Müşteri Adı (Opsiyonel)
                                     </label>
                                     <Input
-                                        {...register('patientName')}
+                                        {...register('partyName')}
                                         placeholder="Müşteri adı"
                                         className="h-11 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                                     />
@@ -252,7 +275,7 @@ export default function PosPage() {
 
                                                 {option.installment_count > 1 && option.monthly_payment && (
                                                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                                                        {option.monthly_payment.toFixed(2)} ₺ x {option.installment_count}
+                                                        {option.monthly_payment?.toFixed(2)} ₺ x {option.installment_count}
                                                     </div>
                                                 )}
 
@@ -262,7 +285,7 @@ export default function PosPage() {
                                                 </div>
 
                                                 <div className="text-sm font-bold text-green-600 dark:text-green-400">
-                                                    →{option.net_amount.toFixed(2)} ₺
+                                                    →{option.net_amount?.toFixed(2) ?? '0.00'} ₺
                                                 </div>
                                             </button>
                                         ))}
@@ -284,13 +307,13 @@ export default function PosPage() {
                                         <div>
                                             <div className="text-xs text-gray-600 dark:text-gray-400">Müşteriden Tahsil:</div>
                                             <div className="text-lg font-bold text-gray-900 dark:text-white">
-                                                {selectedOption.gross_amount.toFixed(2)} ₺
+                                                {selectedOption.gross_amount?.toFixed(2) ?? '0.00'} ₺
                                             </div>
                                         </div>
                                         <div>
                                             <div className="text-xs text-gray-600 dark:text-gray-400">Komisyon:</div>
                                             <div className="text-lg font-bold text-red-600 dark:text-red-400">
-                                                -{selectedOption.commission_amount.toFixed(2)} ₺
+                                                -{selectedOption.commission_amount?.toFixed(2) ?? '0.00'} ₺
                                             </div>
                                         </div>
                                     </div>
@@ -298,7 +321,7 @@ export default function PosPage() {
                                     <div>
                                         <div className="text-xs text-gray-600 dark:text-gray-400">Hesabınıza Geçecek:</div>
                                         <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                            {selectedOption.net_amount.toFixed(2)} ₺
+                                            {selectedOption.net_amount?.toFixed(2) ?? '0.00'} ₺
                                         </div>
                                     </div>
                                 </div>
@@ -339,7 +362,7 @@ export default function PosPage() {
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Tutar:</span>
-                                    <span className="font-semibold">{selectedOption.commission_amount.toFixed(2)} ₺</span>
+                                    <span className="font-semibold">{selectedOption.commission_amount?.toFixed(2) ?? '0.00'} ₺</span>
                                 </div>
                                 <div className="text-xs text-purple-600 dark:text-purple-300 mt-2">
                                     Komisyon otomatik hesaplanır ve hesabınıza net tutar geçer.

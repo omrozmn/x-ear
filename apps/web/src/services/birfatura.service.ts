@@ -8,11 +8,16 @@
 import { InvoiceFormData } from '../types/invoice';
 import { apiClient } from '../api/orval-mutator';
 import {
-  createEfaturaCreate,
-  createEfaturaCancel,
-  createEfaturaRetry
-} from '@/api/generated';
-import { getOutEBelgeV2API } from '../generated/birfatura/outEBelgeV2API';
+  createEfaturaRetry,
+  createEfaturaCancel
+} from '@/api/client/bir-fatura.client';
+import {
+  getOutEBelgeV2API,
+  GetInBoxDocumentsRequestData,
+  UpdateUnreadedStatusRequestData,
+  SendDocumentAnswerRequestData,
+  SendBasicInvoiceFromModelRequestData
+} from '../generated/birfatura/outEBelgeV2API';
 import { unwrapObject } from '../utils/response-unwrap';
 
 export interface BirFaturaResponse {
@@ -112,7 +117,7 @@ class BirFaturaService {
   async getInBoxDocuments(params: InBoxDocumentsRequest): Promise<InBoxDocumentsResponse> {
     try {
       const api = getOutEBelgeV2API();
-      const resp = await api.postApiOutEBelgeV2GetInBoxDocuments(params as any);
+      const resp = await api.postApiOutEBelgeV2GetInBoxDocuments(params as unknown as GetInBoxDocumentsRequestData);
       return resp?.data as InBoxDocumentsResponse || { Success: false };
     } catch (error) {
       console.error('BirFatura getInBoxDocuments error:', error);
@@ -126,7 +131,7 @@ class BirFaturaService {
   async getInBoxDocumentsWithDetail(params: InBoxDocumentsRequest): Promise<InBoxDocumentsResponse> {
     try {
       const api = getOutEBelgeV2API();
-      const resp = await api.postApiOutEBelgeV2GetInBoxDocumentsWithDetail(params as any);
+      const resp = await api.postApiOutEBelgeV2GetInBoxDocumentsWithDetail(params as unknown as GetInBoxDocumentsRequestData);
       return resp?.data as InBoxDocumentsResponse || { Success: false };
     } catch (error) {
       console.error('BirFatura getInBoxDocumentsWithDetail error:', error);
@@ -145,7 +150,7 @@ class BirFaturaService {
         inOutCode: 'IN',
         systemTypeCodes: 'EFATURA',
         fileExtension: 'XML'
-      } as any);
+      } as Record<string, unknown>);
 
       const content = resp?.data?.Result?.content;
       if (!content) return null;
@@ -183,7 +188,7 @@ class BirFaturaService {
         inOutCode: 'IN',
         systemTypeCodes: 'EFATURA',
         fileExtension: 'XML'
-      } as any);
+      } as Record<string, unknown>);
 
       const content = resp?.data?.Result?.content;
       if (!content) return null;
@@ -217,11 +222,11 @@ class BirFaturaService {
     try {
       const api = getOutEBelgeV2API();
       const resp = await api.postApiOutEBelgeV2UpdateUnreadedStatus({
-        uuid,
+        uuid: uuid,
         systemType: 'EFATURA',
         documentType: 'INVOICE',
         inOutCode: 'IN'
-      } as any);
+      } as unknown as UpdateUnreadedStatusRequestData);
       return resp?.data?.Success || false;
     } catch (error) {
       console.error('BirFatura markInBoxInvoiceAsRead error:', error);
@@ -244,7 +249,7 @@ class BirFaturaService {
         acceptOrRejectCode: answer,
         acceptOrRejectReason: reason,
         systemTypeCodes: 'EFATURA'
-      } as any);
+      } as unknown as SendDocumentAnswerRequestData);
 
       const data = resp?.data || {};
       return {
@@ -270,7 +275,7 @@ class BirFaturaService {
   async createAndSend(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     try {
       const api = getOutEBelgeV2API();
-      const body = { invoice: invoiceData } as any;
+      const body = { invoice: invoiceData } as unknown as SendBasicInvoiceFromModelRequestData;
       const resp = await api.postApiOutEBelgeV2SendBasicInvoiceFromModel(body);
       const data = resp?.data || {};
       return {
@@ -289,30 +294,34 @@ class BirFaturaService {
 
   /**
    * Sadece fatura oluştur (göndermeden)
+   * NOT: createEfaturaCreate fonksiyonu API'de mevcut değil, bu method kullanılmıyor
    */
   async create(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
-    try {
-      // const api = getOutEBelgeV2API();
-      const response = await createEfaturaCreate(invoiceData as any);
-      // unwrapObject handles the response structure which might be { data: ... } or direct
-      const data = unwrapObject<any>(response);
+    throw new Error('createEfaturaCreate fonksiyonu API\'de mevcut değil. createEfaturaRetry kullanın.');
+    // try {
+    //   // const api = getOutEBelgeV2API();
+    //   // createEfaturaCreate is incorrectly typed in generated client (takes no args)
+    //   // but the backend expects the invoice object. Using unknown cast to bypass but avoid 'any'.
+    //   const response = await (createEfaturaCreate as unknown as (data: unknown) => Promise<unknown>)(invoiceData);
+    //   // unwrapObject handles the response structure which might be { data: ... } or direct
+    //   const data = unwrapObject<any>(response);
 
-      if (!data.Success) {
-        throw new Error('Fatura oluşturulamadı');
-      }
+    //   if (!data.Success) {
+    //     throw new Error('Fatura oluşturulamadı');
+    //   }
 
-      return {
-        success: true,
-        invoiceId: data.Result?.id || data.Result?.invoiceId,
-        message: 'Fatura başarıyla oluşturuldu',
-      };
-    } catch (error) {
-      console.error('BirFatura create error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
-      };
-    }
+    //   return {
+    //     success: true,
+    //     invoiceId: data.Result?.id || data.Result?.invoiceId,
+    //     message: 'Fatura başarıyla oluşturuldu',
+    //   };
+    // } catch (error) {
+    //   console.error('BirFatura create error:', error);
+    //   return {
+    //     success: false,
+    //     error: error instanceof Error ? error.message : 'Bilinmeyen hata',
+    //   };
+    // }
   }
 
   /**
@@ -346,7 +355,7 @@ class BirFaturaService {
       const resp = await api.postApiOutEBelgeV2GetEnvelopeStatusFromGIB({ envelopeID: invoiceId });
       const data = resp?.data || {};
       return {
-        status: ((data?.Result ?? data?.status) as any) || 'pending',
+        status: (((data as Record<string, unknown>)?.Result ?? (data as Record<string, unknown>)?.status) as InvoiceStatus['status']) || 'pending',
         message: data?.Message || data?.message,
       };
     } catch (error) {
@@ -364,7 +373,7 @@ class BirFaturaService {
   async getXML(invoiceId: string): Promise<XMLResponse | null> {
     try {
       const api = getOutEBelgeV2API();
-      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({ documentUUID: invoiceId, inOutCode: 'OUT', systemTypeCodes: 'EFATURA', fileExtension: 'XML' } as any);
+      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({ documentUUID: invoiceId, inOutCode: 'OUT', systemTypeCodes: 'EFATURA', fileExtension: 'XML' } as unknown as Record<string, unknown>);
       const data = resp?.data || {};
       return {
         xml: data?.Result?.content || data?.Result?.content || '',

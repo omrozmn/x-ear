@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from schemas.system_settings import SystemSettingRead
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", operation_id="listAdminSettings", response_model=ResponseEnvelope)
+@router.get("", operation_id="listAdminSettings", response_model=ResponseEnvelope[List[SystemSettingRead]])
 def get_settings(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -82,7 +83,7 @@ def get_settings(
         settings = db.query(SystemSetting).all()
         
         return ResponseEnvelope(data=[
-            s.to_dict() if hasattr(s, 'to_dict') else {'key': s.key, 'value': s.value}
+            SystemSettingRead.model_validate(s)
             for s in settings
         ])
         

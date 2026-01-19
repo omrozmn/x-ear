@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/subscription.py
+# hypothesis_version: 6.150.1
+
+[100, 255, 500, 'PaymentHistory', 'Plan', 'TRY', 'Tenant', 'active', 'amount', 'cancel_at_period_end', 'canceled', 'currency', 'current_period_end', 'current_period_start', 'date', 'description', 'dynamic', 'failed', 'id', 'incomplete', 'incomplete_expired', 'invoice_url', 'metadata', 'past_due', 'payment_history', 'pending', 'plan', 'plan_id', 'plans.id', 'refunded', 'status', 'subscription', 'subscriptions', 'subscriptions.id', 'succeeded', 'tenant_id', 'tenants.id', 'trial_end', 'trialing', 'unpaid']

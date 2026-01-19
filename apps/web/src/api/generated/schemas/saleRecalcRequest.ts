@@ -5,12 +5,12 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SaleRecalcRequestPatientId } from './saleRecalcRequestPatientId';
+import type { SaleRecalcRequestPartyId } from './saleRecalcRequestPartyId';
 import type { SaleRecalcRequestSaleId } from './saleRecalcRequestSaleId';
 import type { SaleRecalcRequestLimit } from './saleRecalcRequestLimit';
 
 export interface SaleRecalcRequest {
-  patientId?: SaleRecalcRequestPatientId;
+  partyId?: SaleRecalcRequestPartyId;
   saleId?: SaleRecalcRequestSaleId;
   limit?: SaleRecalcRequestLimit;
 }

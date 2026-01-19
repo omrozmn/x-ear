@@ -1,7 +1,7 @@
 """
 Tenant Schemas - Pydantic models for Tenant domain
 """
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
 from pydantic import Field, EmailStr
@@ -14,6 +14,18 @@ class TenantStatus(str, Enum):
     SUSPENDED = "suspended"
     TRIAL = "trial"
 
+    @classmethod
+    def _missing_(cls, value):
+        """Handle case-insensitive lookup"""
+        if isinstance(value, str):
+            lower_value = value.lower()
+            for member in cls:
+                if member.value == lower_value:
+                    return member
+        return None
+
+
+from core.models.enums import ProductCode
 
 class TenantBase(AppBaseModel):
     """Base tenant schema"""
@@ -32,6 +44,9 @@ class TenantBase(AppBaseModel):
     tax_office: Optional[str] = Field(None, alias="taxOffice", description="Tax office")
     
     status: TenantStatus = Field(TenantStatus.ACTIVE, description="Tenant status")
+    
+    # Product (Strict)
+    product_code: Optional[ProductCode] = Field(ProductCode.XEAR_HEARING, description="Product Code")
 
 
 class TenantCreate(TenantBase):
@@ -53,7 +68,6 @@ class TenantUpdate(AppBaseModel):
     city: Optional[str] = None
     tax_number: Optional[str] = Field(None, alias="taxNumber")
     tax_office: Optional[str] = Field(None, alias="taxOffice")
-    tax_office: Optional[str] = Field(None, alias="taxOffice")
     status: Optional[TenantStatus] = None
     # Admin fields
     current_plan: Optional[str] = None
@@ -66,10 +80,14 @@ class TenantUpdate(AppBaseModel):
     billing_email: Optional[str] = None
     description: Optional[str] = None
     slug: Optional[str] = None
+    product_code: Optional[ProductCode] = None
 
 
 class TenantRead(TenantBase, IDMixin, TimestampMixin):
     """Schema for reading a tenant"""
+    # Product Identification (Strict)
+    product_code: ProductCode = Field(..., description="Product Code")
+
     # Subscription info
     plan_id: Optional[str] = Field(None, alias="planId")
     plan_name: Optional[str] = Field(None, alias="planName")
@@ -82,11 +100,11 @@ class TenantRead(TenantBase, IDMixin, TimestampMixin):
     
     # Settings
     settings: Optional[Dict[str, Any]] = Field(None, description="Tenant settings")
-    max_users: int = Field(5, alias="maxUsers")
-    current_users: int = Field(0, alias="currentUsers")
+    max_users: int = Field(..., alias="maxUsers")
+    current_users: int = Field(..., alias="currentUsers")
     owner_email: Optional[str] = Field(None, alias="ownerEmail")
     billing_email: Optional[str] = Field(None, alias="billingEmail")
-    status: TenantStatus = Field(TenantStatus.ACTIVE)
+    status: TenantStatus = Field(...)
     slug: str
 
 
@@ -97,3 +115,68 @@ class TenantStats(AppBaseModel):
     total_sales: int = Field(0, alias="totalSales")
     total_revenue: float = Field(0.0, alias="totalRevenue")
     active_subscriptions: int = Field(0, alias="activeSubscriptions")
+
+    active_subscriptions: int = Field(0, alias="activeSubscriptions")
+
+
+# --- Subscription & Plan Schemas ---
+
+class PlanRead(IDMixin, AppBaseModel):
+    name: str
+    slug: str
+    description: Optional[str] = None
+    plan_type: Optional[str] = Field(None, alias="planType")
+    price: Optional[float] = None
+    billing_interval: Optional[str] = Field(None, alias="billingInterval")
+    features: Optional[List[Dict[str, Any]]] = None
+    max_users: Optional[int] = Field(None, alias="maxUsers")
+    max_storage_gb: Optional[int] = Field(None, alias="maxStorageGb")
+    is_active: bool = Field(True, alias="isActive")
+    is_public: bool = Field(True, alias="isPublic")
+    monthly_price: Optional[float] = Field(None, alias="monthlyPrice")
+    yearly_price: Optional[float] = Field(None, alias="yearlyPrice")
+
+class TenantCompanyResponse(AppBaseModel):
+    id: str
+    name: str
+    company_info: Dict[str, Any] = Field(default_factory=dict, alias="companyInfo")
+    settings: Optional[Dict[str, Any]] = None
+
+class TenantAssetResponse(AppBaseModel):
+    url: str
+    type: str
+    storage_mode: str = Field(..., alias="storageMode")
+
+class TenantAssetUrlResponse(AppBaseModel):
+    type: str
+    url: Optional[str] = None
+    exists: bool
+
+class SubscriptionResponse(AppBaseModel):
+    message: str
+    tenant: Optional[Dict[str, Any]] = None 
+    plan: Optional[Dict[str, Any]] = None
+
+class SignupResponse(AppBaseModel):
+    message: str
+    tenant: Optional[Dict[str, Any]] = None
+    user: Dict[str, Any]
+    token: Optional[str] = None
+
+class CurrentSubscriptionResponse(AppBaseModel):
+    tenant: Optional[Dict[str, Any]] = None
+    plan: Optional[Dict[str, Any]] = None
+    is_expired: bool = Field(False, alias="isExpired")
+    days_remaining: int = Field(0, alias="daysRemaining")
+    message: Optional[str] = None
+    is_super_admin: Optional[bool] = Field(None, alias="is_super_admin")
+
+class TurnstileConfigResponse(AppBaseModel):
+    site_key: str = Field(..., alias="siteKey")
+
+class RegistrationVerifyResponse(AppBaseModel):
+    user_id: str
+    username: str
+    temp_password: str
+    access_token: str
+    message: str

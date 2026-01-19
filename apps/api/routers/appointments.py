@@ -14,10 +14,13 @@ from sqlalchemy import func
 from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
-from schemas.appointments import AppointmentRead
+from schemas.appointments import (
+    AppointmentRead, AppointmentCreate, AppointmentUpdate, 
+    RescheduleRequest, AppointmentAvailability
+)
 from models.appointment import Appointment
 from models.enums import AppointmentStatus
-from models.patient import Patient
+from core.models.party import Party
 from models.tenant import Tenant
 
 
@@ -27,30 +30,7 @@ router = APIRouter(tags=["Appointments"])
 
 # --- Request Schemas ---
 
-class AppointmentCreate(BaseModel):
-    patient_id: str = Field(..., alias="patientId")
-    clinician_id: Optional[str] = Field(None, alias="clinicianId")
-    branch_id: Optional[str] = Field(None, alias="branchId")
-    date: str
-    time: str
-    duration: int = 30
-    type: str = "consultation"
-    status: str = "scheduled"
-    notes: Optional[str] = None
 
-class AppointmentUpdate(BaseModel):
-    date: Optional[str] = None
-    time: Optional[str] = None
-    duration: Optional[int] = None
-    type: Optional[str] = None
-    status: Optional[str] = None
-    notes: Optional[str] = None
-    clinician_id: Optional[str] = Field(None, alias="clinicianId")
-    branch_id: Optional[str] = Field(None, alias="branchId")
-
-class RescheduleRequest(BaseModel):
-    date: str
-    time: str
 
 # --- Helper Functions ---
 
@@ -81,7 +61,7 @@ def parse_date(date_str: str) -> datetime:
 def get_appointments(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    patient_id: Optional[str] = Query(None, alias="patient_id"),
+    party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=1000),
@@ -109,8 +89,8 @@ def get_appointments(
             query = query.filter(Appointment.date <= end_dt)
         
         # Other filters
-        if patient_id:
-            query = query.filter_by(patient_id=patient_id)
+        if party_id:
+            query = query.filter_by(party_id=party_id)
         
         if status:
             try:
@@ -126,7 +106,7 @@ def get_appointments(
         appointments = query.offset((page - 1) * per_page).limit(per_page).all()
         
         return ResponseEnvelope(
-            data=[apt.to_dict() for apt in appointments],
+            data=appointments,
             meta={
                 "total": total,
                 "page": page,
@@ -150,11 +130,11 @@ def create_appointment(
         data = appointment_in.model_dump(by_alias=False)
         
         # Generate ID
-        appointment_id = f"apt_{datetime.now().strftime('%d%m%Y_%H%M%S')}_{str(hash(data['patient_id']))[-6:]}"
+        appointment_id = f"apt_{datetime.now().strftime('%d%m%Y_%H%M%S')}_{str(hash(data['party_id']))[-6:]}"
         
         appointment = Appointment()
         appointment.id = appointment_id
-        appointment.patient_id = data['patient_id']
+        appointment.party_id = data['party_id']
         appointment.clinician_id = data.get('clinician_id')
         appointment.branch_id = data.get('branch_id')
         
@@ -162,9 +142,9 @@ def create_appointment(
         if access.tenant_id:
             appointment.tenant_id = access.tenant_id
         else:
-            patient = db_session.get(Patient, data['patient_id'])
-            if patient and patient.tenant_id:
-                appointment.tenant_id = patient.tenant_id
+            party = db_session.get(Party, data['party_id'])
+            if party and party.tenant_id:
+                appointment.tenant_id = party.tenant_id
             else:
                 tenant = db_session.query(Tenant).first()
                 if tenant:
@@ -175,19 +155,18 @@ def create_appointment(
                         detail=ApiError(message="Tenant not found", code="TENANT_REQUIRED").model_dump(mode="json")
                     )
         
-        # Parse date
-        appointment.date = parse_date(data['date'])
+        # Date
+        # Schema provides datetime for date
+        appointment.date = data['date'] # Already datetime
         appointment.time = data['time']
         appointment.duration = data.get('duration', 30)
-        appointment.appointment_type = data.get('type', 'consultation')
+        appointment.appointment_type = data.get('appointment_type', 'consultation')
         
         # Handle status
-        status_value = data.get('status', 'scheduled')
-        if isinstance(status_value, str):
-            status_value = status_value.upper()
-            appointment.status = AppointmentStatus.from_legacy(status_value)
+        if 'status' in data:
+            appointment.status = data['status']
         else:
-            appointment.status = status_value or AppointmentStatus.SCHEDULED
+            appointment.status = AppointmentStatus.SCHEDULED
         
         appointment.notes = data.get('notes')
         
@@ -196,7 +175,7 @@ def create_appointment(
         
         logger.info(f"Appointment created: {appointment.id}")
         
-        return ResponseEnvelope(data=appointment.to_dict())
+        return ResponseEnvelope(data=appointment)
     except HTTPException:
         raise
     except Exception as e:
@@ -212,7 +191,7 @@ def get_appointment(
 ):
     """Get a single appointment"""
     appointment = get_appointment_or_404(db_session, appointment_id, access)
-    return ResponseEnvelope(data=appointment.to_dict())
+    return ResponseEnvelope(data=appointment)
 
 @router.put("/appointments/{appointment_id}", operation_id="updateAppointment", response_model=ResponseEnvelope[AppointmentRead])
 def update_appointment(
@@ -227,13 +206,13 @@ def update_appointment(
         data = appointment_in.model_dump(exclude_unset=True, by_alias=False)
         
         if 'date' in data and data['date']:
-            appointment.date = parse_date(data['date'])
+            appointment.date = data['date'] # Already datetime from Schema
         if 'time' in data:
             appointment.time = data['time']
         if 'duration' in data:
             appointment.duration = data['duration']
-        if 'type' in data:
-            appointment.appointment_type = data['type']
+        if 'appointment_type' in data:
+            appointment.appointment_type = data['appointment_type']
         if 'status' in data:
             appointment.status = data['status']
         if 'notes' in data:
@@ -244,7 +223,7 @@ def update_appointment(
             appointment.branch_id = data['branch_id']
         
         db_session.commit()
-        return ResponseEnvelope(data=appointment.to_dict())
+        return ResponseEnvelope(data=appointment)
     except HTTPException:
         raise
     except Exception as e:
@@ -287,7 +266,7 @@ def reschedule_appointment(
         appointment.status = 'rescheduled'
         
         db_session.commit()
-        return ResponseEnvelope(data=appointment.to_dict())
+        return ResponseEnvelope(data=appointment)
     except HTTPException:
         raise
     except Exception as e:
@@ -306,7 +285,7 @@ def cancel_appointment(
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = 'cancelled'
         db_session.commit()
-        return ResponseEnvelope(data=appointment.to_dict())
+        return ResponseEnvelope(data=appointment)
     except HTTPException:
         raise
     except Exception as e:
@@ -325,7 +304,7 @@ def complete_appointment(
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = AppointmentStatus.COMPLETED
         db_session.commit()
-        return ResponseEnvelope(data=appointment.to_dict())
+        return ResponseEnvelope(data=appointment)
     except HTTPException:
         raise
     except Exception as e:
@@ -333,7 +312,7 @@ def complete_appointment(
         logger.error(f"Complete appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/availability", operation_id="listAppointmentAvailability")
+@router.get("/appointments/availability", operation_id="listAppointmentAvailability", response_model=ResponseEnvelope[AppointmentAvailability])
 def get_availability(
     date: str,
     duration: int = Query(30, ge=15, le=120),
@@ -390,7 +369,7 @@ def get_availability(
 def list_appointments(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    patient_id: Optional[str] = Query(None, alias="patient_id"),
+    party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,
     start_date: Optional[str] = Query(None, alias="start_date"),
     end_date: Optional[str] = Query(None, alias="end_date"),
@@ -404,8 +383,8 @@ def list_appointments(
         if access.tenant_id:
             query = query.filter_by(tenant_id=access.tenant_id)
         
-        if patient_id:
-            query = query.filter_by(patient_id=patient_id)
+        if party_id:
+            query = query.filter_by(party_id=party_id)
         
         if status:
             query = query.filter_by(status=status)
@@ -425,7 +404,7 @@ def list_appointments(
         appointments = query.order_by(Appointment.date.desc()).offset((page - 1) * per_page).limit(per_page).all()
         
         return ResponseEnvelope(
-            data=[apt.to_dict() for apt in appointments],
+            data=appointments,
             meta={
                 "total": total,
                 "page": page,

@@ -7,12 +7,12 @@ export function parseAndMapCsv(content: string) {
 
   const mapped = rows.map((r) => ({ raw: r, mapped: mapCsvRowToUtsPayload(r) }));
 
-  // Simple validation: require serial and patientTc
+  // Simple validation: require serial and partyTc
   const errors = mapped
     .map((m, idx) => {
       const e: string[] = [];
       if (!m.mapped.serial) e.push('serial_missing');
-      if (!m.mapped.patientTc) e.push('patient_tc_missing');
+      if (!m.mapped.partyTc) e.push('party_tc_missing');
       return { row: idx, errors: e };
     })
     .filter((r) => r.errors.length > 0);

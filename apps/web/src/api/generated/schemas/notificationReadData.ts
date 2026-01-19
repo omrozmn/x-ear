@@ -7,7 +7,4 @@
  */
 import type { NotificationReadDataAnyOf } from './notificationReadDataAnyOf';
 
-/**
- * Additional data
- */
 export type NotificationReadData = NotificationReadDataAnyOf | null;

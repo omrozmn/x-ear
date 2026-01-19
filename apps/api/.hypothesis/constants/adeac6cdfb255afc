@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/utils/approval_token.py
+# hypothesis_version: 6.150.1
+
+[',', ':', 'ApprovalToken', 'Token has expired', 'actionId', 'actionPlanHash', 'action_id', 'action_mismatch', 'actual', 'already_used', 'approverId', 'approver_id', 'approver_mismatch', 'current_hash', 'decode_error', 'error', 'errorType', 'expected', 'expired', 'expired_at', 'expiresAt', 'expires_at', 'invalid_signature', 'issuedAt', 'original_hash', 'plan_drift', 'signature', 'tenantId', 'tenant_id', 'tenant_mismatch', 'tokenId', 'token_id', 'valid']

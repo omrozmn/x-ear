@@ -10,9 +10,19 @@ import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, and_, or_, case
 
-from schemas.base import ResponseEnvelope, ApiError
+from schemas.base import ResponseEnvelope, ApiError, ResponseMeta
+from schemas.reports import (
+    ReportOverviewResponse, ReportPatientsResponse, ReportFinancialResponse,
+    ReportCampaignsResponse, ReportRevenueResponse, ReportPromissoryNotesResponse,
+    ReportPromissoryNotesByPatientResponse, ReportRemainingPaymentsResponse,
+    ReportCashflowResponse, PosMovementItem, PosMovementSummary,
+    PatientSegments, ProductSalesData, PaymentMethodData, CampaignReportItem,
+    PromissoryNotesSummary, MonthlyCount, MonthlyRevenue, PromissoryNotePatientItem,
+    PromissoryNoteListItem, RemainingPaymentItem, RemainingPaymentsSummary,
+    DailyCashflow
+)
 
-from models.patient import Patient
+from core.models.party import Party
 from models.appointment import Appointment
 from models.sales import Sale, DeviceAssignment, PaymentRecord
 from models.device import Device
@@ -71,7 +81,7 @@ def tenant_filter(query, model, access: UnifiedAccess):
 
 # --- Routes ---
 
-@router.get("/reports/overview", operation_id="listReportOverview")
+@router.get("/reports/overview", operation_id="listReportOverview", response_model=ResponseEnvelope[ReportOverviewResponse])
 def report_overview(
     days: int = Query(30, ge=1, le=365),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
@@ -84,10 +94,10 @@ def report_overview(
         start_date = end_date - timedelta(days=days)
         branch_ids = get_user_branch_filter(access, branch_id)
         
-        # Patient stats
-        patient_q = tenant_filter(db_session.query(Patient), Patient, access)
+        # Party stats
+        patient_q = tenant_filter(db_session.query(Party), Party, access)
         total_patients = patient_q.count()
-        new_patients = patient_q.filter(Patient.created_at >= start_date).count()
+        new_patients = patient_q.filter(Party.created_at >= start_date).count()
         
         # Appointment stats
         appointments_query = tenant_filter(db_session.query(Appointment), Appointment, access).filter(
@@ -124,21 +134,21 @@ def report_overview(
         conversion_rate = (total_sales / completed_appointments * 100) if completed_appointments > 0 else 0
         
         return ResponseEnvelope(
-            data={
-                "total_patients": total_patients,
-                "new_patients": new_patients,
-                "total_appointments": total_appointments,
-                "appointment_rate": round(appointment_rate, 1),
-                "total_sales": total_sales,
-                "total_revenue": float(total_revenue),
-                "conversion_rate": round(conversion_rate, 1)
-            }
+            data=ReportOverviewResponse(
+                total_patients=total_patients,
+                new_patients=new_patients,
+                total_appointments=total_appointments,
+                appointment_rate=round(appointment_rate, 1),
+                total_sales=total_sales,
+                total_revenue=float(total_revenue),
+                conversion_rate=round(conversion_rate, 1)
+            )
         )
     except Exception as e:
         logger.error(f"Overview report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/patients", operation_id="listReportPatients")
+@router.get("/reports/patients", operation_id="listReportPatients", response_model=ResponseEnvelope[ReportPatientsResponse])
 def report_patients(
     days: int = Query(30, ge=1, le=365),
     access: UnifiedAccess = Depends(require_access()),
@@ -167,43 +177,43 @@ def report_patients(
             status_data[status_str] = count
         
         # Patient segments
-        new_patients = tenant_scoped_query(access, Patient, db_session).filter(Patient.created_at >= start_date).count()
+        new_patients = tenant_scoped_query(access, Party, db_session).filter(Party.created_at >= start_date).count()
         
-        active_patients = tenant_scoped_query(access, Patient, db_session).join(Appointment).filter(
+        active_patients = tenant_scoped_query(access, Party, db_session).join(Appointment).filter(
             Appointment.date >= start_date,
             Appointment.status == AppointmentStatus.COMPLETED
         ).count()
         
-        trial_patients = tenant_scoped_query(access, Patient, db_session).join(Appointment).filter(
+        trial_patients = tenant_scoped_query(access, Party, db_session).join(Appointment).filter(
             Appointment.date >= start_date,
             Appointment.status == AppointmentStatus.SCHEDULED
         ).count()
         
         appt_subquery = tenant_scoped_query(access, Appointment, db_session).filter(
             Appointment.date >= start_date
-        ).with_entities(Appointment.patient_id)
+        ).with_entities(Appointment.party_id)
         
-        inactive_patients = tenant_scoped_query(access, Patient, db_session).filter(
-            ~Patient.id.in_(appt_subquery)
+        inactive_patients = tenant_scoped_query(access, Party, db_session).filter(
+            ~Party.id.in_(appt_subquery)
         ).count()
         
         return ResponseEnvelope(
-            data={
-                "age_distribution": age_data,
-                "status_distribution": status_data,
-                "patient_segments": {
-                    "new": new_patients,
-                    "active": active_patients,
-                    "trial": trial_patients,
-                    "inactive": inactive_patients
-                }
-            }
+            data=ReportPatientsResponse(
+                age_distribution=age_data,
+                status_distribution=status_data,
+                patient_segments=PatientSegments(
+                    new=new_patients,
+                    active=active_patients,
+                    trial=trial_patients,
+                    inactive=inactive_patients
+                )
+            )
         )
     except Exception as e:
         logger.error(f"Patients report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/financial", operation_id="listReportFinancial")
+@router.get("/reports/financial", operation_id="listReportFinancial", response_model=ResponseEnvelope[ReportFinancialResponse])
 def report_financial(
     days: int = Query(30, ge=1, le=365),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
@@ -284,17 +294,17 @@ def report_financial(
                 }
         
         return ResponseEnvelope(
-            data={
-                "revenue_trend": revenue_trend,
-                "product_sales": product_data,
-                "payment_methods": payment_data
-            }
+            data=ReportFinancialResponse(
+                revenue_trend=revenue_trend,
+                product_sales={k: ProductSalesData(**v) for k, v in product_data.items()},
+                payment_methods={k: PaymentMethodData(**v) for k, v in payment_data.items()}
+            )
         )
     except Exception as e:
         logger.error(f"Financial report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/campaigns", operation_id="listReportCampaigns")
+@router.get("/reports/campaigns", operation_id="listReportCampaigns", response_model=ResponseEnvelope[ReportCampaignsResponse])
 def report_campaigns(
     days: int = Query(30, ge=1, le=365),
     access: UnifiedAccess = Depends(require_access()),
@@ -352,23 +362,23 @@ def report_campaigns(
         trend_data = {str(date): count for date, count in sms_trends}
         
         return ResponseEnvelope(
-            data={
-                "campaigns": campaign_data,
-                "sms_trends": trend_data
-            }
+            data=ReportCampaignsResponse(
+                campaigns=[CampaignReportItem(**c) for c in campaign_data],
+                sms_trends=trend_data
+            )
         )
     except Exception as e:
         logger.error(f"Campaigns report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/revenue", operation_id="listReportRevenue")
+@router.get("/reports/revenue", operation_id="listReportRevenue", response_model=ResponseEnvelope[ReportRevenueResponse])
 def report_revenue(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Revenue report placeholder"""
     return ResponseEnvelope(
-        data={"monthly": [12000, 15000, 15500]}
+        data=ReportRevenueResponse(monthly=[12000, 15000, 15500])
     )
 
 @router.get("/reports/appointments", operation_id="listReportAppointments")
@@ -384,7 +394,7 @@ def report_appointments(
         meta={"total": 0, "page": page, "per_page": per_page, "total_pages": 0}
     )
 
-@router.get("/reports/promissory-notes", operation_id="listReportPromissoryNotes")
+@router.get("/reports/promissory-notes", operation_id="listReportPromissoryNotes", response_model=ResponseEnvelope[ReportPromissoryNotesResponse])
 def report_promissory_notes(
     days: int = Query(365, ge=1),
     access: UnifiedAccess = Depends(require_access()),
@@ -481,24 +491,24 @@ def report_promissory_notes(
             })
         
         return ResponseEnvelope(
-            data={
-                "summary": {
-                    "total_notes": total_notes,
-                    "active_notes": active_notes,
-                    "overdue_notes": overdue_notes,
-                    "paid_notes": paid_notes,
-                    "total_amount": float(total_amount),
-                    "total_collected": float(total_collected)
-                },
-                "monthly_counts": monthly_counts_data,
-                "monthly_revenue": monthly_revenue_data
-            }
+            data=ReportPromissoryNotesResponse(
+                summary=PromissoryNotesSummary(
+                    total_notes=total_notes,
+                    active_notes=active_notes,
+                    overdue_notes=overdue_notes,
+                    paid_notes=paid_notes,
+                    total_amount=float(total_amount),
+                    total_collected=float(total_collected)
+                ),
+                monthly_counts=[MonthlyCount(**r) for r in monthly_counts_data],
+                monthly_revenue=[MonthlyRevenue(**r) for r in monthly_revenue_data]
+            )
         )
     except Exception as e:
         logger.error(f"Promissory notes report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/promissory-notes/by-patient", operation_id="listReportPromissoryNoteByPatient")
+@router.get("/reports/promissory-notes/by-patient", operation_id="listReportPromissoryNoteByPatient", response_model=ResponseEnvelope[List[PromissoryNotePatientItem]])
 def report_promissory_notes_by_patient(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -510,7 +520,7 @@ def report_promissory_notes_by_patient(
     try:
         # Base query - patient notes summary
         subquery = db_session.query(
-            PromissoryNote.patient_id,
+            PromissoryNote.party_id,
             func.count(PromissoryNote.id).label('total_notes'),
             func.count(case((PromissoryNote.status == 'active', 1))).label('active_notes'),
             func.count(case((PromissoryNote.status == 'overdue', 1))).label('overdue_notes'),
@@ -518,7 +528,7 @@ def report_promissory_notes_by_patient(
             func.sum(PromissoryNote.amount).label('total_amount'),
             func.sum(PromissoryNote.paid_amount).label('paid_amount'),
             func.sum(PromissoryNote.amount - PromissoryNote.paid_amount).label('remaining_amount')
-        ).group_by(PromissoryNote.patient_id)
+        ).group_by(PromissoryNote.party_id)
         
         if access.tenant_id:
              subquery = subquery.filter(PromissoryNote.tenant_id == access.tenant_id)
@@ -534,12 +544,12 @@ def report_promissory_notes_by_patient(
         
         subquery = subquery.subquery()
         
-        # Join with Patient to get patient info
+        # Join with Party to get party info
         query = db_session.query(
-            Patient.id,
-            Patient.first_name,
-            Patient.last_name,
-            Patient.phone,
+            Party.id,
+            Party.first_name,
+            Party.last_name,
+            Party.phone,
             subquery.c.total_notes,
             subquery.c.active_notes,
             subquery.c.overdue_notes,
@@ -547,7 +557,7 @@ def report_promissory_notes_by_patient(
             subquery.c.total_amount,
             subquery.c.paid_amount,
             subquery.c.remaining_amount
-        ).join(subquery, Patient.id == subquery.c.patient_id)
+        ).join(subquery, Party.id == subquery.c.party_id)
         
         # Order by remaining amount descending
         query = query.order_by(subquery.c.remaining_amount.desc())
@@ -561,8 +571,8 @@ def report_promissory_notes_by_patient(
         patients_data = []
         for row in results:
             patients_data.append({
-                "patient_id": row.id,
-                "patient_name": f"{row.first_name or ''} {row.last_name or ''}".strip(),
+                "party_id": row.id,
+                "party_name": f"{row.first_name or ''} {row.last_name or ''}".strip(),
                 "phone": row.phone,
                 "total_notes": row.total_notes or 0,
                 "active_notes": row.active_notes or 0,
@@ -574,7 +584,7 @@ def report_promissory_notes_by_patient(
             })
         
         return ResponseEnvelope(
-            data=patients_data,
+            data=[PromissoryNotePatientItem(**p) for p in patients_data],
             meta={
                 "total": total,
                 "page": page,
@@ -586,7 +596,7 @@ def report_promissory_notes_by_patient(
         logger.error(f"Promissory notes by patient report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/promissory-notes/list", operation_id="listReportPromissoryNoteList")
+@router.get("/reports/promissory-notes/list", operation_id="listReportPromissoryNoteList", response_model=ResponseEnvelope[List[PromissoryNoteListItem]])
 def report_promissory_notes_list(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -614,11 +624,11 @@ def report_promissory_notes_list(
             query = query.filter(PromissoryNote.due_date <= e_date)
             
         if search:
-            query = query.join(Patient).filter(
+            query = query.join(Party).filter(
                 or_(
-                    Patient.first_name.ilike(f"%{search}%"),
-                    Patient.last_name.ilike(f"%{search}%"),
-                    Patient.phone.ilike(f"%{search}%"),
+                    Party.first_name.ilike(f"%{search}%"),
+                    Party.last_name.ilike(f"%{search}%"),
+                    Party.phone.ilike(f"%{search}%"),
                     PromissoryNote.note_number.ilike(f"%{search}%")
                 )
             )
@@ -639,15 +649,15 @@ def report_promissory_notes_list(
                 "remaining_amount": float(note.amount - note.paid_amount),
                 "due_date": note.due_date.isoformat(),
                 "status": note.status.value if hasattr(note.status, 'value') else note.status,
-                "patient": {
-                    "id": note.patient.id,
-                    "name": f"{note.patient.first_name} {note.patient.last_name}",
-                    "phone": note.patient.phone
-                } if note.patient else None
+                "party": {
+                    "id": note.party.id,
+                    "name": f"{note.party.first_name} {note.party.last_name}",
+                    "phone": note.party.phone
+                } if note.party else None
             })
             
         return ResponseEnvelope(
-            data=results,
+            data=[PromissoryNoteListItem(**r) for r in results],
             meta={
                 "total": total,
                 "page": page,
@@ -659,7 +669,7 @@ def report_promissory_notes_list(
         logger.error(f"Promissory notes list report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/remaining-payments", operation_id="listReportRemainingPayments")
+@router.get("/reports/remaining-payments", operation_id="listReportRemainingPayments", response_model=ResponseEnvelope[List[RemainingPaymentItem]])
 def report_remaining_payments(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -673,16 +683,16 @@ def report_remaining_payments(
         branch_ids = get_user_branch_filter(access, branch_id)
         
         query = db_session.query(
-            Patient.id.label('patient_id'),
-            Patient.first_name,
-            Patient.last_name,
-            Patient.phone,
+            Party.id.label('party_id'),
+            Party.first_name,
+            Party.last_name,
+            Party.phone,
             func.count(Sale.id).label('sale_count'),
             func.sum(Sale.final_amount).label('total_amount'),
             func.sum(Sale.paid_amount).label('paid_amount'),
             func.sum(Sale.final_amount - Sale.paid_amount).label('remaining_amount')
         ).join(
-            Sale, Patient.id == Sale.patient_id
+            Sale, Party.id == Sale.party_id
         ).filter(
             Sale.final_amount > Sale.paid_amount,
             Sale.status != 'cancelled'
@@ -693,7 +703,7 @@ def report_remaining_payments(
         if branch_ids:
             query = query.filter(Sale.branch_id.in_(branch_ids))
         
-        query = query.group_by(Patient.id, Patient.first_name, Patient.last_name, Patient.phone)
+        query = query.group_by(Party.id, Party.first_name, Party.last_name, Party.phone)
         
         if min_amount > 0:
             query = query.having(func.sum(Sale.final_amount - Sale.paid_amount) >= min_amount)
@@ -709,8 +719,8 @@ def report_remaining_payments(
         patients_data = []
         for row in results:
             patients_data.append({
-                "patient_id": row.patient_id,
-                "patient_name": f"{row.first_name or ''} {row.last_name or ''}".strip(),
+                "party_id": row.party_id,
+                "party_name": f"{row.first_name or ''} {row.last_name or ''}".strip(),
                 "phone": row.phone,
                 "sale_count": row.sale_count or 0,
                 "total_amount": float(row.total_amount) if row.total_amount else 0,
@@ -720,10 +730,10 @@ def report_remaining_payments(
         
         # Summary totals
         summary_query = db_session.query(
-            func.count(func.distinct(Patient.id)).label('patient_count'),
+            func.count(func.distinct(Party.id)).label('party_count'),
             func.sum(Sale.final_amount - Sale.paid_amount).label('total_remaining')
         ).join(
-            Sale, Patient.id == Sale.patient_id
+            Sale, Party.id == Sale.party_id
         ).filter(
             Sale.final_amount > Sale.paid_amount,
             Sale.status != 'cancelled'
@@ -737,23 +747,23 @@ def report_remaining_payments(
         summary = summary_query.first()
         
         return ResponseEnvelope(
-            data=patients_data,
+            data=[RemainingPaymentItem(**p) for p in patients_data],
             meta={
                 "total": total,
                 "page": page,
                 "per_page": per_page,
                 "total_pages": (total + per_page - 1) // per_page,
-                "summary": {
-                    "total_patients": summary.patient_count or 0 if summary else 0,
-                    "total_remaining": float(summary.total_remaining) if summary and summary.total_remaining else 0
-                }
+                "summary": RemainingPaymentsSummary(
+                    total_parties=summary.party_count or 0 if summary else 0,
+                    total_remaining=float(summary.total_remaining) if summary and summary.total_remaining else 0
+                )
             }
         )
     except Exception as e:
         logger.error(f"Remaining payments report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/cashflow-summary", operation_id="listReportCashflowSummary")
+@router.get("/reports/cashflow-summary", operation_id="listReportCashflowSummary", response_model=ResponseEnvelope[ReportCashflowResponse])
 def report_cashflow_summary(
     days: int = Query(30, ge=1, le=365),
     access: UnifiedAccess = Depends(require_access()),
@@ -812,18 +822,18 @@ def report_cashflow_summary(
             })
             
         return ResponseEnvelope(
-            data={
-                "total_revenue": float(total_revenue),
-                "total_expenses": float(total_expenses),
-                "net_cash": float(net_cash),
-                "daily_breakdown": daily_data
-            }
+            data=ReportCashflowResponse(
+                total_revenue=float(total_revenue),
+                total_expenses=float(total_expenses),
+                net_cash=float(net_cash),
+                daily_breakdown=[DailyCashflow(**d) for d in daily_data]
+            )
         )
     except Exception as e:
         logger.error(f"Cashflow summary report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/pos-movements", operation_id="listReportPosMovements")
+@router.get("/reports/pos-movements", operation_id="listReportPosMovements", response_model=ResponseEnvelope[List[PosMovementItem]])
 def report_pos_movements(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -840,11 +850,11 @@ def report_pos_movements(
         query = db_session.query(
             PaymentRecord,
             Sale,
-            Patient
+            Party
         ).join(
             Sale, PaymentRecord.sale_id == Sale.id
         ).join(
-            Patient, Sale.patient_id == Patient.id, isouter=True
+            Party, Sale.party_id == Party.id, isouter=True
         ).filter(
             PaymentRecord.created_at >= start_date,
             PaymentRecord.created_at <= end_date,
@@ -866,7 +876,7 @@ def report_pos_movements(
         results = query.offset((page - 1) * per_page).limit(per_page).all()
         
         data = []
-        for payment, sale, patient in results:
+        for payment, sale, party in results:
             data.append({
                 'id': payment.id,
                 'date': payment.created_at.isoformat(),
@@ -877,7 +887,7 @@ def report_pos_movements(
                 'installment': payment.installment_count,
                 'error_message': payment.error_message,
                 'sale_id': sale.id if sale else None,
-                'patient_name': f"{patient.first_name} {patient.last_name}" if patient else "Bilinmiyor"
+                'patient_name': f"{party.first_name} {party.last_name}" if party else "Bilinmiyor"
             })
             
         # Summary
@@ -927,13 +937,17 @@ def report_pos_movements(
         summary['fail_count'] = fail_query.scalar() or 0
             
         return ResponseEnvelope(
-            data=data,
+            data=[PosMovementItem(**d) for d in data],
             meta={
                 "total": total,
                 "page": page,
                 "per_page": per_page,
                 "total_pages": (total + per_page - 1) // per_page,
-                "summary": summary
+                "summary": PosMovementSummary(
+                    total_volume=summary['total_volume'],
+                    success_count=summary['success_count'],
+                    fail_count=summary['fail_count']
+                )
             }
         )
     except Exception as e:

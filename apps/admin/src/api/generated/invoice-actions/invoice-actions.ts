@@ -25,7 +25,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  HTTPValidationError
+  HTTPValidationError,
+  ResponseEnvelopeInvoiceCopyCancelResponse,
+  ResponseEnvelopeInvoiceIssueResponse,
+  ResponseEnvelopeInvoiceRead
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -43,7 +46,7 @@ export const createInvoiceIssue = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeInvoiceIssueResponse>(
       {url: `/api/invoices/${invoiceId}/issue`, method: 'POST', signal
     },
       );
@@ -106,7 +109,7 @@ export const createInvoiceCopy = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeInvoiceRead>(
       {url: `/api/invoices/${invoiceId}/copy`, method: 'POST', signal
     },
       );
@@ -169,7 +172,7 @@ export const createInvoiceCopyCancel = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeInvoiceCopyCancelResponse>(
       {url: `/api/invoices/${invoiceId}/copy-cancel`, method: 'POST', signal
     },
       );

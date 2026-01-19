@@ -5,16 +5,16 @@ import {
   deleteInventory,
   updateInventory,
   createInventorySerials
-} from '@/api/generated';
+} from '@/api/client/inventory.client';
 import { ArrowLeft, Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
 import { Button, Modal } from '@x-ear/ui-web';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem, InventoryCategory } from '../types/inventory';
 import { SerialNumberModal } from '../components/inventory/SerialNumberModal';
 import { ProductInfoSection } from './inventory/components/ProductInfoSection';
 import { StockInfoSection } from './inventory/components/StockInfoSection';
 import { PricingInfoSection } from './inventory/components/PricingInfoSection';
 import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection';
-import { InventoryMovementsTable } from '../components/patient/InventoryMovementsTable';
+import { InventoryMovementsTable } from '../components/party/InventoryMovementsTable';
 import { unwrapObject } from '../utils/response-unwrap';
 
 interface InventoryDetailPageProps {
@@ -64,24 +64,26 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   useEffect(() => {
     loadItem();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadItem = async () => {
     try {
       setLoading(true);
       const response = await getInventory(id);
-      const apiItem = unwrapObject<any>(response);
+      // unwrapObject returns T, and response.data is T (InventoryItemRead)
+      const apiItem = response.data;
 
       if (apiItem) {
 
         // Handle features
         let featuresArray: string[] = [];
-        if (apiItem.features) {
-          if (typeof apiItem.features === 'string') {
-            featuresArray = apiItem.features.split(',').map((f: string) => f.trim()).filter(Boolean);
-          } else if (Array.isArray(apiItem.features)) {
-            featuresArray = apiItem.features;
+        const featuresValue = apiItem.features as unknown;
+        if (featuresValue) {
+          if (typeof featuresValue === 'string') {
+            featuresArray = (featuresValue as string).split(',').map((f: string) => f.trim()).filter(Boolean);
+          } else if (Array.isArray(featuresValue)) {
+            featuresArray = featuresValue as string[];
           }
         }
 
@@ -104,31 +106,31 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
           name: apiItem.name || '',
           brand: apiItem.brand || '',
           model: apiItem.model || '',
-          category: apiItem.category || '',
-          availableInventory: apiItem.availableInventory || apiItem.available_inventory || 0,
-          totalInventory: apiItem.totalInventory || apiItem.total_inventory || 0,
-          usedInventory: apiItem.usedInventory || apiItem.used_inventory || 0,
-          reorderLevel: apiItem.reorderLevel || apiItem.minInventory || apiItem.min_inventory || 5,
-          price: parseFloat(apiItem.price) || 0,
-          vatIncludedPrice: parseFloat(apiItem.price) * 1.18 || 0,
-          totalValue: (apiItem.availableInventory || apiItem.available_inventory || 0) * parseFloat(apiItem.price) || 0,
-          cost: parseFloat(apiItem.cost) || 0,
+          category: (apiItem.category || 'hearing_aid') as InventoryCategory,
+          availableInventory: apiItem.availableInventory || 0,
+          totalInventory: apiItem.totalInventory || 0,
+          usedInventory: apiItem.usedInventory || 0,
+          reorderLevel: apiItem.reorderLevel || 5,
+          price: Number(apiItem.price) || 0,
+          vatIncludedPrice: Number(apiItem.price) * 1.18 || 0,
+          totalValue: (apiItem.availableInventory || 0) * Number(apiItem.price) || 0,
+          cost: Number(apiItem.cost) || 0,
           barcode: apiItem.barcode || '',
           supplier: apiItem.supplier || '',
           description: apiItem.description || '',
-          status: (apiItem.availableInventory || apiItem.available_inventory || 0) > 0 ? 'available' : 'out_of_stock',
+          status: (apiItem.availableInventory || 0) > 0 ? 'available' : 'out_of_stock',
           features: featuresArray,
           availableSerials: serialsArray,
           warranty: apiItem.warranty,
           // include item's tax rate for use by UI components
-          taxRate: (apiItem.vatRate || apiItem.kdv) as number | undefined,
+          taxRate: (apiItem.vatRate || (apiItem.kdv as unknown as number)) as number | undefined,
           // preserve flags sent by backend so UI edit mode can read them
-          priceIncludesKdv: apiItem.priceIncludesKdv ?? apiItem.price_includes_kdv,
-          costIncludesKdv: apiItem.costIncludesKdv ?? apiItem.cost_includes_kdv,
-          stockCode: apiItem.stockCode || apiItem.stock_code || '',
+          priceIncludesKdv: apiItem.priceIncludesKdv,
+          costIncludesKdv: apiItem.costIncludesKdv,
+          stockCode: typeof apiItem.stockCode === 'string' ? apiItem.stockCode : String(apiItem.stockCode || ''),
           unit: apiItem.unit || 'adet',
-          createdAt: apiItem.createdAt || apiItem.created_at || '',
-          lastUpdated: apiItem.updatedAt || apiItem.updated_at || ''
+          createdAt: typeof apiItem.createdAt === 'string' ? apiItem.createdAt : String(apiItem.createdAt || ''),
+          lastUpdated: typeof apiItem.updatedAt === 'string' ? apiItem.updatedAt : String(apiItem.updatedAt || '')
         };
 
         setItem(mappedItem);
@@ -138,12 +140,12 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         }
 
         // Load whether price and cost already include KDV from API if provided
-        if (apiItem.priceIncludesKdv !== undefined || apiItem.price_includes_kdv !== undefined) {
-          setIsPriceKdvIncluded(Boolean(apiItem.priceIncludesKdv ?? apiItem.price_includes_kdv));
+        if (apiItem.priceIncludesKdv !== undefined) {
+          setIsPriceKdvIncluded(Boolean(apiItem.priceIncludesKdv));
         }
 
-        if (apiItem.costIncludesKdv !== undefined || apiItem.cost_includes_kdv !== undefined) {
-          setIsCostKdvIncluded(Boolean(apiItem.costIncludesKdv ?? apiItem.cost_includes_kdv));
+        if (apiItem.costIncludesKdv !== undefined) {
+          setIsCostKdvIncluded(Boolean(apiItem.costIncludesKdv));
         }
       }
       setError(null);
@@ -191,8 +193,8 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       });
       setIsEditMode(true);
       // When entering edit mode, ensure toggles reflect persisted flags
-      setIsPriceKdvIncluded(Boolean((item as any).priceIncludesKdv ?? (item as any).price_includes_kdv ?? false));
-      setIsCostKdvIncluded(Boolean((item as any).costIncludesKdv ?? (item as any).cost_includes_kdv ?? false));
+      setIsPriceKdvIncluded(Boolean(item.priceIncludesKdv ?? false));
+      setIsCostKdvIncluded(Boolean(item.costIncludesKdv ?? false));
     }
   };
 
@@ -201,8 +203,8 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     setEditedItem({});
     // Revert any flag changes to last persisted values (from item)
     if (item) {
-      setIsPriceKdvIncluded(Boolean((item as any).priceIncludesKdv ?? (item as any).price_includes_kdv ?? false));
-      setIsCostKdvIncluded(Boolean((item as any).costIncludesKdv ?? (item as any).cost_includes_kdv ?? false));
+      setIsPriceKdvIncluded(Boolean(item.priceIncludesKdv ?? false));
+      setIsCostKdvIncluded(Boolean(item.costIncludesKdv ?? false));
     }
   };
 
@@ -211,7 +213,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
     try {
       // include kdv in the payload so backend can persist kdv_rate
-      const response = await updateInventory(id, {
+      const payload = {
         name: editedItem.name ?? item.name,
         brand: editedItem.brand ?? item.brand,
         model: editedItem.model,
@@ -228,7 +230,9 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         kdv: kdvRate,
         priceIncludesKdv: isPriceKdvIncluded,
         costIncludesKdv: isCostKdvIncluded,
-      } as any);
+      };
+
+      const response = await updateInventory(id, payload);
 
       // Response is direct data from Orval
       if (response) {
@@ -272,9 +276,10 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: features.length
       });
 
-      const response = await updateInventory(id, { features } as any);
+      // Update payload requires partial features
+      const response = await updateInventory(id, { features } as unknown as any);
 
-      if ((response as any).data?.success) {
+      if (response && response.data) {
         await loadItem();
       }
     } catch (err) {

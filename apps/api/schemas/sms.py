@@ -4,18 +4,19 @@ from pydantic import Field, EmailStr
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
-class SMSHeaderType(str, Enum):
+# Enums
+class SmsHeaderType(str, Enum):
     COMPANY_TITLE = 'company_title'
     TRADEMARK = 'trademark'
     DOMAIN = 'domain'
     OTHER = 'other'
 
-class SMSHeaderStatus(str, Enum):
+class SmsHeaderStatus(str, Enum):
     PENDING = 'pending'
     APPROVED = 'approved'
     REJECTED = 'rejected'
 
-class SMSSourceType(str, Enum):
+class SmsSourceType(str, Enum):
     EXCEL = 'excel'
     FILTER = 'filter'
 
@@ -27,52 +28,52 @@ class DocumentType(str, Enum):
     ACTIVITY_CERT = 'activity_cert'
     SIGNATURE_CIRCULAR = 'signature_circular'
 
-# --- SMS Provider Config Schemas ---
-class SMSProviderConfigBase(AppBaseModel):
+# --- Sms Provider Config Schemas ---
+class SmsProviderConfigBase(AppBaseModel):
     documents_email: Optional[EmailStr] = Field(None, alias="documentsEmail")
     api_username: Optional[str] = Field(None, alias="apiUsername")
     is_active: bool = Field(True, alias="isActive")
     documents_submitted: bool = Field(False, alias="documentsSubmitted")
     all_documents_approved: bool = Field(False, alias="allDocumentsApproved")
 
-class SMSProviderConfigCreate(SMSProviderConfigBase):
+class SmsProviderConfigCreate(SmsProviderConfigBase):
     tenant_id: str = Field(..., alias="tenantId")
     api_password: Optional[str] = Field(None, alias="apiPassword")
 
-class SMSProviderConfigUpdate(AppBaseModel):
+class SmsProviderConfigUpdate(AppBaseModel):
     api_username: Optional[str] = Field(None, alias="apiUsername")
     api_password: Optional[str] = Field(None, alias="apiPassword")
     documents_email: Optional[EmailStr] = Field(None, alias="documentsEmail")
     is_active: Optional[bool] = Field(None, alias="isActive")
 
-class SMSProviderConfigRead(SMSProviderConfigBase, IDMixin):
+class SmsProviderConfigRead(SmsProviderConfigBase, IDMixin):
     tenant_id: str = Field(..., alias="tenantId")
     documents: List[Any] = []
     documents_submitted_at: Optional[str] = Field(None, alias="documentsSubmittedAt")
     # Password explicitly excluded
 
-# --- SMS Header Request Schemas ---
-class SMSHeaderRequestBase(AppBaseModel):
+# --- Sms Header Request Schemas ---
+class SmsHeaderRequestBase(AppBaseModel):
     header_text: str = Field(..., min_length=3, max_length=11, alias="headerText")
-    header_type: SMSHeaderType = Field(..., alias="headerType")
+    header_type: SmsHeaderType = Field(..., alias="headerType")
     documents: List[str] = []
 
-class SMSHeaderRequestCreate(SMSHeaderRequestBase):
+class SmsHeaderRequestCreate(SmsHeaderRequestBase):
     pass
 
-class SMSHeaderRequestUpdate(AppBaseModel):
+class SmsHeaderRequestUpdate(AppBaseModel):
     # Only status usually updated by admin
-    status: Optional[SMSHeaderStatus] = None
+    status: Optional[SmsHeaderStatus] = None
     rejection_reason: Optional[str] = Field(None, alias="rejectionReason")
 
-class SMSHeaderRequestRead(SMSHeaderRequestBase, IDMixin, TimestampMixin):
+class SmsHeaderRequestRead(SmsHeaderRequestBase, IDMixin, TimestampMixin):
     tenant_id: str = Field(..., alias="tenantId")
-    status: SMSHeaderStatus = SMSHeaderStatus.PENDING
+    status: SmsHeaderStatus = SmsHeaderStatus.PENDING
     rejection_reason: Optional[str] = Field(None, alias="rejectionReason")
     is_default: bool = Field(False, alias="isDefault")
 
-# --- SMS Package Schemas ---
-class SMSPackageBase(AppBaseModel):
+# --- Sms Package Schemas ---
+class SmsPackageBase(AppBaseModel):
     name: str
     description: Optional[str] = None
     sms_count: int = Field(..., gt=0, alias="smsCount")
@@ -80,10 +81,10 @@ class SMSPackageBase(AppBaseModel):
     currency: str = "TRY"
     is_active: bool = Field(True, alias="isActive")
 
-class SMSPackageCreate(SMSPackageBase):
+class SmsPackageCreate(SmsPackageBase):
     pass
 
-class SMSPackageUpdate(AppBaseModel):
+class SmsPackageUpdate(AppBaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     sms_count: Optional[int] = Field(None, gt=0, alias="smsCount")
@@ -91,11 +92,11 @@ class SMSPackageUpdate(AppBaseModel):
     currency: Optional[str] = None
     is_active: Optional[bool] = Field(None, alias="isActive")
 
-class SMSPackageRead(SMSPackageBase, IDMixin, TimestampMixin):
+class SmsPackageRead(SmsPackageBase, IDMixin, TimestampMixin):
     pass
 
-# --- Tenant SMS Credit Schemas ---
-class TenantSMSCreditRead(IDMixin):
+# --- Tenant Sms Credit Schemas ---
+class TenantSmsCreditRead(IDMixin):
     tenant_id: str = Field(..., alias="tenantId")
     balance: int = 0
     total_purchased: int = Field(0, alias="totalPurchased")
@@ -104,7 +105,7 @@ class TenantSMSCreditRead(IDMixin):
 # --- Target Audience Schemas ---
 class TargetAudienceBase(AppBaseModel):
     name: str
-    source_type: SMSSourceType = Field(..., alias="sourceType")
+    source_type: SmsSourceType = Field(..., alias="sourceType")
     filter_criteria: Optional[dict] = Field(None, alias="filterCriteria")
 
 class TargetAudienceCreate(TargetAudienceBase):

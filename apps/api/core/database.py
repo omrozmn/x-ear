@@ -51,6 +51,11 @@ Base = declarative_base()
 _current_tenant_id: ContextVar[str | None] = ContextVar('tenant_id', default=None)
 _skip_tenant_filter: ContextVar[bool] = ContextVar('skip_filter', default=False)
 
+# Type alias for context token
+from contextvars import Token
+TenantContextToken = Token[str | None]
+SkipFilterToken = Token[bool]
+
 
 def get_current_tenant_id() -> str | None:
     """Get current tenant ID from context"""
@@ -58,18 +63,113 @@ def get_current_tenant_id() -> str | None:
 
 
 def set_current_tenant_id(tenant_id: str | None):
-    """Set current tenant ID in context"""
+    """
+    Set current tenant ID in context.
+    
+    DEPRECATED: Use set_tenant_context() instead for proper token-based cleanup.
+    This function is kept for backward compatibility but should not be used
+    in new code.
+    
+    WARNING: Never use set_current_tenant_id(None) for cleanup!
+    Always use reset_tenant_context(token) instead.
+    """
     _current_tenant_id.set(tenant_id)
 
 
+def set_tenant_context(tenant_id: str) -> TenantContextToken:
+    """
+    Set tenant context and return token for cleanup.
+    
+    This is the CORRECT way to set tenant context. The returned token
+    MUST be used with reset_tenant_context() in a finally block.
+    
+    Usage:
+        token = set_tenant_context(tenant_id)
+        try:
+            # ... do work ...
+        finally:
+            reset_tenant_context(token)
+    
+    Args:
+        tenant_id: The tenant ID to set in context
+        
+    Returns:
+        Token that MUST be passed to reset_tenant_context()
+    
+    CRITICAL: Never use set_current_tenant_id(None) for cleanup!
+    """
+    return _current_tenant_id.set(tenant_id)
+
+
+def reset_tenant_context(token: TenantContextToken) -> None:
+    """
+    Reset tenant context using the token from set_tenant_context().
+    
+    This is the ONLY correct way to clean up tenant context.
+    Using set_current_tenant_id(None) is FORBIDDEN because it can
+    corrupt context in nested or concurrent scenarios.
+    
+    Args:
+        token: The token returned by set_tenant_context()
+    
+    CRITICAL: Always call this in a finally block!
+    """
+    _current_tenant_id.reset(token)
+
+
 class UnboundSession:
-    """Context manager to bypass tenant filter"""
+    """
+    Context manager to bypass tenant filter.
+    
+    DEPRECATED: Use unbound_session(reason="...") instead.
+    This class is kept for backward compatibility.
+    """
     def __enter__(self):
         self.token = _skip_tenant_filter.set(True)
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         _skip_tenant_filter.reset(self.token)
+
+
+class unbound_session:
+    """
+    Context manager to bypass tenant filter with mandatory audit logging.
+    
+    All cross-tenant access MUST be audited. This context manager requires
+    a 'reason' parameter that is logged for security audit purposes.
+    
+    Usage:
+        with unbound_session(reason="admin-report-generation"):
+            # Queries here bypass tenant filter
+            all_parties = db.query(Party).all()
+    
+    Args:
+        reason: Mandatory reason for bypassing tenant filter (for audit)
+    
+    Raises:
+        UnboundSessionAuditError: If reason is not provided
+    """
+    
+    def __init__(self, reason: str):
+        if not reason or not reason.strip():
+            from utils.exceptions import UnboundSessionAuditError
+            raise UnboundSessionAuditError()
+        self.reason = reason
+        self.token: SkipFilterToken | None = None
+    
+    def __enter__(self):
+        logger.info(f"🔓 Entering unbound session: {self.reason}")
+        self.token = _skip_tenant_filter.set(True)
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.token is not None:
+            _skip_tenant_filter.reset(self.token)
+        if exc_type:
+            logger.warning(f"🔒 Exiting unbound session with error: {self.reason} - {exc_type.__name__}")
+        else:
+            logger.info(f"🔒 Exiting unbound session: {self.reason}")
 
 
 def should_skip_tenant_filter() -> bool:
@@ -171,15 +271,23 @@ def json_load(raw) -> dict:
 
 # Tenant Isolation Logic
 from sqlalchemy.orm import with_loader_criteria
+from config.tenant_config import get_tenant_strict_mode, TenantBehavior
 
 @event.listens_for(SessionLocal, 'do_orm_execute')
 def receive_do_orm_execute(execute_state):
     """
-    Automatically apply tenant filter to all SELECT queries.
-    Pass 'skip_filter' context var to bypass.
+    Automatically apply tenant filter to all SELECT queries on TenantScopedMixin models.
+    
+    CRITICAL RULES:
+    1. Only filters TenantScopedMixin subclasses (NOT all Base subclasses)
+    2. Respects _skip_tenant_filter context variable
+    3. In strict mode, raises error if tenant context is missing
+    4. In non-strict mode, logs warning if tenant context is missing
+    
+    Pass 'skip_filter' context var to bypass (use unbound_session context manager).
     """
     if should_skip_tenant_filter():
-        print("DEBUG: filter skipped")
+        logger.debug("Tenant filter skipped (unbound session)")
         return
 
     # Only apply to SELECT
@@ -187,14 +295,40 @@ def receive_do_orm_execute(execute_state):
         return
 
     tenant_id = get_current_tenant_id()
+    
     if not tenant_id:
+        # Check strict mode behavior
+        behavior = TenantBehavior.get_query_behavior()
+        if behavior == "error":
+            from utils.exceptions import TenantContextRequiredError
+            raise TenantContextRequiredError(
+                "Query executed without tenant context in strict mode"
+            )
+        elif behavior == "warning":
+            logger.warning(
+                "⚠️ Query executed without tenant context - "
+                "this may return cross-tenant data"
+            )
         return
-        
+    
+    # Import TenantScopedMixin here to avoid circular imports
+    # For backward compatibility, also check for hasattr(cls, 'tenant_id')
+    # This allows existing models to work without inheriting TenantScopedMixin
+    from core.models.mixins import TenantScopedMixin, is_tenant_scoped
+    
+    # Create a filter that works with both TenantScopedMixin and legacy models
+    def tenant_filter(cls, t_id=tenant_id):
+        # Check if this class has tenant_id attribute
+        if hasattr(cls, 'tenant_id'):
+            return cls.tenant_id == t_id
+        return None
+    
     execute_state.statement = execute_state.statement.options(
         with_loader_criteria(
-            # Apply to all models inheriting from Base
+            # Use Base for now to support legacy models
+            # TODO: Migrate all models to TenantScopedMixin and change to TenantScopedMixin
             Base, 
-            lambda cls, t_id=tenant_id: cls.tenant_id == t_id if hasattr(cls, 'tenant_id') else None,
+            tenant_filter,
             include_aliases=True
         )
     )

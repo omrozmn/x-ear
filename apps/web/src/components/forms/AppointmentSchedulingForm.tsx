@@ -6,7 +6,7 @@ import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface Appointment {
   id?: string;
-  patientId: string;
+  partyId: string;
   appointmentDate: string;
   appointmentTime: string;
   duration: number; // dakika cinsinden
@@ -21,7 +21,7 @@ interface Appointment {
 }
 
 interface AppointmentSchedulingFormProps {
-  patientId: string;
+  partyId: string;
   appointment?: Appointment | null;
   isOpen: boolean;
   onClose: () => void;
@@ -30,7 +30,7 @@ interface AppointmentSchedulingFormProps {
 }
 
 export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps> = ({
-  patientId,
+  partyId,
   appointment,
   isOpen,
   onClose,
@@ -38,7 +38,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
   isLoading = false
 }) => {
   const [formData, setFormData] = useState<Partial<Appointment>>({
-    patientId,
+    partyId,
     appointmentDate: '',
     appointmentTime: '',
     duration: 30,
@@ -62,7 +62,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
       } else {
         // Create mode
         setFormData({
-          patientId,
+          partyId,
           appointmentDate: '',
           appointmentTime: '',
           duration: 30,
@@ -72,7 +72,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
       }
       setErrors({});
     }
-  }, [isOpen, appointment, patientId]);
+  }, [isOpen, appointment, partyId]);
 
   // Load available doctors
   useEffect(() => {

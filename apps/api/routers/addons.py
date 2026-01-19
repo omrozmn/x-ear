@@ -27,10 +27,8 @@ def get_addons(db: Session = Depends(get_db)):
         
         addons = db.query(AddOn).filter_by(is_active=True).all()
         
-        return ResponseEnvelope(data=[
-            addon.to_dict() if hasattr(addon, 'to_dict') else {'id': addon.id, 'name': addon.name}
-            for addon in addons
-        ])
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=[AddonRead.model_validate(addon) for addon in addons])
         
     except Exception as e:
         logger.error(f"Error getting addons: {e}")
@@ -50,10 +48,8 @@ def get_admin_addons(
         
         addons = db.query(AddOn).all()
         
-        return ResponseEnvelope(data=[
-            addon.to_dict() if hasattr(addon, 'to_dict') else {'id': addon.id, 'name': addon.name}
-            for addon in addons
-        ])
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=[AddonRead.model_validate(addon) for addon in addons])
         
     except HTTPException:
         raise
@@ -85,8 +81,10 @@ def create_addon(
         
         db.add(addon)
         db.commit()
+        db.refresh(addon)
         
-        return ResponseEnvelope(data=addon.to_dict() if hasattr(addon, 'to_dict') else {'id': addon.id})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=AddonRead.model_validate(addon))
         
     except HTTPException:
         raise
@@ -125,8 +123,10 @@ def update_addon(
             addon.is_active = request_data.is_active
         
         db.commit()
+        db.refresh(addon)
         
-        return ResponseEnvelope(data=addon.to_dict() if hasattr(addon, 'to_dict') else {'id': addon.id})
+        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        return ResponseEnvelope(data=AddonRead.model_validate(addon))
         
     except HTTPException:
         raise

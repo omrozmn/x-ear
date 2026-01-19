@@ -1,4 +1,4 @@
-# Scan Queue Model
+# Scan Queue Model (formerly Patient scan queue)
 from .base import db, BaseModel, gen_id
 from datetime import datetime
 
@@ -7,7 +7,7 @@ class ScanQueue(BaseModel):
     
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('scan'))
     tenant_id = db.Column(db.String(50), nullable=False)
-    patient_id = db.Column(db.String(50), nullable=False)
+    party_id = db.Column(db.String(50), nullable=False)
     
     status = db.Column(db.String(20), default='pending') # pending, processing, completed, failed
     priority = db.Column(db.String(10), default='normal') # low, normal, high
@@ -28,7 +28,7 @@ class ScanQueue(BaseModel):
         d = {
             'id': self.id,
             'tenantId': self.tenant_id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'status': self.status,
             'priority': self.priority,
             'filePath': self.file_path,

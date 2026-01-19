@@ -27,6 +27,7 @@ import type {
 import type {
   HTTPValidationError,
   ResponseEnvelope,
+  ResponseEnvelopeListSystemSettingRead,
   SettingItem
 } from '.././schemas';
 
@@ -108,7 +109,7 @@ export const listAdminSettings = (
 ) => {
       
       
-      return adminApi<ResponseEnvelope>(
+      return adminApi<ResponseEnvelopeListSystemSettingRead>(
       {url: `/api/admin/settings`, method: 'GET', signal
     },
       );

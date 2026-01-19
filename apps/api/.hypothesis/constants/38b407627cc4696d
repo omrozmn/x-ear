@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/idempotency.py
+# hypothesis_version: 6.150.1
+
+[128, 256, 'created_at', 'endpoint', 'headers', 'id', 'idempotency_key', 'idempotency_keys', 'processing', 'response', 'status_code', 'updated_at', 'user_id']

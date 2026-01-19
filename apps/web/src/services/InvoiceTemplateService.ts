@@ -18,7 +18,7 @@ export class InvoiceTemplateService {
           usageCount: 45,
           templateData: {
             type: 'service',
-            patientName: '',
+            partyName: '',
             items: [
               {
                 name: 'Genel Muayene',
@@ -49,7 +49,7 @@ export class InvoiceTemplateService {
           usageCount: 23,
           templateData: {
             type: 'service',
-            patientName: '',
+            partyName: '',
             items: [
               {
                 name: 'Diş Tedavisi',

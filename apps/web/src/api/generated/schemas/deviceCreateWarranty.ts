@@ -7,4 +7,7 @@
  */
 import type { Warranty } from './warranty';
 
+/**
+ * Warranty info
+ */
 export type DeviceCreateWarranty = Warranty | null;

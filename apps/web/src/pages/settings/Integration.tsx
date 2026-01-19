@@ -7,14 +7,25 @@ import {
     useCreateSmDocumentUpload,
     useDeleteSmDocument,
     useCreateSmDocumentSubmit,
-    useCreateSmHeaders
-} from '@/api/generated/sms-integration/sms-integration';
+    useCreateSmHeaders,
+    getListSmConfigQueryKey,
+    getListSmHeadersQueryKey,
+    getListSmCreditQueryKey
+} from '@/api/client/sms-integration.client';
 import { Button, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAuthStore } from '@/stores/authStore';
 import { customInstance } from '@/api/orval-mutator';
 import { PosSettings } from './PosSettings';
+import type { SmsProviderConfigRead, SmsHeaderRequestRead } from '@/api/generated/schemas';
+
+interface SmsDocument {
+    type: string;
+    filename: string;
+    status: 'uploaded' | 'sent' | 'revision_requested' | 'approved';
+    url?: string;
+}
 
 const REQUIRED_DOCUMENTS = [
     { id: 'contract', label: 'Sözleşme', hasExample: true },
@@ -43,9 +54,9 @@ export default function IntegrationSettings() {
     const uploadInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
     const { token } = useAuthStore();
 
-    const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useListSmConfig({ query: { enabled: !!token } });
-    const { data: creditData } = useListSmCredit({ query: { enabled: !!token } });
-    const { data: headersData, refetch: refetchHeaders } = useListSmHeaders({ query: { enabled: !!token } });
+    const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useListSmConfig({ query: { queryKey: getListSmConfigQueryKey(), enabled: !!token } });
+    const { data: creditData } = useListSmCredit({ query: { queryKey: getListSmCreditQueryKey(), enabled: !!token } });
+    const { data: headersData, refetch: refetchHeaders } = useListSmHeaders({ query: { queryKey: getListSmHeadersQueryKey(), enabled: !!token } });
 
     const { mutateAsync: uploadDocument } = useCreateSmDocumentUpload();
     const { mutateAsync: deleteDocument } = useDeleteSmDocument();
@@ -63,9 +74,13 @@ export default function IntegrationSettings() {
     const headerDocInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (configData?.data) {
-            const payload = configData.data as any;
-            setUploadedDocs(Array.isArray(payload.documents) ? payload.documents : []);
+        if (configData && configData.data) {
+            const payload = configData.data as SmsProviderConfigRead;
+            // documents is unknown[] in schema, verify shape
+            const docs = Array.isArray(payload.documents)
+                ? (payload.documents as unknown as SmsDocument[])
+                : [];
+            setUploadedDocs(docs);
             setDocumentsSubmitted(payload.documentsSubmitted || false);
             setAllDocumentsApproved(payload.allDocumentsApproved || false);
         }
@@ -113,7 +128,12 @@ export default function IntegrationSettings() {
         const doc = uploadedDocs.find(d => d.type === docType);
         if (!doc) return;
         try {
-            const response = await customInstance({ url: `/api/sms/documents/${docType}/download`, method: 'GET' }) as any;
+            // Document download/preview endpoint
+            const response = await customInstance<{ data: { url: string }, url?: string }>({
+                url: `/api/sms/documents/${docType}/download`,
+                method: 'GET'
+            });
+
             const previewUrl = response?.data?.url || response?.url;
             if (previewUrl) {
                 setPreviewDoc({ type: docType, url: previewUrl, filename: doc.filename });
@@ -129,7 +149,8 @@ export default function IntegrationSettings() {
         if (!allDocsUploaded) return;
         setIsSubmitting(true);
         try {
-            await submitDocuments({ data: {} as any }); // Schema requires body but it might be empty
+            // Submit documents (schema requires document_type, using 'all' as it triggers full submission)
+            await submitDocuments({ data: { document_type: 'all' } });
             showSuccessToast('Belgeler gönderildi');
             setDocumentsSubmitted(true);
             refetchConfig();
@@ -152,7 +173,7 @@ export default function IntegrationSettings() {
             await requestHeader({
                 data: {
                     headerText: newHeader,
-                    headerType: newHeaderType as any,
+                    headerType: newHeaderType as 'company_title' | 'trademark' | 'domain' | 'other',
                     documents
                 }
             });
@@ -183,8 +204,11 @@ export default function IntegrationSettings() {
         return <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>{badge.label}</span>;
     };
 
-    const headers = Array.isArray((headersData as any)?.data) ? (headersData as any).data : [];
-    const credit = (creditData as any)?.data;
+    const headers = Array.isArray(headersData?.data)
+        ? (headersData?.data as SmsHeaderRequestRead[])
+        : [];
+
+    const credit = creditData?.data /* as SmsCreditRead - inferred automatically if available */;
 
     return (
         <div className="p-6 max-w-6xl mx-auto">

@@ -1,6 +1,6 @@
 export interface DeviceReplacementHistory {
   id: string;
-  patientId: string;
+  partyId: string;
   oldDeviceId: string;
   newDeviceId: string;
   oldDeviceInfo: DeviceInfo;
@@ -28,7 +28,7 @@ export interface DeviceInfo {
 }
 
 export interface DeviceReplacementRequest {
-  patientId: string;
+  partyId: string;
   saleId?: string;
   oldDeviceId: string;
   oldDeviceInfo?: Partial<DeviceInfo>;
@@ -53,7 +53,7 @@ export const REPLACEMENT_REASONS = [
   'defective',
   'upgrade',
   'warranty_replacement',
-  'patient_request',
+  'party_request',
   'technical_issue',
   'compatibility_issue',
   'other'
@@ -65,7 +65,7 @@ export const REPLACEMENT_REASON_LABELS: Record<ReplacementReason, string> = {
   defective: 'Arızalı Cihaz',
   upgrade: 'Yükseltme',
   warranty_replacement: 'Garanti Değişimi',
-  patient_request: 'Hasta Talebi',
+  party_request: 'Hasta Talebi',
   technical_issue: 'Teknik Sorun',
   compatibility_issue: 'Uyumluluk Sorunu',
   other: 'Diğer'

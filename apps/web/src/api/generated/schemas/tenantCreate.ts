@@ -15,6 +15,7 @@ import type { TenantCreateDescription } from './tenantCreateDescription';
 import type { TenantCreateTaxNumber } from './tenantCreateTaxNumber';
 import type { TenantCreateTaxOffice } from './tenantCreateTaxOffice';
 import type { TenantStatus } from './tenantStatus';
+import type { TenantCreateProductCode } from './tenantCreateProductCode';
 import type { TenantCreatePlanId } from './tenantCreatePlanId';
 import type { TenantCreateCurrentPlan } from './tenantCreateCurrentPlan';
 import type { TenantCreateMaxUsers } from './tenantCreateMaxUsers';
@@ -50,6 +51,8 @@ export interface TenantCreate {
   taxOffice?: TenantCreateTaxOffice;
   /** Tenant status */
   status?: TenantStatus;
+  /** Product Code */
+  productCode?: TenantCreateProductCode;
   /** Subscription plan ID */
   planId?: TenantCreatePlanId;
   /** Current Plan Slug */

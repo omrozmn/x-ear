@@ -6,7 +6,7 @@ class DeviceReplacement(BaseModel):
     __tablename__ = 'device_replacements'
     
     id = db.Column(db.String(50), primary_key=True)
-    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     old_device_id = db.Column(db.String(50), db.ForeignKey('devices.id'), nullable=False)
     new_inventory_id = db.Column(db.String(50), nullable=False)
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
@@ -21,7 +21,7 @@ class DeviceReplacement(BaseModel):
     def to_dict(self):
         result = {
             'id': self.id,
-            'patientId': self.patient_id,
+            'partyId': self.party_id,
             'oldDeviceId': self.old_device_id,
             'newInventoryId': self.new_inventory_id,
             'oldDeviceInfo': (json.loads(self.old_device_info) if isinstance(self.old_device_info, str) else self.old_device_info),

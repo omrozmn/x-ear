@@ -16,17 +16,15 @@ import {
     X
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import {
-    useListBranches,
-    useListPatientCount,
-    useListPatients,
+import {useListBranches,
+    useListPartyCount,
+    useListParties,
     getListBranchesQueryKey,
-    getListPatientsQueryKey,
-    getListPatientCountQueryKey,
+    getListPartiesQueryKey,
+    getListPartyCountQueryKey,
     useListSmHeaders,
-    getListSmHeadersQueryKey
-} from '@/api/generated';
-import type { ListPatientsParams } from '@/api/generated/schemas';
+    getListSmHeadersQueryKey} from '@/api/client/branches.client';
+import type { ListPartiesParams } from '@/api/generated/schemas';
 
 import { useAuthStore } from '@/stores/authStore';
 
@@ -99,9 +97,10 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
     const { token } = useAuthStore();
 
-    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useListBranches({
-        query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
-    });
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useListBranches(
+        undefined,
+        { query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token } }
+    );
 
     // Get SMS headers for sender selection
     const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmHeaders({
@@ -168,29 +167,29 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
         }
     }, [headerOptions, selectedHeader]);
 
-    // Fetch first patient for preview
-    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatients(
+    // Fetch first party for preview
+    const { data: partiesData, isLoading: partiesLoading, isError: partiesError } = useListParties(
         { page: 1, per_page: 1 },
-        { query: { queryKey: getListPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters' && !!token, refetchOnWindowFocus: false } }
+        { query: { queryKey: getListPartiesQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters' && !!token, refetchOnWindowFocus: false } }
     );
 
-    // Handle different response structures for first patient
-    let firstPatient: any = null;
-    if (patientsData) {
-        if (Array.isArray(patientsData) && patientsData.length > 0) {
-            firstPatient = patientsData[0];
-        } else if ((patientsData as any)?.data) {
-            const innerData = (patientsData as any).data;
+    // Handle different response structures for first party
+    let firstParty: any = null;
+    if (partiesData) {
+        if (Array.isArray(partiesData) && partiesData.length > 0) {
+            firstParty = partiesData[0];
+        } else if ((partiesData as any)?.data) {
+            const innerData = (partiesData as any).data;
             if (Array.isArray(innerData) && innerData.length > 0) {
-                firstPatient = innerData[0];
+                firstParty = innerData[0];
             } else if (innerData?.data && Array.isArray(innerData.data) && innerData.data.length > 0) {
-                firstPatient = innerData.data[0];
+                firstParty = innerData.data[0];
             }
         }
     }
 
-    const normalizedParams = useMemo<ListPatientsParams>(() => {
-        const params: ListPatientsParams = {};
+    const normalizedParams = useMemo<ListPartiesParams>(() => {
+        const params: ListPartiesParams = {};
         if (audienceFilters.status) params.status = audienceFilters.status;
         if (audienceFilters.segment) (params as any).segment = audienceFilters.segment;
         // Note: acquisition_type, branch_id, date_start, date_end are not supported by the current API
@@ -198,19 +197,19 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
         return params;
     }, [audienceFilters]);
 
-    const patientsCountQuery = useListPatientCount(
+    const partiesCountQuery = useListPartyCount(
         mode === 'filters' ? normalizedParams : undefined,
         {
             query: {
-                queryKey: getListPatientCountQueryKey(mode === 'filters' ? normalizedParams : undefined),
+                queryKey: getListPartyCountQueryKey(mode === 'filters' ? normalizedParams : undefined),
                 enabled: mode === 'filters',
                 refetchOnWindowFocus: false
             }
         }
     );
-    const { isLoading: countLoading } = patientsCountQuery;
+    const { isLoading: countLoading } = partiesCountQuery;
 
-    const filterRecipientCount = (patientsCountQuery.data as any)?.count ?? 0;
+    const filterRecipientCount = (partiesCountQuery.data as any)?.count ?? 0;
     const excelRecipientCount = excelPreview?.validPhoneCount ?? 0;
     const recipients = mode === 'filters' ? filterRecipientCount : excelRecipientCount;
 
@@ -329,11 +328,11 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
 
         let preview = message;
 
-        if (mode === 'filters' && firstPatient) {
+        if (mode === 'filters' && firstParty) {
             preview = preview
-                .replace(/\{\{AD\}\}/g, firstPatient.firstName || 'Ad')
-                .replace(/\{\{SOYAD\}\}/g, firstPatient.lastName || 'Soyad')
-                .replace(/\{\{TELEFON\}\}/g, firstPatient.phone || '05XX XXX XX XX')
+                .replace(/\{\{AD\}\}/g, firstParty.firstName || 'Ad')
+                .replace(/\{\{SOYAD\}\}/g, firstParty.lastName || 'Soyad')
+                .replace(/\{\{TELEFON\}\}/g, firstParty.phone || '05XX XXX XX XX')
                 .replace(/\{\{SUBE\}\}/g, 'Şube')
                 .replace(/\{\{FIRMA_ADI\}\}/g, 'X-Ear')
                 .replace(/\{\{FIRMA_TELEFONU\}\}/g, '0850 XXX XX XX');
@@ -368,7 +367,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
         }
 
         return preview;
-    }, [message, mode, firstPatient, excelPreview]);
+    }, [message, mode, firstParty, excelPreview]);
 
     const formatNumber = (value: number) => value.toLocaleString('tr-TR');
 
@@ -475,7 +474,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                    {patientsCountQuery.isFetching || countLoading ? (
+                    {partiesCountQuery.isFetching || countLoading ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
                             Alıcı sayısı hesaplanıyor...
@@ -496,7 +495,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                     </Button>
                 </div>
             </div>
-            {patientsCountQuery.isError && (
+            {partiesCountQuery.isError && (
                 <p className="text-xs text-red-600 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Hedef kitle sayısı alınamadı.
                 </p>
@@ -783,8 +782,8 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                         <div className="p-4 space-y-4">
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
                                 <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">
-                                    {mode === 'filters' && firstPatient
-                                        ? `İlk hasta: ${firstPatient.firstName} ${firstPatient.lastName}`
+                                    {mode === 'filters' && firstParty
+                                        ? `İlk hasta: ${firstParty.firstName} ${firstParty.lastName}`
                                         : mode === 'excel' && excelPreview
                                             ? 'Excel listesinden ilk kayıt'
                                             : 'Örnek verilerle'}

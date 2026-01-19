@@ -6,7 +6,7 @@ import re
 # We will read the file as text and perform string replacement
 # This preserves comments and formatting exactly.
 
-MAPPING_FILE = 'apps/backend/config/permissions_map.py'
+MAPPING_FILE = 'apps/api/config/permissions_map.py'
 
 # The fixes derived from the audit (Method, Path, Old, New)
 # We use the audit report data directly

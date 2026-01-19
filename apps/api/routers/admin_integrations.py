@@ -10,6 +10,7 @@ from models.integration_config import IntegrationConfig
 from models.notification_template import NotificationTemplate
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.notification_templates import NotificationTemplateRead
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +38,10 @@ async def get_integrations(
                 integrations[config.integration_type] = {}
             integrations[config.integration_type][config.config_key] = config.config_value
         
-        return {
-            "success": True,
-            "data": {
-                "integrations": integrations,
-                "available": ["vatan_sms", "birfatura"]
-            }
-        }
+        return ResponseEnvelope(data={
+            "integrations": integrations,
+            "available": ["vatan_sms", "birfatura"]
+        })
     except Exception as e:
         logger.error(f"Get integrations error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -71,7 +69,7 @@ async def init_db(
     """Initialize integration config tables"""
     try:
         IntegrationConfig.__table__.create(db.get_bind(), checkfirst=True)
-        return {"success": True, "message": "Integration config tables initialized"}
+        return ResponseEnvelope(message="Integration config tables initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -98,17 +96,14 @@ async def get_vatan_sms_config(
             trigger_event="vatan_sms_document_uploaded", is_active=True
         ).first()
         
-        return {
-            "success": True,
-            "data": {
-                "approvalEmail": email_config.config_value if email_config else "",
-                "username": username_config.config_value if username_config else "",
-                "password": password_config.config_value if password_config else "",
-                "senderId": sender_id_config.config_value if sender_id_config else "",
-                "isActive": is_active_config.config_value == "true" if is_active_config else False,
-                "emailTemplate": template.to_dict() if template else None
-            }
-        }
+        return ResponseEnvelope(data={
+            "approvalEmail": email_config.config_value if email_config else "",
+            "username": username_config.config_value if username_config else "",
+            "password": password_config.config_value if password_config else "",
+            "senderId": sender_id_config.config_value if sender_id_config else "",
+            "isActive": is_active_config.config_value == "true" if is_active_config else False,
+            "emailTemplate": NotificationTemplateRead.model_validate(template).model_dump(by_alias=True) if template else None
+        })
     except Exception as e:
         logger.error(f"Get VatanSMS config error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -143,7 +138,7 @@ async def update_vatan_sms_config(
         update_or_create("is_active", "true" if data.isActive else "false", "VatanSMS Active Status")
         
         db.commit()
-        return {"success": True, "message": "VatanSMS configuration updated successfully"}
+        return ResponseEnvelope(message="VatanSMS configuration updated successfully")
     except Exception as e:
         db.rollback()
         logger.error(f"Update VatanSMS config error: {e}")
@@ -170,16 +165,13 @@ async def get_birfatura_config(
             trigger_event="birfatura_invoice_sent", is_active=True
         ).first()
         
-        return {
-            "success": True,
-            "data": {
-                "notificationEmail": email_config.config_value if email_config else "",
-                "integrationKey": integration_key.config_value if integration_key else "",
-                "appApiKey": app_api_key.config_value if app_api_key else "",
-                "appSecretKey": app_secret_key.config_value if app_secret_key else "",
-                "emailTemplate": template.to_dict() if template else None
-            }
-        }
+        return ResponseEnvelope(data={
+            "notificationEmail": email_config.config_value if email_config else "",
+            "integrationKey": integration_key.config_value if integration_key else "",
+            "appApiKey": app_api_key.config_value if app_api_key else "",
+            "appSecretKey": app_secret_key.config_value if app_secret_key else "",
+            "emailTemplate": NotificationTemplateRead.model_validate(template).model_dump(by_alias=True) if template else None
+        })
     except Exception as e:
         logger.error(f"Get BirFatura config error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -213,7 +205,7 @@ async def update_birfatura_config(
         update_or_create("app_secret_key", data.appSecretKey, "BirFatura App Secret Key")
         
         db.commit()
-        return {"success": True, "message": "BirFatura configuration updated successfully"}
+        return ResponseEnvelope(message="BirFatura configuration updated successfully")
     except Exception as e:
         db.rollback()
         logger.error(f"Update BirFatura config error: {e}")

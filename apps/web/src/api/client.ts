@@ -1,83 +1,56 @@
 /// <reference types="vite/client" />
 // API Client for X-Ear Web Application
-
-// Re-export PatientRead as Patient from generated schemas for consistency
-export type { PatientRead as Patient } from '@/api/generated/schemas';
 import { tokenManager } from '../utils/token-manager';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
 
-export interface LoginCredentials {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  access_token: string;
-  token?: string;
-  createAuthRefresh?: string;
-  data: {
-    id: string;
-    username: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-    fullName?: string;
-    role?: string;
-    phone?: string;
-    isPhoneVerified?: boolean;
-    isActive?: boolean;
-    lastLogin?: string;
-  };
+// API response wrapper type
+export interface ApiResponse<T> {
   success: boolean;
-  requires_otp?: boolean;
-  requires_phone?: boolean;
-  masked_phone?: string;
-  requestId: string;
-  timestamp: string;
-}
-
-// Legacy Patient type - use generated type instead
-export interface LegacyPatient {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  birth_date?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface PatientsResponse {
-  success: boolean;
-  data: {
-    patients: LegacyPatient[];
-    total: number;
-    page: number;
-    limit: number;
-  };
-  meta?: Record<string, unknown>;
-  requestId: string;
-  timestamp: string;
-}
-
-export interface CreatePatientRequest {
-  name: string;
-  email?: string;
-  phone?: string;
-  birth_date?: string;
-}
-
-export interface UpdatePatientRequest {
-  name?: string;
-  email?: string;
-  phone?: string;
-  birth_date?: string;
-}
-
-export interface ApiResponse<T = unknown> {
-  status: number;
   data: T;
+  error?: string;
+  meta?: any;
+  requestId?: string;
+  timestamp?: string;
+}
+
+// Legacy Party type - use generated type instead
+// Legacy Party type - use generated type instead
+import { PartyRead } from '@/api/generated/schemas';
+export type LegacyParty = PartyRead;
+export { type PartyRead as Party } from '@/api/generated/schemas';
+
+export interface PartiesResponse {
+  success: boolean;
+  data: LegacyParty[];
+  total?: number;
+  meta?: {
+    total?: number;
+    count?: number;
+    [key: string]: any;
+  };
+  requestId?: string;
+  timestamp?: string;
+}
+
+export interface CreatePartyRequest {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  tcNumber?: string;
+  birthDate?: string;
+  birth_date?: string;
+}
+
+export interface UpdatePartyRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  tcNumber?: string;
+  birthDate?: string;
+  birth_date?: string;
 }
 
 class ApiClient {
@@ -87,65 +60,38 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
-    // Use TokenManager for token access (single source of truth)
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
     const token = tokenManager.accessToken;
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string> || {}),
-    };
-
+    const headers = new Headers(options.headers);
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    if (!(options.body instanceof FormData)) {
+      headers.set('Content-Type', 'application/json');
     }
 
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      credentials: 'same-origin',
+    const response = await fetch(url, {
       ...options,
       headers,
     });
 
     const data = await response.json();
 
-    return {
-      status: response.status,
-      data,
-    };
+    if (!response.ok) {
+      throw new Error(data.message || data.error || 'API Request failed');
+    }
+
+    return data as ApiResponse<T>;
   }
 
-  // Authentication methods
-  async login(credentials: LoginCredentials): Promise<ApiResponse<LoginResponse>> {
-    return this.request<LoginResponse>('/api/admin/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
-  }
-
-  async logout(): Promise<ApiResponse<{ success: boolean }>> {
-    return this.request<{ success: boolean }>('/api/auth/logout', {
-      method: 'POST',
-    });
-  }
-
-  async createAuthRefresh(): Promise<ApiResponse<LoginResponse>> {
-    // Use TokenManager for refresh token access (single source of truth)
-    const createAuthRefresh = tokenManager.createAuthRefresh;
-    return this.request<LoginResponse>('/api/auth/refresh', {
-      method: 'POST',
-      body: JSON.stringify({ createAuthRefresh }),
-    });
-  }
-
-  // Patient management methods
-  async getPatients(params: {
+  // Party management methods
+  async getParties(params: {
     page?: number;
     limit?: number;
     search?: string;
-  } = {}): Promise<ApiResponse<PatientsResponse>> {
+  } = {}): Promise<ApiResponse<PartiesResponse>> {
     const searchParams = new URLSearchParams();
 
     if (params.page) searchParams.append('page', params.page.toString());
@@ -153,31 +99,31 @@ class ApiClient {
     if (params.search) searchParams.append('search', params.search);
 
     const queryString = searchParams.toString();
-    const endpoint = `/api/patients${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/api/parties${queryString ? `?${queryString}` : ''}`;
 
-    return this.request<PatientsResponse>(endpoint);
+    return this.request<PartiesResponse>(endpoint);
   }
 
-  async getPatient(id: string): Promise<ApiResponse<{ patient: LegacyPatient }>> {
-    return this.request<{ patient: LegacyPatient }>(`/api/patients/${id}`);
+  async getParty(id: string): Promise<ApiResponse<{ party: LegacyParty }>> {
+    return this.request<{ party: LegacyParty }>(`/api/parties/${id}`);
   }
 
-  async createPatient(patient: CreatePatientRequest): Promise<ApiResponse<{ patient: LegacyPatient }>> {
-    return this.request<{ patient: LegacyPatient }>('/api/patients', {
+  async createParty(party: CreatePartyRequest): Promise<ApiResponse<{ party: LegacyParty }>> {
+    return this.request<{ party: LegacyParty }>('/api/parties', {
       method: 'POST',
-      body: JSON.stringify(patient),
+      body: JSON.stringify(party),
     });
   }
 
-  async updatePatient(id: string, patient: UpdatePatientRequest): Promise<ApiResponse<{ patient: LegacyPatient }>> {
-    return this.request<{ patient: LegacyPatient }>(`/api/patients/${id}`, {
+  async updateParty(id: string, party: UpdatePartyRequest): Promise<ApiResponse<{ party: LegacyParty }>> {
+    return this.request<{ party: LegacyParty }>(`/api/parties/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(patient),
+      body: JSON.stringify(party),
     });
   }
 
-  async deletePatient(id: string): Promise<ApiResponse<{ success: boolean }>> {
-    return this.request<{ success: boolean }>(`/api/patients/${id}`, {
+  async deleteParty(id: string): Promise<ApiResponse<{ success: boolean }>> {
+    return this.request<{ success: boolean }>(`/api/parties/${id}`, {
       method: 'DELETE',
     });
   }

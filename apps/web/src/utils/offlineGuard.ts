@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 export enum OfflineForbiddenOperation {
     REFUND = 'REFUND',
     DELETE_ACCOUNT = 'DELETE_ACCOUNT',
-    DELETE_PATIENT = 'DELETE_PATIENT',
+    DELETE_PARTY = 'DELETE_PARTY',
     CRITICAL_SETTINGS = 'CRITICAL_SETTINGS',
     FINANCIAL_TRANSACTION = 'FINANCIAL_TRANSACTION',
 }
@@ -17,7 +17,7 @@ export enum OfflineForbiddenOperation {
 const OPERATION_MESSAGES: Record<OfflineForbiddenOperation, string> = {
     [OfflineForbiddenOperation.REFUND]: 'Refunds require an active internet connection',
     [OfflineForbiddenOperation.DELETE_ACCOUNT]: 'Account deletion requires an active internet connection',
-    [OfflineForbiddenOperation.DELETE_PATIENT]: 'Patient deletion requires an active internet connection',
+    [OfflineForbiddenOperation.DELETE_PARTY]: 'Party deletion requires an active internet connection',
     [OfflineForbiddenOperation.CRITICAL_SETTINGS]: 'This setting change requires an active internet connection',
     [OfflineForbiddenOperation.FINANCIAL_TRANSACTION]: 'Financial transactions require an active internet connection',
 };

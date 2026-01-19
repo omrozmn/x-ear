@@ -13,33 +13,22 @@ import json
 from sqlalchemy.orm import Session
 
 from database import get_db
-from schemas.base import ResponseEnvelope
+logger = logging.getLogger(__name__)
+
+from schemas.timeline import TimelineEventCreate, TimelineEventRead, TimelineListResponse
+from schemas.base import ResponseEnvelope, ResponseMeta
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Timeline"])
 
 # --- Schemas ---
 
-class TimelineEventCreate(BaseModel):
-    type: str
-    title: str
-    description: Optional[str] = ""
-    details: Optional[dict] = None
-    timestamp: Optional[str] = None
-    date: Optional[str] = None
-    time: Optional[str] = None
-    user: Optional[str] = "system"
-    icon: Optional[str] = "fa-circle"
-    color: Optional[str] = "blue"
-    category: Optional[str] = "general"
-    id: Optional[str] = None
+
 
 # --- Routes ---
 
-@router.get("/timeline", operation_id="listTimeline")
+@router.get("/timeline", operation_id="listTimeline", response_model=ResponseEnvelope[TimelineListResponse])
 def get_timeline(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -70,7 +59,7 @@ def get_timeline(
             
             timeline.append({
                 'id': log.id,
-                'patientId': log.entity_id if log.entity_type == 'patient' else None,
+                'partyId': log.entity_id if log.entity_type == 'patient' else None,
                 'type': log.action,
                 'title': log.action.replace('_', ' ').title() if log.action else '',
                 'description': details.get('description', '') if details else '',
@@ -82,30 +71,30 @@ def get_timeline(
             })
         
         return ResponseEnvelope(
-            data=timeline,
-            meta={
-                'page': page,
-                'perPage': per_page,
-                'total': len(timeline)
-            }
+            data=TimelineListResponse(events=timeline),
+            meta=ResponseMeta(
+                page=page,
+                per_page=per_page,
+                total=len(timeline)
+            )
         )
         
     except Exception as e:
         logger.error(f"Error getting timeline: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/timeline", operation_id="listPatientTimeline")
-def get_patient_timeline(
-    patient_id: str,
+@router.get("/parties/{party_id}/timeline", operation_id="listPartyTimeline", response_model=ResponseEnvelope[TimelineListResponse])
+def get_party_timeline(
+    party_id: str,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get timeline events for a patient"""
     try:
-        from models.patient import Patient
+        from core.models.party import Party
         from models.user import ActivityLog
         
-        patient = db.get(Patient, patient_id)
+        patient = db.get(Party, party_id)
         if not patient:
             raise HTTPException(status_code=404, detail="Patient not found")
         
@@ -125,7 +114,7 @@ def get_patient_timeline(
         try:
             activity_logs = db.query(ActivityLog).filter_by(
                 entity_type='patient',
-                entity_id=patient_id
+                entity_id=party_id
             ).order_by(ActivityLog.created_at.desc()).limit(100).all()
             
             for log in activity_logs:
@@ -140,7 +129,7 @@ def get_patient_timeline(
                 
                 timeline.append({
                     'id': log.id,
-                    'patientId': patient_id,
+                    'partyId': party_id,
                     'type': log.action,
                     'title': log.action.replace('_', ' ').title() if log.action else '',
                     'description': details.get('description', '') if details else '',
@@ -155,11 +144,10 @@ def get_patient_timeline(
         timeline.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
         
         return ResponseEnvelope(
-            data=timeline,
-            meta={
-                'total': len(timeline),
-                'patient_id': patient_id
-            }
+            data=TimelineListResponse(events=timeline),
+            meta=ResponseMeta(
+                total=len(timeline)
+            )
         )
         
     except HTTPException:
@@ -168,19 +156,19 @@ def get_patient_timeline(
         logger.error(f"Error getting patient timeline: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/timeline", operation_id="createPatientTimeline", status_code=201)
+@router.post("/parties/{party_id}/timeline", operation_id="createPartyTimeline", status_code=201, response_model=ResponseEnvelope[TimelineEventRead])
 def add_timeline_event(
-    patient_id: str,
+    party_id: str,
     request_data: TimelineEventCreate,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Add a new timeline event for a patient"""
     try:
-        from models.patient import Patient
+        from core.models.party import Party
         from models.user import ActivityLog
         
-        patient = db.get(Patient, patient_id)
+        patient = db.get(Party, party_id)
         if not patient:
             raise HTTPException(status_code=404, detail="Patient not found")
         
@@ -193,7 +181,7 @@ def add_timeline_event(
         # Create timeline event
         event = {
             'id': request_data.id or str(uuid.uuid4()),
-            'patientId': patient_id,
+            'partyId': party_id,
             'type': request_data.type,
             'title': request_data.title,
             'description': request_data.description or '',
@@ -222,7 +210,7 @@ def add_timeline_event(
                 user_id=event['user'],
                 action=event['type'],
                 entity_type='patient',
-                entity_id=patient_id,
+                entity_id=party_id,
                 tenant_id=access.tenant_id,
                 details=json.dumps({
                     'title': event['title'],
@@ -236,9 +224,9 @@ def add_timeline_event(
         
         db.commit()
         
-        logger.info(f"✅ Timeline event added to patient {patient_id}: {event['title']}")
+        logger.info(f"✅ Timeline event added to party {party_id}: {event['title']}")
         
-        return ResponseEnvelope(data=event)
+        return ResponseEnvelope(data=TimelineEventRead(**event))
         
     except HTTPException:
         raise
@@ -247,28 +235,28 @@ def add_timeline_event(
         logger.error(f"Error adding timeline event: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/activities", operation_id="createPatientActivities", status_code=201)
-def log_patient_activity(
-    patient_id: str,
+@router.post("/parties/{party_id}/activities", operation_id="createPartyActivities", status_code=201, response_model=ResponseEnvelope[TimelineEventRead])
+def log_party_activity(
+    party_id: str,
     request_data: TimelineEventCreate,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Log an activity for a patient (alias for timeline event)"""
-    return add_timeline_event(patient_id, request_data, access, db)
+    return add_timeline_event(party_id, request_data, access, db)
 
-@router.delete("/patients/{patient_id}/timeline/{event_id}", operation_id="deletePatientTimeline")
+@router.delete("/parties/{party_id}/timeline/{event_id}", operation_id="deletePartyTimeline")
 def delete_timeline_event(
-    patient_id: str,
+    party_id: str,
     event_id: str,
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Delete a timeline event"""
     try:
-        from models.patient import Patient
+        from core.models.party import Party
         
-        patient = db.get(Patient, patient_id)
+        patient = db.get(Party, party_id)
         if not patient:
             raise HTTPException(status_code=404, detail="Patient not found")
         
@@ -289,7 +277,7 @@ def delete_timeline_event(
             patient.custom_data_json = custom_data
             db.commit()
             
-            logger.info(f"✅ Timeline event deleted from patient {patient_id}: {event_id}")
+            logger.info(f"✅ Timeline event deleted from party {party_id}: {event_id}")
             
             return ResponseEnvelope(message='Timeline event deleted')
         

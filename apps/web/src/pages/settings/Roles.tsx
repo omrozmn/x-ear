@@ -6,7 +6,7 @@ import {
     useUpdateRole,
     useDeleteRole
 } from '../../api/generated/roles/roles';
-import { RoutersRolesRoleCreate } from '../../api/generated/schemas';
+import { RoutersRolesRoleCreate as RoleCreate } from '../../api/generated/schemas';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
 
 interface Role {
@@ -14,7 +14,7 @@ interface Role {
     name: string;
     description?: string;
     is_system?: boolean;
-    permissions?: string[];
+    permissions?: (string | { name: string })[];
     createdAt?: string;
 }
 
@@ -110,7 +110,7 @@ export default function RolesSettings() {
 
     // Predefined permissions for selection
     const availablePermissions = [
-        { category: 'Hastalar', permissions: ['patients:read', 'patients:create', 'patients:update', 'patients:delete'] },
+        { category: 'Hastalar', permissions: ['parties:read', 'parties:create', 'parties:update', 'parties:delete'] },
         { category: 'Satışlar', permissions: ['sales:read', 'sales:create', 'sales:update', 'sales:delete'] },
         { category: 'Envanter', permissions: ['inventory:read', 'inventory:create', 'inventory:update', 'inventory:delete'] },
         { category: 'Faturalar', permissions: ['invoices:read', 'invoices:create', 'invoices:update', 'invoices:delete'] },
@@ -221,7 +221,7 @@ export default function RolesSettings() {
                                             className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                                         >
                                             <Lock className="w-3 h-3 mr-1" />
-                                            {perm}
+                                            {typeof perm === 'string' ? perm : perm.name}
                                         </span>
                                     ))}
                                     {role.permissions.length > 3 && (
@@ -258,10 +258,11 @@ export default function RolesSettings() {
                         ) : (
                             <form onSubmit={handleCreateRole} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label htmlFor="role-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Rol Adı *
                                     </label>
                                     <input
+                                        id="role-name"
                                         type="text"
                                         required
                                         value={roleData.name}
@@ -272,10 +273,11 @@ export default function RolesSettings() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label htmlFor="role-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Açıklama
                                     </label>
                                     <textarea
+                                        id="role-description"
                                         value={roleData.description}
                                         onChange={(e) => setRoleData({ ...roleData, description: e.target.value })}
                                         rows={3}

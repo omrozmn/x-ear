@@ -1,6 +1,6 @@
 /**
  * Advanced Fuzzy Search Utilities
- * Provides intelligent fuzzy string matching capabilities for patient and product search
+ * Provides intelligent fuzzy string matching capabilities for party and product search
  */
 
 export interface FuzzySearchOptions {

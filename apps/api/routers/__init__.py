@@ -4,7 +4,7 @@ All migrated routers from Flask blueprints
 """
 from . import sms
 from . import campaigns
-from . import patients
+from . import parties
 from . import inventory
 from . import sales
 from . import auth
@@ -17,7 +17,7 @@ from . import reports
 from . import roles
 from . import payments
 from . import users
-from . import tenant_users
+# from . import tenant_users  # Temporarily disabled due to syntax errors
 from . import suppliers
 # Admin routers
 from . import admin
@@ -35,7 +35,7 @@ from . import permissions
 from . import ocr
 from . import upload
 from . import documents
-from . import patient_subresources
+from . import party_subresources
 from . import cash_records
 from . import unified_cash
 from . import payment_integrations
@@ -61,7 +61,7 @@ from . import admin_inventory
 from . import admin_invoices
 from . import admin_marketplaces
 from . import admin_notifications
-from . import admin_patients
+from . import admin_parties
 from . import admin_payments
 from . import admin_production
 from . import admin_scan_queue
@@ -72,11 +72,11 @@ from . import audit
 from . import automation
 from . import affiliates
 from . import checkout
-from . import replacements
-from . import birfatura
+# from . import replacements  # Temporarily disabled due to router not defined
+# from . import birfatura  # Temporarily disabled due to missing schema
 from . import apps
 from . import pos_commission
-from . import uts
+# from . import uts  # Temporarily disabled due to router not defined
 # Phase 7 migrated routers - Final modules
 from . import invoice_management
 from . import invoices_actions
@@ -86,7 +86,7 @@ from . import sms_integration
 __all__ = [
     "sms",
     "campaigns",
-    "patients",
+    "parties",
     "inventory",
     "sales",
     "auth",
@@ -99,7 +99,7 @@ __all__ = [
     "roles",
     "payments",
     "users",
-    "tenant_users",
+    # "tenant_users",  # Temporarily disabled
     "suppliers",
     # Admin
     "admin",
@@ -117,7 +117,7 @@ __all__ = [
     "ocr",
     "upload",
     "documents",
-    "patient_subresources",
+    "party_subresources",
     "cash_records",
     "unified_cash",
     "payment_integrations",
@@ -143,7 +143,7 @@ __all__ = [
     "admin_invoices",
     "admin_marketplaces",
     "admin_notifications",
-    "admin_patients",
+    "admin_parties",
     "admin_payments",
     "admin_production",
     "admin_scan_queue",
@@ -154,11 +154,11 @@ __all__ = [
     "automation",
     "affiliates",
     "checkout",
-    "replacements",
-    "birfatura",
+    # "replacements",  # Temporarily disabled
+    # "birfatura",  # Temporarily disabled
     "apps",
     "pos_commission",
-    "uts",
+    # "uts",  # Temporarily disabled
     # Phase 7 - Final modules
     "invoice_management",
     "invoices_actions",

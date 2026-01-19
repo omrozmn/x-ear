@@ -10,7 +10,7 @@ import logging
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope, ApiError
-from schemas.users import UserRead
+from schemas.users import UserRead, UserMeRead
 
 from models.user import User
 from models.tenant import Tenant
@@ -80,12 +80,12 @@ def list_users(
     users_list = query.order_by(User.created_at.desc()).limit(per_page).offset(offset).all()
     
     return ResponseEnvelope(
-        data=[u.to_dict() for u in users_list],
+        data=[UserRead.model_validate(u) for u in users_list],
         meta={
             "total": total,
             "page": page,
-            "perPage": per_page,
-            "totalPages": (total + per_page - 1) // per_page
+            "per_page": per_page,
+            "total_pages": (total + per_page - 1) // per_page
         }
     )
 
@@ -150,16 +150,37 @@ def create_user(
     db_session.commit()
     
     logger.info(f"User created: {user.id}")
-    return ResponseEnvelope(data=user.to_dict())
+    return ResponseEnvelope(data=UserRead.model_validate(user))
 
-@router.get("/users/me", operation_id="listUserMe", response_model=ResponseEnvelope[UserRead])
+@router.get("/users/me", operation_id="listUserMe", response_model=ResponseEnvelope[UserMeRead])
 def get_me(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get current user profile"""
     def build_payload(u_obj, is_admin_user=False):
-        payload = u_obj.to_dict()
+        # Manual dict construction to avoid to_dict()
+        payload = {
+            'id': u_obj.id,
+            'tenantId': getattr(u_obj, 'tenant_id', None), # admin user might not have tenant_id?
+            'username': getattr(u_obj, 'username', u_obj.email),
+            'email': u_obj.email,
+            'firstName': u_obj.first_name,
+            'lastName': u_obj.last_name,
+            'fullName': getattr(u_obj, 'full_name', f"{u_obj.first_name} {u_obj.last_name}"),
+            'role': u_obj.role,
+            'phone': getattr(u_obj, 'phone', None),
+            'isPhoneVerified': getattr(u_obj, 'is_phone_verified', False),
+            'isActive': u_obj.is_active,
+            'lastLogin': u_obj.last_login.isoformat() if u_obj.last_login else None,
+            'createdAt': u_obj.created_at.isoformat() if getattr(u_obj, 'created_at', None) else None,
+            'updatedAt': u_obj.updated_at.isoformat() if getattr(u_obj, 'updated_at', None) else None,
+            'branchId': getattr(u_obj, 'branch_id', None), # If user model has this? core/models/user.py doesn't show branch_id directly, it uses M2M branches.
+            # But schema has branchId. Let's start with None or check access context. 
+            # In auth.py `get_current_user`, it constructs from `AuthUserRead.from_user_model`.
+            # User model in core/models/user.py doesn't have `branch_id` column, it has `branches` relation.
+            # But `UserRead` schema asks for `branchId`.
+        }
         
         if is_admin_user:
             # Handle impersonation
@@ -220,11 +241,13 @@ def get_me(
     
     # Check if this is an admin user - access.is_admin is set for admin tokens
     if access.is_admin and user:
-        return ResponseEnvelope(data=build_payload(user, is_admin_user=True))
+        payload = build_payload(user, is_admin_user=True)
+        return ResponseEnvelope(data=UserMeRead(**payload))
     
     # Regular tenant user
     if user:
-        return ResponseEnvelope(data=build_payload(user, is_admin_user=False))
+        payload = build_payload(user, is_admin_user=False)
+        return ResponseEnvelope(data=UserMeRead(**payload))
     
     raise HTTPException(
         status_code=404,
@@ -250,7 +273,7 @@ def update_me(
         if 'username' in data:
             user.username = data['username']
         db_session.commit()
-        return ResponseEnvelope(data=user.to_dict())
+        return ResponseEnvelope(data=UserRead.model_validate(user))
     
     raise HTTPException(
         status_code=404,
@@ -319,7 +342,7 @@ def update_user(
     db_session.add(user)
     db_session.commit()
     
-    return ResponseEnvelope(data=user.to_dict())
+    return ResponseEnvelope(data=UserRead.model_validate(user))
 
 @router.delete("/users/{user_id}", operation_id="deleteUser")
 def delete_user(

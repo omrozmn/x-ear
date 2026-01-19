@@ -21,7 +21,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPatientSearchFiltersPaymentPlanCreatePermissionReadSMSHeaderRequestUpdateSMSLogReadSMSProviderConfigCreateTenantStatsUserProfile
+  ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPartySearchFiltersPaymentPlanCreatePermissionReadSmsHeaderRequestUpdateSMSLogReadSmsProviderConfigCreateTenantStatsUserProfile
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -41,7 +41,7 @@ export const listDeveloperSchemaRegistry = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPatientSearchFiltersPaymentPlanCreatePermissionReadSMSHeaderRequestUpdateSMSLogReadSMSProviderConfigCreateTenantStatsUserProfile>(
+      return customInstance<ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPartySearchFiltersPaymentPlanCreatePermissionReadSmsHeaderRequestUpdateSMSLogReadSmsProviderConfigCreateTenantStatsUserProfile>(
       {url: `/api/developer/schema-registry`, method: 'GET', signal
     },
       );

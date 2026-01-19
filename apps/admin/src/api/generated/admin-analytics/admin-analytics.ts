@@ -20,6 +20,13 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  ResponseEnvelopeAdminAnalyticsData,
+  ResponseEnvelopeRevenueAnalytics,
+  ResponseEnvelopeTenantAnalytics,
+  ResponseEnvelopeUserAnalytics
+} from '.././schemas';
+
 import { adminApi } from '../../orval-mutator';
 
 
@@ -35,7 +42,7 @@ export const listAdminAnalyticOverview = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAdminAnalyticsData>(
       {url: `/api/admin/analytics/overview`, method: 'GET', signal
     },
       );
@@ -128,7 +135,7 @@ export const getAdminAnalytics = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAdminAnalyticsData>(
       {url: `/api/admin/analytics`, method: 'GET', signal
     },
       );
@@ -221,7 +228,7 @@ export const listAdminAnalyticRevenue = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeRevenueAnalytics>(
       {url: `/api/admin/analytics/revenue`, method: 'GET', signal
     },
       );
@@ -314,7 +321,7 @@ export const listAdminAnalyticUsers = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeUserAnalytics>(
       {url: `/api/admin/analytics/users`, method: 'GET', signal
     },
       );
@@ -407,7 +414,7 @@ export const listAdminAnalyticTenants = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeTenantAnalytics>(
       {url: `/api/admin/analytics/tenants`, method: 'GET', signal
     },
       );

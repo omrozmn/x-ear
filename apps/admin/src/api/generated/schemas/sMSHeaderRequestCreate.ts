@@ -5,14 +5,14 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSHeaderType } from './sMSHeaderType';
+import type { SmsHeaderType } from './smsHeaderType';
 
-export interface SMSHeaderRequestCreate {
+export interface SmsHeaderRequestCreate {
   /**
    * @minLength 3
    * @maxLength 11
    */
   headerText: string;
-  headerType: SMSHeaderType;
+  headerType: SmsHeaderType;
   documents?: string[];
 }

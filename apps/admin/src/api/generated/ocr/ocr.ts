@@ -32,6 +32,15 @@ import type {
   ListOcrJobsParams,
   OCRProcessRequest,
   PatientExtractionRequest,
+  ResponseEnvelopeListOcrJobRead,
+  ResponseEnvelopeOcrDebugResponse,
+  ResponseEnvelopeOcrEntitiesResponse,
+  ResponseEnvelopeOcrHealthResponse,
+  ResponseEnvelopeOcrInitResponse,
+  ResponseEnvelopeOcrJobRead,
+  ResponseEnvelopeOcrPatientResponse,
+  ResponseEnvelopeOcrProcessResponse,
+  ResponseEnvelopeOcrSimilarityResponse,
   SimilarityRequest
 } from '.././schemas';
 
@@ -50,7 +59,7 @@ export const listOcrHealth = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrHealthResponse>(
       {url: `/api/ocr/health`, method: 'GET', signal
     },
       );
@@ -143,7 +152,7 @@ export const createOcrInitDb = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrInitResponse>(
       {url: `/api/ocr/init-db`, method: 'POST', signal
     },
       );
@@ -206,7 +215,7 @@ export const createOcrInitialize = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrInitResponse>(
       {url: `/api/ocr/initialize`, method: 'POST', signal
     },
       );
@@ -269,7 +278,7 @@ export const createOcrProcess = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrProcessResponse>(
       {url: `/api/ocr/process`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: oCRProcessRequest, signal
@@ -334,7 +343,7 @@ export const createOcrSimilarity = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrSimilarityResponse>(
       {url: `/api/ocr/similarity`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: similarityRequest, signal
@@ -399,7 +408,7 @@ export const createOcrEntities = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrEntitiesResponse>(
       {url: `/api/ocr/entities`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: entityExtractionRequest, signal
@@ -464,7 +473,7 @@ export const createOcrExtractPatient = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrPatientResponse>(
       {url: `/api/ocr/extract_patient`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: patientExtractionRequest, signal
@@ -529,7 +538,7 @@ export const createOcrDebugNer = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrDebugResponse>(
       {url: `/api/ocr/debug_ner`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: debugNERRequest, signal
@@ -594,7 +603,7 @@ export const listOcrJobs = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListOcrJobRead>(
       {url: `/api/ocr/jobs`, method: 'GET',
         params, signal
     },
@@ -688,7 +697,7 @@ export const createOcrJobs = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrJobRead>(
       {url: `/api/ocr/jobs`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createJobRequest, signal
@@ -753,7 +762,7 @@ export const getOcrJob = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeOcrJobRead>(
       {url: `/api/ocr/jobs/${jobId}`, method: 'GET', signal
     },
       );

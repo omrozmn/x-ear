@@ -24,7 +24,7 @@ import type {
   HTTPValidationError,
   ListActivityLogsParams,
   ResponseEnvelopeActivityLogStats,
-  ResponseEnvelopeListActivityLogRead
+  SchemasBaseResponseEnvelopeListActivityLogRead1
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -42,7 +42,7 @@ export const listActivityLogs = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeListActivityLogRead>(
+      return adminApi<SchemasBaseResponseEnvelopeListActivityLogRead1>(
       {url: `/api/activity-logs`, method: 'GET',
         params, signal
     },

@@ -3,7 +3,7 @@ import { Button, Card, CardContent, Badge } from '@x-ear/ui-web';
 import DocumentUploadModal from '@/components/sgk/DocumentUploadModal';
 import { useSgkDocuments, useDeleteSgkDocument } from '@/hooks/sgk/useSgkDocuments';
 
-type Props = { patientId: string };
+type Props = { partyId: string };
 
 interface SgkDocumentItem {
   id: string;
@@ -20,10 +20,10 @@ interface DocumentData {
   data?: SgkDocumentItem[];
 }
 
-export default function DocumentList({ patientId }: Props) {
+export default function DocumentList({ partyId }: Props) {
   const [open, setOpen] = useState(false);
-  const { data, isLoading, isError } = useSgkDocuments(patientId);
-  const deleteMutation = useDeleteSgkDocument(patientId);
+  const { data, isLoading, isError } = useSgkDocuments(partyId);
+  const deleteMutation = useDeleteSgkDocument(partyId);
 
   const docs = (data as unknown as DocumentData)?.data || [];
 
@@ -74,7 +74,7 @@ export default function DocumentList({ patientId }: Props) {
 
       <DocumentUploadModal
         isOpen={open}
-        patientId={patientId}
+        partyId={partyId}
         onClose={() => setOpen(false)}
         onUploaded={() => setOpen(false)}
       />

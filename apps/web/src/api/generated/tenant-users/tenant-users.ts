@@ -25,10 +25,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AssetUpload,
-  CompanyInfoUpdate,
-  GetTenantAssetParams,
   HTTPValidationError,
+  ResponseEnvelopeListUserRead,
+  ResponseEnvelopeUserRead,
   TenantUserCreate,
   TenantUserUpdate
 } from '.././schemas';
@@ -48,8 +47,8 @@ export const listTenantUsers = (
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/tenant/users`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeListUserRead>(
+      {url: `/api/`, method: 'GET', signal
     },
       );
     }
@@ -59,7 +58,7 @@ export const listTenantUsers = (
 
 export const getListTenantUsersQueryKey = () => {
     return [
-    `/api/tenant/users`
+    `/api/`
     ] as const;
     }
 
@@ -133,16 +132,16 @@ export function useListTenantUsers<TData = Awaited<ReturnType<typeof listTenantU
 
 /**
  * Create a new user for the tenant
- * @summary Invite Tenant User
+ * @summary Create Tenant User
  */
-export const createTenantUsers = (
+export const createTenantUser = (
     tenantUserCreate: TenantUserCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/tenant/users`, method: 'POST',
+      return customInstance<ResponseEnvelopeUserRead>(
+      {url: `/api/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: tenantUserCreate, signal
     },
@@ -151,11 +150,11 @@ export const createTenantUsers = (
   
 
 
-export const getCreateTenantUsersMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTenantUsers>>, TError,{data: TenantUserCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createTenantUsers>>, TError,{data: TenantUserCreate}, TContext> => {
+export const getCreateTenantUserMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTenantUser>>, TError,{data: TenantUserCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createTenantUser>>, TError,{data: TenantUserCreate}, TContext> => {
 
-const mutationKey = ['createTenantUsers'];
+const mutationKey = ['createTenantUser'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -165,10 +164,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTenantUsers>>, {data: TenantUserCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTenantUser>>, {data: TenantUserCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createTenantUsers(data,)
+          return  createTenantUser(data,)
         }
 
         
@@ -176,23 +175,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateTenantUsersMutationResult = NonNullable<Awaited<ReturnType<typeof createTenantUsers>>>
-    export type CreateTenantUsersMutationBody = TenantUserCreate
-    export type CreateTenantUsersMutationError = HTTPValidationError
+    export type CreateTenantUserMutationResult = NonNullable<Awaited<ReturnType<typeof createTenantUser>>>
+    export type CreateTenantUserMutationBody = TenantUserCreate
+    export type CreateTenantUserMutationError = HTTPValidationError
 
     /**
- * @summary Invite Tenant User
+ * @summary Create Tenant User
  */
-export const useCreateTenantUsers = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTenantUsers>>, TError,{data: TenantUserCreate}, TContext>, }
+export const useCreateTenantUser = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTenantUser>>, TError,{data: TenantUserCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createTenantUsers>>,
+        Awaited<ReturnType<typeof createTenantUser>>,
         TError,
         {data: TenantUserCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateTenantUsersMutationOptions(options);
+      const mutationOptions = getCreateTenantUserMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -323,482 +322,4 @@ export const useUpdateTenantUser = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions, queryClient);
     }
-    /**
- * Get the current tenant's company information
- * @summary Get Tenant Company
- */
-export const listTenantCompany = (
     
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/tenant/company`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getListTenantCompanyQueryKey = () => {
-    return [
-    `/api/tenant/company`
-    ] as const;
-    }
-
-    
-export const getListTenantCompanyQueryOptions = <TData = Awaited<ReturnType<typeof listTenantCompany>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompany>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListTenantCompanyQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTenantCompany>>> = ({ signal }) => listTenantCompany(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTenantCompany>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type ListTenantCompanyQueryResult = NonNullable<Awaited<ReturnType<typeof listTenantCompany>>>
-export type ListTenantCompanyQueryError = unknown
-
-
-export function useListTenantCompany<TData = Awaited<ReturnType<typeof listTenantCompany>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompany>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTenantCompany>>,
-          TError,
-          Awaited<ReturnType<typeof listTenantCompany>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTenantCompany<TData = Awaited<ReturnType<typeof listTenantCompany>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompany>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTenantCompany>>,
-          TError,
-          Awaited<ReturnType<typeof listTenantCompany>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTenantCompany<TData = Awaited<ReturnType<typeof listTenantCompany>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompany>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Get Tenant Company
- */
-
-export function useListTenantCompany<TData = Awaited<ReturnType<typeof listTenantCompany>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompany>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getListTenantCompanyQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * Update the current tenant's company information
- * @summary Update Tenant Company
- */
-export const updateTenantCompany = (
-    companyInfoUpdate: CompanyInfoUpdate,
- ) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/tenant/company`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: companyInfoUpdate
-    },
-      );
-    }
-  
-
-
-export const getUpdateTenantCompanyMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantCompany>>, TError,{data: CompanyInfoUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateTenantCompany>>, TError,{data: CompanyInfoUpdate}, TContext> => {
-
-const mutationKey = ['updateTenantCompany'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTenantCompany>>, {data: CompanyInfoUpdate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  updateTenantCompany(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateTenantCompanyMutationResult = NonNullable<Awaited<ReturnType<typeof updateTenantCompany>>>
-    export type UpdateTenantCompanyMutationBody = CompanyInfoUpdate
-    export type UpdateTenantCompanyMutationError = HTTPValidationError
-
-    /**
- * @summary Update Tenant Company
- */
-export const useUpdateTenantCompany = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantCompany>>, TError,{data: CompanyInfoUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateTenantCompany>>,
-        TError,
-        {data: CompanyInfoUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getUpdateTenantCompanyMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Upload a company asset (logo, stamp, or signature)
- * @summary Upload Tenant Asset
- */
-export const createTenantCompanyUpload = (
-    assetType: string,
-    assetUpload: AssetUpload,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/tenant/company/upload/${assetType}`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: assetUpload, signal
-    },
-      );
-    }
-  
-
-
-export const getCreateTenantCompanyUploadMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTenantCompanyUpload>>, TError,{assetType: string;data: AssetUpload}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createTenantCompanyUpload>>, TError,{assetType: string;data: AssetUpload}, TContext> => {
-
-const mutationKey = ['createTenantCompanyUpload'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTenantCompanyUpload>>, {assetType: string;data: AssetUpload}> = (props) => {
-          const {assetType,data} = props ?? {};
-
-          return  createTenantCompanyUpload(assetType,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateTenantCompanyUploadMutationResult = NonNullable<Awaited<ReturnType<typeof createTenantCompanyUpload>>>
-    export type CreateTenantCompanyUploadMutationBody = AssetUpload
-    export type CreateTenantCompanyUploadMutationError = HTTPValidationError
-
-    /**
- * @summary Upload Tenant Asset
- */
-export const useCreateTenantCompanyUpload = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTenantCompanyUpload>>, TError,{assetType: string;data: AssetUpload}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createTenantCompanyUpload>>,
-        TError,
-        {assetType: string;data: AssetUpload},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateTenantCompanyUploadMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Delete a company asset
- * @summary Delete Tenant Asset
- */
-export const deleteTenantCompanyUpload = (
-    assetType: string,
- ) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/tenant/company/upload/${assetType}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteTenantCompanyUploadMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTenantCompanyUpload>>, TError,{assetType: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTenantCompanyUpload>>, TError,{assetType: string}, TContext> => {
-
-const mutationKey = ['deleteTenantCompanyUpload'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTenantCompanyUpload>>, {assetType: string}> = (props) => {
-          const {assetType} = props ?? {};
-
-          return  deleteTenantCompanyUpload(assetType,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteTenantCompanyUploadMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTenantCompanyUpload>>>
-    
-    export type DeleteTenantCompanyUploadMutationError = HTTPValidationError
-
-    /**
- * @summary Delete Tenant Asset
- */
-export const useDeleteTenantCompanyUpload = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTenantCompanyUpload>>, TError,{assetType: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTenantCompanyUpload>>,
-        TError,
-        {assetType: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteTenantCompanyUploadMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Get tenant asset file
- * @summary Get Tenant Asset
- */
-export const getTenantAsset = (
-    filename: string,
-    params: GetTenantAssetParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/tenant/assets/access.tenant_id}/${filename}`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetTenantAssetQueryKey = (filename?: string,
-    params?: GetTenantAssetParams,) => {
-    return [
-    `/api/tenant/assets/access.tenant_id}/${filename}`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetTenantAssetQueryOptions = <TData = Awaited<ReturnType<typeof getTenantAsset>>, TError = HTTPValidationError>(filename: string,
-    params: GetTenantAssetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantAsset>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetTenantAssetQueryKey(filename,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTenantAsset>>> = ({ signal }) => getTenantAsset(filename,params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(filename), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTenantAsset>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type GetTenantAssetQueryResult = NonNullable<Awaited<ReturnType<typeof getTenantAsset>>>
-export type GetTenantAssetQueryError = HTTPValidationError
-
-
-export function useGetTenantAsset<TData = Awaited<ReturnType<typeof getTenantAsset>>, TError = HTTPValidationError>(
- filename: string,
-    params: GetTenantAssetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantAsset>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTenantAsset>>,
-          TError,
-          Awaited<ReturnType<typeof getTenantAsset>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTenantAsset<TData = Awaited<ReturnType<typeof getTenantAsset>>, TError = HTTPValidationError>(
- filename: string,
-    params: GetTenantAssetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantAsset>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTenantAsset>>,
-          TError,
-          Awaited<ReturnType<typeof getTenantAsset>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTenantAsset<TData = Awaited<ReturnType<typeof getTenantAsset>>, TError = HTTPValidationError>(
- filename: string,
-    params: GetTenantAssetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantAsset>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Get Tenant Asset
- */
-
-export function useGetTenantAsset<TData = Awaited<ReturnType<typeof getTenantAsset>>, TError = HTTPValidationError>(
- filename: string,
-    params: GetTenantAssetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantAsset>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getGetTenantAssetQueryOptions(filename,params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * Get URL for a specific tenant asset type
- * @summary Get Tenant Asset Url
- */
-export const listTenantCompanyAssetUrl = (
-    assetType: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/tenant/company/assets/${assetType}/url`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getListTenantCompanyAssetUrlQueryKey = (assetType?: string,) => {
-    return [
-    `/api/tenant/company/assets/${assetType}/url`
-    ] as const;
-    }
-
-    
-export const getListTenantCompanyAssetUrlQueryOptions = <TData = Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError = HTTPValidationError>(assetType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListTenantCompanyAssetUrlQueryKey(assetType);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>> = ({ signal }) => listTenantCompanyAssetUrl(assetType, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(assetType), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type ListTenantCompanyAssetUrlQueryResult = NonNullable<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>>
-export type ListTenantCompanyAssetUrlQueryError = HTTPValidationError
-
-
-export function useListTenantCompanyAssetUrl<TData = Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError = HTTPValidationError>(
- assetType: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>,
-          TError,
-          Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTenantCompanyAssetUrl<TData = Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError = HTTPValidationError>(
- assetType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>,
-          TError,
-          Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTenantCompanyAssetUrl<TData = Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError = HTTPValidationError>(
- assetType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Get Tenant Asset Url
- */
-
-export function useListTenantCompanyAssetUrl<TData = Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError = HTTPValidationError>(
- assetType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTenantCompanyAssetUrl>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getListTenantCompanyAssetUrlQueryOptions(assetType,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-

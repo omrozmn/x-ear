@@ -22,4 +22,5 @@ export interface ResponseMeta {
   totalPages?: ResponseMetaTotalPages;
   hasNext?: ResponseMetaHasNext;
   nextCursor?: ResponseMetaNextCursor;
-}
+  [key: string]: unknown;
+ }

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/campaigns.py
+# hypothesis_version: 6.150.1
+
+[1.0, 201, 400, 403, 404, 500, '/admin/campaigns', '/campaigns', 'AUTH_FORBIDDEN', 'CAMPAIGN_NOT_FOUND', 'Campaign not found', 'Campaigns', 'TENANT_REQUIRED', 'Unauthorized', 'VATANSMS', 'all', 'createCampaignSend', 'createCampaigns', 'deleteCampaign', 'draft', 'excel', 'failed', 'filter', 'getCampaign', 'id', 'json', 'listAdminCampaigns', 'listCampaigns', 'name', 'numbers', 'page', 'perPage', 'phone', 'sending', 'sent', 'status', 'total', 'totalPages', 'updateCampaign']

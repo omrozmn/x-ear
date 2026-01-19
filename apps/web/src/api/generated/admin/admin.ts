@@ -32,10 +32,17 @@ import type {
   ListAdminTicketsParams,
   ListAdminUserAllParams,
   ListAdminUsersParams,
-  RoutersAdminUpdateTenantUserRequest,
+  ResponseEnvelope,
+  ResponseEnvelopeAdminLoginResponse,
+  ResponseEnvelopeAvailableRolesResponse,
+  ResponseEnvelopeDebugPagePermissionResponse,
+  ResponseEnvelopeListAdminUserRead,
+  ResponseEnvelopeListTicketRead,
+  ResponseEnvelopeUserRead,
   SwitchRoleRequest,
   SwitchTenantRequest,
   TicketResponseRequest,
+  UpdateTenantUserRequest,
   UpdateTicketRequest
 } from '.././schemas';
 
@@ -54,7 +61,7 @@ export const createAdminAuthLogin = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeAdminLoginResponse>(
       {url: `/api/admin/auth/login`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: adminLoginRequest, signal
@@ -119,7 +126,7 @@ export const createAdminUsers = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/users`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createAdminUserRequest, signal
@@ -184,7 +191,7 @@ export const listAdminUsers = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListAdminUserRead>(
       {url: `/api/admin/users`, method: 'GET',
         params, signal
     },
@@ -278,7 +285,7 @@ export const listAdminUserAll = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/users/all`, method: 'GET',
         params, signal
     },
@@ -368,14 +375,14 @@ export function useListAdminUserAll<TData = Awaited<ReturnType<typeof listAdminU
  */
 export const updateAdminUserAll = (
     userId: string,
-    routersAdminUpdateTenantUserRequest: RoutersAdminUpdateTenantUserRequest,
+    updateTenantUserRequest: UpdateTenantUserRequest,
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeUserRead>(
       {url: `/api/admin/users/all/${userId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: routersAdminUpdateTenantUserRequest
+      data: updateTenantUserRequest
     },
       );
     }
@@ -383,8 +390,8 @@ export const updateAdminUserAll = (
 
 
 export const getUpdateAdminUserAllMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: UpdateTenantUserRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: UpdateTenantUserRequest}, TContext> => {
 
 const mutationKey = ['updateAdminUserAll'];
 const {mutation: mutationOptions} = options ?
@@ -396,7 +403,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserAll>>, {userId: string;data: RoutersAdminUpdateTenantUserRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserAll>>, {userId: string;data: UpdateTenantUserRequest}> = (props) => {
           const {userId,data} = props ?? {};
 
           return  updateAdminUserAll(userId,data,)
@@ -408,18 +415,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateAdminUserAllMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminUserAll>>>
-    export type UpdateAdminUserAllMutationBody = RoutersAdminUpdateTenantUserRequest
+    export type UpdateAdminUserAllMutationBody = UpdateTenantUserRequest
     export type UpdateAdminUserAllMutationError = HTTPValidationError
 
     /**
  * @summary Update Any Tenant User
  */
 export const useUpdateAdminUserAll = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: UpdateTenantUserRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateAdminUserAll>>,
         TError,
-        {userId: string;data: RoutersAdminUpdateTenantUserRequest},
+        {userId: string;data: UpdateTenantUserRequest},
         TContext
       > => {
 
@@ -437,7 +444,7 @@ export const listAdminTickets = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListTicketRead>(
       {url: `/api/admin/tickets`, method: 'GET',
         params, signal
     },
@@ -792,7 +799,7 @@ export const listAdminDebugAvailableRoles = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeAvailableRolesResponse>(
       {url: `/api/admin/debug/available-roles`, method: 'GET', signal
     },
       );
@@ -1013,7 +1020,7 @@ export const getAdminDebugPagePermission = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeDebugPagePermissionResponse>(
       {url: `/api/admin/debug/page-permissions/${pageKey}`, method: 'GET', signal
     },
       );

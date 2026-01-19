@@ -86,20 +86,8 @@ def get_activity_logs(
         offset = (page - 1) * page_size
         logs = query.offset(offset).limit(page_size).all()
         
-        # Convert to dict
-        logs_data = []
-        for log in logs:
-            log_dict = log.to_dict() if hasattr(log, 'to_dict') else {
-                'id': log.id,
-                'tenantId': log.tenant_id,
-                'userId': log.user_id,
-                'action': log.action,
-                'entityType': log.entity_type,
-                'entityId': log.entity_id,
-                'message': log.message,
-                'createdAt': log.created_at.isoformat() if log.created_at else None
-            }
-            logs_data.append(log_dict)
+        # Convert to Pydantic schema (NO to_dict())
+        logs_data = [ActivityLogRead.model_validate(log) for log in logs]
         
         return ResponseEnvelope(
             data=logs_data,

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/auth.py
+# hypothesis_version: 6.150.1
+
+['Captcha token', 'Current password', 'Email', 'JWT access token', 'JWT refresh token', 'New JWT access token', 'New password', 'OTP code', 'Password', 'Phone', 'Phone number', 'User data', 'User identifier', 'Username', 'accessToken', 'captchaToken', 'currentPassword', 'newPassword', 'refreshToken']

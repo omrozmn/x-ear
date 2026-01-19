@@ -9,15 +9,10 @@ import type { SchemasUsersPermissionReadDescription } from './schemasUsersPermis
 import type { SchemasUsersPermissionReadCategory } from './schemasUsersPermissionReadCategory';
 
 /**
- * Schema for reading a permission
+ * Schema for reading Permission
  */
 export interface SchemasUsersPermissionRead {
-  /** Unique identifier for the resource */
-  id: string;
-  /** Permission name */
-  name: string;
-  /** Permission description */
+  code: string;
   description?: SchemasUsersPermissionReadDescription;
-  /** Permission category */
   category?: SchemasUsersPermissionReadCategory;
 }

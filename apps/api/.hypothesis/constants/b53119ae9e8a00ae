@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/integration_config.py
+# hypothesis_version: 6.150.1
+
+[100, 255, 'configKey', 'configValue', 'description', 'id', 'intcfg', 'integrationType', 'integration_configs', 'isActive', 'tenantId']

@@ -40,7 +40,7 @@ export function DesktopSuppliersPage() {
   // Hooks
   const { data, isLoading, error, refetch } = useSuppliers({
     search: searchValue,
-    is_active: (filters?.status as any) === 'active' ? true : (filters?.status as any) === 'inactive' ? false : undefined,
+    is_active: filters?.status === 'ACTIVE' ? true : filters?.status === 'INACTIVE' ? false : undefined,
     page: currentPage,
     per_page: itemsPerPage,
   });
@@ -97,7 +97,7 @@ export function DesktopSuppliersPage() {
   const handleSupplierClick = (supplier: SupplierExtended) => {
     console.log('Row clicked (handleSupplierClick called):', supplier);
     // Fallback for ID if standard id is missing (e.g. using _id or similar)
-    const id = supplier.id || (supplier as any)._id;
+    const id = supplier.id || (supplier as unknown as Record<string, unknown>)._id;
 
     if (id) {
       console.log('Navigating to:', `/suppliers/${id}`);
@@ -142,14 +142,35 @@ export function DesktopSuppliersPage() {
   const handleSaveSupplier = async (supplierData: Omit<SupplierExtended, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>) => {
     try {
       if (editingSupplier && editingSupplier.id) {
+        // Map SupplierExtended to SupplierFormData
+        const formData: any = {
+          companyName: supplierData.companyName,
+          companyCode: supplierData.companyCode,
+          taxNumber: supplierData.taxNumber,
+          taxOffice: supplierData.taxOffice,
+          contactPerson: supplierData.contactPerson,
+          email: supplierData.email,
+          phone: supplierData.phone,
+          mobile: supplierData.mobile,
+          website: supplierData.website,
+          address: supplierData.address,
+          city: supplierData.city,
+          country: supplierData.country,
+          postalCode: supplierData.postalCode,
+          paymentTerms: supplierData.paymentTerms,
+          currency: supplierData.currency,
+          rating: supplierData.rating,
+          notes: supplierData.notes,
+          isActive: supplierData.isActive,
+        };
         await updateSupplierMutation.mutateAsync({
           supplierId: String(editingSupplier.id),
-          updates: supplierData as any
+          updates: formData
         });
         setIsEditModalOpen(false);
         setEditingSupplier(null);
       } else {
-        await createSupplierMutation.mutateAsync(supplierData as any);
+        await createSupplierMutation.mutateAsync(supplierData as Omit<SupplierExtended, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>);
         setShowNewSupplierModal(false);
       }
       refetch();

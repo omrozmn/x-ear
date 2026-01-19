@@ -32,7 +32,18 @@ import type {
   ListReportPromissoryNoteByPatientParams,
   ListReportPromissoryNoteListParams,
   ListReportPromissoryNotesParams,
-  ListReportRemainingPaymentsParams
+  ListReportRemainingPaymentsParams,
+  ResponseEnvelopeListPosMovementItem,
+  ResponseEnvelopeListPromissoryNoteListItem,
+  ResponseEnvelopeListPromissoryNotePatientItem,
+  ResponseEnvelopeListRemainingPaymentItem,
+  ResponseEnvelopeReportCampaignsResponse,
+  ResponseEnvelopeReportCashflowResponse,
+  ResponseEnvelopeReportFinancialResponse,
+  ResponseEnvelopeReportOverviewResponse,
+  ResponseEnvelopeReportPatientsResponse,
+  ResponseEnvelopeReportPromissoryNotesResponse,
+  ResponseEnvelopeReportRevenueResponse
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -50,7 +61,7 @@ export const listReportOverview = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeReportOverviewResponse>(
       {url: `/api/reports/overview`, method: 'GET',
         params, signal
     },
@@ -144,7 +155,7 @@ export const listReportPatients = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeReportPatientsResponse>(
       {url: `/api/reports/patients`, method: 'GET',
         params, signal
     },
@@ -238,7 +249,7 @@ export const listReportFinancial = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeReportFinancialResponse>(
       {url: `/api/reports/financial`, method: 'GET',
         params, signal
     },
@@ -332,7 +343,7 @@ export const listReportCampaigns = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeReportCampaignsResponse>(
       {url: `/api/reports/campaigns`, method: 'GET',
         params, signal
     },
@@ -426,7 +437,7 @@ export const listReportRevenue = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeReportRevenueResponse>(
       {url: `/api/reports/revenue`, method: 'GET', signal
     },
       );
@@ -613,7 +624,7 @@ export const listReportPromissoryNotes = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeReportPromissoryNotesResponse>(
       {url: `/api/reports/promissory-notes`, method: 'GET',
         params, signal
     },
@@ -707,7 +718,7 @@ export const listReportPromissoryNoteByPatient = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListPromissoryNotePatientItem>(
       {url: `/api/reports/promissory-notes/by-patient`, method: 'GET',
         params, signal
     },
@@ -801,7 +812,7 @@ export const listReportPromissoryNoteList = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListPromissoryNoteListItem>(
       {url: `/api/reports/promissory-notes/list`, method: 'GET',
         params, signal
     },
@@ -895,7 +906,7 @@ export const listReportRemainingPayments = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListRemainingPaymentItem>(
       {url: `/api/reports/remaining-payments`, method: 'GET',
         params, signal
     },
@@ -989,7 +1000,7 @@ export const listReportCashflowSummary = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeReportCashflowResponse>(
       {url: `/api/reports/cashflow-summary`, method: 'GET',
         params, signal
     },
@@ -1083,7 +1094,7 @@ export const listReportPosMovements = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListPosMovementItem>(
       {url: `/api/reports/pos-movements`, method: 'GET',
         params, signal
     },

@@ -6,10 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { NotificationUpdateIsRead } from './notificationUpdateIsRead';
+import type { NotificationUpdateReadAt } from './notificationUpdateReadAt';
 
 /**
- * Schema for updating a notification
+ * Schema for updating Notification
  */
 export interface NotificationUpdate {
   isRead?: NotificationUpdateIsRead;
+  readAt?: NotificationUpdateReadAt;
 }

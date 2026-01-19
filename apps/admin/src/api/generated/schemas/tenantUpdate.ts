@@ -23,6 +23,7 @@ import type { TenantUpdateOwnerEmail } from './tenantUpdateOwnerEmail';
 import type { TenantUpdateBillingEmail } from './tenantUpdateBillingEmail';
 import type { TenantUpdateDescription } from './tenantUpdateDescription';
 import type { TenantUpdateSlug } from './tenantUpdateSlug';
+import type { TenantUpdateProductCode } from './tenantUpdateProductCode';
 
 /**
  * Schema for updating a tenant
@@ -46,4 +47,5 @@ export interface TenantUpdate {
   billingEmail?: TenantUpdateBillingEmail;
   description?: TenantUpdateDescription;
   slug?: TenantUpdateSlug;
+  productCode?: TenantUpdateProductCode;
 }

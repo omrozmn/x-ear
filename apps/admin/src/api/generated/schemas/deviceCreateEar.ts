@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Ear side: left, right, both
+ */
 export type DeviceCreateEar = string | null;

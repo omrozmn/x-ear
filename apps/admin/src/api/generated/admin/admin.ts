@@ -32,6 +32,13 @@ import type {
   ListAdminTicketsParams,
   ListAdminUserAllParams,
   ListAdminUsersParams,
+  ResponseEnvelope,
+  ResponseEnvelopeAdminLoginResponse,
+  ResponseEnvelopeAvailableRolesResponse,
+  ResponseEnvelopeDebugPagePermissionResponse,
+  ResponseEnvelopeListAdminUserRead,
+  ResponseEnvelopeListTicketRead,
+  ResponseEnvelopeUserRead,
   RoutersAdminUpdateTenantUserRequest,
   SwitchRoleRequest,
   SwitchTenantRequest,
@@ -54,7 +61,7 @@ export const createAdminAuthLogin = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAdminLoginResponse>(
       {url: `/api/admin/auth/login`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: adminLoginRequest, signal
@@ -119,7 +126,7 @@ export const createAdminUsers = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelope>(
       {url: `/api/admin/users`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createAdminUserRequest, signal
@@ -184,7 +191,7 @@ export const listAdminUsers = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListAdminUserRead>(
       {url: `/api/admin/users`, method: 'GET',
         params, signal
     },
@@ -278,7 +285,7 @@ export const listAdminUserAll = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelope>(
       {url: `/api/admin/users/all`, method: 'GET',
         params, signal
     },
@@ -372,7 +379,7 @@ export const updateAdminUserAll = (
  ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeUserRead>(
       {url: `/api/admin/users/all/${userId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminUpdateTenantUserRequest
@@ -437,7 +444,7 @@ export const listAdminTickets = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeListTicketRead>(
       {url: `/api/admin/tickets`, method: 'GET',
         params, signal
     },
@@ -792,7 +799,7 @@ export const listAdminDebugAvailableRoles = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeAvailableRolesResponse>(
       {url: `/api/admin/debug/available-roles`, method: 'GET', signal
     },
       );
@@ -1013,7 +1020,7 @@ export const getAdminDebugPagePermission = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeDebugPagePermissionResponse>(
       {url: `/api/admin/debug/page-permissions/${pageKey}`, method: 'GET', signal
     },
       );

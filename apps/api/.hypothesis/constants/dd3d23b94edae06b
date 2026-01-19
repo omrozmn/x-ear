@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/role.py
+# hypothesis_version: 6.150.1
+
+[100, 'Permission', 'description', 'id', 'isSystem', 'name', 'permission_id', 'permissions', 'permissions.id', 'role', 'role_id', 'role_permissions', 'roles', 'roles.id', 'subquery']

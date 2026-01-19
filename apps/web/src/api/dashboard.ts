@@ -1,22 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from './orval-mutator';
 
-import { listDashboardChartPatientDistribution } from '@/api/generated';
+import { listDashboardChartPatientDistribution as listDashboardChartPartyDistribution } from '@/api/client/dashboard.client';
 
-export async function fetchPatientDistribution() {
-  const res = await listDashboardChartPatientDistribution() as any; // API returns data despite void type
+export async function fetchPartyDistribution() {
+  const res = await listDashboardChartPartyDistribution() as any; // API returns data despite void type
   return res || [];
 }
 
-export function usePatientDistribution(options?: any) {
+export function usePartyDistribution(options?: any) {
   // Accept either a raw options object or the generated wrapper shape { query: {...}, axios: ... }
   const { query, ...rest } = options ?? {};
   const queryOptions = {
-    queryKey: ['dashboard', 'patient-distribution'],
-    queryFn: fetchPatientDistribution,
+    queryKey: ['dashboard', 'party-distribution'],
+    queryFn: fetchPartyDistribution,
     ...(query ?? rest)
   };
   return useQuery(queryOptions as any);
 }
 
-export default usePatientDistribution;
+export default usePartyDistribution;

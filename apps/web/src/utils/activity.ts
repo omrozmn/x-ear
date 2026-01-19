@@ -63,7 +63,7 @@ export function formatActivitySentence(act: any): string {
 
   // Map entities to Turkish (optional)
   const entityMap: Record<string, string> = {
-    patient: 'Hasta',
+    party: 'Hasta',
     device: 'Cihaz',
     sale: 'Satış',
     appointment: 'Randevu',
@@ -83,7 +83,7 @@ export function formatActivitySentence(act: any): string {
   const displayEntityType = entityMap[entityType.toLowerCase()] || entityType;
 
   const entityId = act?.entityId || '';
-  const patientName = act?.patientName || act?.data?.patientName;
+  const partyName = act?.partyName || act?.data?.partyName;
   const message = act?.message;
 
   // Construct sentence
@@ -112,8 +112,8 @@ export function formatActivitySentence(act: any): string {
 
     parts.push(verb); // Verb
 
-    if (patientName) {
-      parts.push(`- ${patientName}`);
+    if (partyName) {
+      parts.push(`- ${partyName}`);
     } else if (entityId) {
       parts.push(`(#${entityId})`);
     } else if (message && message !== rawAction) {

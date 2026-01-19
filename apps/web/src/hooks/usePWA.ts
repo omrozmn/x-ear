@@ -23,6 +23,16 @@ interface PWAActions {
   checkForUpdates: () => Promise<void>;
 }
 
+interface IOSNavigator extends Navigator {
+  standalone?: boolean;
+}
+
+interface ShortcutsNavigator extends Navigator {
+  shortcuts?: {
+    add: (shortcut: { name: string; url: string; description?: string }) => Promise<void>;
+  };
+}
+
 export const usePWA = (): PWAState & PWAActions => {
   const [state, setState] = useState<PWAState>({
     isInstallable: false,
@@ -34,11 +44,11 @@ export const usePWA = (): PWAState & PWAActions => {
 
   // Check if app is installed
   const checkInstallStatus = useCallback(() => {
-    const isInstalled = 
+    const isInstalled =
       window.matchMedia('(display-mode: standalone)').matches ||
       window.matchMedia('(display-mode: fullscreen)').matches ||
-      (window.navigator as any).standalone === true;
-    
+      (window.navigator as IOSNavigator).standalone === true;
+
     setState(prev => ({ ...prev, isInstalled }));
   }, []);
 
@@ -80,7 +90,7 @@ export const usePWA = (): PWAState & PWAActions => {
     try {
       await state.installPrompt.prompt();
       const { outcome } = await state.installPrompt.userChoice;
-      
+
       if (outcome === 'accepted') {
         setState(prev => ({
           ...prev,
@@ -132,7 +142,7 @@ export const usePWA = (): PWAState & PWAActions => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           console.log('Service Worker registered:', registration);
-          
+
           // Check for updates
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -249,7 +259,7 @@ export const usePWAShortcuts = () => {
     if ('navigator' in window && 'shortcuts' in navigator) {
       try {
         // This is a proposed API, may not be available in all browsers
-        await (navigator as any).shortcuts.add(shortcut);
+        await (navigator as ShortcutsNavigator).shortcuts?.add(shortcut);
       } catch (error) {
         console.warn('Shortcuts API not available:', error);
       }

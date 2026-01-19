@@ -7,4 +7,4 @@
  */
 import type { ResponseMeta } from './responseMeta';
 
-export type ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeMeta = ResponseMeta | null;
+export type ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeMeta = ResponseMeta | null;

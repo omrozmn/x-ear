@@ -118,7 +118,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                                     )}>
                                         <div className="flex justify-between items-start mb-2">
                                             <h3 className="font-semibold text-gray-900 dark:text-white truncate pr-2">
-                                                {apt.patientName || apt.title || 'İsimsiz Randevu'}
+                                                {apt.partyName || apt.title || 'İsimsiz Randevu'}
                                             </h3>
                                             <span className={cn("text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wide", getStatusColor(apt.status))}>
                                                 {apt.status === 'confirmed' ? 'Onaylı' :
@@ -131,7 +131,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                                         <div className="space-y-1.5">
                                             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                                 <User className="h-3.5 w-3.5" />
-                                                <span>{apt.patientName || 'Hasta seçilmedi'}</span>
+                                                <span>{apt.partyName || 'Hasta seçilmedi'}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                                 <Clock className="h-3.5 w-3.5" />

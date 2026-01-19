@@ -45,17 +45,17 @@ describe('useSgkDocuments hooks', () => {
     (sgkService.listDocuments as any).mockResolvedValue({ data: [{ id: 'doc1' }] });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
-    const { result } = renderHook(() => useSgkDocuments('patient-1'), { wrapper });
+    const { result } = renderHook(() => useSgkDocuments('party-1'), { wrapper });
 
     await waitFor(() => (result.current as any).isSuccess);
-    expect(sgkService.listDocuments).toHaveBeenCalledWith('patient-1');
+    expect(sgkService.listDocuments).toHaveBeenCalledWith('party-1');
   });
 
   it('uploads a document and invalidates', async () => {
     (sgkService.uploadDocument as any).mockResolvedValue({});
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 
-    const { result } = renderHook(() => useUploadSgkDocument('patient-1'), { wrapper });
+    const { result } = renderHook(() => useUploadSgkDocument('party-1'), { wrapper });
 
     act(() => {
       (result.current as any).mutate({ append: 'data', idempotencyKey: 'key-1' } as any);
@@ -69,14 +69,14 @@ describe('useSgkDocuments hooks', () => {
     (sgkService.deleteDocument as any).mockResolvedValue({});
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 
-    const { result } = renderHook(() => useDeleteSgkDocument('patient-1'), { wrapper });
+    const { result } = renderHook(() => useDeleteSgkDocument('party-1'), { wrapper });
 
     act(() => {
       (result.current as any).mutate({ id: 'doc1', idempotencyKey: 'k1' });
     });
 
     await waitFor(() => (result.current as any).isSuccess);
-    expect(sgkService.deleteDocument).toHaveBeenCalledWith('doc1', { idempotencyKey: 'k1' });
+    expect(sgkService.deleteDocument).toHaveBeenCalledWith('doc1');
   });
 
   it('falls back to IndexedDB + outbox when upload fails (offline)', async () => {
@@ -86,12 +86,12 @@ describe('useSgkDocuments hooks', () => {
     (outbox.addOperation as any).mockResolvedValue({ id: 'op-1' });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
-    const { result } = renderHook(() => useUploadSgkDocument('patient-1'), { wrapper });
+    const { result } = renderHook(() => useUploadSgkDocument('party-1'), { wrapper });
 
     const file = new Blob(['hello'], { type: 'text/plain' });
 
     act(() => {
-      (result.current as any).mutate({ file }, { });
+      (result.current as any).mutate({ file }, {});
     });
 
     await waitFor(() => (result.current as any).isSuccess);

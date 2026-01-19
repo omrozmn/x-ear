@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/affiliates.py
+# hypothesis_version: 6.150.1
+
+[0.0, 100, 400, 401, 404, 500, '/api/affiliates', '/check/{code}', '/list', '/login', '/lookup', '/me', '/register', '/{affiliate_id}', 'Affiliate not found', 'Affiliates', 'Invalid credentials', 'Unknown', 'access.tenant_id', 'account_holder_name', 'active', 'active_subscriptions', 'amount', 'code', 'createAffiliateLogin', 'createdAt', 'created_at', 'data', 'display_id', 'email', 'end_date', 'event', 'getAffiliateCheck', 'iban', 'id', 'is_active', 'listAffiliateDetails', 'listAffiliateList', 'listAffiliateLookup', 'listAffiliateMe', 'message', 'name', 'phone_number', 'plan_name', 'price', 'recent_commissions', 'referralCode', 'referrals', 'start_date', 'stats', 'status', 'subscription', 'success', 'tenant_name', 'total_commission', 'total_referrals', 'total_revenue', 'updateAffiliate']

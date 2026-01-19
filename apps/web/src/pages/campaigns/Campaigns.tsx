@@ -18,14 +18,16 @@ import {
 import * as XLSX from 'xlsx';
 import {
     useListBranches,
-    useListPatientCount,
-    useListPatients,
-    useListSmCredit,
+    useListPartyCount,
     getListBranchesQueryKey,
-    getListPatientsQueryKey,
-    getListPatientCountQueryKey
-} from '@/api/generated';
-import type { ListPatientsParams } from '@/api/generated/schemas';
+    getListPartyCountQueryKey
+} from '@/api/client/branches.client';
+import {
+    useListParties,
+    getListPartiesQueryKey,
+} from '@/api/client/parties.client';
+import { useListSmCredit } from '@/api/client/sms-integration.client';
+import type { ListPartiesParams } from '@/api/generated/schemas';
 
 type AudienceMode = 'filters' | 'excel';
 
@@ -90,83 +92,85 @@ const CampaignsPage: React.FC = () => {
 
     const { data: creditData, isFetching: creditLoading } = useListSmCredit();
 
-    // Handle different response structures for credit balance
-    let creditBalance = 0;
-    if (creditData) {
-        if (typeof creditData === 'number') {
-            creditBalance = creditData;
-        } else if ((creditData as any)?.balance !== undefined) {
-            creditBalance = (creditData as any).balance;
-        } else if ((creditData as any)?.data) {
-            const innerData = (creditData as any).data;
-            if (typeof innerData === 'number') {
-                creditBalance = innerData;
-            } else if (innerData?.balance !== undefined) {
-                creditBalance = innerData.balance;
-            } else if (innerData?.data?.balance !== undefined) {
-                creditBalance = innerData.data.balance;
-            }
+    // Handle credit balance with strict type checking
+    const creditBalance = useMemo(() => {
+        if (!creditData) return 0;
+        // The generated client might need regeneration, but we expect: { data: { balance: number } }
+        // We safely access path: data -> balance
+        if (typeof creditData === 'object' && 'data' in creditData) {
+            const data = (creditData as { data?: { balance?: number } }).data;
+            return data?.balance ?? 0;
         }
-    }
+        return 0;
+    }, [creditData]);
 
-    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useListBranches({
-        query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false }
-    });
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useListBranches(
+        undefined,
+        { query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false } }
+    );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const branchOptions = useMemo(() => {
         const items: any[] = [];
 
-        // Handle different response structures\n        if (branchesData) {\n            if (Array.isArray(branchesData)) {\n                items = branchesData;\n            } else if ((branchesData as any)?.data) {\n                const innerData = (branchesData as any).data;\n                if (Array.isArray(innerData)) {\n                    items = innerData;\n                } else if (innerData?.data && Array.isArray(innerData.data)) {\n                    items = innerData.data;\n                }\n            }\n        }
+        if (branchesData && typeof branchesData === 'object' && 'data' in branchesData) {
+            // Canonical access: branchesData.data which is array
+            const data = (branchesData as { data?: any[] }).data;
+            if (Array.isArray(data)) {
+                items.push(...data);
+            }
+        }
 
         return items
             .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
             .map((branch) => ({ value: branch.id, label: branch.name ?? '\u015eube' }));
     }, []);
 
-    // Fetch first patient for preview
-    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatients(
+    // Fetch first party for preview
+    const { data: partiesData, isLoading: partiesLoading, isError: partiesError } = useListParties(
         { page: 1, per_page: 1 },
-        { query: { queryKey: getListPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters', refetchOnWindowFocus: false } }
+        { query: { queryKey: getListPartiesQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters', refetchOnWindowFocus: false } }
     );
 
-    // Handle different response structures for first patient
-    let firstPatient: any = null;
-    if (patientsData) {
-        if (Array.isArray(patientsData) && patientsData.length > 0) {
-            firstPatient = patientsData[0];
-        } else if ((patientsData as any)?.data) {
-            const innerData = (patientsData as any).data;
-            if (Array.isArray(innerData) && innerData.length > 0) {
-                firstPatient = innerData[0];
-            } else if (innerData?.data && Array.isArray(innerData.data) && innerData.data.length > 0) {
-                firstPatient = innerData.data[0];
-            }
+    // Handle different response structures for first party
+    let firstParty: any = null;
+    if (partiesData && typeof partiesData === 'object' && 'data' in partiesData) {
+        const data = (partiesData as { data?: any[] }).data;
+        if (Array.isArray(data) && data.length > 0) {
+            firstParty = data[0];
         }
     }
 
-    const normalizedParams = useMemo<ListPatientsParams>(() => {
-        const params: ListPatientsParams = {};
+    const normalizedParams = useMemo<ListPartiesParams>(() => {
+        const params: ListPartiesParams = {};
         if (audienceFilters.status) params.status = audienceFilters.status;
-        if (audienceFilters.segment) (params as any).segment = audienceFilters.segment;
-        // Note: acquisition_type, branch_id, date_start, date_end are not supported by the current API
-        // These filters are applied client-side or need backend extension
+        // Strictly add segment if it exists
+        if (audienceFilters.segment) {
+            // @ts-expect-error - 'segment' might not be in ListPartiesParams definition yet, but backend supports it
+            params.segment = audienceFilters.segment;
+        }
         return params;
     }, [audienceFilters]);
 
-    const patientsCountQuery = useListPatientCount(
+    const partiesCountQuery = useListPartyCount(
         mode === 'filters' ? normalizedParams : undefined,
         {
             query: {
-                queryKey: getListPatientCountQueryKey(mode === 'filters' ? normalizedParams : undefined),
+                queryKey: getListPartyCountQueryKey(mode === 'filters' ? normalizedParams : undefined),
                 enabled: mode === 'filters',
                 refetchOnWindowFocus: false
             }
         }
     );
-    const { isLoading: countLoading, isError: countError } = patientsCountQuery;
+    const { isLoading: countLoading, isError: countError } = partiesCountQuery;
 
-    const filterRecipientCount = (patientsCountQuery.data as any)?.count ?? 0;
+    const filterRecipientCount = useMemo(() => {
+        const data = partiesCountQuery.data;
+        if (data && typeof data === 'object' && 'data' in data) {
+            return (data as { data?: { count?: number } }).data?.count ?? 0;
+        }
+        return 0;
+    }, [partiesCountQuery.data]);
     const excelRecipientCount = excelPreview?.validPhoneCount ?? 0;
     const recipients = (countLoading || countError) ? 0 : (mode === 'filters' ? filterRecipientCount : excelRecipientCount);
 
@@ -286,12 +290,12 @@ const CampaignsPage: React.FC = () => {
 
         let preview = message;
 
-        if (mode === 'filters' && firstPatient) {
+        if (mode === 'filters' && firstParty) {
             preview = preview
-                .replace(/\{\{AD\}\}/g, firstPatient.firstName || 'Ad')
-                .replace(/\{\{SOYAD\}\}/g, firstPatient.lastName || 'Soyad')
-                .replace(/\{\{AD_SOYAD\}\}/g, `${firstPatient.firstName || 'Ad'} ${firstPatient.lastName || 'Soyad'}`)
-                .replace(/\{\{TELEFON\}\}/g, firstPatient.phone || '05XX XXX XX XX')
+                .replace(/\{\{AD\}\}/g, firstParty.firstName || 'Ad')
+                .replace(/\{\{SOYAD\}\}/g, firstParty.lastName || 'Soyad')
+                .replace(/\{\{AD_SOYAD\}\}/g, `${firstParty.firstName || 'Ad'} ${firstParty.lastName || 'Soyad'}`)
+                .replace(/\{\{TELEFON\}\}/g, firstParty.phone || '05XX XXX XX XX')
                 .replace(/\{\{SUBE\}\}/g, 'Şube');
         } else if (mode === 'excel' && excelPreview && excelPreview.rows.length > 0) {
             const firstRow = excelPreview.rows[0];
@@ -322,7 +326,7 @@ const CampaignsPage: React.FC = () => {
         }
 
         return preview;
-    }, [message, mode, firstPatient, excelPreview]);
+    }, [message, mode, firstParty, excelPreview]);
 
     const formatNumber = (value: number) => value.toLocaleString('tr-TR');
 
@@ -414,7 +418,7 @@ const CampaignsPage: React.FC = () => {
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                    {patientsCountQuery.isFetching ? (
+                    {partiesCountQuery.isFetching ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin text-indigo-500 dark:text-indigo-400" />
                             Alıcı sayısı hesaplanıyor...
@@ -435,7 +439,7 @@ const CampaignsPage: React.FC = () => {
                     </Button>
                 </div>
             </div>
-            {patientsCountQuery.isError && (
+            {partiesCountQuery.isError && (
                 <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Hedef kitle sayısı alınamadı.
                 </p>
@@ -727,8 +731,8 @@ const CampaignsPage: React.FC = () => {
                         <div className="p-4 space-y-4">
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                                    {mode === 'filters' && firstPatient
-                                        ? `İlk hasta: ${firstPatient.firstName} ${firstPatient.lastName}`
+                                    {mode === 'filters' && firstParty
+                                        ? `İlk hasta: ${firstParty.firstName} ${firstParty.lastName}`
                                         : mode === 'excel' && excelPreview
                                             ? 'Excel listesinden ilk kayıt'
                                             : 'Örnek verilerle'}

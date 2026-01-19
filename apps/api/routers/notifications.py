@@ -51,7 +51,7 @@ def create_notification(
         db_session.add(notif)
         db_session.commit()
         
-        return ResponseEnvelope(data=notif)
+        return ResponseEnvelope(data=NotificationRead.model_validate(notif))
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create notification error: {e}")
@@ -84,12 +84,12 @@ def list_notifications(
         notifications = query.offset((page - 1) * per_page).limit(per_page).all()
         
         return ResponseEnvelope(
-            data=notifications,
+            data=[NotificationRead.model_validate(n) for n in notifications],
             meta={
                 "total": total,
                 "page": page,
-                "perPage": per_page,
-                "totalPages": (total + per_page - 1) // per_page
+                "per_page": per_page,
+                "total_pages": (total + per_page - 1) // per_page
             }
         )
     except Exception as e:
@@ -115,7 +115,7 @@ def mark_notification_read(
         notif.is_read = True
         db_session.commit()
         
-        return ResponseEnvelope(data=notif)
+        return ResponseEnvelope(data=NotificationRead.model_validate(notif))
     except HTTPException:
         raise
     except Exception as e:
@@ -144,7 +144,7 @@ def update_notification(
             notif.is_read = data['is_read']
             
         db_session.commit()
-        return ResponseEnvelope(data=notif)
+        return ResponseEnvelope(data=NotificationRead.model_validate(notif))
     except HTTPException:
         raise
     except Exception as e:
@@ -168,7 +168,7 @@ def notification_stats(
         )
         
         return ResponseEnvelope(
-            data={"total": total, "unread": unread}
+            data=NotificationStats(total=total, unread=unread, read=total-unread)
         )
     except Exception as e:
         logger.error(f"Notification stats error: {e}")
@@ -212,9 +212,9 @@ def get_user_notification_settings(
         
         if user_settings is None:
             default_notifications = settings_record.get_setting('notifications', {})
-            return ResponseEnvelope(data=default_notifications)
+            return ResponseEnvelope(data=NotificationSettings(**default_notifications))
         
-        return ResponseEnvelope(data=user_settings)
+        return ResponseEnvelope(data=NotificationSettings(**user_settings))
     except Exception as e:
         logger.error(f"Get user notification settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -245,7 +245,7 @@ def set_user_notification_settings(
         db_session.add(settings_record)
         db_session.commit()
         
-        return ResponseEnvelope(message="Preferences updated", data=prefs)
+        return ResponseEnvelope(message="Preferences updated", data=NotificationSettings(**prefs))
     except HTTPException:
         raise
     except Exception as e:

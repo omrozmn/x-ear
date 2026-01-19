@@ -10,7 +10,7 @@ interface InvoiceModalProps {
   onSuccess?: (invoice: any) => void;
   onError?: (error: string) => void;
   initialData?: any;
-  patientId?: string;
+  partyId?: string;
   deviceId?: string;
   mode?: 'create' | 'quick' | 'template' | 'edit';
   title?: string;
@@ -23,7 +23,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   onSuccess,
   onError,
   initialData,
-  patientId,
+  partyId,
   deviceId,
   mode = 'create',
   title
@@ -50,7 +50,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
         onSuccess={onSuccess}
         onError={onError}
         initialData={initialData}
-        patientId={patientId}
+        partyId={partyId}
         deviceId={deviceId}
         mode={mode}
         enableIncomingSelection={enableIncomingSelection}
@@ -83,7 +83,7 @@ interface DeviceInvoiceModalProps extends Omit<InvoiceModalProps, 'initialData'>
     brand?: string;
     model?: string;
   };
-  patientInfo?: {
+  partyInfo?: {
     id: string;
     name: string;
     tcNumber?: string;
@@ -94,10 +94,10 @@ interface DeviceInvoiceModalProps extends Omit<InvoiceModalProps, 'initialData'>
 
 export const DeviceInvoiceModal: React.FC<DeviceInvoiceModalProps> = ({
   deviceInfo,
-  patientInfo,
+  partyInfo,
   ...props
 }) => {
-  // Prepare initial data with device and patient information
+  // Prepare initial data with device and party information
   const initialData: Partial<InvoiceFormData> = {
     invoiceType: 'device',
     scenario: 'device_sale',
@@ -107,12 +107,12 @@ export const DeviceInvoiceModal: React.FC<DeviceInvoiceModalProps> = ({
       device_serial: deviceInfo.serial,
       device_price: deviceInfo.price
     },
-    customer_info: patientInfo ? {
-      first_name: patientInfo.name.split(' ')[0] || '',
-      last_name: patientInfo.name.split(' ').slice(1).join(' ') || '',
-      tc_number: patientInfo.tcNumber || '',
-      phone: patientInfo.phone || '',
-      email: patientInfo.email || ''
+    customer_info: partyInfo ? {
+      first_name: partyInfo.name.split(' ')[0] || '',
+      last_name: partyInfo.name.split(' ').slice(1).join(' ') || '',
+      tc_number: partyInfo.tcNumber || '',
+      phone: partyInfo.phone || '',
+      email: partyInfo.email || ''
     } : {},
     items: [{
       description: deviceInfo.name,

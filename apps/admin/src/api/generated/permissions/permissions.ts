@@ -27,6 +27,10 @@ import type {
 import type {
   HTTPValidationError,
   PermissionCreate,
+  ResponseEnvelopePermissionListResponse,
+  ResponseEnvelopePermissionRead,
+  ResponseEnvelopeRolePermissionsResponse,
+  ResponseEnvelopeUserPermissionsResponse,
   RoutersPermissionsRolePermissionsUpdate
 } from '.././schemas';
 
@@ -45,7 +49,7 @@ export const listPermissions = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopePermissionListResponse>(
       {url: `/api/permissions`, method: 'GET', signal
     },
       );
@@ -138,7 +142,7 @@ export const createPermissions = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopePermissionRead>(
       {url: `/api/permissions`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: permissionCreate, signal
@@ -203,7 +207,7 @@ export const listPermissionMy = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeUserPermissionsResponse>(
       {url: `/api/permissions/my`, method: 'GET', signal
     },
       );
@@ -296,7 +300,7 @@ export const getPermissionRole = (
 ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeRolePermissionsResponse>(
       {url: `/api/permissions/role/${roleName}`, method: 'GET', signal
     },
       );
@@ -389,7 +393,7 @@ export const updatePermissionRole = (
  ) => {
       
       
-      return adminApi<unknown>(
+      return adminApi<ResponseEnvelopeRolePermissionsResponse>(
       {url: `/api/permissions/role/${roleName}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: routersPermissionsRolePermissionsUpdate

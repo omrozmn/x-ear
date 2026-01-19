@@ -27,13 +27,13 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Button, Modal, useModal, Card, Badge, Input, Select, Tabs, useToastHelpers } from '@x-ear/ui-web';
-import { Patient } from '../../types/patient';
+import { Party } from '../../types/party';
 import CommunicationTemplates from './CommunicationTemplates';
 import CommunicationAnalytics from './CommunicationAnalytics';
 import { useCommunicationOfflineSync } from '../../hooks/useCommunicationOfflineSync';
 
 interface CommunicationCenterProps {
-  patients: Patient[];
+  parties: Party[];
   onRefresh: () => void;
 }
 
@@ -42,7 +42,7 @@ interface CommunicationMessage {
   type: 'sms' | 'email';
   recipient: string;
   recipientName?: string;
-  patientId?: string;
+  partyId?: string;
   subject?: string;
   content: string;
   templateId?: string;
@@ -75,7 +75,7 @@ interface CommunicationCampaign {
   name: string;
   type: 'sms' | 'email';
   templateId: string;
-  targetPatients: string[];
+  targetParties: string[];
   scheduledAt?: string;
   status: 'draft' | 'scheduled' | 'running' | 'completed' | 'paused' | 'cancelled';
   sentCount: number;
@@ -86,7 +86,7 @@ interface CommunicationCampaign {
 }
 
 export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
-  patients,
+  parties,
   onRefresh
 }) => {
   // Offline sync hook
@@ -319,7 +319,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
         type: messageData.type || 'sms',
         recipient: messageData.recipient || '',
         recipientName: messageData.recipientName,
-        patientId: messageData.patientId,
+        partyId: messageData.partyId,
         subject: messageData.subject,
         content: messageData.content || '',
         templateId: messageData.templateId,

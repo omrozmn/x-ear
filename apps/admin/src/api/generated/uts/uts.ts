@@ -27,7 +27,11 @@ import type {
 import type {
   BulkRegistration,
   HTTPValidationError,
-  ListUtRegistrationsParams
+  ListUtRegistrationsParams,
+  ResponseEnvelopeUtsCancelResponse,
+  ResponseEnvelopeUtsJobStartResponse,
+  ResponseEnvelopeUtsJobStatusResponse,
+  ResponseEnvelopeUtsRegistrationListResponse
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -45,8 +49,8 @@ export const listUtRegistrations = (
 ) => {
       
       
-      return adminApi<unknown>(
-      {url: `/api/uts/registrations`, method: 'GET',
+      return adminApi<ResponseEnvelopeUtsRegistrationListResponse>(
+      {url: `/registrations`, method: 'GET',
         params, signal
     },
       );
@@ -57,7 +61,7 @@ export const listUtRegistrations = (
 
 export const getListUtRegistrationsQueryKey = (params?: ListUtRegistrationsParams,) => {
     return [
-    `/api/uts/registrations`, ...(params ? [params]: [])
+    `/registrations`, ...(params ? [params]: [])
     ] as const;
     }
 
@@ -139,8 +143,8 @@ export const createUtRegistrationBulk = (
 ) => {
       
       
-      return adminApi<unknown>(
-      {url: `/api/uts/registrations/bulk`, method: 'POST',
+      return adminApi<ResponseEnvelopeUtsJobStartResponse>(
+      {url: `/registrations/bulk`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: bulkRegistration, signal
     },
@@ -204,8 +208,8 @@ export const getUtJob = (
 ) => {
       
       
-      return adminApi<unknown>(
-      {url: `/api/uts/jobs/${jobId}`, method: 'GET', signal
+      return adminApi<ResponseEnvelopeUtsJobStatusResponse>(
+      {url: `/jobs/${jobId}`, method: 'GET', signal
     },
       );
     }
@@ -215,7 +219,7 @@ export const getUtJob = (
 
 export const getGetUtJobQueryKey = (jobId?: string,) => {
     return [
-    `/api/uts/jobs/${jobId}`
+    `/jobs/${jobId}`
     ] as const;
     }
 
@@ -297,8 +301,8 @@ export const createUtJobCancel = (
 ) => {
       
       
-      return adminApi<unknown>(
-      {url: `/api/uts/jobs/${jobId}/cancel`, method: 'POST', signal
+      return adminApi<ResponseEnvelopeUtsCancelResponse>(
+      {url: `/jobs/${jobId}/cancel`, method: 'POST', signal
     },
       );
     }

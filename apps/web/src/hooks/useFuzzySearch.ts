@@ -73,18 +73,18 @@ export function useFuzzySearch<T>(
     // Fuzzy match using Levenshtein distance
     const distance = levenshteinDistance(search, target);
     const maxLength = Math.max(search.length, target.length);
-    
+
     if (distance > maxDistance) return 0;
-    
+
     return Math.max(0, 1 - (distance / maxLength));
   }, [caseSensitive, levenshteinDistance, maxDistance]);
 
   // Get searchable text from item
   const getSearchableText = useCallback((item: T, key?: string): string => {
     if (!item) return '';
-    
+
     if (key) {
-      const value = (item as any)[key];
+      const value = (item as Record<string, unknown>)[key];
       return typeof value === 'string' ? value : String(value || '');
     }
 
@@ -92,7 +92,7 @@ export function useFuzzySearch<T>(
     if (typeof item === 'object' && item !== null) {
       return Object.values(item).join(' ');
     }
-    
+
     return String(item);
   }, []);
 
@@ -117,7 +117,7 @@ export function useFuzzySearch<T>(
         keys.forEach(key => {
           const text = getSearchableText(item, key);
           const score = calculateScore(query, text);
-          
+
           if (score > bestScore) {
             bestScore = score;
           }
@@ -134,7 +134,7 @@ export function useFuzzySearch<T>(
         // Search in entire item
         const text = getSearchableText(item);
         bestScore = calculateScore(query, text);
-        
+
         if (bestScore >= threshold) {
           matches.push({
             key: 'all',

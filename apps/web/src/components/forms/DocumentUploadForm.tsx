@@ -5,7 +5,7 @@ import { Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface DocumentUploadFormProps {
-  patientId: string;
+  partyId: string;
   isOpen: boolean;
   onClose: () => void;
   onUpload: (documentData: FormData) => Promise<void>;
@@ -13,7 +13,7 @@ interface DocumentUploadFormProps {
 }
 
 export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
-  patientId,
+  partyId,
   isOpen,
   onClose,
   onUpload,
@@ -119,7 +119,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
     try {
       const formData = new FormData();
       formData.append('file', selectedFile!);
-      formData.append('patientId', patientId);
+      formData.append('partyId', partyId);
       formData.append('documentType', documentType);
       formData.append('description', description);
       formData.append('tags', tags);

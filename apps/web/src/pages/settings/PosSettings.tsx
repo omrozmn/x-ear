@@ -4,7 +4,7 @@ import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import {
     useUpdatePaymentPoPaytrConfig,
     useListPaymentPoPaytrConfig
-} from '@/api/generated/payment-integrations/payment-integrations';
+} from '@/api/client/payment-integrations.client';
 import { CreditCard, Building2, Check, AlertCircle } from 'lucide-react';
 
 type PosProvider = 'xear' | 'paytr' | 'iyzico' | 'none';
@@ -42,8 +42,16 @@ export const PosSettings = () => {
     const selectedProvider = watch('provider');
 
     useEffect(() => {
-        if ((configData as any)?.data) {
-            const d = (configData as any).data;
+        // Type the response structure
+        interface ConfigResponse {
+            data?: {
+                merchant_id?: string;
+                test_mode?: boolean;
+            };
+        }
+        const config = configData as unknown as ConfigResponse | undefined;
+        if (config?.data) {
+            const d = config.data;
             // Determine provider
             const hasCustomConfig = d.merchant_id && d.merchant_id.trim() !== '';
             reset({
@@ -57,6 +65,16 @@ export const PosSettings = () => {
     }, [configData, reset]);
 
     const onSubmit = (data: PosConfigForm) => {
+        // The mutation expects a specific type, use type assertion for extended payload
+        interface UpdateConfigPayload {
+            enabled: boolean;
+            provider: string;
+            merchant_id?: string;
+            merchant_key?: string;
+            merchant_salt?: string;
+            test_mode?: boolean;
+        }
+
         if (data.provider === 'none') {
             error('Lütfen bir POS sağlayıcı seçin');
             return;
@@ -68,13 +86,14 @@ export const PosSettings = () => {
                 data: {
                     enabled: true,
                     provider: 'xear'
-                } as any
+                } as UpdateConfigPayload
             }, {
                 onSuccess: () => {
                     success('POS ayarları güncellendi');
                 },
-                onError: (err: any) => {
-                    error(err.response?.data?.error || 'Güncelleme başarısız');
+                onError: (err: unknown) => {
+                    const axiosError = err as { response?: { data?: { error?: string } } };
+                    error(axiosError.response?.data?.error || 'Güncelleme başarısız');
                 }
             });
         } else {
@@ -92,13 +111,14 @@ export const PosSettings = () => {
                     merchant_key: data.merchant_key,
                     merchant_salt: data.merchant_salt,
                     test_mode: data.test_mode
-                } as any
+                } as UpdateConfigPayload
             }, {
                 onSuccess: () => {
                     success('POS ayarları güncellendi');
                 },
-                onError: (err: any) => {
-                    error(err.response?.data?.error || 'Güncelleme başarısız');
+                onError: (err: unknown) => {
+                    const axiosError = err as { response?: { data?: { error?: string } } };
+                    error(axiosError.response?.data?.error || 'Güncelleme başarısız');
                 }
             });
         }

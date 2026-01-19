@@ -18,13 +18,16 @@ from database import get_db
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api", tags=["BirFatura"])
+from schemas.base import ResponseEnvelope
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
+from schemas.birfatura import (
+    InvoiceSyncRequest, BirfaturaResponse, InvoiceSyncResponse,
+    MockSearchRequest, MockDetailRequest
+)
 
-sync_service = InvoiceSyncService()
 
-class InvoiceSyncRequest(BaseModel):
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
+router = APIRouter(tags=["BirFatura"])
 
 def get_configured_client(tenant_id: str, db: Session):
     """Get BirFatura client configured for the specific tenant."""
@@ -111,9 +114,9 @@ async def create_invoice(
     try:
         client = get_configured_client(access.tenant_id, db)
         resp = client.create_invoice(payload)
-        return resp
+        return ResponseEnvelope(data=resp)
     except Exception as e:
-        return {"Success": False, "Message": str(e)}
+        return ResponseEnvelope(data={"Success": False, "Message": str(e)})
 
 @router.post("/EFatura/Retry/{invoice_id}", operation_id="createEfaturaRetry")
 async def retry_invoice(
@@ -128,9 +131,9 @@ async def retry_invoice(
     try:
         client = get_configured_client(access.tenant_id, db)
         resp = client.retry_invoice(invoice_id)
-        return resp
+        return ResponseEnvelope(data=resp)
     except Exception as e:
-        return {"Success": False, "Message": str(e)}
+        return ResponseEnvelope(data={"Success": False, "Message": str(e)})
 
 @router.post("/EFatura/Cancel/{invoice_id}", operation_id="createEfaturaCancel")
 async def cancel_invoice(
@@ -149,9 +152,9 @@ async def cancel_invoice(
     try:
         client = get_configured_client(access.tenant_id, db)
         resp = client.cancel_invoice(invoice_id, reason)
-        return resp
+        return ResponseEnvelope(data=resp)
     except Exception as e:
-        return {"Success": False, "Message": str(e)}
+        return ResponseEnvelope(data={"Success": False, "Message": str(e)})
 
 @router.post("/birfatura/sync-invoices", operation_id="createBirfaturaSyncInvoices")
 async def sync_invoices(
@@ -180,7 +183,7 @@ async def sync_invoices(
     
     try:
         stats = sync_service.sync_invoices(access.tenant_id, start_date, end_date)
-        return {"success": True, "data": {"imported": stats}}
+        return ResponseEnvelope(data=InvoiceSyncResponse(success=True, data={"imported": stats}))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -209,9 +212,10 @@ async def send_document_v2(
     try:
         client = get_configured_client(access.tenant_id, db)
         resp = client.send_document_v2(body) if hasattr(client, 'send_document_v2') else client.send_document(body)
-        return {"success": True, "data": resp}
+        return ResponseEnvelope(data=BirfaturaResponse(success=True, data=resp))
     except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        logger.error(f"Send document v2 error: {e}")
+        return ResponseEnvelope(data=BirfaturaResponse(success=False, message=str(e)))
 
 @router.post("/OutEBelgeV2/SendBasicInvoiceFromModel", operation_id="createOutebelgev2Sendbasicinvoicefrommodel")
 async def send_basic_invoice_from_model(
@@ -229,9 +233,10 @@ async def send_basic_invoice_from_model(
     try:
         client = get_configured_client(access.tenant_id, db)
         resp = client.send_basic_invoice_v2(body) if hasattr(client, 'send_basic_invoice_v2') else client.send_basic_invoice(body)
-        return {"success": True, "data": resp}
+        return ResponseEnvelope(data=BirfaturaResponse(success=True, data=resp))
     except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        logger.error(f"Send basic invoice v2 error: {e}")
+        return ResponseEnvelope(data=BirfaturaResponse(success=False, message=str(e)))
 
 # --- Mock Endpoints for Frontend Development ---
 # These endpoints mimic BirFatura functionality for customer selection.
@@ -249,9 +254,9 @@ async def search_firm_customers_mock(
     access: UnifiedAccess = Depends(require_access())
 ):
     """Mock customer search endpoint"""
-    return {
-        "success": True,
-        "data": [
+    return ResponseEnvelope(data=BirfaturaResponse(
+        success=True,
+        data=[
              {
                 "id": "1",
                 "name": "Örnek Müşteri A.Ş." + (f" ({payload.search})" if payload.search else ""),
@@ -260,7 +265,7 @@ async def search_firm_customers_mock(
                 "tcNumber": None
             }
         ]
-    }
+    ))
 
 @router.post("/Firma/FirmaPKBilgisiGetir", operation_id="createFirmaFirmapkbilgisigetir")
 async def get_firm_pk_info_mock(
@@ -268,13 +273,13 @@ async def get_firm_pk_info_mock(
     access: UnifiedAccess = Depends(require_access())
 ):
     """Mock PK info endpoint"""
-    return {
-        "success": True,
-        "data": [
+    return ResponseEnvelope(data=BirfaturaResponse(
+        success=True,
+        data=[
              { "value": "TICARIFATURA", "label": "Ticari Fatura" },
              { "value": "TEMELFATURA", "label": "Temel Fatura" }
         ]
-    }
+    ))
 
 @router.post("/Firma/FirmaAdresBilgisiGetir", operation_id="createFirmaFirmaadresbilgisigetir")
 async def get_firm_address_info_mock(
@@ -283,9 +288,9 @@ async def get_firm_address_info_mock(
 ):
     """Mock Address info endpoint"""
 
-    return {
-        "success": True,
-        "data": [
+    return ResponseEnvelope(data=BirfaturaResponse(
+        success=True,
+        data=[
             {
                 "id": "1",
                 "name": "Merkez Ofis",
@@ -295,4 +300,4 @@ async def get_firm_address_info_mock(
                 "postalCode": "34710"
             }
         ]
-    }
+    ))
