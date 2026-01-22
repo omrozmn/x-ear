@@ -43,8 +43,7 @@ import {
   ResponseEnvelope,
   ResponseEnvelopeInvoiceIssueResponse,
   SchemasBaseResponseEnvelopeBulkUploadResponse2,
-  ResponseEnvelopeBulkUploadResponse as SchemasInvoicesBulkUploadResponse,
-  BulkUploadResponse
+  SchemasInvoicesBulkUploadResponse as BulkUploadResponse
 } from '@/api/generated/schemas';
 import { apiClient } from '../api/orval-mutator';
 

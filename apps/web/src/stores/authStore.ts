@@ -31,6 +31,8 @@ export interface AuthStateUser extends AuthUserRead {
   isImpersonatingTenant?: boolean;
   // Previously we had 'name', but AuthUserRead has firstName/lastName/fullName
   name?: string; // Keep for backward compatibility if needed, or migrate
+  fullName?: string; // Add fullName for compatibility
+  tenantId?: string; // Add tenantId for compatibility
   role: string; // Explicitly match AuthUserRead mandatory role
 }
 
@@ -199,10 +201,15 @@ export const useAuthStore = create<AuthStore>()(
 
             // Map AuthUserRead to AuthStateUser and handle missing fields
             if (accessToken && userData) {
+              const fullName = (userData as any).fullName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+
               const user: AuthStateUser = {
-                ...userData,
+                ...(userData as any),
+                firstName: (userData.firstName || '') as string,
+                lastName: (userData.lastName || '') as string,
+                fullName,
                 // Ensure name is present if components use it (AuthUserRead has fullName)
-                name: userData.fullName || `${userData.firstName} ${userData.lastName}`.trim(),
+                name: fullName,
                 is_super_admin: userData.role === 'super_admin' || userData.role === 'admin', // Basic check
                 isPhoneVerified: !requiresPhoneVerification // Inferred
               };

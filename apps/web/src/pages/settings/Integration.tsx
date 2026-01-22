@@ -18,7 +18,6 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useAuthStore } from '@/stores/authStore';
 import { customInstance } from '@/api/orval-mutator';
 import { PosSettings } from './PosSettings';
-import type { SmsProviderConfigRead, SmsHeaderRequestRead } from '@/api/generated/schemas';
 
 interface SmsDocument {
     type: string;

@@ -360,7 +360,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     // TODO: Implement delete functionality
   };
 
-  const handleExportSales = (sales: Sale[]) => {
+  const handleExportSales = (sales: SaleRead[]) => {
     console.log('Export sales:', sales);
     // TODO: Implement export functionality
   };

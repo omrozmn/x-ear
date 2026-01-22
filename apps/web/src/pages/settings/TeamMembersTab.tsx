@@ -13,7 +13,7 @@ import {
 import {
     UserRead,
     CreateTenantUserRequest,
-    UpdateTenantUserRequest
+    TenantUserUpdate
 } from '@/api/generated/schemas';
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';

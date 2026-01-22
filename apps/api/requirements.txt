@@ -11,6 +11,7 @@ spacy
 SQLAlchemy>=2.0.0
 alembic>=1.13.0
 psycopg[binary]
+psycopg2-binary>=2.9.0
 
 # Authentication - PyJWT (no Flask-JWT-Extended)
 PyJWT>=2.8.0

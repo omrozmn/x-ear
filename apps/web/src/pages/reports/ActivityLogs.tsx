@@ -12,7 +12,7 @@ import {
     useListActivityLogs,
     useListActivityLogStats
 } from '@/api/client/activity-logs.client';
-import type { ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
+import type { SchemasActivityLogsActivityLogRead as ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
 
 // Extended interface to cover properties present in API response but missing from current schema
 interface ExtendedActivityLogRead extends ActivityLogRead {
