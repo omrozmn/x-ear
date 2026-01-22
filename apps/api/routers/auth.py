@@ -232,7 +232,11 @@ def verify_otp(
         stored = otp_store.get_otp(target_id)
         
         # Bypass for test/dev environment with fixed OTP
-        if str(otp) == '123456':
+        # CRITICAL SECURITY: This backdoor must NEVER be active in production
+        # Configured in core/dependencies.py (ENVIRONMENT=development)
+        is_dev_env = os.getenv('ENVIRONMENT', 'production').lower() in ['development', 'test', 'testing']
+        
+        if str(otp) == '123456' and is_dev_env:
             stored = '123456'
         else:
             if not stored:

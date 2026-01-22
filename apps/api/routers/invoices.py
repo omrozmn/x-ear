@@ -247,34 +247,11 @@ def batch_generate_invoices(
                     errors.append(f"Invoice already exists for sale {sale_id}")
                     continue
                 
-                # Generate invoice number
-                year_month = now_utc().strftime('%Y%m')
-                latest = db_session.query(Invoice).filter(
-                    Invoice.invoice_number.like(f'INV{year_month}%'),
-                    Invoice.tenant_id == access.tenant_id
-                ).order_by(desc(Invoice.created_at)).first()
-                 # Note: Flask code filtered like that but maybe global? No, Invoice number collision risk if global. 
-                 # Flask code: Invoice.query.filter(...like...)
-                 # It didn't filter by tenant_id in 'latest' query explicitly in bulk.py snippet I saw.
-                 # But Invoice numbers usually sequential per system or per tenant?
-                 # 'INV{YM}{NUM}' format looks global or requires prefix.
-                 # If per tenant, numbers clash. Assuming global unique or tenant prefix?
-                 # Flask snippet: `Invoice.query.filter(Invoice.invoice_number.like(...))` -> GLOBAL check if not scoped.
-                 # But Invoice model usually holds tenant_id.
-                 # I will scope it to tenant to be safe, or just use UUID if strict parity allows.
-                 # User approved "Complete migration". 
-                 # Let's scope to tenant for correctness in multi-tenant system.
-                
-                if latest:
-                    try:
-                        last_num = int(latest.invoice_number[-4:])
-                        new_num = last_num + 1
-                    except ValueError:
-                        new_num = 1
-                else:
-                    new_num = 1
-                
-                invoice_number = f"INV{year_month}{new_num:04d}"
+                # Generate invoice number using Gapless Sequence
+                from models.sequence import Sequence
+                year = now_utc().year
+                next_val = Sequence.next_number(db_session, sale.tenant_id, 'invoice', year, 'INV')
+                invoice_number = f"INV{year}{next_val:05d}"
                 
                 # Create invoice
                 invoice = Invoice(
@@ -374,9 +351,11 @@ def create_invoice(
             if not party:
                 raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         
-        # Generate invoice number
-        from datetime import datetime
-        invoice_number = f"INV-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
+        # Generate invoice number using Gapless Sequence
+        from models.sequence import Sequence
+        year = datetime.utcnow().year
+        next_val = Sequence.next_number(db_session, access.tenant_id, 'invoice', year, 'INV')
+        invoice_number = f"INV{year}{next_val:05d}"
         
         invoice = Invoice(
             # id is auto-generated (Integer primary key)

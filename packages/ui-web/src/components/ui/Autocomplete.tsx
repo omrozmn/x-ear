@@ -35,7 +35,7 @@ export interface AutocompleteProps {
 
 const defaultFilterOptions = (options: AutocompleteOption[], query: string): AutocompleteOption[] => {
   const lowerQuery = query.toLowerCase();
-  return options.filter(option => 
+  return options.filter(option =>
     option.label.toLowerCase().includes(lowerQuery) ||
     option.value.toLowerCase().includes(lowerQuery) ||
     (option.description && option.description.toLowerCase().includes(lowerQuery))
@@ -69,10 +69,10 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([]);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   // Filter options based on search query
   useEffect(() => {
@@ -102,11 +102,11 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
     const query = e.target.value;
     setSearchQuery(query);
     setHighlightedIndex(-1);
-    
+
     if (!isOpen && query.length >= minSearchLength) {
       setIsOpen(true);
     }
-    
+
     handleSearch(query);
   };
 
@@ -138,21 +138,21 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         if (!isOpen) {
           setIsOpen(true);
         } else {
-          setHighlightedIndex(prev => 
+          setHighlightedIndex(prev =>
             prev < filteredOptions.length - 1 ? prev + 1 : 0
           );
         }
         break;
-      
+
       case 'ArrowUp':
         e.preventDefault();
         if (isOpen) {
-          setHighlightedIndex(prev => 
+          setHighlightedIndex(prev =>
             prev > 0 ? prev - 1 : filteredOptions.length - 1
           );
         }
         break;
-      
+
       case 'Enter':
         e.preventDefault();
         if (isOpen) {
@@ -168,13 +168,13 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
           }
         }
         break;
-      
+
       case 'Escape':
         setIsOpen(false);
         setHighlightedIndex(-1);
         inputRef.current?.blur();
         break;
-      
+
       case 'Tab':
         setIsOpen(false);
         setHighlightedIndex(-1);
@@ -227,7 +227,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
           {label}
         </label>
       )}
-      
+
       <div className="relative">
         <input
           ref={inputRef}
@@ -250,14 +250,14 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
             allowClear && value && 'pr-16'
           )}
         />
-        
+
         {/* Loading spinner */}
         {loading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
           </div>
         )}
-        
+
         {/* Clear button */}
         {allowClear && value && !loading && (
           <button
@@ -271,16 +271,16 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
             </svg>
           </button>
         )}
-        
+
         {/* Dropdown arrow */}
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-          <svg 
+          <svg
             className={clsx(
               'w-4 h-4 text-gray-400 transition-transform',
               isOpen && 'rotate-180'
-            )} 
-            fill="none" 
-            stroke="currentColor" 
+            )}
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -338,7 +338,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
-      
+
       {/* Helper text */}
       {helperText && !error && (
         <p className="mt-1 text-sm text-gray-500">{helperText}</p>

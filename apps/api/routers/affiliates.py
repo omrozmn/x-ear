@@ -203,12 +203,12 @@ async def list_affiliates(skip: int = 0, limit: int = 100, db: Session = Depends
     """List all affiliates"""
     try:
         users = AffiliateService.list_affiliates(db, skip, limit)
-        return [{
+        return ResponseEnvelope(data=[{
             "id": u.id, "display_id": f"{u.created_at.strftime('%y%m%d')}{u.id}",
             "email": u.email, "iban": u.iban, "account_holder_name": u.account_holder_name,
             "phone_number": u.phone_number, "is_active": u.is_active,
             "created_at": u.created_at.isoformat() if u.created_at else None
-        } for u in users]
+        } for u in users])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

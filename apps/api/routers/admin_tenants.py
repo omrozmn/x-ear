@@ -135,13 +135,13 @@ def create_tenant(
             description=request_data.description,
             owner_email=request_data.owner_email,
             billing_email=request_data.billing_email or request_data.owner_email,
-            status=request_data.status.value if request_data.status else TenantStatus.TRIAL.value,
+            status=getattr(request_data.status, 'value', request_data.status) if request_data.status else TenantStatus.TRIAL.value,
             current_plan=request_data.current_plan,
             max_users=request_data.max_users,
             current_users=request_data.current_users,
             company_info=request_data.company_info,
             settings=request_data.settings,
-            product_code=request_data.product_code.value if request_data.product_code else ProductCode.XEAR_HEARING.value
+            product_code=getattr(request_data.product_code, 'value', request_data.product_code) if request_data.product_code else ProductCode.XEAR_HEARING.value
         )
         db_session.add(tenant)
         db_session.commit()

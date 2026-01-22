@@ -27,6 +27,7 @@ export interface SchemasUsersAdminUserRead {
   firstName?: SchemasUsersAdminUserReadFirstName;
   lastName?: SchemasUsersAdminUserReadLastName;
   role?: SchemasUsersAdminUserReadRole;
+  isPhoneVerified?: boolean;
   isActive?: SchemasUsersAdminUserReadIsActive;
   lastLogin?: SchemasUsersAdminUserReadLastLogin;
 }

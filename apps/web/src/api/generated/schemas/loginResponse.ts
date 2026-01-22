@@ -5,12 +5,13 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { AuthUserRead } from './authUserRead';
+import type { LoginResponseUser } from './loginResponseUser';
 
 /**
  * Response for login endpoint.
 
 Contains tokens and user data for successful authentication.
+Supports both regular users (AuthUserRead) and admin users (AdminUserRead).
  */
 export interface LoginResponse {
   /** JWT access token */
@@ -18,7 +19,7 @@ export interface LoginResponse {
   /** JWT refresh token */
   refreshToken: string;
   /** Authenticated user data */
-  user: AuthUserRead;
+  user: LoginResponseUser;
   /** Whether phone verification is required */
   requiresPhoneVerification?: boolean;
 }

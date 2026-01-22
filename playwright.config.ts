@@ -48,7 +48,7 @@ export default defineConfig({
             testDir: './tests/e2e/web',
             use: {
                 ...devices['Desktop Chrome'],
-                baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
             },
         },
         // Desktop - Firefox
@@ -57,7 +57,17 @@ export default defineConfig({
             testDir: './tests/e2e/web',
             use: {
                 ...devices['Desktop Firefox'],
-                baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
+            },
+        },
+        // Desktop - Admin Panel
+        {
+            name: 'admin',
+            testDir: './tests/e2e/admin',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: 'http://localhost:8082',
+                storageState: undefined,
             },
         },
         // Desktop - Safari
@@ -66,7 +76,7 @@ export default defineConfig({
             testDir: './tests/e2e/web',
             use: {
                 ...devices['Desktop Safari'],
-                baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
             },
         },
         // Mobile - iPhone 12
@@ -75,7 +85,7 @@ export default defineConfig({
             testDir: './tests/e2e/web',
             use: {
                 ...devices['iPhone 12'],
-                baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
             },
         },
         // Mobile - Pixel 5
@@ -84,7 +94,7 @@ export default defineConfig({
             testDir: './tests/e2e/web',
             use: {
                 ...devices['Pixel 5'],
-                baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
             },
         },
         // Tablet - iPad
@@ -93,17 +103,10 @@ export default defineConfig({
             testDir: './tests/e2e/web',
             use: {
                 ...devices['iPad (gen 7)'],
-                baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
             },
         },
-        {
-            name: 'admin',
-            testDir: './tests/e2e/admin',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: process.env.ADMIN_BASE_URL || 'http://localhost:8082',
-            },
-        },
+
         {
             name: 'landing',
             testDir: './tests/e2e/landing',

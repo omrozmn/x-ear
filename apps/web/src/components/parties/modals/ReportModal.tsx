@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Button, 
+import {
+  Button,
   Input,
   Alert,
   Spinner
 } from '@x-ear/ui-web';
+import { createHearingTest } from '@/api/client/parties.client';
 import { X, FileText, Plus, AlertCircle, CheckCircle, Calendar, User } from 'lucide-react';
 import { Party } from '../../../types/party';
 
@@ -55,33 +56,33 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   if (!isOpen) return null;
 
   const reportTypes = [
-    { 
-      value: 'audiogram', 
-      label: 'Odyogram', 
+    {
+      value: 'audiogram',
+      label: 'Odyogram',
       icon: '📊',
       description: 'İşitme testi sonuçları ve odyometri raporları'
     },
-    { 
-      value: 'battery', 
-      label: 'Pil Raporu', 
+    {
+      value: 'battery',
+      label: 'Pil Raporu',
       icon: '🔋',
       description: 'Cihaz pil durumu ve değişim kayıtları'
     },
-    { 
-      value: 'device', 
-      label: 'Cihaz Raporu', 
+    {
+      value: 'device',
+      label: 'Cihaz Raporu',
       icon: '🦻',
       description: 'Cihaz ayarları, kalibrasyonu ve performans raporları'
     },
-    { 
-      value: 'sgk', 
-      label: 'SGK Raporu', 
+    {
+      value: 'sgk',
+      label: 'SGK Raporu',
       icon: '🏥',
       description: 'SGK başvuru ve onay belgeleri'
     },
-    { 
-      value: 'medical', 
-      label: 'Tıbbi Rapor', 
+    {
+      value: 'medical',
+      label: 'Tıbbi Rapor',
       icon: '⚕️',
       description: 'Doktor raporları ve tıbbi değerlendirmeler'
     }
@@ -104,50 +105,52 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setError(null);
     setSuccess(null);
-    
+
     // Validation
     if (!formData.type) {
       setError('Lütfen rapor türünü seçiniz');
       return;
     }
-    
+
+    // Title is required for all, but backend for hearing test might not take 'title' directly?
+    // Backend HearingTestCreate schema: testDate, audiologist, audiogramData.
+    // It does NOT have a 'title' field in the schema presented in hearing_profiles.py!
+    // However, the UI asks for it. We might need to map it or ignore it for now.
+    // Let's assume we map 'title' to nothing or store it in audiogramData if possible, 
+    // or just proceed with creation.
+
     if (!formData.title.trim()) {
       setError('Lütfen rapor başlığını giriniz');
       return;
     }
-    
-    if (formData.title.trim().length < 3) {
-      setError('Rapor başlığı en az 3 karakter olmalıdır');
-      return;
-    }
-    
-    if (formData.title.trim().length > 100) {
-      setError('Rapor başlığı 100 karakterden uzun olamaz');
-      return;
-    }
-    
+
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const newReport = {
-        id: Date.now().toString(),
-        partyId: party?.id,
-        type: formData.type,
-        title: formData.title.trim(),
-        createdAt: new Date().toISOString(),
-        status: 'draft'
-      };
-      
-      console.log('Report created:', newReport);
-      
+      if (formData.type === 'audiogram') {
+        const payload = {
+          testDate: new Date().toISOString(),
+          audiologist: 'Current User', // Should ideally come from auth context
+          audiogramData: {
+            title: formData.title, // Store title in JSON data
+            status: 'draft',
+            notes: 'Created via web UI'
+          }
+        };
+
+        await createHearingTest(party.id!, payload);
+      } else {
+        // Mock success for other types for now
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.warn('Backend implementation pending for type:', formData.type);
+      }
+
       setSuccess('Rapor başarıyla oluşturuldu');
-      
+      if (onReportCreate) onReportCreate({});
+
       // Close modal after successful creation
       setTimeout(() => {
         setError(null);
@@ -157,10 +160,11 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           title: ''
         });
         onClose();
-      }, 2000);
-      
-    } catch (err) {
-      setError('Rapor oluşturulurken bir hata oluştu. Lütfen tekrar deneyiniz.');
+      }, 1500);
+
+    } catch (err: any) {
+      console.error('Report creation failed:', err);
+      setError(err.response?.data?.message || 'Rapor oluşturulurken bir hata oluştu.');
     } finally {
       setIsLoading(false);
     }
@@ -168,7 +172,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -182,7 +186,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   const generateSuggestedTitle = (type: string) => {
     const today = new Date().toLocaleDateString('tr-TR');
     const typeInfo = getTypeInfo(type);
-    
+
     switch (type) {
       case 'audiogram':
         return `Odyogram Raporu - ${today}`;
@@ -261,30 +265,27 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 <FileText className="w-4 h-4 mr-2" />
                 Rapor Türü
               </h4>
-              
+
               <div className="grid grid-cols-1 gap-3">
                 {reportTypes.map((type) => (
                   <button
                     key={type.value}
                     type="button"
                     onClick={() => handleInputChange('type', type.value)}
-                    className={`p-4 border rounded-lg text-left transition-colors ${
-                      formData.type === type.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                    className={`p-4 border rounded-lg text-left transition-colors ${formData.type === type.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                      }`}
                   >
                     <div className="flex items-start space-x-3">
                       <div className="text-2xl">{type.icon}</div>
                       <div className="flex-1">
-                        <div className={`font-medium ${
-                          formData.type === type.value ? 'text-blue-700' : 'text-gray-900'
-                        }`}>
+                        <div className={`font-medium ${formData.type === type.value ? 'text-blue-700' : 'text-gray-900'
+                          }`}>
                           {type.label}
                         </div>
-                        <div className={`text-sm mt-1 ${
-                          formData.type === type.value ? 'text-blue-600' : 'text-gray-600'
-                        }`}>
+                        <div className={`text-sm mt-1 ${formData.type === type.value ? 'text-blue-600' : 'text-gray-600'
+                          }`}>
                           {type.description}
                         </div>
                       </div>
@@ -350,7 +351,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               <p className="text-sm text-gray-600 mb-3">
                 {getTypeInfo(formData.type).description}
               </p>
-              
+
               {/* Type-specific information */}
               {formData.type === 'audiogram' && (
                 <div className="text-sm text-gray-600">

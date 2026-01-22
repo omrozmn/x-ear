@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SaleReadDevicesAnyOfItem } from './saleReadDevicesAnyOfItem';
+import type { DeviceAssignmentRead } from './deviceAssignmentRead';
 
-export type SaleReadDevices = SaleReadDevicesAnyOfItem[] | null;
+export type SaleReadDevices = DeviceAssignmentRead[] | null;

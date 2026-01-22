@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Button, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import {
-  listPartyTimeline,
-  createPartyTimeline
-} from '@/api/client/parties.client';
-import {
+  listPartyNotes,
   createPartyNotes,
   deletePartyNote,
-  updatePartyNote
+  updatePartyNote,
+  createPartyTimeline
 } from '@/api/client/parties.client';
 import type {
   PatientNoteCreate as PartyNoteCreate,
@@ -38,21 +36,22 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpda
 
     try {
       setIsLoading(true);
-      const response = await listPartyTimeline(party.id) as any;
+      // Use listPartyNotes API for consistent CRUD operations
+      const response = await listPartyNotes(party.id) as any;
 
-      if (response?.data && Array.isArray(response.data)) {
-        // Filter timeline events to get only notes
-        const noteEvents = response.data
-          .filter((event: any) => event.type === 'note')
-          .map((event: any) => ({
-            id: event.id || '',
-            text: event.description || '',
-            date: event.timestamp || new Date().toISOString(),
-            author: event.user || 'system',
-            type: 'general' as const
-          }));
+      // API returns { data: [...] } structure
+      const notesData = response?.data || [];
+      if (Array.isArray(notesData)) {
+        // Map API response to PartyNote interface
+        const notesList = notesData.map((note: any) => ({
+          id: note.id || '',
+          text: note.content || '',
+          date: note.createdAt || new Date().toISOString(),
+          author: note.createdBy || 'system',
+          type: note.type || 'general'
+        }));
 
-        setNotes(noteEvents);
+        setNotes(notesList);
       }
     } catch (err) {
       error('Notlar yüklenirken hata oluştu');

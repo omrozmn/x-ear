@@ -17,6 +17,7 @@ import { PartyTabs, type PartyTab } from '../components/parties/PartyTabs';
 import { PartyTabContent } from '../components/parties/PartyTabContent';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
 import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
+import ReportModal from '../components/parties/modals/ReportModal';
 import { PartyNoteForm } from '../components/forms/PartyNoteForm';
 import { ErrorMessage, NetworkError, NotFoundError } from '../components/ErrorMessage';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -43,6 +44,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const { party, isLoading, error, loadParty } = useParty(partyId);
   const refetch = () => partyId ? loadParty(partyId) : Promise.resolve();
@@ -157,6 +159,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
           onEdit={() => setShowEditModal(true)}
           onTagUpdate={() => setShowTagModal(true)}
           onAddNote={() => setShowNoteModal(true)}
+          onGenerateReport={() => setShowReportModal(true)}
         />
 
         {/* Quick Stats */}

@@ -31,9 +31,9 @@ import type {
   ResponseEnvelopePermissionListResponse,
   ResponseEnvelopeRoleListResponse,
   ResponseEnvelopeRoleResponse,
-  RoleCreate,
-  RoleUpdate,
+  SchemasRolesRoleCreate,
   SchemasRolesRolePermissionsUpdate,
+  SchemasRolesRoleUpdate,
   UserRolesUpdate
 } from '.././schemas';
 
@@ -141,7 +141,7 @@ export function useListAdminRoles<TData = Awaited<ReturnType<typeof listAdminRol
  * @summary Create Admin Role
  */
 export const createAdminRoles = (
-    roleCreate: RoleCreate,
+    schemasRolesRoleCreate: SchemasRolesRoleCreate,
  signal?: AbortSignal
 ) => {
       
@@ -149,7 +149,7 @@ export const createAdminRoles = (
       return customInstance<ResponseEnvelopeRoleResponse>(
       {url: `/api/admin/roles`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: roleCreate, signal
+      data: schemasRolesRoleCreate, signal
     },
       );
     }
@@ -157,8 +157,8 @@ export const createAdminRoles = (
 
 
 export const getCreateAdminRolesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: RoleCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: RoleCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: SchemasRolesRoleCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: SchemasRolesRoleCreate}, TContext> => {
 
 const mutationKey = ['createAdminRoles'];
 const {mutation: mutationOptions} = options ?
@@ -170,7 +170,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminRoles>>, {data: RoleCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminRoles>>, {data: SchemasRolesRoleCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createAdminRoles(data,)
@@ -182,18 +182,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateAdminRolesMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminRoles>>>
-    export type CreateAdminRolesMutationBody = RoleCreate
+    export type CreateAdminRolesMutationBody = SchemasRolesRoleCreate
     export type CreateAdminRolesMutationError = HTTPValidationError
 
     /**
  * @summary Create Admin Role
  */
 export const useCreateAdminRoles = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: RoleCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: SchemasRolesRoleCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createAdminRoles>>,
         TError,
-        {data: RoleCreate},
+        {data: SchemasRolesRoleCreate},
         TContext
       > => {
 
@@ -300,14 +300,14 @@ export function useGetAdminRole<TData = Awaited<ReturnType<typeof getAdminRole>>
  */
 export const updateAdminRole = (
     roleId: string,
-    roleUpdate: RoleUpdate,
+    schemasRolesRoleUpdate: SchemasRolesRoleUpdate,
  ) => {
       
       
       return customInstance<ResponseEnvelopeRoleResponse>(
       {url: `/api/admin/roles/${roleId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: roleUpdate
+      data: schemasRolesRoleUpdate
     },
       );
     }
@@ -315,8 +315,8 @@ export const updateAdminRole = (
 
 
 export const getUpdateAdminRoleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminRole>>, TError,{roleId: string;data: RoleUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminRole>>, TError,{roleId: string;data: RoleUpdate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminRole>>, TError,{roleId: string;data: SchemasRolesRoleUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminRole>>, TError,{roleId: string;data: SchemasRolesRoleUpdate}, TContext> => {
 
 const mutationKey = ['updateAdminRole'];
 const {mutation: mutationOptions} = options ?
@@ -328,7 +328,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminRole>>, {roleId: string;data: RoleUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminRole>>, {roleId: string;data: SchemasRolesRoleUpdate}> = (props) => {
           const {roleId,data} = props ?? {};
 
           return  updateAdminRole(roleId,data,)
@@ -340,18 +340,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateAdminRoleMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminRole>>>
-    export type UpdateAdminRoleMutationBody = RoleUpdate
+    export type UpdateAdminRoleMutationBody = SchemasRolesRoleUpdate
     export type UpdateAdminRoleMutationError = HTTPValidationError
 
     /**
  * @summary Update Admin Role
  */
 export const useUpdateAdminRole = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminRole>>, TError,{roleId: string;data: RoleUpdate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminRole>>, TError,{roleId: string;data: SchemasRolesRoleUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateAdminRole>>,
         TError,
-        {roleId: string;data: RoleUpdate},
+        {roleId: string;data: SchemasRolesRoleUpdate},
         TContext
       > => {
 

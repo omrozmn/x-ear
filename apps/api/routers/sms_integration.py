@@ -24,6 +24,11 @@ from schemas.sms import (
     TargetAudienceRead,
     TargetAudienceCreate,
 )
+# Import SMS models at module level
+from core.models.sms_integration import (
+    SMSProviderConfig, SMSHeaderRequest, TenantSMSCredit, TargetAudience
+)
+from core.models.sms_package import SmsPackage as SMSPackage
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +48,6 @@ async def get_sms_config(
 ):
     """Get SMS configuration for tenant"""
     try:
-        from models import SMSProviderConfig
-        
         config = db.query(SMSProviderConfig).filter(SMSProviderConfig.tenant_id == access.tenant_id).first()
         if not config and access.tenant_id:
             config = SMSProviderConfig(tenant_id=access.tenant_id)
@@ -67,9 +70,6 @@ async def update_sms_config(
     try:
         if not access.tenant_id:
             raise HTTPException(status_code=400, detail="Tenant context required")
-        
-        from models import SMSProviderConfig
-        
         config = db.query(SMSProviderConfig).filter(SMSProviderConfig.tenant_id == access.tenant_id).first()
         if not config:
             config = SMSProviderConfig(tenant_id=access.tenant_id)
@@ -99,13 +99,11 @@ async def list_sms_headers(
 ):
     """List SMS headers for tenant"""
     try:
-        from models import SMSHeaderRequest as SMSHeaderModel
-        
-        query = db.query(SMSHeaderModel)
+        query = db.query(SMSHeaderRequest)
         if access.tenant_id:
-            query = query.filter(SMSHeaderModel.tenant_id == access.tenant_id)
+            query = query.filter(SMSHeaderRequest.tenant_id == access.tenant_id)
         
-        headers = query.order_by(SMSHeaderModel.created_at.desc()).all()
+        headers = query.order_by(SMSHeaderRequest.created_at.desc()).all()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[SmsHeaderRequestRead.model_validate(h).model_dump(by_alias=True) for h in headers])
     except Exception as e:
@@ -121,9 +119,6 @@ async def request_sms_header(
     try:
         if not access.tenant_id:
             raise HTTPException(status_code=400, detail="Tenant context required")
-        
-        from models import SMSHeaderRequest as SMSHeaderModel
-        
         header_text = data.header_text
         if not header_text:
             raise HTTPException(status_code=400, detail="Header text is required")
@@ -131,10 +126,10 @@ async def request_sms_header(
         if len(header_text) > 11:
             raise HTTPException(status_code=400, detail="Header text max 11 chars")
         
-        existing_headers = db.query(SMSHeaderModel).filter(SMSHeaderModel.tenant_id == access.tenant_id).count()
+        existing_headers = db.query(SMSHeaderRequest).filter(SMSHeaderRequest.tenant_id == access.tenant_id).count()
         is_first_header = existing_headers == 0
         
-        header = SMSHeaderModel(
+        header = SMSHeaderRequest(
             tenant_id=access.tenant_id,
             header_text=header_text,
             header_type=data.header_type,
@@ -164,17 +159,14 @@ async def set_default_header(
     try:
         if not access.tenant_id:
             raise HTTPException(status_code=400, detail="Tenant context required")
-        
-        from models import SMSHeaderRequest as SMSHeaderModel
-        
-        header = db.get(SMSHeaderModel, header_id)
+        header = db.get(SMSHeaderRequest, header_id)
         if not header or header.tenant_id != access.tenant_id:
             raise HTTPException(status_code=404, detail="Header not found")
         
         if header.status != "approved":
             raise HTTPException(status_code=400, detail="Only approved headers can be set as default")
         
-        db.query(SMSHeaderModel).filter(SMSHeaderModel.tenant_id == access.tenant_id).update({"is_default": False})
+        db.query(SMSHeaderRequest).filter(SMSHeaderRequest.tenant_id == access.tenant_id).update({"is_default": False})
         header.is_default = True
         db.commit()
         db.refresh(header)
@@ -191,8 +183,6 @@ async def set_default_header(
 async def list_sms_packages(db: Session = Depends(get_db)):
     """List available SMS packages (public endpoint)"""
     try:
-        from models import SMSPackage
-        
         packages = db.query(SMSPackage).filter(SMSPackage.is_active == True).order_by(SMSPackage.price).all()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[SmsPackageRead.model_validate(p).model_dump(by_alias=True) for p in packages])
@@ -206,8 +196,6 @@ async def get_sms_credit(
 ):
     """Get SMS credit balance for tenant"""
     try:
-        from models import TenantSMSCredit
-        
         credit = db.query(TenantSMSCredit).filter(TenantSMSCredit.tenant_id == access.tenant_id).first()
         if not credit and access.tenant_id:
             credit = TenantSMSCredit(tenant_id=access.tenant_id)
@@ -229,9 +217,6 @@ async def list_target_audiences(
     try:
         if not access.tenant_id:
             raise HTTPException(status_code=400, detail="Tenant context required")
-        
-        from models import TargetAudience
-        
         audiences = db.query(TargetAudience).filter(TargetAudience.tenant_id == access.tenant_id).order_by(TargetAudience.created_at.desc()).all()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[TargetAudienceRead.model_validate(a).model_dump(by_alias=True) for a in audiences])
@@ -250,9 +235,6 @@ async def create_target_audience(
     try:
         if not access.tenant_id:
             raise HTTPException(status_code=400, detail="Tenant context required")
-        
-        from models import TargetAudience
-        
         audience = TargetAudience(
             tenant_id=access.tenant_id,
             name=data.name,
@@ -375,9 +357,6 @@ async def upload_audience_file(
         
         # Count records (simple line count for CSV)
         total_records = len(content.decode('utf-8', errors='ignore').strip().split('\n')) - 1
-        
-        from models import TargetAudience
-        
         audience = TargetAudience(
             tenant_id=access.tenant_id,
             name=name,
@@ -409,8 +388,6 @@ async def list_admin_sms_headers(
 ):
     """List all SMS header requests (admin)"""
     try:
-        from models import SMSHeaderRequest
-        
         query = db.query(SMSHeaderRequest).order_by(SMSHeaderRequest.created_at.desc())
         total = query.count()
         headers = query.offset((page - 1) * per_page).limit(per_page).all()
@@ -441,8 +418,6 @@ async def update_header_status(
 ):
     """Update SMS header request status (admin)"""
     try:
-        from models import SMSHeaderRequest
-        
         header = db.get(SMSHeaderRequest, header_id)
         if not header:
             raise HTTPException(status_code=404, detail="Header request not found")

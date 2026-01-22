@@ -264,6 +264,8 @@ class SaleBase(AppBaseModel):
     right_ear_assignment_id: Optional[str] = Field(None, alias="rightEarAssignmentId")
     left_ear_assignment_id: Optional[str] = Field(None, alias="leftEarAssignmentId")
 
+from pydantic import model_validator
+
 class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     """Schema for reading a sale - matches Sale.to_dict() output"""
     party_id: str = Field(..., alias="partyId")
@@ -276,6 +278,15 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     notes: Optional[str] = None
     
+    @model_validator(mode='after')
+    def compute_fields(self):
+        # Calculate remaining amount
+        final = self.final_amount or 0.0
+        paid = self.paid_amount or 0.0
+        self.remaining_amount = max(0.0, final - paid)
+        return self
+    
+    # Financials - all optional to match to_dict() which may return None
     # Financials - all optional to match to_dict() which may return None
     list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
     total_amount: Optional[float] = Field(None, alias="totalAmount")
@@ -283,8 +294,13 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     sgk_coverage: Optional[float] = Field(0.0, alias="sgkCoverage")
     final_amount: Optional[float] = Field(None, alias="finalAmount")
     paid_amount: Optional[float] = Field(0.0, alias="paidAmount")
-    patient_payment: Optional[float] = Field(None, alias="patientPayment")
     
+    # Golden Path: Alias patient_payment (DB) to partyPayment (API)
+    patient_payment: Optional[float] = Field(None, alias="partyPayment")
+    
+    # Golden Path: Computed field for Frontend convenience
+    remaining_amount: Optional[float] = Field(0.0, alias="remainingAmount")
+
     # Assignments
     right_ear_assignment_id: Optional[str] = Field(None, alias="rightEarAssignmentId")
     left_ear_assignment_id: Optional[str] = Field(None, alias="leftEarAssignmentId")
@@ -293,9 +309,11 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
 
     # Enriched Data (for include_details=True)
     patient: Optional[Dict[str, Any]] = None
-    devices: Optional[List[Dict[str, Any]]] = None
-    payment_plan: Optional[Dict[str, Any]] = Field(None, alias="paymentPlan")
-    payment_records: Optional[List[Dict[str, Any]]] = Field(None, alias="paymentRecords")  # alias="payments" handled by frontend adaptation if needed, but standardizing here
+    
+    # Golden Path: Strict typing for improved type safety
+    devices: Optional[List[DeviceAssignmentRead]] = Field(default_factory=list)
+    payment_plan: Optional[PaymentPlanRead] = Field(None, alias="paymentPlan") 
+    payment_records: Optional[List[PaymentRecordRead]] = Field(default_factory=list, alias="paymentRecords") 
     payments: Optional[List[Dict[str, Any]]] = None # Backward compatibility alias
     invoice: Optional[Dict[str, Any]] = None
 

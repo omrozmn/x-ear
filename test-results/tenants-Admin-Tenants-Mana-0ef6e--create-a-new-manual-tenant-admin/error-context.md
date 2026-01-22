@@ -1,0 +1,220 @@
+# Page snapshot
+
+```yaml
+- generic [active]:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - img
+          - generic: X-Ear Admin
+        - generic:
+          - navigation:
+            - link:
+              - /url: /
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /analytics
+              - img
+              - text: Raporlar
+            - link:
+              - /url: /tenants
+              - img
+              - text: Aboneler
+            - link:
+              - /url: /users
+              - img
+              - text: Kullanıcılar
+            - link:
+              - /url: /patients
+              - img
+              - text: Hastalar
+            - link:
+              - /url: /appointments
+              - img
+              - text: Randevular
+            - link:
+              - /url: /inventory
+              - img
+              - text: Cihaz & Stok
+            - link:
+              - /url: /suppliers
+              - img
+              - text: Tedarikçiler
+            - link:
+              - /url: /campaigns
+              - img
+              - text: Kampanyalar
+            - link:
+              - /url: /production
+              - img
+              - text: Üretim Takibi
+            - link:
+              - /url: /marketplaces
+              - img
+              - text: Pazaryerleri
+            - link:
+              - /url: /notifications
+              - img
+              - text: Bildirimler
+            - link:
+              - /url: /api-keys
+              - img
+              - text: API Anahtarları
+            - link:
+              - /url: /roles
+              - img
+              - text: Roller
+            - link:
+              - /url: /plans
+              - img
+              - text: Planlar
+            - link:
+              - /url: /affiliates
+              - img
+              - text: Affiliateler
+            - link:
+              - /url: /addons
+              - img
+              - text: Eklentiler
+            - link:
+              - /url: /sms/headers
+              - img
+              - text: SMS Başlıkları
+            - link:
+              - /url: /sms/packages
+              - img
+              - text: SMS Paketleri
+            - link:
+              - /url: /ai
+              - img
+              - text: AI Yönetimi
+            - link:
+              - /url: /activity-logs
+              - img
+              - text: Aktivite Logları
+            - link:
+              - /url: /files
+              - img
+              - text: Dosyalar
+            - link:
+              - /url: /ocr-queue
+              - img
+              - text: OCR Kuyruğu
+            - link:
+              - /url: /billing
+              - img
+              - text: Faturalar
+            - link:
+              - /url: /payments
+              - img
+              - text: Ödemeler
+            - link:
+              - /url: /support
+              - img
+              - text: Destek
+            - link:
+              - /url: /integrations/vatan-sms
+              - img
+              - text: Entegrasyonlar
+            - link:
+              - /url: /settings
+              - img
+              - text: Ayarlar
+      - generic:
+        - banner:
+          - heading [level=1]: Super Admin Panel
+          - generic:
+            - button:
+              - img
+            - generic:
+              - button:
+                - generic: Admin User
+                - img
+        - main:
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=1]: Aboneler
+                - paragraph: Sistemdeki tüm abonelerin listesi ve yönetimi.
+              - generic:
+                - button:
+                  - img
+                  - text: Yeni Abone Ekle
+            - generic:
+              - generic:
+                - generic:
+                  - img
+                - textbox:
+                  - /placeholder: Abone ara...
+              - generic:
+                - combobox
+              - generic:
+                - combobox
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Organizasyon
+                          - columnheader: Durum
+                          - columnheader: Ürün
+                          - columnheader: Plan
+                          - columnheader: Kullanıcılar
+                          - columnheader: Oluşturulma
+                          - columnheader:
+                            - generic: İşlemler
+                      - rowgroup:
+                        - row:
+                          - cell: Yükleniyor...
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: Toplam 0 kayıttan 1 - 0 arası gösteriliyor
+                  - combobox
+                - generic:
+                  - navigation:
+                    - button [disabled]:
+                      - generic: Önceki
+                      - img
+                    - button: "1"
+                    - button [disabled]:
+                      - generic: Sonraki
+                      - img
+    - button [ref=e1] [cursor=pointer]:
+      - generic [ref=e2]:
+        - img [ref=e4]
+        - img [ref=e39]
+      - generic [ref=e73]: "-"
+      - generic [ref=e74]: TanStack Router
+    - button:
+      - img
+  - dialog "Yeni Abone Ekle" [ref=e76]:
+    - generic [ref=e77]:
+      - heading "Yeni Abone Ekle" [level=2] [ref=e78]
+      - button [ref=e79] [cursor=pointer]:
+        - img [ref=e80]
+    - generic [ref=e83]:
+      - generic [ref=e84]:
+        - generic [ref=e85]: Organizasyon Adı
+        - textbox [ref=e86]: Test Manual Tenant 1768921114292
+      - generic [ref=e87]:
+        - generic [ref=e88]: Yönetici Email
+        - textbox [ref=e89]: admin-1768921114298@example.com
+      - generic [ref=e90]:
+        - generic [ref=e91]: Ürün
+        - combobox [ref=e92]:
+          - option "İşitme Merkezi" [selected]
+        - paragraph [ref=e93]: "Varsayılan: İşitme Merkezi"
+      - generic [ref=e94]:
+        - generic [ref=e95]: Başlangıç Durumu
+        - combobox [ref=e96]:
+          - option "Deneme (Trial)" [selected]
+          - option "Aktif"
+      - generic [ref=e97]:
+        - button "İptal" [ref=e98] [cursor=pointer]
+        - button "Oluştur" [ref=e99] [cursor=pointer]
+```

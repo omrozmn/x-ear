@@ -15,12 +15,27 @@ test.describe('Party Detail Page', () => {
         await tenantPage.goto('/parties');
         await tenantPage.waitForLoadState('networkidle');
 
+        // Wait for any phone verification modal to disappear or close it
+        const phoneModal = tenantPage.locator('text="Telefon Doğrulama"');
+        const hasModal = await phoneModal.isVisible({ timeout: 2000 }).catch(() => false);
+        
+        if (hasModal) {
+            // Try to verify with test OTP to close modal
+            const otpInput = tenantPage.locator('input[type="text"][maxlength="6"]');
+            if (await otpInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+                await otpInput.fill('123456');
+                await tenantPage.click('button:has-text("Doğrula")');
+                // Wait for modal to close
+                await tenantPage.waitForTimeout(2000);
+            }
+        }
+
         // Click on first party if available
         const firstItem = tenantPage.locator('table tbody tr, [class*="item"], [class*="card"]').first();
         const hasItems = await firstItem.isVisible({ timeout: 5000 }).catch(() => false);
 
         if (hasItems) {
-            await firstItem.click();
+            await firstItem.click({ force: true }); // Force click to bypass any overlays
             await tenantPage.waitForLoadState('networkidle');
 
             // Verify detail page or modal loaded

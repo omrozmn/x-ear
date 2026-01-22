@@ -743,8 +743,16 @@ def create_sale(
     # 4. Create Sale Record
     sale_id = gen_sale_id(db)
     
-    # KDV Logic (20%)
-    kdv_rate = 0.20
+    # KDV Logic - Use product tax rate or default to 0 for hearing aids if not set (Hearing aids are 0% in TR, but system default is 18/20)
+    # If product has a tax rate, use it. Otherwise, fallback to system default (0.20) only if absolutely necessary.
+    # Note: inventory.kdv_rate is stored as percentage (e.g. 18.0 or 20.0 or 0.0)
+    
+    product_tax_rate = getattr(product, 'kdv_rate', 20.0)
+    # Handle None case
+    if product_tax_rate is None:
+        product_tax_rate = 20.0
+        
+    kdv_rate = float(product_tax_rate) / 100.0
     kdv_amount = base_price - (base_price / (1 + kdv_rate))
     
     # Notes

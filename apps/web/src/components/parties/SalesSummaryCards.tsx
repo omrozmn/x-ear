@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
 import { DollarSign, Shield, CreditCard, Clock } from 'lucide-react';
-import { Sale } from '../../types/party/party-communication.types';
+import { SaleRead } from '../../api/generated/schemas';
 
 interface SalesSummaryCardsProps {
-  sales: Sale[];
+  sales: SaleRead[];
   sgkCoverageCalculation?: any;
 }
 
@@ -12,14 +12,17 @@ export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
   sales,
   sgkCoverageCalculation
 }) => {
-  const totalSales = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+  const totalSales = sales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0);
   const totalSGKCoverage = sales.reduce((sum, sale) => sum + (sale.sgkCoverage || 0), 0);
-  const totalPartyPayment = sales.reduce((sum, sale) => sum + (sale.totalAmount - (sale.sgkCoverage || 0)), 0);
-  const totalPaid = sales.reduce((sum, sale) => {
-    const paidAmount = sale.payments?.reduce((paySum, payment) => paySum + payment.amount, 0) || 0;
-    return sum + paidAmount;
-  }, 0);
-  const remainingAmount = totalPartyPayment - totalPaid;
+
+  // Golden Path: Use backend's 'partyPayment' (aliased from patient_payment)
+  const totalPartyPayment = sales.reduce((sum, sale) => sum + (sale.partyPayment || 0), 0);
+
+  // Golden Path: Use backend's 'paidAmount'
+  const totalPaid = sales.reduce((sum, sale) => sum + (sale.paidAmount || 0), 0);
+
+  // Golden Path: Use backend's 'remainingAmount'
+  const remainingAmount = sales.reduce((sum, sale) => sum + (sale.remainingAmount || 0), 0);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

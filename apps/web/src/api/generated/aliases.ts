@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-18T18:25:36.145Z
+ * Generated: 2026-01-22T14:42:45.508Z
  */
 
 // ACTIVITY_LOGS
@@ -92,6 +92,14 @@ export {
   useCreateAdminInvoicePayment,
   useListAdminInvoicePdf,
 } from './admin-invoices/admin-invoices';
+
+// ADMIN_MARKETPLACES
+export {
+  useCreateAdminMarketplaceInitDb,
+  useListAdminMarketplaceIntegrations,
+  useCreateAdminMarketplaceIntegrations,
+  useCreateAdminMarketplaceIntegrationSync,
+} from './admin-marketplaces/admin-marketplaces';
 
 // ADMIN_NOTIFICATIONS
 export {
@@ -273,14 +281,14 @@ export {
 export {
   useListAppointments,
   useCreateAppointments,
+  useListAppointmentAvailability,
+  useListAppointmentList,
   useGetAppointment,
   useUpdateAppointment,
   useDeleteAppointment,
   useCreateAppointmentReschedule,
   useCreateAppointmentCancel,
   useCreateAppointmentComplete,
-  useListAppointmentAvailability,
-  useListAppointmentList,
 } from './appointments/appointments';
 
 // APPS
@@ -745,6 +753,8 @@ export {
   useCreateTenantUser,
   useDeleteTenantUser,
   useUpdateTenantUser,
+  useGetTenantCompany,
+  useUpdateTenantCompany,
 } from './tenant-users/tenant-users';
 
 // TIMELINE

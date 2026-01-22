@@ -81,7 +81,7 @@ class AssetUpload(BaseModel):
 
 # --- Routes ---
 
-@router.get("/", operation_id="listTenantUsers", response_model=ResponseEnvelope[List[UserRead]])
+@router.get("/tenant/users", operation_id="listTenantUsers", response_model=ResponseEnvelope[List[UserRead]])
 def list_tenant_users(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -332,3 +332,68 @@ def update_tenant_user(
     # Use Pydantic schema for type-safe serialization (NO to_dict())
     return ResponseEnvelope(data=UserRead.model_validate(user_to_update))
 
+
+
+@router.get("/tenant/company", operation_id="getTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
+def get_tenant_company(
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Get company information for current tenant"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        return ResponseEnvelope(data=TenantCompanyResponse.model_validate(tenant))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get tenant company error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/tenant/company", operation_id="updateTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
+def update_tenant_company(
+    company_in: CompanyInfoUpdate,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Update company information for current tenant"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        data = company_in.model_dump(exclude_unset=True, by_alias=False)
+        for key, value in data.items():
+            if hasattr(tenant, key):
+                setattr(tenant, key, value)
+        
+        db_session.commit()
+        db_session.refresh(tenant)
+        
+        return ResponseEnvelope(data=TenantCompanyResponse.model_validate(tenant))
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update tenant company error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

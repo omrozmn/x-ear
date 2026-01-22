@@ -13,6 +13,7 @@ from sqlalchemy import func
 from schemas.base import ResponseEnvelope, ApiError
 
 from models.user import ActivityLog
+from core.models.user import User
 from core.models.party import Party
 from models.device import Device
 from models.sales import Sale

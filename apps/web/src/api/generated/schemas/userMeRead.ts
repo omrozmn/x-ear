@@ -22,5 +22,6 @@ export interface UserMeRead {
   lastName?: UserMeReadLastName;
   phone?: UserMeReadPhone;
   role?: UserMeReadRole;
+  isPhoneVerified?: boolean;
   permissions?: UserMeReadPermissions;
 }

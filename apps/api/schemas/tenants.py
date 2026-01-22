@@ -51,6 +51,7 @@ class TenantBase(AppBaseModel):
 
 class TenantCreate(TenantBase):
     """Schema for creating a tenant"""
+    slug: Optional[str] = Field(None, description="Tenant slug (auto-generated if empty)")
     plan_id: Optional[str] = Field(None, alias="planId", description="Subscription plan ID")
     current_plan: Optional[str] = Field(None, description="Current Plan Slug") # Admin override
     max_users: Optional[int] = Field(5, description="Max users")
@@ -139,7 +140,7 @@ class PlanRead(IDMixin, AppBaseModel):
 class TenantCompanyResponse(AppBaseModel):
     id: str
     name: str
-    company_info: Dict[str, Any] = Field(default_factory=dict, alias="companyInfo")
+    company_info: Optional[Dict[str, Any]] = Field(default_factory=dict, alias="companyInfo")
     settings: Optional[Dict[str, Any]] = None
 
 class TenantAssetResponse(AppBaseModel):

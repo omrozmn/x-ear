@@ -3168,6 +3168,192 @@
         }
       }
     },
+    "/api/appointments/availability": {
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "Get Availability",
+        "description": "Get available time slots for a date",
+        "operationId": "listAppointmentAvailability",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Date"
+            }
+          },
+          {
+            "name": "duration",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 120,
+              "minimum": 15,
+              "default": 30,
+              "title": "Duration"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_AppointmentAvailability_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/appointments/list": {
+      "get": {
+        "tags": [
+          "Appointments"
+        ],
+        "summary": "List Appointments",
+        "description": "List appointments with filters",
+        "operationId": "listAppointmentList",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Per Page"
+            }
+          },
+          {
+            "name": "party_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Party Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_List_AppointmentRead__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/appointments/{appointment_id}": {
       "get": {
         "tags": [
@@ -3453,192 +3639,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ResponseEnvelope_AppointmentRead_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/appointments/availability": {
-      "get": {
-        "tags": [
-          "Appointments"
-        ],
-        "summary": "Get Availability",
-        "description": "Get available time slots for a date",
-        "operationId": "listAppointmentAvailability",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "date",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Date"
-            }
-          },
-          {
-            "name": "duration",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 120,
-              "minimum": 15,
-              "default": 30,
-              "title": "Duration"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseEnvelope_AppointmentAvailability_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/appointments/list": {
-      "get": {
-        "tags": [
-          "Appointments"
-        ],
-        "summary": "List Appointments",
-        "description": "List appointments with filters",
-        "operationId": "listAppointmentList",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1,
-              "title": "Page"
-            }
-          },
-          {
-            "name": "per_page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 20,
-              "title": "Per Page"
-            }
-          },
-          {
-            "name": "party_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Party Id"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Status"
-            }
-          },
-          {
-            "name": "start_date",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Start Date"
-            }
-          },
-          {
-            "name": "end_date",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "End Date"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseEnvelope_List_AppointmentRead__"
                 }
               }
             }
@@ -4611,9 +4611,16 @@
           {
             "name": "user_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "User Id"
             }
           }
@@ -4650,13 +4657,25 @@
         "summary": "Get User Notification Settings",
         "description": "Get user notification settings",
         "operationId": "listNotificationSettings",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "user_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "User Id"
             }
           }
@@ -5563,7 +5582,7 @@
             "required": false,
             "schema": {
               "type": "number",
-              "minimum": 0,
+              "minimum": 0.0,
               "default": 0,
               "title": "Min Amount"
             }
@@ -6842,7 +6861,7 @@
         }
       }
     },
-    "/api/": {
+    "/api/tenant/users": {
       "get": {
         "tags": [
           "Tenant Users"
@@ -6867,7 +6886,9 @@
             "OAuth2PasswordBearer": []
           }
         ]
-      },
+      }
+    },
+    "/api/": {
       "post": {
         "tags": [
           "Tenant Users"
@@ -7012,6 +7033,78 @@
             }
           }
         }
+      }
+    },
+    "/api/tenant/company": {
+      "get": {
+        "tags": [
+          "Tenant Users"
+        ],
+        "summary": "Get Tenant Company",
+        "description": "Get company information for current tenant",
+        "operationId": "getTenantCompany",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_TenantCompanyResponse_"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Tenant Users"
+        ],
+        "summary": "Update Tenant Company",
+        "description": "Update company information for current tenant",
+        "operationId": "updateTenantCompany",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyInfoUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_TenantCompanyResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/api/suppliers": {
@@ -7492,7 +7585,6 @@
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": true,
                 "type": "object",
                 "title": "Settings Data"
               }
@@ -11444,6 +11536,73 @@
             "OAuth2PasswordBearer": []
           }
         ]
+      }
+    },
+    "/api/audit": {
+      "get": {
+        "tags": [
+          "Audit"
+        ],
+        "summary": "List Audit",
+        "description": "List audit logs with optional filters",
+        "operationId": "listAudit",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Type"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/schemas__base__ResponseEnvelope_List_ActivityLogRead____2"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/permissions": {
@@ -16759,6 +16918,181 @@
         }
       }
     },
+    "/api/admin/marketplaces/init-db": {
+      "post": {
+        "tags": [
+          "Admin Marketplaces"
+        ],
+        "summary": "Init Db",
+        "description": "Initialize Marketplace tables",
+        "operationId": "createAdminMarketplaceInitDb",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/marketplaces/integrations": {
+      "get": {
+        "tags": [
+          "Admin Marketplaces"
+        ],
+        "summary": "Get Integrations",
+        "description": "Get list of marketplace integrations",
+        "operationId": "listAdminMarketplaceIntegrations",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Marketplaces"
+        ],
+        "summary": "Create Integration",
+        "description": "Create a new marketplace integration",
+        "operationId": "createAdminMarketplaceIntegrations",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntegrationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/marketplaces/integrations/{integration_id}/sync": {
+      "post": {
+        "tags": [
+          "Admin Marketplaces"
+        ],
+        "summary": "Sync Integration",
+        "description": "Trigger sync for an integration",
+        "operationId": "createAdminMarketplaceIntegrationSync",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/notifications/init-db": {
       "post": {
         "tags": [
@@ -18133,73 +18467,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ResponseEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/audit": {
-      "get": {
-        "tags": [
-          "Audit"
-        ],
-        "summary": "List Audit",
-        "description": "List audit logs with optional filters",
-        "operationId": "listAudit",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "entity_type",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Entity Type"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 500,
-              "minimum": 1,
-              "default": 200,
-              "title": "Limit"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/schemas__base__ResponseEnvelope_List_ActivityLogRead____2"
                 }
               }
             }
@@ -23577,7 +23844,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Get Capabilities Api Ai Capabilities Get"
                 }
@@ -23745,7 +24011,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Acknowledge Alert Api Ai Alerts  Alert Id  Acknowledge Post"
                 }
               }
@@ -23781,7 +24046,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Trigger Alert Check Api Ai Alerts Check Post"
                 }
@@ -23931,7 +24195,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Cleanup Expired Approvals Api Ai Admin Cleanup Expired Post"
                 }
@@ -24030,19 +24293,35 @@
             "description": "Whether AI is currently available"
           },
           "phase": {
-            "$ref": "#/components/schemas/PhaseStatusResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PhaseStatusResponse"
+              }
+            ],
             "description": "Phase status"
           },
           "kill_switch": {
-            "$ref": "#/components/schemas/ai__api__status__KillSwitchStatusResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ai__api__status__KillSwitchStatusResponse"
+              }
+            ],
             "description": "Kill switch status"
           },
           "usage": {
-            "$ref": "#/components/schemas/UsageStatusResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageStatusResponse"
+              }
+            ],
             "description": "Usage status"
           },
           "model": {
-            "$ref": "#/components/schemas/ModelStatusResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ModelStatusResponse"
+              }
+            ],
             "description": "Model status"
           },
           "timestamp": {
@@ -24148,7 +24427,6 @@
             "description": "Schema version of the tool"
           },
           "parameters": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Parameters",
             "description": "Tool parameters"
@@ -24204,7 +24482,6 @@
           },
           "topActions": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24327,7 +24604,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -24396,7 +24672,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -24759,7 +25034,6 @@
             "title": "Toptenants"
           },
           "domainMetrics": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Domainmetrics"
           }
@@ -24778,7 +25052,6 @@
       "AdminDashboardMetrics": {
         "properties": {
           "metrics": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Metrics"
           },
@@ -24894,7 +25167,6 @@
                 "$ref": "#/components/schemas/schemas__users__AdminUserRead"
               },
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -25473,7 +25745,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -25542,7 +25813,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -25731,11 +26001,19 @@
             "default": 30
           },
           "appointmentType": {
-            "$ref": "#/components/schemas/AppointmentType",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentType"
+              }
+            ],
             "default": "consultation"
           },
           "status": {
-            "$ref": "#/components/schemas/AppointmentStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentStatus"
+              }
+            ],
             "default": "scheduled"
           },
           "notes": {
@@ -25768,7 +26046,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -25876,11 +26153,19 @@
             "default": 30
           },
           "appointmentType": {
-            "$ref": "#/components/schemas/AppointmentType",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentType"
+              }
+            ],
             "default": "consultation"
           },
           "status": {
-            "$ref": "#/components/schemas/AppointmentStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentStatus"
+              }
+            ],
             "default": "scheduled"
           },
           "notes": {
@@ -26900,7 +27185,6 @@
           "customerInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -27113,7 +27397,6 @@
           "emailTemplate": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -27640,7 +27923,6 @@
           "targetCriteria": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -27835,7 +28117,6 @@
           "targetCriteria": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -28111,7 +28392,6 @@
           "targetCriteria": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -28366,7 +28646,6 @@
           "context": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -28765,6 +29044,166 @@
         "title": "CommissionRead",
         "description": "Schema for reading a commission"
       },
+      "CompanyInfoUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "taxId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxid"
+          },
+          "taxOffice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxoffice"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "district": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "District"
+          },
+          "postalCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postalcode"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "fax": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fax"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "bankName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bankname"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban"
+          },
+          "accountHolder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountholder"
+          }
+        },
+        "type": "object",
+        "title": "CompanyInfoUpdate"
+      },
       "CompleteSignupRequest": {
         "properties": {
           "email": {
@@ -28852,13 +29291,16 @@
       "CreateActionRequest": {
         "properties": {
           "intent": {
-            "$ref": "#/components/schemas/IntentRequest",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntentRequest"
+              }
+            ],
             "description": "Classified intent"
           },
           "context": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -29164,7 +29606,6 @@
           "tenant": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -29176,7 +29617,6 @@
           "plan": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -29251,7 +29691,6 @@
           },
           "recentActivity": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -29465,7 +29904,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -29480,7 +29918,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -29513,7 +29950,6 @@
             "title": "Assignmentids"
           },
           "pricing": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Pricing"
           },
@@ -30434,7 +30870,7 @@
             ],
             "title": "Sgkscheme"
           },
-          "sgkSupportType": {
+          "sgksupporttype": {
             "anyOf": [
               {
                 "type": "string"
@@ -30478,7 +30914,7 @@
             ],
             "title": "Sgkreduction"
           },
-          "sgkSupport": {
+          "sgksupport": {
             "anyOf": [
               {
                 "type": "number"
@@ -31170,7 +31606,6 @@
           "metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -31316,7 +31751,6 @@
           "metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -31732,7 +32166,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -31793,7 +32226,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -32054,7 +32486,6 @@
           "execution_result": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -32195,7 +32626,6 @@
           "sgkInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -32232,7 +32662,6 @@
           "audiogramData": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -32275,7 +32704,6 @@
           "audiogramData": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -32362,7 +32790,6 @@
           "metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -32437,6 +32864,114 @@
         "type": "object",
         "title": "InstallmentPayment"
       },
+      "IntegrationCreate": {
+        "properties": {
+          "tenantId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tenantid"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "apiKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apikey"
+          },
+          "apiSecret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apisecret"
+          },
+          "sellerId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sellerid"
+          },
+          "syncStock": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Syncstock",
+            "default": true
+          },
+          "syncPrices": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Syncprices",
+            "default": true
+          },
+          "syncOrders": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Syncorders",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "IntegrationCreate"
+      },
       "IntegrationDetailResponse": {
         "properties": {
           "success": {
@@ -32447,7 +32982,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -32516,7 +33050,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -32590,7 +33123,6 @@
             "description": "Confidence score"
           },
           "entities": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Entities",
             "description": "Extracted entities"
@@ -32619,7 +33151,6 @@
             "description": "Confidence score"
           },
           "entities": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Entities",
             "description": "Extracted entities"
@@ -32811,8 +33342,7 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Features",
-            "default": []
+            "title": "Features"
           },
           "direction": {
             "anyOf": [
@@ -33013,8 +33543,7 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Features",
-            "default": []
+            "title": "Features"
           },
           "direction": {
             "anyOf": [
@@ -33062,8 +33591,7 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Availableserials",
-            "default": []
+            "title": "Availableserials"
           },
           "vatIncludedPrice": {
             "type": "number",
@@ -33286,7 +33814,6 @@
         },
         "type": "object",
         "required": [
-          "copy",
           "cancellation"
         ],
         "title": "InvoiceCopyCancelResponse"
@@ -33306,7 +33833,11 @@
             "description": "Invoice number"
           },
           "invoiceType": {
-            "$ref": "#/components/schemas/InvoiceType",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceType"
+              }
+            ],
             "description": "Invoice type",
             "default": "sale"
           },
@@ -33385,7 +33916,11 @@
             "default": 0.0
           },
           "status": {
-            "$ref": "#/components/schemas/InvoiceStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceStatus"
+              }
+            ],
             "description": "Invoice status",
             "default": "draft"
           },
@@ -33447,7 +33982,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -33577,7 +34111,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -34071,7 +34604,6 @@
           "company_info": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -34547,7 +35079,15 @@
             "description": "JWT refresh token"
           },
           "user": {
-            "$ref": "#/components/schemas/AuthUserRead",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthUserRead"
+              },
+              {
+                "$ref": "#/components/schemas/schemas__auth__AdminUserRead"
+              }
+            ],
+            "title": "User",
             "description": "Authenticated user data"
           },
           "requiresPhoneVerification": {
@@ -34564,7 +35104,7 @@
           "user"
         ],
         "title": "LoginResponse",
-        "description": "Response for login endpoint.\n\nContains tokens and user data for successful authentication."
+        "description": "Response for login endpoint.\n\nContains tokens and user data for successful authentication.\nSupports both regular users (AuthUserRead) and admin users (AdminUserRead)."
       },
       "LookupPhoneRequest": {
         "properties": {
@@ -34607,6 +35147,142 @@
         ],
         "title": "LookupPhoneResponse",
         "description": "Response for phone lookup endpoint.\n\nReturns masked phone number for password reset flow."
+      },
+      "MarketplaceDetailResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "MarketplaceDetailResponse"
+      },
+      "MarketplaceListResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "MarketplaceListResponse"
       },
       "MessageResponse": {
         "properties": {
@@ -34759,7 +35435,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -34878,7 +35553,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -34986,7 +35660,6 @@
           "preferences": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -34998,7 +35671,6 @@
           "settings": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -35351,7 +36023,6 @@
       "OcrDebugResponse": {
         "properties": {
           "result": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Result"
           },
@@ -35371,7 +36042,6 @@
         "properties": {
           "entities": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -35541,7 +36211,6 @@
           "patientInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -35564,7 +36233,6 @@
       "OcrProcessResponse": {
         "properties": {
           "result": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Result"
           },
@@ -35744,7 +36412,11 @@
             "title": "Addressfull"
           },
           "status": {
-            "$ref": "#/components/schemas/PartyStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartyStatus"
+              }
+            ],
             "default": "active"
           },
           "segment": {
@@ -35793,7 +36465,6 @@
             "default": []
           },
           "sgkInfo": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Sgkinfo",
             "default": {}
@@ -35828,7 +36499,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -35897,7 +36567,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -36209,7 +36878,6 @@
           "address": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -36362,7 +37030,6 @@
           "sgkInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -36653,7 +37320,6 @@
           "sgkInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -37092,6 +37758,69 @@
         ],
         "title": "PaymentConfirmResponse"
       },
+      "PaymentInstallmentRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for the resource"
+          },
+          "paymentPlanId": {
+            "type": "string",
+            "title": "Paymentplanid"
+          },
+          "installmentNumber": {
+            "type": "integer",
+            "title": "Installmentnumber"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Duedate"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "paidDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paiddate"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "paymentPlanId",
+          "installmentNumber",
+          "amount",
+          "dueDate",
+          "status"
+        ],
+        "title": "PaymentInstallmentRead"
+      },
       "PaymentMethodData": {
         "properties": {
           "count": {
@@ -37131,7 +37860,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -37145,6 +37873,122 @@
         },
         "type": "object",
         "title": "PaymentPlanCreate"
+      },
+      "PaymentPlanRead": {
+        "properties": {
+          "planName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planname"
+          },
+          "totalAmount": {
+            "type": "number",
+            "title": "Totalamount"
+          },
+          "installmentCount": {
+            "type": "integer",
+            "title": "Installmentcount"
+          },
+          "downPayment": {
+            "type": "number",
+            "title": "Downpayment",
+            "default": 0.0
+          },
+          "monthlyAmount": {
+            "type": "number",
+            "title": "Monthlyamount",
+            "default": 0.0
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startdate"
+          },
+          "interestRate": {
+            "type": "number",
+            "title": "Interestrate",
+            "default": 0.0
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat",
+            "description": "Last update timestamp"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for the resource"
+          },
+          "saleId": {
+            "type": "string",
+            "title": "Saleid"
+          },
+          "planType": {
+            "type": "string",
+            "title": "Plantype"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "active"
+          },
+          "installments": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentInstallmentRead"
+            },
+            "type": "array",
+            "title": "Installments",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "totalAmount",
+          "installmentCount",
+          "startDate",
+          "id",
+          "saleId",
+          "planType"
+        ],
+        "title": "PaymentPlanRead"
       },
       "PaymentRecordRead": {
         "properties": {
@@ -37587,11 +38431,10 @@
           "features": {
             "anyOf": [
               {
-                "items": {
-                  "additionalProperties": true,
-                  "type": "object"
+                "additionalProperties": {
+                  "type": "string"
                 },
-                "type": "array"
+                "type": "object"
               },
               {
                 "type": "null"
@@ -37655,7 +38498,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -37747,7 +38589,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -37876,11 +38717,10 @@
           "features": {
             "anyOf": [
               {
-                "items": {
-                  "additionalProperties": true,
-                  "type": "object"
+                "additionalProperties": {
+                  "type": "string"
                 },
-                "type": "array"
+                "type": "object"
               },
               {
                 "type": "null"
@@ -37990,11 +38830,10 @@
           "features": {
             "anyOf": [
               {
-                "items": {
-                  "additionalProperties": true,
-                  "type": "object"
+                "additionalProperties": {
+                  "type": "string"
                 },
-                "type": "array"
+                "type": "object"
               },
               {
                 "type": "null"
@@ -38170,7 +39009,6 @@
             "title": "Url"
           },
           "fields": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Fields"
           },
@@ -38190,17 +39028,14 @@
       "PricingSettingsResponse": {
         "properties": {
           "devices": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Devices"
           },
           "accessories": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Accessories"
           },
           "services": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Services"
           }
@@ -39128,7 +39963,6 @@
         "properties": {
           "activity": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -39383,7 +40217,6 @@
           "oldDeviceInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -39395,7 +40228,6 @@
           "newDeviceInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -39484,7 +40316,6 @@
       "ReplacementInvoiceResponse": {
         "properties": {
           "invoice": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Invoice"
           },
@@ -39617,8 +40448,7 @@
           "priceDifference": {
             "anyOf": [
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -40535,6 +41365,12 @@
             "default": true
           },
           "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
             "title": "Data"
           },
           "message": {
@@ -43459,7 +44295,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -49556,6 +50391,73 @@
         "type": "object",
         "title": "ResponseEnvelope[TenantAnalytics]"
       },
+      "ResponseEnvelope_TenantCompanyResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TenantCompanyResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "ResponseEnvelope[TenantCompanyResponse]"
+      },
       "ResponseEnvelope_TenantRead_": {
         "properties": {
           "success": {
@@ -50776,7 +51678,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -51189,31 +52090,59 @@
             "description": "Aggregation window in minutes"
           },
           "inference_latency": {
-            "$ref": "#/components/schemas/LatencyMetricsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LatencyMetricsResponse"
+              }
+            ],
             "description": "Inference latency metrics"
           },
           "intent_latency": {
-            "$ref": "#/components/schemas/LatencyMetricsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LatencyMetricsResponse"
+              }
+            ],
             "description": "Intent classification latency"
           },
           "planning_latency": {
-            "$ref": "#/components/schemas/LatencyMetricsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LatencyMetricsResponse"
+              }
+            ],
             "description": "Action planning latency"
           },
           "execution_latency": {
-            "$ref": "#/components/schemas/LatencyMetricsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LatencyMetricsResponse"
+              }
+            ],
             "description": "Execution latency"
           },
           "rates": {
-            "$ref": "#/components/schemas/RateMetricsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RateMetricsResponse"
+              }
+            ],
             "description": "Error and timeout rates"
           },
           "approvals": {
-            "$ref": "#/components/schemas/ApprovalMetricsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalMetricsResponse"
+              }
+            ],
             "description": "Approval metrics"
           },
           "quota": {
-            "$ref": "#/components/schemas/QuotaMetricsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuotaMetricsResponse"
+              }
+            ],
             "description": "Quota metrics"
           }
         },
@@ -51739,7 +52668,7 @@
             "title": "Paidamount",
             "default": 0.0
           },
-          "patientPayment": {
+          "partyPayment": {
             "anyOf": [
               {
                 "type": "number"
@@ -51748,7 +52677,19 @@
                 "type": "null"
               }
             ],
-            "title": "Patientpayment"
+            "title": "Partypayment"
+          },
+          "remainingAmount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remainingamount",
+            "default": 0.0
           },
           "rightEarAssignmentId": {
             "anyOf": [
@@ -51786,7 +52727,6 @@
           "patient": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -51799,8 +52739,7 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceAssignmentRead"
                 },
                 "type": "array"
               },
@@ -51813,21 +52752,18 @@
           "paymentPlan": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/PaymentPlanRead"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Paymentplan"
+            ]
           },
           "paymentRecords": {
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/components/schemas/PaymentRecordRead"
                 },
                 "type": "array"
               },
@@ -51841,7 +52777,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -51855,7 +52790,6 @@
           "invoice": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -51928,7 +52862,6 @@
           },
           "errors": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -52249,7 +53182,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -52429,7 +53361,6 @@
           "tenant": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -52439,7 +53370,6 @@
             "title": "Tenant"
           },
           "user": {
-            "additionalProperties": true,
             "type": "object",
             "title": "User"
           },
@@ -52508,7 +53438,7 @@
             ],
             "title": "Text2"
           },
-          "textA": {
+          "texta": {
             "anyOf": [
               {
                 "type": "string"
@@ -52519,7 +53449,7 @@
             ],
             "title": "Texta"
           },
-          "textB": {
+          "textb": {
             "anyOf": [
               {
                 "type": "string"
@@ -52616,7 +53546,11 @@
             "title": "Tenantid"
           },
           "status": {
-            "$ref": "#/components/schemas/SmsHeaderStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SmsHeaderStatus"
+              }
+            ],
             "default": "pending"
           },
           "rejectionReason": {
@@ -53003,8 +53937,7 @@
           "documents": {
             "items": {},
             "type": "array",
-            "title": "Documents",
-            "default": []
+            "title": "Documents"
           },
           "documentsSubmittedAt": {
             "anyOf": [
@@ -53104,7 +54037,6 @@
           "result": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -53407,7 +54339,6 @@
           "tenant": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -53419,7 +54350,6 @@
           "plan": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -53600,7 +54530,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -53669,7 +54598,6 @@
           "data": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -54417,7 +55345,6 @@
       "SystemSettingsResponse": {
         "properties": {
           "settings": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Settings"
           }
@@ -54449,7 +55376,6 @@
           "filterCriteria": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -54525,7 +55451,6 @@
           "filterCriteria": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -54588,6 +55513,46 @@
         ],
         "title": "TenantAnalytics"
       },
+      "TenantCompanyResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "companyInfo": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Companyinfo"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TenantCompanyResponse"
+      },
       "TenantCreate": {
         "properties": {
           "name": {
@@ -54596,9 +55561,16 @@
             "description": "Tenant name"
           },
           "slug": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Slug",
-            "description": "Tenant slug (unique identifier)"
+            "description": "Tenant slug (auto-generated if empty)"
           },
           "email": {
             "anyOf": [
@@ -54712,7 +55684,11 @@
             "description": "Tax office"
           },
           "status": {
-            "$ref": "#/components/schemas/TenantStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TenantStatus"
+              }
+            ],
             "description": "Tenant status",
             "default": "active"
           },
@@ -54781,7 +55757,6 @@
           "companyInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -54795,7 +55770,6 @@
           "settings": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -54809,8 +55783,7 @@
         },
         "type": "object",
         "required": [
-          "name",
-          "slug"
+          "name"
         ],
         "title": "TenantCreate",
         "description": "Schema for creating a tenant"
@@ -54818,7 +55791,6 @@
       "TenantRatesUpdate": {
         "properties": {
           "rates": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Rates"
           }
@@ -54979,11 +55951,15 @@
             "description": "Tax office"
           },
           "status": {
-            "$ref": "#/components/schemas/TenantStatus",
-            "default": "active"
+            "$ref": "#/components/schemas/TenantStatus"
           },
           "productCode": {
-            "$ref": "#/components/schemas/ProductCode"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductCode"
+              }
+            ],
+            "description": "Product Code"
           },
           "planId": {
             "anyOf": [
@@ -55037,7 +56013,6 @@
           "settings": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -55049,13 +56024,11 @@
           },
           "maxUsers": {
             "type": "integer",
-            "title": "Maxusers",
-            "default": 5
+            "title": "Maxusers"
           },
           "currentUsers": {
             "type": "integer",
-            "title": "Currentusers",
-            "default": 0
+            "title": "Currentusers"
           }
         },
         "type": "object",
@@ -55063,7 +56036,10 @@
           "id",
           "name",
           "slug",
-          "productCode"
+          "status",
+          "productCode",
+          "maxUsers",
+          "currentUsers"
         ],
         "title": "TenantRead",
         "description": "Schema for reading a tenant"
@@ -55270,7 +56246,6 @@
           "companyInfo": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -55282,7 +56257,6 @@
           "settings": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -55294,7 +56268,6 @@
           "featureUsage": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -55591,15 +56564,27 @@
             "title": "Description"
           },
           "status": {
-            "$ref": "#/components/schemas/TicketStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketStatus"
+              }
+            ],
             "default": "open"
           },
           "priority": {
-            "$ref": "#/components/schemas/TicketPriority",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketPriority"
+              }
+            ],
             "default": "medium"
           },
           "category": {
-            "$ref": "#/components/schemas/TicketCategory",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketCategory"
+              }
+            ],
             "default": "general"
           },
           "tenantId": {
@@ -55725,7 +56710,6 @@
           "details": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -55859,7 +56843,6 @@
           "details": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -56413,6 +57396,11 @@
             ],
             "title": "Role"
           },
+          "isPhoneVerified": {
+            "type": "boolean",
+            "title": "Isphoneverified",
+            "default": false
+          },
           "permissions": {
             "anyOf": [
               {
@@ -56611,6 +57599,11 @@
             ],
             "title": "Role"
           },
+          "isPhoneVerified": {
+            "type": "boolean",
+            "title": "Isphoneverified",
+            "default": false
+          },
           "isActive": {
             "anyOf": [
               {
@@ -56795,7 +57788,6 @@
             "title": "Success"
           },
           "data": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Data"
           }
@@ -56819,7 +57811,6 @@
             "title": "Data"
           },
           "meta": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Meta"
           }
@@ -56930,7 +57921,6 @@
           "emailTemplate": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -57207,14 +58197,12 @@
       "ai__api__admin__KillSwitchStatusResponse": {
         "properties": {
           "global_switch": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Global Switch",
             "description": "Global kill switch status"
           },
           "tenant_switches": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -57223,7 +58211,6 @@
           },
           "capability_switches": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -58004,7 +58991,6 @@
           "details": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -58664,7 +59650,6 @@
           },
           "errors": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -58719,7 +59704,6 @@
           },
           "errors": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -59035,6 +60019,11 @@
               }
             ],
             "title": "Role"
+          },
+          "isPhoneVerified": {
+            "type": "boolean",
+            "title": "Isphoneverified",
+            "default": false
           },
           "isActive": {
             "anyOf": [

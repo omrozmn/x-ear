@@ -312,11 +312,20 @@ def send_campaign(
              
         except Exception as e:
              logger.error(f"SMS Service failed: {e}")
-             camp.status = 'failed'
-             # Refund credit? Or simplistic fail state?
-             # Flask logic didn't refund explicitly in catch block shown, just set failed.
-             # I'll stick to simple fail state update.
-             db.commit() 
+             
+             # ATOMICITY FIX: Refund credit on failure
+             try:
+                 # Re-fetch credit to be safe or rely on session tracking
+                 # Session is still active.
+                 credit.balance += cost
+                 credit.total_used -= cost # Revert usage stats
+                 camp.status = 'failed'
+                 camp.actual_cost = 0
+                 db.commit()
+                 logger.info(f"Refunded {cost} credits for campaign {camp.id} due to send failure")
+             except Exception as inner_e:
+                 logger.critical(f"CRITICAL: Failed to refund credit for campaign {camp.id}: {inner_e}")
+            
              raise HTTPException(status_code=500, detail=f"SMS Provider Error: {str(e)}")
 
     except HTTPException:

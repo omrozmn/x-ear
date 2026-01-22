@@ -31,7 +31,7 @@ import type {
   ResponseEnvelopePermissionRead,
   ResponseEnvelopeRolePermissionsResponse,
   ResponseEnvelopeUserPermissionsResponse,
-  RolePermissionsUpdate
+  RoutersPermissionsRolePermissionsUpdate
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -389,14 +389,14 @@ export function useGetPermissionRole<TData = Awaited<ReturnType<typeof getPermis
  */
 export const updatePermissionRole = (
     roleName: string,
-    rolePermissionsUpdate: RolePermissionsUpdate,
+    routersPermissionsRolePermissionsUpdate: RoutersPermissionsRolePermissionsUpdate,
  ) => {
       
       
       return customInstance<ResponseEnvelopeRolePermissionsResponse>(
       {url: `/api/permissions/role/${roleName}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: rolePermissionsUpdate
+      data: routersPermissionsRolePermissionsUpdate
     },
       );
     }
@@ -404,8 +404,8 @@ export const updatePermissionRole = (
 
 
 export const getUpdatePermissionRoleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RolePermissionsUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RolePermissionsUpdate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RoutersPermissionsRolePermissionsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RoutersPermissionsRolePermissionsUpdate}, TContext> => {
 
 const mutationKey = ['updatePermissionRole'];
 const {mutation: mutationOptions} = options ?
@@ -417,7 +417,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePermissionRole>>, {roleName: string;data: RolePermissionsUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePermissionRole>>, {roleName: string;data: RoutersPermissionsRolePermissionsUpdate}> = (props) => {
           const {roleName,data} = props ?? {};
 
           return  updatePermissionRole(roleName,data,)
@@ -429,18 +429,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdatePermissionRoleMutationResult = NonNullable<Awaited<ReturnType<typeof updatePermissionRole>>>
-    export type UpdatePermissionRoleMutationBody = RolePermissionsUpdate
+    export type UpdatePermissionRoleMutationBody = RoutersPermissionsRolePermissionsUpdate
     export type UpdatePermissionRoleMutationError = HTTPValidationError
 
     /**
  * @summary Update Role Permissions
  */
 export const useUpdatePermissionRole = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RolePermissionsUpdate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePermissionRole>>, TError,{roleName: string;data: RoutersPermissionsRolePermissionsUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updatePermissionRole>>,
         TError,
-        {roleName: string;data: RolePermissionsUpdate},
+        {roleName: string;data: RoutersPermissionsRolePermissionsUpdate},
         TContext
       > => {
 

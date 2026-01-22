@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SaleReadPaymentPlanAnyOf } from './saleReadPaymentPlanAnyOf';
+import type { PaymentPlanRead } from './paymentPlanRead';
 
-export type SaleReadPaymentPlan = SaleReadPaymentPlanAnyOf | null;
+export type SaleReadPaymentPlan = PaymentPlanRead | null;

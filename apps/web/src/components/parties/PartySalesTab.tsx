@@ -15,10 +15,7 @@ import {
 } from '@x-ear/ui-web';
 import { Plus, Grid, List, RefreshCw, FileText, Eye, CheckCircle, Send, AlertCircle } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
-import { Sale } from '../../types/party/party-communication.types';
-import { PaymentRecord as OrvalPaymentRecord } from '../../generated/orval-types';
-import { PartySale } from '../../hooks/party/usePartySales';
-import { ResponseEnvelopeListSaleRead, SaleRead } from '../../api/generated/schemas';
+import { ResponseEnvelopeListSaleRead, SaleRead, PaymentRecordRead } from '../../api/generated/schemas';
 import { PartySaleFormRefactored } from '../forms/party-sale-form/PartySaleFormRefactored';
 import { CollectionModal } from './modals/CollectionModal';
 import PromissoryNoteModal from './modals/PromissoryNoteModal';
@@ -32,7 +29,7 @@ import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
 import { PartySaleCard } from './party/PartySaleCard';
 import { SalesTableView } from './party/SalesTableView';
-import {listSales} from '@/api/client/sales.client';
+import { listSales } from '@/api/client/sales.client';
 import { PARTY_SALES_DATA } from '../../constants/storage-keys';
 
 interface DeviceReplacement {
@@ -69,7 +66,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [showEditSaleModal, setShowEditSaleModal] = useState(false);
   const [showReturnExchangeModal, setShowReturnExchangeModal] = useState(false);
   const [showProformaModal, setShowProformaModal] = useState(false);
-  const [selectedSale, setSelectedSale] = useState<Sale | undefined>(undefined);
+  const [selectedSale, setSelectedSale] = useState<SaleRead | undefined>(undefined);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -99,7 +96,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   } | null>(null);
 
   // Sales data state
-  const [sales, setSales] = useState<Sale[]>([]);
+  const [sales, setSales] = useState<SaleRead[]>([]);
   const [salesLoading, setSalesLoading] = useState(false);
   const [salesError, setSalesError] = useState<string | null>(null);
 
@@ -134,68 +131,12 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
       }
 
       console.log('💎 Raw salesData before transform:', salesData);
-      if (salesData.length > 0) {
-        console.log('💎 First sale paidAmount BEFORE transform:', salesData[0].paidAmount);
-      }
 
-      // Transform sales data
-      const transformedSales: PartySale[] = salesData.map((sale) => {
-        // Safe access to properties that might be numbers or strings from API
-        const finalAmt = Number(sale.finalAmount || sale.totalAmount || 0);
-        const paidAmt = Number(sale.paidAmount || 0);
-        const totalAmt = Number(sale.totalAmount || 0);
+      // GOLDEN PATH: Use Backend Type Directly (No more manual mapping)
+      // The API now returns exactly what we need, including computed fields.
+      const transformedSales = salesData;
 
-        // Convert SaleReadStatus to SaleStatus (string compatibility)
-        const status = String(sale.status || 'pending').toLowerCase();
-
-        return {
-          id: sale.id || '',
-          partyId: sale.partyId || party.id || '',
-          productId: typeof sale.productId === 'string' ? sale.productId : undefined,
-          saleDate: String(sale.saleDate || sale.createdAt || new Date().toISOString()),
-          totalAmount: totalAmt,
-          discountAmount: Number(sale.discountAmount || 0),
-          finalAmount: finalAmt,
-          paidAmount: paidAmt,
-          remainingAmount: Math.max(finalAmt - paidAmt, 0),
-          sgkCoverage: Number(sale.sgkCoverage || 0),
-          partyPayment: Number(sale.patientPayment || 0), // Mapping patientPayment to partyPayment
-          status: status as any, // Internal type uses generic string union often
-          paymentStatus: status as any,
-          paymentMethod: String(sale.paymentMethod || ''),
-          notes: String(sale.notes || ''),
-          devices: (Array.isArray(sale.devices) ? sale.devices : []).map((d: any) => ({
-            id: d.id || '',
-            name: d.name || '',
-            brand: d.brand || '',
-            model: d.model || '',
-            serialNumber: d.serialNumber,
-            barcode: d.barcode,
-            ear: d.ear,
-            listPrice: Number(d.listPrice || 0),
-            salePrice: Number(d.salePrice || 0),
-            sgkCoverageAmount: Number(d.sgkCoverageAmount || 0),
-            partyResponsibleAmount: Number(d.partyResponsibleAmount || 0)
-          })),
-          paymentRecords: (Array.isArray(sale.paymentRecords) ? sale.paymentRecords : []).map((p: any) => ({
-            id: p.id || '',
-            amount: Number(p.amount || 0),
-            paymentDate: p.paymentDate || new Date().toISOString(),
-            dueDate: p.dueDate,
-            paymentMethod: p.paymentMethod || '',
-            paymentType: p.paymentType || '',
-            status: p.status || '',
-            referenceNumber: p.referenceNumber,
-            notes: p.notes
-          })),
-          payments: Array.isArray(sale.payments) ? sale.payments : [],
-          invoice: sale.invoice ? (sale.invoice as any) : null,
-          createdAt: String(sale.createdAt || new Date().toISOString()),
-          updatedAt: String(sale.updatedAt || new Date().toISOString())
-        } as PartySale;
-      });
-
-      console.log('✅ Transformed sales:', transformedSales);
+      console.log('✅ Sales loaded (Golden Path):', transformedSales);
 
       setSales(transformedSales);
 
@@ -403,13 +344,13 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   }, [sales, searchTerm, statusFilter, paymentMethodFilter, amountRangeMin, amountRangeMax, sortBy, sortOrder]);
 
   // Event handlers with proper typing
-  const handleNewSale = (saleData: Sale) => {
+  const handleNewSale = (saleData: SaleRead) => {
     console.log('New sale created:', saleData);
     loadPartySales();
     setShowNewSaleModal(false);
   };
 
-  const handleEditSale = (sale: Sale) => {
+  const handleEditSale = (sale: SaleRead) => {
     setSelectedSale(sale);
     setShowEditSaleModal(true);
   };
@@ -424,21 +365,21 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     // TODO: Implement export functionality
   };
 
-  const handlePrintSales = (sales: Sale[]) => {
+  const handlePrintSales = (sales: SaleRead[]) => {
     console.log('Print sales:', sales);
     // TODO: Implement print functionality
   };
 
   const handleCreateSale = () => setShowNewSaleModal(true);
-  const handleEditSaleClick = (sale: Sale) => {
+  const handleEditSaleClick = (sale: SaleRead) => {
     setSelectedSale(sale);
     setShowEditSaleModal(true);
   };
-  const handleCollectionClick = (sale: Sale) => {
+  const handleCollectionClick = (sale: SaleRead) => {
     setSelectedSale(sale);
     setShowCollectionModal(true);
   };
-  const handlePromissoryNoteClick = (sale: Sale) => {
+  const handlePromissoryNoteClick = (sale: SaleRead) => {
     setSelectedSale(sale);
     setShowPromissoryNoteModal(true);
   };
@@ -580,42 +521,12 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             // viewMode === 'table' ? (
             // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
-              sales={filteredSales.map((sale) => {
-                // Use existing paidAmount and finalAmount from API transformation
-                // DO NOT recalculate as it causes data loss
-                const paidAmt = Number(sale.paidAmount || 0);
-                const finalAmt = Number(sale.finalAmount || 0);
-                const remaining = Math.max(finalAmt - paidAmt, 0);
-
-                return {
-                  id: sale.id as string,
-                  partyId: party.id || '',
-                  productId: sale.productId as string | undefined,
-                  saleDate: sale.saleDate || new Date().toISOString(),
-                  listPriceTotal: sale.listPriceTotal as number | undefined,
-                  totalAmount: Number(sale.totalAmount ?? 0),
-                  discountAmount: Number(sale.discountAmount || 0),
-                  finalAmount: finalAmt,
-                  paidAmount: paidAmt,
-                  remainingAmount: remaining,
-                  status: (sale.status || 'pending') as any,
-                  paymentStatus: (sale.paymentStatus || 'pending') as any,
-                  paymentMethod: sale.paymentMethod,
-                  soldBy: sale.soldBy,
-                  sgkCoverage: sale.sgkCoverage,
-                  devices: sale.devices || [],
-                  paymentRecords: sale.paymentRecords || [],
-                  payments: sale.payments || [],
-                  notes: sale.notes,
-                  createdAt: sale.createdAt || new Date().toISOString(),
-                  updatedAt: sale.updatedAt || new Date().toISOString()
-                } as unknown as PartySale;
-              })}
+              sales={filteredSales}
               partyId={party.id || ''}
-              onSaleClick={(sale) => handleEditSaleClick(sale as Sale)}
-              onEditSale={(sale) => handleEditSaleClick(sale as Sale)}
-              onCollectPayment={(sale) => handleCollectionClick(sale as Sale)}
-              onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as Sale)}
+              onSaleClick={(sale) => handleEditSaleClick(sale as SaleRead)}
+              onEditSale={(sale) => handleEditSaleClick(sale as SaleRead)}
+              onCollectPayment={(sale) => handleCollectionClick(sale as SaleRead)}
+              onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as SaleRead)}
             />
             // ) : (
             //   <div className="grid grid-cols-1 gap-4">
@@ -847,7 +758,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             onClose={() => setShowCollectionModal(false)}
             party={party}
             sale={selectedSale as any}
-            onPaymentCreate={(paymentData: OrvalPaymentRecord) => {
+            onPaymentCreate={(paymentData: PaymentRecordRead) => {
               console.log('Payment created:', paymentData);
               setShowCollectionModal(false);
               // Refresh sales list after payment

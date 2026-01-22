@@ -19,6 +19,10 @@ class Appointment(BaseModel):
     clinician_id = db.Column(db.String(50))
     branch_id = db.Column(db.String(50))
     tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+
+    __table_args__ = (
+        sa.UniqueConstraint('tenant_id', 'clinician_id', 'date', 'time', name='uq_appointment_slot'),
+    )
     
     # DateTime fields (will be consolidated to start_at in future)
     date = db.Column(db.DateTime, nullable=False)

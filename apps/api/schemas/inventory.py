@@ -27,7 +27,7 @@ class InventoryItemBase(AppBaseModel):
     cost_includes_kdv: bool = Field(False, alias="costIncludesKdv")
     
     # Attributes
-    features: List[str] = []
+    features: List[str] = Field(default_factory=list)
     direction: Optional[str] = None # left, right, both
     warranty: int = 0 # months
 
@@ -50,7 +50,7 @@ class InventoryItemRead(InventoryItemBase, IDMixin, TimestampMixin):
     used_inventory: int = Field(0, alias="usedInventory")
     on_trial: int = Field(0, alias="onTrial")
     
-    available_serials: List[str] = Field([], alias="availableSerials")
+    available_serials: List[str] = Field(default_factory=list, alias="availableSerials")
     
     # Computed / Aliases
     vat_included_price: float = Field(0.0, alias="vatIncludedPrice")
@@ -58,6 +58,14 @@ class InventoryItemRead(InventoryItemBase, IDMixin, TimestampMixin):
     
     # Aliases
     ear: Optional[str] = None
+    
+    @field_validator('features', 'available_serials', mode='before')
+    @classmethod
+    def ensure_list(cls, v):
+        """Convert None to empty list"""
+        if v is None:
+            return []
+        return v
     kdv: Optional[float] = None # Alias for vatRate
     
     @field_validator("ear", mode="before")

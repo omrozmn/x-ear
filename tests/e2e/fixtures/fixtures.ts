@@ -24,7 +24,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
         page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
 
         // 1. Login via API
-        const tokens = await login(request, process.env.TEST_USER_PHONE || '+905551234567', process.env.TEST_USER_OTP || '123456');
+        const tokens = await login(request, process.env.TEST_USER_PHONE || '+905551234567', process.env.TEST_USER_OTP || 'password123');
 
         // 2. Real Backend Mode - No Mocks
         console.log('[Fixture] Running against REAL BACKEND (No Mocks)');
@@ -79,8 +79,8 @@ export const test = base.extend<TestFixtures & TestOptions>({
         const page = await context.newPage();
 
         // Login as admin
-        const tokens = await login(request, process.env.ADMIN_USER_PHONE || '+905550000000', process.env.ADMIN_USER_OTP || '123456');
-        // NOTE: Admin might use a different URL or same auth mechanism. Assuming same for now.
+        const tokens = await login(request, process.env.ADMIN_USER_EMAIL || 'admin@example.com', process.env.ADMIN_USER_PASSWORD || 'Password123!');
+        // NOTE: Admin uses email/password. Login helper handles "identifier" which accepts email.
 
         // If admin is on a different port (8082), we should probably respect that in setupAuthenticatedPage or manually do it.
         // For now, let's assume we can set localStorage on the admin origin.
@@ -88,16 +88,29 @@ export const test = base.extend<TestFixtures & TestOptions>({
         await page.goto(adminUrl);
 
         await page.evaluate((data) => {
-            localStorage.setItem('auth_token', data.accessToken);
+            // Set Zustand persistent storage for AuthStore
+            // This is the primary source of truth for the Admin App
+            const authState = {
+                state: {
+                    user: data.user,
+                    token: data.accessToken,
+                    isAuthenticated: true,
+                    _hasHydrated: true
+                },
+                version: 0
+            };
+            localStorage.setItem('admin-auth-storage', JSON.stringify(authState));
+
+            console.log('[FIXTURE] Setting admin_token:', data.accessToken ? 'PRESENT' : 'MISSING');
+            if (!data.accessToken) console.error('[FIXTURE] Access Token is MISSING!');
+
+            // Critical: The axios interceptor reads from 'admin_token' key directly, 
+            // while Zustand uses 'admin-auth-storage'. We must bridge this by setting both.
+            localStorage.setItem('admin_token', data.accessToken);
             if (data.refreshToken) {
-                localStorage.setItem('refresh_token', data.refreshToken);
+                localStorage.setItem('admin_refresh_token', data.refreshToken);
             }
-            localStorage.setItem('user_info', JSON.stringify({
-                id: data.userId,
-                role: 'ADMIN', // specific to admin
-                tenantId: data.tenantId,
-            }));
-        }, tokens);
+        }, { user: tokens.user, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken || '' });
 
         await use(page);
         await context.close();

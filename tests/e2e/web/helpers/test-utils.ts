@@ -15,29 +15,48 @@ export interface AuthTokens {
   tenantId: string;
   userId: string;
   role?: string;
+  user?: any; // Full user object for admin auth hydration
 }
 
+/**
+ * Login helper - returns auth tokens
+ */
 /**
  * Login helper - returns auth tokens
  */
 export async function login(
   request: APIRequestContext,
   phone: string = '+905551234567',
-  otp: string = '123456' // In this context used as password
+  otp: string = 'password123' // Password for seeded test user
 ): Promise<AuthTokens> {
-  const loginResponse = await request.post(`${API_BASE_URL}/api/auth/login`, {
+  let endpoint = `${API_BASE_URL}/api/auth/login`;
+  let payload: any = {
+    identifier: phone,
+    password: otp
+  };
+
+  // Check if this is an admin login attempt
+  if (phone.includes('@example.com') || phone === 'admin') {
+    endpoint = `${API_BASE_URL}/api/admin/auth/login`;
+    payload = {
+      email: phone,
+      password: otp
+    };
+
+    // Admin dashboard URL might be different if needed in logs
+    console.log('[LOGIN] Detected Admin Login attempt:', phone);
+  }
+
+  const loginResponse = await request.post(endpoint, {
     headers: {
       'Idempotency-Key': crypto.randomUUID(),
       'Content-Type': 'application/json'
     },
-    data: {
-      identifier: phone,
-      password: otp
-    }
+    data: payload
   });
 
   if (!loginResponse.ok()) {
-    console.error('[LOGIN FAILURE] Login Endpoint Failed');
+    console.error(`[LOGIN FAILURE] ${endpoint} Failed`);
     console.error('URL:', loginResponse.url());
     console.error('Status:', loginResponse.status());
     console.error('Body:', await loginResponse.text());
@@ -47,12 +66,19 @@ export async function login(
 
   const data = await loginResponse.json();
 
+  // Admin response structure might differ slightly or be consistent
+  // Based on admin.py: { data: { token, refresh_token, user } }
+  // Standard auth.py: { data: { access_token, refresh_token, user } }
+
+  const responseData = data.data;
+
   return {
-    accessToken: data.data.accessToken,
-    refreshToken: data.data.refreshToken,
-    tenantId: data.data.user.tenantId,
-    userId: data.data.user.id,
-    role: data.data.user.role
+    accessToken: responseData.accessToken || responseData.token, // Admin response uses 'token'
+    refreshToken: responseData.refreshToken || responseData.refresh_token,
+    tenantId: responseData.user.tenantId || responseData.user.tenant_id || 'system',
+    userId: responseData.user.id,
+    role: responseData.user.role,
+    user: responseData.user
   };
 }
 
@@ -180,11 +206,15 @@ export async function createTestParty(
 ): Promise<string> {
   const response = await request.post(`${API_BASE_URL}/api/parties`, {
     headers: {
-      'Authorization': `Bearer ${authToken}`
+      'Authorization': `Bearer ${authToken}`,
+      'Idempotency-Key': crypto.randomUUID()
     },
     data
   });
 
+  if (!response.ok()) {
+    console.error('Failed to create party:', await response.text());
+  }
   expect(response.ok()).toBeTruthy();
 
   const responseData = await response.json();
@@ -201,7 +231,8 @@ export async function deleteTestParty(
 ): Promise<void> {
   const response = await request.delete(`${API_BASE_URL}/api/parties/${partyId}`, {
     headers: {
-      'Authorization': `Bearer ${authToken}`
+      'Authorization': `Bearer ${authToken}`,
+      'Idempotency-Key': crypto.randomUUID()
     }
   });
 
@@ -219,7 +250,8 @@ export async function assignRole(
 ): Promise<void> {
   const response = await request.post(`${API_BASE_URL}/api/parties/${partyId}/roles`, {
     headers: {
-      'Authorization': `Bearer ${authToken}`
+      'Authorization': `Bearer ${authToken}`,
+      'Idempotency-Key': crypto.randomUUID()
     },
     data: { roleCode }
   });

@@ -6,6 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AuthUserRead } from './authUserRead';
-import type { AdminUserRead } from './adminUserRead';
+import type { SchemasAuthAdminUserRead } from './schemasAuthAdminUserRead';
 
-export type ResponseEnvelopeUnionAuthUserReadAdminUserReadData = AuthUserRead | AdminUserRead | null;
+export type ResponseEnvelopeUnionAuthUserReadAdminUserReadData = AuthUserRead | SchemasAuthAdminUserRead | null;

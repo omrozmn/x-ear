@@ -28,7 +28,8 @@ from database import (
     get_current_tenant_id, 
     set_current_tenant_id,
     should_skip_tenant_filter,
-    _skip_tenant_filter as _skip_filter  # Alias for backward compat
+    _skip_tenant_filter as _skip_filter,  # Alias for backward compat
+    _current_tenant_id  # For token-based reset
 )
 
 logger = logging.getLogger(__name__)

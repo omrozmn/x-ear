@@ -275,12 +275,14 @@ def create_inventory(
     db: Session = Depends(get_db)
 ):
     """Create inventory item"""
-    data = item_in.model_dump(exclude_unset=True)
+    from uuid import uuid4
+    from datetime import datetime, timezone
+    
+    data = item_in.model_dump(exclude_unset=True, by_alias=False)
     
     # Determine tenant
-    access.tenant_id = access.tenant_id
     if not access.tenant_id:
-        access.tenant_id = data.get('access.tenant_id')
+        access.tenant_id = data.get('tenant_id')
     # Fallback logic from write.py
     if not access.tenant_id:
         t = db.query(Tenant).first()
@@ -293,7 +295,14 @@ def create_inventory(
     # Since existing model uses from_dict or explicit init.
     # We strip unexpected fields or trust Pydantic's cleanup.
     # Note: 'serials' might be in data? InventoryItemCreate likely has it.
-    serials = data.pop('serials', [])
+    serials = data.pop('available_serials', [])
+    
+    # Remove tenant_id from data to avoid duplicate
+    data.pop('tenant_id', None)
+    
+    # Generate ID if not provided
+    if 'id' not in data or not data['id']:
+        data['id'] = f"item_{datetime.now(timezone.utc).strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}"
     
     try:
         item = InventoryItem(tenant_id=access.tenant_id, **data)

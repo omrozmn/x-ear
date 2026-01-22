@@ -39,10 +39,10 @@ import type {
   ResponseEnvelopeListAdminUserRead,
   ResponseEnvelopeListTicketRead,
   ResponseEnvelopeUserRead,
+  RoutersAdminUpdateTenantUserRequest,
   SwitchRoleRequest,
   SwitchTenantRequest,
   TicketResponseRequest,
-  UpdateTenantUserRequest,
   UpdateTicketRequest
 } from '.././schemas';
 
@@ -375,14 +375,14 @@ export function useListAdminUserAll<TData = Awaited<ReturnType<typeof listAdminU
  */
 export const updateAdminUserAll = (
     userId: string,
-    updateTenantUserRequest: UpdateTenantUserRequest,
+    routersAdminUpdateTenantUserRequest: RoutersAdminUpdateTenantUserRequest,
  ) => {
       
       
       return customInstance<ResponseEnvelopeUserRead>(
       {url: `/api/admin/users/all/${userId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: updateTenantUserRequest
+      data: routersAdminUpdateTenantUserRequest
     },
       );
     }
@@ -390,8 +390,8 @@ export const updateAdminUserAll = (
 
 
 export const getUpdateAdminUserAllMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: UpdateTenantUserRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: UpdateTenantUserRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext> => {
 
 const mutationKey = ['updateAdminUserAll'];
 const {mutation: mutationOptions} = options ?
@@ -403,7 +403,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserAll>>, {userId: string;data: UpdateTenantUserRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserAll>>, {userId: string;data: RoutersAdminUpdateTenantUserRequest}> = (props) => {
           const {userId,data} = props ?? {};
 
           return  updateAdminUserAll(userId,data,)
@@ -415,18 +415,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateAdminUserAllMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminUserAll>>>
-    export type UpdateAdminUserAllMutationBody = UpdateTenantUserRequest
+    export type UpdateAdminUserAllMutationBody = RoutersAdminUpdateTenantUserRequest
     export type UpdateAdminUserAllMutationError = HTTPValidationError
 
     /**
  * @summary Update Any Tenant User
  */
 export const useUpdateAdminUserAll = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: UpdateTenantUserRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateAdminUserAll>>,
         TError,
-        {userId: string;data: UpdateTenantUserRequest},
+        {userId: string;data: RoutersAdminUpdateTenantUserRequest},
         TContext
       > => {
 

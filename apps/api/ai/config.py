@@ -9,7 +9,7 @@ Environment Variables:
 - AI_MODEL_PROVIDER: local (default)
 - AI_MODEL_ID: qwen2.5-7b-instruct (default)
 - AI_MODEL_BASE_URL: http://localhost:11434 (default)
-- AI_MODEL_TIMEOUT_SECONDS: 30 (default)
+- AI_MODEL_TIMEOUT_SECONDS: 90 (default)
 - AI_ENABLED: true/false - default: true
 - AI_RATE_LIMIT_PER_MINUTE: 60 (default)
 - AI_QUOTA_DEFAULT: 1000 (default requests per billing period)
@@ -124,7 +124,7 @@ class AIConfig:
             provider=os.getenv("AI_MODEL_PROVIDER", "local"),
             model_id=os.getenv("AI_MODEL_ID", "qwen2.5-7b-instruct"),
             base_url=os.getenv("AI_MODEL_BASE_URL", "http://localhost:11434"),
-            timeout_seconds=int(os.getenv("AI_MODEL_TIMEOUT_SECONDS", "30")),
+            timeout_seconds=int(os.getenv("AI_MODEL_TIMEOUT_SECONDS", "90")),
             max_tokens=int(os.getenv("AI_MODEL_MAX_TOKENS", "2048")),
             temperature=float(os.getenv("AI_MODEL_TEMPERATURE", "0.1")),
         )

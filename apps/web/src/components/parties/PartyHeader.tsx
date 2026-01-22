@@ -302,6 +302,18 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
             </Button>
           )}
 
+          {onGenerateReport && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onGenerateReport}
+              icon={<FileText className="w-4 h-4" />}
+              iconPosition="left"
+            >
+              Rapor Oluştur
+            </Button>
+          )}
+
           {onTagUpdate && (
             <Button
               size="sm"

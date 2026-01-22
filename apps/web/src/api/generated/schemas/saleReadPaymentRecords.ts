@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SaleReadPaymentRecordsAnyOfItem } from './saleReadPaymentRecordsAnyOfItem';
+import type { PaymentRecordRead } from './paymentRecordRead';
 
-export type SaleReadPaymentRecords = SaleReadPaymentRecordsAnyOfItem[] | null;
+export type SaleReadPaymentRecords = PaymentRecordRead[] | null;

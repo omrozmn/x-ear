@@ -10,6 +10,7 @@ from schemas.apps import AppRead, AppCreate, AppUpdate
 from models.user import User
 from models.role import Role
 from models.user_app_role import UserAppRole
+from models.app import App
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 
@@ -36,7 +37,7 @@ class OwnerTransfer(BaseModel):
 @router.get("", operation_id="listApps")
 async def list_apps(
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access("apps.read", admin_only=True))
+    access: UnifiedAccess = Depends(require_access("apps.read"))
 ):
     """List all apps"""
     apps = db.query(App).order_by(App.name).all()

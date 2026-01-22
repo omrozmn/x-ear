@@ -31,6 +31,7 @@ export interface UserRead {
   lastName?: UserReadLastName;
   phone?: UserReadPhone;
   role?: UserReadRole;
+  isPhoneVerified?: boolean;
   isActive?: UserReadIsActive;
   lastLogin?: UserReadLastLogin;
 }

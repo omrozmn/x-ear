@@ -156,5 +156,8 @@ export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
     );
 };
 
+// Export the configured axios instance for direct usage (e.g., AI client)
+export { axiosInstance as apiClient };
+
 // Default export for Orval
 export default adminApi;

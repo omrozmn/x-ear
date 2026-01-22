@@ -1,22 +1,37 @@
-import { test, expect } from '@playwright/test';
+/**
+ * Admin Panel - Plans & Billing E2E Tests
+ * Tests plan creation and pricing management
+ */
+import { test, expect } from '../fixtures/fixtures';
 
-const ADMIN_URL = process.env.ADMIN_BASE_URL || 'http://localhost:8082';
+test.describe('Admin: Plans & Billing', () => {
 
-test.describe('Admin Plans Management', () => {
+    test('should list subscription plans', async ({ adminPage }) => {
+        await adminPage.goto('/admin/plans');
+        await adminPage.waitForLoadState('networkidle');
 
-    test('should display plans or login', async ({ page }) => {
-        await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(3000);
-
-        const pageContent = page.locator('body');
-        await expect(pageContent).toBeVisible();
+        await expect(adminPage.getByRole('heading', { name: /Plans|Paketler|Abonelik/i }).first()).toBeVisible();
     });
 
-    test('should have root element', async ({ page }) => {
-        await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(3000);
+    test('should list all plans', async ({ adminPage }) => {
+        await adminPage.goto('/plans');
+        await expect(adminPage.getByRole('heading', { name: 'Planlar' })).toBeVisible();
+    });
 
-        const root = page.locator('#root, [id*="root"]').first();
-        await expect(root).toBeVisible({ timeout: 15000 });
+    test('should create a new plan', async ({ adminPage }) => {
+        await adminPage.goto('/plans');
+
+        const createBtn = adminPage.getByRole('button', { name: /Create|Yeni|Ekle/i }).first();
+        if (await createBtn.isVisible()) {
+            await createBtn.click();
+
+            await adminPage.getByLabel(/Name|Ad/i).first().fill('E2E Test Plan');
+            await adminPage.getByLabel(/Price|Fiyat/i).first().fill('999');
+
+            const saveBtn = adminPage.getByRole('button', { name: /Save|Kaydet/i }).first();
+            await saveBtn.click();
+
+            await expect(adminPage.getByText(/Success|Başarı/i)).toBeVisible();
+        }
     });
 });

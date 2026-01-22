@@ -134,16 +134,12 @@ export const AIChatWidget: React.FC = () => {
       <div 
         className="fixed inset-0 bg-black/50 z-40 md:hidden"
         onClick={() => setIsOpen(false)}
+        aria-hidden="true"
       />
       
-      {/* Chat Panel */}
+      {/* Chat Panel - Full screen on mobile, right panel on desktop */}
       <div 
-        className={`
-          fixed z-50 bg-white shadow-2xl
-          md:right-0 md:top-0 md:bottom-0 md:w-[420px] md:rounded-none
-          inset-0 md:inset-auto
-          flex flex-col
-        `}
+        className="fixed z-50 bg-white shadow-2xl flex flex-col inset-0 md:inset-auto md:right-0 md:top-0 md:bottom-0 md:w-[420px]"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-primary-700 text-white">
@@ -162,8 +158,9 @@ export const AIChatWidget: React.FC = () => {
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-primary-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-primary-800 rounded-lg transition-colors flex-shrink-0"
             aria-label="Kapat"
+            type="button"
           >
             <X className="h-5 w-5" />
           </button>

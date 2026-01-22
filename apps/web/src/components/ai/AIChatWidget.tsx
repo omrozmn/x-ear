@@ -19,24 +19,54 @@ interface Message {
   content: string;
   timestamp: Date;
   intent?: ChatResponse['intent'];
+  isExpanded?: boolean;
 }
+
+const MessageContent: React.FC<{ message: Message; onToggleExpand: () => void }> = ({ message, onToggleExpand }) => {
+  const isLong = message.content.length > 500;
+  const shouldTruncate = isLong && !message.isExpanded;
+  const displayContent = shouldTruncate ? message.content.slice(0, 500) + '...' : message.content;
+
+  return (
+    <>
+      <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${
+        message.role === 'user' ? 'text-white font-medium' : 'text-gray-900'
+      }`}>
+        {displayContent}
+      </p>
+      {isLong && (
+        <button
+          onClick={onToggleExpand}
+          className={`text-xs mt-2 underline ${
+            message.role === 'user' ? 'text-primary-100' : 'text-primary-600'
+          } hover:no-underline`}
+        >
+          {message.isExpanded ? 'Daha az göster' : 'Devamını oku'}
+        </button>
+      )}
+    </>
+  );
+};
 
 export const AIChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [sessionId] = useState(() => `session_${Date.now()}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]); // Also scroll when loading state changes
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -44,13 +74,65 @@ export const AIChatWidget: React.FC = () => {
     }
   }, [isOpen]);
 
+  // Network status monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success('İnternet bağlantısı yeniden kuruldu', { duration: 2000 });
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.error('İnternet bağlantısı kesildi', { duration: 4000 });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleToggleExpand = (messageId: string) => {
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId ? { ...msg, isExpanded: !msg.isExpanded } : msg
+    ));
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    const trimmedInput = input.trim();
+    
+    // Check network status
+    if (!isOnline) {
+      toast.error('İnternet bağlantınızı kontrol edin', {
+        duration: 3000,
+      });
+      return;
+    }
+    
+    // Validation (removed isLoading check - allow sending while thinking)
+    if (!trimmedInput) return;
+    
+    if (trimmedInput.length > 2000) {
+      toast.error('Mesajınız çok uzun. Lütfen 2000 karakterden kısa bir mesaj gönderin.', {
+        duration: 4000,
+      });
+      return;
+    }
+    
+    if (trimmedInput.length < 2) {
+      toast.error('Lütfen en az 2 karakter girin.', {
+        duration: 3000,
+      });
+      return;
+    }
 
     const userMessage: Message = {
       id: `msg_${Date.now()}`,
       role: 'user',
-      content: input.trim(),
+      content: trimmedInput,
       timestamp: new Date(),
     };
 
@@ -70,8 +152,13 @@ export const AIChatWidget: React.FC = () => {
         },
       });
 
+      // Handle empty or invalid response
+      if (!response || (!response.response && !response.clarificationQuestion)) {
+        throw new Error('Boş yanıt alındı');
+      }
+
       const assistantMessage: Message = {
-        id: response.requestId,
+        id: response.requestId || `msg_${Date.now()}`,
         role: 'assistant',
         content: response.response || response.clarificationQuestion || 'Anlayamadım, lütfen tekrar deneyin.',
         timestamp: new Date(),
@@ -87,17 +174,38 @@ export const AIChatWidget: React.FC = () => {
     } catch (error: any) {
       console.error('AI chat error:', error);
       
-      const errorMessage = error.response?.data?.error?.message || 
-                          error.message || 
-                          'AI ile iletişim kurulamadı';
+      let errorMessage = 'AI ile iletişim kurulamadı';
+      let userFriendlyMessage = 'Üzgünüm, şu anda yanıt veremiyorum. Lütfen birkaç saniye sonra tekrar deneyin.';
       
-      toast.error(errorMessage);
+      // Handle specific error cases
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = 'İstek zaman aşımına uğradı';
+        userFriendlyMessage = 'Yanıt vermem biraz uzun sürdü. Lütfen tekrar deneyin, bu sefer daha hızlı olacak.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'AI servisi bulunamadı';
+        userFriendlyMessage = 'AI servisi şu anda kullanılamıyor. Lütfen sistem yöneticinize bildirin.';
+      } else if (error.response?.status === 503) {
+        errorMessage = 'AI servisi geçici olarak kullanılamıyor';
+        userFriendlyMessage = 'AI servisi şu anda yoğun. Lütfen birkaç saniye sonra tekrar deneyin.';
+      } else if (error.response?.status === 429) {
+        errorMessage = 'Çok fazla istek gönderildi';
+        userFriendlyMessage = 'Çok hızlı mesaj gönderiyorsunuz. Lütfen birkaç saniye bekleyin.';
+      } else if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message;
+        userFriendlyMessage = `Üzgünüm: ${errorMessage}`;
+      }
       
-      // Add error message to chat
+      // Show user-friendly toast
+      toast.error(userFriendlyMessage, {
+        duration: 5000,
+        position: 'top-center',
+      });
+      
+      // Add error message to chat (less technical)
       setMessages(prev => [...prev, {
         id: `error_${Date.now()}`,
         role: 'assistant',
-        content: `Üzgünüm, bir hata oluştu: ${errorMessage}`,
+        content: userFriendlyMessage,
         timestamp: new Date(),
       }]);
     } finally {
@@ -105,7 +213,7 @@ export const AIChatWidget: React.FC = () => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -134,20 +242,15 @@ export const AIChatWidget: React.FC = () => {
       <div 
         className="fixed inset-0 bg-black/50 z-40 md:hidden"
         onClick={() => setIsOpen(false)}
+        aria-hidden="true"
       />
       
-      {/* Chat Panel - Sidebar'ı hesaba kat */}
+      {/* Chat Panel - Smaller size, safe distance from header */}
       <div 
-        className={`
-          fixed z-50 bg-white shadow-2xl
-          md:right-0 md:top-0 md:bottom-0 md:w-[420px] md:rounded-none
-          inset-0 md:inset-auto
-          flex flex-col
-        `}
-        style={{
-          // Desktop'ta sidebar varsa sağdan 0, yoksa 0
-          // Mobilde tam ekran
-        }}
+        className="fixed z-50 bg-white shadow-2xl flex flex-col 
+                    inset-x-4 bottom-4 top-20 
+                    md:inset-auto md:right-6 md:bottom-6 md:top-24 md:w-[400px] md:h-[600px] md:max-h-[calc(100vh-120px)]
+                    rounded-2xl overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-primary-700 text-white">
@@ -203,15 +306,11 @@ export const AIChatWidget: React.FC = () => {
               <div
                 className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-primary-600 text-white rounded-br-sm'
+                    ? 'bg-blue-600 text-white rounded-br-sm shadow-md'
                     : 'bg-white text-gray-900 shadow-sm border border-gray-100 rounded-bl-sm'
                 }`}
               >
-                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-                  message.role === 'user' ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {message.content}
-                </p>
+                <MessageContent message={message} onToggleExpand={() => handleToggleExpand(message.id)} />
                 {message.intent && (
                   <div className={`mt-2 pt-2 border-t ${
                     message.role === 'user' ? 'border-primary-500' : 'border-gray-200'
@@ -238,10 +337,13 @@ export const AIChatWidget: React.FC = () => {
           
           {isLoading && (
             <div className="flex justify-start animate-fadeIn">
-              <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-gray-100">
+              <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-4 shadow-sm border border-gray-100">
                 <div className="flex items-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary-600" />
-                  <span className="text-sm text-gray-600">Düşünüyorum...</span>
+                  <div className="flex space-x-1.5">
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1s' }}></span>
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '200ms', animationDuration: '1s' }}></span>
+                    <span className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '400ms', animationDuration: '1s' }}></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -252,31 +354,49 @@ export const AIChatWidget: React.FC = () => {
 
         {/* Input */}
         <div className="p-4 border-t border-gray-200 bg-white">
+          {!isOnline && (
+            <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>İnternet bağlantısı yok. Mesaj gönderemezsiniz.</span>
+            </div>
+          )}
           <div className="flex items-end space-x-2">
             <div className="flex-1 relative">
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Mesajınızı yazın..."
                 disabled={isLoading}
+                maxLength={2000}
                 rows={1}
-                className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 pr-16 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 style={{ maxHeight: '120px', minHeight: '48px' }}
               />
-              <div className="absolute right-3 bottom-3 text-xs text-gray-400">
-                {input.length > 0 && `${input.length}/500`}
-              </div>
+              {input.length > 0 && (
+                <div className={`absolute right-3 bottom-3 text-xs ${
+                  input.length > 1800 ? 'text-red-500 font-semibold' : 
+                  input.length > 1500 ? 'text-orange-500' : 
+                  'text-gray-400'
+                }`}>
+                  {input.length}/2000
+                </div>
+              )}
             </div>
             <button
               onClick={handleSend}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || !isOnline}
               className="p-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95 shadow-lg disabled:shadow-none"
               aria-label="Gönder"
+              title={!isOnline ? 'İnternet bağlantısı yok' : 'Gönder'}
             >
               {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <div className="flex space-x-0.5">
+                  <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1s' }}></span>
+                  <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '200ms', animationDuration: '1s' }}></span>
+                  <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '400ms', animationDuration: '1s' }}></span>
+                </div>
               ) : (
                 <Send className="h-5 w-5" />
               )}

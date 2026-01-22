@@ -180,9 +180,119 @@ def create_appointment(
         raise
     except Exception as e:
         db_session.rollback()
+        # Handle Unique Constraint violation (Double Booking)
+        if "uq_appointment_slot" in str(e) or "unique constraint" in str(e).lower():
+             raise HTTPException(
+                 status_code=409,
+                 detail=ApiError(message="This slot is already booked.", code="SLOT_OCCUPIED").model_dump(mode="json")
+             )
         logger.error(f"Create appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/appointments/availability", operation_id="listAppointmentAvailability", response_model=ResponseEnvelope[AppointmentAvailability])
+def get_availability(
+    date: str,
+    duration: int = Query(30, ge=15, le=120),
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Get available time slots for a date"""
+    try:
+        target_date = datetime.fromisoformat(date).date()
+        
+        query = db_session.query(Appointment).filter(
+            func.date(Appointment.date) == target_date,
+            Appointment.status.in_(['scheduled', 'confirmed'])
+        )
+        
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
+        
+        appointments = query.all()
+        
+        # Generate time slots (9:00 - 18:00, 30 min intervals)
+        time_slots = [f"{hour:02d}:{minute:02d}" for hour in range(9, 18) for minute in [0, 30]]
+        
+        # Calculate occupied slots
+        occupied_slots = set()
+        for apt in appointments:
+            apt_hour, apt_minute = map(int, apt.time.split(':'))
+            current_minute = apt_hour * 60 + apt_minute
+            end_minute = current_minute + apt.duration
+            
+            slot_minute = 9 * 60
+            while slot_minute < 18 * 60:
+                slot_end_minute = slot_minute + 30
+                if current_minute < slot_end_minute and end_minute > slot_minute:
+                    slot_hour = slot_minute // 60
+                    slot_min = slot_minute % 60
+                    occupied_slots.add(f"{slot_hour:02d}:{slot_min:02d}")
+                slot_minute += 30
+        
+        available_slots = [slot for slot in time_slots if slot not in occupied_slots]
+        
+        return ResponseEnvelope(
+            data={
+                "availableSlots": available_slots,
+                "occupiedSlots": list(occupied_slots),
+                "date": date
+            }
+        )
+    except Exception as e:
+        logger.error(f"Get availability error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/appointments/list", operation_id="listAppointmentList", response_model=ResponseEnvelope[List[AppointmentRead]])
+def list_appointments(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+    party_id: Optional[str] = Query(None, alias="party_id"),
+    status: Optional[str] = None,
+    start_date: Optional[str] = Query(None, alias="start_date"),
+    end_date: Optional[str] = Query(None, alias="end_date"),
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """List appointments with filters"""
+    try:
+        query = db_session.query(Appointment)
+        
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
+        
+        if party_id:
+            query = query.filter_by(party_id=party_id)
+        
+        if status:
+            query = query.filter_by(status=status)
+        
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date) if 'T' in start_date else datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Appointment.date >= start_dt)
+        
+        if end_date:
+            if 'T' in end_date:
+                end_dt = datetime.fromisoformat(end_date)
+            else:
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
+            query = query.filter(Appointment.date <= end_dt)
+        
+        total = query.count()
+        appointments = query.order_by(Appointment.date.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        
+        return ResponseEnvelope(
+            data=appointments,
+            meta={
+                "total": total,
+                "page": page,
+                "perPage": per_page,
+                "totalPages": (total + per_page - 1) // per_page
+            }
+        )
+    except Exception as e:
+        logger.error(f"List appointments error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 @router.get("/appointments/{appointment_id}", operation_id="getAppointment", response_model=ResponseEnvelope[AppointmentRead])
 def get_appointment(
     appointment_id: str,
@@ -312,106 +422,4 @@ def complete_appointment(
         logger.error(f"Complete appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/availability", operation_id="listAppointmentAvailability", response_model=ResponseEnvelope[AppointmentAvailability])
-def get_availability(
-    date: str,
-    duration: int = Query(30, ge=15, le=120),
-    access: UnifiedAccess = Depends(require_access()),
-    db_session: Session = Depends(get_db)
-):
-    """Get available time slots for a date"""
-    try:
-        target_date = datetime.fromisoformat(date).date()
-        
-        query = db_session.query(Appointment).filter(
-            func.date(Appointment.date) == target_date,
-            Appointment.status.in_(['scheduled', 'confirmed'])
-        )
-        
-        if access.tenant_id:
-            query = query.filter_by(tenant_id=access.tenant_id)
-        
-        appointments = query.all()
-        
-        # Generate time slots (9:00 - 18:00, 30 min intervals)
-        time_slots = [f"{hour:02d}:{minute:02d}" for hour in range(9, 18) for minute in [0, 30]]
-        
-        # Calculate occupied slots
-        occupied_slots = set()
-        for apt in appointments:
-            apt_hour, apt_minute = map(int, apt.time.split(':'))
-            current_minute = apt_hour * 60 + apt_minute
-            end_minute = current_minute + apt.duration
-            
-            slot_minute = 9 * 60
-            while slot_minute < 18 * 60:
-                slot_end_minute = slot_minute + 30
-                if current_minute < slot_end_minute and end_minute > slot_minute:
-                    slot_hour = slot_minute // 60
-                    slot_min = slot_minute % 60
-                    occupied_slots.add(f"{slot_hour:02d}:{slot_min:02d}")
-                slot_minute += 30
-        
-        available_slots = [slot for slot in time_slots if slot not in occupied_slots]
-        
-        return ResponseEnvelope(
-            data={
-                "availableSlots": available_slots,
-                "occupiedSlots": list(occupied_slots),
-                "date": date
-            }
-        )
-    except Exception as e:
-        logger.error(f"Get availability error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/list", operation_id="listAppointmentList", response_model=ResponseEnvelope[List[AppointmentRead]])
-def list_appointments(
-    page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
-    party_id: Optional[str] = Query(None, alias="party_id"),
-    status: Optional[str] = None,
-    start_date: Optional[str] = Query(None, alias="start_date"),
-    end_date: Optional[str] = Query(None, alias="end_date"),
-    access: UnifiedAccess = Depends(require_access()),
-    db_session: Session = Depends(get_db)
-):
-    """List appointments with filters"""
-    try:
-        query = db_session.query(Appointment)
-        
-        if access.tenant_id:
-            query = query.filter_by(tenant_id=access.tenant_id)
-        
-        if party_id:
-            query = query.filter_by(party_id=party_id)
-        
-        if status:
-            query = query.filter_by(status=status)
-        
-        if start_date:
-            start_dt = datetime.fromisoformat(start_date) if 'T' in start_date else datetime.strptime(start_date, '%Y-%m-%d')
-            query = query.filter(Appointment.date >= start_dt)
-        
-        if end_date:
-            if 'T' in end_date:
-                end_dt = datetime.fromisoformat(end_date)
-            else:
-                end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
-            query = query.filter(Appointment.date <= end_dt)
-        
-        total = query.count()
-        appointments = query.order_by(Appointment.date.desc()).offset((page - 1) * per_page).limit(per_page).all()
-        
-        return ResponseEnvelope(
-            data=appointments,
-            meta={
-                "total": total,
-                "page": page,
-                "perPage": per_page,
-                "totalPages": (total + per_page - 1) // per_page
-            }
-        )
-    except Exception as e:
-        logger.error(f"List appointments error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))

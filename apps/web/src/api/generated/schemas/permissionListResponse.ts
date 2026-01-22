@@ -6,13 +6,13 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PermissionGroup } from './permissionGroup';
-import type { PermissionRead } from './permissionRead';
+import type { SchemasRolesPermissionRead } from './schemasRolesPermissionRead';
 
 /**
  * Schema for permission list response
  */
 export interface PermissionListResponse {
   data: PermissionGroup[];
-  all: PermissionRead[];
+  all: SchemasRolesPermissionRead[];
   total: number;
 }

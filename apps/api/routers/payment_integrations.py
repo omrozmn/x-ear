@@ -46,7 +46,7 @@ def get_tenant_paytr_settings(db: Session, tenant_id: str) -> Optional[dict]:
     """Retrieve PayTR settings for a tenant"""
     from models.tenant import Tenant
     
-    tenant = db.get(Tenant, access.tenant_id)
+    tenant = db.get(Tenant, tenant_id)
     if not tenant or not tenant.settings:
         return None
     

@@ -16,6 +16,7 @@ export * from './admin-dashboard/admin-dashboard.ts';
 export * from './admin-integrations/admin-integrations.ts';
 export * from './admin-inventory/admin-inventory.ts';
 export * from './admin-invoices/admin-invoices.ts';
+export * from './admin-marketplaces/admin-marketplaces.ts';
 export * from './admin-notifications/admin-notifications.ts';
 export * from './admin-parties/admin-parties.ts';
 export * from './admin-payments/admin-payments.ts';

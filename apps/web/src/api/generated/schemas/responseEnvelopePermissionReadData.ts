@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { PermissionRead } from './permissionRead';
+import type { SchemasRolesPermissionRead } from './schemasRolesPermissionRead';
 
-export type ResponseEnvelopePermissionReadData = PermissionRead | null;
+export type ResponseEnvelopePermissionReadData = SchemasRolesPermissionRead | null;

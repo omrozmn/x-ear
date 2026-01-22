@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PartySale } from '../../../hooks/party/usePartySales';
+import { SaleRead } from '../../../api/generated/schemas';
 import {
   MoreVertical,
   Eye,
@@ -14,16 +14,16 @@ import {
 import { Button } from '../../ui/Button';
 
 interface SalesTableViewProps {
-  sales: PartySale[];
+  sales: SaleRead[];
   partyId: string;
-  onSaleClick?: (sale: PartySale) => void;
-  onEditSale?: (sale: PartySale) => void;
-  onCreateInvoice?: (sale: PartySale) => void;
-  onViewInvoice?: (sale: PartySale) => void;
-  onManagePromissoryNotes?: (sale: PartySale) => void;
-  onCollectPayment?: (sale: PartySale) => void;
+  onSaleClick?: (sale: SaleRead) => void;
+  onEditSale?: (sale: SaleRead) => void;
+  onCreateInvoice?: (sale: SaleRead) => void;
+  onViewInvoice?: (sale: SaleRead) => void;
+  onManagePromissoryNotes?: (sale: SaleRead) => void;
+  onCollectPayment?: (sale: SaleRead) => void;
   onOpenDocuments?: (partyId: string) => void;
-  onCancelSale?: (sale: PartySale) => void;
+  onCancelSale?: (sale: SaleRead) => void;
 }
 
 export const SalesTableView: React.FC<SalesTableViewProps> = ({
@@ -42,6 +42,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
+    // dateString can be Date object in some weird cases or str, relying on str from API
     return new Date(dateString).toLocaleDateString('tr-TR');
   };
 
@@ -57,34 +58,34 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   /* Removed incorrect client-side VAT calculation. 
      Backend's finalAmount/totalAmount is already the correct figure. */
 
-  const renderDevicesSummary = (sale: PartySale) => {
-    const hasDevices = 'devices' in sale && Array.isArray((sale as any).devices);
-    if (!hasDevices || !sale.devices || sale.devices.length === 0) {
+  const renderDevicesSummary = (sale: SaleRead) => {
+    const devices = sale.devices || [];
+    if (!devices || devices.length === 0) {
       return <span className="text-gray-500">Ürün/Hizmet</span>;
     }
 
     return (
       <div className="space-y-1">
-        {sale.devices.slice(0, 2).map((device, index) => (
+        {devices.slice(0, 2).map((device: any, index: number) => (
           <div key={index} className="text-sm">
-            <div className="font-medium text-gray-900">{device.name}</div>
+            <div className="font-medium text-gray-900">{device.name || device.deviceName}</div>
             <div className="text-xs text-gray-500">{device.brand} {device.model}</div>
           </div>
         ))}
-        {sale.devices.length > 2 && (
-          <div className="text-xs text-gray-500">+{sale.devices.length - 2} daha...</div>
+        {devices.length > 2 && (
+          <div className="text-xs text-gray-500">+{devices.length - 2} daha...</div>
         )}
       </div>
     );
   };
 
-  const renderBarcodeSerialInfo = (sale: PartySale) => {
-    const hasDevices = 'devices' in sale && Array.isArray((sale as any).devices);
-    if (!hasDevices || !sale.devices || sale.devices.length === 0) {
+  const renderBarcodeSerialInfo = (sale: SaleRead) => {
+    const devices = sale.devices || [];
+    if (!devices || devices.length === 0) {
       return <span className="text-gray-500">-</span>;
     }
 
-    const device = sale.devices[0];
+    const device: any = devices[0];
     return (
       <div className="text-sm">
         {device.barcode && <div className="font-mono">{device.barcode}</div>}
@@ -93,7 +94,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     );
   };
 
-  const renderPaymentMethods = (sale: PartySale) => {
+  const renderPaymentMethods = (sale: SaleRead) => {
     const methods: string[] = [];
     if (sale.paymentMethod === 'cash') methods.push('Nakit');
     if (sale.paymentMethod === 'card') methods.push('Kart');
@@ -183,19 +184,17 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
             </tr>
           ) : (
             sales.map((sale) => {
-              // Simpler calculation: Trust the backend's finalAmount/totalAmount
-              const displayTotal = ('finalAmount' in sale && sale.finalAmount !== undefined)
-                ? (sale.finalAmount as number)
-                : (sale.totalAmount ?? 0);
+              // GOLDEN PATH: Trust the backend's computed values
+              const displayTotal = sale.finalAmount ?? sale.totalAmount ?? 0;
+              const paidAmount = sale.paidAmount ?? 0;
+              const remainingAmount = sale.remainingAmount ?? 0;
+              const discountAmount = sale.discountAmount ?? 0;
+              const listPrice = sale.listPriceTotal ?? sale.totalAmount ?? 0;
+              const sgkCoverage = sale.sgkCoverage ?? 0;
 
-              const paidAmount = ('paidAmount' in sale && sale.paidAmount !== undefined) ? (sale.paidAmount as number) : 0;
-              const remainingAmount = displayTotal - paidAmount;
-              const discountAmount = sale.discountAmount || 0;
-              const listPrice = sale.listPriceTotal || sale.totalAmount || 0;
-              const sgkCoverage = sale.sgkCoverage || 0;
-
-              const hasInvoice = Boolean((sale as any).invoice);
-              const statusStr = ('paymentStatus' in sale ? sale.paymentStatus as string | undefined : undefined);
+              const hasInvoice = Boolean(sale.invoice);
+              // Backend 'status' is authoritative
+              const statusStr = sale.status;
               const cancelledClass = statusStr === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
               const partialPaymentClass = paidAmount > 0 && remainingAmount > 0 ? 'bg-yellow-50' : '';
 

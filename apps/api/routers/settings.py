@@ -17,9 +17,7 @@ from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 from schemas.system_settings import SystemSettingsResponse, PricingSettingsResponse
-
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from core.models.system import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -75,30 +73,33 @@ def get_pricing_settings(
     try:
         settings_record = db_session.get(Settings, 'system_settings')
         
+        # Default pricing settings
+        default_pricing = {
+            "devices": {
+                "basic": 2500.00,
+                "standard": 3500.00,
+                "premium": 5000.00,
+                "wireless": 6000.00
+            },
+            "accessories": {
+                "battery_pack": 150.00,
+                "charger": 200.00,
+                "case": 100.00,
+                "ear_mold": 300.00
+            },
+            "services": {
+                "fitting": 500.00,
+                "adjustment": 200.00,
+                "repair": 300.00,
+                "maintenance": 400.00
+            }
+        }
+        
         if settings_record:
             all_settings = json.loads(settings_record.settings_data)
-            pricing_settings = all_settings.get('pricing', {})
+            pricing_settings = all_settings.get('pricing', default_pricing)
         else:
-            pricing_settings = {
-                "devices": {
-                    "basic": 2500.00,
-                    "standard": 3500.00,
-                    "premium": 5000.00,
-                    "wireless": 6000.00
-                },
-                "accessories": {
-                    "battery_pack": 150.00,
-                    "charger": 200.00,
-                    "case": 100.00,
-                    "ear_mold": 300.00
-                },
-                "services": {
-                    "fitting": 500.00,
-                    "adjustment": 200.00,
-                    "repair": 300.00,
-                    "maintenance": 400.00
-                }
-            }
+            pricing_settings = default_pricing
             
         return ResponseEnvelope(data=PricingSettingsResponse.model_validate(pricing_settings))
     except Exception as e:

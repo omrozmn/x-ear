@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PermissionGroupIcon } from './permissionGroupIcon';
-import type { PermissionRead } from './permissionRead';
+import type { SchemasRolesPermissionRead } from './schemasRolesPermissionRead';
 
 /**
  * Schema for permission group
@@ -15,5 +15,5 @@ export interface PermissionGroup {
   category: string;
   label: string;
   icon?: PermissionGroupIcon;
-  permissions: PermissionRead[];
+  permissions: SchemasRolesPermissionRead[];
 }

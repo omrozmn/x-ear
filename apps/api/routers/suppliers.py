@@ -297,7 +297,7 @@ def create_supplier(
                 detail=ApiError(message="Supplier with this company name already exists", code="DUPLICATE").model_dump(mode="json")
             )
         
-        data = supplier_in.model_dump(by_alias=False)
+        data = supplier_in.model_dump(by_alias=False, exclude={'name', 'code', 'contact_name', 'tenant_id'})
         supplier = Supplier(tenant_id=access.tenant_id, **data)
         
         db_session.add(supplier)

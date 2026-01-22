@@ -24,7 +24,7 @@ async function globalSetup(config: FullConfig) {
     // 2. Login or Bootstrap as Super Admin
     // Using created test user which is TENANT_ADMIN
     const adminPhone = process.env.TEST_USER_PHONE || '+905551234567';
-    const adminPassword = process.env.TEST_USER_PASSWORD || '123456';
+    const adminPassword = process.env.TEST_USER_PASSWORD || 'password123';
     let adminToken = '';
 
     try {

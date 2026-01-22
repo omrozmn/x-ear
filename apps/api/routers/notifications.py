@@ -154,16 +154,21 @@ def update_notification(
 
 @router.get("/notifications/stats", operation_id="listNotificationStats", response_model=ResponseEnvelope[NotificationStats])
 def notification_stats(
-    user_id: str = Query(..., alias="user_id"),
+    user_id: Optional[str] = Query(None, alias="user_id"),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get notification stats for a user"""
     try:
-        total = db_session.query(Notification).filter(Notification.user_id == user_id).count()
+        # Use current user if user_id not provided
+        target_user_id = user_id or access.user_id
+        if not target_user_id:
+            raise HTTPException(status_code=400, detail="user_id required")
+        
+        total = db_session.query(Notification).filter(Notification.user_id == target_user_id).count()
         unread = (
             db_session.query(Notification)
-            .filter(Notification.user_id == user_id, Notification.is_read == False)  # noqa: E712
+            .filter(Notification.user_id == target_user_id, Notification.is_read == False)  # noqa: E712
             .count()
         )
         
@@ -202,13 +207,19 @@ def delete_notification(
 
 @router.get("/notifications/settings", operation_id="listNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def get_user_notification_settings(
-    user_id: str = Query(..., alias="user_id"),
+    user_id: Optional[str] = Query(None, alias="user_id"),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get user notification settings"""
     try:
+        # Use current user if user_id not provided
+        target_user_id = user_id or access.user_id
+        if not target_user_id:
+            raise HTTPException(status_code=400, detail="user_id required")
+        
         settings_record = Settings.get_system_settings()
-        user_settings = settings_record.get_setting(f'userNotifications.{user_id}', default=None)
+        user_settings = settings_record.get_setting(f'userNotifications.{target_user_id}', default=None)
         
         if user_settings is None:
             default_notifications = settings_record.get_setting('notifications', {})

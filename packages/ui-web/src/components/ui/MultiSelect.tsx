@@ -44,7 +44,7 @@ export interface MultiSelectProps {
 
 const defaultFilterOptions = (options: MultiSelectOption[], query: string): MultiSelectOption[] => {
   const lowerQuery = query.toLowerCase();
-  return options.filter(option => 
+  return options.filter(option =>
     option.label.toLowerCase().includes(lowerQuery) ||
     option.value.toLowerCase().includes(lowerQuery) ||
     (option.description && option.description.toLowerCase().includes(lowerQuery))
@@ -85,25 +85,25 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<MultiSelectOption[]>([]);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   // Filter options based on search query and exclude selected options
   useEffect(() => {
     let filtered = options;
-    
+
     if (searchable && searchQuery.length >= minSearchLength) {
       filtered = filterOptions(options, searchQuery);
     }
-    
+
     // Don't show already selected options in dropdown
-    filtered = filtered.filter(option => 
+    filtered = filtered.filter(option =>
       !value.some(selected => selected.id === option.id)
     );
-    
+
     setFilteredOptions(filtered.slice(0, maxResults));
   }, [options, searchQuery, value, searchable, minSearchLength, maxResults, filterOptions]);
 
@@ -124,25 +124,25 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     if (!isOpen && query.length >= minSearchLength) {
       setIsOpen(true);
     }
-    
+
     handleSearch(query);
   };
 
   // Handle option selection
   const handleOptionSelect = (option: MultiSelectOption) => {
     if (option.disabled) return;
-    
+
     if (maxSelections && value.length >= maxSelections) {
       return;
     }
-    
+
     const newValue = [...value, option];
     onChange(newValue);
-    
+
     if (searchable) {
       setSearchQuery('');
     }
@@ -156,16 +156,16 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
   // Handle select all
   const handleSelectAll = () => {
-    const availableOptions = options.filter(option => 
+    const availableOptions = options.filter(option =>
       !option.disabled && !value.some(selected => selected.id === option.id)
     );
-    
+
     let newOptions = availableOptions;
     if (maxSelections) {
       const remainingSlots = maxSelections - value.length;
       newOptions = availableOptions.slice(0, remainingSlots);
     }
-    
+
     onChange([...value, ...newOptions]);
   };
 
@@ -234,7 +234,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           {label}
         </label>
       )}
-      
+
       <div
         className={clsx(
           'min-h-[2.5rem] w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm',
@@ -257,7 +257,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               {renderTag ? renderTag(option, () => handleOptionRemove(option)) : defaultRenderTag(option, () => handleOptionRemove(option))}
             </div>
           ))}
-          
+
           {/* Search input */}
           {searchable && (
             <input
@@ -271,12 +271,12 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               className="flex-1 min-w-[120px] outline-none bg-transparent"
             />
           )}
-          
+
           {/* Placeholder when not searchable */}
           {!searchable && !hasSelections && (
             <span className="text-gray-500">{placeholder}</span>
           )}
-          
+
           {/* Selection count */}
           {hasSelections && !searchable && (
             <span className="text-sm text-gray-600">
@@ -284,13 +284,13 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             </span>
           )}
         </div>
-        
+
         {/* Actions */}
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
           {loading && (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
           )}
-          
+
           {clearable && hasSelections && !loading && (
             <button
               type="button"
@@ -306,15 +306,15 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               </svg>
             </button>
           )}
-          
+
           <div className="text-gray-400">
-            <svg 
+            <svg
               className={clsx(
                 'w-4 h-4 transition-transform',
                 isOpen && 'rotate-180'
-              )} 
-              fill="none" 
-              stroke="currentColor" 
+              )}
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -359,7 +359,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               </div>
             </div>
           )}
-          
+
           {loading ? (
             <div className="px-3 py-2 text-sm text-gray-500 text-center">
               {loadingText}
@@ -395,7 +395,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               {noResultsText}
             </div>
           )}
-          
+
           {/* Max selections warning */}
           {maxSelections && value.length >= maxSelections && (
             <div className="border-t border-gray-200 px-3 py-2 text-xs text-amber-600 bg-amber-50">
@@ -409,7 +409,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
-      
+
       {/* Helper text */}
       {helperText && !error && (
         <p className="mt-1 text-sm text-gray-500">{helperText}</p>

@@ -56,7 +56,8 @@ console.log('Starting migration and auth init...');
     storageMigrator.migrate().catch(e => console.warn('Migration failed:', e));
 
     // Initialize auth in background (non-blocking)
-    useAuthStore.getState().initializeAuth().catch(e => console.warn('Auth init failed:', e));
+    // DISABLED: AuthProvider handles this to avoid race conditions
+    // useAuthStore.getState().initializeAuth().catch(e => console.warn('Auth init failed:', e));
 
     console.log('Rendering App...');
 

@@ -29,7 +29,6 @@ import type {
   HTTPValidationError,
   ListPartyPaymentRecordsParams,
   ListPartyPromissoryNotesParams,
-  PaymentRecordCreate,
   PaymentRecordUpdate,
   PromissoryNoteUpdate,
   PromissoryNotesCreate,
@@ -37,7 +36,8 @@ import type {
   ResponseEnvelopeListPromissoryNoteRead,
   ResponseEnvelopePaymentRecordRead,
   ResponseEnvelopePromissoryNoteCollectionResponse,
-  ResponseEnvelopePromissoryNoteRead
+  ResponseEnvelopePromissoryNoteRead,
+  RoutersPaymentsPaymentRecordCreate
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -50,7 +50,7 @@ import { customInstance } from '../../orval-mutator';
  * @summary Create Payment Record
  */
 export const createPaymentRecords = (
-    paymentRecordCreate: PaymentRecordCreate,
+    routersPaymentsPaymentRecordCreate: RoutersPaymentsPaymentRecordCreate,
  signal?: AbortSignal
 ) => {
       
@@ -58,7 +58,7 @@ export const createPaymentRecords = (
       return customInstance<ResponseEnvelopePaymentRecordRead>(
       {url: `/api/payment-records`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: paymentRecordCreate, signal
+      data: routersPaymentsPaymentRecordCreate, signal
     },
       );
     }
@@ -66,8 +66,8 @@ export const createPaymentRecords = (
 
 
 export const getCreatePaymentRecordsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentRecords>>, TError,{data: PaymentRecordCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPaymentRecords>>, TError,{data: PaymentRecordCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentRecords>>, TError,{data: RoutersPaymentsPaymentRecordCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPaymentRecords>>, TError,{data: RoutersPaymentsPaymentRecordCreate}, TContext> => {
 
 const mutationKey = ['createPaymentRecords'];
 const {mutation: mutationOptions} = options ?
@@ -79,7 +79,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPaymentRecords>>, {data: PaymentRecordCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPaymentRecords>>, {data: RoutersPaymentsPaymentRecordCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createPaymentRecords(data,)
@@ -91,18 +91,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreatePaymentRecordsMutationResult = NonNullable<Awaited<ReturnType<typeof createPaymentRecords>>>
-    export type CreatePaymentRecordsMutationBody = PaymentRecordCreate
+    export type CreatePaymentRecordsMutationBody = RoutersPaymentsPaymentRecordCreate
     export type CreatePaymentRecordsMutationError = HTTPValidationError
 
     /**
  * @summary Create Payment Record
  */
 export const useCreatePaymentRecords = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentRecords>>, TError,{data: PaymentRecordCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentRecords>>, TError,{data: RoutersPaymentsPaymentRecordCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createPaymentRecords>>,
         TError,
-        {data: PaymentRecordCreate},
+        {data: RoutersPaymentsPaymentRecordCreate},
         TContext
       > => {
 

@@ -13,7 +13,7 @@ import logging
 
 from database import get_db
 from models.invoice import Invoice
-from models.system import Settings
+from models.system_setting import SystemSetting
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 
@@ -219,7 +219,7 @@ async def get_invoice_settings(
         settings = {}
         
         for key in settings_keys:
-            setting = db.query(Settings).filter(Settings.key == key).first()
+            setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
             if setting:
                 try:
                     settings[key] = json.loads(setting.value)
@@ -245,13 +245,13 @@ async def update_invoice_settings(
         
         for key, value in data_dict.items():
             if key in ["company_info", "invoice_logo", "invoice_signature"]:
-                setting = db.query(Settings).filter(Settings.key == key).first()
+                setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
                 
                 if setting:
                     setting.value = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
                     setting.updated_at = now_utc()
                 else:
-                    setting = Settings(
+                    setting = SystemSetting(
                         key=key,
                         value=json.dumps(value) if isinstance(value, (dict, list)) else str(value),
                         created_at=now_utc(),

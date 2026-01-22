@@ -195,3 +195,32 @@ def get_activity_log_filter_options(
     except Exception as e:
         logger.error(f"Error fetching filter options: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Alias endpoint for /audit (backward compatibility)
+@router.get("/audit", operation_id="listAudit", response_model=ResponseEnvelope[List[ActivityLogRead]])
+def get_audit_logs_alias(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100, alias="perPage"),
+    entity_type: Optional[str] = Query(None, alias="entityType"),
+    entity_id: Optional[str] = Query(None, alias="entityId"),
+    action: Optional[str] = None,
+    user_id: Optional[str] = Query(None, alias="userId"),
+    start_date: Optional[str] = Query(None, alias="startDate"),
+    end_date: Optional[str] = Query(None, alias="endDate"),
+    access: UnifiedAccess = Depends(require_access("activity_logs.view")),
+    db_session: Session = Depends(get_db)
+):
+    """Get audit logs (alias for activity logs)"""
+    return get_activity_logs(
+        page=page,
+        page_size=per_page,  # Map per_page to page_size
+        tenant_id=None,
+        user_id=user_id,
+        action=action,
+        date_from=start_date,
+        date_to=end_date,
+        search=None,
+        access=access,
+        db=db_session
+    )

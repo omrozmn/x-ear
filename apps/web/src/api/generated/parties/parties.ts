@@ -32,9 +32,9 @@ import type {
   ListPartyExportParams,
   PartyCreate,
   PartyUpdate,
-  ResponseEnvelopeBulkUploadResponse,
   ResponseEnvelopeListPartyRead,
-  ResponseEnvelopePartyRead
+  ResponseEnvelopePartyRead,
+  SchemasBaseResponseEnvelopeBulkUploadResponse1
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -621,7 +621,7 @@ export const createPartyBulkUpload = (
       const formData = new FormData();
 formData.append(`file`, bodyCreatePartyBulkUpload.file)
 
-      return customInstance<ResponseEnvelopeBulkUploadResponse>(
+      return customInstance<SchemasBaseResponseEnvelopeBulkUploadResponse1>(
       {url: `/api/parties/bulk-upload`, method: 'POST',
       headers: {'Content-Type': 'multipart/form-data', },
        data: formData, signal

@@ -1,6 +1,6 @@
 from typing import Optional, List, Any
 from enum import Enum
-from pydantic import Field, EmailStr
+from pydantic import Field, EmailStr, field_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
@@ -48,9 +48,14 @@ class SmsProviderConfigUpdate(AppBaseModel):
 
 class SmsProviderConfigRead(SmsProviderConfigBase, IDMixin):
     tenant_id: str = Field(..., alias="tenantId")
-    documents: List[Any] = []
+    documents: List[Any] = Field(default_factory=list)
     documents_submitted_at: Optional[str] = Field(None, alias="documentsSubmittedAt")
     # Password explicitly excluded
+    
+    @field_validator('documents', mode='before')
+    @classmethod
+    def convert_none_to_list(cls, v):
+        return v if v is not None else []
 
 # --- Sms Header Request Schemas ---
 class SmsHeaderRequestBase(AppBaseModel):
@@ -96,7 +101,7 @@ class SmsPackageRead(SmsPackageBase, IDMixin, TimestampMixin):
     pass
 
 # --- Tenant Sms Credit Schemas ---
-class TenantSmsCreditRead(IDMixin):
+class TenantSmsCreditRead(AppBaseModel, IDMixin):
     tenant_id: str = Field(..., alias="tenantId")
     balance: int = 0
     total_purchased: int = Field(0, alias="totalPurchased")
