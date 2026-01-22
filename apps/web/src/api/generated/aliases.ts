@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-22T14:42:45.508Z
+ * Generated: 2026-01-22T15:08:42.527Z
  */
 
 // ACTIVITY_LOGS
@@ -281,14 +281,14 @@ export {
 export {
   useListAppointments,
   useCreateAppointments,
-  useListAppointmentAvailability,
-  useListAppointmentList,
   useGetAppointment,
   useUpdateAppointment,
   useDeleteAppointment,
   useCreateAppointmentReschedule,
   useCreateAppointmentCancel,
   useCreateAppointmentComplete,
+  useListAppointmentAvailability,
+  useListAppointmentList,
 } from './appointments/appointments';
 
 // APPS
@@ -315,7 +315,7 @@ export {
   useCreateAuthResetPassword,
   useCreateAuthLogin,
   useCreateAuthRefresh,
-  useGetAuthMe,
+  useListAuthMe,
   useCreateAuthSendVerificationOtp,
   useCreateAuthSetPassword,
 } from './auth/auth';
@@ -750,11 +750,15 @@ export {
 // TENANT_USERS
 export {
   useListTenantUsers,
-  useCreateTenantUser,
+  useCreateTenantUsers,
   useDeleteTenantUser,
   useUpdateTenantUser,
-  useGetTenantCompany,
+  useListTenantCompany,
   useUpdateTenantCompany,
+  useCreateTenantCompanyUpload,
+  useDeleteTenantCompanyUpload,
+  useGetTenantAsset,
+  useListTenantCompanyAssetUrl,
 } from './tenant-users/tenant-users';
 
 // TIMELINE

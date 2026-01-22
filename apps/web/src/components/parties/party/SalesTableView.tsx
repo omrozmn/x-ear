@@ -206,7 +206,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="font-medium">{sale.id}</div>
-                    <div className="text-xs text-gray-600">{formatDate(sale.saleDate)}</div>
+                    <div className="text-xs text-gray-600">{formatDate(sale.saleDate ?? undefined)}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {renderDevicesSummary(sale)}
@@ -234,7 +234,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                     {formatCurrency(remainingAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {renderStatusBadge(statusStr, paidAmount, remainingAmount)}
+                    {renderStatusBadge(statusStr ?? undefined, paidAmount, remainingAmount)}
                     {hasInvoice && (
                       <span className="block mt-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
                         Fatura Oluşturuldu

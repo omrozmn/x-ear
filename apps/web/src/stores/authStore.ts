@@ -22,7 +22,7 @@ declare global {
 }
 
 // Extended user type for client-side state
-export interface AuthStateUser extends AuthUserRead {
+export interface AuthStateUser extends Omit<AuthUserRead, 'tenantId'> {
   isImpersonating?: boolean;
   realUserEmail?: string;
   is_super_admin?: boolean;
@@ -32,7 +32,7 @@ export interface AuthStateUser extends AuthUserRead {
   // Previously we had 'name', but AuthUserRead has firstName/lastName/fullName
   name?: string; // Keep for backward compatibility if needed, or migrate
   fullName?: string; // Add fullName for compatibility
-  tenantId?: string; // Add tenantId for compatibility
+  tenantId: string; // tenantId is required in AuthUserRead
   role: string; // Explicitly match AuthUserRead mandatory role
 }
 

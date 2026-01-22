@@ -1,6 +1,7 @@
 import { Party } from '../../../../../types/party/party-base.types';
-import { Sale, PaymentRecord } from '../../../../../types/party/party-communication.types';
-import { PaymentRecord as OrvalPaymentRecord } from '../../../../../generated/orval-types';
+import { PaymentRecord } from '../../../../../types/party/party-communication.types';
+import { SaleRead as Sale } from '@/api/generated/schemas/saleRead';
+import { PaymentRecordRead as OrvalPaymentRecord } from '@/api/generated/schemas/paymentRecordRead';
 
 export interface PromissoryNote {
   id: string;

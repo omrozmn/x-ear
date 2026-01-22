@@ -5,10 +5,11 @@
  */
 
 // Import Orval PartyRead type
-import type { PartyRead as OrvalParty } from '@/api/generated/schemas';
+import type { PartyRead as OrvalParty } from '@/api/generated/schemas/partyRead';
 
 // Re-export Orval Party types as Party types aliases
-export type { PartyReadStatus as PartyStatus, PartyReadGender as PartyGender } from '@/api/generated/schemas';
+export type { PartyReadStatus as PartyStatus } from '@/api/generated/schemas/partyReadStatus';
+export type { PartyReadGender as PartyGender } from '@/api/generated/schemas/partyReadGender';
 export type SaleStatus = 'draft' | 'confirmed' | 'cancelled' | 'paid' | 'completed' | 'pending'; // Manual fallback
 
 // Keep only essential types that are still needed

@@ -12,6 +12,8 @@ import {
     getListSmHeadersQueryKey,
     getListSmCreditQueryKey
 } from '@/api/client/sms-integration.client';
+import type { SmsProviderConfigRead } from '@/api/generated/schemas/smsProviderConfigRead';
+import type { SmsHeaderRequestRead } from '@/api/generated/schemas/smsHeaderRequestRead';
 import { Button, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -74,7 +76,7 @@ export default function IntegrationSettings() {
 
     useEffect(() => {
         if (configData && configData.data) {
-            const payload = configData.data as SmsProviderConfigRead;
+            const payload = configData.data as any;
             // documents is unknown[] in schema, verify shape
             const docs = Array.isArray(payload.documents)
                 ? (payload.documents as unknown as SmsDocument[])
@@ -204,7 +206,7 @@ export default function IntegrationSettings() {
     };
 
     const headers = Array.isArray(headersData?.data)
-        ? (headersData?.data as SmsHeaderRequestRead[])
+        ? (headersData?.data as any[])
         : [];
 
     const credit = creditData?.data /* as SmsCreditRead - inferred automatically if available */;

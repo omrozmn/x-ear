@@ -31,7 +31,7 @@ import {
   getListPartyPaymentRecordsQueryKey,
   getListSalePromissoryNotesQueryKey
 } from '../../api/generated/payments/payments';
-import type { PaymentRecordCreate } from '@/api/generated/schemas';
+import type { RoutersPaymentsPaymentRecordCreate as PaymentRecordCreate } from '@/api/generated/schemas/routersPaymentsPaymentRecordCreate';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
 // Local Sale interface as it is missing in exports
 interface Sale {

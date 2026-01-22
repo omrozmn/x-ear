@@ -305,11 +305,11 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     }
 
     if (amountRangeMin) {
-      filtered = filtered.filter(sale => sale.totalAmount >= parseFloat(amountRangeMin));
+      filtered = filtered.filter(sale => (sale.totalAmount ?? 0) >= parseFloat(amountRangeMin));
     }
 
     if (amountRangeMax) {
-      filtered = filtered.filter(sale => sale.totalAmount <= parseFloat(amountRangeMax));
+      filtered = filtered.filter(sale => (sale.totalAmount ?? 0) <= parseFloat(amountRangeMax));
     }
 
     // Sort
@@ -757,7 +757,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             isOpen={showCollectionModal}
             onClose={() => setShowCollectionModal(false)}
             party={party}
-            sale={selectedSale as any}
+            sale={selectedSale}
             onPaymentCreate={(paymentData: PaymentRecordRead) => {
               console.log('Payment created:', paymentData);
               setShowCollectionModal(false);
