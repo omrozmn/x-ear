@@ -240,7 +240,7 @@ export class PartyOfflineSync {
 
       while (hasMore && requestCount < maxRequests) {
         // Use even smaller page size for background sync
-        const url = cursor ? `/api/parties?per_page=10&cursor=${cursor}` : '/api/parties?per_page=10';
+        const url: string = cursor ? `/api/parties?per_page=10&cursor=${cursor}` : '/api/parties?per_page=10';
 
         // Add longer delay between requests to prevent resource exhaustion
         if (requestCount > 0) {
@@ -248,7 +248,7 @@ export class PartyOfflineSync {
         }
 
         try {
-          const data = await customInstance<Record<string, any>>({ url, method: 'GET' });
+          const data: any = await customInstance<Record<string, any>>({ url, method: 'GET' });
           parties.push(...(data.data || []));
           cursor = data.meta?.nextCursor;
           hasMore = !!cursor;

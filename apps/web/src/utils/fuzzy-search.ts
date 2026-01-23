@@ -143,7 +143,7 @@ export function fuzzySearch<T extends object>(
 
     // Search in specified keys or all string properties
     const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key =>
-      typeof item[key] === 'string'
+      typeof (item as any)[key] === 'string'
     );
 
     for (const key of searchKeys) {
@@ -283,7 +283,7 @@ export function getSearchSuggestions<T extends object>(
 
   for (const item of items) {
     const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key =>
-      typeof item[key] === 'string'
+      typeof (item as any)[key] === 'string'
     );
 
     for (const key of searchKeys) {

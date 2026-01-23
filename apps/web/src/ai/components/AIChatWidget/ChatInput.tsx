@@ -187,7 +187,6 @@ export function ChatInput({
     >
       {/* Text input */}
       <input data-allow-raw="true"
-        data-allow-raw="true"
         ref={inputRef}
         type="text"
         value={inputValue}
@@ -209,7 +208,6 @@ export function ChatInput({
 
       {/* Send button */}
       <button data-allow-raw="true"
-        data-allow-raw="true"
         type="submit"
         disabled={!canSend}
         className={`
