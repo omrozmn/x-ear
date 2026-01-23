@@ -336,8 +336,12 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
       }
 
       if (sortOrder === 'asc') {
+        if (!aValue) return 1;
+        if (!bValue) return -1;
         return aValue > bValue ? 1 : -1;
       } else {
+        if (!aValue) return 1;
+        if (!bValue) return -1;
         return aValue < bValue ? 1 : -1;
       }
     });

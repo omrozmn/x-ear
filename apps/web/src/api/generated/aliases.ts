@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-23T22:51:41.753Z
+ * Generated: 2026-01-23T22:54:20.011Z
  */
 
 // ACTIVITY_LOGS

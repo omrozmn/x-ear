@@ -34700,13 +34700,37 @@ components:
       description: Schema for user list response
     UserMeRead:
       properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
         id:
           type: string
           title: Id
           description: Unique identifier for the resource
+        tenantId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenantid
         email:
           type: string
           title: Email
+        username:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Username
         firstName:
           anyOf:
           - type: string
@@ -34717,6 +34741,11 @@ components:
           - type: string
           - type: 'null'
           title: Lastname
+        fullName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fullname
         phone:
           anyOf:
           - type: string
@@ -34731,6 +34760,17 @@ components:
           type: boolean
           title: Isphoneverified
           default: false
+        isActive:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Isactive
+        lastLogin:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastlogin
         permissions:
           anyOf:
           - items: {}

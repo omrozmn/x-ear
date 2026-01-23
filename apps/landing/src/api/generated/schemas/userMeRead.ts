@@ -5,23 +5,39 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { UserMeReadCreatedAt } from './userMeReadCreatedAt';
+import type { UserMeReadUpdatedAt } from './userMeReadUpdatedAt';
+import type { UserMeReadTenantId } from './userMeReadTenantId';
+import type { UserMeReadUsername } from './userMeReadUsername';
 import type { UserMeReadFirstName } from './userMeReadFirstName';
 import type { UserMeReadLastName } from './userMeReadLastName';
+import type { UserMeReadFullName } from './userMeReadFullName';
 import type { UserMeReadPhone } from './userMeReadPhone';
 import type { UserMeReadRole } from './userMeReadRole';
+import type { UserMeReadIsActive } from './userMeReadIsActive';
+import type { UserMeReadLastLogin } from './userMeReadLastLogin';
 import type { UserMeReadPermissions } from './userMeReadPermissions';
 
 /**
  * Schema for /me endpoint
  */
 export interface UserMeRead {
+  /** Creation timestamp */
+  createdAt?: UserMeReadCreatedAt;
+  /** Last update timestamp */
+  updatedAt?: UserMeReadUpdatedAt;
   /** Unique identifier for the resource */
   id: string;
+  tenantId?: UserMeReadTenantId;
   email: string;
+  username?: UserMeReadUsername;
   firstName?: UserMeReadFirstName;
   lastName?: UserMeReadLastName;
+  fullName?: UserMeReadFullName;
   phone?: UserMeReadPhone;
   role?: UserMeReadRole;
   isPhoneVerified?: boolean;
+  isActive?: UserMeReadIsActive;
+  lastLogin?: UserMeReadLastLogin;
   permissions?: UserMeReadPermissions;
 }

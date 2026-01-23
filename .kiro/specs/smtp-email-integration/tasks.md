@@ -130,16 +130,16 @@ This implementation plan breaks down the SMTP Email Integration feature into dis
   - **Property 8: Tenant Context Cleanup**
   - **Validates: Requirements 3.5, 18.6**
 
-- [-] 6.4 Write property test for retry behavior
+- [x] 6.4 Write property test for retry behavior
   - **Property 9: Retry Behavior for Retryable Errors**
   - **Property 10: No Retry for Permanent Errors**
   - **Validates: Requirements 4.1, 4.3, 4.4, 4.5**
 
-- [~] 6.5 Write property test for retry count logging
+- [x] 6.5 Write property test for retry count logging
   - **Property 11: Retry Count Logging**
   - **Validates: Requirements 4.6**
 
-- [~] 6.6 Write property test for audit log creation
+- [-] 6.6 Write property test for audit log creation
   - **Property 12: Audit Log Creation**
   - **Property 13: Successful Send Logging**
   - **Property 14: Failed Send Logging**

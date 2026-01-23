@@ -92,14 +92,19 @@ class UserPermissionRead(AppBaseModel):
     category: Optional[str] = None
 
 
-class UserMeRead(AppBaseModel, IDMixin):
+class UserMeRead(AppBaseModel, IDMixin, TimestampMixin):
     """Schema for /me endpoint"""
+    tenant_id: Optional[str] = Field(None, alias="tenantId")
     email: str
+    username: Optional[str] = None
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
+    full_name: Optional[str] = Field(None, alias="fullName")
     phone: Optional[str] = None
     role: Optional[str] = None
     is_phone_verified: bool = Field(False, alias="isPhoneVerified")
+    is_active: Optional[bool] = Field(None, alias="isActive")
+    last_login: Optional[datetime] = Field(None, alias="lastLogin")
     permissions: Optional[list] = []
 
 

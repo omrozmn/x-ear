@@ -10,7 +10,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({
   partyId,
 }) => {
   // Mock data for now - will be replaced with actual hook
-  const hearingTests = [];
+  const hearingTests: Record<string, unknown>[] = [];
   const isLoading = false;
   const error = null;
 
