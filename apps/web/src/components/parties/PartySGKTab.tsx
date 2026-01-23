@@ -13,7 +13,7 @@ import { EReceiptQuerySection } from './EReceiptQuerySection';
 import { SGKStatusCard } from './SGKStatusCard';
 import { PartyReportsSection } from './PartyReportsSection';
 import { DeviceRightsSection } from './DeviceRightsSection';
-import { SavedEReceiptsSection } from './SavedEReceiptsSection';
+import { SavedEReceiptsSection, SavedEReceipt } from './SavedEReceiptsSection';
 import { DeviceAssignmentSection } from './DeviceAssignmentSection';
 import { FileUploadSection } from './FileUploadSection';
 import { SGKOperationsSection } from './SGKOperationsSection';
@@ -22,18 +22,6 @@ interface PartySGKTabProps {
   party: Party;
   onPartyUpdate?: (party: Party) => void;
 }
-
-// LoadingSpinner component - Replaced by inline Loader2 usage
-// const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
-//   const sizeClasses = {
-//     sm: 'w-4 h-4',
-//     md: 'w-6 h-6',
-//     lg: 'w-8 h-8'
-//   };
-//   return (
-//     <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600`} />
-//   );
-// };
 
 // Error Message Component
 const ErrorMessage: React.FC<{ message: string; onRetry?: () => void }> = ({ message, onRetry }) => (
@@ -92,7 +80,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party }) => {
   const [deviceRightsLoading, setDeviceRightsLoading] = useState(false);
 
   // Saved E-Receipts States
-  const [savedEReceipts, setSavedEReceipts] = useState<any[]>([]);
+  const [savedEReceipts, setSavedEReceipts] = useState<SavedEReceipt[]>([]);
   const [savedEReceiptsLoading, setSavedEReceiptsLoading] = useState(false);
 
   // Device Assignment States

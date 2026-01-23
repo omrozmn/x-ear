@@ -3,14 +3,14 @@ import { Button } from '@x-ear/ui-web';
 import { FileText, Eye, Truck, Edit, Download } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 
-interface SavedEReceiptMaterial {
+export interface SavedEReceiptMaterial {
   code: string;
   name: string;
   applicationDate: string;
   deliveryStatus: 'saved' | 'delivered';
 }
 
-interface SavedEReceipt {
+export interface SavedEReceipt {
   id: string;
   number: string;
   date: string;
@@ -226,11 +226,10 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                           <p className="text-xs text-gray-600">Kod: {material.code} • Başvuru: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            material.deliveryStatus === 'delivered'
+                          <span className={`text-xs px-2 py-1 rounded ${material.deliveryStatus === 'delivered'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
-                          }`}>
+                            }`}>
                             {getMaterialStatusText(material.deliveryStatus)}
                           </span>
                           {material.deliveryStatus === 'saved' && onDeliverMaterial && (
@@ -305,11 +304,10 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                             <p className="text-sm text-gray-600">Kod: {material.code}</p>
                             <p className="text-sm text-gray-600">Başvuru Tarihi: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            material.deliveryStatus === 'delivered'
+                          <span className={`text-xs px-2 py-1 rounded ${material.deliveryStatus === 'delivered'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
-                          }`}>
+                            }`}>
                             {getMaterialStatusText(material.deliveryStatus)}
                           </span>
                         </div>

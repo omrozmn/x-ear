@@ -139,13 +139,13 @@ This implementation plan breaks down the SMTP Email Integration feature into dis
   - **Property 11: Retry Count Logging**
   - **Validates: Requirements 4.6**
 
-- [-] 6.6 Write property test for audit log creation
+- [x] 6.6 Write property test for audit log creation
   - **Property 12: Audit Log Creation**
   - **Property 13: Successful Send Logging**
   - **Property 14: Failed Send Logging**
   - **Validates: Requirements 5.1, 5.2, 5.3, 5.4**
 
-- [~] 6.7 Write unit tests for EmailService
+- [x] 6.7 Write unit tests for EmailService
   - Test exponential backoff delays (2s, 4s, 8s)
   - Test connection timeout handling
   - Test authentication failure (no retry)
@@ -295,7 +295,7 @@ This implementation plan breaks down the SMTP Email Integration feature into dis
   - Ensure AI Layer NEVER directly imports Email_Service
   - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 26.1, 26.2, 26.3, 26.4, 26.5, 26.6, 26.7_
 
-- [~] 16.1 Write integration tests for Tool API email endpoint
+- [-] 16.1 Write integration tests for Tool API email endpoint
   - Test AI request validated against allowlist
   - Test quota enforcement
   - Test failure doesn't cascade to AI layer
