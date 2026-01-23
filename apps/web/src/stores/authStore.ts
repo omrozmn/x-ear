@@ -227,7 +227,7 @@ export const useAuthStore = create<AuthStore>()(
                 name,
                 is_super_admin: userData.role === 'super_admin' || userData.role === 'admin',
                 isPhoneVerified: !requiresPhoneVerification
-              };
+              } as AuthStateUser;
 
               // Check if tenant has changed (extract from JWT token)
               const previousTenantId = localStorage.getItem('current_tenant_id');
@@ -667,7 +667,7 @@ export const useAuthStore = create<AuthStore>()(
         if (storedToken && !tokenManager.isAccessTokenExpired()) {
           try {
             // Get current user info from API
-            const { listUserMe } = await import('../api/generated/users/users');
+            const { listUserMe } = await import('@/api/generated/users/users');
             const response = await listUserMe();
 
             // customInstance returns response.data directly: {success, data: {...}}

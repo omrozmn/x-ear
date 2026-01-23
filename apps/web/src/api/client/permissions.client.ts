@@ -20,4 +20,4 @@ export {
   getUpdatePermissionRoleMutationOptions,
 } from '@/api/generated/index';
 
-export type { SchemasRolesPermissionRead as PermissionRead } from '@/api/generated/schemas';
+export type { PermissionRead } from '@/api/generated/schemas';

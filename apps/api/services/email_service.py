@@ -45,9 +45,36 @@ class EmailService:
         recipient: str,
         variables: Dict[str, str],
         tenant_id: str,
-        language: str = "tr"
+        language: str = "tr",
+        idempotency_key: Optional[str] = None,
+        request_id: Optional[str] = None
     ) -> str:
-        """Queue email for background sending."""
+        """Queue email for background sending with idempotency support.
+        
+        If idempotency_key is provided, checks for duplicate requests within 24 hours.
+        Returns existing email_log_id if duplicate found.
+        """
+        # Check for duplicate request if idempotency_key provided
+        if idempotency_key:
+            existing = self.db.query(SMTPEmailLog).filter(
+                SMTPEmailLog.tenant_id == tenant_id,
+                SMTPEmailLog.idempotency_key == idempotency_key,
+                SMTPEmailLog.created_at >= datetime.now(timezone.utc) - timedelta(hours=24)
+            ).first()
+            
+            if existing:
+                logger.info(
+                    "Duplicate email request detected, returning existing log",
+                    extra={
+                        "email_log_id": existing.id,
+                        "tenant_id": tenant_id,
+                        "recipient": mask_email(recipient),
+                        "idempotency_key": idempotency_key,
+                        **({"request_id": request_id} if request_id else {})
+                    }
+                )
+                return existing.id
+        
         email_log = SMTPEmailLog(
             tenant_id=tenant_id,
             recipient=recipient,
@@ -56,7 +83,8 @@ class EmailService:
             status="pending",
             scenario=scenario,
             template_name=scenario,
-            retry_count=0
+            retry_count=0,
+            idempotency_key=idempotency_key
         )
 
         self.db.add(email_log)
@@ -67,13 +95,14 @@ class EmailService:
             extra={
                 "email_log_id": email_log.id,
                 "tenant_id": tenant_id,
-                "recipient": recipient,
-                "scenario": scenario
+                "recipient": mask_email(recipient),
+                "scenario": scenario,
+                "idempotency_key": idempotency_key,
+                **({"request_id": request_id} if request_id else {})
             }
         )
 
         return email_log.id
-
     async def test_connection(self, smtp_config: dict) -> Tuple[bool, str]:
         """Test SMTP connection and authentication."""
         try:

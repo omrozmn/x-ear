@@ -203,8 +203,8 @@ export const useSyncInvoices = () => {
         mutateAsync: async (params?: { startDate?: string; endDate?: string }) => {
             return mutateAsync({
                 data: {
-                    start_date: params?.startDate,
-                    end_date: params?.endDate
+                    startDate: params?.startDate,
+                    endDate: params?.endDate
                 }
             });
         },

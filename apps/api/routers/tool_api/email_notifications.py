@@ -15,14 +15,14 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from pydantic import EmailStr, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from core.database import get_db
 from core.models.email import SMTPEmailLog
-from dependencies import get_current_user
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import AppBaseModel, ResponseEnvelope
 from services.email_service import EmailService
 from services.email_template_service import EmailTemplateService
@@ -141,8 +141,9 @@ def _log_ai_email_request(
 async def send_ai_email_notification(
     request: ToolAPIEmailRequest,
     background_tasks: BackgroundTasks,
+    response: Response,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    access: UnifiedAccess = Depends(require_access())
 ) -> ResponseEnvelope[ToolAPIEmailResponse]:
     """Send email notification from AI Layer.
     
@@ -159,12 +160,12 @@ async def send_ai_email_notification(
         request: Email notification request
         background_tasks: FastAPI background tasks
         db: Database session
-        current_user: Authenticated user
+        access: Unified access context with tenant_id
         
     Returns:
         ResponseEnvelope with email log ID and status
     """
-    tenant_id = current_user.tenant_id
+    tenant_id = access.tenant_id
     
     # Log request for audit (fail-safe)
     _log_ai_email_request(
@@ -192,9 +193,11 @@ async def send_ai_email_notification(
             )
             
             # Return error but don't cascade to AI Layer
-            return ResponseEnvelope.error(
-                message=error_msg,
-                status_code=400
+            response.status_code = 400
+            return ResponseEnvelope(
+                success=False,
+                error={"message": error_msg, "code": "INVALID_SCENARIO"},
+                message=error_msg
             )
         
         # Check quota
@@ -210,9 +213,11 @@ async def send_ai_email_notification(
             )
             
             # Return error but don't cascade to AI Layer
-            return ResponseEnvelope.error(
-                message=error_msg,
-                status_code=429
+            response.status_code = 429
+            return ResponseEnvelope(
+                success=False,
+                error={"message": error_msg, "code": "QUOTA_EXCEEDED"},
+                message=error_msg
             )
         
         # Initialize services
@@ -232,14 +237,16 @@ async def send_ai_email_notification(
         
         # Add background task for sending
         # Note: send_email_task is decorated with @tenant_task_async
+        # We use a lambda to ensure all arguments are keyword-only
         background_tasks.add_task(
-            email_service.send_email_task,
-            tenant_id=tenant_id,
-            email_log_id=email_log_id,
-            scenario=request.scenario,
-            recipient=request.recipient,
-            variables=request.variables,
-            language=request.language
+            lambda: email_service.send_email_task(
+                tenant_id=tenant_id,
+                email_log_id=email_log_id,
+                scenario=request.scenario,
+                recipient=request.recipient,
+                variables=request.variables,
+                language=request.language
+            )
         )
         
         # Commit transaction
@@ -260,7 +267,8 @@ async def send_ai_email_notification(
             message=f"Email notification queued successfully for scenario: {request.scenario}"
         )
         
-        return ResponseEnvelope.success(
+        return ResponseEnvelope(
+            success=True,
             data=response_data,
             message="AI email notification queued"
         )
@@ -291,7 +299,9 @@ async def send_ai_email_notification(
         
         # Return error but don't cascade to AI Layer
         # Use 500 status but with graceful message
-        return ResponseEnvelope.error(
-            message="Email notification service temporarily unavailable",
-            status_code=500
+        response.status_code = 500
+        return ResponseEnvelope(
+            success=False,
+            error={"message": "Email notification service temporarily unavailable", "code": "SERVICE_ERROR"},
+            message="Email notification service temporarily unavailable"
         )

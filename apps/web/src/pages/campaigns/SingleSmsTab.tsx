@@ -18,7 +18,7 @@ import {
     getListSmHeadersQueryKey,
     useCreateCommunicationMessageSendSms,
 } from '@/api/client/sms.client';
-import type { SMSHeaderRequestRead } from '@/api/generated/schemas';
+import type { SmsHeaderRequestRead } from '@/api/generated/schemas';
 import { useAuthStore } from '@/stores/authStore';
 import { unwrapArray } from '@/utils/response-unwrap';
 
@@ -57,7 +57,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
     const { mutateAsync: createCommunicationMessageSendSms } = useCreateCommunicationMessageSendSms();
 
     // Parse SMS headers and filter only approved ones
-    const headersRaw = unwrapArray<SMSHeaderRequestRead>(headersData);
+    const headersRaw = unwrapArray<SmsHeaderRequestRead>(headersData);
     const headers = headersRaw.filter(h => h.status === 'approved');
 
     // Set default header when headers are loaded

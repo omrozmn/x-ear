@@ -159,7 +159,7 @@ export function TeamMembersTab() {
             firstName: user.firstName || '',
             lastName: user.lastName || '',
             role: user.role || 'user',
-            branchId: user.branchId || '',
+            branchId: (user as any).branchId || '',
             password: '',
             isActive: user.isActive ?? true
         });

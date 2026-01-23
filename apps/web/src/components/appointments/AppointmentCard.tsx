@@ -74,9 +74,9 @@ export function AppointmentCard({
   onCall,
   className = '',
 }: AppointmentCardProps) {
-  const statusVariant = statusVariants[appointment.status] || 'default';
-  const typeVariant = typeVariants[appointment.type] || 'default';
-  
+  const statusVariant = statusVariants[appointment.status as keyof typeof statusVariants] || 'default';
+  const typeVariant = typeVariants[appointment.type as keyof typeof typeVariants] || 'default';
+
   const cardClasses = [
     'transition-all duration-200',
     isDragging ? 'shadow-lg scale-105 rotate-1' : 'hover:shadow-md',
@@ -98,7 +98,7 @@ export function AppointmentCard({
 
   if (isCompact) {
     return (
-      <Card 
+      <Card
         className={cardClasses}
         onClick={handleCardClick}
       >
@@ -120,7 +120,7 @@ export function AppointmentCard({
   }
 
   return (
-    <Card 
+    <Card
       className={cardClasses}
       onClick={handleCardClick}
     >
@@ -135,7 +135,7 @@ export function AppointmentCard({
                   {appointment.partyName}
                 </Text>
               </HStack>
-              
+
               <HStack spacing="xs" className="items-center text-sm text-gray-600">
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 <Text>
@@ -150,17 +150,17 @@ export function AppointmentCard({
             </div>
 
             <VStack spacing="xs" className="items-end">
-              <Badge 
+              <Badge
                 variant={statusVariant}
                 className="text-xs"
               >
-                {statusLabels[appointment.status]}
+                {statusLabels[appointment.status as keyof typeof statusLabels]}
               </Badge>
-              <Badge 
+              <Badge
                 variant={typeVariant}
                 className="text-xs"
               >
-                {typeLabels[appointment.type]}
+                {typeLabels[appointment.type as keyof typeof typeLabels]}
               </Badge>
             </VStack>
           </HStack>
@@ -189,7 +189,7 @@ export function AppointmentCard({
                   Ara
                 </Button>
               )}
-              
+
               {onEdit && (
                 <Button
                   size="sm"
@@ -204,7 +204,7 @@ export function AppointmentCard({
                   Düzenle
                 </Button>
               )}
-              
+
               {onDelete && (
                 <Button
                   size="sm"

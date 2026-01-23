@@ -66,7 +66,8 @@ export const useConditionalFields = (
   const getNestedValue = (data: Record<string, unknown>, path: string): unknown => {
     if (path.includes('.')) {
       const [section, field] = path.split('.');
-      return data[section]?.[field];
+      const sectionData = data[section] as Record<string, unknown> | undefined;
+      return sectionData?.[field];
     }
     return data[path];
   };

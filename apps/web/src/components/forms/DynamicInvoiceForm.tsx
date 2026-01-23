@@ -1,9 +1,9 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  InvoiceFormSchema, 
-  InvoiceFormData, 
-  InvoiceFieldDefinition, 
+import {
+  InvoiceFormSchema,
+  InvoiceFormData,
+  InvoiceFieldDefinition,
   InvoiceFieldSection,
   InvoiceFormValidationResult,
   InvoiceFormValidationError
@@ -80,11 +80,11 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   const visibleSections = useMemo(() => {
     const schema = INVOICE_FORM_SCHEMA;
     const invoiceTypeConfig = schema.invoiceTypes[formData.invoiceType];
-    
+
     if (!invoiceTypeConfig) return [];
 
     const sections: InvoiceFieldSection[] = [];
-    
+
     // Add required sections
     invoiceTypeConfig.requiredFields.forEach(sectionKey => {
       const section = schema.fieldDefinitions[sectionKey];
@@ -102,7 +102,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
     });
 
     return sections;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.invoiceType, formData.scenario, formData]);
 
   // Check if a field should be visible based on conditions
@@ -142,8 +142,8 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
     // Pattern validation
     if (validation.pattern && !new RegExp(validation.pattern).test(String(value))) {
       if (field.id === 'tc_number') {
-        return InvoiceValidationUtils.validateTCKN(String(value)) 
-          ? null 
+        return InvoiceValidationUtils.validateTCKN(String(value))
+          ? null
           : 'Geçersiz T.C. Kimlik Numarası';
       }
       if (field.id === 'tax_number') {
@@ -195,12 +195,12 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
 
     visibleSections.forEach(section => {
       const sectionData = formData[section.name] || {};
-      
+
       Object.values(section.fields).forEach(field => {
         if (shouldShowField(field, sectionData)) {
-          const fieldValue = sectionData[field.id];
+          const fieldValue = (sectionData as any)[field.id];
           const error = validateField(field, fieldValue);
-          
+
           if (error) {
             const fieldKey = `${section.name}.${field.id}`;
             newErrors[fieldKey] = error;
@@ -282,7 +282,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         ...newItems[index],
         [field]: value
       };
-      
+
       // Recalculate total
       if (field === 'quantity' || field === 'unitPrice' || field === 'taxRate') {
         const item = newItems[index];
@@ -290,7 +290,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         const tax = subtotal * (item.taxRate / 100);
         newItems[index].total = subtotal + tax;
       }
-      
+
       return newItems;
     });
   };
@@ -317,7 +317,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const validation = validateForm();
     if (validation.isValid) {
       const submitData: InvoiceFormData = {
@@ -349,7 +349,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   // Render field based on type
   const renderField = (section: InvoiceFieldSection, field: InvoiceFieldDefinition) => {
     const sectionData = formData[section.name] || {};
-    const fieldValue = sectionData[field.id] || field.defaultValue || '';
+    const fieldValue = (sectionData as any)[field.id] || field.defaultValue || '';
     const fieldKey = `${section.name}.${field.id}`;
     const hasError = errors[fieldKey] && touched[fieldKey];
 
@@ -362,14 +362,13 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
       name: field.id,
       value: fieldValue,
       disabled,
-      className: `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-        hasError ? 'border-red-500' : 'border-gray-300'
-      }`,
+      className: `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${hasError ? 'border-red-500' : 'border-gray-300'
+        }`,
       placeholder: field.placeholder,
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const value = field.type === 'checkbox' 
+        const value = field.type === 'checkbox'
           ? (e.target as HTMLInputElement).checked
-          : field.type === 'number' 
+          : field.type === 'number'
             ? parseFloat(e.target.value) || 0
             : e.target.value;
         handleFieldChange(section.name, field.id, value);
@@ -402,7 +401,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
 
       case 'textarea':
         fieldElement = (
-          <Textarea 
+          <Textarea
             {...commonInputProps}
             rows={3}
           />
@@ -438,7 +437,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
           {field.label}
           {field.required && <span className="text-red-500 ml-1">*</span>}
         </label>
-        
+
         {field.type === 'checkbox' ? (
           <div className="flex items-center">
             {fieldElement}
@@ -449,11 +448,11 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         ) : (
           fieldElement
         )}
-        
+
         {field.helpText && (
           <p className="mt-1 text-xs text-gray-500">{field.helpText}</p>
         )}
-        
+
         {hasError && (
           <p className="mt-1 text-xs text-red-500">{errors[fieldKey]}</p>
         )}
@@ -534,7 +533,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
           {section.description && (
             <p className="text-sm text-gray-600 mb-4">{section.description}</p>
           )}
-          
+
           {section.name === 'items' ? (
             // Special handling for items section
             (<div className="space-y-4">

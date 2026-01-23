@@ -9,7 +9,7 @@
 
 export {
   useListTenantUsers,
-  useCreateTenantUsers,
+  useCreateTenantUser as useCreateTenantUsers,
   useUpdateTenantUser,
   useDeleteTenantUser,
   getListTenantUsersQueryKey,

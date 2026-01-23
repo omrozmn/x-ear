@@ -112,7 +112,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
       fitting: 'Cihaz Ayarı',
       assessment: 'Değerlendirme'
     };
-    return labels[type] || type;
+    return labels[type as keyof typeof labels] || type;
   };
 
   const validateForm = (): boolean => {

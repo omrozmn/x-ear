@@ -83,7 +83,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
       fitting: 'Ayar',
       assessment: 'Değerlendirme'
     };
-    return labels[type] || type;
+    return labels[type as keyof typeof labels] || type;
   };
 
   const formatDate = (date: string): string => {

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/config/tenant_permissions.py
+# hypothesis_version: 6.150.2
+
+['activity_logs:read', 'admin', 'appointment:read', 'appointment:write', 'branches:delete', 'branches:read', 'branches:write', 'campaign:read', 'campaign:write', 'cash_records:delete', 'cash_records:read', 'cash_records:write', 'dashboard:read', 'delete', 'inventory:read', 'inventory:write', 'invoice:delete', 'invoice:export', 'invoice:read', 'invoice:write', 'manager', 'ocr:read', 'ocr:write', 'owner', 'patient:delete', 'patient:export', 'patient:read', 'patient:write', 'payments:read', 'payments:write', 'read', 'role:read', 'role:write', 'sale:read', 'sale:write', 'sms.edit', 'sms.view', 'sms:read', 'sms:write', 'supplier:delete', 'supplier:read', 'supplier:write', 'tenant:manage', 'tenant_admin', 'user', 'user:manage', 'users:delete', 'users:read', 'users:write', 'write']

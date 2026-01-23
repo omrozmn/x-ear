@@ -27,7 +27,7 @@ import {
     Zap
 } from 'lucide-react';
 import { useListSmHeaders, getListSmHeadersQueryKey } from '@/api/client/sms.client';
-import type { SMSHeaderRequestRead } from '@/api/generated/schemas';
+import type { SmsHeaderRequestRead } from '@/api/generated/schemas';
 import { useAuthStore } from '@/stores/authStore';
 import { unwrapArray } from '@/utils/response-unwrap';
 
@@ -269,7 +269,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ /* creditBal
 
     // Parse SMS headers and filter only approved ones
     const headerOptions = useMemo(() => {
-        const headersRaw = unwrapArray<SMSHeaderRequestRead>(headersData);
+        const headersRaw = unwrapArray<SmsHeaderRequestRead>(headersData);
         // Only return approved headers
         return headersRaw
             .filter(h => h.status === 'approved')

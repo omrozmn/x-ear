@@ -74,7 +74,7 @@ const EmailLogs: React.FC = () => {
   };
 
   // Status badge color mapping
-  const getStatusBadgeVariant = (status: string): 'success' | 'warning' | 'error' | 'default' => {
+  const getStatusBadgeVariant = (status: string): 'success' | 'warning' | 'danger' | 'default' => {
     switch (status) {
       case 'sent':
         return 'success';
@@ -82,7 +82,7 @@ const EmailLogs: React.FC = () => {
         return 'warning';
       case 'failed':
       case 'bounced':
-        return 'error';
+        return 'danger';
       default:
         return 'default';
     }
@@ -121,22 +121,22 @@ const EmailLogs: React.FC = () => {
   const columns: Column<EmailLog>[] = [
     {
       key: 'recipient',
-      header: 'Alıcı',
-      render: (log) => (
+      title: 'Alıcı',
+      render: (_, log) => (
         <div className="font-medium text-gray-900">{log.recipient}</div>
       ),
     },
     {
       key: 'subject',
-      header: 'Konu',
-      render: (log) => (
+      title: 'Konu',
+      render: (_, log) => (
         <div className="max-w-xs truncate text-gray-700">{log.subject}</div>
       ),
     },
     {
       key: 'status',
-      header: 'Durum',
-      render: (log) => (
+      title: 'Durum',
+      render: (_, log) => (
         <Badge variant={getStatusBadgeVariant(log.status)}>
           {getStatusLabel(log.status)}
         </Badge>
@@ -144,8 +144,8 @@ const EmailLogs: React.FC = () => {
     },
     {
       key: 'scenario',
-      header: 'Senaryo',
-      render: (log) => (
+      title: 'Senaryo',
+      render: (_, log) => (
         <span className="text-sm text-gray-600">
           {log.scenario || '-'}
         </span>
@@ -153,29 +153,29 @@ const EmailLogs: React.FC = () => {
     },
     {
       key: 'retryCount',
-      header: 'Deneme',
-      render: (log) => (
+      title: 'Deneme',
+      render: (_, log) => (
         <span className="text-sm text-gray-600">{log.retryCount}</span>
       ),
     },
     {
       key: 'createdAt',
-      header: 'Oluşturulma',
-      render: (log) => (
+      title: 'Oluşturulma',
+      render: (_, log) => (
         <span className="text-sm text-gray-600">{formatDate(log.createdAt)}</span>
       ),
     },
     {
       key: 'sentAt',
-      header: 'Gönderilme',
-      render: (log) => (
+      title: 'Gönderilme',
+      render: (_, log) => (
         <span className="text-sm text-gray-600">{formatDate(log.sentAt)}</span>
       ),
     },
     {
       key: 'actions',
-      header: '',
-      render: (log) => (
+      title: '',
+      render: (_, log) => (
         <button
           onClick={() => toggleRowExpansion(log.id)}
           className="text-primary-600 hover:text-primary-700 p-1"
@@ -385,7 +385,7 @@ const EmailLogs: React.FC = () => {
                           key={column.key}
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          {column.header}
+                          {column.title}
                         </th>
                       ))}
                     </tr>

@@ -371,6 +371,10 @@ app.include_router(communications.router)
 app.include_router(smtp_config.router)
 app.include_router(email_logs.router)
 
+# Tool API routers (AI Layer integration)
+from routers.tool_api import email_notifications as tool_api_email
+app.include_router(tool_api_email.router)  # No /api prefix - router already has /tool-api prefix
+
 from routers import commissions
 app.include_router(commissions.router)
 

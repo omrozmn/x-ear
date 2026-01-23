@@ -26,7 +26,7 @@ import {
     useListSmHeaders,
     getListSmHeadersQueryKey
 } from '@/api/client/branches.client';
-import type { ListPartiesParams, BranchRead, SMSHeaderRequestRead, PartyRead } from '@/api/generated/schemas';
+import type { ListPartiesParams, BranchRead, SmsHeaderRequestRead, PartyRead } from '@/api/generated/schemas';
 import { unwrapArray } from '@/utils/response-unwrap';
 
 import { useAuthStore } from '@/stores/authStore';
@@ -120,7 +120,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
 
     // Parse SMS headers and filter only approved ones
     const headerOptions = useMemo(() => {
-        const headersRaw = unwrapArray<SMSHeaderRequestRead>(headersData);
+        const headersRaw = unwrapArray<SmsHeaderRequestRead>(headersData);
         // Only return approved headers
         return headersRaw
             .filter(h => h.status === 'approved')

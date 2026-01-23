@@ -295,7 +295,7 @@ This implementation plan breaks down the SMTP Email Integration feature into dis
   - Ensure AI Layer NEVER directly imports Email_Service
   - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 26.1, 26.2, 26.3, 26.4, 26.5, 26.6, 26.7_
 
-- [-] 16.1 Write integration tests for Tool API email endpoint
+- [x] 16.1 Write integration tests for Tool API email endpoint
   - Test AI request validated against allowlist
   - Test quota enforcement
   - Test failure doesn't cascade to AI layer
@@ -314,7 +314,7 @@ This implementation plan breaks down the SMTP Email Integration feature into dis
   - **Property 22: Tenant-Scoped Idempotency**
   - **Validates: Requirements 19.1, 19.2, 19.3**
 
-- [~] 18. Add monitoring and observability
+- [x] 18. Add monitoring and observability
   - Add structured JSON logging for all email operations
   - Add requestId to all log entries
   - Mask PII (email addresses, passwords) in logs
@@ -323,7 +323,7 @@ This implementation plan breaks down the SMTP Email Integration feature into dis
   - Add SMTP connection pool statistics logging
   - _Requirements: 27.1, 27.2, 27.3, 27.4, 27.5, 27.6_
 
-- [~] 19. Final checkpoint - End-to-end testing
+- [-] 19. Final checkpoint - End-to-end testing
   - Test complete flow: Admin saves SMTP config → sends test email → views logs
   - Test password reset email flow end-to-end
   - Test user invite email flow end-to-end

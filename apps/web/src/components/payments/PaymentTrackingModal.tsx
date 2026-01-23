@@ -32,8 +32,8 @@ import {
   useListSalePromissoryNotes,
   getListPartyPaymentRecordsQueryKey,
   getListSalePromissoryNotesQueryKey
-} from '../../api/generated/payments/payments';
-import type { PaymentRecordCreate } from '@/api/generated/schemas/paymentRecordCreate';
+} from '@/api/generated/payments/payments';
+import type { RoutersPaymentsPaymentRecordCreate } from '@/api/generated/schemas';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
 
 // interface ExtendedSaleRead extends SaleRead {
@@ -214,7 +214,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
     setIsLoading(true);
     try {
-      const paymentData: PaymentRecordCreate = {
+      const paymentData: RoutersPaymentsPaymentRecordCreate = {
         partyId: sale.partyId,
         amount: newPayment.amount,
         paymentDate: newPayment.paymentDate,

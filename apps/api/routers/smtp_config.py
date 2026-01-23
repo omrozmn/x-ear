@@ -13,10 +13,11 @@ Requirements:
 - 17.1-17.3: Admin panel integration endpoints
 - 17.8: Explicit operationId for Orval code generation
 - 22.7: SMTP connection test before saving config
+- 27.1-27.6: Monitoring and observability
 """
 
 import logging
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
@@ -393,4 +394,69 @@ async def send_test_email(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to send test email: {str(e)}"
+        )
+
+
+@router.get(
+    "/metrics",
+    response_model=ResponseEnvelope[Dict[str, Any]],
+    operation_id="getEmailMetrics",
+    status_code=200
+)
+async def get_email_metrics(
+    access: UnifiedAccess = Depends(require_access("integrations.smtp.view")),
+    email_service: EmailService = Depends(get_email_service)
+) -> ResponseEnvelope[Dict[str, Any]]:
+    """
+    Get email system metrics for monitoring and observability.
+
+    Returns statistics about email sending operations including:
+    - Total emails sent and failed
+    - Retry count
+    - Average send duration
+    - Failure rate percentage
+    - Failure breakdown by error type
+
+    **Permissions Required:** `integrations.smtp.view`
+
+    **Response:**
+    - Returns current metrics snapshot
+
+    **Example Response:**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "emailsSent": 150,
+        "emailsFailed": 5,
+        "emailsRetried": 8,
+        "averageSendDurationMs": 234.56,
+        "failureRatePercent": 3.23,
+        "failureByType": {
+          "SMTPConnectError": 3,
+          "SMTPAuthenticationError": 2
+        },
+        "lastReset": "2025-01-23T10:00:00Z"
+      }
+    }
+    ```
+    """
+    try:
+        metrics = email_service.get_metrics()
+        
+        logger.info(
+            "Email metrics retrieved",
+            extra={
+                "tenant_id": access.tenant_id,
+                "metrics": metrics
+            }
+        )
+        
+        return ResponseEnvelope.success(metrics)
+    
+    except Exception as e:
+        logger.exception(f"Error retrieving email metrics: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve email metrics: {str(e)}"
         )
