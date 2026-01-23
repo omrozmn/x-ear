@@ -369,7 +369,7 @@ export class PartySyncService {
     }
   }
 
-  async createParty(party: LocalParty, _origin?: string): Promise<LocalParty> {
+  async createParty(party: LocalParty, idempotencyKey?: string): Promise<LocalParty> {
     // 1. Save to local IndexedDB
     await indexedDBManager.updateParty(party);
 
@@ -380,7 +380,7 @@ export class PartySyncService {
       endpoint: '/api/parties',
       data: orval,
       headers: {
-        'Idempotency-Key': `create-party-${party.id}-${Date.now()}`
+        'Idempotency-Key': idempotencyKey || `create-party-${party.id}-${Date.now()}`
       }
     });
 
@@ -392,7 +392,7 @@ export class PartySyncService {
     return party;
   }
 
-  async updateParty(party: LocalParty, _origin?: string): Promise<LocalParty> {
+  async updateParty(party: LocalParty, idempotencyKey?: string): Promise<LocalParty> {
     // 1. Update local IndexedDB
     await indexedDBManager.updateParty(party);
 
@@ -407,14 +407,17 @@ export class PartySyncService {
     return party;
   }
 
-  async deleteParty(partyId: string, _origin?: string): Promise<void> {
+  async deleteParty(partyId: string, idempotencyKey?: string): Promise<void> {
     // 1. Delete from local IndexedDB
     await indexedDBManager.deleteParty(partyId);
 
     // 2. Add to Outbox
     await outbox.addOperation({
       method: 'DELETE',
-      endpoint: `/api/parties/${partyId}`
+      endpoint: `/api/parties/${partyId}`,
+      headers: {
+        'Idempotency-Key': idempotencyKey || `delete-party-${partyId}-${Date.now()}`
+      }
     });
 
     // 3. Trigger sync if online

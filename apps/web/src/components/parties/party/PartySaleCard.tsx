@@ -46,7 +46,7 @@ export const PartySaleCard: React.FC<PartySaleCardProps> = ({
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    } as any);
+    } as Intl.DateTimeFormatOptions);
   };
 
   const formatCurrency = (amount?: number) => {
@@ -236,7 +236,8 @@ export const PartySaleCard: React.FC<PartySaleCardProps> = ({
         <div className="mt-4 pt-3 border-t border-gray-100">
           <div className="flex flex-wrap gap-2">
             {/* Invoice Actions */}
-            {!((sale as any).invoice) ? (
+            {/* Check if invoice exists using 'in' operator or optional chaining compatible with type */}
+            {!('invoice' in sale && sale.invoice) ? (
               <Button
                 variant="secondary"
                 onClick={(e) => {

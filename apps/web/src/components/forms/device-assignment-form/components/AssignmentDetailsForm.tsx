@@ -1,8 +1,8 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import {listInventory} from '@/api/client/inventory.client';
-import { unwrapObject, unwrapArray } from '@/utils/response-unwrap';
-import { Input, Select, Textarea } from '@x-ear/ui-web';
-import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
+import { listInventory } from '@/api/client/inventory.client';
+import { unwrapObject } from '@/utils/response-unwrap';
+import { Input, Select } from '@x-ear/ui-web';
+import { Calendar, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 
 export interface DeviceAssignment {
   id?: string;
@@ -143,20 +143,16 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
     setShowLoanerResults(false);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'assigned':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'trial':
-        return <Clock className="w-4 h-4 text-blue-500" />;
-      case 'returned':
-        return <RotateCcw className="w-4 h-4 text-orange-500" />;
-      case 'defective':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
-      default:
-        return <CheckCircle className="w-4 h-4 text-gray-500" />;
-    }
-  };
+  // Helper to get icon based on status - available for future use
+  // const getStatusIcon = (status: string) => {
+  //   switch (status) {
+  //     case 'assigned': return <CheckCircle className="w-4 h-4 text-green-500" />;
+  //     case 'trial': return <Clock className="w-4 h-4 text-blue-500" />;
+  //     case 'returned': return <RotateCcw className="w-4 h-4 text-orange-500" />;
+  //     case 'defective': return <AlertCircle className="w-4 h-4 text-red-500" />;
+  //     default: return <CheckCircle className="w-4 h-4 text-gray-500" />;
+  //   }
+  // };
 
   return (
     <div className="space-y-6">

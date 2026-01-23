@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_scan_queue.py
+# hypothesis_version: 6.150.2
+
+[404, 500, '/init-db', '/{scan_id}/retry', 'Admin Scan Queue', 'Scan not found', 'listAdminScanQueue', 'pending', 'scan_queue.manage', 'scan_queue.read', 'system.manage']

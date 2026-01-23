@@ -10,7 +10,7 @@
  * @module ai/__tests__/aiSessionStore.test
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { act } from '@testing-library/react';
 import {
   useAISessionStore,

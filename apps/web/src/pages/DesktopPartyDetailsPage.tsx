@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Calendar,
   Activity,
-  Shield,
   CreditCard
 } from 'lucide-react';
 import { useParty } from '../hooks/party/useParty';
@@ -17,7 +16,7 @@ import { PartyTabs, type PartyTab } from '../components/parties/PartyTabs';
 import { PartyTabContent } from '../components/parties/PartyTabContent';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
 import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
-import ReportModal from '../components/parties/modals/ReportModal';
+// import ReportModal from '../components/parties/modals/ReportModal'; // Not used - showReportModal is false
 import { PartyNoteForm } from '../components/forms/PartyNoteForm';
 import { ErrorMessage, NetworkError, NotFoundError } from '../components/ErrorMessage';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -27,7 +26,7 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
 import { useUpdateParty } from '../hooks/useParties';
 import { partyApiService } from '../services/party/party-api.service';
-import type { Party } from '../types/party';
+// import type { Party } from '../types/party'; // Type inferred from useParty hook
 
 
 
@@ -44,7 +43,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
+  const [, setShowReportModal] = useState(false); // Value unused, setter used in PartyHeader
 
   const { party, isLoading, error, loadParty } = useParty(partyId);
   const refetch = () => partyId ? loadParty(partyId) : Promise.resolve();
@@ -71,10 +70,11 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     });
   };
 
-  const formatCurrency = (amount?: number) => {
-    if (!amount) return '₺0';
-    return `₺${amount.toLocaleString('tr-TR')}`;
-  };
+  // Format currency utility - kept for potential future use in this page
+  // const formatCurrency = (amount?: number) => {
+  //   if (!amount) return '₺0';
+  //   return `₺${amount.toLocaleString('tr-TR')}`;
+  // };
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {

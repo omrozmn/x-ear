@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSPackageUpdateName = string | null;
+export type SmsPackageUpdateName = string | null;

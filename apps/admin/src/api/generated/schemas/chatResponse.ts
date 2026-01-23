@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ChatResponseIntent } from './chatResponseIntent';
+import type { ChatResponseActionPlan } from './chatResponseActionPlan';
 import type { ChatResponseResponse } from './chatResponseResponse';
 import type { ChatResponseClarificationQuestion } from './chatResponseClarificationQuestion';
 
@@ -19,6 +20,8 @@ export interface ChatResponse {
   status: string;
   /** Classified intent */
   intent?: ChatResponseIntent;
+  /** Generated action plan if applicable */
+  action_plan?: ChatResponseActionPlan;
   /** Response message */
   response?: ChatResponseResponse;
   /** Whether clarification is needed */

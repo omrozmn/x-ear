@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Badge } from '@x-ear/ui-web';
+// import { Button, Input, Badge } from '@x-ear/ui-web'; // Unused imports
 import { useToastHelpers } from '@x-ear/ui-web';
-import { FileText, Download, Eye, RefreshCw, Upload, Trash2, AlertCircle, CheckCircle, Clock, Plus, X, Loader2, Shield, CreditCard, Calendar, Workflow, Send, FileCheck, Timer, ExternalLink } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
-import { SGKDocument, SGKDocumentType, SGKWorkflow } from '../../types/sgk';
-import { useProcessSgkOcr, useTriggerSgkProcessing } from '../../hooks/sgk/useSgk';
-import sgkService from '../../services/sgk/sgk.service';
-import { SGKWorkflow as SGKWorkflowComponent } from '../SGKWorkflow';
+import { SGKDocument, SGKDocumentType } from '../../types/sgk';
+
+// import sgkService from '../../services/sgk/sgk.service'; // Unused in this file
+
 import { EReceiptQuerySection } from './EReceiptQuerySection';
-import { PartyRightsSection } from './PartyRightsSection';
-import { MaterialDeliverySection } from './MaterialDeliverySection';
+// import { PartyRightsSection } from './PartyRightsSection'; // Component not in use
+// import { MaterialDeliverySection } from './MaterialDeliverySection'; // Component not in use
 import { SGKStatusCard } from './SGKStatusCard';
 import { PartyReportsSection } from './PartyReportsSection';
 import { DeviceRightsSection } from './DeviceRightsSection';
@@ -23,18 +23,17 @@ interface PartySGKTabProps {
   onPartyUpdate?: (party: Party) => void;
 }
 
-// Loading Spinner Component
-const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
-  };
-
-  return (
-    <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600`} />
-  );
-};
+// LoadingSpinner component - Replaced by inline Loader2 usage
+// const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+//   const sizeClasses = {
+//     sm: 'w-4 h-4',
+//     md: 'w-6 h-6',
+//     lg: 'w-8 h-8'
+//   };
+//   return (
+//     <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600`} />
+//   );
+// };
 
 // Error Message Component
 const ErrorMessage: React.FC<{ message: string; onRetry?: () => void }> = ({ message, onRetry }) => (
@@ -66,18 +65,18 @@ const SuccessMessage: React.FC<{ message: string }> = ({ message }) => (
   </div>
 );
 
-export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party, onPartyUpdate }) => {
+export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party }) => {
   const { success: showSuccess, error: showError } = useToastHelpers();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState<SGKDocumentType>('rapor');
-  const [uploadNotes, setUploadNotes] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [documentType] = useState<SGKDocumentType>('rapor');
+  // const [uploadNotes, setUploadNotes] = useState('');
+  // const [isLoading, setIsLoading] = useState(false); // Not used
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [sgkDocuments, setSgkDocuments] = useState<SGKDocument[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [selectedDocumentForWorkflow, setSelectedDocumentForWorkflow] = useState<SGKDocument | null>(null);
-  const [showWorkflowModal, setShowWorkflowModal] = useState(false);
+  // const [selectedDocumentForWorkflow, setSelectedDocumentForWorkflow] = useState<SGKDocument | null>(null);
+  // const [showWorkflowModal, setShowWorkflowModal] = useState(false);
 
   // E-Receipt Query States
   const [eReceiptNo, setEReceiptNo] = useState('');
@@ -102,7 +101,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party, onPartyUpdate }
 
   // Safe access to party data with fallbacks
   // Safe access to party data with fallbacks (Prioritize HearingProfile)
-  const sgkData = party?.hearingProfile?.sgkInfo || party?.sgkInfo || {};
+  // const sgkData = party?.hearingProfile?.sgkInfo || party?.sgkInfo || {};
   const partyId = party?.id || '';
   const sgkStatus = party?.status || 'pending';
 
@@ -141,6 +140,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party, onPartyUpdate }
     }
   };
 
+  /*
   const handleFileUpload = async () => {
     if (!selectedFile || !partyId) return;
     setIsLoading(true);
@@ -154,7 +154,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party, onPartyUpdate }
         autoProcess: false,
       };
 
-      const uploadResult = await sgkService.uploadDocument(body);
+      await sgkService.uploadDocument(body);
 
       showSuccess('Başarılı', 'SGK belgesi başarıyla yüklendi');
       setSuccessMessage('SGK belgesi başarıyla yüklendi');
@@ -170,7 +170,9 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party, onPartyUpdate }
       setIsLoading(false);
     }
   };
+  */
 
+  /*
   const handleViewWorkflow = (document: SGKDocument) => {
     setSelectedDocumentForWorkflow(document);
     setShowWorkflowModal(true);
@@ -184,6 +186,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party, onPartyUpdate }
     ));
     showSuccess('Başarılı', 'İş akışı güncellendi');
   };
+  */
 
   // E-Receipt Query Function (matching legacy implementation)
   const queryEReceipt = async () => {
@@ -441,7 +444,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party, onPartyUpdate }
   };
 
   // Download party form function
-  const downloadPartyForm = (eReceiptId: string) => {
+  const downloadPartyForm = (_eReceiptId: string) => {
     // Simulate download
     showSuccess('Başarılı', 'Hasta işlem formu indirildi');
   };

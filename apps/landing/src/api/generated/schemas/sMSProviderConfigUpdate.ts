@@ -5,14 +5,14 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSProviderConfigUpdateApiUsername } from './sMSProviderConfigUpdateApiUsername';
-import type { SMSProviderConfigUpdateApiPassword } from './sMSProviderConfigUpdateApiPassword';
-import type { SMSProviderConfigUpdateDocumentsEmail } from './sMSProviderConfigUpdateDocumentsEmail';
-import type { SMSProviderConfigUpdateIsActive } from './sMSProviderConfigUpdateIsActive';
+import type { SmsProviderConfigUpdateApiUsername } from './smsProviderConfigUpdateApiUsername';
+import type { SmsProviderConfigUpdateApiPassword } from './smsProviderConfigUpdateApiPassword';
+import type { SmsProviderConfigUpdateDocumentsEmail } from './smsProviderConfigUpdateDocumentsEmail';
+import type { SmsProviderConfigUpdateIsActive } from './smsProviderConfigUpdateIsActive';
 
-export interface SMSProviderConfigUpdate {
-  apiUsername?: SMSProviderConfigUpdateApiUsername;
-  apiPassword?: SMSProviderConfigUpdateApiPassword;
-  documentsEmail?: SMSProviderConfigUpdateDocumentsEmail;
-  isActive?: SMSProviderConfigUpdateIsActive;
+export interface SmsProviderConfigUpdate {
+  apiUsername?: SmsProviderConfigUpdateApiUsername;
+  apiPassword?: SmsProviderConfigUpdateApiPassword;
+  documentsEmail?: SmsProviderConfigUpdateDocumentsEmail;
+  isActive?: SmsProviderConfigUpdateIsActive;
 }

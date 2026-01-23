@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/middleware/idempotency.py
+# hypothesis_version: 6.150.2
+
+[b'Idempotency-Key', b'X-Idempotency-Replayed', b'application/json', b'content-length', b'content-type', b'idempotency-key', b'true', 200, 300, 400, 422, 1000, 3600, '/api/auth/login', '/api/auth/logout', '/api/auth/refresh', '/docs', '/health', '/metrics', '/openapi.json', '/redoc', 'GET', 'PATCH', 'POST', 'PUT', 'TESTING', 'body', 'code', 'created_at', 'error', 'expires_at', 'headers', 'http', 'http.disconnect', 'http.request', 'http.response.body', 'http.response.start', 'message', 'method', 'more_body', 'path', 'status', 'status_code', 'success', 'true', 'type', 'utf-8']

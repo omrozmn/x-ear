@@ -17,6 +17,16 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useAIPhase } from '../hooks/useAIStatus';
+import {
+  isDismissedInSession,
+  setDismissedInSession,
+  resetPhaseABannerDismissed,
+  shouldShowPhaseABanner,
+  PHASE_A_BANNER_STORAGE_KEY
+} from '../utils/aiPhaseHelpers';
+
+// Re-export helper functions for convenience
+export { resetPhaseABannerDismissed, shouldShowPhaseABanner };
 
 // =============================================================================
 // Types
@@ -30,23 +40,23 @@ export interface PhaseABannerProps {
    * Additional CSS classes to apply to the banner container
    */
   className?: string;
-  
+
   /**
    * Custom message to display (overrides default)
    */
   message?: string;
-  
+
   /**
    * Whether to show the dismiss button
    * @default true
    */
   dismissable?: boolean;
-  
+
   /**
    * Callback when banner is dismissed
    */
   onDismiss?: () => void;
-  
+
   /**
    * Storage key for session-based dismissal state
    * @default 'ai-phase-a-banner-dismissed'
@@ -58,10 +68,7 @@ export interface PhaseABannerProps {
 // Constants
 // =============================================================================
 
-/**
- * Default storage key for session-based dismissal
- */
-const DEFAULT_STORAGE_KEY = 'ai-phase-a-banner-dismissed';
+
 
 /**
  * Default banner message in Turkish
@@ -72,16 +79,16 @@ const DEFAULT_MESSAGE = 'AI şu anda yalnızca öneri modunda çalışmaktadır.
  * Banner icon (info icon)
  */
 const INFO_ICON = (
-  <svg 
-    className="w-5 h-5 flex-shrink-0" 
-    fill="currentColor" 
+  <svg
+    className="w-5 h-5 flex-shrink-0"
+    fill="currentColor"
     viewBox="0 0 20 20"
     aria-hidden="true"
   >
-    <path 
-      fillRule="evenodd" 
-      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" 
-      clipRule="evenodd" 
+    <path
+      fillRule="evenodd"
+      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+      clipRule="evenodd"
     />
   </svg>
 );
@@ -90,60 +97,21 @@ const INFO_ICON = (
  * Close icon for dismiss button
  */
 const CLOSE_ICON = (
-  <svg 
-    className="w-4 h-4" 
-    fill="currentColor" 
+  <svg
+    className="w-4 h-4"
+    fill="currentColor"
     viewBox="0 0 20 20"
     aria-hidden="true"
   >
-    <path 
-      fillRule="evenodd" 
-      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" 
-      clipRule="evenodd" 
+    <path
+      fillRule="evenodd"
+      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+      clipRule="evenodd"
     />
   </svg>
 );
 
-// =============================================================================
-// Helper Functions
-// =============================================================================
 
-/**
- * Check if banner was dismissed in current session
- * 
- * @param storageKey - Session storage key
- * @returns boolean indicating if banner was dismissed
- */
-function isDismissedInSession(storageKey: string): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  try {
-    return sessionStorage.getItem(storageKey) === 'true';
-  } catch {
-    // sessionStorage might not be available (e.g., private browsing)
-    return false;
-  }
-}
-
-/**
- * Set banner dismissed state in session storage
- * 
- * @param storageKey - Session storage key
- * @param dismissed - Whether banner is dismissed
- */
-function setDismissedInSession(storageKey: string, dismissed: boolean): void {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    if (dismissed) {
-      sessionStorage.setItem(storageKey, 'true');
-    } else {
-      sessionStorage.removeItem(storageKey);
-    }
-  } catch {
-    // sessionStorage might not be available
-  }
-}
 
 // =============================================================================
 // Component
@@ -178,13 +146,13 @@ export function PhaseABanner({
   message = DEFAULT_MESSAGE,
   dismissable = true,
   onDismiss,
-  storageKey = DEFAULT_STORAGE_KEY,
+  storageKey = PHASE_A_BANNER_STORAGE_KEY,
 }: PhaseABannerProps): React.ReactElement | null {
   // Get current AI phase
   const phase = useAIPhase();
-  
+
   // Track dismissed state (session-based)
-  const [isDismissed, setIsDismissed] = useState<boolean>(() => 
+  const [isDismissed, setIsDismissed] = useState<boolean>(() =>
     isDismissedInSession(storageKey)
   );
 
@@ -230,7 +198,7 @@ export function PhaseABanner({
 
       {/* Dismiss Button */}
       {dismissable && (
-        <button
+        <button data-allow-raw="true"
           type="button"
           onClick={handleDismiss}
           className="
@@ -251,50 +219,7 @@ export function PhaseABanner({
   );
 }
 
-// =============================================================================
-// Utility Functions
-// =============================================================================
 
-/**
- * Reset the banner dismissed state
- * 
- * Call this to make the banner visible again in the current session.
- * Useful for testing or when user wants to see the banner again.
- * 
- * @param storageKey - Session storage key (default: 'ai-phase-a-banner-dismissed')
- * 
- * @example
- * ```tsx
- * // Reset banner visibility
- * resetPhaseABannerDismissed();
- * 
- * // Reset with custom key
- * resetPhaseABannerDismissed('custom-banner-key');
- * ```
- */
-export function resetPhaseABannerDismissed(
-  storageKey: string = DEFAULT_STORAGE_KEY
-): void {
-  setDismissedInSession(storageKey, false);
-}
-
-/**
- * Check if Phase A banner should be visible
- * 
- * Utility function to check banner visibility without rendering.
- * Useful for conditional logic outside the component.
- * 
- * @param phase - Current AI phase ('A', 'B', or 'C')
- * @param storageKey - Session storage key
- * @returns boolean indicating if banner should be visible
- */
-export function shouldShowPhaseABanner(
-  phase: string | null | undefined,
-  storageKey: string = DEFAULT_STORAGE_KEY
-): boolean {
-  if (!phase || phase !== 'A') return false;
-  return !isDismissedInSession(storageKey);
-}
 
 // =============================================================================
 // Default Export

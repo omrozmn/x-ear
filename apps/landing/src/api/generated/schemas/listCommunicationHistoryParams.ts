@@ -16,7 +16,7 @@ page?: number;
  * @maximum 100
  */
 per_page?: number;
-patient_id?: string | null;
+party_id?: string | null;
 type?: string | null;
 direction?: string | null;
 status?: string | null;

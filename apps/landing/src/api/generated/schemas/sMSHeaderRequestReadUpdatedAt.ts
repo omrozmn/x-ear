@@ -9,4 +9,4 @@
 /**
  * Last update timestamp
  */
-export type SMSHeaderRequestReadUpdatedAt = string | null;
+export type SmsHeaderRequestReadUpdatedAt = string | null;

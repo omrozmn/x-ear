@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/capabilities.py
+# hypothesis_version: 6.150.2
+
+['.read', '.view', '/ai', '/capabilities', 'A', 'AI Capabilities', 'ai_phase', 'appointments.view', 'devices.view', 'parties.create', 'parties.edit', 'parties.view', 'reports.view', 'sales.view', 'tenant_id', 'total_capabilities', 'user_id', 'user_permissions']

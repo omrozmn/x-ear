@@ -27,8 +27,9 @@ import type {
 import type {
   HTTPValidationError,
   ListAdminSmPackagesParams,
+  ResponseEnvelopeDetailedSmsPackageRead,
+  ResponseEnvelopeListDetailedSmsPackageRead,
   ResponseEnvelopeListSmsPackageRead,
-  ResponseEnvelopeSmsPackageRead,
   SmsPackageCreate,
   SmsPackageUpdate
 } from '.././schemas';
@@ -141,7 +142,7 @@ export const listAdminSmPackages = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeListSmsPackageRead>(
+      return adminApi<ResponseEnvelopeListDetailedSmsPackageRead>(
       {url: `/api/admin/sms/packages`, method: 'GET',
         params, signal
     },
@@ -235,7 +236,7 @@ export const createAdminSmPackages = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeSmsPackageRead>(
+      return adminApi<ResponseEnvelopeDetailedSmsPackageRead>(
       {url: `/api/admin/sms/packages`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: smsPackageCreate, signal
@@ -300,7 +301,7 @@ export const updateAdminSmPackage = (
  ) => {
       
       
-      return adminApi<ResponseEnvelopeSmsPackageRead>(
+      return adminApi<ResponseEnvelopeDetailedSmsPackageRead>(
       {url: `/api/admin/sms/packages/${packageId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: smsPackageUpdate

@@ -9,4 +9,4 @@
 /**
  * Last update timestamp
  */
-export type SMSPackageReadUpdatedAt = string | null;
+export type SmsPackageReadUpdatedAt = string | null;

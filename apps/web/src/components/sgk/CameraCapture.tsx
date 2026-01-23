@@ -16,6 +16,10 @@ interface CapturedImage {
   processed?: boolean;
 }
 
+interface ExtendedMediaTrackCapabilities extends MediaTrackCapabilities {
+  torch?: boolean;
+}
+
 const CameraCapture: React.FC<CameraCaptureProps> = ({
   isOpen,
   onClose,
@@ -25,7 +29,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  
+
   const [isStreaming, setIsStreaming] = useState(false);
   const [capturedImages, setCapturedImages] = useState<CapturedImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,7 +51,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
@@ -56,7 +60,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
 
       // Try to enable flash if available
       const videoTrack = stream.getVideoTracks()[0];
-      const capabilities = videoTrack.getCapabilities() as any;
+      const capabilities = videoTrack.getCapabilities() as ExtendedMediaTrackCapabilities;
       if (capabilities.torch) {
         setFlashEnabled(false);
       }
@@ -79,12 +83,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   const toggleFlash = useCallback(async () => {
     if (streamRef.current) {
       const videoTrack = streamRef.current.getVideoTracks()[0];
-      const capabilities = videoTrack.getCapabilities() as any;
-      
+      const capabilities = videoTrack.getCapabilities() as ExtendedMediaTrackCapabilities;
+
       if (capabilities.torch) {
         try {
           await videoTrack.applyConstraints({
-            advanced: [{ torch: !flashEnabled } as any]
+            advanced: [{ torch: !flashEnabled } as MediaTrackConstraintSet & { torch: boolean }]
           });
           setFlashEnabled(!flashEnabled);
         } catch (err) {
@@ -101,7 +105,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    
+
     if (!ctx) return;
 
     // Set canvas size to video dimensions
@@ -113,7 +117,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
 
     // Get image data
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-    
+
     const newImage: CapturedImage = {
       id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       dataUrl,
@@ -125,9 +129,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
 
     // Auto-process for edge detection (placeholder for now)
     setTimeout(() => {
-      setCapturedImages(prev => 
-        prev.map(img => 
-          img.id === newImage.id 
+      setCapturedImages(prev =>
+        prev.map(img =>
+          img.id === newImage.id
             ? { ...img, processed: true }
             : img
         )
@@ -144,12 +148,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   // Process and return captured images
   const processImages = useCallback(async () => {
     if (capturedImages.length === 0) return;
-    
+
     setIsProcessing(true);
     try {
       // Simulate processing time
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Convert data URLs to File objects
       const processedFiles = await Promise.all(
         capturedImages.map(async (img, index) => {
@@ -158,9 +162,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
           return new File([blob], `captured-image-${index + 1}.jpg`, { type: 'image/jpeg' });
         })
       );
-      
+
       onCapture(processedFiles);
-      
+
       // Reset state
       setCapturedImages([]);
       stopCamera();
@@ -196,9 +200,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={handleClose} 
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
       title="Belge Fotoğrafı Çek"
       size="lg"
     >
@@ -217,12 +221,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
             playsInline
             muted
           />
-          
+
           {/* Camera overlay */}
           <div className="absolute inset-0 pointer-events-none">
             {/* Document frame guide */}
             <div className="absolute inset-4 border-2 border-white border-dashed opacity-50 rounded-lg" />
-            
+
             {/* Corner guides */}
             <div className="absolute top-4 left-4 w-6 h-6 border-l-4 border-t-4 border-white" />
             <div className="absolute top-4 right-4 w-6 h-6 border-r-4 border-t-4 border-white" />
@@ -272,7 +276,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                     alt="Captured"
                     className="w-20 h-20 object-cover rounded-lg border"
                   />
-                  
+
                   {/* Processing indicator */}
                   {!image.processed && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
@@ -322,7 +326,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
           >
             İptal
           </Button>
-          
+
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -332,7 +336,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
               <RotateCcw className="w-4 h-4 mr-2" />
               Temizle
             </Button>
-            
+
             <Button
               onClick={processImages}
               disabled={capturedImages.length === 0 || isProcessing}

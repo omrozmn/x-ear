@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { listInventory } from '@/api/client/inventory.client';
-import type { InventoryItemCreate } from '@/api/generated/schemas';
+import type { InventoryItemCreate, InventoryItemRead } from '@/api/generated/schemas';
 import { unwrapArray } from '../utils/response-unwrap';
 
 // Use InventoryItemCreate as base type since InventoryItemRead doesn't exist
-type InventoryItemRead = InventoryItemCreate & { id?: string };
+// type InventoryItemRead = InventoryItemCreate & { id?: string };
 
 interface UseInventoryResult {
   products: InventoryItemRead[];

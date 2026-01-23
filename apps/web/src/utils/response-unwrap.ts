@@ -14,39 +14,34 @@
  */
 export function unwrapArray<T>(response: unknown): T[] {
   if (!response) return [];
-  
-  // Direct array
+
   if (Array.isArray(response)) {
     return response as T[];
   }
-  
-  const anyResponse = response as any;
-  
-  // Check for data property
-  if (anyResponse.data !== undefined) {
-    const innerData = anyResponse.data;
-    
-    // data is array
+
+  const obj = response as Record<string, unknown>;
+
+  if (obj.data !== undefined) {
+    const innerData = obj.data;
+
     if (Array.isArray(innerData)) {
       return innerData as T[];
     }
-    
-    // data.data is array (double wrapped)
-    if (innerData?.data && Array.isArray(innerData.data)) {
-      return innerData.data as T[];
+
+    const innerObj = innerData as Record<string, unknown> | null;
+    if (innerObj?.data && Array.isArray(innerObj.data)) {
+      return innerObj.data as T[];
     }
-    
-    // data.items is array (alternative field name)
-    if (innerData?.items && Array.isArray(innerData.items)) {
-      return innerData.items as T[];
+
+    if (innerObj?.items && Array.isArray(innerObj.items)) {
+      return innerObj.items as T[];
     }
   }
-  
-  // Check for items property directly
-  if (anyResponse.items && Array.isArray(anyResponse.items)) {
-    return anyResponse.items as T[];
+
+  if (obj.items && Array.isArray(obj.items)) {
+    return obj.items as T[];
   }
-  
+
   return [];
 }
 
@@ -57,30 +52,28 @@ export function unwrapArray<T>(response: unknown): T[] {
  */
 export function unwrapObject<T>(response: unknown): T | null {
   if (!response) return null;
-  
-  // Check if already an object with expected properties (not wrapper)
-  const anyResponse = response as any;
-  
-  // If has data property, unwrap it
-  if (anyResponse.data !== undefined) {
-    const innerData = anyResponse.data;
-    
-    // data.data exists (double wrapped)
-    if (innerData?.data !== undefined && typeof innerData.data === 'object') {
-      return innerData.data as T;
-    }
-    
-    // data is the object
-    if (typeof innerData === 'object' && innerData !== null && !Array.isArray(innerData)) {
-      return innerData as T;
+
+  const obj = response as Record<string, unknown>;
+
+  if (obj.data !== undefined) {
+    const innerData = obj.data;
+
+    if (innerData !== null && typeof innerData === 'object') {
+      const innerObj = innerData as Record<string, unknown>;
+      if (innerObj.data !== undefined && typeof innerObj.data === 'object') {
+        return innerObj.data as T;
+      }
+
+      if (!Array.isArray(innerData)) {
+        return innerData as T;
+      }
     }
   }
-  
-  // Direct object
-  if (typeof anyResponse === 'object' && anyResponse !== null && !Array.isArray(anyResponse)) {
-    return anyResponse as T;
+
+  if (typeof response === 'object' && response !== null && !Array.isArray(response)) {
+    return response as T;
   }
-  
+
   return null;
 }
 
@@ -95,29 +88,37 @@ export function unwrapPrimitive<T extends string | number | boolean>(
   fallback: T
 ): T {
   if (response === null || response === undefined) return fallback;
-  
+
   // Direct primitive
   if (typeof response === typeof fallback) {
     return response as T;
   }
-  
-  const anyResponse = response as any;
-  
+
+  // Direct primitive checked above
+
+  // Handle object structure safely without explicit any cast
+  // if response is null/undefined it returned fallback at start
+
+
   // Wrapped in data
-  if (anyResponse.data !== undefined) {
+  if (response && typeof response === 'object' && 'data' in response) {
+    const anyResponse = response as Record<string, unknown>;
     const innerData = anyResponse.data;
-    
+
     // Direct primitive in data
     if (typeof innerData === typeof fallback) {
       return innerData as T;
     }
-    
+
     // Double wrapped
-    if (innerData?.data !== undefined && typeof innerData.data === typeof fallback) {
-      return innerData.data as T;
+    if (innerData && typeof innerData === 'object' && 'data' in innerData) {
+      const doubleInner = (innerData as Record<string, unknown>).data;
+      if (typeof doubleInner === typeof fallback) {
+        return doubleInner as T;
+      }
     }
   }
-  
+
   return fallback;
 }
 
@@ -134,29 +135,26 @@ export function unwrapProperty<T>(
   fallback: T
 ): T {
   if (!response) return fallback;
-  
-  const anyResponse = response as any;
-  
-  // Direct property access
-  if (anyResponse[propertyName] !== undefined) {
-    return anyResponse[propertyName] as T;
+
+  const obj = response as Record<string, unknown>;
+
+  if (obj[propertyName] !== undefined) {
+    return obj[propertyName] as T;
   }
-  
-  // Check in data
-  if (anyResponse.data !== undefined) {
-    const innerData = anyResponse.data;
-    
-    // data.propertyName
-    if (innerData[propertyName] !== undefined) {
-      return innerData[propertyName] as T;
+
+  if (obj.data !== undefined && obj.data !== null && typeof obj.data === 'object') {
+    const innerObj = obj.data as Record<string, unknown>;
+
+    if (innerObj[propertyName] !== undefined) {
+      return innerObj[propertyName] as T;
     }
-    
-    // data.data.propertyName
-    if (innerData?.data?.[propertyName] !== undefined) {
-      return innerData.data[propertyName] as T;
+
+    const doubleInner = innerObj.data as Record<string, unknown> | null;
+    if (doubleInner?.[propertyName] !== undefined) {
+      return doubleInner[propertyName] as T;
     }
   }
-  
+
   return fallback;
 }
 
@@ -167,40 +165,40 @@ export function unwrapProperty<T>(
  */
 export function unwrapPaginated<T>(response: unknown): {
   data: T[];
-  meta?: any;
-  pagination?: any;
+  meta?: Record<string, unknown>;
+  pagination?: Record<string, unknown>;
   total?: number;
 } {
   const data = unwrapArray<T>(response);
-  const anyResponse = response as any;
-  
-  let meta: any = undefined;
-  let pagination: any = undefined;
+  const obj = response as Record<string, unknown>;
+
+  let meta: Record<string, unknown> | undefined = undefined;
+  let pagination: Record<string, unknown> | undefined = undefined;
   let total: number | undefined = undefined;
-  
-  // Try to extract meta/pagination from various locations
-  if (anyResponse?.meta) {
-    meta = anyResponse.meta;
-  } else if (anyResponse?.data?.meta) {
-    meta = anyResponse.data.meta;
+
+  // Use type guards or safe access for nested properties
+  if (obj?.meta) {
+    meta = obj.meta as Record<string, unknown>;
+  } else if (obj?.data && typeof obj.data === 'object') {
+    meta = (obj.data as Record<string, unknown>).meta as Record<string, unknown>;
   }
-  
-  if (anyResponse?.pagination) {
-    pagination = anyResponse.pagination;
-  } else if (anyResponse?.data?.pagination) {
-    pagination = anyResponse.data.pagination;
+
+  if (obj?.pagination) {
+    pagination = obj.pagination as Record<string, unknown>;
+  } else if (obj?.data && typeof obj.data === 'object') {
+    pagination = (obj.data as Record<string, unknown>).pagination as Record<string, unknown>;
   }
-  
-  if (anyResponse?.total !== undefined) {
-    total = anyResponse.total;
-  } else if (anyResponse?.data?.total !== undefined) {
-    total = anyResponse.data.total;
-  } else if (meta?.total !== undefined) {
-    total = meta.total;
-  } else if (pagination?.total !== undefined) {
-    total = pagination.total;
+
+  if (typeof obj?.total === 'number') {
+    total = obj.total;
+  } else if (obj?.data && typeof obj.data === 'object' && typeof (obj.data as Record<string, unknown>).total === 'number') {
+    total = (obj.data as Record<string, unknown>).total as number;
+  } else if (meta && typeof meta === 'object' && typeof (meta as Record<string, unknown>).total === 'number') {
+    total = (meta as Record<string, unknown>).total as number;
+  } else if (pagination && typeof pagination === 'object' && typeof (pagination as Record<string, unknown>).total === 'number') {
+    total = (pagination as Record<string, unknown>).total as number;
   }
-  
+
   return { data, meta, pagination, total };
 }
 
@@ -211,19 +209,24 @@ export function unwrapPaginated<T>(response: unknown): {
  */
 export function isSuccessResponse(response: unknown): boolean {
   if (!response) return false;
-  
-  const anyResponse = response as any;
-  
+
   // Check success field at various levels
-  if (anyResponse.success === true) return true;
-  if (anyResponse.data?.success === true) return true;
-  if (anyResponse.data?.data?.success === true) return true;
-  
-  // No explicit failure
-  if (anyResponse.error || anyResponse.data?.error) return false;
-  
-  // Has data, assume success
-  if (anyResponse.data !== undefined || Array.isArray(anyResponse)) return true;
-  
+  if (typeof response === 'object' && response !== null) {
+    const r = response as Record<string, unknown>;
+    if (r.success === true) return true;
+
+    if (r.data && typeof r.data === 'object') {
+      const d = r.data as Record<string, unknown>;
+      if (d.success === true) return true;
+      if (d.data && typeof d.data === 'object' && (d.data as Record<string, unknown>).success === true) return true;
+    }
+
+    // No explicit failure
+    if (r.error || (r.data && typeof r.data === 'object' && (r.data as Record<string, unknown>).error)) return false;
+
+    // Has data, assume success
+    if (r.data !== undefined || Array.isArray(r)) return true;
+  }
+
   return false;
 }

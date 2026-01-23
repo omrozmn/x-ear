@@ -23,7 +23,7 @@ import type {
 import type {
   HTTPValidationError,
   ListAuditParams,
-  SchemasBaseResponseEnvelopeListActivityLogRead2
+  ResponseEnvelopeListAuditLogRead
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -41,7 +41,7 @@ export const listAudit = (
 ) => {
       
       
-      return adminApi<SchemasBaseResponseEnvelopeListActivityLogRead2>(
+      return adminApi<ResponseEnvelopeListAuditLogRead>(
       {url: `/api/audit`, method: 'GET',
         params, signal
     },

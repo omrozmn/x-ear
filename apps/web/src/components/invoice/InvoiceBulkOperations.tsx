@@ -123,7 +123,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
     }
 
     await executeBulkAction(action);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const executeBulkAction = useCallback(async (action: InvoiceBulkAction) => {
@@ -179,7 +179,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
         error: error instanceof Error ? error.message : 'Bilinmeyen hata'
       }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedInvoices, exportOptions, onBulkActionComplete]);
 
   const processSendInvoices = async (): Promise<BulkOperationResult[]> => {
@@ -217,9 +217,9 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
     // Use invoiceService.submitBulkEFatura if available
     try {
       const ids = selectedInvoices.map(i => i.id);
-      const resp = await invoiceService.submitBulkEFatura({ invoiceIds: ids, submissionDate: new Date().toISOString() } as any);
+      const resp = await invoiceService.submitBulkEFatura({ invoiceIds: ids, submissionDate: new Date().toISOString() });
       if (resp && resp.results && Array.isArray(resp.results)) {
-        resp.results.forEach((r: any) => {
+        (resp as any).results.forEach((r: any) => {
           results.push({
             invoiceId: r.invoiceId,
             invoiceNumber: selectedInvoices.find(si => si.id === r.invoiceId)?.invoiceNumber || r.invoiceId,
@@ -281,7 +281,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
       const resp = await invoiceService.exportInvoices({ format: exportOptions.format, filters: undefined });
       if (resp.success && resp.data) {
         // For now, export as CSV as before
-        const exportData = resp.data.invoices.map((invoice: any) => ({
+        const exportData = (resp as any).data.invoices.map((invoice: any) => ({
           'Fatura No': invoice.invoiceNumber,
           'Hasta': invoice.partyName,
           'Tarih': invoice.issueDate,
@@ -334,13 +334,13 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
     return results;
   };
 
-  const convertToCSV = (data: any[]): string => {
+  const convertToCSV = (data: Array<Record<string, string | number | boolean | null | undefined>>): string => {
     if (data.length === 0) return '';
-    
+
     const headers = Object.keys(data[0]);
     const csvContent = [
       headers.join(','),
-      ...data.map(row => 
+      ...data.map(row =>
         headers.map(header => {
           const value = row[header];
           // Escape commas and quotes in CSV
@@ -350,7 +350,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
         }).join(',')
       )
     ].join('\n');
-    
+
     return csvContent;
   };
 
@@ -390,13 +390,13 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
             Seçimi Temizle
           </Button>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span className="text-gray-600">Toplam Tutar:</span>
             <div className="font-medium">₺{statistics.totalAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
           </div>
-          
+
           {Object.entries(statistics.statusCounts).map(([status, count]) => (
             <div key={status}>
               <span className="text-gray-600">{getStatusLabel(status)}:</span>
@@ -413,7 +413,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
             <label className="block text-sm font-medium mb-1">Format</label>
             <Select
               value={exportOptions.format}
-              onChange={(e) => setExportOptions(prev => ({ ...prev, format: e.target.value as any }))}
+              onChange={(e) => setExportOptions(prev => ({ ...prev, format: e.target.value as InvoiceExportOptions['format'] }))}
               options={[
                 { value: 'excel', label: 'Excel' },
                 { value: 'csv', label: 'CSV' },
@@ -423,7 +423,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
               className="w-full px-3 py-1 border rounded"
             />
           </div>
-          
+
           <label className="flex items-center">
             <Input
               type="checkbox"
@@ -433,7 +433,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
             />
             Kalem Detayları
           </label>
-          
+
           <label className="flex items-center">
             <Input
               type="checkbox"
@@ -454,13 +454,12 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
               key={action.type}
               onClick={() => handleBulkAction(action)}
               disabled={state.isProcessing}
-              className={`p-2 rounded text-sm font-medium disabled:opacity-50 ${
-                action.type === 'delete' || action.type === 'cancel'
-                  ? 'bg-red-600 text-white hover:bg-red-700'
-                  : action.type === 'send_to_gib'
+              className={`p-2 rounded text-sm font-medium disabled:opacity-50 ${action.type === 'delete' || action.type === 'cancel'
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : action.type === 'send_to_gib'
                   ? 'bg-purple-600 text-white hover:bg-purple-700'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+                }`}
               variant='default'
               title={action.label}
               aria-label={action.label}
@@ -505,9 +504,8 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
             {state.results.map((result) => (
               <div
                 key={result.invoiceId}
-                className={`result-item flex justify-between items-center py-2 px-3 mb-2 rounded ${
-                  result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}
+                className={`result-item flex justify-between items-center py-2 px-3 mb-2 rounded ${result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}
               >
                 <span className="font-medium">{result.invoiceNumber}</span>
                 <span className="text-sm">
@@ -516,9 +514,9 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
               </div>
             ))}
           </div>
-          
+
           <div className="results-summary mt-2 text-sm text-gray-600">
-            Başarılı: {state.results.filter(r => r.success).length} / 
+            Başarılı: {state.results.filter(r => r.success).length} /
             Başarısız: {state.results.filter(r => !r.success).length}
           </div>
         </div>

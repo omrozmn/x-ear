@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Textarea, Alert, AlertDescription, Loading } from '@x-ear/ui-web';
 import { X, FileText, User, Building, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { Party } from '../../../types/party';
-import { Sale } from '../../../types/party/party-communication.types';
+// import { Sale } from '../../../types/party/party-communication.types';
+import { SaleRead } from '@/api/generated/schemas';
 
 // Local Sale type for API compatibility
 interface APISale {
@@ -35,7 +36,7 @@ interface PromissoryNoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   party: Party;
-  sale?: Sale;
+  sale?: SaleRead;
   promissoryNote?: PromissoryNote; // For editing existing notes
   onSave: (noteData: any) => void;
   loading?: boolean;
@@ -286,7 +287,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   <div className="space-y-1 text-sm">
                     <div><span className="font-medium">Satış ID:</span> {sale.id}</div>
                     <div><span className="font-medium">Satış Tarihi:</span> {sale.saleDate ? formatDate(sale.saleDate) : '-'}</div>
-                    <div><span className="font-medium">Toplam Tutar:</span> {formatCurrency(sale.totalAmount)}</div>
+                    <div><span className="font-medium">Toplam Tutar:</span> {formatCurrency(sale.totalAmount || 0)}</div>
                     <div><span className="font-medium">Ödeme Yöntemi:</span> {sale.paymentMethod || '-'}</div>
                   </div>
                 </div>
@@ -371,9 +372,9 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   {mode === 'view' ? (
                     <div className="px-3 py-2 bg-gray-100 rounded-md">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${formData.status === 'active' ? 'bg-green-100 text-green-800' :
-                          formData.status === 'paid' ? 'bg-blue-100 text-blue-800' :
-                            formData.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
+                        formData.status === 'paid' ? 'bg-blue-100 text-blue-800' :
+                          formData.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
                         }`}>
                         {formData.status === 'active' ? 'Aktif' :
                           formData.status === 'paid' ? 'Ödenmiş' :

@@ -159,7 +159,7 @@ export function AIActionButton({
         },
       });
 
-      onSuccess?.(result.plan.planId);
+      onSuccess?.(result.planId);
     } catch (error) {
       onError?.(error as Error);
     }
@@ -168,7 +168,7 @@ export function AIActionButton({
   return (
     <AIFeatureWrapper capability="actions" hideWhenUnavailable>
       <PendingActionBadge actionType={actionType} position="top-right">
-        <button
+        <button data-allow-raw="true"
           type="button"
           onClick={handleClick}
           disabled={disabled || isBlocked || createAction.isPending}
@@ -259,7 +259,7 @@ export function AIQuickAction({
         intent,
         additionalContext: { ...context, ...aiContext },
       });
-      onSuccess?.(result.plan.planId);
+      onSuccess?.(result.planId);
     } catch (error) {
       onError?.(error as Error);
     }
@@ -268,7 +268,7 @@ export function AIQuickAction({
   return (
     <AIFeatureWrapper capability="actions" hideWhenUnavailable>
       <PendingActionBadge actionType={actionType} position="top-right" size="sm">
-        <button
+        <button data-allow-raw="true"
           type="button"
           onClick={handleClick}
           disabled={disabled || isBlocked || createAction.isPending}

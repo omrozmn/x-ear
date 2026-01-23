@@ -8,29 +8,25 @@ import {
   PartyMatchRequest,
   Communication,
   Party,
-  DateRange,
-  PartySegment,
-  PartyStatus
+  DateRange
 } from '../types/party';
 import {
   PartyRead as OrvalParty,
-  ResponseEnvelopeListPartyRead,
-  ResponseEnvelopePartyRead,
   PartyCreate,
   PartyUpdate,
   ListPartiesParams
 } from "@/api/generated/schemas";
 import {
   listParties,
-  getParty,
+  // getParty, // Not used in this file
   createParty,
   updateParty,
   deleteParty
 } from "@/api/client/parties.client";
-import { outbox } from '../utils/outbox';
+// import { outbox } from '../utils/outbox'; // Not used
 import { PARTYS_DATA } from '../constants/storage-keys';
 import { indexedDBManager } from '../utils/indexeddb';
-import { AxiosResponse } from 'axios';
+// import { AxiosResponse } from 'axios'; // Not used
 import { convertOrvalToLegacyParty } from '../types/party/party-adapter';
 
 export class PartyService {
@@ -697,7 +693,7 @@ export class PartyService {
   }
 
   // Bulk Upload (New P1 Feature)
-  async bulkUploadParties(file: File): Promise<{ processed: number; success: boolean; errors: any[] }> {
+  async bulkUploadParties(file: File): Promise<{ processed: number; success: boolean; errors: unknown[] }> {
     await this.ensureInitialized();
     try {
       // Use Orval-generated function

@@ -13,7 +13,7 @@ from middleware.unified_access import UnifiedAccess, require_access, require_adm
 from schemas.base import ResponseEnvelope
 from schemas.parties import PartyRead
 from schemas.sales import DeviceAssignmentRead, SaleRead
-from schemas.audit import ActivityLogRead
+from schemas.audit import AuditLogRead
 from schemas.documents import DocumentRead
 
 logger = logging.getLogger(__name__)
@@ -148,7 +148,7 @@ async def get_party_timeline(
         activities = db.query(ActivityLog).filter(
             ActivityLog.entity_id == party_id
         ).order_by(ActivityLog.created_at.desc()).all()
-        return ResponseEnvelope(data={"timeline": [ActivityLogRead.model_validate(a).model_dump(by_alias=True) for a in activities]})
+        return ResponseEnvelope(data={"timeline": [AuditLogRead.model_validate(a).model_dump(by_alias=True) for a in activities]})
     except HTTPException:
         raise
     except Exception as e:

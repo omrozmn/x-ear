@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/marketplaces.py
+# hypothesis_version: 6.150.2
+
+['apiKey', 'apiSecret', 'lastSyncAt', 'sellerId', 'syncOrders', 'syncPrices', 'syncStock', 'tenantId']

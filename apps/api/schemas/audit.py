@@ -7,7 +7,7 @@ from pydantic import Field, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
-class ActivityLogRead(AppBaseModel, IDMixin, TimestampMixin):
+class AuditLogRead(AppBaseModel, IDMixin, TimestampMixin):
     """Schema for reading an activity log entry - matches ActivityLog.to_dict() output"""
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     

@@ -96,12 +96,15 @@ export function usePartySales(partyId?: string) {
     try {
       const result = await apiService.getSales(id);
       // Map Sale[] to PartySale[] with required fields
-      const mappedSales: PartySale[] = (result?.data || []).map((sale: SaleRead) => ({
-        ...sale,
-        finalAmount: (sale.finalAmount as unknown as number) ?? (sale.totalAmount as unknown as number) ?? 0,
-        paidAmount: (sale.paidAmount as unknown as number) ?? 0,
-        paymentStatus: (sale.status as any) ?? 'pending',
-      })) as unknown as PartySale[];
+      const mappedSales: PartySale[] = (result?.data || []).map((sale: SaleRead) => {
+        const status = sale.status as 'completed' | 'pending' | 'cancelled';
+        return {
+          ...sale,
+          finalAmount: typeof sale.finalAmount === 'number' ? sale.finalAmount : Number(sale.finalAmount || sale.totalAmount || 0),
+          paidAmount: typeof sale.paidAmount === 'number' ? sale.paidAmount : Number(sale.paidAmount || 0),
+          paymentStatus: status || 'pending',
+        } as unknown as PartySale;
+      });
       setSales(mappedSales);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));

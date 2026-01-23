@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { PlanUpdateFeaturesAnyOfItem } from './planUpdateFeaturesAnyOfItem';
+import type { PlanUpdateFeaturesAnyOf } from './planUpdateFeaturesAnyOf';
 
-export type PlanUpdateFeatures = PlanUpdateFeaturesAnyOfItem[] | null;
+export type PlanUpdateFeatures = PlanUpdateFeaturesAnyOf | null;

@@ -34,20 +34,20 @@ export function useUploadSgkDocument(partyId: string) {
 
       try {
         // Upload document - sgkService.uploadDocument takes BodySgkCreateSgkDocuments which is { file: Blob }
-        const body: any = { file: file as Blob }; // Service expects object with file property, assuming generated client structure
+        const bodyInput: { file: Blob } = { file: file || new Blob() }; // Ensure strict type matching
 
         // Actually sgkService.uploadDocument likely takes the generated body type.
         // We pass the object wrapper as expected by generated clients usually.
-        return await sgkService.uploadDocument({ file: file as Blob });
+        return await sgkService.uploadDocument(bodyInput);
       } catch (err) {
         // On network/offline failure, serialize file blob to IndexedDB and enqueue outbox operation
         try {
-          if (file && ((file as any) instanceof File || (file as any) instanceof Blob)) {
-            const fileObj = file as File; // Blob might not have name, but input says File
-            const filename = fileObj.name || 'unknown_file';
-            const mime = fileObj.type || 'application/octet-stream';
+          if (file instanceof Blob) { // File is a subclass of Blob, so this covers both
+            const fileObj = file; // No cast needed for basic Blob ops
+            const filename = (file instanceof File ? file.name : 'unknown_file');
+            const mime = file.type || 'application/octet-stream';
 
-            const blobId = await indexedDBManager.saveFileBlob(fileObj, { filename, mime });
+            const blobId = await indexedDBManager.saveFileBlob(file, { filename, mime });
             await outbox.addOperation({
               method: 'POST',
               endpoint: `/api/sgk/documents?partyId=${encodeURIComponent(partyId)}`,

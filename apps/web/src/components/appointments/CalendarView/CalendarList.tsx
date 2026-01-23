@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isSameDay, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { Card, Text, Badge, Button, VStack, HStack, Input } from '@x-ear/ui-web';
-import { Calendar, Clock, User, MapPin, Phone, Search } from 'lucide-react';
+import { Card, Text, Badge, Input } from '@x-ear/ui-web';
+import { Calendar, Clock, User, MapPin, Search } from 'lucide-react';
 import { Appointment } from '../../../types/appointment';
-import { AppointmentCard } from '../AppointmentCard';
+// import { AppointmentCard } from '../AppointmentCard'; // Not used - inline card rendering
 
 interface CalendarListProps {
   selectedDate: Date;
@@ -15,9 +15,10 @@ interface CalendarListProps {
   isCompactView?: boolean;
 }
 
-interface GroupedAppointments {
-  [date: string]: Appointment[];
-}
+// Unused interface - commented out
+// interface GroupedAppointments {
+//   [date: string]: Appointment[];
+// }
 
 interface MonthGroup {
   monthKey: string; // yyyy-MM
@@ -28,10 +29,10 @@ interface MonthGroup {
 export const CalendarList: React.FC<CalendarListProps> = ({
   selectedDate,
   appointments,
-  onDateChange,
+  // onDateChange, // Currently unused
   onAppointmentClick,
-  onDateClick,
-  isCompactView = false,
+  // onDateClick, // Currently unused
+  // isCompactView = false, // Currently unused
 }) => {
   const [showAll, setShowAll] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -174,7 +175,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
                 <label className="text-sm text-gray-600 dark:text-gray-400">Görüntüle:</label>
-                <select value={showAll ? 'all' : 'week'} onChange={(e) => setShowAll(e.target.value === 'all')} className="px-2 py-1 border rounded-md dark:bg-slate-800 dark:text-white dark:border-slate-700">
+                <select data-allow-raw="true" value={showAll ? 'all' : 'week'} onChange={(e) => setShowAll(e.target.value === 'all')} className="px-2 py-1 border rounded-md dark:bg-slate-800 dark:text-white dark:border-slate-700">
                   <option value="all" className="dark:bg-slate-800">Tümü</option>
                   <option value="week" className="dark:bg-slate-800">Bu Hafta</option>
                 </select>
@@ -198,7 +199,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
               />
             </div>
 
-            <select
+            <select data-allow-raw="true"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
@@ -210,7 +211,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
               <option value="completed" className="dark:bg-slate-800">Tamamlandı</option>
             </select>
 
-            <select
+            <select data-allow-raw="true"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'date' | 'party' | 'status')}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"

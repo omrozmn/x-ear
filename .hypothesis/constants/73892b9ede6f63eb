@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/models/ai_usage.py
+# hypothesis_version: 6.150.2
+
+['AIUsage', 'advisory', 'ai_usage', 'blocking', 'chat', 'createdAt', 'execution', 'id', 'ocr', 'quotaExceededAt', 'quotaLimit', 'requestCount', 'request_count', 'tenantId', 'tenant_id', 'tokenCountInput', 'tokenCountOutput', 'token_count_input', 'token_count_output', 'updatedAt', 'updated_at', 'usageDate', 'usageType', 'usage_date', 'usage_type']

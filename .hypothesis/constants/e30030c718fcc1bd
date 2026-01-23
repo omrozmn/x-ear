@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/runtime/circuit_breaker.py
+# hypothesis_version: 6.150.2
+
+[0.0, 30.0, 60.0, 'T', 'closed', 'failedCalls', 'failureCount', 'half_open', 'inference', 'lastFailureTime', 'lastSuccessTime', 'metrics', 'name', 'open', 'rejectedCalls', 'retryAfterSeconds', 'state', 'stateChanges', 'successCount', 'successfulCalls', 'totalCalls']

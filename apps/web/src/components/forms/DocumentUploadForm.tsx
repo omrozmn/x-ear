@@ -154,10 +154,10 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
           </label>
           <div
             className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
-                ? 'border-blue-400 bg-blue-50'
-                : selectedFile
-                  ? 'border-green-400 bg-green-50'
-                  : 'border-gray-300 hover:border-gray-400'
+              ? 'border-blue-400 bg-blue-50'
+              : selectedFile
+                ? 'border-green-400 bg-green-50'
+                : 'border-gray-300 hover:border-gray-400'
               }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -170,7 +170,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
               onChange={handleFileInputChange}
               accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.txt"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              data-allow-raw
+              data-allow-raw="true"
             />
 
             {selectedFile ? (
@@ -229,7 +229,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             value={documentType}
             onChange={(e) => setDocumentType(e.target.value)}
             className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.documentType ? 'border-red-300' : ''}`}
-            data-allow-raw
+            data-allow-raw="true"
           >
             <option value="">Doküman türü seçin...</option>
             <option value="sgk_report">SGK Raporu</option>

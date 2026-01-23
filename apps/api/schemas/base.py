@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar, Optional, Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 from pydantic.alias_generators import to_camel
 
 T = TypeVar("T")
@@ -18,6 +18,13 @@ class AppBaseModel(BaseModel):
         use_enum_values=True,
         arbitrary_types_allowed=True
     )
+    
+    @field_serializer('*', when_used='json', check_fields=False)
+    def serialize_datetime(self, value: Any) -> Any:
+        """Serialize datetime objects to ISO format strings."""
+        if isinstance(value, datetime):
+            return value.isoformat()
+        return value
 
 class IDMixin(BaseModel):
     """Mixin for models that have an ID."""
@@ -58,11 +65,13 @@ class ResponseEnvelope(BaseModel, Generic[T]):
 
     model_config = ConfigDict(
         populate_by_name=True,
-        alias_generator=to_camel,
-        json_encoders={
-            datetime: lambda v: v.isoformat()
-        }
+        alias_generator=to_camel
     )
+    
+    @field_serializer('timestamp', when_used='json')
+    def serialize_timestamp(self, value: datetime) -> str:
+        """Serialize timestamp to ISO format string."""
+        return value.isoformat()
 
 
 class ApiError(AppBaseModel):

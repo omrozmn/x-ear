@@ -47,15 +47,44 @@ class KillSwitchActiveError(Exception):
     
     def __init__(
         self,
-        message: str,
-        scope: KillSwitchScope,
+        message: str = "AI features disabled by kill switch",
+        scope: Optional[KillSwitchScope] = None,
         target_id: Optional[str] = None,
         reason: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        capability: Optional[str] = None,
     ):
+        """
+        Initialize KillSwitchActiveError.
+        
+        Args:
+            message: Error message
+            scope: Kill switch scope (GLOBAL, TENANT, CAPABILITY)
+            target_id: Target ID (tenant_id or capability name)
+            reason: Reason for kill switch activation
+            tenant_id: (Deprecated) Use target_id instead. Kept for backward compatibility.
+            capability: (Deprecated) Use target_id instead. Kept for backward compatibility.
+        """
         super().__init__(message)
         self.scope = scope
-        self.target_id = target_id
+        
+        # Support both old and new parameter names for backward compatibility
+        if tenant_id is not None:
+            self.target_id = tenant_id
+            if scope is None:
+                self.scope = KillSwitchScope.TENANT
+        elif capability is not None:
+            self.target_id = capability
+            if scope is None:
+                self.scope = KillSwitchScope.CAPABILITY
+        else:
+            self.target_id = target_id
+        
         self.reason = reason
+        
+        # Store deprecated parameters for backward compatibility
+        self.tenant_id = tenant_id
+        self.capability = capability
 
 
 @dataclass

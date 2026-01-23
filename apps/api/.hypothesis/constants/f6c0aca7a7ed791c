@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/email_template_service.py
+# hypothesis_version: 6.150.2
+
+['X-Ear CRM', 'admin_link', 'amount', 'app_name', 'currency', 'current_year', 'destek@x-ear.com', 'due_date', 'email_verification', 'error', 'error_details', 'error_type', 'expires_in_hours', 'html', 'html_length', 'invitation_link', 'inviter_name', 'invoice_created', 'invoice_link', 'invoice_number', 'language', 'missing', 'organization_name', 'password_reset', 'payment_status', 'provided', 'r', 'required', 'reset_link', 'role_name', 'scenario', 'smtp_test', 'subject', 'subject_length', 'support_email', 'system_error', 'templates/email', 'tenant_name', 'text_length', 'timestamp', 'tr', 'user_invite', 'user_name', 'utf-8', 'verification_link', 'xml']

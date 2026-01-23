@@ -35,7 +35,7 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
       const mockRightsData = {
         partyId: partyId,
         partyName: party.firstName + ' ' + party.lastName,
-        sgkNo: (party.hearingProfile?.sgkInfo as any)?.sgkNumber || party.sgkInfo?.sgkNumber || '12345678901',
+        sgkNo: (party.hearingProfile?.sgkInfo as Record<string, any>)?.sgkNumber || party.sgkInfo?.sgkNumber || '12345678901',
         coverage: {
           hearingAid: {
             percentage: 85,
@@ -87,8 +87,8 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
       setPartyRightsData(mockRightsData);
       showSuccess('Başarılı', 'Hasta hakları başarıyla sorgulandı');
 
-    } catch (error: any) {
-      const errorMessage = error?.message || 'Hasta hakları sorgulanırken hata oluştu';
+    } catch (error: unknown) {
+      const errorMessage = (error as Error)?.message || 'Hasta hakları sorgulanırken hata oluştu';
       showError('Hata', errorMessage);
     } finally {
       setIsQueryingRights(false);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, AlertCircle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { DollarSign, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 
 interface SalesStatisticsProps {
   sales: any[];
@@ -13,9 +13,9 @@ export const SalesStatistics: React.FC<SalesStatisticsProps> = ({ sales, isVisib
   const totalPending = totalRevenue - totalPaid;
   const totalSGKSupport = sales.reduce((sum, sale) => sum + (sale.sgkSupport || 0), 0);
 
-  const completedSales = sales.filter(sale => sale.status === 'completed').length;
-  const pendingSales = sales.filter(sale => sale.status === 'pending').length;
-  const cancelledSales = sales.filter(sale => sale.status === 'cancelled').length;
+  // const completedSales = sales.filter(sale => sale.status === 'completed').length;
+  // const pendingSales = sales.filter(sale => sale.status === 'pending').length;
+  // const cancelledSales = sales.filter(sale => sale.status === 'cancelled').length;
 
   if (!isVisible) return null;
 
@@ -35,7 +35,7 @@ export const SalesStatistics: React.FC<SalesStatisticsProps> = ({ sales, isVisib
           </div>
         </div>
       </div>
-      
+
       <div className="bg-blue-50 p-4 rounded-lg">
         <div className="flex items-center">
           <CheckCircle className="w-5 h-5 text-blue-500 mr-2" />
@@ -50,7 +50,7 @@ export const SalesStatistics: React.FC<SalesStatisticsProps> = ({ sales, isVisib
           </div>
         </div>
       </div>
-      
+
       <div className="bg-yellow-50 p-4 rounded-lg">
         <div className="flex items-center">
           <Clock className="w-5 h-5 text-yellow-500 mr-2" />
@@ -65,7 +65,7 @@ export const SalesStatistics: React.FC<SalesStatisticsProps> = ({ sales, isVisib
           </div>
         </div>
       </div>
-      
+
       <div className="bg-purple-50 p-4 rounded-lg">
         <div className="flex items-center">
           <TrendingUp className="w-5 h-5 text-purple-500 mr-2" />

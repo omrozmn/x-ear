@@ -5,7 +5,7 @@ export interface AppError {
   message: string;
   code?: string;
   statusCode?: number;
-  details?: any;
+  details?: unknown;
   timestamp: Date;
 }
 
@@ -96,15 +96,15 @@ export const getErrorMessage = (error: unknown): string => {
   if (error instanceof AxiosError) {
     return error.response?.data?.message || error.message || 'API hatası oluştu';
   }
-  
+
   if (error instanceof Error) {
     return error.message;
   }
-  
+
   if (typeof error === 'string') {
     return error;
   }
-  
+
   return 'Bilinmeyen bir hata oluştu';
 };
 

@@ -52,7 +52,8 @@ export interface TenantRead {
   taxNumber?: TenantReadTaxNumber;
   /** Tax office */
   taxOffice?: TenantReadTaxOffice;
-  status?: TenantStatus;
+  status: TenantStatus;
+  /** Product Code */
   productCode: ProductCode;
   planId?: TenantReadPlanId;
   planName?: TenantReadPlanName;
@@ -62,6 +63,6 @@ export interface TenantRead {
   branchCount?: number;
   /** Tenant settings */
   settings?: TenantReadSettings;
-  maxUsers?: number;
-  currentUsers?: number;
+  maxUsers: number;
+  currentUsers: number;
 }

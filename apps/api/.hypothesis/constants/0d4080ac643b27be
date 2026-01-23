@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_notifications.py
+# hypothesis_version: 6.150.2
+
+[100, 400, 404, 500, '/init-db', '/send', '/templates', 'Admin Notifications', 'Invalid target type', 'Template deleted', 'Template not found', 'Tenant not found', 'all', 'both', 'channel', 'count', 'email', 'email_count', 'info', 'limit', 'manual', 'owner', 'page', 'push', 'push_count', 'system.manage', 'system.read', 'tenant', 'total', 'total_pages', 'type']

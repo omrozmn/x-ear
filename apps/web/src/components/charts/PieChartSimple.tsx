@@ -13,7 +13,7 @@ export const PieChartSimple: React.FC<Props> = ({ data = [], size = 200 }) => {
   const center = size / 2;
   const radius = center - 2;
 
-  const slices = data.map((d, i) => {
+  const slices = data.map((d) => {
     const start = (acc / total) * 2 * Math.PI - Math.PI / 2;
     acc += Math.max(0, d.value);
     const end = (acc / total) * 2 * Math.PI - Math.PI / 2;
@@ -43,7 +43,7 @@ export const PieChartSimple: React.FC<Props> = ({ data = [], size = 200 }) => {
             <span style={{ width: 12, height: 12, background: palette[i % palette.length], display: 'inline-block', borderRadius: 2 }} />
             <div className="flex-1">
               <div className="font-medium">{d.label}</div>
-              <div className="text-xs text-gray-500">{d.value} ({((d.value/total)*100).toFixed(1)}%)</div>
+              <div className="text-xs text-gray-500">{d.value} ({((d.value / total) * 100).toFixed(1)}%)</div>
             </div>
           </div>
         ))}

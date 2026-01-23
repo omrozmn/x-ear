@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Tool parameters
- */
 export type ActionStepResponseParameters = { [key: string]: unknown };

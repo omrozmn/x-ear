@@ -10,7 +10,7 @@ from models.integration_config import IntegrationConfig
 from models.notification_template import NotificationTemplate
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
-from schemas.notification_templates import NotificationTemplateRead
+from schemas.notification_templates import EmailTemplateRead
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ async def get_vatan_sms_config(
             "password": password_config.config_value if password_config else "",
             "senderId": sender_id_config.config_value if sender_id_config else "",
             "isActive": is_active_config.config_value == "true" if is_active_config else False,
-            "emailTemplate": NotificationTemplateRead.model_validate(template).model_dump(by_alias=True) if template else None
+            "emailTemplate": EmailTemplateRead.model_validate(template).model_dump(by_alias=True) if template else None
         })
     except Exception as e:
         logger.error(f"Get VatanSMS config error: {e}")
@@ -170,7 +170,7 @@ async def get_birfatura_config(
             "integrationKey": integration_key.config_value if integration_key else "",
             "appApiKey": app_api_key.config_value if app_api_key else "",
             "appSecretKey": app_secret_key.config_value if app_secret_key else "",
-            "emailTemplate": NotificationTemplateRead.model_validate(template).model_dump(by_alias=True) if template else None
+            "emailTemplate": EmailTemplateRead.model_validate(template).model_dump(by_alias=True) if template else None
         })
     except Exception as e:
         logger.error(f"Get BirFatura config error: {e}")

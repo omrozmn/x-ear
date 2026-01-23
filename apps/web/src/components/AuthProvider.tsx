@@ -11,7 +11,7 @@ interface AuthProviderProps {
 
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const { isAuthenticated, isLoading, initializeAuth, logout, clearAuth } = useAuthStore();
+  const { isAuthenticated, initializeAuth, clearAuth } = useAuthStore();
   const [isInitializing, setIsInitializing] = React.useState(true);
 
   // Debug logging disabled to reduce console noise

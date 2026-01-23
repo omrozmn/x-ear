@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/feature_flags.py
+# hypothesis_version: 6.150.2
+
+['A', 'AIFeatureFlagService', 'AI_ENABLED', 'AI_PHASE', 'B', 'C', 'actions', 'ai.actions.enabled', 'ai.approval.required', 'ai.audit.enabled', 'ai.chat.enabled', 'ai.enabled', 'ai.ocr.enabled', 'ai.phase.execution', 'ai.phase.proposal', 'chat', 'ocr', 'tenant_id', 'true']

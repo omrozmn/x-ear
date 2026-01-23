@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@x-ear/ui-web';
-import { Invoice, CreateInvoiceData, InvoiceStatus } from '../../types/invoice';
+import { Invoice, CreateInvoiceData, InvoiceStatus, InvoiceTypeLegacy, PaymentMethod, InvoiceAddress, InvoiceItem } from '../../types/invoice';
 import { InvoiceScenarioSection } from './InvoiceScenarioSection';
 import { InvoiceTypeSection } from './InvoiceTypeSection';
 import { InvoiceDateTimeSection } from './InvoiceDateTimeSection';
@@ -10,7 +10,7 @@ import ExportDetailsCard from './ExportDetailsCard';
 import { SGKInvoiceSection } from './SGKInvoiceSection';
 import { GovernmentSection, GOVERNMENT_EXEMPTION_REASONS } from './GovernmentSection';
 import WithholdingCard from './WithholdingCard';
-import { Select } from '@x-ear/ui-web';
+import { Select, Input, Textarea } from '@x-ear/ui-web';
 import { WithholdingModal } from './WithholdingModal';
 import { GovernmentInvoiceModal } from './GovernmentInvoiceModal';
 import { SGKInvoiceData } from '../../types/invoice';
@@ -42,7 +42,7 @@ interface InvoiceFormState {
   totalDiscount: number;
   issueTime: string;
   notes?: string;
-  items: any[]; // Ideally strict typed but depends on product lines
+  items: (InvoiceItem | Record<string, any>)[]; // Ideally strict typed but depends on product lines
 
   // Nested structure objects
   scenarioData?: InvoiceScenarioData;
@@ -74,6 +74,23 @@ interface InvoiceFormState {
   customerLabel?: CustomerLabelData;
   governmentExemptionReason?: string;
 
+  // Extended typed fields
+  paymentMethod?: PaymentMethod | string;
+  status?: InvoiceStatus | string;
+  invoiceNumber?: string;
+  partyId?: string;
+  partyName?: string;
+  partyPhone?: string;
+  partyTcNumber?: string;
+  issueDate?: string;
+  dueDate?: string;
+  billingAddress?: InvoiceAddress;
+  shippingAddress?: InvoiceAddress;
+  exchangeRate?: number;
+  subtotal?: number;
+  totalAmount?: number;
+  grandTotal?: number;
+
   // Index signature to allow dynamic access if absolutely necessary, but preferred to be explicit
   [key: string]: unknown;
 }
@@ -83,10 +100,23 @@ interface InvoiceFormExtendedProps {
   onSubmit: (data: CreateInvoiceData) => void;
   onCancel: () => void;
   isLoading?: boolean;
-  onDataChange?: (field: string, value: any) => void;
-  initialData?: any;
+  onDataChange?: (field: string, value: unknown) => void;
+  initialData?: Partial<InvoiceFormState>;
   onRequestLineEditor?: (type: 'withholding' | 'special' | 'medical', index: number) => void;
 }
+
+const resolveAddress = (addr: InvoiceAddress | string | unknown): InvoiceAddress | undefined => {
+  if (!addr) return undefined;
+  if (typeof addr === 'string') return { name: '', address: addr, city: '' };
+  if (typeof addr === 'object') return addr as InvoiceAddress;
+  return undefined;
+};
+
+const resolveNotes = (notes: unknown): string | undefined => {
+  if (typeof notes === 'string') return notes;
+  if (notes && typeof notes === 'object' && 'note' in notes) return (notes as { note: string }).note;
+  return undefined;
+};
 
 export function InvoiceFormExtended({
   invoice,
@@ -121,7 +151,10 @@ export function InvoiceFormExtended({
     currency: initialData?.currency || invoice?.currency || 'TRY',
     totalDiscount: initialData?.totalDiscount ?? invoice?.totalDiscount ?? 0,
     customerId: invoice?.customerId || '',
-    customerName: invoice?.customerName || ''
+    customerName: invoice?.customerName || '',
+    subtotal: invoice?.subtotal ?? 0,
+    totalAmount: invoice?.totalAmount ?? invoice?.grandTotal ?? 0,
+    items: (invoice?.items || (initialData as any)?.items || []) as InvoiceItem[]
   });
 
   // Modal states
@@ -211,12 +244,12 @@ export function InvoiceFormExtended({
     setWithholdingModalOpen(true);
   }, []);
 
-  const handleSaveWithholding = useCallback((data: any) => {
+  const handleSaveWithholding = useCallback((data: WithholdingData) => {
     console.log('Withholding data saved:', data, 'for item:', currentItemIndex);
     // TODO: Update item withholding data
   }, [currentItemIndex]);
 
-  const handleSaveGovernment = useCallback((data: any) => {
+  const handleSaveGovernment = useCallback((data: GovernmentInvoiceData) => {
     setExtendedData(prev => ({ ...prev, governmentData: data }));
   }, []);
 
@@ -337,7 +370,7 @@ export function InvoiceFormExtended({
                             <div className="p-4">
                               <SGKInvoiceSection
                                 sgkData={extendedData.sgkData}
-                                onChange={(data: any) => handleExtendedFieldChange('sgkData', data)}
+                                onChange={(data: SGKInvoiceData) => handleExtendedFieldChange('sgkData', data)}
                               />
                             </div>
                           </div>
@@ -352,8 +385,11 @@ export function InvoiceFormExtended({
                             </div>
                             <div className="p-4">
                               <GovernmentSection
-                                formData={extendedData as any}
-                                onChange={(data: any) => handleExtendedFieldChange('governmentData', data)}
+                                formData={(extendedData.governmentData || {}) as unknown as any}
+                                onChange={(field, value) => {
+                                  const currentGov = extendedData.governmentData || {};
+                                  handleExtendedFieldChange('governmentData', { ...currentGov, [field]: value });
+                                }}
                               />
                             </div>
                           </div>
@@ -400,7 +436,7 @@ export function InvoiceFormExtended({
                             <div className="grid grid-cols-1 gap-3">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Özel Matrah Tutarı</label>
-                                <input
+                                <Input
                                   type="number"
                                   step="0.01"
                                   value={extendedData.specialTaxBase?.amount || ''}
@@ -409,7 +445,6 @@ export function InvoiceFormExtended({
                                     hasSpecialTaxBase: true,
                                     amount: parseFloat(e.target.value)
                                   })}
-                                  className="w-full border rounded px-2 py-1"
                                   placeholder="0.00"
                                 />
                               </div>
@@ -602,36 +637,36 @@ export function InvoiceFormExtended({
             <Button type="button" onClick={() => {
               const submissionData: CreateInvoiceData = {
                 invoiceNumber: typeof extendedData.invoiceNumber === 'string' ? extendedData.invoiceNumber : undefined,
-                type: (typeof extendedData.type === 'string' ? extendedData.type : 'sales') as any, // fallback
+                type: (typeof extendedData.type === 'string' ? extendedData.type : 'sales') as InvoiceTypeLegacy,
                 customerId: extendedData.customerId?.toString(),
                 customerName: typeof extendedData.customerName === 'string' ? extendedData.customerName : undefined,
                 customerTaxNumber: typeof extendedData.customerTaxNumber === 'string' ? extendedData.customerTaxNumber : undefined,
-                customerAddress: extendedData.customerAddress && typeof extendedData.customerAddress === 'object' ? extendedData.customerAddress as any : undefined,
-                billingAddress: (extendedData.billingAddress || extendedData.customerAddress) as any,
-                shippingAddress: extendedData.shippingAddress as any,
+                customerAddress: extendedData.customerAddress,
+                billingAddress: resolveAddress(extendedData.billingAddress) || resolveAddress(extendedData.customerAddress),
+                shippingAddress: resolveAddress(extendedData.shippingAddress),
                 partyId: typeof extendedData.partyId === 'string' ? extendedData.partyId : undefined,
                 partyName: typeof extendedData.partyName === 'string' ? extendedData.partyName : undefined,
                 partyPhone: typeof extendedData.partyPhone === 'string' ? extendedData.partyPhone : undefined,
                 partyTcNumber: typeof extendedData.partyTcNumber === 'string' ? extendedData.partyTcNumber : undefined,
                 issueDate: typeof extendedData.issueDate === 'string' ? extendedData.issueDate : new Date().toISOString().split('T')[0],
                 dueDate: typeof extendedData.dueDate === 'string' ? extendedData.dueDate : undefined,
-                paymentMethod: extendedData.paymentMethod as any,
+                paymentMethod: extendedData.paymentMethod as PaymentMethod,
                 currency: typeof extendedData.currency === 'string' ? extendedData.currency : 'TRY',
                 exchangeRate: typeof extendedData.exchangeRate === 'number' ? extendedData.exchangeRate : 1,
-                notes: (extendedData.notes as any)?.note || (typeof extendedData.notes === 'string' ? extendedData.notes : undefined),
+                notes: resolveNotes(extendedData.notes),
                 items: Array.isArray(extendedData.items) ? extendedData.items.map((item: any) => ({
                   name: typeof item.name === 'string' ? item.name : '',
                   description: typeof item.description === 'string' ? item.description : undefined,
                   quantity: Number(item.quantity || 1),
                   unitPrice: Number(item.unitPrice || 0),
                   discount: Number(item.discount || 0),
-                  discountType: typeof item.discountType === 'string' ? item.discountType : 'percentage',
+                  discountType: (typeof item.discountType === 'string' && (item.discountType === 'percentage' || item.discountType === 'amount')) ? item.discountType : 'percentage',
                   taxRate: Number(item.taxRate || 0),
                   unit: typeof item.unit === 'string' ? item.unit : 'ADET'
                 })) : [],
                 subtotal: Number(extendedData.subtotal || 0),
                 totalAmount: Number(extendedData.totalAmount || extendedData.grandTotal || 0),
-                status: typeof extendedData.status === 'string' ? extendedData.status as any : 'draft',
+                status: (typeof extendedData.status === 'string' ? extendedData.status : 'draft') as InvoiceStatus,
               };
               onSubmit(submissionData);
             }} className="px-4 py-2 bg-blue-600 text-white">
@@ -643,7 +678,7 @@ export function InvoiceFormExtended({
           <WithholdingModal
             isOpen={withholdingModalOpen}
             onClose={() => setWithholdingModalOpen(false)}
-            onSave={handleSaveWithholding}
+            onSave={handleSaveWithholding as any}
             itemIndex={currentItemIndex}
           />
 

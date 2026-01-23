@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/party_subresources.py
+# hypothesis_version: 6.150.2
+
+[0.0, 0.01, 201, 403, 404, 500, 'Access denied', 'Party not found', 'PartySubresources', 'User-Agent', 'barcode', 'brand', 'createPartyNotes', 'deletePartyNote', 'deviceCount', 'devices', 'ear', 'genel', 'general', 'id', 'invoice', 'listPartyDevices', 'listPartyNotes', 'listPartySales', 'listPrice', 'model', 'name', 'partyId', 'partyName', 'patientPayment', 'paymentPlan', 'paymentRecords', 'pending', 'salePrice', 'salesCount', 'serialNumber', 'sgkCoverage', 'sgkCoverageAmount', 'sgkReduction', 'system', 'total', 'updatePartyNote']

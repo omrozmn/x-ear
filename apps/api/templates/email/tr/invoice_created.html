@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Yeni Fatura Oluşturuldu</h2>
+
+<p>Merhaba,</p>
+
+<p>Hesabınız için yeni bir fatura oluşturuldu. Fatura detayları aşağıdaki gibidir:</p>
+
+<div class="info">
+    <p><strong>Fatura No:</strong> {{ invoice_number }}</p>
+    <p><strong>Tutar:</strong> {{ amount }} {{ currency }}</p>
+    <p><strong>Son Ödeme Tarihi:</strong> {{ due_date }}</p>
+    <p><strong>Durum:</strong> {{ payment_status }}</p>
+</div>
+
+{% if payment_status == "unpaid" or payment_status == "ödenmedi" %}
+<div class="warning">
+    <p><strong>Ödeme Talimatları:</strong></p>
+    <p>{{ payment_instructions }}</p>
+</div>
+{% endif %}
+
+<p>Faturanızı görüntülemek ve detayları incelemek için:</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ invoice_link }}" class="button">
+        Faturayı Görüntüle
+    </a>
+</div>
+
+<p>Herhangi bir sorunuz varsa, lütfen bizimle iletişime geçin.</p>
+{% endblock %}

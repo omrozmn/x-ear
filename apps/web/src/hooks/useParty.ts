@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Party, PartyDevice, PartyNote, PartyCommunication } from '../types/party';
-import { mockServices } from '../api/mock-services';
+
 
 export interface UsePartyOptions {
   enableRealTimeSync?: boolean;
@@ -45,7 +45,7 @@ export interface UsePartyReturn {
 
 export const useParty = (
   partyId: string | null,
-  options: UsePartyOptions = {}
+  _options: UsePartyOptions = {}
 ): UsePartyReturn => {
   const [party, setParty] = useState<Party | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +63,7 @@ export const useParty = (
     const loadParty = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         const mockParty: Party = {
           id: partyId,
@@ -91,10 +91,10 @@ export const useParty = (
   // Update party
   const updateParty = useCallback(async (updates: Partial<Party>): Promise<Party> => {
     if (!party) throw new Error('No party loaded');
-    
+
     setIsSaving(true);
     setError(null);
-    
+
     try {
       const updatedParty = { ...party, ...updates };
       setParty(updatedParty);
@@ -110,10 +110,10 @@ export const useParty = (
   // Delete party
   const deleteParty = useCallback(async (): Promise<void> => {
     if (!party) throw new Error('No party loaded');
-    
+
     setIsSaving(true);
     setError(null);
-    
+
     try {
       setParty(null);
     } catch (err) {
@@ -127,17 +127,17 @@ export const useParty = (
   // Add device
   const addDevice = useCallback(async (device: Omit<PartyDevice, 'id'>): Promise<PartyDevice> => {
     if (!party) throw new Error('No party loaded');
-    
+
     const newDevice: PartyDevice = {
       ...device,
       id: Date.now().toString()
     };
-    
+
     const updatedParty = {
       ...party,
       devices: [...(party.devices || []), newDevice]
     };
-    
+
     setParty(updatedParty);
     return newDevice;
   }, [party]);
@@ -145,16 +145,16 @@ export const useParty = (
   // Update device
   const updateDevice = useCallback(async (deviceId: string, updates: Partial<PartyDevice>): Promise<PartyDevice> => {
     if (!party) throw new Error('No party loaded');
-    
+
     const devices = party.devices || [];
     const deviceIndex = devices.findIndex(d => d.id === deviceId);
-    
+
     if (deviceIndex === -1) throw new Error('Device not found');
-    
+
     const updatedDevice = { ...devices[deviceIndex], ...updates };
     const updatedDevices = [...devices];
     updatedDevices[deviceIndex] = updatedDevice;
-    
+
     setParty({ ...party, devices: updatedDevices });
     return updatedDevice;
   }, [party]);
@@ -162,7 +162,7 @@ export const useParty = (
   // Remove device
   const removeDevice = useCallback(async (deviceId: string): Promise<void> => {
     if (!party) throw new Error('No party loaded');
-    
+
     const updatedDevices = (party.devices || []).filter(d => d.id !== deviceId);
     setParty({ ...party, devices: updatedDevices });
   }, [party]);
@@ -177,7 +177,7 @@ export const useParty = (
       type,
       createdAt: new Date().toISOString()
     };
-    
+
     return newNote;
   }, []);
 
@@ -191,12 +191,12 @@ export const useParty = (
       type: updates.type || 'general',
       createdAt: updates.createdAt || new Date().toISOString()
     };
-    
+
     return updatedNote;
   }, []);
 
   // Remove note
-  const removeNote = useCallback(async (noteId: string): Promise<void> => {
+  const removeNote = useCallback(async (_noteId: string): Promise<void> => {
     // Mock implementation
   }, []);
 
@@ -206,14 +206,14 @@ export const useParty = (
       ...communication,
       id: Date.now().toString()
     };
-    
+
     return newCommunication;
   }, []);
 
   // Refresh party
   const refreshParty = useCallback(async (): Promise<void> => {
     if (!partyId) return;
-    
+
     setIsLoading(true);
     try {
       // Mock refresh
@@ -238,11 +238,11 @@ export const useParty = (
   const validateParty = useCallback((partyData?: Partial<Party>) => {
     const data = partyData || party;
     const errors: string[] = [];
-    
+
     if (!data?.firstName) errors.push('First name is required');
     if (!data?.lastName) errors.push('Last name is required');
     if (!data?.email) errors.push('Email is required');
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -252,7 +252,7 @@ export const useParty = (
   // Calculate priority score
   const calculatePriorityScore = useCallback((): number => {
     if (!party) return 0;
-    
+
     let score = 0;
     // Use priorityScore if available, otherwise calculate based on other factors
     if (party.priorityScore) {
@@ -263,7 +263,7 @@ export const useParty = (
       else if (party.status === 'TRIAL') score += 2;
       else if (party.status === 'CUSTOMER') score += 3;
     }
-    
+
     return score;
   }, [party]);
 

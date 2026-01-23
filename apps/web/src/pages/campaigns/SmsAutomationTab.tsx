@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Button, Card, Textarea, Input, Select, useToastHelpers, Checkbox } from '@x-ear/ui-web';
+import { Button, Card, Textarea, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import {
     AlertTriangle,
     Bell,
@@ -12,7 +12,7 @@ import {
     Edit3,
     Eye,
     FileText,
-    Loader2,
+    // Loader2, // Not used - using different loading pattern
     Package,
     Pause,
     Play,
@@ -26,8 +26,10 @@ import {
     X,
     Zap
 } from 'lucide-react';
-import {useListSmHeaders, getListSmHeadersQueryKey} from '@/api/client/sms.client';
+import { useListSmHeaders, getListSmHeadersQueryKey } from '@/api/client/sms.client';
+import type { SMSHeaderRequestRead } from '@/api/generated/schemas';
 import { useAuthStore } from '@/stores/authStore';
+import { unwrapArray } from '@/utils/response-unwrap';
 
 // SMS Automation Trigger Types
 type TriggerType =
@@ -250,7 +252,7 @@ interface SmsAutomationTabProps {
     creditLoading: boolean;
 }
 
-export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalance, creditLoading }) => {
+export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ /* creditBalance, creditLoading - not used */ }) => {
     const [rules, setRules] = useState<AutomationRule[]>(SAMPLE_RULES);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
@@ -267,19 +269,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
 
     // Parse SMS headers and filter only approved ones
     const headerOptions = useMemo(() => {
-        let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
-        if (headersData) {
-            if (Array.isArray(headersData)) {
-                headersRaw = headersData;
-            } else if ((headersData as any)?.data) {
-                const innerData = (headersData as any).data;
-                if (Array.isArray(innerData)) {
-                    headersRaw = innerData;
-                } else if (innerData?.data && Array.isArray(innerData.data)) {
-                    headersRaw = innerData.data;
-                }
-            }
-        }
+        const headersRaw = unwrapArray<SMSHeaderRequestRead>(headersData);
         // Only return approved headers
         return headersRaw
             .filter(h => h.status === 'approved')
@@ -303,7 +293,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
         if (showCreateModal && !editingRule && defaultHeaderId && !formData.headerId) {
             setFormData(prev => ({ ...prev, headerId: defaultHeaderId }));
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showCreateModal, editingRule, defaultHeaderId]);
 
     // Form state for create/edit
@@ -453,9 +443,10 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
         setShowPreview(true);
     };
 
-    const smsSegments = formData.templateContent.length > 0
-        ? Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))
-        : 0;
+    // SMS segments calculation - kept for future use but not displayed
+    // const smsSegments = formData.templateContent.length > 0
+    //     ? Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))
+    //     : 0;
 
     const selectedTriggerConfig = TRIGGER_CONFIG[formData.trigger];
 
@@ -623,7 +614,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                         <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Kullanılabilir tetikleyiciler:</p>
                                         <div className="flex flex-wrap gap-2">
                                             {Object.entries(TRIGGER_CONFIG)
-                                                .filter(([_, config]) => config.category === category)
+                                                .filter(([, config]) => config.category === category)
                                                 .map(([trigger, config]) => (
                                                     <button
                                                         key={trigger}

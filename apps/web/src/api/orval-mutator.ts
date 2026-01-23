@@ -1,20 +1,48 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig, AxiosInstance } from 'axios';
 import humps from 'humps';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { tokenManager } from '../utils/token-manager';
+
+// Extend Axios types for custom properties
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    __isRetryRequest?: boolean;
+  }
+  export interface InternalAxiosRequestConfig {
+    __isRetryRequest?: boolean;
+  }
+}
+
+interface ExtendedAxiosInstance extends AxiosInstance {
+  _refreshing?: boolean;
+  _refreshSubscribers?: Array<(token: string | null) => void>;
+}
+
+interface RefreshResponse {
+  accessToken?: string;
+  access_token?: string;
+}
 
 // Hybrid Converter: Adds CamelCase keys while preserving SnakeCase keys
 // Canonical Case Converter: Strictly camelCase
 // Replaces previous hybrid approach to ensure idempotency and type consistency
 // We keep the name 'hybridCamelize' for backward compatibility with imports
-export const hybridCamelize = (data: any): any => {
+// Resource errors need extra properties
+interface ExtendedError extends Error {
+  code?: string;
+  response?: { status: number };
+  retryAfter?: number;
+  originalError?: unknown;
+}
+
+export const hybridCamelize = (data: unknown): unknown => {
   if (Array.isArray(data)) {
     return data.map(hybridCamelize);
   }
   if (data && typeof data === 'object' && data !== null && !(data instanceof Date)) {
     // Strictly return camelized keys - NO hybrid snake_case keys
     // This ensures data shape is deterministic for idempotency hashing
-    return humps.camelizeKeys(data);
+    return humps.camelizeKeys(data as Record<string, unknown>);
   }
   return data;
 };
@@ -77,14 +105,15 @@ function sleep(ms: number): Promise<void> {
 }
 
 // Check if error is retryable
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
+  const err = error as ExtendedError;
   // Check error codes
-  if (error.code && RETRY_CONFIG.retryableErrors.includes(error.code)) {
+  if (err.code && RETRY_CONFIG.retryableErrors.includes(err.code)) {
     return true;
   }
 
   // Check HTTP status codes
-  if (error.response?.status && RETRY_CONFIG.retryableStatusCodes.includes(error.response.status)) {
+  if (err.response?.status && RETRY_CONFIG.retryableStatusCodes.includes(err.response.status)) {
     return true;
   }
 
@@ -99,7 +128,8 @@ async function retryRequest<T>(
 ): Promise<T> {
   try {
     return await requestFn();
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as ExtendedError;
     // Don't retry if we've exceeded max attempts
     if (attempt >= RETRY_CONFIG.maxRetries) {
       throw error;
@@ -115,7 +145,7 @@ async function retryRequest<T>(
     console.warn(`Request failed (attempt ${attempt}/${RETRY_CONFIG.maxRetries}), retrying in ${delay}ms:`, {
       url: config.url,
       method: config.method,
-      error: error.code || error.message
+      error: err.code || err.message
     });
 
     await sleep(delay);
@@ -179,18 +209,18 @@ async function queueOfflineRequest(config: AxiosRequestConfig): Promise<void> {
 }
 
 // Enhanced error handling for resource constraints
-function handleResourceError(error: any, config: AxiosRequestConfig): Error {
-  const resourceError = new Error('Kaynak limiti aşıldı. Lütfen bir süre sonra tekrar deneyin.');
+function handleResourceError(error: unknown, config: AxiosRequestConfig): Error {
+  const resourceError = new Error('Kaynak limiti aşıldı. Lütfen bir süre sonra tekrar deneyin.') as ExtendedError;
   resourceError.name = 'ResourceError';
 
   // Add retry suggestion
-  (resourceError as any).retryAfter = 5000; // Suggest retry after 5 seconds
-  (resourceError as any).originalError = error;
+  resourceError.retryAfter = 5000; // Suggest retry after 5 seconds
+  resourceError.originalError = error;
 
   console.warn('Kaynak kısıtlaması tespit edildi:', {
     url: config.url,
     method: config.method,
-    error: error.code || error.message
+    error: error instanceof Error ? error.message : 'Unknown error'
   });
 
   return resourceError;
@@ -250,7 +280,7 @@ apiClient.interceptors.request.use(
 
     return config;
   },
-  (error) => {
+  (error: unknown) => {
     return Promise.reject(error);
   }
 );
@@ -284,9 +314,11 @@ apiClient.interceptors.response.use(
           hasRefreshToken: !!createAuthRefresh
         });
 
-        if (!(apiClient as any)._refreshing) {
-          (apiClient as any)._refreshing = true;
-          (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
+        const extendedClient = apiClient as ExtendedAxiosInstance;
+
+        if (!extendedClient._refreshing) {
+          extendedClient._refreshing = true;
+          extendedClient._refreshSubscribers = [] as Array<(token: string | null) => void>;
           try {
             if (!createAuthRefresh) {
               console.error('[orval-mutator] Yenileme token\'ı mevcut değil');
@@ -297,7 +329,7 @@ apiClient.interceptors.response.use(
 
             // Bypass apiClient to avoid attaching the expired access token
             const refreshUrl = `${API_BASE_URL}/api/auth/refresh`;
-            let refreshResp: { status: number; data: any };
+            let refreshResp: AxiosResponse<RefreshResponse>;
 
             try {
               // Try with Authorization header first (preferred by backend)
@@ -319,46 +351,46 @@ apiClient.interceptors.response.use(
 
             console.log('[orval-mutator] Refresh response:', {
               status: refreshResp.status,
-              hasAccessToken: !!(refreshResp.data as any).access_token || !!(refreshResp.data as any).accessToken
+              hasAccessToken: !!refreshResp.data?.access_token || !!refreshResp.data?.accessToken
             });
 
             if (refreshResp.status === 200 && refreshResp.data) {
-              const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
+              const newToken = refreshResp.data.access_token || refreshResp.data.accessToken || null;
               if (newToken) {
                 console.log('[orval-mutator] Token refresh successful, updating via TokenManager...');
                 // Use TokenManager to update token (single source of truth)
                 tokenManager.updateAccessToken(newToken);
-                (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(newToken));
+                extendedClient._refreshSubscribers?.forEach((cb) => cb(newToken));
               } else {
                 console.error('[orval-mutator] No access token in refresh response');
-                (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+                extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
               }
             } else {
               console.error('[orval-mutator] Refresh failed with status:', refreshResp.status);
-              (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+              extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
               // Clear tokens via TokenManager
               tokenManager.clearTokens();
             }
           } catch (e) {
             console.error('[orval-mutator] Token refresh error:', e);
-            (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+            extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
             // Clear tokens via TokenManager
             tokenManager.clearTokens();
           } finally {
-            (apiClient as any)._refreshing = false;
-            (apiClient as any)._refreshSubscribers = [];
+            extendedClient._refreshing = false;
+            extendedClient._refreshSubscribers = [];
           }
         } else {
           console.log('[orval-mutator] Refresh already in progress, waiting...');
         }
 
         return new Promise((resolve, reject) => {
-          (apiClient as any)._refreshSubscribers.push((token: string | null) => {
+          extendedClient._refreshSubscribers?.push((token: string | null) => {
             if (token) {
               config.__isRetryRequest = true;
               config.headers = config.headers || {};
               config.headers['Authorization'] = `Bearer ${token}`;
-              resolve(apiClient(config));
+              resolve(extendedClient(config));
             } else {
               // Failed to refresh - tokens already cleared by TokenManager
               reject(error);
@@ -371,17 +403,18 @@ apiClient.interceptors.response.use(
     }
 
     // Handle resource constraint errors (ERR_INSUFFICIENT_RESOURCES, connection limits, etc.)
-    if (error.code === 'ERR_INSUFFICIENT_RESOURCES' ||
-      error.code === 'ECONNRESET' ||
-      error.code === 'ENOTFOUND' ||
-      (error.response?.status === 429) || // Too Many Requests
-      (error.response?.status === 503)) { // Service Unavailable
+    const err = error as ExtendedError;
+    if (err.code === 'ERR_INSUFFICIENT_RESOURCES' ||
+      err.code === 'ECONNRESET' ||
+      err.code === 'ENOTFOUND' ||
+      (err.response?.status === 429) || // Too Many Requests
+      (err.response?.status === 503)) { // Service Unavailable
       return Promise.reject(handleResourceError(error, config));
     }
 
     // Handle network errors (offline scenarios)
     // Only queue non-GET requests - GET requests should be re-fetched by UI when online
-    if (!error.response && error.code === 'ERR_NETWORK') {
+    if (!err.response && err.code === 'ERR_NETWORK') {
       const method = config?.method?.toUpperCase() || 'GET';
 
       if (method !== 'GET') {

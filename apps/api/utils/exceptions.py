@@ -162,3 +162,114 @@ class UnboundSessionAuditError(Exception):
     def __init__(self, message: str = "unbound_session requires a 'reason' parameter for audit"):
         self.message = message
         super().__init__(message)
+
+
+class ConfigurationError(Exception):
+    """
+    Exception raised when required configuration is missing or invalid.
+    
+    This error indicates that the application cannot start or operate
+    correctly due to missing or invalid configuration values.
+    
+    Usage:
+        if not os.getenv("SMTP_ENCRYPTION_KEY"):
+            raise ConfigurationError("SMTP_ENCRYPTION_KEY environment variable is required")
+    """
+    
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(message)
+
+
+class SecurityException(Exception):
+    """
+    Exception raised when a security-related operation fails.
+    
+    This error indicates a security violation such as:
+    - Failed decryption (tampered data)
+    - Invalid authentication tag
+    - Unauthorized access attempt
+    
+    These errors should be logged with high severity for security audit.
+    
+    Usage:
+        try:
+            decrypted = decrypt_password(encrypted)
+        except InvalidToken:
+            logger.error("Password decryption failed - invalid authentication tag")
+            raise SecurityException("Failed to decrypt SMTP password")
+    """
+    
+    def __init__(self, message: str, details: Optional[str] = None):
+        self.message = message
+        self.details = details
+        full_message = f"{message}: {details}" if details else message
+        super().__init__(full_message)
+
+
+class TemplateError(Exception):
+    """
+    Exception raised when email template operations fail.
+    
+    This error indicates issues with email template processing such as:
+    - Template not found
+    - Template syntax error
+    - Template rendering failure
+    
+    Usage:
+        try:
+            template = jinja_env.get_template("password_reset.html")
+        except TemplateNotFound:
+            raise TemplateError("Email template not found: password_reset")
+    """
+    
+    def __init__(self, message: str, details: Optional[str] = None):
+        self.message = message
+        self.details = details
+        full_message = f"{message}: {details}" if details else message
+        super().__init__(full_message)
+
+
+class ValidationError(Exception):
+    """
+    Exception raised when data validation fails.
+    
+    This error indicates that provided data does not meet validation requirements such as:
+    - Missing required fields
+    - Invalid field values
+    - Type mismatches
+    - Business rule violations
+    
+    Usage:
+        if not all(required_vars in variables):
+            raise ValidationError("Missing required variables: reset_link, user_name")
+    """
+    
+    def __init__(self, message: str, details: Optional[str] = None):
+        self.message = message
+        self.details = details
+        full_message = f"{message}: {details}" if details else message
+        super().__init__(full_message)
+
+
+
+class SMTPError(Exception):
+    """
+    Exception raised when SMTP operations fail.
+    
+    This error indicates issues with SMTP operations such as:
+    - No SMTP configuration found
+    - SMTP connection failure
+    - SMTP authentication failure
+    - Email sending failure
+    
+    Usage:
+        if not smtp_config:
+            raise SMTPError("No SMTP configuration found for tenant")
+    """
+    
+    def __init__(self, message: str, details: Optional[str] = None):
+        self.message = message
+        self.details = details
+        full_message = f"{message}: {details}" if details else message
+        super().__init__(full_message)

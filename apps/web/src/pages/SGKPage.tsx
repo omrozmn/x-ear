@@ -2,9 +2,9 @@
 // Main page for SGK document management, workflow, and e-receipt processing
 
 import React, { useState, useEffect } from 'react';
-import { 
-  SGKDocument, 
-  SGKStats, 
+import {
+  SGKDocument,
+  SGKStats,
   SGKDocumentFilters,
   SGKWorkflow as SGKWorkflowType
 } from '../types/sgk';
@@ -22,7 +22,7 @@ export const SGKPage: React.FC = () => {
   const [stats, setStats] = useState<SGKStats | null>(null);
   const [selectedDocument, setSelectedDocument] = useState<SGKDocument | null>(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState<SGKWorkflowType | null>(null);
-  const [filters, _setFilters] = useState<SGKDocumentFilters>({});
+  const [filters] = useState<SGKDocumentFilters>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -46,7 +46,7 @@ export const SGKPage: React.FC = () => {
 
   const handleDocumentSelect = async (document: SGKDocument) => {
     setSelectedDocument(document);
-    
+
     // Load workflow for the document
     try {
       const workflow = await sgkService.getWorkflow(document.id);
@@ -110,7 +110,7 @@ export const SGKPage: React.FC = () => {
     }).format(amount);
   };
 
-  const getStatusColor = (status: string, _value: number): string => {
+  const getStatusColor = (status: string): string => {
     if (status === 'rejected' || status === 'cancelled') return 'text-red-600';
     if (status === 'approved' || status === 'completed') return 'text-green-600';
     if (status === 'under_review' || status === 'submitted') return 'text-yellow-600';
@@ -139,7 +139,7 @@ export const SGKPage: React.FC = () => {
                 Belge yönetimi, iş akışı ve e-reçete işlemleri
               </p>
             </div>
-            
+
             {/* Quick Stats */}
             {stats && (
               <div className="flex space-x-6">
@@ -206,11 +206,10 @@ export const SGKPage: React.FC = () => {
                 key={tab.id}
                 variant="ghost"
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
+                className={`${activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
               >
                 {getTabIcon(tab.id as TabType)}
                 <span>{tab.label}</span>
@@ -233,7 +232,7 @@ export const SGKPage: React.FC = () => {
               onDocumentDelete={() => {
                 setRefreshKey(prev => prev + 1);
               }}
-              onWorkflowUpdate={(_documentId, _status) => {
+              onWorkflowUpdate={() => {
                 setRefreshKey(prev => prev + 1);
               }}
             />
@@ -285,7 +284,7 @@ export const SGKPage: React.FC = () => {
                       </svg>
                     </Button>
                   </div>
-                  
+
                   <SGKWorkflow
                     document={selectedDocument}
                     workflow={selectedWorkflow || undefined}
@@ -406,11 +405,11 @@ export const SGKPage: React.FC = () => {
                       <div className="text-2xl font-bold text-blue-600">{count}</div>
                       <div className="text-sm text-gray-500 capitalize">
                         {type === 'recete' ? 'E-Reçete' :
-                         type === 'rapor' ? 'Rapor' :
-                         type === 'belge' ? 'Belge' :
-                         type === 'fatura' ? 'Fatura' :
-                         type === 'teslim' ? 'Teslim' :
-                         type === 'iade' ? 'İade' : type}
+                          type === 'rapor' ? 'Rapor' :
+                            type === 'belge' ? 'Belge' :
+                              type === 'fatura' ? 'Fatura' :
+                                type === 'teslim' ? 'Teslim' :
+                                  type === 'iade' ? 'İade' : type}
                       </div>
                     </div>
                   ))}
@@ -427,18 +426,18 @@ export const SGKPage: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                   {Object.entries(stats.byStatus).map(([status, count]) => (
                     <div key={status} className="text-center">
-                      <div className={`text-2xl font-bold ${getStatusColor(status, count)}`}>
+                      <div className={`text-2xl font-bold ${getStatusColor(status)}`}>
                         {count}
                       </div>
                       <div className="text-sm text-gray-500 capitalize">
                         {status === 'draft' ? 'Taslak' :
-                         status === 'submitted' ? 'Gönderildi' :
-                         status === 'under_review' ? 'İnceleniyor' :
-                         status === 'approved' ? 'Onaylandı' :
-                         status === 'rejected' ? 'Reddedildi' :
-                         status === 'paid' ? 'Ödendi' :
-                         status === 'completed' ? 'Tamamlandı' :
-                         status === 'cancelled' ? 'İptal' : status}
+                          status === 'submitted' ? 'Gönderildi' :
+                            status === 'under_review' ? 'İnceleniyor' :
+                              status === 'approved' ? 'Onaylandı' :
+                                status === 'rejected' ? 'Reddedildi' :
+                                  status === 'paid' ? 'Ödendi' :
+                                    status === 'completed' ? 'Tamamlandı' :
+                                      status === 'cancelled' ? 'İptal' : status}
                       </div>
                     </div>
                   ))}

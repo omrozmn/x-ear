@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/error_messages.py
+# hypothesis_version: 6.150.2
+
+['ACCOUNT_INACTIVE', 'Geçersiz token', 'Geçersiz veri', 'Hesap aktif değil', 'INTERNAL_ERROR', 'INVALID_CREDENTIALS', 'INVALID_OTP', 'INVALID_TOKEN', 'Kayıt bulunamadı', 'Kullanıcı bulunamadı', 'MISSING_CREDENTIALS', 'MISSING_PARAMS', 'NOT_FOUND', 'NO_REFRESH_TOKEN', 'OTP_EXPIRED', 'Oturum süresi doldu', 'PERMISSION_DENIED', 'PHONE_NOT_REGISTERED', 'SMS gönderilemedi', 'SMS_FAILED', 'TOKEN_EXPIRED', 'USER_NOT_FOUND', 'VALIDATION_ERROR']

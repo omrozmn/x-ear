@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/admin_user.py
+# hypothesis_version: 6.150.2
+
+[100, 255, 'SuperAdmin', 'admin_roles', 'admin_users', 'content', 'created_at', 'email', 'finance', 'first_name', 'id', 'is_active', 'is_super_admin', 'last_login', 'last_name', 'mfa_enabled', 'pbkdf2:sha256', 'permissions', 'role', 'roles', 'super_admin', 'support']

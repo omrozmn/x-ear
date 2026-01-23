@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SimilarityRequestTextA = string | null;
+export type SimilarityRequestTexta = string | null;

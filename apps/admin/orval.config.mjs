@@ -1,7 +1,7 @@
 export default {
   'admin-api': {
     input: {
-      target: process.env.OPENAPI_SOURCE || 'http://localhost:5003/openapi.json',
+      target: process.env.OPENAPI_SOURCE || '../../openapi.yaml',
     },
     output: {
       mode: 'tags-split',

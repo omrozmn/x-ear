@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/promissory_note.py
+# hypothesis_version: 6.150.2
+
+[0.0, 100, 200, 255, 'active', 'amount', 'authorizedCourt', 'debtorAddress', 'debtorName', 'debtorPhone', 'debtorTaxOffice', 'debtorTc', 'documentId', 'dueDate', 'due_date', 'fileName', 'guarantorAddress', 'guarantorName', 'guarantorPhone', 'guarantorTc', 'hasGuarantor', 'id', 'issueDate', 'note', 'noteNumber', 'notes', 'paidAmount', 'paidDate', 'parties.id', 'partyId', 'party_id', 'promissory_notes', 'saleId', 'sale_id', 'sales.id', 'status', 'tenants.id', 'totalAmount', 'totalNotes', 'İstanbul (Çağlayan)']

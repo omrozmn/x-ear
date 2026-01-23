@@ -16,6 +16,12 @@
 
 import React from 'react';
 import type { AIStatus } from '../types/ai.types';
+import { getStatusType, getDetailedStatusLabel } from '../utils/aiStatusHelpers';
+import type { AIStatusType } from '../utils/aiStatusHelpers';
+
+// Re-export helper functions and types for convenience
+export { getStatusType, getDetailedStatusLabel };
+export type { AIStatusType };
 
 // =============================================================================
 // Types
@@ -26,10 +32,7 @@ import type { AIStatus } from '../types/ai.types';
  */
 export type AIStatusIndicatorSize = 'sm' | 'md' | 'lg';
 
-/**
- * Status type derived from AIStatus
- */
-export type AIStatusType = 'available' | 'degraded' | 'unavailable' | 'unknown';
+
 
 /**
  * Props for AIStatusIndicator component
@@ -40,19 +43,19 @@ export interface AIStatusIndicatorProps {
    * If null/undefined, shows 'unknown' state
    */
   status: AIStatus | null | undefined;
-  
+
   /**
    * Size variant of the indicator
    * @default 'md'
    */
   size?: AIStatusIndicatorSize;
-  
+
   /**
    * Whether to show the status label text
    * @default false
    */
   showLabel?: boolean;
-  
+
   /**
    * Additional CSS classes to apply
    */
@@ -91,110 +94,7 @@ const STATUS_COLORS: Record<AIStatusType, string> = {
   unknown: 'bg-gray-400',
 };
 
-/**
- * Status labels in Turkish
- */
-const STATUS_LABELS: Record<AIStatusType, string> = {
-  available: 'Aktif',
-  degraded: 'Kısıtlı',
-  unavailable: 'Devre Dışı',
-  unknown: 'Bilinmiyor',
-};
 
-// =============================================================================
-// Helper Functions
-// =============================================================================
-
-/**
- * Determine the status type from AIStatus data
- * 
- * Logic:
- * 1. If no status data -> unknown
- * 2. If not enabled -> unavailable
- * 3. If kill switch active (global or tenant) -> unavailable
- * 4. If available = true -> available
- * 5. If quota exceeded or capabilities disabled -> degraded
- * 6. Otherwise -> unavailable
- * 
- * @param status - AIStatus data or null/undefined
- * @returns AIStatusType
- */
-export function getStatusType(status: AIStatus | null | undefined): AIStatusType {
-  // No status data
-  if (!status) {
-    return 'unknown';
-  }
-
-  // AI is disabled by configuration
-  if (!status.enabled) {
-    return 'unavailable';
-  }
-
-  // Kill switch is active
-  if (status.killSwitch.globalActive || status.killSwitch.tenantActive) {
-    return 'unavailable';
-  }
-
-  // AI is fully available
-  if (status.available) {
-    return 'available';
-  }
-
-  // Check for degraded conditions
-  const hasDegradedConditions = 
-    status.usage.anyQuotaExceeded || 
-    status.killSwitch.capabilitiesDisabled.length > 0 ||
-    !status.model.available;
-
-  if (hasDegradedConditions) {
-    return 'degraded';
-  }
-
-  // Default to unavailable if not available
-  return 'unavailable';
-}
-
-/**
- * Get detailed status label based on specific conditions
- * 
- * @param status - AIStatus data or null/undefined
- * @returns Detailed status label string
- */
-export function getDetailedStatusLabel(status: AIStatus | null | undefined): string {
-  if (!status) {
-    return STATUS_LABELS.unknown;
-  }
-
-  if (!status.enabled) {
-    return 'Devre Dışı';
-  }
-
-  if (status.killSwitch.globalActive) {
-    return 'Durduruldu';
-  }
-
-  if (status.killSwitch.tenantActive) {
-    return 'Tenant Durduruldu';
-  }
-
-  if (status.available) {
-    return 'Aktif';
-  }
-
-  if (status.usage.anyQuotaExceeded) {
-    return 'Limit Aşıldı';
-  }
-
-  if (status.killSwitch.capabilitiesDisabled.length > 0) {
-    return 'Kısıtlı';
-  }
-
-  if (!status.model.available) {
-    return 'Model Kullanılamıyor';
-  }
-
-  return 'Kullanılamıyor';
-}
 
 // =============================================================================
 // Component
@@ -235,17 +135,17 @@ export function AIStatusIndicator({
   const label = getDetailedStatusLabel(status);
 
   return (
-    <div 
+    <div
       className={`inline-flex items-center gap-2 ${className}`}
       role="status"
       aria-label={`AI durumu: ${label}`}
     >
       {/* Status dot with pulse animation */}
-      <span 
+      <span
         className={`${sizeClass} rounded-full ${colorClass} ${statusType === 'available' ? 'animate-pulse' : ''}`}
         aria-hidden="true"
       />
-      
+
       {/* Optional label */}
       {showLabel && (
         <span className={`${labelSizeClass} text-gray-600`}>

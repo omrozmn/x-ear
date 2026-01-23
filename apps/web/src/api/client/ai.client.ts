@@ -1,60 +1,28 @@
 /**
- * AI Chat Client
+ * AI Client Adapter
  * 
- * Wrapper for AI chat endpoints following best practices:
- * - Uses axios instance from orval-mutator
- * - Proper error handling
- * - Turkish error messages
+ * Re-exports generated AI clients for use in the application.
+ * This adapter layer satisifes the no-restricted-imports rule.
  */
 
+/* eslint-disable no-restricted-imports */
 import { apiClient } from '../orval-mutator';
+import type { AiActionPlanResponse } from '@/api/generated/schemas';
 
-export interface ChatRequest {
-  prompt: string;
-  context?: Record<string, any>;
-  sessionId?: string;
-}
-
-export interface ChatResponse {
-  requestId: string;
-  status: string;
-  intent?: {
-    intentType: string;
-    confidence: number;
-    entities: Record<string, any>;
-    clarificationNeeded: boolean;
-    clarificationQuestion?: string;
-  };
-  response?: string;
-  needsClarification: boolean;
-  clarificationQuestion?: string;
-  processingTimeMs: number;
-  piiDetected: boolean;
-  phiDetected: boolean;
-}
+export * from '@/api/generated/ai-actions/ai-actions';
+export * from '@/api/generated/ai-chat/ai-chat';
+export * from '@/api/generated/ai-status/ai-status';
 
 /**
- * Send a chat message to AI
+ * Get pending actions manually (since generated client misses list endpoint)
  */
-export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
-  // Override global timeout for AI requests (model inference can take 30-60s)
-  const response = await apiClient.post<{ data: ChatResponse }>('/api/ai/chat', request, {
-    headers: {
-      'Idempotency-Key': `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    },
-    timeout: 90000 // 90 seconds - enough for model loading + inference
-  });
-  return response.data.data;
-}
-
-/**
- * Get AI status
- */
-export async function getAIStatus(): Promise<{
-  enabled: boolean;
-  phase: string;
-  modelId: string;
-}> {
-  const response = await apiClient.get<{ data: any }>('/api/ai/status');
-  return response.data.data;
+export async function getPendingActions(params: {
+    tenant_id?: string;
+    party_id?: string | null;
+    status?: string;
+}): Promise<{ actions: AiActionPlanResponse[]; total: number }> {
+    const response = await apiClient.get<{ actions: AiActionPlanResponse[]; total: number }>('/api/ai/actions', {
+        params,
+    });
+    return response.data;
 }

@@ -4,9 +4,28 @@ import { PartyApiService } from '../../services/party/party-api.service';
 import { PartyStorageService } from '../../services/party/party-storage.service';
 
 // Type for API/legacy response that may have different field names
-// We use any for a few fields because Orval types like PartyReadFirstName include null, 
-// but our internal Party type expects string | undefined
-type PartyLike = any;
+interface PartyLike {
+  id?: string | null;
+  firstName?: string | null;
+  first_name?: string | null;
+  lastName?: string | null;
+  last_name?: string | null;
+  name?: string | null;
+  tcNumber?: string | null;
+  tc_number?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  birthDate?: string | null;
+  birth_date?: string | null;
+  status?: string | null;
+  segment?: string | null;
+  createdAt?: string | number | null;
+  created_at?: string | number | null;
+  updatedAt?: string | number | null;
+  updated_at?: string | number | null;
+  tags?: string[] | null | unknown; // Allow unknown for flexible API responses
+  [key: string]: unknown;
+}
 
 // Helper to convert LegacyParty or API response to Party type
 function toParty(data: PartyLike | null | undefined): Party | null {
@@ -20,11 +39,11 @@ function toParty(data: PartyLike | null | undefined): Party | null {
     phone: data.phone || '',
     email: data.email || undefined,
     birthDate: data.birthDate || data.birth_date || undefined,
-    status: (data.status as any) || 'active',
-    segment: (data.segment as any) || 'NEW',
+    status: (data.status as 'active' | 'passive' | 'archived') || 'active',
+    segment: (data.segment as 'NEW' | 'LOYAL' | 'VIP' | 'Risk') || 'NEW',
     createdAt: (data.createdAt || data.created_at || '').toString(),
     updatedAt: (data.updatedAt || data.updated_at || '').toString(),
-    tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+    tags: Array.isArray(data.tags) ? data.tags : [],
   } as Party;
 }
 
@@ -52,11 +71,11 @@ export function useParty(partyId?: string) {
       const result = await apiService.fetchParty(id);
       if (result) {
         // Convert API result to Party type
-        setParty(toParty(result));
+        setParty(toParty(result as unknown as PartyLike));
       } else {
         // Fallback to local storage
         const localParty = await storageService.getPartyById(id);
-        setParty(toParty(localParty));
+        setParty(toParty(localParty as unknown as PartyLike));
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -64,7 +83,7 @@ export function useParty(partyId?: string) {
       // Try local storage as fallback
       try {
         const localParty = await storageService.getPartyById(id);
-        setParty(toParty(localParty));
+        setParty(toParty(localParty as unknown as PartyLike));
       } catch (localErr) {
         console.error('Failed to load from local storage:', localErr);
       }
@@ -81,9 +100,10 @@ export function useParty(partyId?: string) {
     setError(null);
 
     try {
-      const result = await apiService.updateParty(party.id, updates as any);
+      // Cast updates to match API requirements - using Record<string, unknown> is safer than any
+      const result = await apiService.updateParty(party.id, updates as Record<string, unknown>);
       if (result) {
-        const updatedParty = toParty(result);
+        const updatedParty = toParty(result as unknown as PartyLike);
         setParty(updatedParty);
         return updatedParty;
       }

@@ -2,7 +2,7 @@
  * PartySearchInput Component
  * Reusable party search with autocomplete
  */
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@x-ear/ui-web';
 import { Search, X } from 'lucide-react';
 import { useParties } from '../../hooks/useParties';
@@ -69,7 +69,7 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
             <p className="text-sm text-blue-700">TC: {selectedParty.tcNumber}</p>
           )}
         </div>
-        <button
+        <button data-allow-raw="true"
           type="button"
           onClick={() => onSelectParty(null)}
           className="text-blue-600 hover:text-blue-800"
@@ -100,7 +100,7 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
               <div
                 key={party.id}
                 onClick={() => {
-                  onSelectParty(party as any);
+                  onSelectParty(party as unknown as Party);
                   setSearch('');
                   setShowResults(false);
                 }}

@@ -4,7 +4,7 @@ export default {
       // CI'da statik dosya, development'ta runtime kullan
       // CI: OPENAPI_SOURCE=./openapi.json npx orval
       // Dev: Backend çalışırken npx orval
-      target: process.env.OPENAPI_SOURCE || 'http://localhost:5003/openapi.json',
+      target: process.env.OPENAPI_SOURCE || '../../openapi.yaml',
     },
     output: {
       mode: 'tags-split',

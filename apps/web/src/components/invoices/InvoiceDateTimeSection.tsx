@@ -1,5 +1,4 @@
-import { Input, Checkbox, DatePicker } from '@x-ear/ui-web';
-import { Info } from 'lucide-react';
+import { Input, DatePicker } from '@x-ear/ui-web';
 
 interface InvoiceDateTimeSectionProps {
   issueDate: string;
@@ -14,14 +13,14 @@ export function InvoiceDateTimeSection({
   issueDate,
   issueTime,
   dueDate,
-  discount,
-  discountType,
+  discount: _discount,
+  discountType: _discountType,
   onChange
 }: InvoiceDateTimeSectionProps) {
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Tarih ve İskonto Bilgileri</h3>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Fatura Tarihi */}
         <div>

@@ -4,7 +4,8 @@ import {
   getInventory,
   deleteInventory,
   updateInventory,
-  createInventorySerials
+  createInventorySerials,
+  InventoryItemUpdate
 } from '@/api/client/inventory.client';
 import { ArrowLeft, Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
 import { Button, Modal } from '@x-ear/ui-web';
@@ -78,7 +79,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
         // Handle features
         let featuresArray: string[] = [];
-        const featuresValue = apiItem.features as unknown;
+        const featuresValue = apiItem.features;
         if (featuresValue) {
           if (typeof featuresValue === 'string') {
             featuresArray = (featuresValue as string).split(',').map((f: string) => f.trim()).filter(Boolean);
@@ -213,23 +214,19 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
     try {
       // include kdv in the payload so backend can persist kdv_rate
-      const payload = {
+      const payload: InventoryItemUpdate & Record<string, any> = {
         name: editedItem.name ?? item.name,
         brand: editedItem.brand ?? item.brand,
         model: editedItem.model,
-        category: editedItem.category ?? item.category,
+        category: (editedItem.category ?? item.category),
         price: editedItem.price ?? item.price,
         cost: editedItem.cost,
         barcode: editedItem.barcode,
         stockCode: editedItem.stockCode,
         supplier: editedItem.supplier,
         description: editedItem.description,
-        minInventory: editedItem.reorderLevel,
         availableInventory: editedItem.availableInventory,
         unit: editedItem.unit,
-        kdv: kdvRate,
-        priceIncludesKdv: isPriceKdvIncluded,
-        costIncludesKdv: isCostKdvIncluded,
       };
 
       const response = await updateInventory(id, payload);
@@ -276,8 +273,8 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: features.length
       });
 
-      // Update payload requires partial features
-      const response = await updateInventory(id, { features } as unknown as any);
+      // Update payload requires features which is supported by backend but missing from Update schema
+      const response = await updateInventory(id, { features } as InventoryItemUpdate & { features: string[] });
 
       if (response && response.data) {
         await loadItem();

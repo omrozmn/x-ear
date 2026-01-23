@@ -84,7 +84,7 @@ export class InvoiceValidationService {
       {
         field: 'dueDate',
         message: 'Vade tarihi fatura tarihinden sonra olmalıdır',
-        validator: (value: string, formData: InvoiceFormData) => 
+        validator: (value: string, formData: InvoiceFormData) =>
           !value || InvoiceValidationUtils.validateDueDate(value, formData.issueDate)
       },
 
@@ -117,7 +117,7 @@ export class InvoiceValidationService {
     // Apply validation rules
     for (const rule of this.validationRules) {
       const fieldValue = this.getNestedValue(formData, rule.field);
-      
+
       // Skip optional field validation if requested
       if (skipOptionalFields && this.isOptionalField(rule.field)) {
         continue;
@@ -303,23 +303,23 @@ export class InvoiceValidationService {
   // TC Kimlik No algoritma kontrolü
   private validateTCKN(tcNo: string): boolean {
     if (!/^\d{11}$/.test(tcNo)) return false;
-    
+
     const digits = tcNo.split('').map(Number);
-    
+
     // İlk hane 0 olamaz
     if (digits[0] === 0) return false;
-    
+
     // 10. hane kontrolü
     const sum1 = (digits[0] + digits[2] + digits[4] + digits[6] + digits[8]) * 7;
     const sum2 = digits[1] + digits[3] + digits[5] + digits[7];
     const digit10 = (sum1 - sum2) % 10;
     if (digits[9] !== digit10) return false;
-    
+
     // 11. hane kontrolü
     const sum3 = digits.slice(0, 10).reduce((a, b) => a + b, 0);
     const digit11 = sum3 % 10;
     if (digits[10] !== digit11) return false;
-    
+
     return true;
   }
 
@@ -355,7 +355,7 @@ export class InvoiceValidationService {
     return warnings;
   }
 
-  public validateField(fieldName: string, value: any, formData: InvoiceFormData): string | null {
+  public validateField(fieldName: string, value: unknown, formData: InvoiceFormData): string | null {
     const rule = this.validationRules.find(r => r.field === fieldName);
     if (rule && !rule.validator(value, formData)) {
       return rule.message;
@@ -363,14 +363,14 @@ export class InvoiceValidationService {
     return null;
   }
 
-  public validateItemField(itemIndex: number, fieldName: string, value: any): string | null {
+  public validateItemField(itemIndex: number, fieldName: string, value: unknown): string | null {
     const item = { [fieldName]: value } as Partial<InvoiceItem>;
     const errors = this.validateInvoiceItem(item as InvoiceItem, itemIndex);
     return errors[`items[${itemIndex}].${fieldName}`] || null;
   }
 
-  private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => {
+  private getNestedValue(obj: any, path: string): unknown {
+    return path.split('.').reduce((current: any, key) => {
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
@@ -399,15 +399,15 @@ export class InvoiceValidationService {
 
   // Real-time validation for form fields
   public createFieldValidator(fieldName: string, formData: InvoiceFormData) {
-    return (value: any) => {
+    return (value: unknown) => {
       return this.validateField(fieldName, value, formData);
     };
   }
 
   // Batch validation for multiple fields
-  public validateFields(fields: Record<string, any>, formData: InvoiceFormData): Record<string, string> {
+  public validateFields(fields: Record<string, unknown>, formData: InvoiceFormData): Record<string, string> {
     const errors: Record<string, string> = {};
-    
+
     Object.entries(fields).forEach(([fieldName, value]) => {
       const error = this.validateField(fieldName, value, formData);
       if (error) {

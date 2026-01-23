@@ -8,8 +8,10 @@
 import type { UserReadCreatedAt } from './userReadCreatedAt';
 import type { UserReadUpdatedAt } from './userReadUpdatedAt';
 import type { UserReadTenantId } from './userReadTenantId';
+import type { UserReadUsername } from './userReadUsername';
 import type { UserReadFirstName } from './userReadFirstName';
 import type { UserReadLastName } from './userReadLastName';
+import type { UserReadFullName } from './userReadFullName';
 import type { UserReadPhone } from './userReadPhone';
 import type { UserReadRole } from './userReadRole';
 import type { UserReadIsActive } from './userReadIsActive';
@@ -27,10 +29,13 @@ export interface UserRead {
   id: string;
   tenantId?: UserReadTenantId;
   email: string;
+  username?: UserReadUsername;
   firstName?: UserReadFirstName;
   lastName?: UserReadLastName;
+  fullName?: UserReadFullName;
   phone?: UserReadPhone;
   role?: UserReadRole;
+  isPhoneVerified?: boolean;
   isActive?: UserReadIsActive;
   lastLogin?: UserReadLastLogin;
 }

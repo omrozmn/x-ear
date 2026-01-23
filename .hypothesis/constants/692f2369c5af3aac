@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/base.py
+# hypothesis_version: 6.150.2
+
+['01', '_limit', '_limit_clause', '_offset', '_offset_clause', 'createdAt', 'entity', 'tenant_id', 'updatedAt', 'value']

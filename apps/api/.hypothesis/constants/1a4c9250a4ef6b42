@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/dashboard.py
+# hypothesis_version: 6.150.2
+
+[0.0, 'acquisitionType', 'activePatients', 'activeTrials', 'availableDevices', 'branchId', 'dailyRevenue', 'endingTrials', 'estimatedRevenue', 'monthlyRevenue', 'pendingAppointments', 'recentActivity', 'todayAppointments', 'todaysAppointments', 'totalDevices', 'totalPatients']

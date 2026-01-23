@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSProviderConfigReadApiUsername = string | null;
+export type SmsProviderConfigReadApiUsername = string | null;

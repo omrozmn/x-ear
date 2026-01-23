@@ -3,7 +3,8 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Banknote, Calendar, DollarSign, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react';
-import {listSalePromissoryNotes} from '@/api/client/sales.client';
+import { listSalePromissoryNotes } from '@/api/client/sales.client';
+import type { Sale } from '../../types/party/party-communication.types';
 
 interface PromissoryNote {
   id: string;
@@ -18,9 +19,9 @@ interface PromissoryNote {
 interface PromissoryNotesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  sale: any;
+  sale: Sale;
   onCollectNote?: (noteId: string, amount: number, paymentMethod: string) => Promise<void>;
-  onCreateNote?: (noteData: any) => Promise<void>;
+  onCreateNote?: (noteData: { amount: number, dueDate: string, notes?: string }) => Promise<void>;
 }
 
 export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
@@ -44,29 +45,28 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
     if (isOpen && sale?.id) {
       fetchPromissoryNotes();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sale?.id]);
 
   const fetchPromissoryNotes = async () => {
+    if (!sale?.id) return;
     setIsLoading(true);
     setError(null);
     try {
       const response = await listSalePromissoryNotes(sale.id);
       // API response type is void, so we'll handle the actual data structure
       // Normalize response to always be an array of notes
-      const payload = (response as any) ?? {};
+      const payload = response as unknown as (PromissoryNote[] | { data: PromissoryNote[] } | { success: boolean; result: PromissoryNote[] });
       let notesArray: PromissoryNote[] = [];
 
       if (Array.isArray(payload)) {
-        notesArray = payload as PromissoryNote[];
-      } else if (Array.isArray(payload.data)) {
-        notesArray = payload.data as PromissoryNote[];
-      } else if (payload.success && Array.isArray(payload.result)) {
-        // some backends return { success: true, result: [...] }
-        notesArray = payload.result as PromissoryNote[];
+        notesArray = payload;
+      } else if ('data' in payload && Array.isArray(payload.data)) {
+        notesArray = payload.data;
+      } else if ('result' in payload && Array.isArray(payload.result)) {
+        notesArray = payload.result;
       } else if (sale?.paymentRecords && Array.isArray(sale.paymentRecords)) {
-        // fallback: use sale.paymentRecords if API didn't return promissory notes
-        notesArray = sale.paymentRecords as PromissoryNote[];
+        notesArray = sale.paymentRecords;
       } else {
         notesArray = [];
       }

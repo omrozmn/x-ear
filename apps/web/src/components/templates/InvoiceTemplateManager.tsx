@@ -66,12 +66,12 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
   // Load templates on component mount
   useEffect(() => {
     loadTemplates();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTemplates = useCallback(async () => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
     try {
       const templates = await InvoiceTemplateService.getTemplates();
       setState(prev => ({
@@ -110,7 +110,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (state.sortBy) {
         case 'name':
           comparison = a.name.localeCompare(b.name, 'tr');
@@ -177,7 +177,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
         ...prev,
         templates: [...prev.templates, duplicatedTemplate]
       }));
-      
+
       if (onTemplateCreate) {
         onTemplateCreate(duplicatedTemplate);
       }
@@ -189,7 +189,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
     }
   }, [onTemplateCreate]);
 
-  const handleFormSubmit = useCallback(async (formData: any) => {
+  const handleFormSubmit = useCallback(async (formData: Record<string, any>) => {
     setFormState(prev => ({ ...prev, isSubmitting: true }));
 
     try {
@@ -203,13 +203,13 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           templateData: formData,
           isActive: true
         };
-        
+
         result = await InvoiceTemplateService.createCommunicationTemplates(createData);
         setState(prev => ({
           ...prev,
           templates: [...prev.templates, result]
         }));
-        
+
         if (onTemplateCreate) {
           onTemplateCreate(result);
         }
@@ -220,13 +220,13 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           category: formData.category,
           templateData: formData
         };
-        
+
         result = await InvoiceTemplateService.updateCommunicationTemplate(formState.template.id, updateData);
         setState(prev => ({
           ...prev,
           templates: prev.templates.map(t => t.id === result.id ? result : t)
         }));
-        
+
         if (onTemplateUpdate) {
           onTemplateUpdate(result);
         }
@@ -256,7 +256,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
         ...prev,
         templates: prev.templates.filter(t => t.id !== confirmDialog.templateId)
       }));
-      
+
       if (onTemplateDelete) {
         onTemplateDelete(confirmDialog.templateId);
       }
@@ -352,7 +352,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
               </label>
               <Select
                 value={state.sortBy}
-                onChange={(e) => setState(prev => ({ ...prev, sortBy: e.target.value as any }))}
+                onChange={(e) => setState(prev => ({ ...prev, sortBy: e.target.value as "name" | "createdAt" | "usageCount" }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 options={[
                   { value: "name", label: "İsim" },
@@ -369,7 +369,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
               </label>
               <Select
                 value={state.sortOrder}
-                onChange={(e) => setState(prev => ({ ...prev, sortOrder: e.target.value as any }))}
+                onChange={(e) => setState(prev => ({ ...prev, sortOrder: e.target.value as "asc" | "desc" }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 options={[
                   { value: "asc", label: "Artan" },
@@ -408,7 +408,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           <div className="empty-state text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">📄</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {state.searchQuery || state.selectedCategory !== 'all' 
+              {state.searchQuery || state.selectedCategory !== 'all'
                 ? 'Arama kriterlerine uygun şablon bulunamadı'
                 : 'Henüz şablon oluşturulmamış'
               }
@@ -461,7 +461,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="font-medium text-lg mb-4">Şablonu Sil</h3>
             <p className="text-gray-700 mb-6">
-              "<strong>{confirmDialog.templateName}</strong>" şablonunu silmek istediğinizden emin misiniz? 
+              "<strong>{confirmDialog.templateName}</strong>" şablonunu silmek istediğinizden emin misiniz?
               Bu işlem geri alınamaz.
             </p>
             <div className="flex justify-end gap-3">
@@ -513,7 +513,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
             {getCategoryLabel(template.category)}
           </span>
         </div>
-        
+
         <div className="flex items-center space-x-1">
           <Button
             onClick={onView}
@@ -671,8 +671,8 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
           <div className="template-form-content">
             <h3 className="text-lg font-medium mb-4">Fatura Şablonu</h3>
             <DynamicInvoiceForm
-              initialData={template?.templateData as any}
-              onSubmit={(data: any) => setFormData((prev: any) => ({ ...prev, ...data }))}
+              initialData={template?.templateData as Record<string, any>}
+              onSubmit={(data: Record<string, any>) => setFormData((prev: any) => ({ ...prev, ...data }))}
               disabled={isReadOnly}
             />
           </div>

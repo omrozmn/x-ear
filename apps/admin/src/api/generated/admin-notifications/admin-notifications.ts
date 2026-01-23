@@ -30,9 +30,9 @@ import type {
   ListAdminNotificationsParams,
   NotificationSend,
   ResponseEnvelope,
+  ResponseEnvelopeEmailTemplateRead,
+  ResponseEnvelopeListEmailTemplateRead,
   ResponseEnvelopeListNotificationRead,
-  ResponseEnvelopeListNotificationTemplateRead,
-  ResponseEnvelopeNotificationTemplateRead,
   RoutersAdminNotificationsTemplateCreate
 } from '.././schemas';
 
@@ -273,7 +273,7 @@ export const listAdminNotificationTemplates = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeListNotificationTemplateRead>(
+      return adminApi<ResponseEnvelopeListEmailTemplateRead>(
       {url: `/api/admin/notifications/templates`, method: 'GET',
         params, signal
     },
@@ -367,7 +367,7 @@ export const createAdminNotificationTemplates = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeNotificationTemplateRead>(
+      return adminApi<ResponseEnvelopeEmailTemplateRead>(
       {url: `/api/admin/notifications/templates`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminNotificationsTemplateCreate, signal
@@ -432,7 +432,7 @@ export const updateAdminNotificationTemplate = (
  ) => {
       
       
-      return adminApi<ResponseEnvelopeNotificationTemplateRead>(
+      return adminApi<ResponseEnvelopeEmailTemplateRead>(
       {url: `/api/admin/notifications/templates/${templateId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminNotificationsTemplateCreate

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/documents.py
+# hypothesis_version: 6.150.2
+
+[201, 400, 403, 404, 500, './storage/documents', 'Access denied', 'Document not found', 'Documents', 'Party not found', 'Patient not found', 'User-Agent', 'createdBy', 'document', 'document_upload', 'documents', 'fileName', 'filePath', 'getPatientDocument', 'id', 'listPatientDocuments', 'metadata', 'mimeType', 'originalName', 'partyId', 'party_id', 'patient', 'size', 'status', 'total', 'type', 'uploadedAt', 'wb']

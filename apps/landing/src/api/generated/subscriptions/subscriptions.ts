@@ -28,6 +28,9 @@ import type {
   CompleteSignupRequest,
   HTTPValidationError,
   RegisterAndSubscribeRequest,
+  ResponseEnvelopeCurrentSubscriptionResponse,
+  ResponseEnvelopeSignupResponse,
+  ResponseEnvelopeSubscriptionResponse,
   SubscribeRequest
 } from '.././schemas';
 
@@ -46,7 +49,7 @@ export const createSubscriptionSubscribe = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSubscriptionResponse>(
       {url: `/api/subscriptions/subscribe`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: subscribeRequest, signal
@@ -111,7 +114,7 @@ export const createSubscriptionCompleteSignup = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSignupResponse>(
       {url: `/api/subscriptions/complete-signup`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: completeSignupRequest, signal
@@ -176,7 +179,7 @@ export const listSubscriptionCurrent = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeCurrentSubscriptionResponse>(
       {url: `/api/subscriptions/current`, method: 'GET', signal
     },
       );
@@ -269,7 +272,7 @@ export const createSubscriptionRegisterAndSubscribe = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSignupResponse>(
       {url: `/api/subscriptions/register-and-subscribe`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: registerAndSubscribeRequest, signal

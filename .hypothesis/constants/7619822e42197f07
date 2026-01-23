@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/system_setting.py
+# hypothesis_version: 6.150.2
+
+[100, 255, 'category', 'description', 'isPublic', 'key', 'system_settings', 'value']

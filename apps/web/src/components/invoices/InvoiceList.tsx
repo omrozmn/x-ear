@@ -245,7 +245,7 @@ export function InvoiceList({
       {selectedIds.size > 0 && (
         <div className="p-3">
           <InvoiceBulkOperations
-            selectedInvoices={Array.from(selectedIds).map(id => invoices.find(i => i.id === id)).filter(Boolean) as any}
+            selectedInvoices={Array.from(selectedIds).map(id => invoices.find(i => i.id === id)).filter((i): i is Invoice => i !== undefined)}
             onBulkActionComplete={(action) => { setSelectedIds(new Set()); loadInvoices(); }}
             onSelectionClear={() => setSelectedIds(new Set())}
           />
@@ -348,7 +348,7 @@ export function InvoiceList({
                               <Button onClick={(e) => { e.stopPropagation(); invoiceService.generateInvoicePdf(invoice.id).then(res => { if (res.success && res.data) invoiceService.previewPdfBlob(res.data); }); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Fatura Aç" aria-label="Fatura Aç">
                                 <FileText size={16} />
                               </Button>
-                              <Button onClick={(e) => { e.stopPropagation(); const saleId = (invoice as any).saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
+                              <Button onClick={(e) => { e.stopPropagation(); const saleId = invoice.saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
                                 <Truck size={16} />
                               </Button>
                             </>

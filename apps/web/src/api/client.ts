@@ -9,14 +9,14 @@ export interface ApiResponse<T> {
   success: boolean;
   data: T;
   error?: string;
-  meta?: any;
+  meta?: Record<string, unknown>;
   requestId?: string;
   timestamp?: string;
 }
 
 // Legacy Party type - use generated type instead
 // Legacy Party type - use generated type instead
-import { PartyRead } from '@/api/generated/schemas';
+import { PartyRead, TenantUserUpdate } from '@/api/generated/schemas';
 export type LegacyParty = PartyRead;
 export { type PartyRead as Party } from '@/api/generated/schemas';
 
@@ -27,7 +27,7 @@ export interface PartiesResponse {
   meta?: {
     total?: number;
     count?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   requestId?: string;
   timestamp?: string;
@@ -129,12 +129,12 @@ class ApiClient {
   }
 
   // Tenant User Management
-  async getTenantUsers(): Promise<ApiResponse<{ data: any[] }>> {
-    return this.request<{ data: any[] }>('/api/tenant/users');
+  async getTenantUsers(): Promise<ApiResponse<{ data: Record<string, unknown>[] }>> {
+    return this.request<{ data: Record<string, unknown>[] }>('/api/tenant/users');
   }
 
-  async inviteTenantUser(data: { email: string; firstName: string; lastName: string; role: string }): Promise<ApiResponse<{ data: any; tempPassword?: string }>> {
-    return this.request<{ data: any; tempPassword?: string }>('/api/tenant/users', {
+  async inviteTenantUser(data: { email: string; firstName: string; lastName: string; role: string }): Promise<ApiResponse<{ data: Record<string, unknown>; tempPassword?: string }>> {
+    return this.request<{ data: Record<string, unknown>; tempPassword?: string }>('/api/tenant/users', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -146,8 +146,8 @@ class ApiClient {
     });
   }
 
-  async updateTenantUser(userId: string, data: any): Promise<ApiResponse<{ data: any }>> {
-    return this.request<{ data: any }>(`/api/tenant/users/${userId}`, {
+  async updateTenantUser(userId: string, data: TenantUserUpdate): Promise<ApiResponse<{ data: Record<string, unknown> }>> {
+    return this.request<{ data: Record<string, unknown> }>(`/api/tenant/users/${userId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });

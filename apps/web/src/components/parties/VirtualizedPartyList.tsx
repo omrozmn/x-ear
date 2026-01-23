@@ -3,10 +3,10 @@
  * High-performance party list with virtual scrolling and lazy loading
  */
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { List } from 'react-window';
-import { debounce } from 'lodash';
-import { Search, Filter, X, ChevronDown, ChevronUp, User, Phone, Calendar, MapPin, Trash2, Mail, Eye, MessageSquare, Edit } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+// import { List } from 'react-window'; // Not used - using manual map instead
+// import { debounce } from 'lodash'; // Not used
+import { Search, Filter, ChevronDown, ChevronUp, User, Phone, Trash2, Mail, Eye, MessageSquare, Edit } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
 import { Button, Badge, Checkbox, Loading, Input } from '@x-ear/ui-web';
 import { PartyCommunicationIntegration } from './PartyCommunicationIntegration';
@@ -220,8 +220,8 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
   onPartyClick,
   onEdit,
   onDelete,
-  onLoadMore,
-  hasMore = false,
+  // onLoadMore, // Currently unused
+  // hasMore = false, // Currently unused
   searchTerm = '',
   onSearchChange,
   filters,
@@ -231,16 +231,16 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
   const [communicationParty, setCommunicationParty] = useState<Party | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Memoized data for list
-  const listData = useMemo(() => ({
-    parties,
-    selectedParties,
-    onPartySelect,
-    onPartyClick,
-    onEdit,
-    onDelete,
-    onCommunicationClick: setCommunicationParty
-  }), [parties, selectedParties, onPartySelect, onPartyClick, onEdit, onDelete]);
+  // Memoized data for list - currently using inline data object in map
+  // const listData = useMemo(() => ({
+  //   parties,
+  //   selectedParties,
+  //   onPartySelect,
+  //   onPartyClick,
+  //   onEdit,
+  //   onDelete,
+  //   onCommunicationClick: setCommunicationParty
+  // }), [parties, selectedParties, onPartySelect, onPartyClick, onEdit, onDelete]);
 
   // Select all functionality
   const isAllSelected = useMemo(() => {

@@ -113,6 +113,11 @@ class FastAPIPermissionMiddleware:
             await self.app(scope, receive, send)
             return
 
+        # Skip AI endpoints - they have their own JWT auth middleware
+        if path.startswith("/api/ai/"):
+            await self.app(scope, receive, send)
+            return
+
         required_permission = get_permission_for_endpoint(method, path)
         if required_permission == "public":
             await self.app(scope, receive, send)

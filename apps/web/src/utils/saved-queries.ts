@@ -8,7 +8,7 @@ export interface SavedQuery {
   name: string;
   description?: string;
   query: string;
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;
@@ -46,6 +46,7 @@ export class SavedQueriesManager {
       if (!stored) return [];
 
       const queries = JSON.parse(stored);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return queries.map((query: any) => ({
         ...query,
         createdAt: new Date(query.createdAt),
@@ -76,7 +77,7 @@ export class SavedQueriesManager {
   createQuery(
     name: string,
     query: string,
-    filters: Record<string, any>,
+    filters: Record<string, unknown>,
     options: {
       description?: string;
       isDefault?: boolean;
@@ -84,7 +85,7 @@ export class SavedQueriesManager {
     } = {}
   ): SavedQuery {
     const queries = this.loadQueries();
-    
+
     // Check if name already exists
     if (queries.some(q => q.name === name)) {
       throw new Error('Bu isimde bir sorgu zaten mevcut');
@@ -111,7 +112,7 @@ export class SavedQueriesManager {
 
     queries.push(newQuery);
     this.saveQueries(queries);
-    
+
     return newQuery;
   }
 
@@ -121,7 +122,7 @@ export class SavedQueriesManager {
   updateQuery(id: string, updates: Partial<Omit<SavedQuery, 'id' | 'createdAt' | 'usageCount'>>): SavedQuery {
     const queries = this.loadQueries();
     const index = queries.findIndex(q => q.id === id);
-    
+
     if (index === -1) {
       throw new Error('Sorgu bulunamadı');
     }
@@ -134,7 +135,7 @@ export class SavedQueriesManager {
 
     queries[index] = updatedQuery;
     this.saveQueries(queries);
-    
+
     return updatedQuery;
   }
 
@@ -144,7 +145,7 @@ export class SavedQueriesManager {
   deleteQuery(id: string): void {
     const queries = this.loadQueries();
     const filteredQueries = queries.filter(q => q.id !== id);
-    
+
     if (filteredQueries.length === queries.length) {
       throw new Error('Sorgu bulunamadı');
     }
@@ -166,14 +167,14 @@ export class SavedQueriesManager {
   useQuery(id: string): SavedQuery {
     const queries = this.loadQueries();
     const index = queries.findIndex(q => q.id === id);
-    
+
     if (index === -1) {
       throw new Error('Sorgu bulunamadı');
     }
 
     queries[index].usageCount++;
     queries[index].lastUsed = new Date();
-    
+
     this.saveQueries(queries);
     return queries[index];
   }
@@ -213,8 +214,8 @@ export class SavedQueriesManager {
   searchQueries(searchTerm: string): SavedQuery[] {
     const queries = this.loadQueries();
     const term = searchTerm.toLowerCase();
-    
-    return queries.filter(q => 
+
+    return queries.filter(q =>
       q.name.toLowerCase().includes(term) ||
       (q.description && q.description.toLowerCase().includes(term)) ||
       (q.tags && q.tags.some(tag => tag.toLowerCase().includes(term)))
@@ -235,7 +236,7 @@ export class SavedQueriesManager {
   importQueries(jsonData: string, options: { merge?: boolean } = {}): void {
     try {
       const importedQueries: SavedQuery[] = JSON.parse(jsonData);
-      
+
       if (!Array.isArray(importedQueries)) {
         throw new Error('Geçersiz format');
       }
@@ -296,9 +297,9 @@ export const savedQueriesManager = new SavedQueriesManager();
 // Utility functions for common operations
 export const savedQueries = {
   load: () => savedQueriesManager.loadQueries(),
-  create: (name: string, query: string, filters: Record<string, any>, options?: any) => 
+  create: (name: string, query: string, filters: Record<string, unknown>, options: { description?: string, isDefault?: boolean, tags?: string[] } = {}) =>
     savedQueriesManager.createQuery(name, query, filters, options),
-  update: (id: string, updates: any) => savedQueriesManager.updateQuery(id, updates),
+  update: (id: string, updates: Partial<Omit<SavedQuery, 'id' | 'createdAt' | 'usageCount'>>) => savedQueriesManager.updateQuery(id, updates),
   delete: (id: string) => savedQueriesManager.deleteQuery(id),
   use: (id: string) => savedQueriesManager.useQuery(id),
   getPopular: (limit?: number) => savedQueriesManager.getPopularQueries(limit),

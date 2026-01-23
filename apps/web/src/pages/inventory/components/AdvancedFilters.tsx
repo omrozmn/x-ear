@@ -79,9 +79,9 @@ interface AdvancedFiltersProps {
 const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   filters,
   onFiltersChange,
-  onClearFilters,
+  // onClearFilters, // Prop passed but using local clearFilters instead
   categories,
-  brands,
+  // brands, // Prop passed but using BrandAutocomplete which fetches its own
   suppliers,
   isExpanded = false,
   onToggleExpanded
@@ -129,26 +129,21 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     });
   };
 
-  const handleWarrantyPeriodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    onFiltersChange({
-      ...filters,
-      warrantyPeriod: value
-    });
-  };
+  // Handler for warranty period change via select - available but using inline change
+  // const handleWarrantyPeriodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   const value = event.target.value;
+  //   onFiltersChange({ ...filters, warrantyPeriod: value });
+  // };
 
-  const handleFeatureChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    const currentFeatures = filters.features || [];
-    const updatedFeatures = currentFeatures.includes(value)
-      ? currentFeatures.filter(f => f !== value)
-      : [...currentFeatures, value];
-
-    onFiltersChange({
-      ...filters,
-      features: updatedFeatures
-    });
-  };
+  // Handler for feature change via select - available but using handleFeatureToggle
+  // const handleFeatureChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   const value = event.target.value;
+  //   const currentFeatures = filters.features || [];
+  //   const updatedFeatures = currentFeatures.includes(value)
+  //     ? currentFeatures.filter(f => f !== value)
+  //     : [...currentFeatures, value];
+  //   onFiltersChange({ ...filters, features: updatedFeatures });
+  // };
 
   const applyDatePreset = (preset: string) => {
     const now = new Date();
@@ -192,11 +187,11 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   const activeFilterCount = Object.keys(filters).filter(key => {
     const value = filters[key as keyof IInventoryFilters];
     if (key === 'priceRange') {
-      const range = value as any;
+      const range = value as IInventoryFilters['priceRange'];
       return range?.min !== undefined || range?.max !== undefined;
     }
     if (key === 'dateRange') {
-      const range = value as any;
+      const range = value as IInventoryFilters['dateRange'];
       return range?.start || range?.end;
     }
     if (key === 'features') {
@@ -370,7 +365,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               <CategoryAutocomplete
                 categories={categories}
                 value={filters.category || ''}
-                onChange={(v) => onFiltersChange({ ...filters, category: (v || undefined) as any })}
+                onChange={(v) => onFiltersChange({ ...filters, category: (v || undefined) as IInventoryFilters['category'] })}
               />
             </div>
 

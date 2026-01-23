@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Building2, Pencil, AlertCircle, AlertTriangle, MapPin, Phone, Mail } from 'lucide-react';
 import { branchService, Branch } from '../../services/branch.service';
+import { Button, Input, Textarea } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 
 interface ConfirmationModal {
@@ -75,8 +76,8 @@ export function BranchesTab() {
         } catch (err: any) {
             // Handle error object - extract message string
             const errorData = err.response?.data?.error;
-            const msg = typeof errorData === 'object' && errorData?.message 
-                ? errorData.message 
+            const msg = typeof errorData === 'object' && errorData?.message
+                ? errorData.message
                 : (typeof errorData === 'string' ? errorData : 'İşlem gerçekleştirilemedi.');
             setFormError(msg);
             toast.error(msg);
@@ -98,8 +99,8 @@ export function BranchesTab() {
                     fetchBranches();
                 } catch (err: any) {
                     const errorData = err.response?.data?.error;
-                    const msg = typeof errorData === 'object' && errorData?.message 
-                        ? errorData.message 
+                    const msg = typeof errorData === 'object' && errorData?.message
+                        ? errorData.message
                         : 'Şube silinemedi';
                     toast.error(msg);
                 }
@@ -142,13 +143,12 @@ export function BranchesTab() {
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Subeler</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Organizasyonunuza ait subeleri yonetin</p>
                 </div>
-                <button
+                <Button
                     onClick={openCreateModal}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    icon={<Plus className="w-5 h-5" />}
                 >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Yeni Sube Ekle
-                </button>
+                    Yeni Şube Ekle
+                </Button>
             </div>
 
             {error && (
@@ -216,20 +216,24 @@ export function BranchesTab() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
                                             onClick={() => openEditModal(branch)}
-                                            className="text-blue-600 hover:text-blue-800 transition-colors p-1 mr-2"
-                                            title="Duzenle"
+                                            className="text-blue-600 mr-2"
+                                            title="Düzenle"
                                         >
                                             <Pencil className="w-5 h-5" />
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
                                             onClick={() => handleDelete(branch.id)}
-                                            className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                                            className="text-gray-400 hover:text-red-600"
                                             title="Sil"
                                         >
                                             <Trash2 className="w-5 h-5" />
-                                        </button>
+                                        </Button>
                                     </td>
                                 </tr>
                             ))
@@ -248,60 +252,48 @@ export function BranchesTab() {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube Adi *</label>
-                                <div className="relative">
-                                    <Building2 className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                        placeholder="Orn: Merkez Sube"
-                                    />
-                                </div>
+                                <Input
+                                    label="Şube Adı *"
+                                    type="text"
+                                    required
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    leftIcon={<Building2 className="w-5 h-5 text-gray-400" />}
+                                    placeholder="Örn: Merkez Şube"
+                                    fullWidth
+                                />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adres</label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                    <textarea
-                                        value={formData.address}
-                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 max-h-24 min-h-[80px]"
-                                        placeholder="Sube adresi"
-                                    />
-                                </div>
+                                <Textarea
+                                    label="Adres"
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    placeholder="Şube adresi"
+                                    className="min-h-[80px]"
+                                    fullWidth
+                                />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefon</label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            value={formData.phone}
-                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                            placeholder="0212..."
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-posta</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-                                        <input
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                            placeholder="sube@..."
-                                        />
-                                    </div>
-                                </div>
+                                <Input
+                                    label="Telefon"
+                                    type="text"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    leftIcon={<Phone className="w-5 h-5 text-gray-400" />}
+                                    placeholder="0212..."
+                                    fullWidth
+                                />
+                                <Input
+                                    label="E-posta"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    leftIcon={<Mail className="w-5 h-5 text-gray-400" />}
+                                    placeholder="sube@..."
+                                    fullWidth
+                                />
                             </div>
 
                             {formError && (
@@ -312,20 +304,21 @@ export function BranchesTab() {
                             )}
 
                             <div className="flex space-x-3 pt-2">
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    className="flex-1"
                                 >
-                                    Iptal
-                                </button>
-                                <button
+                                    İptal
+                                </Button>
+                                <Button
                                     type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                                    loading={isSubmitting}
+                                    className="flex-1"
                                 >
-                                    {isSubmitting ? 'Kaydediliyor...' : (editingBranch ? 'Guncelle' : 'Olustur')}
-                                </button>
+                                    {editingBranch ? 'Güncelle' : 'Oluştur'}
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -337,7 +330,7 @@ export function BranchesTab() {
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all">
                         <div className={`flex items-center mb-4 ${confirmationModal.type === 'danger' ? 'text-red-600' :
-                                confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-blue-600'
+                            confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-blue-600'
                             }`}>
                             <AlertTriangle className="w-6 h-6 mr-2" />
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -350,21 +343,18 @@ export function BranchesTab() {
                         </p>
 
                         <div className="flex justify-end space-x-3">
-                            <button
+                            <Button
+                                variant="outline"
                                 onClick={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
-                                Iptal
-                            </button>
-                            <button
+                                İptal
+                            </Button>
+                            <Button
+                                variant={confirmationModal.type === 'danger' ? 'danger' : 'primary'}
                                 onClick={confirmationModal.onConfirm}
-                                className={`px-4 py-2 text-white rounded-lg transition-colors ${confirmationModal.type === 'danger' ? 'bg-red-600 hover:bg-red-700' :
-                                        confirmationModal.type === 'warning' ? 'bg-amber-500 hover:bg-amber-600' :
-                                            'bg-blue-600 hover:bg-blue-700'
-                                    }`}
                             >
                                 Onayla
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

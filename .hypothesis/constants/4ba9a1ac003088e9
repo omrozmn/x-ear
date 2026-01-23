@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/tenants.py
+# hypothesis_version: 6.150.2
+
+[0.0, 'Address', 'Billing email', 'City', 'Company Info', 'Contact email', 'Contact phone', 'Current Plan Slug', 'Current users', 'Description', 'Max users', 'Owner email', 'Product Code', 'Settings', 'Subscription plan ID', 'Tax number', 'Tax office', 'Tenant name', 'Tenant settings', 'Tenant status', 'active', 'activeSubscriptions', 'billingEmail', 'billingInterval', 'branchCount', 'companyInfo', 'currentUsers', 'daysRemaining', 'inactive', 'isActive', 'isExpired', 'isPublic', 'is_super_admin', 'maxStorageGb', 'maxUsers', 'monthlyPrice', 'ownerEmail', 'patientCount', 'planId', 'planName', 'planType', 'siteKey', 'storageMode', 'subscriptionEnd', 'suspended', 'taxNumber', 'taxOffice', 'totalPatients', 'totalRevenue', 'totalSales', 'totalUsers', 'trial', 'userCount', 'yearlyPrice']

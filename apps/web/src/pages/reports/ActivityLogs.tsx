@@ -12,7 +12,8 @@ import {
     useListActivityLogs,
     useListActivityLogStats
 } from '@/api/client/activity-logs.client';
-import type { SchemasActivityLogsActivityLogRead as ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
+import type { ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
+import { Button, Input, Select } from '@x-ear/ui-web';
 
 // Extended interface to cover properties present in API response but missing from current schema
 interface ExtendedActivityLogRead extends ActivityLogRead {
@@ -21,7 +22,7 @@ interface ExtendedActivityLogRead extends ActivityLogRead {
     branchId?: string;
     role?: string;
     partyName?: string;
-    data?: any;
+    data?: Record<string, unknown>;
     userAgent?: string;
 }
 
@@ -36,9 +37,14 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
             <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
                 <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
                     <h2 className="text-lg font-semibold dark:text-white">Aktivite Log Detayı</h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded dark:text-gray-400">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onClose}
+                        className="p-1"
+                    >
                         <X className="w-5 h-5" />
-                    </button>
+                    </Button>
                 </div>
                 <div className="p-4 overflow-y-auto">
                     <div className="space-y-4">
@@ -114,12 +120,13 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                     </div>
                 </div>
                 <div className="p-4 border-t dark:border-gray-700">
-                    <button
+                    <Button
+                        variant="default"
                         onClick={onClose}
-                        className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-lg font-medium"
+                        fullWidth
                     >
                         Kapat
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -152,14 +159,18 @@ export default function ActivityLogsPage() {
         per_page: perPage // Keep per_page for backward compat if backend expects it
     };
 
-    const { data: logsResponse, isLoading } = useListActivityLogs(queryParams as any);
+    const { data: logsResponse, isLoading } = useListActivityLogs(queryParams as ListActivityLogsParams);
 
     // Filter options are not available in the new API, use empty defaults
-    const filterResponse = { data: { branches: [], users: [], actions: [] } };
+    const filterOptions: { branches: { id: string, name: string }[], users: { id: string, name: string }[], actions: string[] } = {
+        branches: [],
+        users: [],
+        actions: []
+    };
 
     const logs: ExtendedActivityLogRead[] = (logsResponse?.data as unknown as ExtendedActivityLogRead[]) || [];
     const pagination = logsResponse?.meta;
-    const options = (filterResponse as any)?.data;
+    const options = filterOptions;
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
@@ -176,73 +187,59 @@ export default function ActivityLogsPage() {
             {/* Filters */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
-                    <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Şube</label>
-                        <select
-                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={filters.branch_id}
-                            onChange={(e) => setFilters({ ...filters, branch_id: e.target.value })}
-                        >
-                            <option value="">Tüm Şubeler</option>
-                            {options?.branches?.map((b: any) => (
-                                <option key={b.id} value={b.id}>{b.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kullanıcı</label>
-                        <select
-                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={filters.user_id}
-                            onChange={(e) => setFilters({ ...filters, user_id: e.target.value })}
-                        >
-                            <option value="">Tüm Kullanıcılar</option>
-                            {options?.users?.map((u: any) => (
-                                <option key={u.id} value={u.id}>{u.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Aksiyon</label>
-                        <select
-                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={filters.action}
-                            onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-                        >
-                            <option value="">Tüm Aksiyonlar</option>
-                            {options?.actions?.map((action: string) => (
-                                <option key={action} value={action}>{action}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kritik</label>
-                        <select
-                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={filters.is_critical === undefined ? '' : filters.is_critical ? 'true' : 'false'}
-                            onChange={(e) => setFilters({
-                                ...filters,
-                                is_critical: e.target.value === '' ? undefined : e.target.value === 'true'
-                            })}
-                        >
-                            <option value="">Tümü</option>
-                            <option value="true">Sadece Kritik</option>
-                            <option value="false">Sadece Normal</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Arama</label>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-                                placeholder="Mesaj veya aksiyon ara..."
-                                value={filters.search}
-                                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                            />
-                        </div>
-                    </div>
+                    <Select
+                        label="Şube"
+                        value={filters.branch_id}
+                        onChange={(e) => setFilters({ ...filters, branch_id: e.target.value })}
+                        options={[
+                            { value: '', label: 'Tüm Şubeler' },
+                            ...options.branches.map(b => ({ value: b.id, label: b.name }))
+                        ]}
+                        fullWidth
+                    />
+                    <Select
+                        label="Kullanıcı"
+                        value={filters.user_id}
+                        onChange={(e) => setFilters({ ...filters, user_id: e.target.value })}
+                        options={[
+                            { value: '', label: 'Tüm Kullanıcılar' },
+                            ...options.users.map(u => ({ value: u.id, label: u.name }))
+                        ]}
+                        fullWidth
+                    />
+                    <Select
+                        label="Aksiyon"
+                        value={filters.action}
+                        onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+                        options={[
+                            { value: '', label: 'Tüm Aksiyonlar' },
+                            ...(options?.actions?.map((action: string) => ({ value: action, label: action })) || [])
+                        ]}
+                        fullWidth
+                    />
+                    <Select
+                        label="Kritik"
+                        value={filters.is_critical === undefined ? '' : filters.is_critical ? 'true' : 'false'}
+                        onChange={(e) => setFilters({
+                            ...filters,
+                            is_critical: e.target.value === '' ? undefined : e.target.value === 'true'
+                        })}
+                        options={[
+                            { value: '', label: 'Tümü' },
+                            { value: 'true', label: 'Sadece Kritik' },
+                            { value: 'false', label: 'Sadece Normal' }
+                        ]}
+                        fullWidth
+                    />
+                    <Input
+                        label="Arama"
+                        type="text"
+                        placeholder="Mesaj veya aksiyon ara..."
+                        value={filters.search}
+                        onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                        leftIcon={<Search className="w-4 h-4 text-gray-400" />}
+                        fullWidth
+                    />
                 </div>
             </div>
 
@@ -303,13 +300,15 @@ export default function ActivityLogsPage() {
                                                 {log.ipAddress}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <button
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
                                                     onClick={() => setSelectedLog(log)}
-                                                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                    className="p-1.5"
                                                     title="Detay"
                                                 >
                                                     <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                                </button>
+                                                </Button>
                                             </td>
                                         </tr>
                                     ))}
@@ -332,33 +331,36 @@ export default function ActivityLogsPage() {
                                     Toplam {pagination.total} kayıt, Sayfa {page}/{pagination.totalPages ?? 1}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => setPage(p => Math.max(1, p - 1))}
                                         disabled={page === 1}
-                                        className="px-3 py-1.5 border rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800 dark:text-gray-200"
                                     >
                                         Önceki
-                                    </button>
-                                    <select
-                                        value={perPage}
+                                    </Button>
+                                    <Select
+                                        value={String(perPage)}
                                         onChange={(e) => {
                                             setPerPage(Number(e.target.value));
                                             setPage(1);
                                         }}
-                                        className="border rounded-lg px-2 py-1.5 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    >
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                        <option value={100}>100</option>
-                                    </select>
-                                    <button
+                                        options={[
+                                            { value: '10', label: '10' },
+                                            { value: '20', label: '20' },
+                                            { value: '50', label: '50' },
+                                            { value: '100', label: '100' }
+                                        ]}
+                                        className="w-20"
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => setPage(p => Math.min(pagination.totalPages ?? 1, p + 1))}
                                         disabled={page >= (pagination.totalPages ?? 1)}
-                                        className="px-3 py-1.5 border rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800 dark:text-gray-200"
                                     >
                                         Sonraki
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         )}

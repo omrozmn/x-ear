@@ -180,6 +180,8 @@ class LocalModelClient:
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         stop_sequences: Optional[List[str]] = None,
+        timeout_override: Optional[float] = None,
+        num_predict: Optional[int] = None,
     ) -> ModelResponse:
         """
         Generate a completion from the model.
@@ -190,6 +192,8 @@ class LocalModelClient:
             max_tokens: Maximum tokens to generate
             temperature: Sampling temperature
             stop_sequences: Sequences to stop generation
+            timeout_override: Override default timeout (seconds)
+            num_predict: Hard limit on tokens (overrides max_tokens)
             
         Returns:
             ModelResponse with the generated content
@@ -210,12 +214,15 @@ class LocalModelClient:
             )
         
         # Build request payload
+        # Use num_predict if provided (hard limit), otherwise use max_tokens
+        token_limit = num_predict if num_predict is not None else (max_tokens or self.config.max_tokens)
+        
         payload = {
             "model": self.config.model_name,
             "prompt": prompt,
             "stream": False,
             "options": {
-                "num_predict": max_tokens or self.config.max_tokens,
+                "num_predict": token_limit,
                 "temperature": temperature or self.config.temperature,
                 "top_p": self.config.top_p,
             },
@@ -228,8 +235,11 @@ class LocalModelClient:
             payload["options"]["stop"] = stop_sequences
         
         try:
+            # Use timeout_override if provided, otherwise use config timeout
+            timeout_seconds = timeout_override if timeout_override is not None else self.config.timeout_seconds
+            
             async with httpx.AsyncClient(
-                timeout=httpx.Timeout(self.config.timeout_seconds)
+                timeout=httpx.Timeout(timeout_seconds)
             ) as client:
                 response = await client.post(
                     f"{self.config.base_url}/api/generate",
@@ -264,8 +274,9 @@ class LocalModelClient:
                 
         except httpx.TimeoutException:
             self._consecutive_failures += 1
-            logger.error(f"Model request timed out after {self.config.timeout_seconds}s")
-            raise ModelTimeoutError(self.config.timeout_seconds)
+            timeout_used = timeout_override if timeout_override is not None else self.config.timeout_seconds
+            logger.error(f"Model request timed out after {timeout_used}s")
+            raise ModelTimeoutError(timeout_used)
             
         except httpx.ConnectError as e:
             self._consecutive_failures += 1
@@ -398,6 +409,8 @@ class SyncModelClient:
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
         stop_sequences: Optional[List[str]] = None,
+        timeout_override: Optional[float] = None,
+        num_predict: Optional[int] = None,
     ) -> ModelResponse:
         """Generate completion synchronously."""
         return asyncio.run(
@@ -407,6 +420,8 @@ class SyncModelClient:
                 max_tokens=max_tokens,
                 temperature=temperature,
                 stop_sequences=stop_sequences,
+                timeout_override=timeout_override,
+                num_predict=num_predict,
             )
         )
     
@@ -426,13 +441,42 @@ class SyncModelClient:
         )
 
 
-# Global client instance
-_client: Optional[LocalModelClient] = None
+# Global client instances
+_smart_client: Optional[LocalModelClient] = None
+_fast_client: Optional[LocalModelClient] = None
 
 
 def get_model_client() -> LocalModelClient:
-    """Get the global model client instance."""
-    global _client
-    if _client is None:
-        _client = LocalModelClient()
-    return _client
+    """Get the global SMART model client instance (default)."""
+    global _smart_client
+    if _smart_client is None:
+        from ai.config import get_ai_config
+        config = get_ai_config().model
+        # Map config to ModelConfig
+        model_config = ModelConfig(
+            model_name=config.model_id,
+            base_url=config.base_url,
+            timeout_seconds=float(config.timeout_seconds),
+            max_tokens=config.max_tokens,
+            temperature=config.temperature,
+        )
+        _smart_client = LocalModelClient(model_config)
+    return _smart_client
+
+
+def get_fast_model_client() -> LocalModelClient:
+    """Get the global FAST model client instance."""
+    global _fast_client
+    if _fast_client is None:
+        from ai.config import get_ai_config
+        config = get_ai_config().fast_model
+        # Map config to ModelConfig
+        model_config = ModelConfig(
+            model_name=config.model_id,
+            base_url=config.base_url,
+            timeout_seconds=float(config.timeout_seconds),
+            max_tokens=config.max_tokens,
+            temperature=config.temperature,
+        )
+        _fast_client = LocalModelClient(model_config)
+    return _fast_client

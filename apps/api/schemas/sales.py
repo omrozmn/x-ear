@@ -295,8 +295,8 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     final_amount: Optional[float] = Field(None, alias="finalAmount")
     paid_amount: Optional[float] = Field(0.0, alias="paidAmount")
     
-    # Golden Path: Alias patient_payment (DB) to partyPayment (API)
-    patient_payment: Optional[float] = Field(None, alias="partyPayment")
+    # Golden Path: Alias patient_payment (DB) to patientPayment (API)
+    patient_payment: Optional[float] = Field(None, alias="patientPayment")
     
     # Golden Path: Computed field for Frontend convenience
     remaining_amount: Optional[float] = Field(0.0, alias="remainingAmount")

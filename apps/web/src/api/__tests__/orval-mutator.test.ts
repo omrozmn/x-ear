@@ -1,5 +1,5 @@
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { hybridCamelize, generateIdempotencyKey } from '../orval-mutator';
 
 describe('Canonical Case Conversion', () => {
@@ -22,7 +22,7 @@ describe('Canonical Case Conversion', () => {
             }
         };
 
-        const result = hybridCamelize(input);
+        const result = hybridCamelize(input) as Record<string, unknown>;
         expect(result).toEqual(expected);
         // Ensure NO snake_case keys remain
         expect(result).not.toHaveProperty('first_name');

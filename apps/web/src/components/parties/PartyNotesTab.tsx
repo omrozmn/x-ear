@@ -11,6 +11,7 @@ import {
 import type {
   PatientNoteCreate as PartyNoteCreate,
   PatientNoteUpdate as PartyNoteUpdate,
+  TimelineEventCreate,
 } from '@/api/generated/schemas';
 import type { Party, PartyNote } from '../../types/party/index';
 import { getCurrentUserId, getCurrentUserName } from '@/utils/auth-utils';
@@ -36,14 +37,26 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpda
 
     try {
       setIsLoading(true);
-      // Use listPartyNotes API for consistent CRUD operations
-      const response = await listPartyNotes(party.id) as any;
+      // Use listPartyNotes API with correct typing
+      // Note: We need to import unwrapArray if we want to use it, or just assert the Response wrapper
+      // Assuming listPartyNotes returns the wrapper directly or Promise thereof.
+      // Based on other files, utilize unwrapResult pattern or casting to expected shape if generic is unknown
+      const response = await listPartyNotes(party.id);
 
-      // API returns { data: [...] } structure
-      const notesData = response?.data || [];
-      if (Array.isArray(notesData)) {
+      // The generated client usually returns { data: ... } or the data directly depending on config.
+      // Let's assume it returns a wrapper and we access .data
+      // We'll trust the generated types or cast to unknown first to avoid 'as any' if needed, 
+      // but safely checking Array.isArray on response.data is good.
+
+      // If response is the data itself (array) or wrapper.
+      // Let's look at import: listPartyNotes. 
+      // If we use 'as any', we are bypassing. 
+      // Let's safe-cast to unknown record for now to read .data if types are missing
+      const responseData = (response as unknown as { data: any[] })?.data || [];
+
+      if (Array.isArray(responseData)) {
         // Map API response to PartyNote interface
-        const notesList = notesData.map((note: any) => ({
+        const notesList = responseData.map((note) => ({
           id: note.id || '',
           text: note.content || '',
           date: note.createdAt || new Date().toISOString(),
@@ -95,7 +108,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpda
       await createPartyNotes(party.id || '', noteBody);
 
       // Also add to timeline
-      const timelineBody: any = { // TimelineEventCreate
+      const timelineBody: TimelineEventCreate = {
         type: 'note',
         title: 'Yeni Not Eklendi',
         description: newNoteContent,

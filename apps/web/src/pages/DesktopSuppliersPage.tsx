@@ -5,8 +5,8 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Button, Input, Modal, Pagination, Tabs, TabsList, TabsTrigger, TabsContent, Badge } from '@x-ear/ui-web';
-import { useNavigate, Outlet, useParams } from '@tanstack/react-router';
+import { Button, Input, Modal, Tabs, TabsList, TabsTrigger, TabsContent, Badge } from '@x-ear/ui-web';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier } from '../hooks/useSuppliers';
 import { useSuggestedSuppliers } from '../hooks/useSupplierInvoices';
 import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Trash2 } from 'lucide-react';
@@ -22,7 +22,7 @@ export function DesktopSuppliersPage() {
 
 
   const navigate = useNavigate();
-  const { supplierId } = useParams({ strict: false }) as { supplierId?: string };
+  const { supplierId: _supplierId } = useParams({ strict: false }) as { supplierId?: string };
 
   // State
   const [searchValue, setSearchValue] = useState('');
@@ -56,8 +56,8 @@ export function DesktopSuppliersPage() {
     const paginatedData = unwrapPaginated<SupplierExtended>(data);
     if (!paginatedData || !paginatedData.meta) return undefined;
     return {
-      total: paginatedData.meta.total,
-      totalPages: paginatedData.meta.totalPages
+      total: Number(paginatedData.meta.total),
+      totalPages: Number(paginatedData.meta.totalPages)
     };
   }, [data]);
 
@@ -69,7 +69,7 @@ export function DesktopSuppliersPage() {
   const stats = React.useMemo(() => {
     const supplierArray = suppliers || [];
     return {
-      total: pagination?.total || supplierArray.length,
+      total: Number(pagination?.total || supplierArray.length),
       active: supplierArray.filter(s => s?.isActive).length,
       inactive: supplierArray.filter(s => !s?.isActive).length,
     };
@@ -372,7 +372,7 @@ export function DesktopSuppliersPage() {
                     pagination={pagination ? {
                       current: currentPage,
                       pageSize: itemsPerPage,
-                      total: pagination.total,
+                      total: Number(pagination.total),
                       onChange: (page, size) => {
                         setCurrentPage(page);
                         setItemsPerPage(size);

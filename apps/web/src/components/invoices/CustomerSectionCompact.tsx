@@ -55,7 +55,7 @@ export function CustomerSectionCompact({
       onChange('customerTaxNumber', SGK_CUSTOMER.taxNumber);
       onChange('customerAddress', SGK_CUSTOMER.address);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   // TC ile hasta arama
@@ -69,15 +69,15 @@ export function CustomerSectionCompact({
     console.log('TC ile arama yapılıyor:', tcNumber);
     setIsSearching(true);
     setShowResults(true);
-    
+
     try {
       const result = await partyService.getParties({
         search: tcNumber,
         limit: 10
       });
-      
+
       console.log('Arama sonucu:', result);
-      
+
       if (result.parties && result.parties.length > 0) {
         setSearchResults(result.parties);
         console.log('Bulunan hasta sayısı:', result.parties.length);
@@ -104,15 +104,15 @@ export function CustomerSectionCompact({
     console.log('Ad ile arama yapılıyor:', name);
     setIsSearching(true);
     setShowResults(true);
-    
+
     try {
       const result = await partyService.getParties({
         search: name,
         limit: 10
       });
-      
+
       console.log('Arama sonucu:', result);
-      
+
       if (result.parties && result.parties.length > 0) {
         setSearchResults(result.parties);
         console.log('Bulunan hasta sayısı:', result.parties.length);
@@ -133,13 +133,13 @@ export function CustomerSectionCompact({
     setSelectedParty(party);
     setShowResults(false);
     setShowSuccessMessage(true);
-    
+
     onChange('customerId', party.id);
     onChange('customerFirstName', party.firstName);
     onChange('customerLastName', party.lastName);
     onChange('customerTcNumber', party.tcNumber || '');
     onChange('customerTaxNumber', '');
-    
+
     // Adres bilgilerini çek - Party tipindeki alan isimleri farklı olabilir
     // Öncelikle addressFull (generated types) kontrol et, sonra snake_case, sonra parçalı alanlardan oluştur
     let addressText = '';
@@ -152,8 +152,13 @@ export function CustomerSectionCompact({
     districtValue = (party.addressDistrict as string) || (party.address_district as string) || '';
 
     // Fallbacks: some records may have nested address object or separate street field
-    if (!addressText && (party as any).address) {
-      const a = (party as any).address;
+    interface LegacyPartyWithAddress extends Omit<Party, 'address'> {
+      address?: string | { full?: string; street?: string; streetName?: string } | null;
+    }
+    const legacyParty = party as unknown as LegacyPartyWithAddress;
+
+    if (!addressText && legacyParty.address) {
+      const a = legacyParty.address;
       if (typeof a === 'string') addressText = a;
       else if (a && typeof a === 'object') addressText = a.full || a.street || a.streetName || '';
     }
@@ -169,7 +174,7 @@ export function CustomerSectionCompact({
     onChange('customerAddress', addressText);
     onChange('customerCity', cityValue);
     onChange('customerDistrict', districtValue);
-    
+
     // İl seçildiğinde ilçeleri yükle
     if (cityValue) {
       const cityData = citiesData.cities.find(c => c.name === cityValue);
@@ -188,7 +193,7 @@ export function CustomerSectionCompact({
   const handleCityChange = useCallback((city: string) => {
     onChange('customerCity', city);
     onChange('customerDistrict', ''); // İlçeyi sıfırla
-    
+
     const cityData = citiesData.cities.find(c => c.name === city);
     if (cityData) {
       setDistricts(cityData.districts);
@@ -326,7 +331,7 @@ export function CustomerSectionCompact({
                 </div>
               )}
             </div>
-            
+
             {/* TC Arama Sonuçları */}
             {showResults && searchResults.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -393,7 +398,7 @@ export function CustomerSectionCompact({
               />
             </div>
           </div>
-          
+
           {/* Ad/Soyad Arama Sonuçları */}
           {showResults && searchResults.length > 0 && !customerTcNumber && (
             <div className="relative">

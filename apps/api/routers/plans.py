@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.base import ResponseEnvelope
 # Use Pydantic schema for type-safe serialization (NO to_dict())
-from schemas.plans import PlanRead, PlanCreate, PlanUpdate
+from schemas.plans import DetailedPlanRead, PlanCreate, PlanUpdate
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/plans", tags=["Plans"])
 
 # --- Routes ---
 
-@router.get("", operation_id="listPlans", response_model=ResponseEnvelope[List[PlanRead]])
+@router.get("", operation_id="listPlans", response_model=ResponseEnvelope[List[DetailedPlanRead]])
 def get_plans(db: Session = Depends(get_db)):
     """Get all active plans (Public)"""
     try:
@@ -31,7 +31,7 @@ def get_plans(db: Session = Depends(get_db)):
         results = []
         for plan in plans:
             # Use Pydantic schema for type-safe serialization (NO to_dict())
-            plan_data = PlanRead.model_validate(plan)
+            plan_data = DetailedPlanRead.model_validate(plan)
             plan_dict = plan_data.model_dump(by_alias=True)
             # Filter features if they are a list of dicts
             if isinstance(plan_dict.get('features'), list):
@@ -44,7 +44,7 @@ def get_plans(db: Session = Depends(get_db)):
         logger.error(f"Error getting plans: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/admin", operation_id="listPlanAdmin", response_model=ResponseEnvelope[List[PlanRead]])
+@router.get("/admin", operation_id="listPlanAdmin", response_model=ResponseEnvelope[List[DetailedPlanRead]])
 def get_admin_plans(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -60,7 +60,7 @@ def get_admin_plans(
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[
-            PlanRead.model_validate(p).model_dump(by_alias=True)
+            DetailedPlanRead.model_validate(p).model_dump(by_alias=True)
             for p in plans
         ])
         
@@ -70,7 +70,7 @@ def get_admin_plans(
         logger.error(f"Error getting admin plans: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", operation_id="createPlan", status_code=201, response_model=ResponseEnvelope[PlanRead])
+@router.post("", operation_id="createPlan", status_code=201, response_model=ResponseEnvelope[DetailedPlanRead])
 def create_plan(
     request_data: PlanCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -101,7 +101,7 @@ def create_plan(
         db.refresh(plan)
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return ResponseEnvelope(data=PlanRead.model_validate(plan).model_dump(by_alias=True))
+        return ResponseEnvelope(data=DetailedPlanRead.model_validate(plan).model_dump(by_alias=True))
         
     except HTTPException:
         raise
@@ -110,7 +110,7 @@ def create_plan(
         logger.error(f"Error creating plan: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/{plan_id}", operation_id="updatePlan", response_model=ResponseEnvelope[PlanRead])
+@router.put("/{plan_id}", operation_id="updatePlan", response_model=ResponseEnvelope[DetailedPlanRead])
 def update_plan(
     plan_id: str,
     request_data: PlanUpdate,
@@ -147,7 +147,7 @@ def update_plan(
         db.refresh(plan)
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return ResponseEnvelope(data=PlanRead.model_validate(plan).model_dump(by_alias=True))
+        return ResponseEnvelope(data=DetailedPlanRead.model_validate(plan).model_dump(by_alias=True))
         
     except HTTPException:
         raise

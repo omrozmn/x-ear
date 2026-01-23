@@ -5,18 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeData } from './responseEnvelopeUnionTenantSMSCreditReadNoneTypeData';
-import type { ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeMessage } from './responseEnvelopeUnionTenantSMSCreditReadNoneTypeMessage';
-import type { ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeError } from './responseEnvelopeUnionTenantSMSCreditReadNoneTypeError';
-import type { ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeMeta } from './responseEnvelopeUnionTenantSMSCreditReadNoneTypeMeta';
-import type { ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeRequestId } from './responseEnvelopeUnionTenantSMSCreditReadNoneTypeRequestId';
+import type { ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeData } from './responseEnvelopeUnionTenantSmsCreditReadNoneTypeData';
+import type { ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeMessage } from './responseEnvelopeUnionTenantSmsCreditReadNoneTypeMessage';
+import type { ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeError } from './responseEnvelopeUnionTenantSmsCreditReadNoneTypeError';
+import type { ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeMeta } from './responseEnvelopeUnionTenantSmsCreditReadNoneTypeMeta';
+import type { ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeRequestId } from './responseEnvelopeUnionTenantSmsCreditReadNoneTypeRequestId';
 
-export interface ResponseEnvelopeUnionTenantSMSCreditReadNoneType {
+export interface ResponseEnvelopeUnionTenantSmsCreditReadNoneType {
   success?: boolean;
-  data?: ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeData;
-  message?: ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeMessage;
-  error?: ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeError;
-  meta?: ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeMeta;
-  requestId?: ResponseEnvelopeUnionTenantSMSCreditReadNoneTypeRequestId;
+  data?: ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeData;
+  message?: ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeMessage;
+  error?: ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeError;
+  meta?: ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeMeta;
+  requestId?: ResponseEnvelopeUnionTenantSmsCreditReadNoneTypeRequestId;
   timestamp?: string;
 }

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/request_logger.py
+# hypothesis_version: 6.150.2
+
+[100, 'default_key_v1', 'existing_request_id', 'idempotency_key', 'intent_type', 'model_id', 'prompt is required', 'request_id', 'session_id', 'status', 'tenant_id', 'user_id', 'user_id is required']

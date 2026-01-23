@@ -27,11 +27,16 @@ import type {
 import type {
   CollectPaymentRequest,
   HTTPValidationError,
-  ListPatientPaymentRecordsParams,
-  ListPatientPromissoryNotesParams,
+  ListPartyPaymentRecordsParams,
+  ListPartyPromissoryNotesParams,
   PaymentRecordUpdate,
   PromissoryNoteUpdate,
   PromissoryNotesCreate,
+  ResponseEnvelopeListPaymentRecordRead,
+  ResponseEnvelopeListPromissoryNoteRead,
+  ResponseEnvelopePaymentRecordRead,
+  ResponseEnvelopePromissoryNoteCollectionResponse,
+  ResponseEnvelopePromissoryNoteRead,
   RoutersPaymentsPaymentRecordCreate
 } from '.././schemas';
 
@@ -50,7 +55,7 @@ export const createPaymentRecords = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopePaymentRecordRead>(
       {url: `/api/payment-records`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: routersPaymentsPaymentRecordCreate, signal
@@ -106,18 +111,18 @@ export const useCreatePaymentRecords = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get all payment records for a patient
- * @summary Get Patient Payment Records
+ * Get all payment records for a party
+ * @summary Get Party Payment Records
  */
-export const listPatientPaymentRecords = (
-    patientId: string,
-    params?: ListPatientPaymentRecordsParams,
+export const listPartyPaymentRecords = (
+    partyId: string,
+    params?: ListPartyPaymentRecordsParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/payment-records`, method: 'GET',
+      return customInstance<ResponseEnvelopeListPaymentRecordRead>(
+      {url: `/api/parties/${partyId}/payment-records`, method: 'GET',
         params, signal
     },
       );
@@ -126,75 +131,75 @@ export const listPatientPaymentRecords = (
 
 
 
-export const getListPatientPaymentRecordsQueryKey = (patientId?: string,
-    params?: ListPatientPaymentRecordsParams,) => {
+export const getListPartyPaymentRecordsQueryKey = (partyId?: string,
+    params?: ListPartyPaymentRecordsParams,) => {
     return [
-    `/api/patients/${patientId}/payment-records`, ...(params ? [params]: [])
+    `/api/parties/${partyId}/payment-records`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListPatientPaymentRecordsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError = HTTPValidationError>(patientId: string,
-    params?: ListPatientPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError, TData>>, }
+export const getListPartyPaymentRecordsQueryOptions = <TData = Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError = HTTPValidationError>(partyId: string,
+    params?: ListPartyPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPatientPaymentRecordsQueryKey(patientId,params);
+  const queryKey =  queryOptions?.queryKey ?? getListPartyPaymentRecordsQueryKey(partyId,params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientPaymentRecords>>> = ({ signal }) => listPatientPaymentRecords(patientId,params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPartyPaymentRecords>>> = ({ signal }) => listPartyPaymentRecords(partyId,params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type ListPatientPaymentRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientPaymentRecords>>>
-export type ListPatientPaymentRecordsQueryError = HTTPValidationError
+export type ListPartyPaymentRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof listPartyPaymentRecords>>>
+export type ListPartyPaymentRecordsQueryError = HTTPValidationError
 
 
-export function useListPatientPaymentRecords<TData = Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError = HTTPValidationError>(
- patientId: string,
-    params: undefined |  ListPatientPaymentRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError, TData>> & Pick<
+export function useListPartyPaymentRecords<TData = Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError = HTTPValidationError>(
+ partyId: string,
+    params: undefined |  ListPartyPaymentRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientPaymentRecords>>,
+          Awaited<ReturnType<typeof listPartyPaymentRecords>>,
           TError,
-          Awaited<ReturnType<typeof listPatientPaymentRecords>>
+          Awaited<ReturnType<typeof listPartyPaymentRecords>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListPatientPaymentRecords<TData = Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError = HTTPValidationError>(
- patientId: string,
-    params?: ListPatientPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError, TData>> & Pick<
+export function useListPartyPaymentRecords<TData = Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError = HTTPValidationError>(
+ partyId: string,
+    params?: ListPartyPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientPaymentRecords>>,
+          Awaited<ReturnType<typeof listPartyPaymentRecords>>,
           TError,
-          Awaited<ReturnType<typeof listPatientPaymentRecords>>
+          Awaited<ReturnType<typeof listPartyPaymentRecords>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListPatientPaymentRecords<TData = Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError = HTTPValidationError>(
- patientId: string,
-    params?: ListPatientPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError, TData>>, }
+export function useListPartyPaymentRecords<TData = Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError = HTTPValidationError>(
+ partyId: string,
+    params?: ListPartyPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get Patient Payment Records
+ * @summary Get Party Payment Records
  */
 
-export function useListPatientPaymentRecords<TData = Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError = HTTPValidationError>(
- patientId: string,
-    params?: ListPatientPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPaymentRecords>>, TError, TData>>, }
+export function useListPartyPaymentRecords<TData = Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError = HTTPValidationError>(
+ partyId: string,
+    params?: ListPartyPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPaymentRecords>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListPatientPaymentRecordsQueryOptions(patientId,params,options)
+  const queryOptions = getListPartyPaymentRecordsQueryOptions(partyId,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -216,7 +221,7 @@ export const updatePaymentRecord = (
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopePaymentRecordRead>(
       {url: `/api/payment-records/${recordId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: paymentRecordUpdate
@@ -272,18 +277,18 @@ export const useUpdatePaymentRecord = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get all promissory notes for a patient
- * @summary Get Patient Promissory Notes
+ * Get all promissory notes for a party
+ * @summary Get Party Promissory Notes
  */
-export const listPatientPromissoryNotes = (
-    patientId: string,
-    params?: ListPatientPromissoryNotesParams,
+export const listPartyPromissoryNotes = (
+    partyId: string,
+    params?: ListPartyPromissoryNotesParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/promissory-notes`, method: 'GET',
+      return customInstance<ResponseEnvelopeListPromissoryNoteRead>(
+      {url: `/api/parties/${partyId}/promissory-notes`, method: 'GET',
         params, signal
     },
       );
@@ -292,75 +297,75 @@ export const listPatientPromissoryNotes = (
 
 
 
-export const getListPatientPromissoryNotesQueryKey = (patientId?: string,
-    params?: ListPatientPromissoryNotesParams,) => {
+export const getListPartyPromissoryNotesQueryKey = (partyId?: string,
+    params?: ListPartyPromissoryNotesParams,) => {
     return [
-    `/api/patients/${patientId}/promissory-notes`, ...(params ? [params]: [])
+    `/api/parties/${partyId}/promissory-notes`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListPatientPromissoryNotesQueryOptions = <TData = Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError = HTTPValidationError>(patientId: string,
-    params?: ListPatientPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError, TData>>, }
+export const getListPartyPromissoryNotesQueryOptions = <TData = Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError = HTTPValidationError>(partyId: string,
+    params?: ListPartyPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPatientPromissoryNotesQueryKey(patientId,params);
+  const queryKey =  queryOptions?.queryKey ?? getListPartyPromissoryNotesQueryKey(partyId,params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientPromissoryNotes>>> = ({ signal }) => listPatientPromissoryNotes(patientId,params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPartyPromissoryNotes>>> = ({ signal }) => listPartyPromissoryNotes(partyId,params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type ListPatientPromissoryNotesQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientPromissoryNotes>>>
-export type ListPatientPromissoryNotesQueryError = HTTPValidationError
+export type ListPartyPromissoryNotesQueryResult = NonNullable<Awaited<ReturnType<typeof listPartyPromissoryNotes>>>
+export type ListPartyPromissoryNotesQueryError = HTTPValidationError
 
 
-export function useListPatientPromissoryNotes<TData = Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError = HTTPValidationError>(
- patientId: string,
-    params: undefined |  ListPatientPromissoryNotesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError, TData>> & Pick<
+export function useListPartyPromissoryNotes<TData = Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError = HTTPValidationError>(
+ partyId: string,
+    params: undefined |  ListPartyPromissoryNotesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientPromissoryNotes>>,
+          Awaited<ReturnType<typeof listPartyPromissoryNotes>>,
           TError,
-          Awaited<ReturnType<typeof listPatientPromissoryNotes>>
+          Awaited<ReturnType<typeof listPartyPromissoryNotes>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListPatientPromissoryNotes<TData = Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError = HTTPValidationError>(
- patientId: string,
-    params?: ListPatientPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError, TData>> & Pick<
+export function useListPartyPromissoryNotes<TData = Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError = HTTPValidationError>(
+ partyId: string,
+    params?: ListPartyPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientPromissoryNotes>>,
+          Awaited<ReturnType<typeof listPartyPromissoryNotes>>,
           TError,
-          Awaited<ReturnType<typeof listPatientPromissoryNotes>>
+          Awaited<ReturnType<typeof listPartyPromissoryNotes>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListPatientPromissoryNotes<TData = Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError = HTTPValidationError>(
- patientId: string,
-    params?: ListPatientPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError, TData>>, }
+export function useListPartyPromissoryNotes<TData = Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError = HTTPValidationError>(
+ partyId: string,
+    params?: ListPartyPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get Patient Promissory Notes
+ * @summary Get Party Promissory Notes
  */
 
-export function useListPatientPromissoryNotes<TData = Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError = HTTPValidationError>(
- patientId: string,
-    params?: ListPatientPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientPromissoryNotes>>, TError, TData>>, }
+export function useListPartyPromissoryNotes<TData = Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError = HTTPValidationError>(
+ partyId: string,
+    params?: ListPartyPromissoryNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartyPromissoryNotes>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListPatientPromissoryNotesQueryOptions(patientId,params,options)
+  const queryOptions = getListPartyPromissoryNotesQueryOptions(partyId,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -382,7 +387,7 @@ export const createPromissoryNotes = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListPromissoryNoteRead>(
       {url: `/api/promissory-notes`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: promissoryNotesCreate, signal
@@ -447,7 +452,7 @@ export const updatePromissoryNote = (
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopePromissoryNoteRead>(
       {url: `/api/promissory-notes/${noteId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: promissoryNoteUpdate
@@ -513,7 +518,7 @@ export const createPromissoryNoteCollect = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopePromissoryNoteCollectionResponse>(
       {url: `/api/promissory-notes/${noteId}/collect`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: collectPaymentRequest, signal
@@ -578,7 +583,7 @@ export const listSalePromissoryNotes = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListPromissoryNoteRead>(
       {url: `/api/sales/${saleId}/promissory-notes`, method: 'GET', signal
     },
       );

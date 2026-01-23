@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/scan_queue.py
+# hypothesis_version: 6.150.2
+
+[255, 'completedAt', 'errorMessage', 'filePath', 'id', 'modelPath', 'normal', 'partyId', 'pending', 'polygonCount', 'priority', 'renderTimeMs', 'scan', 'scan_queue', 'startedAt', 'status', 'tenantId']

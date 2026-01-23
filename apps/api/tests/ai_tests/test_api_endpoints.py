@@ -25,7 +25,7 @@ os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-testing")
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 
 # Import AI routers
@@ -44,9 +44,25 @@ from ai.services.kill_switch import KillSwitch, get_kill_switch
 # =============================================================================
 
 @pytest.fixture
-def app():
-    """Create a test FastAPI app with AI routers."""
+def app(mock_auth_middleware, db_session):
+    """Create a test FastAPI app with AI routers and authentication middleware."""
+    from core.database import get_db
+    
     test_app = FastAPI(title="AI Layer Test App")
+    
+    # Override get_db dependency to use test database session
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass  # Don't close - managed by fixture
+    
+    test_app.dependency_overrides[get_db] = override_get_db
+    
+    # Add mock authentication middleware
+    @test_app.middleware("http")
+    async def auth_middleware(request: Request, call_next):
+        return await mock_auth_middleware(request, call_next)
     
     # Include all AI routers
     test_app.include_router(chat_router, prefix="/api")

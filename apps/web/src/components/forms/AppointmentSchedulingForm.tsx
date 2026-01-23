@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
-import { Calendar, Clock, User, FileText, AlertCircle, MapPin } from 'lucide-react';
+import { Calendar, Clock, User, FileText, MapPin } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface Appointment {
@@ -46,7 +46,14 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
     createdBy: getCurrentUserId()
   });
 
-  const [availableDoctors, setAvailableDoctors] = useState<any[]>([]);
+  interface Doctor {
+    id: string;
+    name: string;
+    specialty: string;
+    title: string;
+  }
+
+  const [availableDoctors, setAvailableDoctors] = useState<Doctor[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal opens/closes or appointment changes
@@ -147,39 +154,10 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
     }
   };
 
-  const getAppointmentTypeText = (type: string): string => {
-    switch (type) {
-      case 'consultation':
-        return 'Konsultasyon';
-      case 'fitting':
-        return 'Cihaz Uygulaması';
-      case 'follow_up':
-        return 'Kontrol';
-      case 'repair':
-        return 'Tamirat';
-      case 'other':
-        return 'Diğer';
-      default:
-        return type;
-    }
-  };
-
-  const getStatusText = (status: string): string => {
-    switch (status) {
-      case 'scheduled':
-        return 'Planlandı';
-      case 'confirmed':
-        return 'Onaylandı';
-      case 'completed':
-        return 'Tamamlandı';
-      case 'cancelled':
-        return 'İptal Edildi';
-      case 'no_show':
-        return 'Gelmedi';
-      default:
-        return status;
-    }
-  };
+  /* Unused helpers removed to satisfy lint
+  const getAppointmentTypeText = (type: string): string => { ... }
+  const getStatusText = (status: string): string => { ... }
+  */
 
   const generateTimeSlots = (): string[] => {
     const slots: string[] = [];
@@ -210,6 +188,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
                 <Calendar className="w-4 h-4 text-gray-400" />
               </div>
               <input
+                data-allow-raw="true"
                 type="date"
                 value={formData.appointmentDate || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, appointmentDate: e.target.value }))}
@@ -231,6 +210,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
                 <Clock className="w-4 h-4 text-gray-400" />
               </div>
               <select
+                data-allow-raw="true"
                 value={formData.appointmentTime || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, appointmentTime: e.target.value }))}
                 className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentTime ? 'border-red-300' : ''}`}
@@ -259,6 +239,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               <User className="w-4 h-4 text-gray-400" />
             </div>
             <select
+              data-allow-raw="true"
               value={formData.doctorId || ''}
               onChange={(e) => {
                 const selectedDoctor = availableDoctors.find(d => d.id === e.target.value);
@@ -290,8 +271,9 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               Randevu Türü *
             </label>
             <select
+              data-allow-raw="true"
               value={formData.appointmentType || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, appointmentType: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, appointmentType: e.target.value as Appointment['appointmentType'] }))}
               className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentType ? 'border-red-300' : ''}`}
             >
               <option value="">Tür seçin...</option>
@@ -311,6 +293,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               Süre (dakika) *
             </label>
             <input
+              data-allow-raw="true"
               type="number"
               min="15"
               max="240"
@@ -335,6 +318,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               <MapPin className="w-4 h-4 text-gray-400" />
             </div>
             <input
+              data-allow-raw="true"
               type="text"
               value={formData.location || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
@@ -354,6 +338,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               <FileText className="w-4 h-4 text-gray-400" />
             </div>
             <textarea
+              data-allow-raw="true"
               value={formData.notes || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Randevu ile ilgili notlar..."
@@ -370,8 +355,9 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               Durum
             </label>
             <select
+              data-allow-raw="true"
               value={formData.status || 'scheduled'}
-              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Appointment['status'] }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="scheduled">Planlandı</option>

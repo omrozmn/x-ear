@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_plans.py
+# hypothesis_version: 6.150.2
+
+[100, 400, 404, 500, '/admin/plans', '/{plan_id}', 'Admin Plans', 'NOT_FOUND', 'Plan not found', 'billing_interval', 'code', 'createAdminPlan', 'deleteAdminPlan', 'getAdminPlan', 'items', 'limit', 'listAdminPlans', 'message', 'page', 'pagination', 'plan', 'plan_type', 'total', 'totalPages', 'true', 'updateAdminPlan']

@@ -1,0 +1,4 @@
+{
+  "subject": "{{ organization_name }} - Sistem Daveti",
+  "required_variables": ["inviter_name", "organization_name", "invitation_link", "role_name"]
+}

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/policies/policy_engine.py
+# hypothesis_version: 6.150.2
+
+[0.0, 100, 1000, 'actionType', 'action_type', 'allow', 'approvalReason', 'compliance', 'critical', 'data_access', 'decision', 'deny', 'description', 'details', 'enabled', 'error', 'evaluatedRules', 'evaluationTimeMs', 'evaluation_time_ms', 'high', 'isAllowed', 'message', 'priority', 'rate_limit', 'rbac', 'require_approval', 'requiresApproval', 'riskLevel', 'risk_threshold', 'ruleId', 'ruleType', 'rule_id', 'rule_type', 'severity', 'targetResource', 'targetTenantId', 'tenantId', 'tenant_id', 'toolId', 'userId', 'userPermissions', 'userRoles', 'user_id', 'version', 'violations', 'violations_count', 'warning', 'warnings']

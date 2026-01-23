@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Modal, Button, Input, FileUpload } from '@x-ear/ui-web';
+import { Modal, Button, FileUpload } from '@x-ear/ui-web';
 import { useUploadSgkDocuments } from '../../hooks/sgk/useSgkDocuments';
-import { Upload, X, FileImage, AlertCircle } from 'lucide-react';
+import { X, FileImage, AlertCircle } from 'lucide-react';
 
 interface BulkUploadModalProps {
   isOpen: boolean;
@@ -43,7 +43,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   const handleFileSelect = useCallback((selectedFiles: File[]) => {
     setError(null);
     const validFiles: File[] = [];
-    
+
     for (const file of selectedFiles) {
       if (validateFile(file)) {
         validFiles.push(file);
@@ -53,8 +53,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     }
 
     // Remove duplicates based on name and size
-    const uniqueFiles = validFiles.filter(newFile => 
-      !files.some(existingFile => 
+    const uniqueFiles = validFiles.filter(newFile =>
+      !files.some(existingFile =>
         existingFile.name === newFile.name && existingFile.size === newFile.size
       )
     );
@@ -67,10 +67,12 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     handleFileSelect(fileObjects);
   }, [handleFileSelect]);
 
+  /* 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     handleFileSelect(selectedFiles);
   }, [handleFileSelect]);
+  */
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -111,7 +113,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         formData.append('files', file);
       });
 
-      const response = await uploadMutation.mutateAsync(formData);
+      await uploadMutation.mutateAsync(formData);
       onUploadComplete([]);
     } catch (error) {
       console.error('Upload failed:', error);
@@ -142,8 +144,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         <div
           className={`
             border-2 border-dashed rounded-lg p-8 text-center transition-colors
-            ${isDragOver 
-              ? 'border-blue-400 bg-blue-50' 
+            ${isDragOver
+              ? 'border-blue-400 bg-blue-50'
               : 'border-gray-300 hover:border-gray-400'
             }
             ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}

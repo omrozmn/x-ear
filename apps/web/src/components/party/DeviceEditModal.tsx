@@ -126,9 +126,9 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         discountType: 'amount',
         downPayment: 0,
         // Normalize reportStatus
-        reportStatus: (['raporlu', 'received', 'has_report', 'true'].includes(String(device.reportStatus || (device as any).report_status || '').toLowerCase().trim()) ? 'received' :
-          ['bekleniyor', 'pending'].includes(String(device.reportStatus || (device as any).report_status || '').toLowerCase().trim()) ? 'pending' :
-            ['none', 'raporsuz', 'null', 'undefined', ''].includes(String(device.reportStatus || (device as any).report_status || '').toLowerCase().trim()) ? 'none' : '')
+        reportStatus: (['raporlu', 'received', 'has_report', 'true'].includes(String(device.reportStatus || '').toLowerCase().trim()) ? 'received' :
+          ['bekleniyor', 'pending'].includes(String(device.reportStatus || '').toLowerCase().trim()) ? 'pending' :
+            ['none', 'raporsuz', 'null', 'undefined', ''].includes(String(device.reportStatus || '').toLowerCase().trim()) ? 'none' : '')
       });
 
       // Find and set the selected device
@@ -168,7 +168,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
   const filteredDevices = availableDevices.filter(d => {
     const q = deviceSearch.trim().toLowerCase();
     if (!q) return true;
-    const searchString = [d.brand, d.model, (d as any).name, d.type].filter(Boolean).join(' ').toLowerCase();
+    const searchString = [d.brand, d.model, d.type].filter(Boolean).join(' ').toLowerCase();
     return searchString.includes(q);
   });
 

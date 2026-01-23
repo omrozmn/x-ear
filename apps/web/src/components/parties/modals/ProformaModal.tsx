@@ -514,8 +514,8 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                 <ProductSearchComponent
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
-                  searchResults={searchResults}
-                  selectedProduct={selectedProduct}
+                  searchResults={searchResults as any}
+                  selectedProduct={selectedProduct as any}
                   onProductSelect={(p) => {
                     setSelectedProduct(p as ProformaProduct);
                     setSearchTerm('');

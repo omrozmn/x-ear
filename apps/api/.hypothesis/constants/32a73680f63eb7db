@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/subscriptions.py
+# hypothesis_version: 6.150.2
+
+[365, 400, 401, 403, 404, 500, '/complete-signup', '/current', '/subscribe', '/subscriptions', '0000', '@', 'Geçersiz plan', 'Invalid card number', 'MONTHLY', 'Plan not found', 'Subscriptions', 'Tenant not found', 'Unauthorized', 'YEARLY', 'billingEmail', 'billingInterval', 'currentPlan', 'currentPlanId', 'currentUsers', 'description', 'email', 'featureUsage', 'feature_usage', 'features', 'get_monthly_price', 'get_yearly_price', 'id', 'isActive', 'isPublic', 'key', 'last_reset', 'limit', 'maxStorageGb', 'maxUsers', 'monthlyPrice', 'name', 'ownerEmail', 'planType', 'price', 'role', 'slug', 'sms_credits', 'status', 'subscriptionEndDate', 'super_admin', 'tenant_admin', 'used', 'yearlyPrice']

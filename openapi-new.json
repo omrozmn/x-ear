@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys; sys.path.insert(0, 'apps/api'); from app import app; import json; print(json.dumps(app.openapi(), indent=2))
+                                                ^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'app'

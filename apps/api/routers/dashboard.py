@@ -23,7 +23,7 @@ from models.branch import Branch
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 
-from schemas.audit import ActivityLogRead
+from schemas.audit import AuditLogRead
 from schemas.dashboard import (
     DashboardData, DashboardKPIs, ChartData, 
     RecentActivityResponse, BranchDistribution
@@ -47,7 +47,7 @@ def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict
     results = []
     # Collect IDs for bulk fetch could be optimized here, but keeping it simple for now (N+1) as per original implementation
     for log in logs:
-        data = ActivityLogRead.model_validate(log).model_dump(by_alias=True)
+        data = AuditLogRead.model_validate(log).model_dump(by_alias=True)
         
         # User details
         if log.user_id:

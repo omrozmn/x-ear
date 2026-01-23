@@ -1,18 +1,18 @@
 import React, { useState, useMemo, useCallback } from 'react'
-import { Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@x-ear/ui-web'
-import { 
-  Tag, 
-  MessageSquare, 
-  Download, 
-  Trash2, 
-  Archive, 
-  UserCheck, 
-  UserX, 
-  Mail, 
-  FileText, 
-  Calendar, 
-  CheckSquare, 
-  X, 
+import { Button, Input, Textarea } from '@x-ear/ui-web'
+import {
+  Tag,
+  MessageSquare,
+  Download,
+  Trash2,
+  Archive,
+  UserCheck,
+  UserX,
+  Mail,
+  FileText,
+  Calendar,
+  CheckSquare,
+  X,
   AlertTriangle,
   Users,
   Send
@@ -142,7 +142,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       minSelection: 1,
       maxSelection: 50
     },
-    
+
     // Data Actions
     {
       id: 'export-csv',
@@ -164,7 +164,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       category: 'data',
       minSelection: 1
     },
-    
+
     // Status Actions
     {
       id: 'activate',
@@ -199,7 +199,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       category: 'status',
       minSelection: 1
     },
-    
+
     // Organization Actions
     {
       id: 'assign-segment',
@@ -229,7 +229,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       minSelection: 1,
       maxSelection: 20
     },
-    
+
     // Dangerous Actions
     {
       id: 'delete',
@@ -277,7 +277,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
     if (!action || selectedCount === 0) return
 
     setIsProcessing(true)
-    
+
     try {
       switch (action.id) {
         case 'add-tag':
@@ -319,7 +319,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
           await onBulkDelete()
           break
       }
-      
+
       setShowActionModal(false)
       setCurrentAction(null)
     } catch (error) {
@@ -347,7 +347,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
 
     setCurrentAction(action)
     setInputValue('')
-    
+
     if (action.requiresInput || action.requiresConfirmation) {
       setShowActionModal(true)
     } else {
@@ -418,7 +418,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                 const Icon = action.icon
                 const isDisabled = disabled || loading || isProcessing
                 const isDangerous = action.category === 'dangerous'
-                
+
                 return (
                   <Button
                     key={action.id}
@@ -427,12 +427,12 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                     disabled={isDisabled}
                     className={`
                       relative p-3 h-auto flex-col transition-all duration-200
-                      ${isDisabled 
-                        ? 'opacity-50 cursor-not-allowed' 
+                      ${isDisabled
+                        ? 'opacity-50 cursor-not-allowed'
                         : 'hover:shadow-md hover:-translate-y-0.5'
                       }
-                      ${isDangerous 
-                        ? 'border-red-200 hover:border-red-300 hover:bg-red-50' 
+                      ${isDangerous
+                        ? 'border-red-200 hover:border-red-300 hover:bg-red-50'
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }
                     `}
@@ -446,7 +446,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                         {action.name}
                       </span>
                     </div>
-                    
+
                     {/* Selection limits indicator */}
                     {(action.minSelection || action.maxSelection) && (
                       <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -480,12 +480,12 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                 </Button>
               </div>
             </div>
-            
+
             <div className="px-6 py-4">
               <p className="text-sm text-gray-600 mb-4">
                 {currentAction.description}
               </p>
-              
+
               {currentAction.category === 'dangerous' && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                   <div className="flex items-center">
@@ -496,7 +496,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                   </div>
                 </div>
               )}
-              
+
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                 <span className="text-sm text-blue-800">
                   <strong>{selectedCount}</strong> hasta etkilenecek
@@ -508,7 +508,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {currentAction.inputPlaceholder}
                   </label>
-                  
+
                   {currentAction.inputType === 'textarea' ? (
                     <Textarea
                       value={inputValue}
@@ -532,7 +532,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                           </option>
                         ))}
                       </select>
-                      
+
                       {/* Allow custom input for tags */}
                       {(currentAction.id === 'add-tag' || currentAction.id === 'remove-tag') && (
                         <div className="mt-2">
@@ -558,7 +558,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
               <Button
                 variant="outline"

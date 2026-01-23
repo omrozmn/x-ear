@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/suppliers.py
+# hypothesis_version: 6.150.2
+
+[100, 120, 200, 'InventoryItem', 'ProductSupplier', 'Supplier', 'TRY', 'Türkiye', 'address', 'all, delete-orphan', 'city', 'companyCode', 'companyName', 'contactPerson', 'country', 'createdAt', 'currency', 'email', 'extend_existing', 'fax', 'id', 'inventory.id', 'isActive', 'isPrimary', 'lastOrderDate', 'leadTimeDays', 'minimumOrderQuantity', 'mobile', 'name', 'notes', 'paymentTerms', 'phone', 'postalCode', 'priority', 'product', 'productCount', 'productId', 'product_id', 'product_suppliers', 'products', 'rating', 'sku', 'supplier', 'supplierId', 'supplierProductCode', 'supplierProductName', 'supplier_id', 'suppliers', 'suppliers.id', 'taxNumber', 'taxOffice', 'tenantId', 'tenants.id', 'unitCost', 'updatedAt', 'website']

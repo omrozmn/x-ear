@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/agents/executor.py
+# hypothesis_version: 6.150.2
+
+[0.0, 1000, 86400, 'approval_required', 'error', 'errorMessage', 'executedAt', 'executionTimeMs', 'failed', 'idempotencyKey', 'idempotent_duplicate', 'mode', 'partial_success', 'phase_blocked', 'planId', 'requestId', 'rollbackExecuted', 'rolled_back', 'status', 'stepNumber', 'stepResults', 'stepsFailed', 'stepsSucceeded', 'success', 'toolName', 'toolResult', 'totalExecutionTimeMs']

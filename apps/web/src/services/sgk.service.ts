@@ -29,14 +29,12 @@ import { apiClient } from '../api/orval-mutator';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { SGK_DATA, SGK_DOCUMENTS } from '../constants/storage-keys';
 import {
-  listSgkDocuments,
   createSgkWorkflowCreate,
   updateSgkWorkflowStatus,
   getSgkWorkflow,
   listSgkEReceiptDownloadPatientForm
 } from '@/api/client/sgk.client';
 import { WorkflowStatusUpdate, WorkflowCreateRequest } from '@/api/generated/schemas';
-import { unwrapObject } from '../utils/response-unwrap';
 
 export class SGKService {
   private documents: SGKDocument[] = [];
@@ -598,7 +596,7 @@ export class SGKService {
   }
 
   // Party SGK Info Management
-  async getPartySGKInfo(_partyId: string): Promise<SGKPartyInfo | null> {
+  async getPartySGKInfo(): Promise<SGKPartyInfo | null> {
     await this.init();
 
     // This would typically come from the party service
@@ -748,7 +746,7 @@ export class SGKService {
   }
 
   // Hasta hakları sorgulama
-  async createSgkQueryRightsMethod(partyId: string, tcNumber: string): Promise<any> {
+  async createSgkQueryRightsMethod(partyId: string, tcNumber: string): Promise<unknown> {
     try {
       // Gerçek API çağrısı - using apiClient since createSgkQueryRights doesn't exist
       const response = await apiClient({

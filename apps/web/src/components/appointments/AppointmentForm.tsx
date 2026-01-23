@@ -5,6 +5,8 @@ import { useAppointments } from '../../hooks/useAppointments';
 import { useParties } from '../../hooks/useParties';
 import { PartyAutocomplete } from './PartyAutocomplete';
 import { getCurrentUserId } from '@/utils/auth-utils';
+import { Gender } from '../../api/generated/schemas/gender';
+import { PartyStatus } from '../../api/generated/schemas/partyStatus';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -12,6 +14,8 @@ interface AppointmentFormProps {
   onSave?: (appointment: Appointment) => void;
   onCancel?: () => void;
   mode?: 'create' | 'edit';
+  initialDate?: string;
+  initialTime?: string;
   className?: string;
 }
 
@@ -46,6 +50,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   onSave,
   onCancel,
   mode = 'create',
+  initialDate,
+  initialTime,
   className = ''
 }) => {
   const { createAppointment, updateAppointment, creating, updating, error } = useAppointments();
@@ -56,8 +62,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const [formData, setFormData] = useState<FormData>({
     partyId: partyId || appointment?.partyId || '',
     partyName: appointment?.partyName || '',
-    date: appointment?.date || new Date().toISOString().split('T')[0],
-    time: appointment?.time || '09:00',
+    date: appointment?.date || initialDate || new Date().toISOString().split('T')[0],
+    time: appointment?.time || initialTime || '09:00',
     duration: appointment?.duration || 30,
     type: appointment?.type || 'consultation',
     status: appointment?.status || 'scheduled',
@@ -91,7 +97,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     if (!formData.title || formData.title === getTypeLabel(formData.type)) {
       setFormData(prev => ({ ...prev, title: getTypeLabel(formData.type) }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.type]);
 
   const getTypeLabel = (type: AppointmentType): string => {
@@ -172,15 +178,15 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         lastName: lastName || '',
         phone: '',
         email: '',
-        gender: 'OTHER' as any, // Cast to any to avoid strict enum check for now, or use correct enum
-        status: 'ACTIVE' as any,
-        segment: 'NEW' as any
+        gender: Gender.O,
+        status: PartyStatus.active,
+        segment: 'NEW'
       });
 
       setFormData(prev => ({
         ...prev,
-        partyId: newParty.id || '',
-        partyName: `${newParty.firstName} ${newParty.lastName}`.trim()
+        partyId: (newParty.id as string) || '',
+        partyName: `${(newParty.firstName as string)} ${(newParty.lastName as string)}`.trim()
       }));
 
       showSuccess('Yeni hasta oluşturuldu');
@@ -285,8 +291,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   value={formData.partyName}
                   partyId={formData.partyId}
                   onSelect={(party) => {
-                    handleInputChange('partyId', party.id || '');
-                    handleInputChange('partyName', `${party.firstName} ${party.lastName}`);
+                    handleInputChange('partyId', (party.id as string) || '');
+                    handleInputChange('partyName', `${(party.firstName as string)} ${(party.lastName as string)}`);
                   }}
                   onAddNew={handleAddNewParty}
                   placeholder="Hasta adı veya TC ile arayın..."

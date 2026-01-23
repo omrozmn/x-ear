@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/middleware/auth.py
+# hypothesis_version: 6.150.2
+
+[401, '/ai', '/ai/health', '/ai/status', 'AUTH_REQUIRED', 'Authorization', 'Bearer', 'Bearer ', 'HS256', 'JWT_SECRET_KEY', 'WWW-Authenticate', 'X-Request-ID', 'code', 'error', 'http', 'message', 'path', 'requestId', 'state', 'sub', 'success', 'tenant_id', 'type', 'user_id']

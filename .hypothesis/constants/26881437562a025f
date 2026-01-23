@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/permissions.py
+# hypothesis_version: 6.150.2
+
+[201, 400, 403, 404, 409, 500, '.', '/permissions', '/permissions/my', 'Ayarlar', 'Cihazlar', 'Dashboard', 'Diğer', 'Ekip', 'Faturalar', 'Finans', 'Hastalar', 'Kampanyalar', 'Permissions', 'Raporlar', 'Role not found', 'SGK', 'Satışlar', 'Stok', 'User not found', 'activity_logs.', 'admin', 'admin.', 'bar-chart', 'campaigns', 'category', 'createPermissions', 'dashboard', 'devices', 'dollar-sign', 'file-text', 'finance', 'getPermissionRole', 'headphones', 'icon', 'inventory', 'invoices', 'label', 'layout-dashboard', 'listPermissionMy', 'listPermissions', 'megaphone', 'more-horizontal', 'other', 'package', 'patients', 'permissions', 'reports', 'sales', 'settings', 'sgk', 'shield', 'shopping-cart', 'super_admin', 'system.', 'team', 'updatePermissionRole', 'users', 'users-round']

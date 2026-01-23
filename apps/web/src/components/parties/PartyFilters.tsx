@@ -232,9 +232,9 @@ export function PartyFilters({
               <button
                 key={option.value}
                 onClick={() => handleFilterChange('acquisitionType',
-                  filters.acquisitionType?.includes(option.value as any)
+                  filters.acquisitionType?.includes(option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement")
                     ? filters.acquisitionType.filter(s => s !== option.value)
-                    : [...(filters.acquisitionType || []), option.value as any]
+                    : [...(filters.acquisitionType || []), option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement"]
                 )}
                 className={`px-2 py-1 text-xs rounded-full border transition-colors ${filters.acquisitionType?.includes(option.value as any)
                   ? 'bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-300'

@@ -9,7 +9,6 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
-  closestCenter,
   rectIntersection,
 } from '@dnd-kit/core';
 import {
@@ -17,29 +16,18 @@ import {
 } from '@dnd-kit/sortable';
 import { Appointment } from '../../types/appointment';
 import { AppointmentCard } from './AppointmentCard';
+import { DragData, DropData } from './DragDropUtils';
 
 interface DragDropProviderProps {
   children: React.ReactNode;
-  appointments: Appointment[];
   onAppointmentMove: (appointmentId: string, newDate: Date, newTime: string) => Promise<void>;
   onAppointmentReorder?: (appointmentId: string, newIndex: number) => Promise<void>;
 }
 
-interface DragData {
-  type: 'appointment';
-  appointment: Appointment;
-}
 
-interface DropData {
-  type: 'time-slot' | 'day' | 'appointment-area';
-  date: Date;
-  time?: string;
-  index?: number;
-}
 
 export function DragDropProvider({
   children,
-  appointments,
   onAppointmentMove,
   onAppointmentReorder,
 }: DragDropProviderProps) {
@@ -61,7 +49,7 @@ export function DragDropProvider({
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event;
     const dragData = active.data.current as DragData;
-    
+
     if (dragData?.type === 'appointment') {
       setActiveAppointment(dragData.appointment);
       setIsDragging(true);
@@ -71,7 +59,7 @@ export function DragDropProvider({
   const handleDragOver = useCallback((event: DragOverEvent) => {
     // Handle drag over logic if needed for visual feedback
     const { over } = event;
-    
+
     if (over) {
       const dropData = over.data.current as DropData;
       // Add visual feedback for valid drop zones
@@ -83,7 +71,7 @@ export function DragDropProvider({
 
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     setActiveAppointment(null);
     setIsDragging(false);
 
@@ -133,16 +121,16 @@ export function DragDropProvider({
       <div className={isDragging ? 'dragging' : ''}>
         {children}
       </div>
-      
+
       <DragOverlay>
         {activeAppointment && (
           <div className="opacity-90 transform rotate-3 shadow-lg">
             <AppointmentCard
               appointment={activeAppointment}
               isDragging={true}
-              onClick={() => {}}
-              onEdit={() => {}}
-              onDelete={() => {}}
+              onClick={() => { }}
+              onEdit={() => { }}
+              onDelete={() => { }}
             />
           </div>
         )}
@@ -150,47 +138,3 @@ export function DragDropProvider({
     </DndContext>
   );
 }
-
-// Helper function to create drag data for appointments
-export function createAppointmentDragData(appointment: Appointment): DragData {
-  return {
-    type: 'appointment',
-    appointment,
-  };
-}
-
-// Helper function to create drop data for time slots
-export function createTimeSlotDropData(date: Date, time: string): DropData {
-  return {
-    type: 'time-slot',
-    date,
-    time,
-  };
-}
-
-// Helper function to create drop data for days
-export function createDayDropData(date: Date): DropData {
-  return {
-    type: 'day',
-    date,
-  };
-}
-
-// Helper function to create drop data for appointment areas
-export function createAppointmentAreaDropData(date: Date, index: number): DropData {
-  return {
-    type: 'appointment-area',
-    date,
-    index,
-  };
-}
-
-// CSS classes for drag and drop states
-export const dragDropStyles = {
-  draggable: 'cursor-grab active:cursor-grabbing transition-transform hover:scale-105',
-  dragging: 'opacity-50 transform scale-95',
-  dropZone: 'transition-colors duration-200',
-  dropZoneActive: 'bg-blue-50 border-blue-200 border-dashed',
-  dropZoneValid: 'bg-green-50 border-green-200',
-  dropZoneInvalid: 'bg-red-50 border-red-200',
-};

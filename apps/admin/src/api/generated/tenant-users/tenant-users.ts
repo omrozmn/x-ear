@@ -25,8 +25,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CompanyInfoUpdate,
   HTTPValidationError,
   ResponseEnvelopeListUserRead,
+  ResponseEnvelopeTenantCompanyResponse,
   ResponseEnvelopeUserRead,
   TenantUserCreate,
   TenantUserUpdate
@@ -48,7 +50,7 @@ export const listTenantUsers = (
       
       
       return adminApi<ResponseEnvelopeListUserRead>(
-      {url: `/api/`, method: 'GET', signal
+      {url: `/api/tenant/users`, method: 'GET', signal
     },
       );
     }
@@ -58,7 +60,7 @@ export const listTenantUsers = (
 
 export const getListTenantUsersQueryKey = () => {
     return [
-    `/api/`
+    `/api/tenant/users`
     ] as const;
     }
 
@@ -319,6 +321,163 @@ export const useUpdateTenantUser = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getUpdateTenantUserMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get company information for current tenant
+ * @summary Get Tenant Company
+ */
+export const getTenantCompany = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeTenantCompanyResponse>(
+      {url: `/api/tenant/company`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetTenantCompanyQueryKey = () => {
+    return [
+    `/api/tenant/company`
+    ] as const;
+    }
+
+    
+export const getGetTenantCompanyQueryOptions = <TData = Awaited<ReturnType<typeof getTenantCompany>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCompany>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTenantCompanyQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTenantCompany>>> = ({ signal }) => getTenantCompany(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTenantCompany>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetTenantCompanyQueryResult = NonNullable<Awaited<ReturnType<typeof getTenantCompany>>>
+export type GetTenantCompanyQueryError = unknown
+
+
+export function useGetTenantCompany<TData = Awaited<ReturnType<typeof getTenantCompany>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCompany>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTenantCompany>>,
+          TError,
+          Awaited<ReturnType<typeof getTenantCompany>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetTenantCompany<TData = Awaited<ReturnType<typeof getTenantCompany>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCompany>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTenantCompany>>,
+          TError,
+          Awaited<ReturnType<typeof getTenantCompany>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetTenantCompany<TData = Awaited<ReturnType<typeof getTenantCompany>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCompany>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Tenant Company
+ */
+
+export function useGetTenantCompany<TData = Awaited<ReturnType<typeof getTenantCompany>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCompany>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetTenantCompanyQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Update company information for current tenant
+ * @summary Update Tenant Company
+ */
+export const updateTenantCompany = (
+    companyInfoUpdate: CompanyInfoUpdate,
+ ) => {
+      
+      
+      return adminApi<ResponseEnvelopeTenantCompanyResponse>(
+      {url: `/api/tenant/company`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: companyInfoUpdate
+    },
+      );
+    }
+  
+
+
+export const getUpdateTenantCompanyMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantCompany>>, TError,{data: CompanyInfoUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateTenantCompany>>, TError,{data: CompanyInfoUpdate}, TContext> => {
+
+const mutationKey = ['updateTenantCompany'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTenantCompany>>, {data: CompanyInfoUpdate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateTenantCompany(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTenantCompanyMutationResult = NonNullable<Awaited<ReturnType<typeof updateTenantCompany>>>
+    export type UpdateTenantCompanyMutationBody = CompanyInfoUpdate
+    export type UpdateTenantCompanyMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Tenant Company
+ */
+export const useUpdateTenantCompany = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantCompany>>, TError,{data: CompanyInfoUpdate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateTenantCompany>>,
+        TError,
+        {data: CompanyInfoUpdate},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateTenantCompanyMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

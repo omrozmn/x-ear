@@ -1,0 +1,24 @@
+{% extends "base.txt" %}
+
+{% block content %}
+Yeni Fatura Oluşturuldu
+
+Merhaba,
+
+Hesabınız için yeni bir fatura oluşturuldu. Fatura detayları aşağıdaki gibidir:
+
+Fatura No: {{ invoice_number }}
+Tutar: {{ amount }} {{ currency }}
+Son Ödeme Tarihi: {{ due_date }}
+Durum: {{ payment_status }}
+
+{% if payment_status == "unpaid" or payment_status == "ödenmedi" %}
+ÖDEME TALİMATLARI:
+{{ payment_instructions }}
+{% endif %}
+
+Faturanızı görüntülemek için:
+{{ invoice_link }}
+
+Herhangi bir sorunuz varsa, lütfen bizimle iletişime geçin.
+{% endblock %}

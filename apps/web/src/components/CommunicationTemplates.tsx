@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import {listCommunicationTemplates,
+import {
+  listCommunicationTemplates,
   updateCommunicationTemplate,
   createCommunicationTemplates,
-  deleteCommunicationTemplate} from '@/api/client/communications.client';
+  deleteCommunicationTemplate,
+  RoutersCommunicationsTemplateCreate
+} from '@/api/client/communications.client';
 // CommunicationTemplate type defined locally since schema may not export it
 import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
+
+interface ResponseEnvelope<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
 
 interface CommunicationTemplate {
   id?: string;
@@ -128,11 +137,12 @@ const CommunicationTemplates: React.FC = () => {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await listCommunicationTemplates() as any;
+      const response = await listCommunicationTemplates() as unknown as ResponseEnvelope<CommunicationTemplate[]>;
 
       if (response?.success && response?.data) {
-        // Filter out templates with undefined id
-        const validTemplates = (response.data || []).filter((template: any) => template.id !== undefined) as CommunicationTemplate[];
+        // Filter out templates with undefined id and map to local interface
+        const validTemplates = (response.data || [])
+          .filter((template) => template.id !== undefined);
         setTemplates(validTemplates);
       } else {
         setTemplates([]);
@@ -207,10 +217,10 @@ const CommunicationTemplates: React.FC = () => {
 
       if (selectedTemplate?.id) {
         // Update existing template
-        const response = await updateCommunicationTemplate(
+        const response: ResponseEnvelope<CommunicationTemplate> = await updateCommunicationTemplate(
           selectedTemplate.id,
-          formData
-        ) as any;
+          formData as unknown as RoutersCommunicationsTemplateCreate
+        ) as unknown as ResponseEnvelope<CommunicationTemplate>;
 
         if (response?.success) {
           await loadTemplates();
@@ -221,7 +231,7 @@ const CommunicationTemplates: React.FC = () => {
         }
       } else {
         // Create new template
-        const response = await createCommunicationTemplates(formData) as any;
+        const response: ResponseEnvelope<CommunicationTemplate> = await createCommunicationTemplates(formData as unknown as RoutersCommunicationsTemplateCreate) as unknown as ResponseEnvelope<CommunicationTemplate>;
 
         if (response?.success) {
           await loadTemplates();
@@ -245,7 +255,7 @@ const CommunicationTemplates: React.FC = () => {
     if (!confirm(`Are you sure you want to delete "${template.name}"?`)) return;
 
     try {
-      const response = await deleteCommunicationTemplate(template.id!) as any;
+      const response = await deleteCommunicationTemplate(template.id!) as unknown as ResponseEnvelope<CommunicationTemplate>;
 
       if (response?.success) {
         await loadTemplates();

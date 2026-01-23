@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/birfatura.py
+# hypothesis_version: 6.150.2
+
+['createdAt', 'edocumentStatus', 'endDate', 'incoming', 'invoiceNumber', 'startDate', 'totalAmount', 'totalIncoming', 'totalOutgoing', 'userId', 'userName']

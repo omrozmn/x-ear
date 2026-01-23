@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/sms_integration.py
+# hypothesis_version: 6.150.2
+
+[400, 403, 404, 500, '.pdf', '/admin/headers', '/api/sms', '/audiences', '/audiences/upload', '/config', '/credit', '/documents/submit', '/documents/upload', '/headers', '/packages', 'Access denied', 'File not found', 'Header not found', 'SMS Integration', 'Uploaded Audience', 'approved', 'audiences', 'createSmAudiences', 'createSmHeaders', 'deleteSmDocument', 'documentType', 'downloadUrl', 'file_upload', 'filename', 'general', 'getSmDocumentFile', 'ignore', 'is_default', 'listSmAdminHeaders', 'listSmAudiences', 'listSmConfig', 'listSmCredit', 'listSmHeaders', 'listSmPackages', 'page', 'path', 'perPage', 'size', 'sms-documents', 'status', 'submitted', 'submittedAt', 'total', 'totalPages', 'updateSmConfig', 'uploads', 'utf-8']

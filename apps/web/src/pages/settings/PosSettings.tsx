@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import {
     useUpdatePaymentPoPaytrConfig,
     useListPaymentPoPaytrConfig
 } from '@/api/client/payment-integrations.client';
-import { CreditCard, Building2, Check, AlertCircle } from 'lucide-react';
+import { CreditCard, Check, AlertCircle } from 'lucide-react';
 
 type PosProvider = 'xear' | 'paytr' | 'iyzico' | 'none';
 
@@ -25,7 +25,7 @@ const PROVIDER_OPTIONS = [
 ];
 
 export const PosSettings = () => {
-    const { register, handleSubmit, reset, setValue, watch } = useForm<PosConfigForm>({
+    const { register, handleSubmit, reset, watch } = useForm<PosConfigForm>({
         defaultValues: {
             provider: 'none',
             merchant_id: '',

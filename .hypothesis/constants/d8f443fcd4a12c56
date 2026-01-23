@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/email.py
+# hypothesis_version: 6.150.2
+
+[100, 255, 500, 'Tenant', 'email_log', 'email_template', 'is_active', 'language_code', 'name', 'sent_at', 'smtp_configs', 'status', 'tenant_id', 'tenant_smtp_config', 'tenants.id']

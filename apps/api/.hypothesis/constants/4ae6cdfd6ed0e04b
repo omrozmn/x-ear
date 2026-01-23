@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_invoices.py
+# hypothesis_version: 6.150.2
+
+[100, 400, 404, 500, '/api/admin/invoices', '/{invoice_id}', '/{invoice_id}/pdf', 'Admin Invoices', 'Invoice not found', 'PDF not available', 'active', 'createAdminInvoice', 'data', 'getAdminInvoice', 'invoice', 'items', 'limit', 'listAdminInvoicePdf', 'listAdminInvoices', 'page', 'pagination', 'paid', 'success', 'tenantName', 'total', 'totalPages', 'url']

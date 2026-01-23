@@ -2716,7 +2716,7 @@
         "parameters": [
           {
             "name": "authorization",
-            "in": "query",
+            "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
@@ -10562,7 +10562,7 @@
           "Invoices"
         ],
         "summary": "Send To Gib",
-        "description": "Send invoice to GIB (Generate e-Fatura/e-Arşiv)",
+        "description": "Send invoice to GIB (Generate e-Fatura/e-Ar\u015fiv)",
         "operationId": "createInvoiceSendToGib",
         "security": [
           {
@@ -10906,7 +10906,7 @@
           "SGK"
         ],
         "summary": "Query E Receipt",
-        "description": "E-reçete sorgulama endpoint'i",
+        "description": "E-re\u00e7ete sorgulama endpoint'i",
         "operationId": "createSgkEReceiptQuery",
         "requestBody": {
           "content": {
@@ -11020,7 +11020,7 @@
           "SGK"
         ],
         "summary": "Query Patient Rights",
-        "description": "SGK hasta hakları sorgulama endpoint'i",
+        "description": "SGK hasta haklar\u0131 sorgulama endpoint'i",
         "operationId": "createSgkPatientRightQuery",
         "requestBody": {
           "content": {
@@ -11065,7 +11065,7 @@
           "SGK"
         ],
         "summary": "Create Sgk Workflow",
-        "description": "SGK workflow oluşturma endpoint'i",
+        "description": "SGK workflow olu\u015fturma endpoint'i",
         "operationId": "createSgkWorkflowCreate",
         "requestBody": {
           "content": {
@@ -11110,7 +11110,7 @@
           "SGK"
         ],
         "summary": "Update Sgk Workflow",
-        "description": "SGK workflow güncelleme endpoint'i",
+        "description": "SGK workflow g\u00fcncelleme endpoint'i",
         "operationId": "updateSgkWorkflowUpdate",
         "security": [
           {
@@ -11166,7 +11166,7 @@
           "SGK"
         ],
         "summary": "Get Sgk Workflow",
-        "description": "SGK workflow detayları endpoint'i",
+        "description": "SGK workflow detaylar\u0131 endpoint'i",
         "operationId": "getSgkWorkflow",
         "security": [
           {
@@ -13649,7 +13649,7 @@
           "UnifiedCash"
         ],
         "summary": "Get Unified Cash Records",
-        "description": "Unified cash records endpoint - returns all financial records from one place.\n\nCombines:\n- Sales (satışlar)\n- PaymentRecords (ödeme kayıtları)\n- Cash Records (nakit kayıtları)",
+        "description": "Unified cash records endpoint - returns all financial records from one place.\n\nCombines:\n- Sales (sat\u0131\u015flar)\n- PaymentRecords (\u00f6deme kay\u0131tlar\u0131)\n- Cash Records (nakit kay\u0131tlar\u0131)",
         "operationId": "listUnifiedCashRecords",
         "security": [
           {
@@ -23016,6 +23016,319 @@
         }
       }
     },
+    "/admin/integrations/smtp/config": {
+      "get": {
+        "tags": [
+          "SMTP Configuration"
+        ],
+        "summary": "Get Smtp Config",
+        "description": "Get active SMTP configuration for current tenant.\n\nPassword is never included in response for security.\nReturns null if no configuration exists (will use global fallback).\n\n**Permissions Required:** `integrations.smtp.view`\n\n**Response:**\n- Returns the active configuration (password excluded)\n- Returns null if no configuration exists\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"config_123\",\n    \"tenantId\": \"tenant_456\",\n    \"host\": \"mail.example.com\",\n    \"port\": 465,\n    \"username\": \"info@example.com\",\n    \"fromEmail\": \"info@example.com\",\n    \"fromName\": \"Example Company\",\n    \"useTls\": false,\n    \"useSsl\": true,\n    \"timeout\": 30,\n    \"isActive\": true,\n    \"createdAt\": \"2025-01-23T10:00:00Z\",\n    \"updatedAt\": \"2025-01-23T10:00:00Z\"\n  }\n}\n```",
+        "operationId": "getSMTPConfig",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_Union_SMTPConfigResponse__NoneType__"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "SMTP Configuration"
+        ],
+        "summary": "Create Or Update Smtp Config",
+        "description": "Create or update SMTP configuration for current tenant.\n\nPassword is encrypted before storage using AES-256-GCM.\nConfiguration is validated by attempting a test connection.\n\n**Permissions Required:** `integrations.smtp.manage`\n\n**Request Body:**\n- host: SMTP server hostname or IP\n- port: SMTP server port (1-65535)\n- username: SMTP authentication username\n- password: SMTP authentication password (will be encrypted)\n- fromEmail: From email address\n- fromName: From display name\n- useTls: Use STARTTLS (default: false)\n- useSsl: Use SSL/TLS (default: true)\n- timeout: Connection timeout in seconds (5-120, default: 30)\n\n**Response:**\n- Returns the created/updated configuration (password excluded)\n- Returns 400 if validation fails\n- Returns 400 if SMTP connection test fails\n\n**Example:**\n```json\n{\n  \"host\": \"mail.example.com\",\n  \"port\": 465,\n  \"username\": \"info@example.com\",\n  \"password\": \"secret123\",\n  \"fromEmail\": \"info@example.com\",\n  \"fromName\": \"Example Company\",\n  \"useSsl\": true,\n  \"timeout\": 30\n}\n```",
+        "operationId": "createOrUpdateSMTPConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SMTPConfigCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_SMTPConfigResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/integrations/smtp/test": {
+      "post": {
+        "tags": [
+          "SMTP Configuration"
+        ],
+        "summary": "Send Test Email",
+        "description": "Send a test email to verify SMTP configuration.\n\nUses a simple test template with current configuration.\nEmail is sent asynchronously in the background.\n\n**Permissions Required:** `integrations.smtp.test`\n\n**Request Body:**\n- recipient: Email address to send test email to\n\n**Response:**\n- Returns 202 Accepted (email queued for sending)\n- Returns 404 if no SMTP configuration exists\n\n**Example Request:**\n```json\n{\n  \"recipient\": \"test@example.com\"\n}\n```\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"success\": true,\n    \"message\": \"Test email queued successfully\",\n    \"sentAt\": \"2025-01-23T10:00:00Z\"\n  }\n}\n```",
+        "operationId": "sendTestEmail",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendTestEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_SendTestEmailResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/integrations/smtp/logs": {
+      "get": {
+        "tags": [
+          "Email Logs"
+        ],
+        "summary": "Get Email Logs",
+        "description": "Get email logs with pagination and filtering.\n\nReturns a paginated list of email logs for the current tenant.\nSupports filtering by status, recipient, and date range.\n\n**Permissions Required:** `integrations.smtp.logs.view`\n\n**Query Parameters:**\n- page: Page number (default: 1, min: 1)\n- perPage: Items per page (default: 25, min: 10, max: 100)\n- status: Filter by status (pending, sent, failed, bounced)\n- recipient: Filter by recipient email (partial match)\n- dateFrom: Filter by date from (ISO-8601 format)\n- dateTo: Filter by date to (ISO-8601 format)\n\n**Response:**\n- items: List of email logs\n- total: Total number of items matching filters\n- page: Current page number\n- perPage: Items per page\n- totalPages: Total number of pages\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"items\": [\n      {\n        \"id\": \"log_123\",\n        \"tenantId\": \"tenant_456\",\n        \"recipient\": \"user@example.com\",\n        \"subject\": \"Password Reset Request\",\n        \"bodyPreview\": \"You requested a password reset...\",\n        \"status\": \"sent\",\n        \"sentAt\": \"2025-01-23T10:00:00Z\",\n        \"errorMessage\": null,\n        \"retryCount\": 0,\n        \"templateName\": \"password_reset\",\n        \"scenario\": \"password_reset\",\n        \"createdAt\": \"2025-01-23T09:59:00Z\",\n        \"updatedAt\": \"2025-01-23T10:00:00Z\"\n      }\n    ],\n    \"total\": 150,\n    \"page\": 1,\n    \"perPage\": 25,\n    \"totalPages\": 6\n  }\n}\n```",
+        "operationId": "getEmailLogs",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25,
+              "title": "Perpage"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "recipient",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Recipient"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Datefrom"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dateto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_EmailLogListResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/emails/send": {
+      "post": {
+        "tags": [
+          "Email Logs"
+        ],
+        "summary": "Send Manual Email",
+        "description": "Send manual email to one or more recipients.\n    \n    Allows administrators to send custom emails using the configured SMTP settings.\n    Emails are queued and sent asynchronously in the background.\n    \n    **Permissions Required:** `emails.send`\n    \n    **Request Body:**\n    - recipients: List of email addresses (1-100)\n    - subject: Email subject (1-500 characters)\n    - bodyHtml: HTML email body (required)\n    - bodyText: Plain text email body (optional, auto-generated if not provided)\n    - templateName: Template name if using template (optional)\n    - templateVariables: Template variables (optional)\n    \n    **Response:**\n    - emailIds: List of email log IDs for tracking\n    - queuedCount: Number of emails queued for sending\n    - message: Status message\n    - Returns 202 Accepted (emails queued for sending)\n    - Returns 404 if no SMTP configuration exists\n    \n    **Example Request:**\n    ```json\n    {\n      \"recipients\": [\"user1@example.com\", \"user2@example.com\"],\n      \"subject\": \"Important Announcement\",\n      \"bodyHtml\": \"<h1>Hello</h1><p>This is an important announcement.</p>\",\n      \"bodyText\": \"Hello\n\nThis is an important announcement.\"\n    }\n    ```\n    \n    **Example Response:**\n    ```json\n    {\n      \"success\": true,\n      \"data\": {\n        \"emailIds\": [\"log_123\", \"log_456\"],\n        \"queuedCount\": 2,\n        \"message\": \"2 emails queued successfully\"\n      }\n    }\n    ```",
+        "operationId": "sendManualEmail",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_SendEmailResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/commissions/create": {
       "post": {
         "tags": [
@@ -24342,123 +24655,6 @@
         ],
         "title": "AIStatusResponse",
         "description": "Complete AI status response."
-      },
-      "ActionPlanResponse": {
-        "properties": {
-          "plan_id": {
-            "type": "string",
-            "title": "Plan Id",
-            "description": "Unique plan identifier"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status",
-            "description": "Plan status"
-          },
-          "steps": {
-            "items": {
-              "$ref": "#/components/schemas/ActionStepResponse"
-            },
-            "type": "array",
-            "title": "Steps",
-            "description": "Action steps"
-          },
-          "overall_risk_level": {
-            "type": "string",
-            "title": "Overall Risk Level",
-            "description": "Overall risk level"
-          },
-          "requires_approval": {
-            "type": "boolean",
-            "title": "Requires Approval",
-            "description": "Whether approval is required"
-          },
-          "plan_hash": {
-            "type": "string",
-            "title": "Plan Hash",
-            "description": "Hash of the plan for integrity"
-          },
-          "approval_token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Approval Token",
-            "description": "Approval token if required"
-          },
-          "created_at": {
-            "type": "string",
-            "title": "Created At",
-            "description": "Creation timestamp"
-          }
-        },
-        "type": "object",
-        "required": [
-          "plan_id",
-          "status",
-          "steps",
-          "overall_risk_level",
-          "requires_approval",
-          "plan_hash",
-          "created_at"
-        ],
-        "title": "ActionPlanResponse",
-        "description": "Response containing an action plan."
-      },
-      "ActionStepResponse": {
-        "properties": {
-          "step_number": {
-            "type": "integer",
-            "title": "Step Number",
-            "description": "Step number in sequence"
-          },
-          "tool_name": {
-            "type": "string",
-            "title": "Tool Name",
-            "description": "Tool to execute"
-          },
-          "tool_schema_version": {
-            "type": "string",
-            "title": "Tool Schema Version",
-            "description": "Schema version of the tool"
-          },
-          "parameters": {
-            "type": "object",
-            "title": "Parameters",
-            "description": "Tool parameters"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description",
-            "description": "Step description"
-          },
-          "risk_level": {
-            "type": "string",
-            "title": "Risk Level",
-            "description": "Risk level of this step"
-          },
-          "requires_approval": {
-            "type": "boolean",
-            "title": "Requires Approval",
-            "description": "Whether this step requires approval"
-          }
-        },
-        "type": "object",
-        "required": [
-          "step_number",
-          "tool_name",
-          "tool_schema_version",
-          "parameters",
-          "description",
-          "risk_level",
-          "requires_approval"
-        ],
-        "title": "ActionStepResponse",
-        "description": "Response for a single action step."
       },
       "ActivityLogStats": {
         "properties": {
@@ -28712,6 +28908,17 @@
             ],
             "description": "Classified intent"
           },
+          "action_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ai__api__chat__ActionPlanResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Generated action plan if applicable"
+          },
           "response": {
             "anyOf": [
               {
@@ -29346,7 +29553,7 @@
           "plan": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ActionPlanResponse"
+                "$ref": "#/components/schemas/ai__api__actions__ActionPlanResponse"
               },
               {
                 "type": "null"
@@ -32262,6 +32469,175 @@
         "type": "object",
         "title": "EReceiptUpdate"
       },
+      "EmailLogListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EmailLogResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "perPage": {
+            "type": "integer",
+            "title": "Perpage"
+          },
+          "totalPages": {
+            "type": "integer",
+            "title": "Totalpages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage",
+          "totalPages"
+        ],
+        "title": "EmailLogListResponse",
+        "description": "Schema for email log list response."
+      },
+      "EmailLogResponse": {
+        "properties": {
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat",
+            "description": "Last update timestamp"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for the resource"
+          },
+          "tenantId": {
+            "type": "string",
+            "title": "Tenantid"
+          },
+          "recipient": {
+            "type": "string",
+            "title": "Recipient"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "bodyPreview": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bodypreview"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EmailStatus"
+          },
+          "sentAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sentat"
+          },
+          "errorMessage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errormessage"
+          },
+          "retryCount": {
+            "type": "integer",
+            "title": "Retrycount",
+            "default": 0
+          },
+          "templateName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Templatename"
+          },
+          "scenario": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenantId",
+          "recipient",
+          "subject",
+          "status"
+        ],
+        "title": "EmailLogResponse",
+        "description": "Schema for email log response."
+      },
+      "EmailStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "sent",
+          "failed",
+          "bounced"
+        ],
+        "title": "EmailStatus",
+        "description": "Email status enum"
+      },
       "EntityExtractionRequest": {
         "properties": {
           "imagePath": {
@@ -32463,7 +32839,7 @@
           "plan": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ActionPlanResponse"
+                "$ref": "#/components/schemas/ai__api__actions__ActionPlanResponse"
               },
               {
                 "type": "null"
@@ -32623,7 +32999,7 @@
             "type": "string",
             "title": "Partyid"
           },
-          "sgkInfo": {
+          "sgk_info_json": {
             "anyOf": [
               {
                 "type": "object"
@@ -32632,7 +33008,7 @@
                 "type": "null"
               }
             ],
-            "title": "Sgkinfo"
+            "title": "Sgk Info Json"
           }
         },
         "type": "object",
@@ -33805,7 +34181,7 @@
       },
       "InvoiceCopyCancelResponse": {
         "properties": {
-          "copy": {
+          "copyInvoice": {
             "$ref": "#/components/schemas/InvoiceRead"
           },
           "cancellation": {
@@ -33814,6 +34190,7 @@
         },
         "type": "object",
         "required": [
+          "copyInvoice",
           "cancellation"
         ],
         "title": "InvoiceCopyCancelResponse"
@@ -37018,16 +37395,16 @@
             ],
             "title": "Branchname"
           },
-          "tags": {
+          "tags_json": {
             "anyOf": [
               {},
               {
                 "type": "null"
               }
             ],
-            "title": "Tags"
+            "title": "Tags Json"
           },
-          "sgkInfo": {
+          "sgk_info_json": {
             "anyOf": [
               {
                 "type": "object"
@@ -37036,7 +37413,7 @@
                 "type": "null"
               }
             ],
-            "title": "Sgkinfo"
+            "title": "Sgk Info Json"
           },
           "roles": {
             "anyOf": [
@@ -37072,9 +37449,9 @@
       },
       "PartyRoleRead": {
         "properties": {
-          "code": {
+          "role_code": {
             "type": "string",
-            "title": "Code"
+            "title": "Role Code"
           },
           "assignedAt": {
             "anyOf": [
@@ -37091,7 +37468,7 @@
         },
         "type": "object",
         "required": [
-          "code"
+          "role_code"
         ],
         "title": "PartyRoleRead"
       },
@@ -39213,7 +39590,7 @@
           "authorizedCourt": {
             "type": "string",
             "title": "Authorizedcourt",
-            "default": "İstanbul (Çağlayan)"
+            "default": "\u0130stanbul (\u00c7a\u011flayan)"
           },
           "documentId": {
             "anyOf": [
@@ -39579,7 +39956,7 @@
           "authorizedCourt": {
             "type": "string",
             "title": "Authorizedcourt",
-            "default": "İstanbul (Çağlayan)"
+            "default": "\u0130stanbul (\u00c7a\u011flayan)"
           },
           "documentId": {
             "anyOf": [
@@ -40447,6 +40824,9 @@
           },
           "priceDifference": {
             "anyOf": [
+              {
+                "type": "number"
+              },
               {
                 "type": "string"
               },
@@ -42970,6 +43350,73 @@
         },
         "type": "object",
         "title": "ResponseEnvelope[DocumentRead]"
+      },
+      "ResponseEnvelope_EmailLogListResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailLogListResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "ResponseEnvelope[EmailLogListResponse]"
       },
       "ResponseEnvelope_FileListResponse_": {
         "properties": {
@@ -49520,6 +49967,73 @@
         "type": "object",
         "title": "ResponseEnvelope[RoleResponse]"
       },
+      "ResponseEnvelope_SMTPConfigResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SMTPConfigResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "ResponseEnvelope[SMTPConfigResponse]"
+      },
       "ResponseEnvelope_SaleRead_": {
         "properties": {
           "success": {
@@ -49720,6 +50234,140 @@
         },
         "type": "object",
         "title": "ResponseEnvelope[ScanQueueRead]"
+      },
+      "ResponseEnvelope_SendEmailResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SendEmailResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "ResponseEnvelope[SendEmailResponse]"
+      },
+      "ResponseEnvelope_SendTestEmailResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SendTestEmailResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "ResponseEnvelope[SendTestEmailResponse]"
       },
       "ResponseEnvelope_SignupResponse_": {
         "properties": {
@@ -50796,6 +51444,73 @@
         },
         "type": "object",
         "title": "ResponseEnvelope[Union[AuthUserRead, AdminUserRead]]"
+      },
+      "ResponseEnvelope_Union_SMTPConfigResponse__NoneType__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SMTPConfigResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "ResponseEnvelope[Union[SMTPConfigResponse, NoneType]]"
       },
       "ResponseEnvelope_Union_SmsProviderConfigRead__NoneType__": {
         "properties": {
@@ -52294,6 +53009,191 @@
         ],
         "title": "SMSLogStatus"
       },
+      "SMTPConfigCreate": {
+        "properties": {
+          "host": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Host",
+            "description": "SMTP server hostname or IP"
+          },
+          "port": {
+            "type": "integer",
+            "maximum": 65535.0,
+            "minimum": 1.0,
+            "title": "Port",
+            "description": "SMTP server port"
+          },
+          "username": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Username",
+            "description": "SMTP authentication username"
+          },
+          "fromEmail": {
+            "type": "string",
+            "format": "email",
+            "title": "Fromemail",
+            "description": "From email address"
+          },
+          "fromName": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Fromname",
+            "description": "From display name"
+          },
+          "useTls": {
+            "type": "boolean",
+            "title": "Usetls",
+            "description": "Use STARTTLS",
+            "default": false
+          },
+          "useSsl": {
+            "type": "boolean",
+            "title": "Usessl",
+            "description": "Use SSL/TLS",
+            "default": true
+          },
+          "timeout": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 5.0,
+            "title": "Timeout",
+            "description": "Connection timeout in seconds",
+            "default": 30
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Password",
+            "description": "SMTP authentication password (will be encrypted)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host",
+          "port",
+          "username",
+          "fromEmail",
+          "fromName",
+          "password"
+        ],
+        "title": "SMTPConfigCreate",
+        "description": "Schema for creating SMTP configuration."
+      },
+      "SMTPConfigResponse": {
+        "properties": {
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat",
+            "description": "Last update timestamp"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for the resource"
+          },
+          "host": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Host",
+            "description": "SMTP server hostname or IP"
+          },
+          "port": {
+            "type": "integer",
+            "maximum": 65535.0,
+            "minimum": 1.0,
+            "title": "Port",
+            "description": "SMTP server port"
+          },
+          "username": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Username",
+            "description": "SMTP authentication username"
+          },
+          "fromEmail": {
+            "type": "string",
+            "format": "email",
+            "title": "Fromemail",
+            "description": "From email address"
+          },
+          "fromName": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Fromname",
+            "description": "From display name"
+          },
+          "useTls": {
+            "type": "boolean",
+            "title": "Usetls",
+            "description": "Use STARTTLS",
+            "default": false
+          },
+          "useSsl": {
+            "type": "boolean",
+            "title": "Usessl",
+            "description": "Use SSL/TLS",
+            "default": true
+          },
+          "timeout": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 5.0,
+            "title": "Timeout",
+            "description": "Connection timeout in seconds",
+            "default": 30
+          },
+          "tenantId": {
+            "type": "string",
+            "title": "Tenantid"
+          },
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "host",
+          "port",
+          "username",
+          "fromEmail",
+          "fromName",
+          "tenantId",
+          "isActive"
+        ],
+        "title": "SMTPConfigResponse",
+        "description": "SMTP configuration (password excluded for security)"
+      },
       "SaleCreate": {
         "properties": {
           "partyId": {
@@ -53235,6 +54135,108 @@
         ],
         "title": "SendEmail"
       },
+      "SendEmailRequest": {
+        "properties": {
+          "recipients": {
+            "items": {
+              "type": "string",
+              "format": "email"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Recipients",
+            "description": "Email recipients"
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Subject",
+            "description": "Email subject"
+          },
+          "bodyHtml": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Bodyhtml",
+            "description": "HTML email body"
+          },
+          "bodyText": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bodytext",
+            "description": "Plain text email body (optional)"
+          },
+          "templateName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Templatename",
+            "description": "Template name if using template"
+          },
+          "templateVariables": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Templatevariables",
+            "description": "Template variables"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipients",
+          "subject",
+          "bodyHtml"
+        ],
+        "title": "SendEmailRequest",
+        "description": "Schema for manual email sending."
+      },
+      "SendEmailResponse": {
+        "properties": {
+          "emailIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Emailids",
+            "description": "Email log IDs for tracking"
+          },
+          "queuedCount": {
+            "type": "integer",
+            "title": "Queuedcount",
+            "description": "Number of emails queued for sending"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "emailIds",
+          "queuedCount",
+          "message"
+        ],
+        "title": "SendEmailResponse",
+        "description": "Schema for email sending response."
+      },
       "SendSMS": {
         "properties": {
           "phoneNumber": {
@@ -53274,6 +54276,53 @@
           "message"
         ],
         "title": "SendSMS"
+      },
+      "SendTestEmailRequest": {
+        "properties": {
+          "recipient": {
+            "type": "string",
+            "format": "email",
+            "title": "Recipient",
+            "description": "Test email recipient"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient"
+        ],
+        "title": "SendTestEmailRequest",
+        "description": "Schema for test email request."
+      },
+      "SendTestEmailResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "sentAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sentat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "SendTestEmailResponse",
+        "description": "Schema for test email response."
       },
       "SendVerificationOtpRequest": {
         "properties": {
@@ -54808,7 +55857,7 @@
             ],
             "title": "Country",
             "description": "Country",
-            "default": "Türkiye"
+            "default": "T\u00fcrkiye"
           },
           "postalCode": {
             "anyOf": [
@@ -58194,6 +59243,123 @@
         ],
         "title": "WorkflowUpdateRequest"
       },
+      "ai__api__actions__ActionPlanResponse": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id",
+            "description": "Unique plan identifier"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Plan status"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/ai__api__actions__ActionStepResponse"
+            },
+            "type": "array",
+            "title": "Steps",
+            "description": "Action steps"
+          },
+          "overall_risk_level": {
+            "type": "string",
+            "title": "Overall Risk Level",
+            "description": "Overall risk level"
+          },
+          "requires_approval": {
+            "type": "boolean",
+            "title": "Requires Approval",
+            "description": "Whether approval is required"
+          },
+          "plan_hash": {
+            "type": "string",
+            "title": "Plan Hash",
+            "description": "Hash of the plan for integrity"
+          },
+          "approval_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Token",
+            "description": "Approval token if required"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "Creation timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_id",
+          "status",
+          "steps",
+          "overall_risk_level",
+          "requires_approval",
+          "plan_hash",
+          "created_at"
+        ],
+        "title": "ActionPlanResponse",
+        "description": "Response containing an action plan."
+      },
+      "ai__api__actions__ActionStepResponse": {
+        "properties": {
+          "step_number": {
+            "type": "integer",
+            "title": "Step Number",
+            "description": "Step number in sequence"
+          },
+          "tool_name": {
+            "type": "string",
+            "title": "Tool Name",
+            "description": "Tool to execute"
+          },
+          "tool_schema_version": {
+            "type": "string",
+            "title": "Tool Schema Version",
+            "description": "Schema version of the tool"
+          },
+          "parameters": {
+            "type": "object",
+            "title": "Parameters",
+            "description": "Tool parameters"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Step description"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level",
+            "description": "Risk level of this step"
+          },
+          "requires_approval": {
+            "type": "boolean",
+            "title": "Requires Approval",
+            "description": "Whether this step requires approval"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_number",
+          "tool_name",
+          "tool_schema_version",
+          "parameters",
+          "description",
+          "risk_level",
+          "requires_approval"
+        ],
+        "title": "ActionStepResponse",
+        "description": "Response for a single action step."
+      },
       "ai__api__admin__KillSwitchStatusResponse": {
         "properties": {
           "global_switch": {
@@ -58232,6 +59398,88 @@
         ],
         "title": "KillSwitchStatusResponse",
         "description": "Kill switch status response."
+      },
+      "ai__api__chat__ActionPlanResponse": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/ai__api__chat__ActionStepResponse"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "overall_risk_level": {
+            "type": "string",
+            "title": "Overall Risk Level"
+          },
+          "requires_approval": {
+            "type": "boolean",
+            "title": "Requires Approval"
+          },
+          "estimated_duration_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Duration Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_id",
+          "steps",
+          "overall_risk_level",
+          "requires_approval"
+        ],
+        "title": "ActionPlanResponse",
+        "description": "Action plan to be executed."
+      },
+      "ai__api__chat__ActionStepResponse": {
+        "properties": {
+          "step_number": {
+            "type": "integer",
+            "title": "Step Number"
+          },
+          "tool_name": {
+            "type": "string",
+            "title": "Tool Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "parameters": {
+            "type": "object",
+            "title": "Parameters"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level"
+          },
+          "requires_approval": {
+            "type": "boolean",
+            "title": "Requires Approval"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_number",
+          "tool_name",
+          "description",
+          "parameters",
+          "risk_level",
+          "requires_approval"
+        ],
+        "title": "ActionStepResponse",
+        "description": "Step in an action plan."
       },
       "ai__api__status__KillSwitchStatusResponse": {
         "properties": {

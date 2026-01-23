@@ -12,7 +12,7 @@ import {
 } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useDroppable } from '@dnd-kit/core';
-import { Button, Card, Text, Badge } from '@x-ear/ui-web';
+import { Button, Text, Badge } from '@x-ear/ui-web';
 import { Appointment } from '../../../types/appointment';
 import { useCalendarKeyboardNavigation } from '../../../hooks/useKeyboardNavigation';
 

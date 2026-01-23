@@ -8,10 +8,23 @@ import {
   useCreateAdminDebugExitImpersonation,
   getListAdminDebugAvailableRolesQueryKey,
 } from '@/api/client/admin.client';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, AuthStateUser } from '../../stores/authStore';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
 import { partyService } from '../../services/party.service';
 import { indexedDBManager } from '../../utils/indexeddb';
+
+interface RoleResponseData {
+  accessToken?: string;
+  effectiveRole?: string;
+  isImpersonating?: boolean;
+  realUserEmail?: string;
+  createAuthRefresh?: string;
+}
+
+interface RoleResponse {
+  success: boolean;
+  data: RoleResponseData;
+}
 
 interface DebugRoleSwitcherProps {
   darkMode?: boolean;
@@ -70,7 +83,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
 
         console.log('[DebugRoleSwitcher] Raw response:', response);
 
-        const data = (response as any)?.data || response;
+        const data = (response as unknown as RoleResponse)?.data || (response as unknown as RoleResponseData);
         console.log('[DebugRoleSwitcher] Extracted data:', data);
 
         if (data && (data.accessToken || data.effectiveRole)) {
@@ -79,10 +92,10 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
           if (data.accessToken && user) {
             const updatedUser = {
               ...user,
-              role: data.effectiveRole,
+              role: data.effectiveRole || user.role,
               isImpersonating: data.isImpersonating || true,
               realUserEmail: data.realUserEmail || user.email,
-            };
+            } as AuthStateUser;
 
             // Pass both access and refresh tokens to setAuth
             setAuth(updatedUser, data.accessToken, data.createAuthRefresh || null);
@@ -133,7 +146,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
           console.error('[DebugRoleSwitcher] Failed to clear IndexedDB:', e);
         }
 
-        const data = (response as any)?.data || response;
+        const data = (response as unknown as RoleResponse)?.data || (response as unknown as RoleResponseData);
 
         if (data?.accessToken && user) {
           const updatedUser = {
@@ -168,7 +181,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   const isImpersonating = user?.isImpersonating === true;
 
   // Response has { success, data: { roles: [...] } }
-  const roles = (rolesResponse as any)?.data?.roles || [];
+  const roles = (rolesResponse as unknown as { data?: { roles?: any[] } })?.data?.roles || [];
   const currentRole = user?.role || 'unknown';
 
   const handleRoleSwitch = (roleName: string) => {

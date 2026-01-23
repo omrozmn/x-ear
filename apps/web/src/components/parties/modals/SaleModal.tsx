@@ -8,10 +8,9 @@ import {
 } from '@x-ear/ui-web';
 import { CreditCard, FileText, X, Search, Package, DollarSign } from 'lucide-react';
 import { Party } from '../../../types/party/party-base.types';
-import { useInventory } from '../../../hooks/useInventory';
-import ProductSearch, { type Product } from '../../common/ProductSearch';
-import { useFuzzySearch } from '../../../utils/fuzzySearch';
-import {createPartyTimeline, createPartyActivities} from '@/api/client/parties.client';
+import { useInventory, InventoryItemRead } from '../../../hooks/useInventory';
+import { fuzzySearch } from '../../../utils/fuzzy-search';
+import { createPartyTimeline, createPartyActivities } from '@/api/client/parties.client';
 import { partyApiService } from '../../../services/party/party-api.service';
 import { SaleRead } from '@/api/generated/schemas';
 
@@ -19,13 +18,13 @@ interface SaleModalProps {
   isOpen: boolean;
   onClose: () => void;
   party: Party;
-  onSaleCreate: (sale: any) => void;
+  onSaleCreate: (sale: SaleRead) => void;
 }
 
 function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
   // Legacy UX'a uygun basit state
   const [partyStatus, setPartyStatus] = useState('worker');
-  const [selectedDevice, setSelectedDevice] = useState<any>(null);
+  const [selectedDevice, setSelectedDevice] = useState<InventoryItemRead | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [discount, setDiscount] = useState(0);
   const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('fixed'); // TL indirim
@@ -34,8 +33,6 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [devices, setDevices] = useState<any[]>([]);
-  const [devicesLoading, setDevicesLoading] = useState(false);
   const [installmentCount, setInstallmentCount] = useState(1);
   const [interestRate, setInterestRate] = useState(0);
 
@@ -46,20 +43,15 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
   const [productSearchTerm, setProductSearchTerm] = useState('');
   const [showProductDropdown, setShowProductDropdown] = useState(false);
 
-  const fuzzySearchUtil = new (require('../../../utils/fuzzySearch').FuzzySearchUtil)({
-    threshold: 0.6,
-    maxDistance: 3,
-    caseSensitive: false,
-    includeScore: true,
-    minLength: 1
-  });
-
   const filteredProducts = useMemo(() => {
     if (!productSearchTerm.trim()) {
       return products.slice(0, 10); // Show first 10 products when no search
     }
 
-    const searchResults = fuzzySearchUtil.search(productSearchTerm, products, ['name', 'brand', 'model', 'barcode', 'serialNumber']);
+    const searchResults = fuzzySearch(products, productSearchTerm, {
+      threshold: 0.6,
+      keys: ['name', 'brand', 'model', 'barcode', 'serialNumber']
+    });
     return searchResults.slice(0, 10).map(result => result.item);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productSearchTerm, products]);  // Click outside handler for dropdown
@@ -89,7 +81,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
       };
     }
 
-    const basePrice = selectedDevice.price * quantity;
+    const basePrice = (selectedDevice.price || 0) * quantity;
     const discountAmount = discountType === 'percentage'
       ? (basePrice * discount) / 100
       : discount;
@@ -142,9 +134,9 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
       const saleData = {
         devices: [{
           id: selectedDevice.id,
-          inventoryId: selectedDevice.inventoryId, // Add inventoryId for backend
+          inventoryId: selectedDevice.id, // Use ID as inventory ID
           ear: 'left', // Default ear side
-          listPrice: selectedDevice.price,
+          listPrice: selectedDevice.price || 0, // Fallback if price missing
           discountType: discountType,
           discountValue: discount,
           notes: notes
@@ -170,10 +162,12 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
           await createTimelineLog(party.id, notes, saleId);
         }
         if (saleId && party.id) {
-          await createSalesLog(party.id, saleData, saleId);
+          await createSalesLog(party.id, saleId);
         }
 
-        onSaleCreate(response.data);
+        if (response.data) {
+          onSaleCreate(response.data);
+        }
         handleClose();
       } else {
         setError(response.message || 'Satış kaydedilirken bir hata oluştu');
@@ -223,7 +217,8 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
         category: 'sales'
       };
 
-      await createPartyTimeline(partyId, timelineData as unknown as Parameters<typeof createPartyTimeline>[1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await createPartyTimeline(partyId, timelineData as any);
       console.log('Timeline log created successfully');
     } catch (error) {
       console.error('Error creating timeline log:', error);
@@ -232,7 +227,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
   };
 
   // Legacy'deki gibi sales log oluşturma (cashflow için)
-  const createSalesLog = async (partyId: string, saleData: any, saleId: string) => {
+  const createSalesLog = async (partyId: string, saleId: string) => {
     try {
       // Create activity log entry for cashflow tracking
       const activityData = {
@@ -270,7 +265,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
           <h2 className="text-xl font-bold text-gray-900">
             Yeni Satış - {party.firstName} {party.lastName}
           </h2>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
+          <button data-allow-raw="true" onClick={handleClose} className="text-gray-400 hover:text-gray-600">
             <X size={24} />
           </button>
         </div>
@@ -344,7 +339,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                                 {product.price?.toLocaleString('tr-TR')} TL
                               </div>
                               <div className="text-xs text-gray-500">
-                                Stok: {product.stock || 0}
+                                Stok: {product.availableInventory || 0}
                               </div>
                             </div>
                           </div>
@@ -393,15 +388,15 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   </div>
                   <div>
                     <span className="text-gray-600">Stok:</span>
-                    <span className={`font-medium ml-2 ${(selectedDevice.stock || 0) === 0 ? 'text-red-600' :
-                      (selectedDevice.stock || 0) <= 5 ? 'text-orange-600' : 'text-green-600'
+                    <span className={`font-medium ml-2 ${(selectedDevice.availableInventory || 0) === 0 ? 'text-red-600' :
+                      (selectedDevice.availableInventory || 0) <= 5 ? 'text-orange-600' : 'text-green-600'
                       }`}>
-                      {selectedDevice.stock || 0} adet
+                      {selectedDevice.availableInventory || 0} adet
                     </span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-gray-600">Barkod:</span>
-                    <span className="font-medium ml-2 font-mono text-xs">{selectedDevice.barcode || '-'}</span>
+                    <span className="font-medium ml-2 font-mono text-xs">{(selectedDevice.barcode as unknown as string) || '-'}</span>
                   </div>
                 </div>
               </div>
@@ -438,6 +433,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
               <label className="block text-sm font-medium text-gray-700 mb-3">Ödeme Yöntemi</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button
+                  data-allow-raw="true"
                   type="button"
                   onClick={() => setPaymentMethod('cash')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'cash'
@@ -449,6 +445,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   <span className="text-sm font-medium">Nakit</span>
                 </button>
                 <button
+                  data-allow-raw="true"
                   type="button"
                   onClick={() => setPaymentMethod('card')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'card'
@@ -460,6 +457,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   <span className="text-sm font-medium">Kart</span>
                 </button>
                 <button
+                  data-allow-raw="true"
                   type="button"
                   onClick={() => setPaymentMethod('transfer')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'transfer'
@@ -470,6 +468,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   <span className="text-sm font-medium">Havale</span>
                 </button>
                 <button
+                  data-allow-raw="true"
                   type="button"
                   onClick={() => setPaymentMethod('installment')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'installment'

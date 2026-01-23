@@ -4,20 +4,12 @@ import {
   User,
   Phone,
   Mail,
-  Calendar,
-  MapPin,
   CreditCard,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  MoreVertical,
   Edit,
   Trash2,
-  Download,
-  Upload,
   MessageSquare
 } from 'lucide-react';
-import { useDeleteParty } from '../../hooks/useParties';
+// import { useDeleteParty } from '../../hooks/useParties'; // Hook not used in this component
 import type { Party } from '../../types/party/index';
 import { PartyCommunicationIntegration } from './PartyCommunicationIntegration';
 import {
@@ -92,7 +84,7 @@ export function PartyList({
   onEdit,
   onDelete,
   onTagClick,
-  onBulkAction,
+  // onBulkAction, // Currently unused
   showSelection = false,
   showActions = true,
   viewMode = 'list',
@@ -106,13 +98,12 @@ export function PartyList({
 
   // Fetch branches for display
   const { data: branchesData } = useListBranches();
-  const branches = unwrapArray<BranchRead>(branchesData) || [];
+  const branches = useMemo(() => unwrapArray<BranchRead>(branchesData) || [], [branchesData]);
 
   // Helper to find branch name
   const getBranchName = useCallback((party: Party) => {
-    const p = party as any;
-    const branchId = p.branchId || p.branch_id;
-    const branchName = p.branchName || p.branch_name;
+    const branchId = party.branchId;
+    const branchName = party.branchName;
 
     if (branchName) return branchName;
     if (branchId) {

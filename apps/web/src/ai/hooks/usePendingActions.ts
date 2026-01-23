@@ -19,7 +19,7 @@
 
 import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { getPendingActions } from '@/api/client/ai.client';
 import { useAISessionStore } from '../stores/aiSessionStore';
 import { useAIContext } from './useAIContext';
 import type { ActionPlan, AIError, AIErrorCode } from '../types/ai.types';
@@ -28,10 +28,7 @@ import type { ActionPlan, AIError, AIErrorCode } from '../types/ai.types';
 // Constants
 // =============================================================================
 
-/** API base URL from environment */
-const API_BASE_URL = typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
-  : 'http://localhost:5003';
+// Removed unused constant API_BASE_URL
 
 /** Query key for pending actions */
 export const PENDING_ACTIONS_QUERY_KEY = 'ai-pending-actions';
@@ -107,9 +104,15 @@ interface PendingActionsResponse {
 /**
  * Parse error response to AIError
  */
+/**
+ * Parse error response to AIError
+ */
 function parseErrorResponse(error: unknown): AIError {
-  if (axios.isAxiosError(error) && error.response?.data) {
-    const data = error.response.data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const err = error as any;
+
+  if (err?.response?.data) {
+    const data = err.response.data;
 
     if (data.code && typeof data.code === 'string') {
       return {
@@ -122,7 +125,7 @@ function parseErrorResponse(error: unknown): AIError {
     }
 
     // Map HTTP status to error code
-    const status = error.response.status;
+    const status = err.response.status;
     let code: AIErrorCode = 'INFERENCE_ERROR';
 
     if (status === 429) {
@@ -206,7 +209,7 @@ export function usePendingActions(
   const pendingActionsFromStore = useAISessionStore((state) => state.pendingActions);
   const syncPendingActions = useAISessionStore((state) => state.syncPendingActions);
   const hasPendingActionInStore = useAISessionStore((state) => state.hasPendingAction);
-  const clearAllPending = useAISessionStore((state) => state.clearAll);
+  // const clearAllPending = useAISessionStore((state) => state.clearAll); // Unused
 
   // Query for fetching pending actions from backend
   const query = useQuery<PendingActionsResponse, AIError>({
@@ -220,26 +223,39 @@ export function usePendingActions(
       }
 
       try {
-        // Fetch pending actions for the current user/tenant
-        // Note: This endpoint may need to be implemented on the backend
-        // For now, we'll use the existing actions endpoint with status filter
-        const response = await axios.get<PendingActionsResponse>(
-          `${API_BASE_URL}/api/ai/actions`,
-          {
-            params: {
-              status: 'pending_approval',
-              tenant_id: context.tenant_id,
-              party_id: context.party_id,
-            },
-            withCredentials: true,
-          }
-        );
+        const response = await getPendingActions({
+          status: 'pending_approval',
+          tenant_id: context.tenant_id,
+          party_id: context.party_id,
+        });
 
-        return response.data;
+        return {
+          actions: (response.actions || []).map((apiPlan) => ({
+            planId: apiPlan.plan_id,
+            status: apiPlan.status as import('../types/ai.types').ActionPlanStatus,
+            overallRiskLevel: apiPlan.overall_risk_level as import('../types/ai.types').RiskLevel,
+            requiresApproval: apiPlan.requires_approval,
+            planHash: apiPlan.plan_hash,
+            approvalToken: apiPlan.approval_token || undefined,
+            createdAt: apiPlan.created_at,
+            steps: (apiPlan.steps || []).map((s: any) => ({
+              stepNumber: s.step_number,
+              toolName: s.tool_name,
+              toolSchemaVersion: s.tool_schema_version,
+              parameters: s.parameters || {},
+              description: s.description,
+              riskLevel: s.risk_level as import('../types/ai.types').RiskLevel,
+              requiresApproval: s.requires_approval,
+            })),
+          })),
+          total: response.total || 0
+        };
       } catch (error) {
         // If the endpoint doesn't exist or returns 404, return empty array
-        // This allows the hook to work even without backend support
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
+        // (axios error checking logic might differ slightly with orval/client wrapper but client throws axios error)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const err = error as any;
+        if (err.response?.status === 404) {
           return { actions: [], total: 0 };
         }
         throw parseErrorResponse(error);
@@ -249,7 +265,6 @@ export function usePendingActions(
     refetchInterval,
     staleTime: PENDING_ACTIONS_STALE_TIME,
     retry: 1,
-    // Don't throw on error, handle gracefully
     throwOnError: false,
   });
 
@@ -429,18 +444,24 @@ export async function prefetchPendingActions(
   await queryClient.prefetchQuery({
     queryKey: [PENDING_ACTIONS_QUERY_KEY, tenantId, partyId],
     queryFn: async () => {
-      const response = await axios.get<PendingActionsResponse>(
-        `${API_BASE_URL}/api/ai/actions`,
-        {
-          params: {
-            status: 'pending_approval',
-            tenant_id: tenantId,
-            party_id: partyId,
-          },
-          withCredentials: true,
-        }
-      );
-      return response.data;
+      const response = await getPendingActions({
+        status: 'pending_approval',
+        tenant_id: tenantId,
+        party_id: partyId,
+      });
+      return {
+        actions: (response.actions || []).map((apiPlan) => ({
+          planId: apiPlan.plan_id,
+          // Minimal mapping required for cache consistency
+          status: apiPlan.status as import('../types/ai.types').ActionPlanStatus,
+          overallRiskLevel: apiPlan.overall_risk_level as import('../types/ai.types').RiskLevel,
+          requiresApproval: apiPlan.requires_approval,
+          planHash: apiPlan.plan_hash,
+          createdAt: apiPlan.created_at,
+          steps: [], // Prefetch usually doesn't need deep steps, or map if critical
+        }) as unknown as ActionPlan), // assertive cast to match return type
+        total: response.total || 0
+      };
     },
     staleTime: PENDING_ACTIONS_STALE_TIME,
   });

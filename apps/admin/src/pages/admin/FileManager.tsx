@@ -81,8 +81,8 @@ const FileManager: React.FC = () => {
         try {
             const result = await processOcr({
                 data: {
-                    image_path: fileUrl,
-                    auto_crop: true
+                    imagePath: fileUrl,
+                    autoCrop: true
                 }
             });
 

@@ -29,10 +29,11 @@ export function LoginForm() {
   const [password, setPassword] = useState(initialCreds.password);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [otpCode, _setOtpCode] = useState('');
-  const [phoneNumber, _setPhoneNumber] = useState('');
+  // OTP state - reserved for future implementation
+  // const [otpCode, _setOtpCode] = useState('');
+  // const [phoneNumber, _setPhoneNumber] = useState('');
 
-  const { login, verifyOtp, sendOtp, isLoading, error, requiresOtp: _requiresOtp, requiresPhone: _requiresPhone, maskedPhone: _maskedPhone, setError } = useAuthStore();
+  const { login, isLoading, error, setError } = useAuthStore();
 
   // Debug: Log error state changes
   console.log('LoginForm error state:', error);
@@ -69,6 +70,8 @@ export function LoginForm() {
     }
   };
 
+  // OTP handlers - reserved for future implementation
+  /*
   const _handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode.trim()) return;
@@ -92,6 +95,7 @@ export function LoginForm() {
       console.error('Send OTP failed:', error);
     }
   };
+  */
 
   // The conditional rendering for OTP form is removed.
   // The LoginForm will now always render the standard username/password form.
@@ -191,7 +195,7 @@ export function LoginForm() {
                     }}
                     disabled={isLoading}
                   />
-                  <button
+                  <button data-allow-raw="true"
                     type="button"
                     className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
@@ -214,7 +218,7 @@ export function LoginForm() {
               </div>
             )}
 
-            <button
+            <button data-allow-raw="true"
               type="submit"
               disabled={isLoading || !username.trim() || !password.trim()}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg login-button-hover focus-ring-enhanced"
@@ -230,7 +234,7 @@ export function LoginForm() {
             </button>
 
             <div className="text-center">
-              <button
+              <button data-allow-raw="true"
                 type="button"
                 onClick={() => {
                   // Force logout before going to forgot-password

@@ -6,7 +6,7 @@ from pydantic import Field, ConfigDict, field_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
-class NotificationTemplateRead(AppBaseModel, IDMixin, TimestampMixin):
+class EmailTemplateRead(AppBaseModel, IDMixin, TimestampMixin):
     """Schema for reading NotificationTemplate"""
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     

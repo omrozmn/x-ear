@@ -17,7 +17,7 @@ export const PhoneVerificationModal: React.FC = () => {
         // Show modal if user is authenticated but phone is not verified
         // Skip for admin users (they don't have phone verification)
         const isAdminUser = user?.role === 'super_admin' || user?.role === 'support' || user?.role === 'finance' || user?.role === 'content';
-        
+
         if (isAuthenticated && user && !isAdminUser && !user.isPhoneVerified) {
             setIsOpen(true);
             if (!user.phone) {
@@ -42,8 +42,9 @@ export const PhoneVerificationModal: React.FC = () => {
             await sendOtp(phoneNumber);
             setStep('otp');
             toast.success('Doğrulama kodu gönderildi');
-        } catch (error: any) {
-            toast.error(error.message || 'Kod gönderilemedi');
+        } catch (error: unknown) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Kod gönderilemedi');
         } finally {
             setIsLoading(false);
         }
@@ -60,8 +61,9 @@ export const PhoneVerificationModal: React.FC = () => {
             await verifyOtp(otpCode, phoneNumber);
             toast.success('Telefon numarası başarıyla doğrulandı');
             setIsOpen(false);
-        } catch (error: any) {
-            toast.error(error.message || 'Doğrulama başarısız');
+        } catch (error: unknown) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Doğrulama başarısız');
         } finally {
             setIsLoading(false);
         }
@@ -107,13 +109,13 @@ export const PhoneVerificationModal: React.FC = () => {
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Doğrulama Kodu
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 value={otpCode}
                                 onChange={(e) => setOtpCode(e.target.value)}
                                 placeholder="XXXXXX"
                                 maxLength={6}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-center tracking-widest text-lg"
+                                className="text-center tracking-widest text-lg"
                                 disabled={isLoading}
                             />
                             <p className="text-xs text-center text-gray-500">

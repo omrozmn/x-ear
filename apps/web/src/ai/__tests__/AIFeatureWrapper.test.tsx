@@ -11,11 +11,11 @@
  * @module ai/__tests__/AIFeatureWrapper.test
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   checkAIAvailability,
   getUnavailableMessage,
-} from '../components/AIFeatureWrapper';
+} from '../utils/aiAvailability';
 import type { AIStatus, AIRole } from '../types/ai.types';
 
 // Helper to create mock AIStatus

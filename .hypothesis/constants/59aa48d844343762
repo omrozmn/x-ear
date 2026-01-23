@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/branches.py
+# hypothesis_version: 6.150.2
+
+['Branch address', 'Branch code', 'Branch name', 'City', 'District', 'Email', 'Is branch active', 'Is main branch', 'Phone number', 'isActive', 'isMain', 'patientCount', 'tenantId', 'userCount']

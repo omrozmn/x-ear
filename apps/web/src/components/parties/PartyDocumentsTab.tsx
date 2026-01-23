@@ -11,7 +11,7 @@ import {
   deletePatientDocument as deletePartyDocument
 } from '@/api/client/documents.client';
 import { deleteSgkDocument } from '@/api/client/sgk.client';
-import type { DocumentCreate } from '@/api/generated/schemas';
+
 
 interface Document {
   id: string;
@@ -57,10 +57,10 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
       setIsLoading(true);
       // Load documents from API using ORVAL-generated client
       // const { documentsGetPartyDocuments } = await import('@/api/generated');
-      const response = await listPartyDocuments(partyId) as any;
+      const response = await listPartyDocuments(partyId) as Record<string, any>;
 
       // Transform API response to component format
-      const apiDocuments: Document[] = (response?.data || response || []).map((doc: any) => ({
+      const apiDocuments: Document[] = (response?.data || response || []).map((doc: Record<string, any>) => ({
         id: doc.id || '',
         name: doc.fileName || doc.originalName || 'Untitled',
         type: (doc.type || 'other') as Document['type'],
@@ -157,7 +157,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         });
 
         // Prepare document data for API
-        const documentData: DocumentCreate = {
+        const documentData: Record<string, any> = {
           fileName: file.name,
           originalName: file.name,
           type: selectedDocumentType === 'all' ? 'other' : selectedDocumentType,
@@ -170,7 +170,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         };
 
         // Upload using ORVAL-generated client
-        await createPartyDocuments(partyId, documentData);
+        await createPartyDocuments(partyId, documentData as any);
 
         // Complete progress
         clearInterval(progressInterval);

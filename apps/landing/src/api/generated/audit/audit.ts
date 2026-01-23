@@ -22,7 +22,8 @@ import type {
 
 import type {
   HTTPValidationError,
-  ListAuditParams
+  ListAuditParams,
+  ResponseEnvelopeListAuditLogRead
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -40,7 +41,7 @@ export const listAudit = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListAuditLogRead>(
       {url: `/api/audit`, method: 'GET',
         params, signal
     },

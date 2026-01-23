@@ -33,7 +33,6 @@ interface SGKDocumentListProps {
 
 export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   partyId,
-  filters: _externalFilters,
   onDocumentSelect,
   onDocumentEdit,
   onDocumentDelete,
@@ -42,13 +41,13 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 }) => {
   const [documents, setDocuments] = useState<SGKDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [_error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<SGKDocumentType | ''>('');
   const [selectedStatus, setSelectedStatus] = useState<SGKWorkflowStatus | ''>('');
   const [selectedProcessingStatus, setSelectedProcessingStatus] = useState<SGKProcessingStatus | ''>('');
-  const [sortBy, _setSortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
+  const [sortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Batch operations state
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
@@ -240,25 +239,24 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     }
   };
 
-  const handleBulkStatusUpdate = async (status: SGKWorkflowStatus) => {
-    if (selectedDocuments.size === 0) return;
-
-    setBatchLoading(true);
-    try {
-      const selectedDocs = sortedDocuments.filter(doc => selectedDocuments.has(doc.id));
-      const updatePromises = selectedDocs
-        .filter(doc => doc.workflow?.id)
-        .map(doc => sgkService.updateWorkflowStatus(doc.workflow!.id, status));
-      await Promise.all(updatePromises);
-
-      await loadDocuments();
-      setSelectedDocuments(new Set());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Toplu durum güncelleme başarısız');
-    } finally {
-      setBatchLoading(false);
-    }
-  };
+  // Bulk status update handler - available for future batch status feature
+  // const handleBulkStatusUpdate = async (status: SGKWorkflowStatus) => {
+  //   if (selectedDocuments.size === 0) return;
+  //   setBatchLoading(true);
+  //   try {
+  //     const selectedDocs = sortedDocuments.filter(doc => selectedDocuments.has(doc.id));
+  //     const updatePromises = selectedDocs
+  //       .filter(doc => doc.workflow?.id)
+  //       .map(doc => sgkService.updateWorkflowStatus(doc.workflow!.id, status));
+  //     await Promise.all(updatePromises);
+  //     await loadDocuments();
+  //     setSelectedDocuments(new Set());
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : 'Toplu durum güncelleme başarısız');
+  //   } finally {
+  //     setBatchLoading(false);
+  //   }
+  // };
 
   // Document viewer handlers
   const handleViewDocument = (document: SGKDocument) => {

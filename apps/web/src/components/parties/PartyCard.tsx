@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
 import { Button, Badge, Checkbox } from '@x-ear/ui-web';
 import {
-  User,
   Phone,
   Mail,
   Calendar,
-  MapPin,
-  CreditCard,
   AlertCircle,
   CheckCircle,
-  Clock,
   MoreVertical,
   Eye,
   Edit,
   Trash2,
-  Heart,
   Activity,
   Shield
 } from 'lucide-react';

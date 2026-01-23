@@ -37,7 +37,7 @@ export interface SearchableItem {
   barcode?: string;
   serialNumber?: string;
   description?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -87,17 +87,17 @@ export function calculateSimilarity(str1: string, str2: string): number {
  */
 export function fuzzyContains(haystack: string, needle: string, threshold = 0.6): boolean {
   if (!haystack || !needle) return false;
-  
+
   const haystackLower = haystack.toLowerCase();
   const needleLower = needle.toLowerCase();
-  
+
   // Exact substring match
   if (haystackLower.includes(needleLower)) return true;
-  
+
   // Fuzzy matching for each word in needle
   const needleWords = needleLower.split(/\s+/);
   const haystackWords = haystackLower.split(/\s+/);
-  
+
   return needleWords.every(needleWord => {
     return haystackWords.some(haystackWord => {
       return calculateSimilarity(haystackWord, needleWord) >= threshold;
@@ -108,7 +108,7 @@ export function fuzzyContains(haystack: string, needle: string, threshold = 0.6)
 /**
  * Perform fuzzy search on array of objects
  */
-export function fuzzySearch<T extends Record<string, any>>(
+export function fuzzySearch<T extends object>(
   items: T[],
   query: string,
   options: FuzzySearchOptions = {}
@@ -116,15 +116,15 @@ export function fuzzySearch<T extends Record<string, any>>(
   const {
     threshold = 0.3,
     caseSensitive = false,
-    includeScore = true,
+    // includeScore = true, // Unused
     keys = []
   } = options;
 
-  if (!query.trim()) return items.map(item => ({ 
-    item, 
-    score: 1, 
-    matches: [], 
-    relevance: 'high' as const 
+  if (!query.trim()) return items.map(item => ({
+    item,
+    score: 1,
+    matches: [],
+    relevance: 'high' as const
   }));
 
   const searchQuery = caseSensitive ? query : query.toLowerCase();
@@ -132,32 +132,33 @@ export function fuzzySearch<T extends Record<string, any>>(
 
   for (const item of items) {
     let maxScore = 0;
-    const matches: Array<{ 
-      key: string; 
-      value: string; 
-      score: number; 
+    const matches: Array<{
+      key: string;
+      value: string;
+      score: number;
       type: 'exact' | 'partial' | 'fuzzy' | 'phonetic';
       startIndex?: number;
       endIndex?: number;
     }> = [];
 
     // Search in specified keys or all string properties
-    const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key => 
+    const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key =>
       typeof item[key] === 'string'
     );
 
     for (const key of searchKeys) {
-      const value = item[key];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const value = (item as any)[key];
       if (typeof value !== 'string') continue;
 
       const searchValue = caseSensitive ? value : value.toLowerCase();
-      
+
       // Calculate different types of matches
       let score = 0;
       let matchType: 'exact' | 'partial' | 'fuzzy' | 'phonetic' = 'fuzzy';
       let startIndex = -1;
       let endIndex = -1;
-      
+
       // Exact match (highest score)
       if (searchValue === searchQuery) {
         score = 1;
@@ -186,10 +187,10 @@ export function fuzzySearch<T extends Record<string, any>>(
       }
 
       if (score >= threshold) {
-        matches.push({ 
-          key, 
-          value, 
-          score, 
+        matches.push({
+          key,
+          value,
+          score,
           type: matchType,
           startIndex: startIndex >= 0 ? startIndex : undefined,
           endIndex: endIndex >= 0 ? endIndex : undefined
@@ -199,12 +200,12 @@ export function fuzzySearch<T extends Record<string, any>>(
     }
 
     if (maxScore >= threshold) {
-      const relevance: 'high' | 'medium' | 'low' = 
+      const relevance: 'high' | 'medium' | 'low' =
         maxScore >= 0.8 ? 'high' : maxScore >= 0.5 ? 'medium' : 'low';
-      
-      results.push({ 
-        item, 
-        score: maxScore, 
+
+      results.push({
+        item,
+        score: maxScore,
         matches,
         relevance
       });
@@ -222,7 +223,7 @@ export function fuzzySearch<T extends Record<string, any>>(
  */
 export function highlightMatches(text: string, query: string, className = 'bg-yellow-200'): string {
   if (!query.trim()) return text;
-  
+
   const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   return text.replace(regex, `<span class="${className}">$1</span>`);
 }
@@ -257,19 +258,19 @@ export function searchProducts<T extends SearchableItem>(
   };
 
   const results = fuzzySearch(products, query, productOptions);
-  
+
   // Apply maxResults limit if specified
   if (productOptions.maxResults) {
     return results.slice(0, productOptions.maxResults);
   }
-  
+
   return results;
 }
 
 /**
  * Get search suggestions based on partial input
  */
-export function getSearchSuggestions<T extends Record<string, any>>(
+export function getSearchSuggestions<T extends object>(
   items: T[],
   partialQuery: string,
   keys: string[] = [],
@@ -281,12 +282,13 @@ export function getSearchSuggestions<T extends Record<string, any>>(
   const query = partialQuery.toLowerCase();
 
   for (const item of items) {
-    const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key => 
+    const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key =>
       typeof item[key] === 'string'
     );
 
     for (const key of searchKeys) {
-      const value = item[key];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const value = (item as any)[key];
       if (typeof value !== 'string') continue;
 
       const words = value.toLowerCase().split(/\s+/);

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/middleware/unified_access.py
+# hypothesis_version: 6.150.2
+
+[401, '/api/auth/login', 'ADMIN_REQUIRED', 'AUTH_REQUIRED', 'Admin user inactive', 'Admin user not found', 'Bearer', 'HS256', 'INVALID_TOKEN', 'Invalid token', 'JWT_SECRET_KEY', 'PERMISSIONS_CHANGED', 'PERMISSION_DENIED', 'TENANT_REQUIRED', 'User inactive', 'User not found', 'WWW-Authenticate', 'admin', 'admin.', 'admin_', 'anonymous', 'branch_id', 'code', 'effective_role', 'effective_tenant_id', 'get_all_permissions', 'is_impersonating', 'message', 'perm_ver', 'permissions', 'permissions_version', 'required', 'role_permissions', 'sub', 'super_admin', 'tenant', 'tenant_admin', 'tenant_id', 'your_role']

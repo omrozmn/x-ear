@@ -1,15 +1,16 @@
 import { Party } from '../../../../../types/party/party-base.types';
-import { Sale, PaymentRecord as ImportedPaymentRecord } from '../../../../../types/party/party-communication.types';
+// import { Sale, PaymentRecord as ImportedPaymentRecord } from '../../../../../types/party/party-communication.types';
+import { SaleRead } from '@/api/generated/schemas';
 
-// Re-export Sale type
-export type { Sale };
+// Export SaleRead as alias if needed, or just usage
+export type Sale = SaleRead;
 
 export interface EditSaleModalProps {
   isOpen: boolean;
   onClose: () => void;
   party: Party;
-  sale: Sale;
-  onSaleUpdate: (sale: Sale) => void;
+  sale: SaleRead;
+  onSaleUpdate: (sale: SaleRead) => void;
   loading?: boolean;
 }
 

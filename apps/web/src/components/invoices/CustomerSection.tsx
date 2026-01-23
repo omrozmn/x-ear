@@ -83,7 +83,7 @@ export function CustomerSection({
       onChange('customerId', '0');
       onChange('customerName', SGK_CUSTOMER_TEXT);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   // SGK modundan çıkıldığında önceki müşteri bilgilerini geri yükle
@@ -94,7 +94,7 @@ export function CustomerSection({
       setSearchQuery(previousCustomerState.searchQuery || '');
       setPreviousCustomerState(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   const handleSearch = async (query: string) => {
@@ -108,7 +108,7 @@ export function CustomerSection({
     setIsSearching(true);
     try {
       const response = await searchMutation.mutateAsync({
-        data: { search: query } as any
+        data: { search: query } as unknown as any // Generated hook expects specific BodyType, casting to any via unknown for now if type unavailable
       });
 
       const results = unwrapArray<CustomerSearchResult>(response) || [];

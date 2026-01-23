@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Sistem Hatası Bildirimi</h2>
+
+<div class="warning">
+    <p><strong>⚠️ Kritik Sistem Hatası</strong></p>
+    <p>Sistemde kritik bir hata oluştu ve acil müdahale gerekebilir.</p>
+</div>
+
+<div class="info">
+    <p><strong>Hata Tipi:</strong> {{ error_type }}</p>
+    <p><strong>Zaman:</strong> {{ timestamp }}</p>
+    <p><strong>Etkilenen Tenant:</strong> {{ tenant_name }}</p>
+</div>
+
+<p><strong>Hata Detayları:</strong></p>
+<pre style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px;">{{ error_details }}</pre>
+
+<p>Detaylı hata loglarını görüntülemek için:</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ admin_link }}" class="button">
+        Admin Paneline Git
+    </a>
+</div>
+
+<p><strong>Önerilen Aksiyonlar:</strong></p>
+<ul>
+    <li>Hata loglarını inceleyin</li>
+    <li>Etkilenen kullanıcıları kontrol edin</li>
+    <li>Gerekirse sistem yöneticisine bildirin</li>
+</ul>
+{% endblock %}

@@ -1,5 +1,31 @@
 """
-Prompt Anonymization Service for AI Layer.
+Prompt Anonymization Service for AI Layer (FUTURE USE - NOT CURRENTLY ACTIVE).
+
+⚠️ STATUS: This module is NOT currently used in production and is reserved for future implementation.
+
+PURPOSE:
+This service will be activated when we implement model improvement and training pipelines
+that require anonymized prompt data. It provides anonymization of prompts to remove all
+PII/PHI while preserving semantic structure for model training purposes.
+
+WHY NOT CURRENTLY USED:
+1. Phase A (read-only) does not require model training/improvement
+2. Full anonymization requires NER (Named Entity Recognition) model integration
+3. Current PII redaction in Intent Refiner is sufficient for operational needs
+4. Model improvement pipeline is planned for Phase B/C rollout
+
+PLANNED ACTIVATION:
+- Target: Q2 2025 (Phase B implementation)
+- Dependency: NER model integration for entity detection
+- Use case: Anonymized prompt corpus for fine-tuning local models
+- Requirements: 10.4 (Anonymize prompts before using them for model improvement)
+
+RELATED MODULES:
+- ai.utils.pii_redactor: Operational PII/PHI redaction (currently active)
+- ai.agents.intent_refiner: Uses pii_redactor for real-time redaction
+
+DO NOT DELETE: This module contains production-ready code that will be activated
+when model improvement features are implemented.
 
 Requirements:
 - 10.4: Anonymize prompts before using them for model improvement

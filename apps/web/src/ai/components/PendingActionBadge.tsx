@@ -20,6 +20,13 @@
 import React, { useMemo, useCallback } from 'react';
 import { usePendingActions, usePendingActionsCount } from '../hooks/usePendingActions';
 import type { ActionPlan } from '../types/ai.types';
+import {
+  shouldBlockActionSubmission,
+  getPendingActionByType,
+} from '../utils/aiActionHelpers';
+
+// Re-export helper functions for convenience
+export { shouldBlockActionSubmission, getPendingActionByType };
 
 // =============================================================================
 // Types
@@ -273,7 +280,7 @@ export function PendingActionBadge({
 
   // Render badge element
   const badgeElement = onClick ? (
-    <button
+    <button data-allow-raw="true"
       type="button"
       onClick={handleClick}
       className={badgeClasses}
@@ -353,64 +360,7 @@ export function PendingActionCountBadge({
   );
 }
 
-// =============================================================================
-// Helper Functions
-// =============================================================================
 
-/**
- * Check if an action submission should be blocked due to pending action
- * 
- * Use this function before submitting a new action to prevent duplicates.
- * 
- * @param actionType - The action type to check
- * @param pendingActions - List of pending actions
- * @returns true if submission should be blocked
- * 
- * @example
- * ```tsx
- * const { pendingActions } = usePendingActions();
- * 
- * const handleSubmit = () => {
- *   if (shouldBlockActionSubmission('create_party', pendingActions)) {
- *     toast.warning('Bu işlem için zaten bir onay bekleniyor');
- *     return;
- *   }
- *   // Proceed with submission
- * };
- * ```
- */
-export function shouldBlockActionSubmission(
-  actionType: string,
-  pendingActions: ActionPlan[]
-): boolean {
-  return pendingActions.some((action) =>
-    action.steps.some(
-      (step) =>
-        step.toolName === actionType ||
-        step.description.toLowerCase().includes(actionType.toLowerCase())
-    )
-  );
-}
-
-/**
- * Get the first pending action matching an action type
- * 
- * @param actionType - The action type to find
- * @param pendingActions - List of pending actions
- * @returns The matching action or undefined
- */
-export function getPendingActionByType(
-  actionType: string,
-  pendingActions: ActionPlan[]
-): ActionPlan | undefined {
-  return pendingActions.find((action) =>
-    action.steps.some(
-      (step) =>
-        step.toolName === actionType ||
-        step.description.toLowerCase().includes(actionType.toLowerCase())
-    )
-  );
-}
 
 // =============================================================================
 // Default Export

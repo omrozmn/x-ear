@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { DollarSign, MoreVertical, Eye, Edit, FileText, File, Ban } from 'lucide-react';
+import { Button, Dropdown } from '@x-ear/ui-web';
 
 interface SalesListProps {
   sales: any[];
@@ -27,35 +27,21 @@ export const SalesList: React.FC<SalesListProps> = ({
   console.log('SalesList - sales:', sales);
   console.log('SalesList - filteredSales:', filteredSales);
   console.log('SalesList - hasActiveFilters:', hasActiveFilters);
-  const [openMenuSaleId, setOpenMenuSaleId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    function handleDocClick(e: MouseEvent) {
-      if (!menuRef.current) return;
-      if (!(e.target instanceof Node)) return;
-      if (!menuRef.current.contains(e.target)) {
-        setOpenMenuSaleId(null);
-      }
-    }
-
-    document.addEventListener('click', handleDocClick);
-    return () => document.removeEventListener('click', handleDocClick);
-  }, []);
   if (filteredSales.length === 0) {
     return (
       <div className="text-center py-12" role="status">
         <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {sales.length === 0 
-            ? 'Henüz satış yapılmamış' 
-            : hasActiveFilters 
+          {sales.length === 0
+            ? 'Henüz satış yapılmamış'
+            : hasActiveFilters
               ? 'Filtreye uygun satış bulunamadı'
               : 'Henüz satış kaydı bulunmuyor'
           }
         </h3>
         <p className="text-gray-500">
-          {sales.length === 0 
+          {sales.length === 0
             ? 'Bu hastaya henüz satış işlemi gerçekleştirilmemiş.'
             : hasActiveFilters
               ? 'Lütfen filtre kriterlerinizi kontrol edin.'
@@ -80,7 +66,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       ));
     }
-    
+
     // If no devices array but productId exists, show product info
     if (sale.productId) {
       return (
@@ -90,7 +76,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       );
     }
-    
+
     return <div className="text-gray-500 text-sm">Ürün bilgisi yok</div>;
   };
 
@@ -99,7 +85,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       const device = sale.devices[0];
       const barcode = device.barcode || device.serialNumber || '-';
       const serial = device.serialNumber || '-';
-      
+
       return (
         <div>
           <div className="font-medium">{barcode}</div>
@@ -107,7 +93,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       );
     }
-    
+
     // If no devices but productId exists, show productId as barcode
     if (sale.productId) {
       return (
@@ -117,7 +103,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       );
     }
-    
+
     return '-';
   };
 
@@ -127,7 +113,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       return paidRecords.map((record: any, index: number) => {
         const methodLabels: Record<string, string> = {
           'cash': 'Nakit',
-          'card': 'Kart', 
+          'card': 'Kart',
           'transfer': 'Havale',
           'installment': 'Taksit',
           'promissory_note': 'Senet'
@@ -140,16 +126,16 @@ export const SalesList: React.FC<SalesListProps> = ({
         );
       });
     }
-    
+
     const paymentMethod = sale.paymentMethod || 'cash';
     const methodLabels: Record<string, string> = {
       'cash': 'Nakit',
       'card': 'Kart',
-      'transfer': 'Havale', 
+      'transfer': 'Havale',
       'installment': 'Taksit',
       'promissory_note': 'Senet'
     };
-    
+
     return methodLabels[paymentMethod] || paymentMethod;
   };
 
@@ -159,7 +145,7 @@ export const SalesList: React.FC<SalesListProps> = ({
     } else if (paidAmount > 0 && remainingAmount === 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>;
     }
-    
+
     const badges: Record<string, React.ReactElement> = {
       'paid': <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>,
       'pending': <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Beklemede</span>,
@@ -252,10 +238,10 @@ export const SalesList: React.FC<SalesListProps> = ({
               const paid = calculatePaidAmount(sale);
               const remaining = calculateRemaining(sale);
               const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
-              
+
               return (
-                <tr 
-                  key={sale.id} 
+                <tr
+                  key={sale.id}
                   className={`hover:bg-gray-50 ${paid > 0 && remaining > 0 ? 'bg-yellow-50' : ''} ${cancelledClass} cursor-pointer transition-colors`}
                   onClick={() => onSaleClick(sale)}
                   role="row"
@@ -292,64 +278,45 @@ export const SalesList: React.FC<SalesListProps> = ({
                     {renderStatusBadge(sale.status, paid, remaining)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center relative" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenMenuSaleId(prev => prev === sale.id ? null : (sale.id as string));
-                      }}
-                      aria-haspopup="true"
-                      aria-expanded={openMenuSaleId === sale.id}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                    >
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
-                    </button>
-
-                    {openMenuSaleId === sale.id && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                        <ul className="py-1">
-                          <li>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onViewInvoice(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Eye className="inline mr-2 w-4 h-4 align-middle" /> Görüntüle Fatura
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onCreateInvoice(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <FileText className="inline mr-2 w-4 h-4 align-middle" /> Fatura Oluştur
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onCollectPayment(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <DollarSign className="inline mr-2 w-4 h-4 align-middle" /> Tahsilat Yap
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onManagePromissoryNotes(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <File className="inline mr-2 w-4 h-4 align-middle" /> Senet İşlemleri
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onManageInstallments(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Edit className="inline mr-2 w-4 h-4 align-middle" /> Taksit İşlemleri
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
+                    <Dropdown
+                      position="bottom-right"
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-8 h-8 p-0 rounded-full border border-gray-200"
+                        >
+                          <MoreVertical className="w-4 h-4 text-gray-600" />
+                        </Button>
+                      }
+                      items={[
+                        {
+                          label: (<><Eye className="inline mr-2 w-4 h-4 align-middle" /> Görüntüle Fatura</>),
+                          value: 'view_invoice',
+                          onClick: () => onViewInvoice(sale)
+                        },
+                        {
+                          label: (<><FileText className="inline mr-2 w-4 h-4 align-middle" /> Fatura Oluştur</>),
+                          value: 'create_invoice',
+                          onClick: () => onCreateInvoice(sale)
+                        },
+                        {
+                          label: (<><DollarSign className="inline mr-2 w-4 h-4 align-middle" /> Tahsilat Yap</>),
+                          value: 'collect_payment',
+                          onClick: () => onCollectPayment(sale)
+                        },
+                        {
+                          label: (<><File className="inline mr-2 w-4 h-4 align-middle" /> Senet İşlemleri</>),
+                          value: 'promissory_notes',
+                          onClick: () => onManagePromissoryNotes(sale)
+                        },
+                        {
+                          label: (<><Edit className="inline mr-2 w-4 h-4 align-middle" /> Taksit İşlemleri</>),
+                          value: 'installments',
+                          onClick: () => onManageInstallments(sale)
+                        }
+                      ]}
+                    />
                   </td>
                 </tr>
               );

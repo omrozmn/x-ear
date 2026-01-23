@@ -88,7 +88,7 @@ class CreateActionRequest(BaseModel):
     idempotency_key: Optional[str] = Field(default=None, max_length=128, description="Idempotency key")
 
 
-class ActionStepResponse(BaseModel):
+class AiActionStepResponse(BaseModel):
     """Response for a single action step."""
     step_number: int = Field(description="Step number in sequence")
     tool_name: str = Field(description="Tool to execute")
@@ -99,11 +99,11 @@ class ActionStepResponse(BaseModel):
     requires_approval: bool = Field(description="Whether this step requires approval")
 
 
-class ActionPlanResponse(BaseModel):
+class AiActionPlanResponse(BaseModel):
     """Response containing an action plan."""
     plan_id: str = Field(description="Unique plan identifier")
     status: str = Field(description="Plan status")
-    steps: List[ActionStepResponse] = Field(description="Action steps")
+    steps: List[AiActionStepResponse] = Field(description="Action steps")
     overall_risk_level: str = Field(description="Overall risk level")
     requires_approval: bool = Field(description="Whether approval is required")
     plan_hash: str = Field(description="Hash of the plan for integrity")
@@ -115,7 +115,7 @@ class CreateActionResponse(BaseModel):
     """Response from action creation."""
     request_id: str = Field(description="Request identifier")
     status: str = Field(description="Processing status")
-    plan: Optional[ActionPlanResponse] = Field(default=None, description="Generated action plan")
+    plan: Optional[AiActionPlanResponse] = Field(default=None, description="Generated action plan")
     error_message: Optional[str] = Field(default=None, description="Error message if failed")
     processing_time_ms: float = Field(description="Processing time in milliseconds")
 
@@ -167,7 +167,7 @@ class GetActionResponse(BaseModel):
     """Response for getting action details."""
     action_id: str = Field(description="Action identifier")
     status: str = Field(description="Current status")
-    plan: Optional[ActionPlanResponse] = Field(default=None, description="Action plan")
+    plan: Optional[AiActionPlanResponse] = Field(default=None, description="Action plan")
     approval_status: Optional[str] = Field(default=None, description="Approval status")
     execution_result: Optional[Dict[str, Any]] = Field(default=None, description="Execution result")
     created_at: str = Field(description="Creation timestamp")
@@ -409,7 +409,7 @@ async def create_action(
     
     # Build step responses
     step_responses = [
-        ActionStepResponse(
+        AiActionStepResponse(
             step_number=step.step_number,
             tool_name=step.tool_name,
             tool_schema_version=step.tool_schema_version,
@@ -421,7 +421,7 @@ async def create_action(
         for step in plan.steps
     ]
     
-    plan_response = ActionPlanResponse(
+    plan_response = AiActionPlanResponse(
         plan_id=plan.plan_id,
         status="pending_approval" if plan.requires_approval else "ready",
         steps=step_responses,
@@ -478,7 +478,7 @@ async def get_action(
     
     plan: ActionPlan = action_data.get("plan")
     step_responses = [
-        ActionStepResponse(
+        AiActionStepResponse(
             step_number=step.step_number,
             tool_name=step.tool_name,
             tool_schema_version=step.tool_schema_version,
@@ -490,7 +490,7 @@ async def get_action(
         for step in plan.steps
     ] if plan else []
     
-    plan_response = ActionPlanResponse(
+    plan_response = AiActionPlanResponse(
         plan_id=plan.plan_id,
         status=action_data.get("status", "unknown"),
         steps=step_responses,

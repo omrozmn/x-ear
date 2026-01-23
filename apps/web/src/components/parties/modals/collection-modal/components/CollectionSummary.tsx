@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge, Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
-import { DollarSign, Calendar, AlertCircle, CheckCircle, FileText, Clock, AlertTriangle, CreditCard } from 'lucide-react';
+import { DollarSign, FileText, AlertTriangle, CreditCard } from 'lucide-react';
 import type { PaymentCalculations, PromissoryNote } from '../types';
 import type { Sale } from '../../../../../types/party/party-communication.types';
 

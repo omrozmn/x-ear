@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { TenantCreateSlug } from './tenantCreateSlug';
 import type { TenantCreateEmail } from './tenantCreateEmail';
 import type { TenantCreatePhone } from './tenantCreatePhone';
 import type { TenantCreateAddress } from './tenantCreateAddress';
@@ -29,8 +30,8 @@ import type { TenantCreateSettings } from './tenantCreateSettings';
 export interface TenantCreate {
   /** Tenant name */
   name: string;
-  /** Tenant slug (unique identifier) */
-  slug: string;
+  /** Tenant slug (auto-generated if empty) */
+  slug?: TenantCreateSlug;
   /** Contact email */
   email?: TenantCreateEmail;
   /** Contact phone */

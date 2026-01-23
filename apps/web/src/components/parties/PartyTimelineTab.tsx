@@ -8,17 +8,9 @@ import {
   Filter,
   Calendar,
   Clock,
-  User,
-  FileText,
-  Phone,
-  CreditCard,
-  Stethoscope,
-  Settings,
   RefreshCw,
   ChevronDown,
-  ChevronUp,
-  Eye,
-  Download
+  ChevronUp
 } from 'lucide-react';
 import { Party } from '@/types/party';
 
@@ -39,7 +31,7 @@ interface PartyTimelineTabProps {
   onPartyUpdate?: (party: Party) => void;
 }
 
-export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party, onPartyUpdate: _onPartyUpdate }) => {
+export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => {
   const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
 
   const formatDate = (dateStr: string): string => {

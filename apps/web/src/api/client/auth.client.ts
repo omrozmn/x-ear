@@ -15,7 +15,7 @@ export {
   createAuthResetPassword,
   createAuthForgotPassword,
   createAuthRefresh,
-  getAuthMe,
+  listAuthMe as getAuthMe,
   createAuthSendVerificationOtp,
   createAuthSetPassword,
   useCreateAuthLogin,
@@ -24,7 +24,7 @@ export {
   useCreateAuthResetPassword,
   useCreateAuthForgotPassword,
   useCreateAuthRefresh,
-  useGetAuthMe,
+  useListAuthMe as useGetAuthMe,
   useCreateAuthSendVerificationOtp,
   useCreateAuthSetPassword,
 } from '@/api/generated/index';

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, startOfDay } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, isSameDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useDroppable } from '@dnd-kit/core';
-import { Button, Card, Text, VStack } from '@x-ear/ui-web';
+import { Button, Text } from '@x-ear/ui-web';
 import { Appointment } from '../../../types/appointment';
 import { useCalendarKeyboardNavigation } from '../../../hooks/useKeyboardNavigation';
 
@@ -32,7 +32,6 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
   onDateChange,
   onAppointmentClick,
   onTimeSlotClick,
-  isCompactView = false,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 

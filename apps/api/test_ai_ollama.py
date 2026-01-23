@@ -55,7 +55,7 @@ def test_ollama_generate():
         response = requests.post(
             "http://localhost:11434/api/generate",
             json=payload,
-            timeout=30
+            timeout=60
         )
         
         if response.status_code == 200:
@@ -98,10 +98,14 @@ def test_ai_chat_endpoint():
         }
         
         print(f"📤 Sending chat request: {payload['prompt']}")
+        headers = {
+            "Idempotency-Key": "test-request-id-12345"
+        }
         response = requests.post(
-            "http://localhost:5003/ai/chat",
+            "http://localhost:5003/api/ai/chat",
             json=payload,
-            timeout=30
+            headers=headers,
+            timeout=60
         )
         
         if response.status_code == 200:

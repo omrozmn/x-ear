@@ -18,7 +18,7 @@ page?: number;
 per_page?: number;
 type?: string | null;
 status?: string | null;
-patient_id?: string | null;
+party_id?: string | null;
 campaign_id?: string | null;
 date_from?: string | null;
 date_to?: string | null;

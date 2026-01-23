@@ -1,0 +1,4 @@
+{
+  "subject": "SMTP Test E-postası - {{ app_name }}",
+  "required_variables": ["user_name", "tenant_name"]
+}

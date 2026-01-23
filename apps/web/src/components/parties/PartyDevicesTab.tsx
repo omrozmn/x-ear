@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Input, Select, Badge } from '@x-ear/ui-web';
-import { FileText, Plus, Calendar, DollarSign, Settings, Trash2, Edit, X, XCircle } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
+import { FileText, Plus, Calendar, DollarSign, Settings, XCircle } from 'lucide-react';
 import { Party, PartyDevice } from '../../types/party';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { listInventory } from '@/api/client/inventory.client';
-import { createDevices, deleteDevice } from '@/api/client/devices.client';
-import { createSales, createPartyDeviceAssignments } from '@/api/client/sales.client';
+import { deleteDevice } from '@/api/client/devices.client';
+import { createPartyDeviceAssignments } from '@/api/client/sales.client';
 import { useCreateReplacement } from '@/api/client/replacements.client';
 import { apiClient } from '@/api/orval-mutator';
 import type {
-  DeviceRead,
-  DeviceCreate,
   ListInventoryParams,
-  SaleCreate
 } from '@/api/generated/schemas';
 
 // Fallback interfaces for types not exported in schema index
@@ -33,10 +30,7 @@ interface SaleRead {
   [key: string]: any;
 }
 
-// Backward compatibility aliases
-type Device = DeviceRead;
-type InventoryItem = InventoryItemRead;
-type Sale = SaleRead;
+
 import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
 import { DeviceAssignment } from '../forms/device-assignment-form/components/AssignmentDetailsForm';
 import { PartyDeviceCard } from '../party/PartyDeviceCard';
@@ -50,7 +44,7 @@ interface PartyDevicesTabProps {
 }
 
 export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: PartyDevicesTabProps) => {
-  const { success: showSuccess, error: showError, warning: showWarning } = useToastHelpers();
+  const { success: showSuccess, error: showError } = useToastHelpers();
 
   // Orval mutation hooks
   // const updateDeviceAssignmentMutation = useUpdateDeviceAssignmentApiSalesAssignmentsAssignmentIdPut(); // Hook missing
@@ -61,13 +55,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
   const [showReplacementModal, setShowReplacementModal] = useState(false);
   const [editingDevice, setEditingDevice] = useState<PartyDevice | null>(null);
   const [replacingDevice, setReplacingDevice] = useState<PartyDevice | null>(null);
-  const [rightEarMode, setRightEarMode] = useState<'inventory' | 'manual'>('inventory');
-  const [leftEarMode, setLeftEarMode] = useState<'inventory' | 'manual'>('manual');
-  const [rightEarReason, setRightEarReason] = useState<'Trial' | 'Sale'>('Trial');
-  const [leftEarReason, setLeftEarReason] = useState<'Trial' | 'Sale'>('Trial');
+
 
   // Use the hook for party devices
-  const { data: devices, isLoading: devicesLoading, error: devicesError, refetch: refetchDevices } = usePartyDevices(party?.id || '');
+  const { data: devices, /* isLoading: devicesLoading, */ error: devicesError, refetch: refetchDevices } = usePartyDevices(party?.id || '');
 
   // Sync editingDevice with latest data from devices array
   // This ensures the edit modal shows the most recent values after updates
@@ -84,10 +75,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         }
       }
     }
-  }, [devices, editingDevice?.id, showEditModal]);
+  }, [devices, editingDevice, showEditModal]);
 
   // State for other API data
-  const [inventoryItems, setInventoryItems] = useState<InventoryItemRead[]>([]);
+  // const [inventoryItems, setInventoryItems] = useState<InventoryItemRead[]>([]);
   const [sales, setSales] = useState<SaleRead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,8 +91,8 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
       };
 
-      const response = await listInventory(params);
-      setInventoryItems((response?.data || []) as InventoryItemRead[]);
+      // const response = await listInventory(params);
+      // setInventoryItems((response?.data || []) as InventoryItemRead[]);
     } catch (err) {
       console.error('Error loading inventory:', err);
     }
@@ -209,7 +200,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       // Remove undefined values
       const cleanedItem = Object.fromEntries(
-        Object.entries(assignmentItem).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+        Object.entries(assignmentItem).filter(([, v]) => v !== undefined && v !== null && v !== '')
       );
 
       const payload = {
@@ -380,7 +371,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         };
 
         // 1. Create replacement record
-        const result = await createReplacement({
+        await createReplacement({
           partyId: party.id,
           data: payload
         });
@@ -416,41 +407,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
     ereceiptsCount: 0 // This would come from a separate API
   };
 
-  const getDeviceStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'assigned':
-        return <Badge className="bg-green-100 text-green-800">Atanmış</Badge>;
-      case 'available':
-        return <Badge className="bg-blue-100 text-blue-800">Müsait</Badge>;
-      case 'maintenance':
-        return <Badge className="bg-yellow-100 text-yellow-800">Bakımda</Badge>;
-      case 'retired':
-        return <Badge className="bg-gray-100 text-gray-800">Emekli</Badge>;
-      default:
-        return <Badge className="bg-gray-100 text-gray-800">Bilinmiyor</Badge>;
-    }
-  };
 
-  const getEarText = (ear?: string) => {
-    switch (ear) {
-      case 'left':
-        return 'Sol';
-      case 'right':
-        return 'Sağ';
-      case 'both':
-        return 'İkisi';
-      default:
-        return 'Belirtilmemiş';
-    }
-  };
-
-  const formatCurrencyTR = (amount?: number) => {
-    try {
-      return (Number(amount || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TRY';
-    } catch (e) {
-      return `${Number(amount || 0).toFixed(2)} TRY`;
-    }
-  };
 
   if (loading && devices.length === 0) {
     return (

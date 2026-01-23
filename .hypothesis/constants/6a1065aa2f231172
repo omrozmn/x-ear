@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/party_subresources.py
+# hypothesis_version: 6.150.2
+
+['appointmentId', 'authorId', 'clinical', 'createdBy', 'genel', 'general', 'isPrivate', 'noteType', 'partyId', 'system', 'type']

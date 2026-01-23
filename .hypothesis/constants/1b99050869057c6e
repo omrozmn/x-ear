@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/system.py
+# hypothesis_version: 6.150.2
+
+['+90 216 555 0123', '.', '1234567890', 'X-Ear İşitme Merkezi', 'address', 'company', 'defaultBranch', 'desktop', 'email', 'features', 'hidden', 'id', 'info@x-ear.com', 'integrations_ui', 'mode', 'name', 'notifications', 'phone', 'plans', 'pricing_ui', 'security_ui', 'settings', 'sms', 'system', 'system_settings', 'taxNumber']

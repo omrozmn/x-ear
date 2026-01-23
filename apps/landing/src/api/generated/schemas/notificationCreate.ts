@@ -5,28 +5,16 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { NotificationType } from './notificationType';
-import type { NotificationChannel } from './notificationChannel';
-import type { NotificationCreateUserId } from './notificationCreateUserId';
-import type { NotificationCreateActionUrl } from './notificationCreateActionUrl';
+import type { NotificationCreateNotificationType } from './notificationCreateNotificationType';
 import type { NotificationCreateData } from './notificationCreateData';
 
 /**
- * Schema for creating a notification
+ * Schema for creating Notification
  */
 export interface NotificationCreate {
-  /** Notification title */
+  userId: string;
   title: string;
-  /** Notification message */
   message: string;
-  /** Notification type */
-  type?: NotificationType;
-  /** Notification channel */
-  channel?: NotificationChannel;
-  /** Target user ID */
-  userId?: NotificationCreateUserId;
-  /** Action URL */
-  actionUrl?: NotificationCreateActionUrl;
-  /** Additional data */
+  notificationType?: NotificationCreateNotificationType;
   data?: NotificationCreateData;
 }

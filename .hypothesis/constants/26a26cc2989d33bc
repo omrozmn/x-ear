@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/appointments.py
+# hypothesis_version: 6.150.2
+
+[100, 120, 201, 400, 404, 409, 500, 1000, '%Y-%m-%d', '/appointments', '/appointments/list', ':', 'Appointment deleted', 'Appointments', 'SLOT_OCCUPIED', 'T', 'TENANT_REQUIRED', 'Tenant not found', 'appointment_type', 'availableSlots', 'branch_id', 'cancelled', 'clinician_id', 'confirmed', 'consultation', 'createAppointments', 'date', 'deleteAppointment', 'duration', 'end_date', 'getAppointment', 'json', 'listAppointmentList', 'listAppointments', 'notes', 'occupiedSlots', 'page', 'party_id', 'perPage', 'rescheduled', 'scheduled', 'start_date', 'status', 'tenantScope', 'time', 'total', 'totalPages', 'unique constraint', 'updateAppointment', 'uq_appointment_slot']

@@ -1,0 +1,23 @@
+{% extends "base.txt" %}
+
+{% block content %}
+Sistem Hatası Bildirimi
+
+⚠️ KRİTİK SİSTEM HATASI
+Sistemde kritik bir hata oluştu ve acil müdahale gerekebilir.
+
+Hata Tipi: {{ error_type }}
+Zaman: {{ timestamp }}
+Etkilenen Tenant: {{ tenant_name }}
+
+HATA DETAYLARI:
+{{ error_details }}
+
+Detaylı hata loglarını görüntülemek için:
+{{ admin_link }}
+
+ÖNERİLEN AKSİYONLAR:
+- Hata loglarını inceleyin
+- Etkilenen kullanıcıları kontrol edin
+- Gerekirse sistem yöneticisine bildirin
+{% endblock %}

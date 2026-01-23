@@ -9,10 +9,28 @@ import {
   createAuthLookupPhone as lookupPhoneApi,
   createAuthResetPassword as resetPasswordApi
 } from '@/api/client/auth.client';
-import type { AuthUserRead, LoginRequest, ResponseEnvelopeLoginResponse, ResponseEnvelopeVerifyOtpResponse, ResponseEnvelopeLookupPhoneResponse, ResponseEnvelopeRefreshTokenResponse } from '@/api/client/auth.client';
+import type { AuthUserRead, LoginRequest, ResponseEnvelopeLoginResponse } from '@/api/client/auth.client';
 import { DEV_CONFIG } from '../config/dev-config';
 import { subscriptionService } from '../services/subscription.service';
 import { tokenManager } from '../utils/token-manager';
+import { unwrapObject } from '../utils/response-unwrap';
+
+// Helper for safe error handling
+interface ApiError {
+  response?: {
+    status?: number;
+    data?: {
+      error?: string;
+      message?: string;
+    };
+  };
+  message?: string;
+  code?: string;
+}
+
+function asApiError(error: unknown): ApiError {
+  return error as ApiError;
+}
 
 // Extend Window interface to include __AUTH_TOKEN__
 declare global {
@@ -22,18 +40,15 @@ declare global {
 }
 
 // Extended user type for client-side state
-export interface AuthStateUser extends Omit<AuthUserRead, 'tenantId'> {
+export interface AuthStateUser extends AuthUserRead {
   isImpersonating?: boolean;
   realUserEmail?: string;
   is_super_admin?: boolean;
   effectiveTenantId?: string;
   tenantName?: string;
   isImpersonatingTenant?: boolean;
-  // Previously we had 'name', but AuthUserRead has firstName/lastName/fullName
-  name?: string; // Keep for backward compatibility if needed, or migrate
-  fullName?: string; // Add fullName for compatibility
-  tenantId: string; // tenantId is required in AuthUserRead
-  role: string; // Explicitly match AuthUserRead mandatory role
+  name?: string;
+  isPhoneVerified?: boolean;
 }
 
 interface SubscriptionStatus {
@@ -162,8 +177,8 @@ export const useAuthStore = create<AuthStore>()(
             set({
               subscription: {
                 isExpired: Boolean(subInfo.isExpired),
-                daysRemaining: subInfo.daysRemaining ?? 0,
-                planName: (subInfo.plan?.name || 'Unknown') as string
+                daysRemaining: typeof subInfo.daysRemaining === 'number' ? subInfo.daysRemaining : 0,
+                planName: subInfo.plan?.name || 'Unknown'
               }
             });
           }
@@ -201,17 +216,17 @@ export const useAuthStore = create<AuthStore>()(
 
             // Map AuthUserRead to AuthStateUser and handle missing fields
             if (accessToken && userData) {
-              const fullName = (userData as any).fullName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+              const name = (userData.firstName && userData.lastName)
+                ? `${userData.firstName} ${userData.lastName}`.trim()
+                : (userData.username || '');
 
               const user: AuthStateUser = {
-                ...(userData as any),
-                firstName: (userData.firstName || '') as string,
-                lastName: (userData.lastName || '') as string,
-                fullName,
-                // Ensure name is present if components use it (AuthUserRead has fullName)
-                name: fullName,
-                is_super_admin: userData.role === 'super_admin' || userData.role === 'admin', // Basic check
-                isPhoneVerified: !requiresPhoneVerification // Inferred
+                ...userData,
+                firstName: userData.firstName || '',
+                lastName: userData.lastName || '',
+                name,
+                is_super_admin: userData.role === 'super_admin' || userData.role === 'admin',
+                isPhoneVerified: !requiresPhoneVerification
               };
 
               // Check if tenant has changed (extract from JWT token)
@@ -293,8 +308,10 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             console.error('Invalid response structure:', { response: responseEnvelope });
             throw new Error('Sunucudan geçersiz yanıt alındı');
+            throw new Error('Sunucudan geçersiz yanıt alındı');
           }
-        } catch (error: any) {
+        } catch (err: unknown) {
+          const error = asApiError(err);
           console.log('=== LOGIN ERROR ===');
           console.error('Login error:', error);
 
@@ -359,7 +376,7 @@ export const useAuthStore = create<AuthStore>()(
             throw new Error('Kullanıcı bilgisi (telefon veya e-posta) bulunamadı');
           }
 
-          const envelope = await verifyOtpApi({ otp, identifier: targetIdentifier }) as ResponseEnvelopeVerifyOtpResponse;
+          const envelope = await verifyOtpApi({ otp, identifier: targetIdentifier });
 
           if (envelope?.success && envelope.data) {
             const { accessToken: newToken, refreshToken: newRefreshToken, user: userData } = envelope.data;
@@ -368,7 +385,9 @@ export const useAuthStore = create<AuthStore>()(
             if (userData) {
               const user: AuthStateUser = {
                 ...userData,
-                name: (userData.fullName || userData.firstName) ? (userData.fullName || `${userData.firstName || ''} ${userData.lastName || ''}`) : (userData.username || ''),
+                name: (userData.firstName && userData.lastName)
+                  ? `${userData.firstName} ${userData.lastName}`.trim()
+                  : (userData.username || ''),
                 isPhoneVerified: true
               };
 
@@ -393,10 +412,10 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             setError('Doğrulama başarısız');
           }
-        } catch (error: any) {
-          console.error('OTP Verification error:', error);
-          setError(error.response?.data?.message || error.message || 'Doğrulama başarısız');
-          throw error;
+        } catch (err: unknown) {
+          console.error('OTP Verification error:', err);
+          setError(err instanceof Error ? err.message : 'Doğrulama başarısız');
+          throw err;
         } finally {
           setLoading(false);
         }
@@ -420,7 +439,8 @@ export const useAuthStore = create<AuthStore>()(
           // If phone was required, now it's sent, so we can hide phone input? 
           // Or just keep it.
 
-        } catch (error: any) {
+        } catch (err: unknown) {
+          const error = asApiError(err);
           console.error('Send OTP error:', error);
           setError(error.response?.data?.error || error.message || 'OTP gönderilemedi');
           throw error;
@@ -440,21 +460,22 @@ export const useAuthStore = create<AuthStore>()(
           console.log('Phone:', phone);
           console.log('Making request to:', '/api/auth/forgot-password');
 
-          const data = await forgotPasswordApi({
+          const responseEnvelope = await forgotPasswordApi({
             identifier: phone,
             captchaToken: 'dummy' // TODO: Implement proper captcha
-          }) as any;
+          });
 
-          console.log('Response received:', data);
+          console.log('Response received:', responseEnvelope);
 
-          if (data?.success) {
+          if (responseEnvelope?.success) {
             // OTP sent successfully - no error, function completes successfully
             console.log('OTP sent successfully');
           } else {
             console.log('Response not successful, throwing error');
-            throw new Error(data?.error || 'OTP gönderilemedi');
+            throw new Error(typeof responseEnvelope?.error === 'string' ? responseEnvelope.error : 'OTP gönderilemedi');
           }
-        } catch (error: any) {
+        } catch (err: unknown) {
+          const error = asApiError(err);
           console.log('=== FORGOT PASSWORD ERROR ===');
           console.error('Forgot password error:', error);
           console.error('Error response:', error.response);
@@ -495,7 +516,7 @@ export const useAuthStore = create<AuthStore>()(
           setError(null);
 
           // Use Orval-generated API (G-03: Auth Boundary Migration)
-          const response = await lookupPhoneApi({ identifier }) as ResponseEnvelopeLookupPhoneResponse;
+          const response = await lookupPhoneApi({ identifier });
 
           if (response?.success && response?.data) {
             return {
@@ -505,7 +526,8 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             throw new Error('Kullanıcı bulunamadı');
           }
-        } catch (error: any) {
+        } catch (err: unknown) {
+          const error = asApiError(err);
           // Handle "not found" explicitly
           if (error.response?.status === 404) {
             const msg = 'Kayıtlı kullanıcı bulunamadı';
@@ -531,14 +553,15 @@ export const useAuthStore = create<AuthStore>()(
           const data = await verifyOtpApi({
             identifier: phone,
             otp: otp
-          }) as any;
+          });
 
           if (data?.success) {
             // OTP verified successfully
           } else {
             throw new Error('Doğrulama başarısız');
           }
-        } catch (error: any) {
+        } catch (err: unknown) {
+          const error = asApiError(err);
           console.error('Verify reset OTP error:', error);
           setError(error.response?.data?.message || error.message || 'Doğrulama başarısız');
           throw error;
@@ -559,14 +582,15 @@ export const useAuthStore = create<AuthStore>()(
             identifier: phone,
             otp: otp,
             newPassword: newPassword
-          }) as any;
+          });
 
           if (data?.success) {
             // Password reset successfully
           } else {
             throw new Error('Şifre sıfırlanamadı');
           }
-        } catch (error: any) {
+        } catch (err: unknown) {
+          const error = asApiError(err);
           console.error('Reset password error:', error);
           setError(error.response?.data?.error || error.message || 'Şifre sıfırlanamadı');
           throw error;
@@ -608,10 +632,9 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           // authRefresh uses refresh token from Authorization header (set by apiClient interceptor)
-          const responseData = await refreshTokenApi() as any;
-          if (responseData && (responseData.access_token || responseData.accessToken)) {
-            // Backend should return { access_token, data: user } format
-            const newToken = responseData.access_token || responseData.accessToken;
+          const responseEnvelope = await refreshTokenApi();
+          if (responseEnvelope && responseEnvelope.data && responseEnvelope.data.accessToken) {
+            const newToken = responseEnvelope.data.accessToken;
             set({ token: newToken });
             // Use TokenManager to update access token
             tokenManager.updateAccessToken(newToken);
@@ -648,11 +671,20 @@ export const useAuthStore = create<AuthStore>()(
             const response = await listUserMe();
 
             // customInstance returns response.data directly: {success, data: {...}}
-            const responseData = response as any;
-            console.log('[initializeAuth] API response:', responseData);
+            const rawResponse = response as unknown;
+            const userData = unwrapObject<AuthUserRead & {
+              firstName?: string;
+              lastName?: string;
+              name?: string;
+              role?: string;
+              phone?: string;
+              tenantId?: string;
+              tenantName?: string;
+              username?: string;
+              isPhoneVerified?: boolean;
+            }>(rawResponse);
 
-            // Extract nested user data
-            const userData = responseData?.data || responseData;
+            console.log('[initializeAuth] API response:', rawResponse);
 
             if (userData && (userData.id || userData.email)) {
               // Get impersonation status from TokenManager
@@ -666,25 +698,24 @@ export const useAuthStore = create<AuthStore>()(
 
               // Type assertion or mapping might be needed if UserRead and AuthUserRead differ
               const transformedUser: AuthStateUser = {
-                ...(userData as any), // Spread base properties from UserRead
-                id: userData.id || '',
-                email: userData.email || '',
-                // Ensure name is present
-                name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.fullName || userData.username || '',
+                ...userData,
+                id: userData.id,
+                email: userData.email,
+                firstName: userData.firstName || '',
+                lastName: userData.lastName || '',
+                name: (userData.firstName && userData.lastName)
+                  ? `${userData.firstName} ${userData.lastName}`.trim()
+                  : (userData.username || ''),
                 role: userData.role || 'user',
                 phone: userData.phone,
+                tenantId: userData.tenantId,
                 isPhoneVerified,
                 isImpersonating,
                 realUserEmail,
                 is_super_admin: userData.role === 'super_admin',
-                // Preserve tenant impersonation details from token
-                effectiveTenantId: payload?.effective_tenant_id as string | undefined,
-                // If tenant name is in token, use it. Backend doesn't strictly put name in token usually, 
-                // but we can try to keep what was persisted if not available, OR rely on what /me returns if updated.
-                // However, /me usually returns DB user. 
-                // Let's use persisted tenantName if we are impersonating tenant and token confirms it.
+                effectiveTenantId: payload?.effective_tenant_id,
                 tenantName: (payload?.is_impersonating_tenant ? userData.tenantName : undefined),
-                isImpersonatingTenant: payload?.is_impersonating_tenant as boolean | undefined
+                isImpersonatingTenant: payload?.is_impersonating_tenant
               };
 
               // If we are impersonating a tenant, try to restore tenantName from storage if available

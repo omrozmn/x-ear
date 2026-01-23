@@ -13,7 +13,7 @@ export type ListUnifiedCashRecordsParams = {
  */
 limit?: number;
 record_type?: string | null;
-patient_id?: string | null;
+party_id?: string | null;
 status?: string | null;
 start_date?: string | null;
 end_date?: string | null;

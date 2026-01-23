@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/ocr.py
+# hypothesis_version: 6.150.2
+
+['autoCrop', 'completed', 'databaseConnected', 'documentType', 'errorMessage', 'failed', 'filePath', 'hfNerAvailable', 'imagePath', 'imagePath1', 'imagePath2', 'medical', 'ocrAvailable', 'ocrText', 'patientInfo', 'patientName', 'pending', 'processing', 'spacyAvailable', 'tenantId']

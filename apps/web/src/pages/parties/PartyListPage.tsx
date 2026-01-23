@@ -80,7 +80,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     tcNumber: party.tcNumber || party.tc_number || '',
     phone: party.phone || '',
     email: party.email || '',
-    status: (party.status as any) || 'active',
+    status: (party.status as PartyStatus) || 'active',
     segment: (party.segment as PartySegment) || 'NEW',
     labels: party.label ? [party.label as PartyLabel] : [],
     registrationDate: party.createdAt || party.created_at || '',
@@ -350,7 +350,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <span className="text-red-600 mr-2">⚠️</span>
-            <span className="text-sm text-red-700">{(currentError as any) instanceof Error ? (currentError as any).message : String(currentError)}</span>
+            <span className="text-sm text-red-700">{typeof currentError === 'string' ? currentError : (currentError as Error)?.message || String(currentError)}</span>
           </div>
           <Button
             onClick={() => {

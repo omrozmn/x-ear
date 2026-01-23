@@ -29,8 +29,15 @@ def export_openapi(output_path: str = None):
             "openapi.json",
         )
 
+    # Determine format from extension
+    is_yaml = output_path.endswith((".yaml", ".yml"))
+
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(openapi_schema, f, indent=2, ensure_ascii=False, default=str)
+        if is_yaml:
+            import yaml
+            yaml.dump(openapi_schema, f, sort_keys=False, allow_unicode=True, default_flow_style=False, indent=2)
+        else:
+            json.dump(openapi_schema, f, indent=2, ensure_ascii=False, default=str)
 
     # Stats
     paths_count = len(openapi_schema.get("paths", {}))

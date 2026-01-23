@@ -114,6 +114,7 @@ export interface Invoice {
    * case `serverId` will be undefined until the invoice is synced.
    */
   serverId?: number;
+  saleId?: string;
   invoiceNumber: string;
   type: InvoiceTypeLegacy;
   status: InvoiceStatus;
@@ -522,7 +523,7 @@ export interface EFaturaSubmission {
 export interface EFaturaBulkSubmission {
   invoiceIds: string[];
   submissionDate: string;
-  results: Array<{
+  results?: Array<{
     invoiceId: string;
     success: boolean;
     ettn?: string;

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_production.py
+# hypothesis_version: 6.150.2
+
+[404, 500, '/init-db', '/orders', 'Admin Production', 'Order not found', 'Order status updated', 'production.manage', 'production.read', 'system.manage']

@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-22T15:08:42.527Z
+ * Generated: 2026-01-23T22:51:41.753Z
  */
 
 // ACTIVITY_LOGS
@@ -281,14 +281,14 @@ export {
 export {
   useListAppointments,
   useCreateAppointments,
+  useListAppointmentAvailability,
+  useListAppointmentList,
   useGetAppointment,
   useUpdateAppointment,
   useDeleteAppointment,
   useCreateAppointmentReschedule,
   useCreateAppointmentCancel,
   useCreateAppointmentComplete,
-  useListAppointmentAvailability,
-  useListAppointmentList,
 } from './appointments/appointments';
 
 // APPS
@@ -315,7 +315,7 @@ export {
   useCreateAuthResetPassword,
   useCreateAuthLogin,
   useCreateAuthRefresh,
-  useListAuthMe,
+  useGetAuthMe,
   useCreateAuthSendVerificationOtp,
   useCreateAuthSetPassword,
 } from './auth/auth';
@@ -439,6 +439,12 @@ export {
   useGetPatientDocument,
   useDeletePatientDocument,
 } from './documents/documents';
+
+// EMAIL_LOGS
+export {
+  useGetEmailLogs,
+  useSendManualEmail,
+} from './email-logs/email-logs';
 
 // HEALTH
 export {
@@ -728,6 +734,13 @@ export {
   useDeleteAdminSmPackage,
 } from './sms/sms';
 
+// SMTP_CONFIGURATION
+export {
+  useGetSMTPConfig,
+  useCreateOrUpdateSMTPConfig,
+  useSendTestEmail,
+} from './smtp-configuration/smtp-configuration';
+
 // SUBSCRIPTIONS
 export {
   useCreateSubscriptionSubscribe,
@@ -750,15 +763,11 @@ export {
 // TENANT_USERS
 export {
   useListTenantUsers,
-  useCreateTenantUsers,
+  useCreateTenantUser,
   useDeleteTenantUser,
   useUpdateTenantUser,
-  useListTenantCompany,
+  useGetTenantCompany,
   useUpdateTenantCompany,
-  useCreateTenantCompanyUpload,
-  useDeleteTenantCompanyUpload,
-  useGetTenantAsset,
-  useListTenantCompanyAssetUrl,
 } from './tenant-users/tenant-users';
 
 // TIMELINE

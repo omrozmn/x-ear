@@ -13,10 +13,14 @@ import {
     User,
     X
 } from 'lucide-react';
-import {useListSmHeaders,
+import {
+    useListSmHeaders,
     getListSmHeadersQueryKey,
-    useCreateCommunicationMessageSendSms,} from '@/api/client/sms.client';
+    useCreateCommunicationMessageSendSms,
+} from '@/api/client/sms.client';
+import type { SMSHeaderRequestRead } from '@/api/generated/schemas';
 import { useAuthStore } from '@/stores/authStore';
+import { unwrapArray } from '@/utils/response-unwrap';
 
 const SMS_SEGMENT_LENGTH = 155;
 
@@ -53,19 +57,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
     const { mutateAsync: createCommunicationMessageSendSms } = useCreateCommunicationMessageSendSms();
 
     // Parse SMS headers and filter only approved ones
-    let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
-    if (headersData) {
-        if (Array.isArray(headersData)) {
-            headersRaw = headersData;
-        } else if ((headersData as any)?.data) {
-            const innerData = (headersData as any).data;
-            if (Array.isArray(innerData)) {
-                headersRaw = innerData;
-            } else if (innerData?.data && Array.isArray(innerData.data)) {
-                headersRaw = innerData.data;
-            }
-        }
-    }
+    const headersRaw = unwrapArray<SMSHeaderRequestRead>(headersData);
     const headers = headersRaw.filter(h => h.status === 'approved');
 
     // Set default header when headers are loaded

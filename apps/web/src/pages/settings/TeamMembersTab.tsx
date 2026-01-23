@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Mail, User, Shield, AlertCircle, CheckCircle2, Lock, Eye, EyeOff, Building2, Pencil, AlertTriangle } from 'lucide-react';
 import { Button, Input, Select } from '@x-ear/ui-web';
 import {
@@ -12,8 +12,9 @@ import {
 } from '@/api/client/tenant-users.client';
 import {
     UserRead,
-    CreateTenantUserRequest,
-    TenantUserUpdate
+    TenantUserCreate,
+    TenantUserUpdate,
+    ResponseEnvelopeListUserRead
 } from '@/api/generated/schemas';
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
@@ -120,20 +121,17 @@ export function TeamMembersTab() {
         e.preventDefault();
         setInviteError('');
         setInviteSuccess('');
-        const payload = {
+        const payload: TenantUserCreate = {
             username: inviteData.username,
             password: inviteData.password,
             email: inviteData.email,
-            first_name: inviteData.firstName,
-            last_name: inviteData.lastName,
+            firstName: inviteData.firstName,
+            lastName: inviteData.lastName,
             role: inviteData.role,
-            is_active: true
+            branchIds: inviteData.branchId ? [inviteData.branchId] : []
         };
 
-        // Use 'as any' only if strictly necessary to bypass type mismatch between generated schemas
-        // where one expects strict string and other expects alias, until we align them.
-        // But here I'll try to pass it without strict type annotation first.
-        inviteMutation.mutate({ data: payload as any });
+        inviteMutation.mutate({ data: payload });
     };
 
     const handleDelete = (userId: string) => {
@@ -156,15 +154,12 @@ export function TeamMembersTab() {
         }
         setEditingUser(user);
         setEditData({
-            username: '', // UserRead does not strictly have 'username', relies on email usually or it's separate
+            username: user.username || '',
             email: user.email || '',
             firstName: user.firstName || '',
             lastName: user.lastName || '',
             role: user.role || 'user',
-            // UserRead doesn't show branches array in the schema I saw. If it exists in runtime response, excellent.
-            // If not, this might be why 'as any' was used. Strict UserRead might break this.
-            // I'll cast `user` to `any` JUST for this property access if needed, or define an Extended interface.
-            branchId: (user as any).branches && (user as any).branches.length > 0 ? (user as any).branches[0].id : '',
+            branchId: user.branchId || '',
             password: '',
             isActive: user.isActive ?? true
         });
@@ -178,16 +173,18 @@ export function TeamMembersTab() {
         setUpdateError('');
 
         try {
-            const payload = {
-                first_name: editData.firstName,
-                last_name: editData.lastName,
-                role: editData.role,
+            const payload: TenantUserUpdate = {
+                firstName: editData.firstName,
+                lastName: editData.lastName,
+                role: editData.role as TenantUserUpdate['role'],
                 isActive: editData.isActive ?? true,
-                email: editData.email
+                email: editData.email,
+                username: editData.username,
+                password: editData.password || undefined,
+                branchIds: editData.branchId ? [editData.branchId] : []
             };
-            const extendedPayload = { ...payload, password: editData.password || undefined, branchIds: editData.branchId ? [editData.branchId] : [] };
 
-            await updateUserMutation.mutateAsync({ userId: editingUser.id, data: extendedPayload as any });
+            await updateUserMutation.mutateAsync({ userId: editingUser.id, data: payload });
             setIsEditModalOpen(false);
             toast.success('Kullanici basariyla guncellendi.');
             refetch();
@@ -231,16 +228,8 @@ export function TeamMembersTab() {
     };
 
     // Backend returns ResponseEnvelopeListUserRead
-    // usersResponse?.data is UserRead[] | null due to Orval-Mutator unwrapping/naming convention, but let's check generated types
-    // Actually, `useListTenantUsers` returns `UseQueryResult<ResponseEnvelopeListUserRead, unknown>`
-    // The mutator might be returning the envelope OR the data directly depending on config.
-    // Assuming standard Orval behavior with `customInstance` returning `Promise<T>`:
-    // `usersResponse` is the `ResponseEnvelopeListUserRead`.
-
-    // However, the previous code suggested `(usersResponse as any)?.data`.
-    // Let's type strictly:
-    const backendResponse = usersResponse as unknown as { data: UserRead[] } | undefined;
-    const users: UserRead[] = Array.isArray(backendResponse?.data) ? backendResponse!.data : [];
+    const usersResponseTyped = usersResponse as ResponseEnvelopeListUserRead | undefined;
+    const users = Array.isArray(usersResponseTyped?.data) ? usersResponseTyped!.data : [];
 
     const getRoleLabel = (role: string) => {
         const labels: Record<string, string> = {
@@ -478,13 +467,14 @@ export function TeamMembersTab() {
                                             onChange={(e) => setInviteData({ ...inviteData, password: e.target.value })}
                                             leftIcon={<Lock className="w-5 h-5" />}
                                             rightIcon={
-                                                <button
-                                                    type="button"
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
                                                     onClick={() => setShowPassword(!showPassword)}
-                                                    className="focus:outline-none"
+                                                    className="p-1 h-auto"
                                                 >
                                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                                </button>
+                                                </Button>
                                             }
                                             placeholder="Guvenli sifre olusturun"
                                             minLength={6}
@@ -560,16 +550,15 @@ export function TeamMembersTab() {
                                         variant="outline"
                                         className="flex-1"
                                     >
-                                        Iptal
+                                        İptal
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={inviteMutation.isPending}
                                         loading={inviteMutation.isPending}
                                         variant="primary"
                                         className="flex-1"
                                     >
-                                        {inviteMutation.isPending ? 'Olusturuluyor...' : 'Kullanici Olustur'}
+                                        Kullanıcı Oluştur
                                     </Button>
                                 </div>
                             </form>
@@ -628,13 +617,14 @@ export function TeamMembersTab() {
                                         onChange={(e) => setEditData({ ...editData, password: e.target.value })}
                                         leftIcon={<Lock className="w-5 h-5" />}
                                         rightIcon={
-                                            <button
-                                                type="button"
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="focus:outline-none"
+                                                className="p-1 h-auto"
                                             >
                                                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                            </button>
+                                            </Button>
                                         }
                                         placeholder="Degistirmek icin girin"
                                         minLength={6}
@@ -744,18 +734,11 @@ export function TeamMembersTab() {
                                 onClick={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
                                 variant="outline"
                             >
-                                Iptal
+                                İptal
                             </Button>
                             <Button
                                 onClick={confirmationModal.onConfirm}
-                                variant={confirmationModal.type === 'danger' ? 'danger' : 'default'}
-                                className={
-                                    confirmationModal.type === 'warning'
-                                        ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500'
-                                        : confirmationModal.type === 'info'
-                                            ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
-                                            : ''
-                                }
+                                variant={confirmationModal.type === 'danger' ? 'danger' : (confirmationModal.type === 'warning' ? 'default' : 'primary')}
                             >
                                 Onayla
                             </Button>

@@ -21,6 +21,7 @@ os.environ['JWT_SECRET_KEY'] = 'test-secret'
 os.environ['TESTING'] = 'true'  # Disable idempotency middleware in tests
 os.environ['APP_ENV'] = 'testing'
 os.environ['DATABASE_URL'] = 'sqlite:///:memory:'  # Use in-memory DB for tests
+os.environ['SMTP_ENCRYPTION_KEY'] = '1RRDcoqlZU8KwHa_Y0ylelmteMsSM6Wgl07RJsGL2-k='  # Valid Fernet key for tests
 
 # Patch JSONB for SQLite tests
 import sqlalchemy.dialects.postgresql
@@ -43,6 +44,13 @@ middleware.unified_access.SECRET_KEY = 'test-secret'
 try:
     import middleware.permission_middleware
     middleware.permission_middleware.SECRET_KEY = 'test-secret'
+except (ImportError, AttributeError):
+    pass
+
+# Patch AI middleware auth
+try:
+    import ai.middleware.auth
+    ai.middleware.auth.SECRET_KEY = 'test-secret'
 except (ImportError, AttributeError):
     pass
 

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/email_service.py
+# hypothesis_version: 6.150.2
+
+[500, 'Date', 'From', 'Message-ID', 'Subject', 'To', 'alternative', 'email_log_id', 'failed', 'host', 'html', 'password', 'pending', 'plain', 'port', 'recipient', 'scenario', 'sent', 'tenant_id', 'timeout', 'tr', 'use_ssl', 'use_tls', 'username', 'utf-8']

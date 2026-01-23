@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 
 interface DropdownItem {
-  label: string;
+  label: React.ReactNode;
   value: string;
   disabled?: boolean;
   onClick?: () => void;

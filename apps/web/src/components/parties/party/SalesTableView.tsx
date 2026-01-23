@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SaleRead } from '../../../api/generated/schemas';
+import { SaleRead } from '../../../api/generated/schemas/saleRead';
 import {
   MoreVertical,
   Eye,
@@ -26,8 +26,15 @@ interface SalesTableViewProps {
   onCancelSale?: (sale: SaleRead) => void;
 }
 
+// Extended interface to handle runtime properties missing from schema
+interface ExtendedSaleRead extends SaleRead {
+  devices?: any[];
+  remainingAmount?: number;
+  invoice?: any;
+}
+
 export const SalesTableView: React.FC<SalesTableViewProps> = ({
-  sales,
+  sales: rawSales,
   partyId,
   onSaleClick,
   onEditSale,
@@ -38,6 +45,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   onOpenDocuments,
   onCancelSale
 }) => {
+  const sales = rawSales as unknown as ExtendedSaleRead[];
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const formatDate = (dateString?: string) => {
@@ -58,7 +66,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   /* Removed incorrect client-side VAT calculation. 
      Backend's finalAmount/totalAmount is already the correct figure. */
 
-  const renderDevicesSummary = (sale: SaleRead) => {
+  const renderDevicesSummary = (sale: ExtendedSaleRead) => {
     const devices = sale.devices || [];
     if (!devices || devices.length === 0) {
       return <span className="text-gray-500">Ürün/Hizmet</span>;
@@ -79,7 +87,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     );
   };
 
-  const renderBarcodeSerialInfo = (sale: SaleRead) => {
+  const renderBarcodeSerialInfo = (sale: ExtendedSaleRead) => {
     const devices = sale.devices || [];
     if (!devices || devices.length === 0) {
       return <span className="text-gray-500">-</span>;

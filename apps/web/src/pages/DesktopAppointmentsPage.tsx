@@ -11,10 +11,10 @@ export function DesktopAppointmentsPage() {
 
 
   const { error, stats } = useAppointments();
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+  const [viewMode /*, _setViewMode */] = useState<ViewMode>('calendar');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>();
-  const [_filters, _setFilters] = useState<AppointmentFilters>({});
+  // const [_filters, _setFilters] = useState<AppointmentFilters>({});
 
   const handleDateClick = (date: string) => {
     setSelectedDate(date);

@@ -107,8 +107,11 @@ class AIRequest(Base):
     latency_ms = Column(Integer, nullable=True)
     
     # Timestamps
-    created_at = Column(DateTime, nullable=False, default=now_utc)
+    created_at = Column(DateTime, nullable=False, default=now_utc, index=True)
     completed_at = Column(DateTime, nullable=True)
+    
+    # Legal hold flag (prevents deletion during compliance investigations)
+    legal_hold = Column(Boolean, nullable=False, default=False, index=True)
     
     # Idempotency
     idempotency_key = Column(String(128), nullable=True, index=True)
@@ -118,6 +121,7 @@ class AIRequest(Base):
         Index("ix_ai_requests_tenant_created", "tenant_id", "created_at"),
         Index("ix_ai_requests_user_created", "user_id", "created_at"),
         Index("ix_ai_requests_status_created", "status", "created_at"),
+        Index("ix_ai_requests_legal_hold_created", "legal_hold", "created_at"),
     )
     
     def to_dict(self) -> dict:

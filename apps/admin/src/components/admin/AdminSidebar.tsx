@@ -54,7 +54,7 @@ const navigation = [
     { name: 'Faturalar', href: '/billing', icon: CreditCard },
     { name: 'Ödemeler', href: '/payments', icon: Wallet },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
-    { name: 'Entegrasyonlar', href: '/integrations/vatan-sms', icon: Zap },
+    { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },
     { name: 'Ayarlar', href: '/settings', icon: Settings },
 ]
 

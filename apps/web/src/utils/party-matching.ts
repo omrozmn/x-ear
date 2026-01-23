@@ -181,10 +181,15 @@ export class PartyMatcher {
 
     // Adres karşılaştırması
     const getAddressString = (p: Party): string => {
-      const addr = p.address as any;
+      const addr = p.address;
       if (typeof addr === 'string') return addr;
-      if (!addr) return p.addressFull || p.address_full || '';
-      return addr.full || addr.full_address || addr.fullAddress || p.addressFull || p.address_full || '';
+      // Handle legacy object address structure if it exists in runtime but not in type
+      if (addr && typeof addr === 'object') {
+        const addrObj = addr as Record<string, unknown>;
+        const full = addrObj.full || addrObj.full_address || addrObj.fullAddress;
+        if (typeof full === 'string') return full;
+      }
+      return p.addressFull || p.address_full || '';
     };
 
     const party1Address = getAddressString(party1);

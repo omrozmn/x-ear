@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/timeline.py
+# hypothesis_version: 6.150.2
+
+['blue', 'entityId', 'entityType', 'fa-circle', 'general', 'partyId', 'system']

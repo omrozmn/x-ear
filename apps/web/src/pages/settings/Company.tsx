@@ -124,11 +124,9 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
         </div>
       </div>
 
-      {/* eslint-disable-next-line no-restricted-syntax */}
-      <input
+      <Input
         ref={fileInputRef}
         type="file"
-        data-allow-raw="true"
         accept="image/png,image/jpeg,image/gif,image/webp"
         onChange={handleInputChange}
         className="hidden"

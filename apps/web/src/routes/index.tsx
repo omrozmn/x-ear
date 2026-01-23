@@ -1,6 +1,6 @@
 import { Button, Select } from '@x-ear/ui-web';
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
 import { QuickStatsCard } from '../components/dashboard/QuickStatsCard';
@@ -10,7 +10,7 @@ import { CashRegisterModal } from '../components/dashboard/CashRegisterModal';
 import { PricingCalculatorModal } from '../components/dashboard/PricingCalculatorModal';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { usePermissions } from '../hooks/usePermissions';
-import { getEnvVar } from '../utils/env';
+// import { getEnvVar } from '../utils/env'; // Available but not currently used
 import PieChartSimple from '../components/charts/PieChartSimple';
 import { usePartyDistribution } from '../api/dashboard';
 import { formatActivitySentence } from '../utils/activity';
@@ -41,7 +41,7 @@ function DesktopDashboard() {
   const [isPricingCalculatorModalOpen, setIsPricingCalculatorModalOpen] = useState(false);
 
   // Permission-based visibility
-  const { hasPermission, isSuperAdmin, isLoading: permissionsLoading } = usePermissions();
+  const { hasPermission, isSuperAdmin } = usePermissions();
 
   // Check individual permissions for dashboard sections
   const canViewParties = isSuperAdmin || hasPermission('parties.view');
@@ -51,7 +51,7 @@ function DesktopDashboard() {
   const canViewSales = isSuperAdmin || hasPermission('sales.view');
   const canViewAnalytics = isSuperAdmin || hasPermission('dashboard.analytics');
   const canViewActivityLogs = isSuperAdmin || hasPermission('activity_logs.view');
-  const canViewReports = isSuperAdmin || hasPermission('reports.view');
+  // const canViewReports = isSuperAdmin || hasPermission('reports.view'); // Available for future use
 
   const handleCardClick = (cardType: string) => {
     switch (cardType) {
@@ -233,7 +233,7 @@ function DesktopDashboard() {
 
 function PartyDistribution() {
   const { data, isLoading, isError } = usePartyDistribution();
-  const raw = (data as any)?.data || [];
+  const raw = (data as Record<string, any>)?.data || [];
   const list = Array.isArray(raw) ? raw : [];
 
   // Convert to pie slices by summing breakdowns per branch (use status counts as primary)

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Input, Alert } from '@x-ear/ui-web';
-import { Trash2, Box, Folder, RefreshCw, DollarSign, Tag, Truck, Star } from 'lucide-react';
+import { Box, Folder, DollarSign, Tag, Truck, Star } from 'lucide-react';
 import { InventoryCategory, InventoryStatus } from '../../../types/inventory';
 import { SupplierAutocomplete } from './SupplierAutocomplete';
 import CategoryAutocomplete from './CategoryAutocomplete';
@@ -37,14 +37,11 @@ const OPERATION_TYPES = [
   { value: 'add_features', label: 'Özellik Ekle', icon: <Star className="w-5 h-5" />, color: 'purple' }
 ];
 
+/*
 const CATEGORIES = [
-  { value: 'hearing_aid', label: 'İşitme Cihazı' },
-  { value: 'battery', label: 'Pil' },
-  { value: 'accessory', label: 'Aksesuar' },
-  { value: 'ear_mold', label: 'Kulak Kalıbı' },
-  { value: 'cleaning_supplies', label: 'Temizlik Malzemesi' },
-  { value: 'amplifiers', label: 'Amplifikatör' }
+  ...
 ];
+*/
 
 // status changes are not available via bulk operations in this UI
 
@@ -151,8 +148,8 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
                 onClick={() => setOperationType(op.value)}
                 aria-pressed={operationType === op.value}
                 className={`flex items-center space-x-2 p-3 border rounded-md text-sm focus:outline-none transition-colors ${operationType === op.value
-                    ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/40 dark:border-blue-500'
-                    : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
+                  ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/40 dark:border-blue-500'
+                  : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
                   }`}
               >
                 <span className={`text-gray-700 dark:text-gray-300 ${operationType === op.value ? 'dark:text-white' : ''}`}>{op.icon}</span>
@@ -315,11 +312,11 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             disabled={!operationType || isLoading}
             loading={isLoading}
             className={`inline-flex items-center px-4 py-2 rounded-md ${selectedOperation?.color === 'red' ? 'bg-red-600 hover:bg-red-700 text-white' :
-                selectedOperation?.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700 text-white' :
-                  selectedOperation?.color === 'green' ? 'bg-green-600 hover:bg-green-700 text-white' :
-                    selectedOperation?.color === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
-                      selectedOperation?.color === 'purple' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
-                        'bg-blue-600 hover:bg-blue-700 text-white'
+              selectedOperation?.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700 text-white' :
+                selectedOperation?.color === 'green' ? 'bg-green-600 hover:bg-green-700 text-white' :
+                  selectedOperation?.color === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
+                    selectedOperation?.color === 'purple' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
+                      'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
           >
             <span className="mr-2">{selectedOperation?.icon}</span>

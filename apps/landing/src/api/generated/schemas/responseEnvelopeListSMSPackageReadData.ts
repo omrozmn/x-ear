@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSPackageRead } from './sMSPackageRead';
+import type { SmsPackageRead } from './smsPackageRead';
 
-export type ResponseEnvelopeListSMSPackageReadData = SMSPackageRead[] | null;
+export type ResponseEnvelopeListSmsPackageReadData = SmsPackageRead[] | null;

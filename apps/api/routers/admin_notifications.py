@@ -12,7 +12,8 @@ from models.tenant import Tenant
 from models.user import User
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
-from schemas.notifications import NotificationRead, NotificationTemplateRead, NotificationTemplateCreate
+from schemas.notifications import NotificationRead, NotificationTemplateCreate
+from schemas.notification_templates import EmailTemplateRead
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +174,7 @@ async def send_notification(
 
 # --- Template Endpoints (Migrated from Flask) ---
 
-@router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=ResponseEnvelope[List[NotificationTemplateRead]])
+@router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=ResponseEnvelope[List[EmailTemplateRead]])
 async def get_templates(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -196,14 +197,14 @@ async def get_templates(
         templates = query.order_by(NotificationTemplate.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(
-            data=[NotificationTemplateRead.model_validate(t) for t in templates],
+            data=[EmailTemplateRead.model_validate(t) for t in templates],
             meta={"page": page, "limit": limit, "total": total, "total_pages": (total + limit - 1) // limit}
         )
     except Exception as e:
         logger.error(f"Get templates error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/templates", operation_id="createAdminNotificationTemplates", response_model=ResponseEnvelope[NotificationTemplateRead])
+@router.post("/templates", operation_id="createAdminNotificationTemplates", response_model=ResponseEnvelope[EmailTemplateRead])
 async def create_template(
     data: TemplateCreate,
     db: Session = Depends(get_db),
@@ -240,13 +241,13 @@ async def create_template(
         db.refresh(template)
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return ResponseEnvelope(data=NotificationTemplateRead.model_validate(template))
+        return ResponseEnvelope(data=EmailTemplateRead.model_validate(template))
     except Exception as e:
         db.rollback()
         logger.error(f"Create template error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/templates/{template_id}", operation_id="updateAdminNotificationTemplate", response_model=ResponseEnvelope[NotificationTemplateRead])
+@router.put("/templates/{template_id}", operation_id="updateAdminNotificationTemplate", response_model=ResponseEnvelope[EmailTemplateRead])
 async def update_template(
     template_id: str,
     data: TemplateCreate,
@@ -293,7 +294,7 @@ async def update_template(
         db.commit()
         db.refresh(template)
         
-        return ResponseEnvelope(data=NotificationTemplateRead.model_validate(template))
+        return ResponseEnvelope(data=EmailTemplateRead.model_validate(template))
     except HTTPException:
         raise
     except Exception as e:

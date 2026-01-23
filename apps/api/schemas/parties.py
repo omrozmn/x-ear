@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict, Any, Union
 from enum import Enum
 from datetime import date, datetime
-from pydantic import Field, EmailStr
+from pydantic import Field, EmailStr, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
@@ -116,9 +116,9 @@ class PartyRead(AppBaseModel, IDMixin, TimestampMixin):
     branch_id: Optional[str] = Field(None, alias="branchId")
     branch_name: Optional[str] = Field(None, alias="branchName")
     
-    # JSON Data
-    tags: Optional[Any] = Field(None, validation_alias="tags_json")
-    sgk_info: Optional[Dict[str, Any]] = Field(None, alias="sgkInfo", validation_alias="sgk_info_json")
+    # JSON Data - Field adları doğrudan API adları, alias_generator sayesinde camelCase olacak
+    tags: Optional[List[str]] = None
+    sgk_info: Optional[Dict[str, Any]] = Field(None, alias="sgkInfo")
 
     # Remediation 5.1: Roles
     # Using alias="code" for role_code to match legacy output
@@ -126,15 +126,39 @@ class PartyRead(AppBaseModel, IDMixin, TimestampMixin):
 
     # Remediation 5.2: Hearing Profile
     hearing_profile: Optional["HearingProfileRead"] = Field(None, alias="hearingProfile")
+    
+    @model_validator(mode='before')
+    @classmethod
+    def map_orm_fields(cls, data: Any) -> Any:
+        """Map ORM field names to schema field names"""
+        if isinstance(data, dict):
+            # tags_json -> tags
+            if 'tags_json' in data and 'tags' not in data:
+                data['tags'] = data.pop('tags_json')
+            # sgk_info_json -> sgk_info
+            if 'sgk_info_json' in data and 'sgk_info' not in data:
+                data['sgk_info'] = data.pop('sgk_info_json')
+        elif hasattr(data, '__dict__'):
+            # ORM object - convert to dict-like access
+            pass  # from_attributes=True handles this
+        return data
 
 # --- Nested Schemas ---
 class PartyRoleRead(AppBaseModel):
-    code: str = Field(..., alias="code", validation_alias="role_code")
+    role_code: str = Field(..., alias="code")
     assigned_at: Optional[datetime] = Field(None, alias="assignedAt")
 
 class HearingProfileRead(AppBaseModel, IDMixin, TimestampMixin):
     party_id: str = Field(..., alias="partyId")
-    sgk_info: Optional[Dict[str, Any]] = Field(None, alias="sgkInfo", validation_alias="sgk_info_json")
+    sgk_info: Optional[Dict[str, Any]] = Field(None, alias="sgkInfo")
+    
+    @model_validator(mode='before')
+    @classmethod
+    def map_orm_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if 'sgk_info_json' in data and 'sgk_info' not in data:
+                data['sgk_info'] = data.pop('sgk_info_json')
+        return data
 
 # --- Search/Filter Schemas ---
 class PartySearchFilters(AppBaseModel):

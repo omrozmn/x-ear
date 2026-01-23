@@ -23,7 +23,8 @@ export function ConfirmDialog({
   variant = 'primary',
   isLoading = false
 }: ConfirmDialogProps) {
-  const buttonVariant = variant === 'danger' ? 'danger' : variant === 'warning' ? 'warning' : 'primary';
+  // Button variant "warning" is not supported, map to "danger" or "secondary"
+  const buttonVariant = variant === 'danger' ? 'danger' : variant === 'warning' ? 'danger' : 'primary';
 
   return (
     <Modal isOpen={isOpen} onClose={isLoading ? () => { } : onClose} title={title || 'Onay'} size="sm">
@@ -32,7 +33,7 @@ export function ConfirmDialog({
         <div className="mt-4 flex justify-end space-x-2">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>{cancelLabel}</Button>
           <Button
-            variant={buttonVariant as any}
+            variant={buttonVariant}
             onClick={async () => { await onConfirm(); }}
             disabled={isLoading}
             loading={isLoading}

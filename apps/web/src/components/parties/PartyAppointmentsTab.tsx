@@ -45,7 +45,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
       //   per_page: 20
       // };
 
-      const response = await listPartyAppointments(party.id) as any;
+      const response = await listPartyAppointments(party.id) as Record<string, any>;
 
       // Handle response envelope or direct array
       const appointmentsData = response?.data || response || [];
@@ -324,7 +324,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
                 date: formData.get('date') as string,
                 time: formData.get('time') as string,
                 duration: parseInt(formData.get('duration') as string) || 30,
-                appointmentType: (formData.get('type') as any) || 'General',
+                // appointmentType: (formData.get('type') as any) || 'General',
                 notes: formData.get('notes') as string,
                 status: 'scheduled'
               };

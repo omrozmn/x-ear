@@ -61,6 +61,13 @@ export function PartyFormModal({
   const { data: branchesData } = useListBranches();
   const branches = unwrapArray<BranchRead>(branchesData);
 
+  const getSafeAddressProperty = (address: any, prop: string): unknown => {
+    if (address && typeof address === 'object' && prop in address) {
+      return address[prop];
+    }
+    return undefined;
+  };
+
   const [formData, setFormData] = useState<PartyFormData>({
     firstName: '',
     lastName: '',
@@ -113,8 +120,8 @@ export function PartyFormModal({
         birthDate: initialData.birthDate || '',
         email: initialData.email || '',
         address: typeof initialData.address === 'string' ? initialData.address : initialData.addressFull || '',
-        city: (typeof initialData.address === 'object' ? (initialData.address as any)?.city : initialData.addressCity) || '',
-        district: (typeof initialData.address === 'object' ? (initialData.address as any)?.district : initialData.addressDistrict) || '',
+        city: (getSafeAddressProperty(initialData.address, 'city') as string) || initialData.addressCity || '',
+        district: (getSafeAddressProperty(initialData.address, 'district') as string) || initialData.addressDistrict || '',
         status: (initialData.status as PartyStatus) || 'active',
         segment: initialData.segment || '',
         acquisitionType: initialData.acquisitionType || '',
@@ -247,7 +254,7 @@ export function PartyFormModal({
         branchId: formData.branchId?.trim() || undefined,
         acquisitionType: formData.acquisitionType?.trim() || undefined,
         // Normalize status to lowercase for backend enum compatibility
-        status: formData.status?.toLowerCase() || 'active',
+        status: (formData.status?.toLowerCase() || 'active') as PartyStatus,
         segment: formData.segment || 'lead',
         tags: formData.tags || [],
       };
@@ -257,7 +264,7 @@ export function PartyFormModal({
 
       // We need to cast cleanedData to PartyCreate because address handling is loose in form but explicit in type
       // And we handle optional/undefined differently
-      const submitData = cleanedData as unknown as PartyCreate;
+      const submitData = cleanedData as PartyCreate;
 
       const result = await onSubmit(submitData);
       if (result) {

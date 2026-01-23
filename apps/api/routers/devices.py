@@ -25,7 +25,7 @@ from schemas.sales import DeviceAssignmentUpdate, InstallmentPayment, PaymentPla
 from schemas.inventory import StockMovementRead
 from schemas.sms import SmsHeaderRequestUpdate, SmsProviderConfigCreate
 from schemas.tenants import TenantCreate, TenantRead, TenantStats, TenantUpdate
-from schemas.users import PermissionRead, RoleRead, UserProfile
+from schemas.users import UserPermissionRead, UserRoleRead, UserProfile
 from schemas.parties import PartySearchFilters
 
 from models.inventory import InventoryItem
@@ -80,8 +80,8 @@ def ensure_hearing_product(db_session: Session, tenant_id: str):
                 PasswordChangeRequest,
                 PartySearchFilters,
                 PaymentPlanCreate,
-                PermissionRead,
-                RoleRead,
+                UserPermissionRead,
+                UserRoleRead,
                 SmsHeaderRequestUpdate,
                 SMSLogRead,
                 SmsProviderConfigCreate,

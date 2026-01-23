@@ -110,7 +110,7 @@ export function CashflowModal({
         <div className="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-lg">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Yeni Kasa Kaydı</h3>
-            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <button data-allow-raw="true" onClick={handleClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -122,7 +122,7 @@ export function CashflowModal({
                 İşlem Türü *
               </label>
               <div className="flex space-x-4">
-                <button
+                <button data-allow-raw="true"
                   type="button"
                   onClick={() => {
                     setTransactionType('income');
@@ -136,7 +136,7 @@ export function CashflowModal({
                   <TrendingUp className="inline h-5 w-5 mr-2" />
                   Gelir
                 </button>
-                <button
+                <button data-allow-raw="true"
                   type="button"
                   onClick={() => {
                     setTransactionType('expense');
@@ -195,7 +195,7 @@ export function CashflowModal({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Tutar (₺) *
               </label>
-              <input
+              <input data-allow-raw="true"
                 type="text"
                 inputMode="decimal"
                 placeholder="0.00"
@@ -217,7 +217,7 @@ export function CashflowModal({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Açıklama (İsteğe Bağlı)
               </label>
-              <textarea
+              <textarea data-allow-raw="true"
                 rows={3}
                 placeholder="İşlem açıklaması..."
                 value={description}

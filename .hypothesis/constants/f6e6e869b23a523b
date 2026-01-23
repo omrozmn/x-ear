@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/email_scenario_service.py
+# hypothesis_version: 6.150.2
+
+['admin_link', 'amount', 'currency', 'default_language', 'due_date', 'email_verification', 'error_details', 'error_type', 'expires_in_hours', 'invitation_link', 'inviter_name', 'invoice_created', 'invoice_link', 'invoice_number', 'organization_name', 'password_reset', 'preferred_language', 'reset_link', 'role_name', 'system_error', 'tenant_name', 'timestamp', 'tr', 'user_invite', 'user_name', 'verification_link']

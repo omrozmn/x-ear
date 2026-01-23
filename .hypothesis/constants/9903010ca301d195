@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/utils/pii_redactor.py
+# hypothesis_version: 6.150.2
+
+['[ADRES]', '[EMAIL]', '[HASTA_NO]', '[IBAN]', '[KART_NO]', '[SAĞLIK_DURUMU]', '[TANI]', '[TC_KIMLIK]', '[TELEFON]', '[İLAÇ]', '[İSİM]', '\\b[1-9]\\d{10}\\b', 'address', 'aids', 'amoklavin', 'anksiyete', 'arveles', 'aspirin', 'atorvastatin', 'augmentin', 'bipolar', 'böbrek', 'cipro', 'credit_card', 'depresyon', 'detectionCount', 'diagnosis', 'diklofenak', 'diyabet', 'email', 'gliclazide', 'hasPhi', 'hasPii', 'health_condition', 'hepatit', 'hipertansiyon', 'hiv', 'iban', 'ibuprofen', 'işitme kaybı', 'kalp', 'kanser', 'karaciğer', 'lansoprazol', 'majezik', 'medical_record', 'medication', 'metformin', 'name', 'odyometri', 'omeprazol', 'pantoprazol', 'parol', 'phiTypes', 'phone', 'piiTypes', 'ramipril', 'redactedText', 'sağırlık', 'tc_kimlik', 'tümör', 'voltaren', 'şizofreni']

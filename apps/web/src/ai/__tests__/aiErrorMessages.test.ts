@@ -12,7 +12,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   getAIErrorMessage,
-  getErrorConfig,
   getHttpStatus,
   getErrorCategory,
   isClientError,
@@ -244,12 +243,12 @@ describe('aiErrorMessages', () => {
         .mockResolvedValueOnce('success');
 
       const resultPromise = withRetry(fn, { errorCode: 'INFERENCE_ERROR' });
-      
+
       // First call fails
       await vi.advanceTimersByTimeAsync(0);
       // Wait for retry delay
       await vi.advanceTimersByTimeAsync(1000);
-      
+
       const result = await resultPromise;
 
       expect(result).toBe('success');

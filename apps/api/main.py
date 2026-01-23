@@ -69,12 +69,15 @@ logging.basicConfig(level=logging.INFO, handlers=[console_handler, file_handler]
 logger = logging.getLogger("x-ear")
 
 # Create FastAPI app - operation_ids are now explicit in each endpoint
+# separate_input_output_schemas=False: Fixes Orval generating 'unknown' types
+# by avoiding OpenAPI 3.1 anyOf syntax for nullable fields
 app = FastAPI(
     title="X-Ear CRM API",
     description="Auto-generated from Flask backend routes",
     version="1.0.0",
     docs_url="/docs",
-    openapi_url="/openapi.json"
+    openapi_url="/openapi.json",
+    separate_input_output_schemas=False,  # Critical: Orval compatibility
 )
 
 # ============================================================================
@@ -118,6 +121,16 @@ async def readiness_check():
 from middleware.idempotency import IdempotencyMiddleware
 
 app.add_middleware(IdempotencyMiddleware)
+
+# ============================================================================
+# AI JWT Authentication Middleware (P0 - CRITICAL)
+# ============================================================================
+# JWT authentication for AI endpoints (/ai/*)
+# Validates JWT tokens and sets tenant context for AI requests
+# Requirements: 2.1, 2.7 (AI Security Fixes)
+from ai.middleware.auth import ai_auth_middleware
+
+app.middleware("http")(ai_auth_middleware)
 
 # Permission middleware should run early (after request-id) to ensure consistent errors/logs.
 app.add_middleware(FastAPIPermissionMiddleware)
@@ -213,7 +226,8 @@ app.add_middleware(
     allow_origin_regex=r"http(s)?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*", "Idempotency-Key", "X-Request-Id", "sentry-trace", "baggage"],
+    allow_headers=["*", "Idempotency-Key", "X-Request-Id"],
+    # TODO: Add "sentry-trace" and "baggage" when Sentry is installed (GAP-L1)
     expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
@@ -349,11 +363,13 @@ app.include_router(sms_packages.router, prefix="/api") # Active: SMS Package Man
 # app.include_router(orders.router, prefix="/api") # Pending: Marketplace Orders
 
 # Phase 7 migrated routers - Final modules
-from routers import invoice_management, invoices_actions, communications, sms_integration
+from routers import invoice_management, invoices_actions, communications, sms_integration, smtp_config, email_logs
 app.include_router(sms_integration.router)
 app.include_router(invoice_management.router)
 app.include_router(invoices_actions.router)
 app.include_router(communications.router)
+app.include_router(smtp_config.router)
+app.include_router(email_logs.router)
 
 from routers import commissions
 app.include_router(commissions.router)

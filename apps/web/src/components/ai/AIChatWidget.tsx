@@ -9,8 +9,9 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, AlertCircle } from 'lucide-react';
-import { sendChatMessage, type ChatResponse } from '@/api/client/ai.client';
+import { MessageCircle, X, Send, AlertCircle } from 'lucide-react';
+import { chatApiAiChatPost as sendChatMessage } from '@/api/client/ai.client';
+import type { ChatResponse } from '@/ai/types/ai.types';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -29,17 +30,15 @@ const MessageContent: React.FC<{ message: Message; onToggleExpand: () => void }>
 
   return (
     <>
-      <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${
-        message.role === 'user' ? 'text-white font-medium' : 'text-gray-900'
-      }`}>
+      <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${message.role === 'user' ? 'text-white font-medium' : 'text-gray-900'
+        }`}>
         {displayContent}
       </p>
       {isLong && (
-        <button
+        <button data-allow-raw="true"
           onClick={onToggleExpand}
-          className={`text-xs mt-2 underline ${
-            message.role === 'user' ? 'text-primary-100' : 'text-primary-600'
-          } hover:no-underline`}
+          className={`text-xs mt-2 underline ${message.role === 'user' ? 'text-primary-100' : 'text-primary-600'
+            } hover:no-underline`}
         >
           {message.isExpanded ? 'Daha az göster' : 'Devamını oku'}
         </button>
@@ -80,7 +79,7 @@ export const AIChatWidget: React.FC = () => {
       setIsOnline(true);
       toast.success('İnternet bağlantısı yeniden kuruldu', { duration: 2000 });
     };
-    
+
     const handleOffline = () => {
       setIsOnline(false);
       toast.error('İnternet bağlantısı kesildi', { duration: 4000 });
@@ -96,14 +95,14 @@ export const AIChatWidget: React.FC = () => {
   }, []);
 
   const handleToggleExpand = (messageId: string) => {
-    setMessages(prev => prev.map(msg => 
+    setMessages(prev => prev.map(msg =>
       msg.id === messageId ? { ...msg, isExpanded: !msg.isExpanded } : msg
     ));
   };
 
   const handleSend = async () => {
     const trimmedInput = input.trim();
-    
+
     // Check network status
     if (!isOnline) {
       toast.error('İnternet bağlantınızı kontrol edin', {
@@ -111,17 +110,17 @@ export const AIChatWidget: React.FC = () => {
       });
       return;
     }
-    
+
     // Validation (removed isLoading check - allow sending while thinking)
     if (!trimmedInput) return;
-    
+
     if (trimmedInput.length > 2000) {
       toast.error('Mesajınız çok uzun. Lütfen 2000 karakterden kısa bir mesaj gönderin.', {
         duration: 4000,
       });
       return;
     }
-    
+
     if (trimmedInput.length < 2) {
       toast.error('Lütfen en az 2 karakter girin.', {
         duration: 3000,
@@ -143,7 +142,7 @@ export const AIChatWidget: React.FC = () => {
     try {
       const response = await sendChatMessage({
         prompt: userMessage.content,
-        sessionId,
+        session_id: sessionId,
         context: {
           conversationHistory: messages.slice(-5).map(m => ({
             role: m.role,
@@ -152,55 +151,65 @@ export const AIChatWidget: React.FC = () => {
         },
       });
 
+      const responseData = response as unknown as ChatResponse & { clarification_question?: string; request_id?: string; pii_detected?: boolean; phi_detected?: boolean };
+
       // Handle empty or invalid response
-      if (!response || (!response.response && !response.clarificationQuestion)) {
+      if (!responseData || (!responseData.response && !responseData.clarificationQuestion && !responseData.clarification_question)) {
         throw new Error('Boş yanıt alındı');
       }
 
       const assistantMessage: Message = {
-        id: response.requestId || `msg_${Date.now()}`,
+        id: responseData.requestId || responseData.request_id || `msg_${Date.now()}`,
         role: 'assistant',
-        content: response.response || response.clarificationQuestion || 'Anlayamadım, lütfen tekrar deneyin.',
+        content: responseData.response || responseData.clarificationQuestion || responseData.clarification_question || 'Anlayamadım, lütfen tekrar deneyin.',
         timestamp: new Date(),
-        intent: response.intent,
+        intent: responseData.intent,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
 
       // Show warnings if PII/PHI detected
-      if (response.piiDetected || response.phiDetected) {
+      if (responseData.piiDetected || responseData.pii_detected || responseData.phiDetected || responseData.phi_detected) {
         toast('Hassas bilgiler tespit edildi ve maskelendi', { icon: '🔒' });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as {
+        code?: string;
+        message?: string;
+        response?: {
+          status?: number;
+          data?: { error?: { message?: string } }
+        }
+      };
       console.error('AI chat error:', error);
-      
+
       let errorMessage = 'AI ile iletişim kurulamadı';
       let userFriendlyMessage = 'Üzgünüm, şu anda yanıt veremiyorum. Lütfen birkaç saniye sonra tekrar deneyin.';
-      
+
       // Handle specific error cases
-      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
         errorMessage = 'İstek zaman aşımına uğradı';
         userFriendlyMessage = 'Yanıt vermem biraz uzun sürdü. Lütfen tekrar deneyin, bu sefer daha hızlı olacak.';
-      } else if (error.response?.status === 404) {
+      } else if (err.response?.status === 404) {
         errorMessage = 'AI servisi bulunamadı';
         userFriendlyMessage = 'AI servisi şu anda kullanılamıyor. Lütfen sistem yöneticinize bildirin.';
-      } else if (error.response?.status === 503) {
+      } else if (err.response?.status === 503) {
         errorMessage = 'AI servisi geçici olarak kullanılamıyor';
         userFriendlyMessage = 'AI servisi şu anda yoğun. Lütfen birkaç saniye sonra tekrar deneyin.';
-      } else if (error.response?.status === 429) {
+      } else if (err.response?.status === 429) {
         errorMessage = 'Çok fazla istek gönderildi';
         userFriendlyMessage = 'Çok hızlı mesaj gönderiyorsunuz. Lütfen birkaç saniye bekleyin.';
-      } else if (error.response?.data?.error?.message) {
-        errorMessage = error.response.data.error.message;
+      } else if (err.response?.data?.error?.message) {
+        errorMessage = err.response.data.error.message;
         userFriendlyMessage = `Üzgünüm: ${errorMessage}`;
       }
-      
+
       // Show user-friendly toast
       toast.error(userFriendlyMessage, {
         duration: 5000,
         position: 'top-center',
       });
-      
+
       // Add error message to chat (less technical)
       setMessages(prev => [...prev, {
         id: `error_${Date.now()}`,
@@ -222,7 +231,7 @@ export const AIChatWidget: React.FC = () => {
 
   if (!isOpen) {
     return (
-      <button
+      <button data-allow-raw="true"
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 p-5 bg-primary-600 text-white rounded-full shadow-2xl hover:bg-primary-700 transition-all hover:scale-110 z-50 group"
         aria-label="AI Asistan"
@@ -239,14 +248,14 @@ export const AIChatWidget: React.FC = () => {
   return (
     <>
       {/* Backdrop for mobile */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-40 md:hidden"
         onClick={() => setIsOpen(false)}
         aria-hidden="true"
       />
-      
+
       {/* Chat Panel - Smaller size, safe distance from header */}
-      <div 
+      <div
         className="fixed z-50 bg-white shadow-2xl flex flex-col 
                     inset-x-4 bottom-4 top-20 
                     md:inset-auto md:right-6 md:bottom-6 md:top-24 md:w-[400px] md:h-[600px] md:max-h-[calc(100vh-120px)]
@@ -267,7 +276,7 @@ export const AIChatWidget: React.FC = () => {
               <p className="text-xs text-primary-100">Size nasıl yardımcı olabilirim?</p>
             </div>
           </div>
-          <button
+          <button data-allow-raw="true"
             onClick={() => setIsOpen(false)}
             className="p-2 hover:bg-primary-800 rounded-lg transition-colors flex-shrink-0"
             aria-label="Kapat"
@@ -297,44 +306,40 @@ export const AIChatWidget: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           {messages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-sm shadow-md'
-                    : 'bg-white text-gray-900 shadow-sm border border-gray-100 rounded-bl-sm'
-                }`}
+                className={`max-w-[85%] rounded-2xl px-4 py-3 ${message.role === 'user'
+                  ? 'bg-blue-600 text-white rounded-br-sm shadow-md'
+                  : 'bg-white text-gray-900 shadow-sm border border-gray-100 rounded-bl-sm'
+                  }`}
               >
                 <MessageContent message={message} onToggleExpand={() => handleToggleExpand(message.id)} />
                 {message.intent && (
-                  <div className={`mt-2 pt-2 border-t ${
-                    message.role === 'user' ? 'border-primary-500' : 'border-gray-200'
-                  } text-xs flex items-center gap-2`}>
+                  <div className={`mt-2 pt-2 border-t ${message.role === 'user' ? 'border-primary-500' : 'border-gray-200'
+                    } text-xs flex items-center gap-2`}>
                     <span className="opacity-75">Intent: {message.intent.intentType}</span>
-                    <span className={`px-2 py-0.5 rounded-full ${
-                      message.role === 'user' ? 'bg-primary-700' : 'bg-gray-100'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-full ${message.role === 'user' ? 'bg-primary-700' : 'bg-gray-100'
+                      }`}>
                       {Math.round(message.intent.confidence * 100)}%
                     </span>
                   </div>
                 )}
-                <p className={`text-xs mt-1.5 ${
-                  message.role === 'user' ? 'text-primary-200' : 'text-gray-500'
-                }`}>
-                  {message.timestamp.toLocaleTimeString('tr-TR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                <p className={`text-xs mt-1.5 ${message.role === 'user' ? 'text-primary-200' : 'text-gray-500'
+                  }`}>
+                  {message.timestamp.toLocaleTimeString('tr-TR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </p>
               </div>
             </div>
           ))}
-          
+
           {isLoading && (
             <div className="flex justify-start animate-fadeIn">
               <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-4 shadow-sm border border-gray-100">
@@ -348,7 +353,7 @@ export const AIChatWidget: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -362,7 +367,7 @@ export const AIChatWidget: React.FC = () => {
           )}
           <div className="flex items-end space-x-2">
             <div className="flex-1 relative">
-              <textarea
+              <textarea data-allow-raw="true"
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -375,16 +380,15 @@ export const AIChatWidget: React.FC = () => {
                 style={{ maxHeight: '120px', minHeight: '48px' }}
               />
               {input.length > 0 && (
-                <div className={`absolute right-3 bottom-3 text-xs ${
-                  input.length > 1800 ? 'text-red-500 font-semibold' : 
-                  input.length > 1500 ? 'text-orange-500' : 
-                  'text-gray-400'
-                }`}>
+                <div className={`absolute right-3 bottom-3 text-xs ${input.length > 1800 ? 'text-red-500 font-semibold' :
+                  input.length > 1500 ? 'text-orange-500' :
+                    'text-gray-400'
+                  }`}>
                   {input.length}/2000
                 </div>
               )}
             </div>
-            <button
+            <button data-allow-raw="true"
               onClick={handleSend}
               disabled={!input.trim() || !isOnline}
               className="p-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95 shadow-lg disabled:shadow-none"

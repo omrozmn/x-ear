@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/affiliate_user.py
+# hypothesis_version: 6.150.2
+
+[255, '^[A-Z0-9]{15,34}$', 'affiliate_user', 'iban']

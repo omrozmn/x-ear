@@ -5,19 +5,19 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSProviderConfigReadDocumentsEmail } from './sMSProviderConfigReadDocumentsEmail';
-import type { SMSProviderConfigReadApiUsername } from './sMSProviderConfigReadApiUsername';
-import type { SMSProviderConfigReadDocumentsSubmittedAt } from './sMSProviderConfigReadDocumentsSubmittedAt';
+import type { SmsProviderConfigReadDocumentsEmail } from './smsProviderConfigReadDocumentsEmail';
+import type { SmsProviderConfigReadApiUsername } from './smsProviderConfigReadApiUsername';
+import type { SmsProviderConfigReadDocumentsSubmittedAt } from './smsProviderConfigReadDocumentsSubmittedAt';
 
-export interface SMSProviderConfigRead {
+export interface SmsProviderConfigRead {
   /** Unique identifier for the resource */
   id: string;
-  documentsEmail?: SMSProviderConfigReadDocumentsEmail;
-  apiUsername?: SMSProviderConfigReadApiUsername;
+  documentsEmail?: SmsProviderConfigReadDocumentsEmail;
+  apiUsername?: SmsProviderConfigReadApiUsername;
   isActive?: boolean;
   documentsSubmitted?: boolean;
   allDocumentsApproved?: boolean;
   tenantId: string;
   documents?: unknown[];
-  documentsSubmittedAt?: SMSProviderConfigReadDocumentsSubmittedAt;
+  documentsSubmittedAt?: SmsProviderConfigReadDocumentsSubmittedAt;
 }

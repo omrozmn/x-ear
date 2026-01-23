@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Search, Plus, Filter, SortAsc } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { PartyCard } from '@/components/mobile/PartyCard';
@@ -11,7 +11,7 @@ import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 export const MobilePartiesPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchValue, setSearchValue] = useState('');
-    const { data, isLoading, error } = useParties();
+    const { data, isLoading, error: _error } = useParties();
     const parties = data?.parties || [];
 
     const handleRefresh = async () => {

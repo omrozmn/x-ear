@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/purchase_invoices.py
+# hypothesis_version: 6.150.2
+
+['INCOMING', 'RECEIVED', 'TRY', 'birfaturaUuid', 'branchId', 'currency', 'inventoryId', 'invoiceDate', 'invoiceNumber', 'invoiceType', 'isMatched', 'lineTotal', 'productCode', 'productDescription', 'productName', 'purchaseInvoiceId', 'senderAddress', 'senderCity', 'senderName', 'senderTaxNumber', 'senderTaxOffice', 'status', 'supplierId', 'taxAmount', 'taxRate', 'tenantId', 'totalAmount', 'unitPrice']

@@ -5,17 +5,17 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSHeaderRequestReadCreatedAt } from './sMSHeaderRequestReadCreatedAt';
-import type { SMSHeaderRequestReadUpdatedAt } from './sMSHeaderRequestReadUpdatedAt';
-import type { SMSHeaderType } from './sMSHeaderType';
-import type { SMSHeaderStatus } from './sMSHeaderStatus';
-import type { SMSHeaderRequestReadRejectionReason } from './sMSHeaderRequestReadRejectionReason';
+import type { SmsHeaderRequestReadCreatedAt } from './smsHeaderRequestReadCreatedAt';
+import type { SmsHeaderRequestReadUpdatedAt } from './smsHeaderRequestReadUpdatedAt';
+import type { SmsHeaderType } from './smsHeaderType';
+import type { SmsHeaderStatus } from './smsHeaderStatus';
+import type { SmsHeaderRequestReadRejectionReason } from './smsHeaderRequestReadRejectionReason';
 
-export interface SMSHeaderRequestRead {
+export interface SmsHeaderRequestRead {
   /** Creation timestamp */
-  createdAt?: SMSHeaderRequestReadCreatedAt;
+  createdAt?: SmsHeaderRequestReadCreatedAt;
   /** Last update timestamp */
-  updatedAt?: SMSHeaderRequestReadUpdatedAt;
+  updatedAt?: SmsHeaderRequestReadUpdatedAt;
   /** Unique identifier for the resource */
   id: string;
   /**
@@ -23,10 +23,10 @@ export interface SMSHeaderRequestRead {
    * @maxLength 11
    */
   headerText: string;
-  headerType: SMSHeaderType;
+  headerType: SmsHeaderType;
   documents?: string[];
   tenantId: string;
-  status?: SMSHeaderStatus;
-  rejectionReason?: SMSHeaderRequestReadRejectionReason;
+  status?: SmsHeaderStatus;
+  rejectionReason?: SmsHeaderRequestReadRejectionReason;
   isDefault?: boolean;
 }

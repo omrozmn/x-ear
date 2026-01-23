@@ -1,5 +1,6 @@
 import { Input, Select, Button } from '@x-ear/ui-web';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuthStore } from '../../stores/authStore';
+import { useState, useEffect, useCallback } from 'react';
 import { Info, AlertTriangle, Copy, Trash2, BarChart3, DollarSign, RefreshCw, Pill, CheckCircle } from 'lucide-react';
 import { UnitSelector } from './UnitSelector';
 import ProductSearchModal from './ProductSearchModal';
@@ -15,13 +16,12 @@ import {
   getInventory,
   createInventory,
 } from '@/api/client/inventory.client';
-import { AUTH_TOKEN } from '../../constants/storage-keys';
+
 
 // Local InventoryItem type for API responses
 // Replacing loose interface with generated type alias where possible
 import type {
-  InventoryItemRead,
-  ResponseEnvelopeListInventoryItemRead
+  InventoryItemRead
 } from '@/api/generated/schemas';
 
 // Minimal interface for what we expect from API if generated type is complex/union
@@ -198,11 +198,9 @@ export function ProductLinesSection({
         const params = {}; // Define empty params
         const resp = await listInventory(params);
 
-        // Strictly typed response handling
-        const envelope = resp as unknown as ResponseEnvelopeListInventoryItemRead;
-        const apiItems = (envelope?.data || []) as unknown as ApiInventoryItem[];
+        const apiItems = resp?.data || [];
 
-        console.log('✅ API inventory response', { status: (resp as any)?.status, itemsCount: apiItems.length });
+        console.log('✅ API inventory response', { itemsCount: apiItems.length });
 
         const nowIso = new Date().toISOString();
         const mapped: LocalInventoryItem[] = apiItems.map((item) => ({
@@ -214,10 +212,10 @@ export function ProductLinesSection({
           barcode: String(item.barcode || ''),
           stockCode: undefined,
           // Extract supplier name if it's an object, or use as is if string (though schema says object)
-          supplier: typeof item.supplier === 'object' ? (item.supplier as any)?.name || '' : String(item.supplier || ''),
+          supplier: (typeof item.supplier === 'object' && item.supplier !== null && 'name' in item.supplier) ? (item.supplier as Record<string, any>).name || '' : String(item.supplier || ''),
           unit: undefined,
           description: String(item.description || ''),
-          availableInventory: item.availableInventory ?? item.inventory ?? item.stock ?? 0,
+          availableInventory: item.availableInventory ?? 0,
           totalInventory: item.totalInventory ?? 0,
           usedInventory: item.usedInventory ?? 0,
           onTrial: item.onTrial,
@@ -232,8 +230,8 @@ export function ProductLinesSection({
           vatIncludedPrice: item.vatIncludedPrice,
           totalValue: undefined,
           features: item.features,
-          ear: item.ear as unknown as EarDirection,
-          direction: item.direction as unknown as EarDirection,
+          ear: item.ear as EarDirection,
+          direction: item.direction as EarDirection,
           sgkCode: undefined,
           isMinistryTracked: undefined,
           warranty: item.warranty,
@@ -314,11 +312,10 @@ export function ProductLinesSection({
             product = {
               id: it.id || productIdOrObject,
               name: it.name || '',
-              code: it.barcode,
               brand: it.brand || '',
               model: it.model || '',
               price: Number(it.price || 0),
-              stockQuantity: it.availableInventory ?? it.inventory ?? it.stock ?? 0,
+              stockQuantity: it.availableInventory ?? 0,
               unit: it.unit || 'Adet',
               taxRate: Number(taxRateVal),
               description: it.description,
@@ -431,6 +428,12 @@ export function ProductLinesSection({
     const line = lines[index];
     const { name, brand, model } = parseNameBrandModel(line.name);
 
+    const tenantId = useAuthStore.getState().user?.tenantId || '';
+    if (!tenantId) {
+      console.error('❌ Cannot create inventory: Tenant ID missing');
+      return;
+    }
+
     const body = {
       name: name || line.name,
       brand: brand || 'Genel',
@@ -441,11 +444,12 @@ export function ProductLinesSection({
       vatRate: line.taxRate,
       unit: line.unit,
       description: line.description,
-      stock: 100 // Default stock
+      availableInventory: 100,
+      tenantId: tenantId
     };
 
     try {
-      const resp = await createInventory(body as any); // Create body might need Strict type
+      const resp = await createInventory(body);
       const created = (resp as unknown as { data: ApiInventoryItem })?.data;
       console.log('✅ Envanter’e eklendi', { id: created?.id, name: created?.name });
 
@@ -455,8 +459,7 @@ export function ProductLinesSection({
       }
 
       // Refresh products list
-      const params = {};
-      const prodResp = await listInventory(params);
+      await listInventory({});
       // ... (logic to update allProducts could go here, or just rely on handleProductSelect fetching it)
 
     } catch (err) {
@@ -500,12 +503,7 @@ export function ProductLinesSection({
   };
 
   // Get product options for SearchableSelect
-  const getProductOptions = () => {
-    return allProducts.map(product => ({
-      value: product.id,
-      label: formatProductLabel(product)
-    }));
-  };
+
 
   const handleWithholdingSave = (data: LineWithholdingData) => {
     const newLines = [...lines];
@@ -587,19 +585,20 @@ export function ProductLinesSection({
           {/* Para Birimi Seçimi */}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
             <label className="text-sm font-medium text-gray-700">Para Birimi:</label>
-            <select
+            <Select
               value={currency}
               onChange={(e) => onCurrencyChange?.(e.target.value)}
-              className="ml-2 bg-white border rounded px-2 py-1 text-sm"
-            >
-              <option value="TRY">TRY ({getCurrencySymbol('TRY')})</option>
-              <option value="USD">USD ({getCurrencySymbol('USD')})</option>
-              <option value="EUR">EUR ({getCurrencySymbol('EUR')})</option>
-            </select>
+              className="ml-2 !w-auto"
+              options={[
+                { value: 'TRY', label: `TRY (${getCurrencySymbol('TRY')})` },
+                { value: 'USD', label: `USD (${getCurrencySymbol('USD')})` },
+                { value: 'EUR', label: `EUR (${getCurrencySymbol('EUR')})` },
+              ]}
+            />
             {/* Genel İskonto: moved here */}
             <div className="ml-4 flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Genel İskonto</label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 value={generalDiscount === undefined || generalDiscount === null ? '' : String(generalDiscount)}
@@ -608,16 +607,17 @@ export function ProductLinesSection({
                   onGeneralDiscountChange?.(v === '' ? '' : parseFloat(v));
                 }}
                 placeholder="0.00"
-                className="px-2 py-1 border border-gray-300 rounded text-sm w-28"
+                className="w-28"
               />
-              <select
+              <Select
                 value={''}
                 onChange={() => { /* keep percentage/amount toggling elsewhere if needed */ }}
-                className="ml-1 bg-white border rounded px-1 py-1 text-sm w-20"
-              >
-                <option value="percentage">%</option>
-                <option value="amount">₺</option>
-              </select>
+                className="ml-1 !w-20"
+                options={[
+                  { value: 'percentage', label: '%' },
+                  { value: 'amount', label: '₺' },
+                ]}
+              />
             </div>
           </div>
           <Button
@@ -725,13 +725,14 @@ export function ProductLinesSection({
                   return (
                     <div className="mt-2 border border-gray-200 rounded-md bg-white shadow-sm overflow-hidden">
                       {suggestions.map(p => (
-                        <button
+                        <Button
                           key={p.id}
                           type="button"
+                          variant="ghost"
                           onClick={() => handleProductSelect(index, p.id)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm h-auto justify-start"
                         >
-                          <div className="flex items-start justify-between">
+                          <div className="flex items-start justify-between w-full">
                             <div className="flex-1">
                               <div className="font-medium text-gray-900">
                                 {formatProductLabel(p)}
@@ -754,7 +755,7 @@ export function ProductLinesSection({
                             </div>
                             <div className="text-blue-600 text-xl flex items-center ml-2">→</div>
                           </div>
-                        </button>
+                        </Button>
                       ))}
                       {suggestions.length === 0 && !exactMatch && (
                         <div className="px-3 py-2 text-sm text-gray-600 flex items-center justify-between">
@@ -783,7 +784,7 @@ export function ProductLinesSection({
                   <Input
                     type="number"
                     label="Miktar"
-                    value={(line.quantity as any) === '' || line.quantity === undefined ? '' : String(line.quantity)}
+                    value={line.quantity === 0 && line.name === '' ? '' : String(line.quantity)}
                     onChange={(e) => handleLineChange(index, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
                     min="0.01"
                     step="0.01"

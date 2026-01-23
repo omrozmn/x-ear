@@ -3,20 +3,18 @@ import {
   Button,
   Alert,
   Loading,
-  Modal
+  Modal,
+  Select
 } from '@x-ear/ui-web';
-import { X, Edit, CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { useEditSale } from './edit-sale-modal/hooks/useEditSale';
 import { SaleFormFields } from './edit-sale-modal/components/SaleFormFields';
 import { PaymentSummary } from './PaymentSummary';
-import { SGKIntegration } from './SGKIntegration';
-// import PaymentTrackingModal from '../../../payments/PaymentTrackingModal';
 import type { EditSaleModalProps } from './edit-sale-modal/types';
 
 export const EditSaleModal: React.FC<EditSaleModalProps> = ({
   isOpen,
   onClose,
-  party,
   sale,
   onSaleUpdate,
   loading = false
@@ -25,17 +23,10 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
     formData,
     state,
     availableDevices,
-    sgkSchemes,
-    paymentRecords,
-    totalPaid,
-    remainingBalance,
-    discountPercentage,
-    hasPayments,
     updateFormData,
     updateState,
     submitForm,
-    resetForm,
-    loadAvailableDevices
+    resetForm
   } = useEditSale(sale, isOpen);
 
   if (!isOpen) return null;
@@ -52,6 +43,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
     updateState({ showDeviceSelector: false });
   };
 
+  /*
   const handleSgkSchemeSelect = (scheme: any) => {
     const coverage = Math.min(
       formData.listPrice * (scheme.coveragePercentage / 100),
@@ -59,6 +51,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
     );
     updateFormData({ sgkCoverage: coverage });
   };
+  */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,17 +130,18 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
         <div className="flex items-center justify-between pt-6 border-t">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Durum:</span>
-            <select
+            <Select
               value={state.saleStatus}
-              onChange={(e) => updateState({ saleStatus: e.target.value })}
-              className="px-3 py-1 border border-gray-300 rounded text-sm"
-            >
-              <option value="draft">Taslak</option>
-              <option value="confirmed">Onaylandı</option>
-              <option value="delivered">Teslim Edildi</option>
-              <option value="completed">Tamamlandı</option>
-              <option value="cancelled">İptal</option>
-            </select>
+              onChange={(e: any) => updateState({ saleStatus: e.target.value })}
+              options={[
+                { value: 'draft', label: 'Taslak' },
+                { value: 'confirmed', label: 'Onaylandı' },
+                { value: 'delivered', label: 'Teslim Edildi' },
+                { value: 'completed', label: 'Tamamlandı' },
+                { value: 'cancelled', label: 'İptal' }
+              ]}
+              className="w-40"
+            />
           </div>
 
           <div className="flex gap-3">

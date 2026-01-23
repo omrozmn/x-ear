@@ -16,15 +16,18 @@ import {
     X
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import {useListBranches,
+import {
+    useListBranches,
     useListPartyCount,
     useListParties,
     getListBranchesQueryKey,
     getListPartiesQueryKey,
     getListPartyCountQueryKey,
     useListSmHeaders,
-    getListSmHeadersQueryKey} from '@/api/client/branches.client';
-import type { ListPartiesParams } from '@/api/generated/schemas';
+    getListSmHeadersQueryKey
+} from '@/api/client/branches.client';
+import type { ListPartiesParams, BranchRead, SMSHeaderRequestRead, PartyRead } from '@/api/generated/schemas';
+import { unwrapArray } from '@/utils/response-unwrap';
 
 import { useAuthStore } from '@/stores/authStore';
 
@@ -80,10 +83,10 @@ const SMS_SEGMENT_LENGTH = 155;
 
 interface BulkSmsTabProps {
     creditBalance: number;
-    creditLoading: boolean;
+    creditLoading?: boolean;
 }
 
-export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoading }) => {
+export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoading: _creditLoading }) => {
     const [audienceFilters, setAudienceFilters] = useState<AudienceFilters>({ status: 'active' });
     const [mode, setMode] = useState<AudienceMode>('filters');
     const [message, setMessage] = useState('');
@@ -108,42 +111,16 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     });
 
     const branchOptions = useMemo(() => {
-        let items: any[] = [];
-
-        // Handle different response structures
-        if (branchesData) {
-            if (Array.isArray(branchesData)) {
-                items = branchesData;
-            } else if ((branchesData as any)?.data) {
-                const innerData = (branchesData as any).data;
-                if (Array.isArray(innerData)) {
-                    items = innerData;
-                } else if (innerData?.data && Array.isArray(innerData.data)) {
-                    items = innerData.data;
-                }
-            }
-        }
+        const items = unwrapArray<BranchRead>(branchesData);
 
         return items
-            .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
+            .filter((branch): branch is BranchRead => Boolean(branch?.id))
             .map((branch) => ({ value: branch.id, label: branch.name ?? 'Şube' }));
     }, [branchesData]);
 
     // Parse SMS headers and filter only approved ones
     const headerOptions = useMemo(() => {
-        let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
-        if (headersData) {
-            if (Array.isArray(headersData)) {
-                headersRaw = headersData;
-            } else if ((headersData as any)?.data) {
-                const innerData = (headersData as any).data;
-                if (Array.isArray(innerData)) {
-                    headersRaw = innerData;
-                } else if (innerData?.data && Array.isArray(innerData.data)) {
-                    headersRaw = innerData.data;
-                }
-            }
-        }
+        const headersRaw = unwrapArray<SMSHeaderRequestRead>(headersData);
         // Only return approved headers
         return headersRaw
             .filter(h => h.status === 'approved')
@@ -168,30 +145,22 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     }, [headerOptions, selectedHeader]);
 
     // Fetch first party for preview
-    const { data: partiesData, isLoading: partiesLoading, isError: partiesError } = useListParties(
+    const { data: partiesData /*, isLoading: partiesLoading, isError: partiesError */ } = useListParties(
         { page: 1, per_page: 1 },
         { query: { queryKey: getListPartiesQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters' && !!token, refetchOnWindowFocus: false } }
     );
 
     // Handle different response structures for first party
-    let firstParty: any = null;
-    if (partiesData) {
-        if (Array.isArray(partiesData) && partiesData.length > 0) {
-            firstParty = partiesData[0];
-        } else if ((partiesData as any)?.data) {
-            const innerData = (partiesData as any).data;
-            if (Array.isArray(innerData) && innerData.length > 0) {
-                firstParty = innerData[0];
-            } else if (innerData?.data && Array.isArray(innerData.data) && innerData.data.length > 0) {
-                firstParty = innerData.data[0];
-            }
-        }
+    let firstParty: PartyRead | null = null;
+    const items = unwrapArray<PartyRead>(partiesData);
+    if (items.length > 0) {
+        firstParty = items[0];
     }
 
     const normalizedParams = useMemo<ListPartiesParams>(() => {
-        const params: ListPartiesParams = {};
+        const params: ListPartiesParams & { segment?: string } = {};
         if (audienceFilters.status) params.status = audienceFilters.status;
-        if (audienceFilters.segment) (params as any).segment = audienceFilters.segment;
+        if (audienceFilters.segment) params.segment = audienceFilters.segment;
         // Note: acquisition_type, branch_id, date_start, date_end are not supported by the current API
         // These filters are applied client-side or need backend extension
         return params;
@@ -209,7 +178,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     );
     const { isLoading: countLoading } = partiesCountQuery;
 
-    const filterRecipientCount = (partiesCountQuery.data as any)?.count ?? 0;
+    const filterRecipientCount = (partiesCountQuery.data as { count?: number })?.count ?? 0;
     const excelRecipientCount = excelPreview?.validPhoneCount ?? 0;
     const recipients = mode === 'filters' ? filterRecipientCount : excelRecipientCount;
 

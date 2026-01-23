@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON
+from sqlalchemy.orm import relationship
 from models.base import db
 
 
@@ -74,6 +75,9 @@ class Tenant(db.Model):
         db.Index('idx_tenants_status', 'status'),
         db.Index('idx_tenants_slug', 'slug'),
     )
+    
+    # Relationships
+    smtp_configs = relationship("TenantSMTPConfig", back_populates="tenant", lazy="dynamic")
     
     @staticmethod
     def generate_slug(name: str) -> str:

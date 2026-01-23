@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/auth.py
+# hypothesis_version: 6.150.2
+
+['AdminUserRead', 'AuthUserRead', 'Captcha token', 'Current password', 'Email', 'Email address', 'First name', 'Full name', 'JWT access token', 'JWT refresh token', 'Last login timestamp', 'Last name', 'MFA Status', 'New JWT access token', 'New password', 'OTP code', 'Password', 'Phone', 'Phone number', 'Status message', 'Super Admin status', 'Tenant ID', 'User ID', 'User role', 'Username', 'accessToken', 'captchaToken', 'createdAt', 'created_at', 'currentPassword', 'firstName', 'fullName', 'isActive', 'isPhoneInput', 'isPhoneVerified', 'isSuperAdmin', 'is_super_admin', 'lastLogin', 'lastName', 'maskedPhone', 'mfaEnabled', 'mfa_enabled', 'newPassword', 'refreshToken', 'super_admin', 'tenantId', 'updatedAt', 'updated_at', 'userExists']

@@ -29,8 +29,10 @@ class UserRead(AppBaseModel, IDMixin, TimestampMixin):
     """Schema for reading User - replaces to_dict()"""
     tenant_id: Optional[str] = Field(None, alias="tenantId")
     email: str
+    username: Optional[str] = None
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
+    full_name: Optional[str] = Field(None, alias="fullName")
     phone: Optional[str] = None
     role: Optional[str] = None
     is_phone_verified: bool = Field(False, alias="isPhoneVerified")
@@ -76,14 +78,14 @@ class RoleBase(AppBaseModel):
     description: Optional[str] = None
 
 
-class RoleRead(AppBaseModel, IDMixin):
+class UserRoleRead(AppBaseModel, IDMixin):
     """Schema for reading Role"""
     name: str
     description: Optional[str] = None
     permissions: Optional[list] = []
 
 
-class PermissionRead(AppBaseModel):
+class UserPermissionRead(AppBaseModel):
     """Schema for reading Permission"""
     code: str
     description: Optional[str] = None

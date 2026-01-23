@@ -159,7 +159,7 @@ async def copy_invoice_cancel(
         db.commit()
         
         return ResponseEnvelope(data=InvoiceCopyCancelResponse(
-            copy=InvoiceRead.model_validate(copy_inv),
+            copy_invoice=InvoiceRead.model_validate(copy_inv),
             cancellation=InvoiceRead.model_validate(cancel_inv)
         ))
     except HTTPException:

@@ -7,7 +7,7 @@ G-03: Auth Boundary Migration
 - NO to_dict() usage - use AuthUserRead.from_user_model() instead
 - All endpoints have explicit response_model for OpenAPI generation
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Body, Header
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Optional, Union
 from datetime import datetime, timezone, timedelta
@@ -38,7 +38,7 @@ from schemas.auth import (
     MessageResponse,
     MessageResponse,
     AuthUserRead,
-    AdminUserRead,
+    AuthAdminUserRead,
 )
 from schemas.users import UserRead
 from models.user import User
@@ -199,7 +199,7 @@ def forgot_password(
 @router.post("/auth/verify-otp", operation_id="createAuthVerifyOtp", response_model=ResponseEnvelope[VerifyOtpResponse])
 def verify_otp(
     request_data: VerifyOtpRequest,
-    authorization: Optional[str] = None,
+    authorization: Optional[str] = Header(None),
     db_session: Session = Depends(get_db)
 ):
     """Verify OTP for phone verification or password reset"""
@@ -214,7 +214,9 @@ def verify_otp(
                 token = authorization.split(" ")[1]
                 payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
                 user_id = payload.get("sub")
-            except Exception:
+                logger.info(f"Extracted user_id from token: {user_id}")
+            except Exception as e:
+                logger.warning(f"Failed to decode token: {e}")
                 pass
         
         target_id = user_id if user_id else identifier
@@ -229,7 +231,6 @@ def verify_otp(
             )
         
         otp_store = get_otp_store()
-        stored = otp_store.get_otp(target_id)
         
         # Bypass for test/dev environment with fixed OTP
         # CRITICAL SECURITY: This backdoor must NEVER be active in production
@@ -237,8 +238,20 @@ def verify_otp(
         is_dev_env = os.getenv('ENVIRONMENT', 'production').lower() in ['development', 'test', 'testing']
         
         if str(otp) == '123456' and is_dev_env:
+            logger.info(f"Using dev OTP bypass for user_id={user_id}")
             stored = '123456'
         else:
+            stored = otp_store.get_otp(target_id)
+            
+            # If not found with target_id, try with user_id (for phone verification flow)
+            if not stored and user_id:
+                logger.info(f"OTP not found with target_id={target_id}, trying user_id={user_id}")
+                stored = otp_store.get_otp(user_id)
+                if stored:
+                    logger.info(f"OTP found with user_id={user_id}")
+                else:
+                    logger.warning(f"OTP not found with user_id={user_id} either")
+            
             if not stored:
                 raise HTTPException(
                     status_code=400,
@@ -507,7 +520,7 @@ def login(
         
         # Use appropriate schema based on user type
         if is_admin_user:
-            user_data = AdminUserRead.from_admin_model(user)
+            user_data = AuthAdminUserRead.from_admin_model(user)
         else:
             user_data = AuthUserRead.from_user_model(user)
         
@@ -633,7 +646,7 @@ def refresh_token(
         logger.error(f"Token refresh error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/auth/me", operation_id="getAuthMe", response_model=ResponseEnvelope[Union[AuthUserRead, AdminUserRead]])
+@router.get("/auth/me", operation_id="getAuthMe", response_model=ResponseEnvelope[Union[AuthUserRead, AuthAdminUserRead]])
 def get_current_user(
     authorization: str = Depends(oauth2_scheme),
     db_session: Session = Depends(get_db)
@@ -649,7 +662,7 @@ def get_current_user(
             if not admin:
                 raise HTTPException(status_code=404, detail="User not found")
             
-            return ResponseEnvelope(data=AdminUserRead.from_model(admin))
+            return ResponseEnvelope(data=AuthAdminUserRead.from_model(admin))
         else:
             user = db_session.get(User, user_id)
             if not user:

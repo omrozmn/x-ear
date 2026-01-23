@@ -21,8 +21,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   onClose,
   mode = 'view',
   partyId,
-  initialDate: _initialDate,
-  initialTime: _initialTime
+  initialDate,
+  initialTime
 }) => {
   const { updateAppointment, deleteAppointment, updating, deleting } = useAppointments();
   const [currentMode, setCurrentMode] = useState(mode);
@@ -110,7 +110,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     }
   };
 
-  const handleSave = (_savedAppointment: Appointment) => {
+  const handleSave = () => {
     if (currentMode === 'create') {
       onClose();
     } else {
@@ -270,6 +270,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <AppointmentForm
               appointment={currentMode === 'edit' ? appointment : undefined}
               partyId={partyId}
+              initialDate={initialDate}
+              initialTime={initialTime}
               mode={currentMode === 'create' ? 'create' : 'edit'}
               onSave={handleSave}
               onCancel={handleCancel}

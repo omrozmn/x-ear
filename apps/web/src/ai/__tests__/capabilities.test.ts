@@ -20,7 +20,7 @@ import {
   requiresApproval,
   isRetryableCapability,
 } from '../config/capabilities';
-import type { AIPhase, AIRole, AICapability } from '../types/ai.types';
+import type { AICapability } from '../types/ai.types';
 
 describe('capabilities', () => {
   // ==========================================================================

@@ -1,6 +1,5 @@
-import { Input, Select, Button, DatePicker } from '@x-ear/ui-web';
+import { Input, Select, DatePicker } from '@x-ear/ui-web';
 import { useState } from 'react';
-import { Info, AlertTriangle } from 'lucide-react';
 import { SGKInvoiceData } from '../../types/invoice';
 
 interface SGKInvoiceSectionProps {
@@ -42,9 +41,10 @@ export function SGKInvoiceSection({
     onChange,
     errors = {}
 }: SGKInvoiceSectionProps) {
-    const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+    // Payment details toggle - reserved for future feature
+    // const [showPaymentDetails, setShowPaymentDetails] = useState(false);
 
-    const handleChange = (field: keyof SGKInvoiceData, value: any) => {
+    const handleChange = (field: keyof SGKInvoiceData, value: string | number | boolean) => {
         // Update the field
         onChange({
             ...sgkData,
@@ -93,16 +93,16 @@ export function SGKInvoiceSection({
 
     return (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">SGK Faturası Özel Bilgileri</h3>
-            <div className="flex items-center space-x-2">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                SGK Faturası
-              </span>
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">SGK Faturası Özel Bilgileri</h3>
+                <div className="flex items-center space-x-2">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                        SGK Faturası
+                    </span>
+                </div>
             </div>
-          </div>
 
-          <div className="space-y-6">
+            <div className="space-y-6">
                 {/* İlave Fatura Bilgileri - KRİTİK YENİ BÖLÜM */}
                 <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
                     <h4 className="text-md font-medium text-gray-900 mb-4">İlave Fatura Bilgileri *</h4>
@@ -112,7 +112,7 @@ export function SGKInvoiceSection({
                             <Select
                                 label="İlave Fatura Bilgisi Tipi"
                                 value={additionalInfo}
-                                onChange={(e) => handleChange('additionalInfo', e.target.value as any)}
+                                onChange={(e) => handleChange('additionalInfo', e.target.value)}
                                 options={ADDITIONAL_INFO_OPTIONS}
                                 error={errors.additionalInfo}
                                 fullWidth
@@ -221,30 +221,30 @@ export function SGKInvoiceSection({
 
                         <>
                             <div>
-                                    <DatePicker
-                                        label="Dönem Başlangıç Tarihi"
-                                        value={sgkData.periodStartDate ? ((): Date | null => {
-                                            const parts = String(sgkData.periodStartDate).split('-');
-                                            if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-                                            return null;
-                                        })() : null}
-                                        onChange={(date) => {
-                                            if (!date) return handleChange('periodStartDate', '');
-                                            const yyyy = date.getFullYear();
-                                            const mm = String(date.getMonth() + 1).padStart(2, '0');
-                                            const dd = String(date.getDate()).padStart(2, '0');
-                                            handleChange('periodStartDate', `${yyyy}-${mm}-${dd}`);
-                                        }}
-                                        onMonthYearChange={(y, m) => {
-                                            const start = new Date(y, m, 1);
-                                            const end = new Date(y, m + 1, 0);
-                                            const formatLocalISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                                            handleChange('periodStartDate', formatLocalISO(start));
-                                            handleChange('periodEndDate', formatLocalISO(end));
-                                        }}
-                                        placeholder="Tarih seçin"
-                                        fullWidth
-                                    />
+                                <DatePicker
+                                    label="Dönem Başlangıç Tarihi"
+                                    value={sgkData.periodStartDate ? ((): Date | null => {
+                                        const parts = String(sgkData.periodStartDate).split('-');
+                                        if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                                        return null;
+                                    })() : null}
+                                    onChange={(date) => {
+                                        if (!date) return handleChange('periodStartDate', '');
+                                        const yyyy = date.getFullYear();
+                                        const mm = String(date.getMonth() + 1).padStart(2, '0');
+                                        const dd = String(date.getDate()).padStart(2, '0');
+                                        handleChange('periodStartDate', `${yyyy}-${mm}-${dd}`);
+                                    }}
+                                    onMonthYearChange={(y, m) => {
+                                        const start = new Date(y, m, 1);
+                                        const end = new Date(y, m + 1, 0);
+                                        const formatLocalISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                                        handleChange('periodStartDate', formatLocalISO(start));
+                                        handleChange('periodEndDate', formatLocalISO(end));
+                                    }}
+                                    placeholder="Tarih seçin"
+                                    fullWidth
+                                />
                             </div>
 
                             <div>
@@ -265,7 +265,7 @@ export function SGKInvoiceSection({
                                     onMonthYearChange={(y, m) => {
                                         const start = new Date(y, m, 1);
                                         const end = new Date(y, m + 1, 0);
-                                        const formatLocalISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                                        const formatLocalISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                                         handleChange('periodStartDate', formatLocalISO(start));
                                         handleChange('periodEndDate', formatLocalISO(end));
                                     }}

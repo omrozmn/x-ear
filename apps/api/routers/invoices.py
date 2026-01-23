@@ -223,7 +223,7 @@ def batch_generate_invoices(
         
         # Helper for date
         def now_utc():
-            return datetime.utcnow()
+            return datetime.now(timezone.utc)
             
         for sale_id in sale_ids:
             try:

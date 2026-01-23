@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_tickets.py
+# hypothesis_version: 6.150.2
+
+[100, 404, '/api/admin/tickets', '/{ticket_id}', '1', 'Acme Corp', 'Admin Tickets', 'John Doe', 'Login Issue', 'Ticket not found', 'User cannot login', 'category', 'createAdminTicket', 'created_at', 'created_by', 'data', 'description', 'high', 'id', 'limit', 'listAdminTickets', 'open', 'page', 'pagination', 'priority', 'sla_due_date', 'status', 'success', 'technical', 'tenant-1', 'tenant_id', 'tenant_name', 'ticket', 'tickets', 'tickets.manage', 'tickets.read', 'title', 'total', 'totalPages', 'updateAdminTicket']

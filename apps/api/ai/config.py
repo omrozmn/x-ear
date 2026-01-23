@@ -122,11 +122,20 @@ class AIConfig:
         # Model configuration
         self._model = ModelConfig(
             provider=os.getenv("AI_MODEL_PROVIDER", "local"),
-            model_id=os.getenv("AI_MODEL_ID", "qwen2.5-7b-instruct"),
+            model_id=os.getenv("AI_MODEL_ID", "qwen2.5:7b-instruct"), # Default Smart
             base_url=os.getenv("AI_MODEL_BASE_URL", "http://localhost:11434"),
-            timeout_seconds=int(os.getenv("AI_MODEL_TIMEOUT_SECONDS", "90")),
+            timeout_seconds=int(os.getenv("AI_MODEL_TIMEOUT_SECONDS", "180")),
             max_tokens=int(os.getenv("AI_MODEL_MAX_TOKENS", "2048")),
             temperature=float(os.getenv("AI_MODEL_TEMPERATURE", "0.1")),
+        )
+        
+        self._fast_model = ModelConfig(
+            provider=os.getenv("AI_MODEL_PROVIDER", "local"),
+            model_id=os.getenv("AI_FAST_MODEL_ID", "qwen2.5:3b"), # Default Fast
+            base_url=os.getenv("AI_MODEL_BASE_URL", "http://localhost:11434"),
+            timeout_seconds=int(os.getenv("AI_FAST_MODEL_TIMEOUT_SECONDS", "3")),  # 3 second timeout for fast model
+            max_tokens=1024,
+            temperature=0.1,
         )
         
         # Guardrail configuration
@@ -170,8 +179,13 @@ class AIConfig:
     
     @property
     def model(self) -> ModelConfig:
-        """Model configuration."""
+        """Model configuration (Smart/Default)."""
         return self._model
+
+    @property
+    def fast_model(self) -> ModelConfig:
+        """Fast model configuration."""
+        return self._fast_model
     
     @property
     def guardrails(self) -> GuardrailConfig:

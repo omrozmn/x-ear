@@ -41,10 +41,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     createAppointmentCancel,
     createAppointmentComplete,
     markNoShow,
-    rescheduleAppointment: _rescheduleAppointment
   } = useAppointments({ filters });
 
-  const handleFilterChange = (key: keyof AppointmentFilters, value: any) => {
+  const handleFilterChange = <K extends keyof AppointmentFilters>(key: K, value: AppointmentFilters[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
@@ -172,7 +171,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
               <Select
                 label="Durum"
                 value={filters.status || ''}
-                onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
+                onChange={(e) => handleFilterChange('status', (e.target.value || undefined) as AppointmentStatus | undefined)}
                 options={[
                   { value: "", label: "Tümü" },
                   { value: "scheduled", label: "Planlandı" },
@@ -189,7 +188,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
               <Select
                 label="Tür"
                 value={filters.type || ''}
-                onChange={(e) => handleFilterChange('type', e.target.value || undefined)}
+                onChange={(e) => handleFilterChange('type', (e.target.value || undefined) as AppointmentType | undefined)}
                 options={[
                   { value: "", label: "Tümü" },
                   { value: "consultation", label: "Konsültasyon" },

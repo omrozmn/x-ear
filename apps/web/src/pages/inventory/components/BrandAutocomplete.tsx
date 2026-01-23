@@ -81,7 +81,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 
     // Handle different response structures
     if (brandsData) {
-      const responseData = brandsData as any;
+      const responseData = brandsData as Record<string, any>;
       if (Array.isArray(responseData)) {
         apiBrands = responseData;
       } else if (responseData?.data) {

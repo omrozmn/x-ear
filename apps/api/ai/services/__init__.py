@@ -115,25 +115,14 @@ from ai.services.audit_service import (
 
 from ai.services.data_retention import (
     DataRetentionService,
-    DeletionRequest,
-    DeletionStatus,
-    DeletionScope,
-    RetentionPurgeResult,
     get_data_retention_service,
     reset_data_retention_service,
+    ai_prompts_deleted_total,
 )
 
-from ai.services.prompt_anonymizer import (
-    PromptAnonymizer,
-    AnonymizedPrompt,
-    AnonymizedPromptStore,
-    AnonymizationLevel,
-    AnonymizationResult,
-    get_prompt_anonymizer,
-    get_anonymized_prompt_store,
-    anonymize_prompt,
-    reset_anonymizer_singletons,
-)
+# NOTE: prompt_anonymizer module exists but is not currently active.
+# It will be activated in Phase B/C for model improvement pipelines.
+# See ai/services/prompt_anonymizer.py for details.
 
 from ai.services.metrics import (
     MetricsCollector,
@@ -263,22 +252,9 @@ __all__ = [
     "REQUIRED_MODEL_FIELDS",
     # Data Retention
     "DataRetentionService",
-    "DeletionRequest",
-    "DeletionStatus",
-    "DeletionScope",
-    "RetentionPurgeResult",
     "get_data_retention_service",
     "reset_data_retention_service",
-    # Prompt Anonymizer
-    "PromptAnonymizer",
-    "AnonymizedPrompt",
-    "AnonymizedPromptStore",
-    "AnonymizationLevel",
-    "AnonymizationResult",
-    "get_prompt_anonymizer",
-    "get_anonymized_prompt_store",
-    "anonymize_prompt",
-    "reset_anonymizer_singletons",
+    "ai_prompts_deleted_total",
     # Metrics
     "MetricsCollector",
     "MetricType",

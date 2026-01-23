@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/payment_integrations.py
+# hypothesis_version: 6.150.2
+
+['iframeUrl', 'merchantId', 'merchantKeyMasked', 'merchantSaltMasked', 'paymentRecordId', 'testMode']

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/tenant_users.py
+# hypothesis_version: 6.150.2
+
+[400, 403, 404, 409, 500, 1024, '.', '/', '/tenant/company', '/tenant/users', 'EMAIL_EXISTS', 'Email already exists', 'FORBIDDEN', 'LIMIT_REACHED', 'NO_TENANT', 'No tenant context', 'SELF_DELETE', 'STORAGE_MODE', 'TENANT_NOT_FOUND', 'Tenant Users', 'Tenant not found', 'USERNAME_EXISTS', 'USER_NOT_FOUND', 'User not found', 'User removed', 'WEAK_PASSWORD', 'accountHolder', 'admin', 'bankName', 'branchIds', 'branch_ids', 'createTenantUser', 'deleteTenantUser', 'email', 'firstName', 'first_name', 'getTenantCompany', 'gif', 'isActive', 'is_active', 'jpeg', 'jpg', 'json', 'lastName', 'last_name', 'listTenantUsers', 'local', 'password', 'png', 'postalCode', 'role', 'taxId', 'taxOffice', 'tenant_admin', 'updateTenantCompany', 'updateTenantUser', 'user', 'username', 'webp']

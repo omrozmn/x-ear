@@ -69,7 +69,7 @@ export const useInfiniteScroll = ({
 }: UseInfiniteScrollOptions) => {
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    
+
     if (hasMore && !loading && scrollTop + clientHeight >= scrollHeight - threshold) {
       onLoadMore();
     }
@@ -138,7 +138,7 @@ export const usePerformanceMonitor = () => {
     const start = performance.now();
     callback();
     const end = performance.now();
-    
+
     setMetrics(prev => ({
       ...prev,
       renderTime: end - start
@@ -152,7 +152,7 @@ export const usePerformanceMonitor = () => {
     const measureFrame = () => {
       frameCount++;
       const currentTime = performance.now();
-      
+
       if (currentTime - lastTime >= 1000) {
         setMetrics(prev => ({
           ...prev,
@@ -161,7 +161,7 @@ export const usePerformanceMonitor = () => {
         frameCount = 0;
         lastTime = currentTime;
       }
-      
+
       requestAnimationFrame(measureFrame);
     };
 
@@ -170,7 +170,7 @@ export const usePerformanceMonitor = () => {
 
   const measureMemoryUsage = useCallback(() => {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as unknown as { memory: { usedJSHeapSize: number } }).memory;
       setMetrics(prev => ({
         ...prev,
         memoryUsage: memory.usedJSHeapSize / 1024 / 1024 // MB

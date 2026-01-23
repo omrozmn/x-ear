@@ -12,7 +12,7 @@
  * Requirements: 3 (AI Actions Integration)
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useAIPhase } from '../hooks/useAIStatus';
 import { useAIRuntimeStore } from '../stores/aiRuntimeStore';
 import type {
@@ -36,38 +36,38 @@ export interface AIActionPreviewProps {
    * The action plan to display
    */
   plan: ActionPlan;
-  
+
   /**
    * Callback when user clicks simulate
    */
   onSimulate?: (planId: string) => void;
-  
+
   /**
    * Callback when user clicks execute
    */
   onExecute?: (planId: string, approvalToken?: string) => void;
-  
+
   /**
    * Callback when user clicks approve
    */
   onApprove?: (planId: string, approvalToken: string) => void;
-  
+
   /**
    * Whether the component is in loading state
    */
   isLoading?: boolean;
-  
+
   /**
    * Additional CSS classes
    */
   className?: string;
-  
+
   /**
    * Whether to show the mode selector
    * @default true
    */
   showModeSelector?: boolean;
-  
+
   /**
    * Whether to show action buttons
    * @default true
@@ -161,7 +161,7 @@ interface RiskBadgeProps {
 function RiskBadge({ level, className = '' }: RiskBadgeProps): React.ReactElement {
   const colors = RISK_COLORS[level];
   const label = RISK_LABELS[level];
-  
+
   return (
     <span
       className={`
@@ -185,15 +185,14 @@ interface ActionStepItemProps {
   isActive?: boolean;
 }
 
-function ActionStepItem({ 
-  step, 
-  status = 'pending', 
+function ActionStepItem({
+  step,
+  status = 'pending',
   progress,
   isActive = false,
 }: ActionStepItemProps): React.ReactElement {
   const statusConfig = STEP_STATUS_CONFIG[status];
-  const riskColors = RISK_COLORS[step.riskLevel as RiskLevel] || RISK_COLORS.low;
-  
+
   return (
     <div
       className={`
@@ -219,7 +218,7 @@ function ActionStepItem({
           {statusConfig.icon}
         </span>
       </div>
-      
+
       {/* Step Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -233,11 +232,11 @@ function ActionStepItem({
             </span>
           )}
         </div>
-        
+
         <p className="mt-1 text-sm text-gray-600">
           {step.description}
         </p>
-        
+
         {/* Progress bar for running steps */}
         {status === 'running' && progress !== undefined && (
           <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
@@ -247,7 +246,7 @@ function ActionStepItem({
             />
           </div>
         )}
-        
+
         {/* Parameters preview (collapsed by default) */}
         {Object.keys(step.parameters).length > 0 && (
           <details className="mt-2">
@@ -274,20 +273,20 @@ interface ModeSelectorProps {
   hideExecute?: boolean;
 }
 
-function ModeSelector({ 
-  value, 
-  onChange, 
+function ModeSelector({
+  value,
+  onChange,
   disabled = false,
   hideExecute = false,
 }: ModeSelectorProps): React.ReactElement {
-  const options = hideExecute 
+  const options = hideExecute
     ? MODE_OPTIONS.filter(opt => opt.value !== 'execute')
     : MODE_OPTIONS;
-  
+
   return (
     <div className="flex gap-2">
       {options.map((option) => (
-        <button
+        <button data-allow-raw="true"
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
@@ -318,7 +317,7 @@ interface ExecutionProgressDisplayProps {
 
 function ExecutionProgressDisplay({ progress }: ExecutionProgressDisplayProps): React.ReactElement {
   const percentage = Math.round((progress.currentStep / progress.totalSteps) * 100);
-  
+
   return (
     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
       <div className="flex items-center justify-between mb-2">
@@ -375,23 +374,23 @@ export function AIActionPreview({
 }: AIActionPreviewProps): React.ReactElement {
   // Get current AI phase to determine if execute is allowed
   const phase = useAIPhase();
-  
+
   // Get execution progress from runtime store
   const executionProgress = useAIRuntimeStore((state) => state.executionProgress);
   const isExecuting = useAIRuntimeStore((state) => state.isExecuting);
-  
+
   // Local state for mode selection
   const [selectedMode, setSelectedMode] = useState<ExecutionMode>('simulate');
-  
+
   // Determine if we're in Phase A (read-only mode)
   const isPhaseA = phase?.currentPhase === 'A';
-  
+
   // Check if execution is allowed based on phase
   const canExecute = phase?.executionAllowed ?? false;
-  
+
   // Check if this plan is currently being executed
   const isCurrentPlanExecuting = isExecuting && executionProgress?.actionId === plan.planId;
-  
+
   // Get step statuses from execution progress
   const getStepStatus = useCallback((stepNumber: number): StepStatus => {
     if (!executionProgress || executionProgress.actionId !== plan.planId) {
@@ -400,7 +399,7 @@ export function AIActionPreview({
     const stepStatus = executionProgress.stepStatuses.find(s => s.stepNumber === stepNumber);
     return stepStatus?.status || 'pending';
   }, [executionProgress, plan.planId]);
-  
+
   // Get step progress percentage
   const getStepProgress = useCallback((stepNumber: number): number | undefined => {
     if (!executionProgress || executionProgress.actionId !== plan.planId) {
@@ -409,24 +408,24 @@ export function AIActionPreview({
     const stepStatus = executionProgress.stepStatuses.find(s => s.stepNumber === stepNumber);
     return stepStatus?.progress;
   }, [executionProgress, plan.planId]);
-  
+
   // Handle simulate click
   const handleSimulate = useCallback(() => {
     onSimulate?.(plan.planId);
   }, [onSimulate, plan.planId]);
-  
+
   // Handle execute click
   const handleExecute = useCallback(() => {
     onExecute?.(plan.planId, plan.approvalToken);
   }, [onExecute, plan.planId, plan.approvalToken]);
-  
+
   // Handle approve click
   const handleApprove = useCallback(() => {
     if (plan.approvalToken) {
       onApprove?.(plan.planId, plan.approvalToken);
     }
   }, [onApprove, plan.planId, plan.approvalToken]);
-  
+
   // Handle action button click based on selected mode
   const handleActionClick = useCallback(() => {
     if (selectedMode === 'simulate') {
@@ -435,16 +434,16 @@ export function AIActionPreview({
       handleExecute();
     }
   }, [selectedMode, handleSimulate, handleExecute]);
-  
+
   // Overall risk colors
   const overallRiskColors = RISK_COLORS[plan.overallRiskLevel];
-  
+
   // Determine if plan needs approval
   const needsApproval = plan.requiresApproval && plan.status === 'pending';
-  
+
   // Determine if plan is approved
   const isApproved = plan.status === 'approved';
-  
+
   return (
     <div
       className={`
@@ -484,7 +483,7 @@ export function AIActionPreview({
             )}
           </div>
         </div>
-        
+
         {/* Phase A Warning */}
         {isPhaseA && (
           <p className="mt-2 text-sm text-blue-600">
@@ -492,22 +491,22 @@ export function AIActionPreview({
           </p>
         )}
       </div>
-      
+
       {/* Execution Progress (if executing) */}
       {isCurrentPlanExecuting && executionProgress && (
         <div className="p-4 border-b border-gray-200">
           <ExecutionProgressDisplay progress={executionProgress} />
         </div>
       )}
-      
+
       {/* Steps List */}
       <div className="p-4 space-y-3">
         {plan.steps.map((step) => {
           const status = getStepStatus(step.stepNumber);
           const progress = getStepProgress(step.stepNumber);
-          const isActive = isCurrentPlanExecuting && 
+          const isActive = isCurrentPlanExecuting &&
             executionProgress?.currentStep === step.stepNumber;
-          
+
           return (
             <ActionStepItem
               key={step.stepNumber}
@@ -519,7 +518,7 @@ export function AIActionPreview({
           );
         })}
       </div>
-      
+
       {/* Actions Footer */}
       {showActions && (
         <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 space-y-3">
@@ -532,12 +531,12 @@ export function AIActionPreview({
               hideExecute={isPhaseA || !canExecute}
             />
           )}
-          
+
           {/* Action Buttons */}
           <div className="flex gap-2">
             {/* Approve Button (if needs approval) */}
             {needsApproval && !isPhaseA && (
-              <button
+              <button data-allow-raw="true"
                 type="button"
                 onClick={handleApprove}
                 disabled={isLoading || isCurrentPlanExecuting}
@@ -550,10 +549,10 @@ export function AIActionPreview({
                 Onayla
               </button>
             )}
-            
+
             {/* Simulate/Execute Button */}
             {(!needsApproval || isApproved || selectedMode === 'simulate') && (
-              <button
+              <button data-allow-raw="true"
                 type="button"
                 onClick={handleActionClick}
                 disabled={isLoading || isCurrentPlanExecuting || (selectedMode === 'execute' && !canExecute)}
@@ -592,7 +591,7 @@ export function AIActionPreview({
               </button>
             )}
           </div>
-          
+
           {/* Phase A Info */}
           {isPhaseA && selectedMode === 'execute' && (
             <p className="text-xs text-gray-500 text-center">

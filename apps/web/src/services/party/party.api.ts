@@ -20,38 +20,43 @@ import {
   createSgkDocuments,
   deleteSgkDocument
 } from '@/api/client/sgk.client';
-import type { PartyCreate } from '@/api/generated/schemas';
+import type {
+  PartyCreate,
+  ListPartiesParams,
+  PartyUpdate,
+  TimelineEventCreate,
+  SaleCreate,
+  UploadSGKDocumentRequest
+} from '@/api/generated/schemas';
 
 // Wrapper to match legacy API structure
 export const partiesApi = {
-  list: (params?: any) => listParties(params),
+  list: (params?: ListPartiesParams) => listParties(params),
   create: (data: PartyCreate) => createParty(data),
   delete: (id: string) => deleteParty(id),
-  update: (id: string, data: any) => updateParty(id, data),
+  update: (id: string, data: PartyUpdate) => updateParty(id, data),
   // Search was likely same as list with query param
-  search: (query?: any) => listParties(query),
+  search: (query?: ListPartiesParams) => listParties(query),
 
   // Timeline operations
   getTimeline: (partyId: string) => listPartyTimeline(partyId),
-  createPartyTimeline: (partyId: string, data: any) => createPartyTimeline(partyId, data),
+  createPartyTimeline: (partyId: string, data: TimelineEventCreate) => createPartyTimeline(partyId, data),
   deletePartyTimeline: (partyId: string, eventId: string) => deletePartyTimeline(partyId, eventId),
 
   // Log activity
-  logActivity: (partyId: string, data: any) => createPartyActivities(partyId, data),
+  logActivity: (partyId: string, data: TimelineEventCreate) => createPartyActivities(partyId, data),
 
   // Notes operations (mapped to Timeline/Notes endpoints)
   // Note: party-subresources has listPartyNotes, createPartyNotes, etc.
-  // But legacy used timeline. We'll stick to timeline for activity but maybe use notes for notes.
-  // For now, staying consistent with what was there but using new names.
-  createNote: (partyId: string, data: any) => createPartyTimeline(partyId, data),
+  createNote: (partyId: string, data: TimelineEventCreate) => createPartyTimeline(partyId, data),
   deleteNote: (partyId: string, noteId: string) => deletePartyTimeline(partyId, noteId),
 
   // Sales operations
   getSales: (partyId: string) => listAdminPartySales(partyId),
-  createSale: (data: any) => createSales(data),
+  createSale: (data: SaleCreate) => createSales(data),
 
   // SGK operations
-  createSgkDocuments: (data?: any) => createSgkDocuments(data),
+  createSgkDocuments: (data: UploadSGKDocumentRequest) => createSgkDocuments(data),
   deleteSgkDocument: (documentId: string) => deleteSgkDocument(documentId),
 };
 

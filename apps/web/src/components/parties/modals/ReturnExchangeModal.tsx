@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Button,
   Textarea,
@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
   Alert,
-  Input
+  Input,
+  Select
 } from '@x-ear/ui-web';
 import {
   X,
@@ -18,12 +19,11 @@ import {
   Package,
   FileText,
   Send,
-  Eye,
-  Search
+  Eye
 } from 'lucide-react';
 import { Party } from '../../../types/party';
-import {updateSale} from '@/api/client/sales.client';
-import type { SaleUpdate } from '@/api/generated/schemas';
+import { updateSale } from '@/api/client/sales.client';
+import type { SaleUpdate, SaleRead } from '@/api/generated/schemas';
 import { useInventory } from '../../../hooks/useInventory';
 import { useFuzzySearch } from '../../../hooks/useFuzzySearch';
 
@@ -40,26 +40,28 @@ interface LocalInventoryItem {
   [key: string]: any;
 }
 
+/* 
 // Local types for API compatibility
-interface APISale {
+interface _APISale {
   id: string;
   partyId?: string;
   totalAmount?: number;
   partyPayment?: number;
 }
 
-interface SalesUpdateSale1Body {
+interface _SalesUpdateSale1Body {
   status?: string;
   notes?: string;
 }
 
-interface InventoryItem {
+interface _InventoryItem {
   id: string;
   name: string;
   brand?: string;
   model?: string;
   price?: number;
 }
+*/
 
 interface ReturnInvoice {
   id: string;
@@ -72,20 +74,20 @@ interface ReturnInvoice {
   createdAt: string;
 }
 
-interface Sale {
-  id: string;
-  productName: string;
-  brand: string;
-  model: string;
-  serialNumber?: string;
-  salePrice: number;
-  saleDate: string;
-  paymentMethod: string;
-  status: string;
-  productId?: string;
-  totalAmount?: number;
-  notes?: string;
-}
+// interface Sale {
+//   id: string;
+//   productName: string;
+//   brand: string;
+//   model: string;
+//   serialNumber?: string;
+//   salePrice: number;
+//   saleDate: string;
+//   paymentMethod: string;
+//   status: string;
+//   productId?: string;
+//   totalAmount?: number;
+//   notes?: string;
+// }
 
 interface ReturnExchangeData {
   saleId: string;
@@ -108,7 +110,7 @@ interface ReturnExchangeModalProps {
   isOpen: boolean;
   onClose: () => void;
   party: Party;
-  sale: Sale;
+  sale: SaleRead;
   onReturnExchangeCreate: (data: ReturnExchangeData) => void;
 }
 
@@ -120,13 +122,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   onReturnExchangeCreate
 }) => {
   // Use inventory hook for products
-  const { products, loading: productsLoading } = useInventory();
+  const { products } = useInventory(); // productsLoading removed as unused
 
   const [type, setType] = useState<'return' | 'exchange'>('return');
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
-  const [newProductName, setNewProductName] = useState('');
   const [priceDifference, setPriceDifference] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -141,12 +142,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useState('');
   const [supplierInvoiceDate, setSupplierInvoiceDate] = useState('');
   const [invoiceNote, setInvoiceNote] = useState('');
-  const [showInvoicePreview, setShowInvoicePreview] = useState(false);
-  const [previewInvoiceData, setPreviewInvoiceData] = useState<any>(null);
+  // const [showInvoicePreview, setShowInvoicePreview] = useState(false);
+  // const [previewInvoiceData, setPreviewInvoiceData] = useState<any>(null);
 
   // Device replacement states
-  const [replacementId, setReplacementId] = useState<string | null>(null);
-  const [replacementStatus, setReplacementStatus] = useState<'draft' | 'invoice_created' | 'completed'>('draft');
+  // const [replacementId, setReplacementId] = useState<string | null>(null);
+  // const [replacementStatus, setReplacementStatus] = useState<'draft' | 'invoice_created' | 'completed'>('draft');
   const [gibError, setGibError] = useState('');
 
   // New product selection for exchange
@@ -165,7 +166,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
     'Diğer'
   ];
 
-  const { results, search, clearSearch } = useFuzzySearch<LocalInventoryItem>(products, {
+  const { /* results, */ search, clearSearch } = useFuzzySearch<LocalInventoryItem>(products, {
     threshold: 0.3,
     maxDistance: 3,
     keys: ['name', 'brand', 'model', 'category', 'barcode', 'serialNumber']
@@ -179,13 +180,14 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
     }
   }, [productSearchTerm, showProductSearch, search, clearSearch]);
 
-  const filteredProducts: LocalInventoryItem[] = useMemo(() => {
-    if (!showProductSearch) return [];
-    if (!productSearchTerm.trim()) {
-      return products.slice(0, 10);
-    }
-    return results.slice(0, 10).map(r => r.item);
-  }, [results, products, productSearchTerm, showProductSearch]);
+  // Placeholder for product selection UI - currently incomplete
+  // const filteredProducts: LocalInventoryItem[] = useMemo(() => {
+  //   if (!showProductSearch) return [];
+  //   if (!productSearchTerm.trim()) {
+  //     return products.slice(0, 10);
+  //   }
+  //   return results.slice(0, 10).map(r => r.item);
+  // }, [results, products, productSearchTerm, showProductSearch]);
 
   useEffect(() => {
     if (isOpen) {
@@ -194,15 +196,14 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       setReason('');
       setNotes('');
       setRefundAmount('');
-      setNewProductName('');
       setPriceDifference('');
       setError('');
       setSuccess(false);
       setSelectedNewProduct(null);
       setShowProductSearch(false);
       setProductSearchTerm('');
-      setReplacementId(null);
-      setReplacementStatus('draft');
+      // setReplacementId(null);
+      // setReplacementStatus('draft');
       setGibError('');
       // focus first control for accessibility
       setTimeout(() => {
@@ -276,7 +277,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       });
 
       // Update replacement status
-      setReplacementStatus('invoice_created');
+      // setReplacementStatus('invoice_created');
 
     } catch (error: any) {
       console.error('Return invoice creation error:', error);
@@ -286,36 +287,25 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
     }
   };
 
-  const previewInvoice = async (invoiceId: string) => {
+  const previewInvoice = async () => {
     try {
       // TODO: Implement invoice preview API call
       // Mock preview data for now
+      /*
       const mockPreviewData = {
-        invoiceNumber: returnInvoice?.invoiceNumber || 'PREVIEW-001',
-        supplierName: supplierName || 'Tedarikçi Adı',
-        supplierInvoiceNumber: supplierInvoiceNumber || 'TED-001',
-        createdAt: new Date().toISOString(),
-        status: returnInvoice?.status || 'draft',
-        amount: returnInvoice?.amount || 0,
-        items: [
-          {
-            description: 'İade Kalemi',
-            quantity: 1,
-            unitPrice: returnInvoice?.amount || 0,
-            total: returnInvoice?.amount || 0
-          }
-        ]
+        ...
       };
+      */
 
-      setPreviewInvoiceData(mockPreviewData);
-      setShowInvoicePreview(true);
+      // setPreviewInvoiceData(mockPreviewData);
+      // setShowInvoicePreview(true);
     } catch (error) {
       console.error('Invoice preview error:', error);
       setError('Fatura önizlemesi yüklenirken hata oluştu');
     }
   };
 
-  const sendInvoiceToGib = async (invoiceId: string) => {
+  const sendInvoiceToGib = async () => {
     setGibLoading(true);
     setGibError('');
 
@@ -324,21 +314,23 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       // const api = getXEarCRMAPIAutoGenerated();
 
       // Mock response for now
+      /*
       const invoiceData = {
         invoice: {
           gib_sent_date: new Date().toISOString()
         }
       };
+      */
 
       setReturnInvoice(prev => prev ? {
         ...prev,
         status: 'gib_sent',
         gibSent: true,
-        gibSentDate: invoiceData.invoice.gib_sent_date
+        gibSentDate: new Date().toISOString() // Using current date directly
       } : null);
 
       // Update replacement status
-      setReplacementStatus('completed');
+      // setReplacementStatus('completed');
 
     } catch (error: any) {
       console.error('GIB send error:', error);
@@ -535,20 +527,15 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                 <CardTitle className="text-lg">İade/Değişim Nedeni</CardTitle>
               </CardHeader>
               <CardContent>
-                <select
+                <Select
                   value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
+                  onChange={(e: any) => setReason(e.target.value)}
+                  options={[
+                    { value: '', label: 'Neden seçiniz' },
+                    ...returnReasons.map(r => ({ value: r, label: r }))
+                  ]}
                   id="return-exchange-first-input"
-                >
-                  <option value="">Neden seçiniz</option>
-                  {returnReasons.map((reasonOption) => (
-                    <option key={reasonOption} value={reasonOption}>
-                      {reasonOption}
-                    </option>
-                  ))}
-                </select>
+                />
               </CardContent>
             </Card>
 
@@ -744,15 +731,15 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Fatura Türü
                         </label>
-                        <select
+                        <Select
                           value={invoiceType}
-                          onChange={(e) => setInvoiceType(e.target.value as 'individual' | 'corporate' | 'e_archive')}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="individual">Bireysel Fatura</option>
-                          <option value="corporate">Kurumsal Fatura</option>
-                          <option value="e_archive">E-Arşiv Fatura</option>
-                        </select>
+                          onChange={(e: any) => setInvoiceType(e.target.value as 'individual' | 'corporate' | 'e_archive')}
+                          options={[
+                            { value: 'individual', label: 'Bireysel Fatura' },
+                            { value: 'corporate', label: 'Kurumsal Fatura' },
+                            { value: 'e_archive', label: 'E-Arşiv Fatura' }
+                          ]}
+                        />
                       </div>
 
                       {returnInvoice && (
@@ -789,7 +776,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                               size="sm"
                               variant="outline"
                               className="text-xs"
-                              onClick={() => returnInvoice && previewInvoice(returnInvoice.id)}
+                              onClick={() => returnInvoice && previewInvoice()}
                             >
                               <Eye className="w-3 h-3 mr-1" />
                               Önizle
@@ -801,7 +788,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                                 size="sm"
                                 className="text-xs bg-green-600 hover:bg-green-700"
                                 disabled={gibLoading}
-                                onClick={() => returnInvoice && sendInvoiceToGib(returnInvoice.id)}
+                                onClick={() => returnInvoice && sendInvoiceToGib()}
                               >
                                 {gibLoading ? (
                                   <RefreshCw className="w-3 h-3 mr-1 animate-spin" />

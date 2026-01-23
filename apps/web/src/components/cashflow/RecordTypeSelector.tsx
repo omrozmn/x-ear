@@ -93,19 +93,18 @@ export function RecordTypeSelector({
             <div
               key={type}
               onClick={() => onSelectType(type as RecordType)}
-              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-all ${
-                isSelected
+              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-all ${isSelected
                   ? transactionType === 'income'
                     ? 'bg-green-600 text-white ring-2 ring-green-600'
                     : 'bg-red-600 text-white ring-2 ring-red-600'
                   : transactionType === 'income'
-                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                  : 'bg-red-100 text-red-800 hover:bg-red-200'
-              }`}
+                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                }`}
             >
               <span>{RECORD_TYPE_LABELS[type as RecordType] || type}</span>
               {isCustom && (
-                <button
+                <button data-allow-raw="true"
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();

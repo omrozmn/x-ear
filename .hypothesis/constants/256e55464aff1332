@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/suppliers.py
+# hypothesis_version: 6.150.2
+
+[0.0, 'Address', 'City', 'Contact person name', 'Country', 'Currency', 'Email', 'Fax number', 'Is supplier active', 'Mobile number', 'Notes', 'Payment terms', 'Phone number', 'Postal code', 'Rating 1-5', 'Supplier ID', 'Supplier code', 'TRY', 'Tax number', 'Tax office', 'Türkiye', 'Website', 'activeSuppliers', 'averageRating', 'before', 'code', 'companyCode', 'companyName', 'contactName', 'contactPerson', 'email', 'inactiveSuppliers', 'isActive', 'isPrimary', 'lastOrderDate', 'leadTimeDays', 'minimumOrderQuantity', 'name', 'paymentTerms', 'postalCode', 'productCount', 'productId', 'supplierId', 'supplierProductCode', 'supplierProductName', 'taxNumber', 'taxOffice', 'tenantId', 'totalPurchases', 'totalSuppliers', 'unitCost']

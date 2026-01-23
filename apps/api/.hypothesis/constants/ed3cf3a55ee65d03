@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/cash_records.py
+# hypothesis_version: 6.150.2
+
+[200, 201, 400, 403, 404, 500, 1000, '+00:00', '/cash-records', 'Access denied', 'Amount is required', 'CashRecords', 'Record not found', 'Z', 'amount', 'batarya', 'cash', 'count', 'createCashRecords', 'date', 'deleteCashRecord', 'description', 'diger', 'expense', 'filtre', 'id', 'income', 'kalip', 'kalıp', 'kaparo', 'kapora', 'listCashRecords', 'onarım', 'paid', 'partyId', 'partyName', 'payment', 'pil', 'recordType', 'tamir', 'teslim', 'teslimat', 'transactionType']

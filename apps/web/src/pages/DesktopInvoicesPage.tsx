@@ -1,7 +1,7 @@
-import { Button, Input, Card } from '@x-ear/ui-web';
+import { Button, Card } from '@x-ear/ui-web';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Zap, Plus, FileText, File, AlertTriangle, X, Eye, Edit2 } from 'lucide-react';
+import { Zap, Plus, FileText, AlertTriangle, X } from 'lucide-react';
 import UniversalImporter from '../components/importer/UniversalImporter';
 import { useToastHelpers } from '@x-ear/ui-web';
 import invoicesSchema from '../components/importer/schemas/invoices';
@@ -9,7 +9,7 @@ import { FieldDef } from '../components/importer/UniversalImporter';
 import { Invoice, InvoiceFilters, InvoiceTemplate } from '../types/invoice';
 
 import { InvoiceModal } from '../components/modals/InvoiceModal';
-import { InvoiceTemplateManager } from '../components/templates/InvoiceTemplateManager';
+// import { InvoiceTemplateManager } from '../components/templates/InvoiceTemplateManager'; // Not used - templates view disabled
 import { InvoiceFilters as InvoiceFiltersComponent } from '../components/invoices/InvoiceFilters';
 import { GovernmentInvoiceModal } from '../components/invoices/GovernmentInvoiceModal';
 import { InvoiceStats } from '../components/invoices/InvoiceStats';
@@ -63,7 +63,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   });
 
   const [governmentModalOpen, setGovernmentModalOpen] = useState(false);
-  const [currentInvoiceForGov, setCurrentInvoiceForGov] = useState<Invoice | null>(null);
+  const [currentInvoiceForGov] = useState<Invoice | null>(null);
   const [isImporterOpen, setIsImporterOpen] = useState(false);
   const [importResult, setImportResult] = useState<null | { created: number; updated: number; errors: any[] }>(null);
 
@@ -131,8 +131,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     }
   }, [state.filters]);
 
-  // Filter invoices based on filters
-  const filteredInvoices = React.useMemo(() => {
+  // Filter invoices based on filters - computed value not directly used but kept for potential future use
+  const _filteredInvoices = React.useMemo(() => {
     let filtered = state.invoices;
 
     // Apply search filter
@@ -153,7 +153,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
 
     // Apply type filter
     if (state.filters.type && state.filters.type.length > 0) {
-      filtered = filtered.filter(invoice => state.filters.type!.includes(invoice.type as any));
+      filtered = filtered.filter(invoice => state.filters.type!.includes(invoice.type as import('../types/invoice').InvoiceType));
     }
 
     // Apply date filters
@@ -349,7 +349,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             ].map((tab) => (
               <Button
                 key={tab.key}
-                onClick={() => setState(prev => ({ ...prev, currentView: tab.key as any }))}
+                onClick={() => setState(prev => ({ ...prev, currentView: tab.key as PageState['currentView'] }))}
                 className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${state.currentView === tab.key
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'

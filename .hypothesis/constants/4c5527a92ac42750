@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/ocr_job.py
+# hypothesis_version: 6.150.2
+
+[100, 512, 'completed', 'created_at', 'document_type', 'error_message', 'failed', 'file_path', 'id', 'ocr_jobs', 'patient_name', 'pending', 'processing', 'result', 'status', 'tenant_id', 'tenants.id', 'updated_at']

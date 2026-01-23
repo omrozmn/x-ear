@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/smtp_config.py
+# hypothesis_version: 6.150.2
+
+[200, 202, 400, 404, 500, '/config', '/test', 'SMTP Configuration', 'User', 'X-Ear CRM', 'config_id', 'email', 'email_log_id', 'full_name', 'getSMTPConfig', 'recipient', 'sendTestEmail', 'smtp_test', 'tenant_id', 'tenant_name', 'tr', 'user_name']

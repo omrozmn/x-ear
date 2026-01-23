@@ -2,7 +2,7 @@
   "templateId": "intent_classifier",
   "version": "1.0.0",
   "category": "intent",
-  "contentHash": "e0349cdc10f492b86111d9258c2fc485e892111b6a8dd0536e34bdd306989f97",
+  "contentHash": "f9a1770a5c822836bb1549bbd275eaca8b0147fc79467da0839e7058060faf89",
   "description": "Classifies user intent into predefined categories",
   "author": "system",
   "variables": [

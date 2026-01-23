@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/marketplace.py
+# hypothesis_version: 6.150.2
+
+[100, 255, 'MarketplaceProduct', 'connected', 'dynamic', 'errorMessage', 'id', 'integration', 'integrationId', 'isActive', 'isSynced', 'lastSyncAt', 'localProductId', 'localProductType', 'marketplace_products', 'mkp', 'mkt', 'name', 'platform', 'remotePrice', 'remoteProductId', 'remoteSku', 'remoteStock', 'sellerId', 'status', 'syncOrders', 'syncPrices', 'syncStock', 'tenantId', 'tenants.id']

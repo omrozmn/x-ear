@@ -4,9 +4,8 @@
  * @version 1.0.0
  */
 
-import type { PartyRead, DeviceRead, PartyReadStatus } from '@/api/generated/schemas';
-// Fallback type for Sale since strict type is missing in schemas
-export type SaleRead = any;
+import type { PartyRead, PartyReadStatus, SaleRead } from '@/api/generated/schemas';
+import type { DeviceRead } from '@/api/generated/schemas/deviceRead';
 
 export interface AnalyticsTimeRange {
   start: string;
@@ -275,11 +274,12 @@ export class PartyAnalyticsService {
     let outstandingBalance = 0;
 
     sales.forEach(sale => {
-      totalRevenue += sale.totalAmount;
+      const amount = sale.totalAmount || 0;
+      totalRevenue += amount;
 
       // Estimate outstanding balance (placeholder logic)
       if (Math.random() > 0.8) { // 20% chance of outstanding balance
-        outstandingBalance += sale.totalAmount * 0.3;
+        outstandingBalance += amount * 0.3;
       }
     });
 

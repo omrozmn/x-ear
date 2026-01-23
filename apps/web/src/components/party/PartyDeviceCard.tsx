@@ -115,28 +115,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
   const reportStatus = (device.reportStatus || device.report_status || 'none').toLowerCase();
   const isLoaner = device.isLoaner || device.is_loaner;
 
-  // DEBUG: Disabled to reduce console noise
-  // Enable by uncommenting if needed for debugging
-  /*
-  try {
-    const dp: any = device as any;
-    const debugDisplay = {
-      partyPayment: dp.partyPayment,
-      salePrice: dp.salePrice,
-      netPayable: dp.netPayable,
-      listPrice: dp.listPrice,
-      serials: {
-        serialNumber: dp.serialNumber || dp.serial_number,
-        left: dp.serialNumberLeft || dp.serial_number_left,
-        right: dp.serialNumberRight || dp.serial_number_right
-      },
-      ear: dp.ear || dp.earSide || dp.side
-    };
-    console.debug('[PartyDeviceCard] debugDisplay:', debugDisplay);
-  } catch (e) {
-    console.debug('[PartyDeviceCard] debug logging failed', e);
-  }
-  */
+
 
   return (
     <div className={`relative bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>

@@ -3,34 +3,29 @@ FastAPI SMS Packages Router - Migrated from Flask routes/sms_packages.py
 Handles SMS package management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
-from pydantic import BaseModel
+from typing import Optional, List
 import logging
 
 from sqlalchemy.orm import Session
 
 from database import get_db
-from schemas.base import ResponseEnvelope
-from schemas.sms_packages import SmsPackageRead
+from schemas.base import ResponseEnvelope, ResponseMeta
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 
-# Define list response explicitly here or use List[SmsPackageRead]
-from typing import List
-from schemas.base import ResponseEnvelope, ResponseMeta
+from schemas.sms import (
+    SmsPackageCreate,
+    SmsPackageUpdate,
+    SmsPackageRead as BaseSmsPackageRead
+)
+from schemas.sms_packages import DetailedSmsPackageRead
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["SMS"])
 
-from schemas.sms import (
-    SmsPackageCreate,
-    SmsPackageUpdate,
-    SmsPackageRead
-)
-
 # --- Public Routes ---
 
-@router.get("/sms-packages", operation_id="listSmsPackages", response_model=ResponseEnvelope[List[SmsPackageRead]])
+@router.get("/sms-packages", operation_id="listSmsPackages", response_model=ResponseEnvelope[List[BaseSmsPackageRead]])
 def list_public_packages(db: Session = Depends(get_db)):
     """List all active SMS packages (Public)"""
     try:
@@ -39,7 +34,7 @@ def list_public_packages(db: Session = Depends(get_db)):
         packages = db.query(SmsPackage).filter_by(is_active=True).order_by(SmsPackage.price).all()
         
         return ResponseEnvelope(data=[
-            SmsPackageRead.model_validate(p)
+            BaseSmsPackageRead.model_validate(p)
             for p in packages
         ])
         
@@ -49,7 +44,7 @@ def list_public_packages(db: Session = Depends(get_db)):
 
 # --- Admin Routes ---
 
-@router.get("/admin/sms/packages", operation_id="listAdminSmPackages", response_model=ResponseEnvelope[List[SmsPackageRead]])
+@router.get("/admin/sms/packages", operation_id="listAdminSmPackages", response_model=ResponseEnvelope[List[DetailedSmsPackageRead]])
 def list_admin_packages(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -71,7 +66,7 @@ def list_admin_packages(
         
         return ResponseEnvelope(
             data=[
-                SmsPackageRead.model_validate(p)
+                DetailedSmsPackageRead.model_validate(p)
                 for p in packages
             ],
             meta=ResponseMeta(
@@ -88,7 +83,7 @@ def list_admin_packages(
         logger.error(f"List admin SMS packages error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/admin/sms/packages", operation_id="createAdminSmPackages", status_code=201, response_model=ResponseEnvelope[SmsPackageRead])
+@router.post("/admin/sms/packages", operation_id="createAdminSmPackages", status_code=201, response_model=ResponseEnvelope[DetailedSmsPackageRead])
 def create_package(
     request_data: SmsPackageCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -111,7 +106,7 @@ def create_package(
         db.add(pkg)
         db.commit()
         
-        return ResponseEnvelope(data=SmsPackageRead.model_validate(pkg).model_dump(by_alias=True))
+        return ResponseEnvelope(data=DetailedSmsPackageRead.model_validate(pkg))
         
     except HTTPException:
         raise
@@ -120,7 +115,7 @@ def create_package(
         logger.error(f"Create SMS package error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/admin/sms/packages/{package_id}", operation_id="updateAdminSmPackage", response_model=ResponseEnvelope[SmsPackageRead])
+@router.put("/admin/sms/packages/{package_id}", operation_id="updateAdminSmPackage", response_model=ResponseEnvelope[DetailedSmsPackageRead])
 def update_package(
     package_id: str,
     request_data: SmsPackageUpdate,
@@ -151,7 +146,7 @@ def update_package(
         
         db.commit()
         
-        return ResponseEnvelope(data=SmsPackageRead.model_validate(pkg))
+        return ResponseEnvelope(data=DetailedSmsPackageRead.model_validate(pkg))
         
     except HTTPException:
         raise

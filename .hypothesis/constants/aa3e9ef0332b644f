@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/commission_ledger.py
+# hypothesis_version: 6.150.2
+
+['AffiliateUser', 'affiliate_user.id', 'commission_ledger', 'commissions', 'pending']

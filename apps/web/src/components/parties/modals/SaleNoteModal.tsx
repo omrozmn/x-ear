@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Button, 
+import {
+  Button,
   Textarea,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
   Alert,
   Spinner
 } from '@x-ear/ui-web';
@@ -27,8 +22,8 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
   onClose,
   party,
   sale,
-  onNoteSave,
-  loading = false
+  // onNoteSave, // Not used - internal simulated save
+  // loading = false  // Using internal isLoading state
 }) => {
   const [noteText, setNoteText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
@@ -51,13 +46,14 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
   const handleNoteChange = (value: string) => {
     setNoteText(value);
     setHasChanges(value !== (sale.notes || ''));
-    
+
     // Clear errors when user starts typing
     if (errors.note) {
       setErrors(prev => ({ ...prev, note: '' }));
     }
   };
 
+  /* validateNote function not called directly - inline validation in handleSubmit
   const validateNote = () => {
     const newErrors: Record<string, string> = {};
 
@@ -68,48 +64,49 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sale) return;
-    
+
     setError(null);
     setSuccess(null);
-    
+
     // Validation
     if (noteText.trim().length > 1000) {
       setError('Not 1000 karakterden uzun olamaz');
       return;
     }
-    
+
     if (noteText.trim() === (sale.notes || '').trim()) {
       setError('Herhangi bir değişiklik yapılmadı');
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       const updatedSale = {
         ...sale,
         notes: noteText.trim(),
         updatedAt: new Date().toISOString()
       };
-      
+
       console.log('Sale note updated:', updatedSale);
-      
+
       setSuccess('Satış notu başarıyla güncellendi');
-      
+
       // Close modal after successful update
       setTimeout(() => {
         setError(null);
         setSuccess(null);
         onClose();
       }, 2000);
-      
+
     } catch (err) {
       setError('Not güncellenirken bir hata oluştu. Lütfen tekrar deneyiniz.');
     } finally {
@@ -243,7 +240,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                   rows={6}
                   className={`resize-none ${errors.note ? 'border-red-500' : ''}`}
                 />
-                
+
                 <div className="flex justify-between items-center mt-1">
                   <div className="text-xs text-gray-500">
                     {noteText.length}/1000 karakter
@@ -267,7 +264,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                       type="button"
                       onClick={() => {
                         const currentNote = noteText.trim();
-                        const newNote = currentNote 
+                        const newNote = currentNote
                           ? `${currentNote}\n• ${quickNote}`
                           : `• ${quickNote}`;
                         handleNoteChange(newNote);

@@ -1,3 +1,336 @@
+# Operation ID Evidence — Sales, Parties, Inventory
+
+Source files:
+- x-ear/apps/api/routers/sales.py
+- x-ear/apps/api/routers/parties.py
+- x-ear/apps/api/routers/inventory.py
+
+Each entry includes the exact FastAPI route decorator line and a 2–4 line function signature snippet proving the implementation of the OpenAPI `operationId`.
+
+---
+
+- operation_id: `listSales`
+
+  ```python
+  @router.get("/sales", operation_id="listSales", response_model=ResponseEnvelope[List[SaleRead]])
+  def get_sales(
+      page: int = Query(1, ge=1),
+  ):
+  ```
+
+- operation_id: `getSale`
+
+  ```python
+  @router.get("/sales/{sale_id}", operation_id="getSale", response_model=ResponseEnvelope[SaleRead])
+  def get_sale(
+      sale_id: str,
+      db: Session = Depends(get_db),
+  ):
+  ```
+
+- operation_id: `listSalePayments`
+
+  ```python
+  @router.get("/sales/{sale_id}/payments", operation_id="listSalePayments", response_model=ResponseEnvelope[Any])
+  def get_sale_payments(
+      sale_id: str,
+      db: Session = Depends(get_db),
+  ):
+  ```
+
+- operation_id: `createSalePayments`
+
+  ```python
+  @router.post("/sales/{sale_id}/payments", operation_id="createSalePayments")
+  def record_sale_payment(
+      sale_id: str,
+      payment_in: PaymentRecordCreate,
+  ):
+  ```
+
+- operation_id: `listSalePaymentPlan`
+
+  ```python
+  @router.get("/sales/{sale_id}/payment-plan", operation_id="listSalePaymentPlan")
+  def get_sale_payment_plan(
+      sale_id: str,
+      db: Session = Depends(get_db),
+  ):
+  ```
+
+- operation_id: `createSalePaymentPlan`
+
+  ```python
+  @router.post("/sales/{sale_id}/payment-plan", operation_id="createSalePaymentPlan")
+  def create_sale_payment_plan(
+      sale_id: str,
+      request_data: PaymentPlanCreate,
+  ):
+  ```
+
+- operation_id: `createSaleInstallmentPay`
+
+  ```python
+  @router.post("/sales/{sale_id}/installments/{installment_id}/pay", operation_id="createSaleInstallmentPay")
+  def pay_installment(
+      sale_id: str,
+      installment_id: str,
+  ):
+  ```
+
+- operation_id: `createPartyDeviceAssignments`
+
+  ```python
+  @router.post("/parties/{party_id}/device-assignments", operation_id="createPartyDeviceAssignments", response_model=ResponseEnvelope[DeviceAssignmentCreateResponse])
+  def create_device_assignments(
+      party_id: str,
+      data: DeviceAssignmentCreate,
+  ):
+  ```
+
+- operation_id: `updateDeviceAssignment`
+
+  ```python
+  @router.patch("/device-assignments/{assignment_id}", operation_id="updateDeviceAssignment", response_model=ResponseEnvelope[DeviceAssignmentRead])
+  def update_device_assignment(
+      assignment_id: str,
+      updates: DeviceAssignmentUpdate,
+  ):
+  ```
+
+- operation_id: `createDeviceAssignmentReturnLoaner`
+
+  ```python
+  @router.post("/device-assignments/{assignment_id}/return-loaner", operation_id="createDeviceAssignmentReturnLoaner", response_model=ResponseEnvelope[DeviceAssignmentRead])
+  def return_loaner_to_stock(
+      assignment_id: str,
+      db: Session = Depends(get_db),
+  ):
+  ```
+
+- operation_id: `createPricingPreview`
+
+  ```python
+  @router.post("/pricing-preview", operation_id="createPricingPreview")
+  def pricing_preview(
+      data: DeviceAssignmentCreate,
+      db: Session = Depends(get_db),
+  ):
+  ```
+
+---
+
+- operation_id: `listParties`
+
+  ```python
+  @router.get("/parties", operation_id="listParties", response_model=ResponseEnvelope[List[PartyRead]])
+  def list_parties(
+      page: int = 1,
+      per_page: int = 20,
+  ):
+  ```
+
+- operation_id: `createParties`
+
+  ```python
+  @router.post("/parties", operation_id="createParties", response_model=ResponseEnvelope[PartyRead], status_code=201)
+  def create_party(
+      patient_in: PartyCreate,
+      access: UnifiedAccess = Depends(require_access("parties.create")),
+  ):
+  ```
+
+- operation_id: `listPartyExport`
+
+  ```python
+  @router.get("/parties/export", operation_id="listPartyExport")
+  def export_parties(
+      q: Optional[str] = None,
+      status: Optional[str] = None,
+  ):
+  ```
+
+- operation_id: `listPartyCount`
+
+  ```python
+  @router.get("/parties/count", operation_id="listPartyCount")
+  def count_parties(
+      access: UnifiedAccess = Depends(require_access("parties.view")),
+      db: Session = Depends(get_db),
+  ):
+  ```
+
+- operation_id: `getParty`
+
+  ```python
+  @router.get("/parties/{party_id}", operation_id="getParty", response_model=ResponseEnvelope[PartyRead])
+  def get_party(
+      party_id: str,
+      access: UnifiedAccess = Depends(require_access("parties.view")),
+      db: Session = Depends(get_db)
+  ):
+  ```
+
+- operation_id: `updateParty`
+
+  ```python
+  @router.put("/parties/{party_id}", operation_id="updateParty", response_model=ResponseEnvelope[PartyRead])
+  def update_party(
+      party_id: str,
+      patient_in: PartyUpdate,
+  ):
+  ```
+
+- operation_id: `deleteParty`
+
+  ```python
+  @router.delete("/parties/{party_id}", operation_id="deleteParty")
+  def delete_party(
+      party_id: str,
+      access: UnifiedAccess = Depends(require_access("parties.delete")),
+  ):
+  ```
+
+- operation_id: `createPartyBulkUpload`
+
+  ```python
+  @router.post("/parties/bulk-upload", operation_id="createPartyBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
+  async def bulk_upload_parties(
+      file: UploadFile = File(...),
+      access: UnifiedAccess = Depends(require_access("parties.create")),
+  ):
+  ```
+
+---
+
+- operation_id: `listInventory`
+
+  ```python
+  @router.get("/inventory", operation_id="listInventory", response_model=ResponseEnvelope[List[InventoryItemRead]])
+  def get_all_inventory(
+      page: int = 1,
+      per_page: int = 20,
+  ):
+  ```
+
+- operation_id: `listInventorySearch`
+
+  ```python
+  @router.get("/inventory/search", operation_id="listInventorySearch", response_model=ResponseEnvelope[InventorySearchResponse])
+  def advanced_search(
+      q: Optional[str] = None,
+      category: Optional[str] = None,
+  ):
+  ```
+
+- operation_id: `listInventoryStats`
+
+  ```python
+  @router.get("/inventory/stats", operation_id="listInventoryStats", response_model=ResponseEnvelope[InventoryStats])
+  def get_inventory_stats(
+      access: UnifiedAccess = Depends(require_access()),
+      db: Session = Depends(get_db)
+  ):
+  ```
+
+- operation_id: `listInventoryLowStock`
+
+  ```python
+  @router.get("/inventory/low-stock", operation_id="listInventoryLowStock", response_model=ResponseEnvelope[List[InventoryItemRead]])
+  def get_low_stock(
+      access: UnifiedAccess = Depends(require_access()),
+      db: Session = Depends(get_db)
+  ):
+  ```
+
+- operation_id: `listInventoryUnits`
+
+  ```python
+  @router.get("/inventory/units", operation_id="listInventoryUnits", response_model=ResponseEnvelope[Dict[str, List[str]]])
+  def get_units(
+      access: UnifiedAccess = Depends(require_access()),
+      db: Session = Depends(get_db)
+  ):
+  ```
+
+- operation_id: `listInventoryActivity`
+
+  ```python
+  @router.get("/inventory/{item_id}/activity", operation_id="listInventoryActivity", response_model=ResponseEnvelope[List[Dict[str, Any]]])
+  def get_inventory_activities(
+      item_id: str,
+      access: UnifiedAccess = Depends(require_access()),
+  ):
+  ```
+
+- operation_id: `createInventory`
+
+  ```python
+  @router.post("/inventory", operation_id="createInventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
+  def create_inventory(
+      item_in: InventoryItemCreate,
+      access: UnifiedAccess = Depends(require_access()),
+  ):
+  ```
+
+- operation_id: `getInventory`
+
+  ```python
+  @router.get("/inventory/{item_id}", operation_id="getInventory", response_model=ResponseEnvelope[InventoryItemRead])
+  def get_inventory_item(
+      item_id: str,
+      access: UnifiedAccess = Depends(require_access()),
+  ):
+  ```
+
+- operation_id: `updateInventory`
+
+  ```python
+  @router.put("/inventory/{item_id}", operation_id="updateInventory", response_model=ResponseEnvelope[InventoryItemRead])
+  def update_inventory(
+      item_id: str,
+      item_in: InventoryItemUpdate,
+  ):
+  ```
+
+- operation_id: `deleteInventory`
+
+  ```python
+  @router.delete("/inventory/{item_id}", operation_id="deleteInventory")
+  def delete_inventory(
+      item_id: str,
+      access: UnifiedAccess = Depends(require_access()),
+  ):
+  ```
+
+- operation_id: `createInventorySerials`
+
+  ```python
+  @router.post("/inventory/{item_id}/serials", operation_id="createInventorySerials")
+  def add_serials(
+      item_id: str,
+      payload: Dict[str, List[str]],
+  ):
+  ```
+
+- operation_id: `listInventoryMovements`
+
+  ```python
+  @router.get("/inventory/{item_id}/movements", operation_id="listInventoryMovements", response_model=ResponseEnvelope[List[StockMovementRead]])
+  def get_movements(
+      item_id: str,
+      startTime: Optional[str] = None,
+      endTime: Optional[str] = None,
+  ):
+  ```
+
+---
+
+File references:
+
+- [x-ear/apps/api/routers/sales.py](x-ear/apps/api/routers/sales.py)
+- [x-ear/apps/api/routers/parties.py](x-ear/apps/api/routers/parties.py)
+- [x-ear/apps/api/routers/inventory.py](x-ear/apps/api/routers/inventory.py)
 # OperationId Evidence — Sales, Parties, Inventory Routers
 
 Files processed:

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/ocr.py
+# hypothesis_version: 6.150.2
+
+[0.9, 100, 201, 400, 403, 404, 500, 503, 8192, '.jpg', '/debug_ner', '/entities', '/extract_patient', '/health', '/init-db', '/initialize', '/jobs', '/jobs/{job_id}', '/ocr', '/process', '/similarity', '?', 'Access denied', 'Job not found', 'OCR', 'PATIENT_NAME', 'confidence', 'createOcrDebugNer', 'createOcrEntities', 'createOcrInitDb', 'createOcrInitialize', 'createOcrJobs', 'createOcrProcess', 'createOcrSimilarity', 'custom_entities', 'end', 'entities', 'ents', 'extract_patient_name', 'getOcrJob', 'healthy', 'hf_ner', 'hf_ner_error', 'http://', 'https://', 'label', 'lemma', 'listOcrHealth', 'listOcrJobs', 'name', 'nlp', 'paddleocr_available', 'patient_info', 'pos', 'score', 'spacy_entities', 'spacy_error', 'start', 'tag', 'text', 'tokens', 'wb']

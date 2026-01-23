@@ -15,7 +15,7 @@ export interface UseInvoiceValidationReturn {
   fieldWarnings: Record<string, string>;
   isValidating: boolean;
   validateForm: (formData: InvoiceFormData, context?: Partial<ValidationContext>) => Promise<InvoiceValidation>;
-  validateField: (fieldName: string, value: any, formData: InvoiceFormData) => Promise<string | null>;
+  validateField: (fieldName: string, value: unknown, formData: InvoiceFormData) => Promise<string | null>;
   clearFieldError: (fieldName: string) => void;
   clearAllErrors: () => void;
   hasErrors: boolean;
@@ -26,9 +26,9 @@ export function useInvoiceValidation(
   options: UseInvoiceValidationOptions = {}
 ): UseInvoiceValidationReturn {
   const {
-    validateOnChange = true,
-    validateOnBlur = true,
-    debounceMs = 300,
+    // validateOnChange = true, // Not used yet
+    // validateOnBlur = true,   // Not used yet
+    // debounceMs = 300,        // Not used yet
     skipOptionalFields = false
   } = options;
 
@@ -37,7 +37,7 @@ export function useInvoiceValidation(
     errors: {},
     warnings: {}
   });
-  
+
   const [isValidating, setIsValidating] = useState(false);
   const validationService = useMemo(() => InvoiceValidationService.getInstance(), []);
 
@@ -46,7 +46,7 @@ export function useInvoiceValidation(
     context: Partial<ValidationContext> = {}
   ): Promise<InvoiceValidation> => {
     setIsValidating(true);
-    
+
     try {
       const validationContext: ValidationContext = {
         formData,
@@ -66,11 +66,11 @@ export function useInvoiceValidation(
 
   const validateField = useCallback(async (
     fieldName: string,
-    value: any,
+    value: unknown,
     formData: InvoiceFormData
   ): Promise<string | null> => {
     const error = validationService.validateField(fieldName, value, formData);
-    
+
     setValidation(prev => ({
       ...prev,
       errors: {
@@ -86,7 +86,7 @@ export function useInvoiceValidation(
     setValidation(prev => {
       const newErrors = { ...prev.errors };
       delete newErrors[fieldName];
-      
+
       return {
         ...prev,
         errors: newErrors,
@@ -133,9 +133,9 @@ export function useFieldValidation(
   const validationService = useMemo(() => InvoiceValidationService.getInstance(), []);
 
   const validateField = useCallback(
-    async (value: any) => {
+    async (value: unknown) => {
       setIsValidating(true);
-      
+
       // Debounce validation
       const timeoutId = setTimeout(async () => {
         try {
@@ -171,10 +171,10 @@ export function useItemValidation() {
   const validateItem = useCallback((
     itemIndex: number,
     fieldName: string,
-    value: any
+    value: unknown
   ): string | null => {
     const error = validationService.validateItemField(itemIndex, fieldName, value);
-    
+
     setItemErrors(prev => ({
       ...prev,
       [itemIndex]: {
@@ -189,7 +189,7 @@ export function useItemValidation() {
   const clearItemError = useCallback((itemIndex: number, fieldName?: string) => {
     setItemErrors(prev => {
       const newErrors = { ...prev };
-      
+
       if (fieldName) {
         if (newErrors[itemIndex]) {
           delete newErrors[itemIndex][fieldName];
@@ -200,7 +200,7 @@ export function useItemValidation() {
       } else {
         delete newErrors[itemIndex];
       }
-      
+
       return newErrors;
     });
   }, []);

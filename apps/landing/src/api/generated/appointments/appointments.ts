@@ -32,6 +32,7 @@ import type {
   ListAppointmentListParams,
   ListAppointmentsParams,
   RescheduleRequest,
+  ResponseEnvelopeAppointmentAvailability,
   ResponseEnvelopeAppointmentRead,
   ResponseEnvelopeListAppointmentRead
 } from '.././schemas';
@@ -201,6 +202,194 @@ export const useCreateAppointments = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * Get available time slots for a date
+ * @summary Get Availability
+ */
+export const listAppointmentAvailability = (
+    params: ListAppointmentAvailabilityParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeAppointmentAvailability>(
+      {url: `/api/appointments/availability`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListAppointmentAvailabilityQueryKey = (params?: ListAppointmentAvailabilityParams,) => {
+    return [
+    `/api/appointments/availability`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListAppointmentAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAppointmentAvailabilityQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentAvailability>>> = ({ signal }) => listAppointmentAvailability(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListAppointmentAvailabilityQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointmentAvailability>>>
+export type ListAppointmentAvailabilityQueryError = HTTPValidationError
+
+
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAppointmentAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof listAppointmentAvailability>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAppointmentAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof listAppointmentAvailability>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Availability
+ */
+
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListAppointmentAvailabilityQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * List appointments with filters
+ * @summary List Appointments
+ */
+export const listAppointmentList = (
+    params?: ListAppointmentListParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeListAppointmentRead>(
+      {url: `/api/appointments/list`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListAppointmentListQueryKey = (params?: ListAppointmentListParams,) => {
+    return [
+    `/api/appointments/list`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListAppointmentListQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAppointmentListQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentList>>> = ({ signal }) => listAppointmentList(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListAppointmentListQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointmentList>>>
+export type ListAppointmentListQueryError = HTTPValidationError
+
+
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params: undefined |  ListAppointmentListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAppointmentList>>,
+          TError,
+          Awaited<ReturnType<typeof listAppointmentList>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAppointmentList>>,
+          TError,
+          Awaited<ReturnType<typeof listAppointmentList>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Appointments
+ */
+
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListAppointmentListQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Get a single appointment
  * @summary Get Appointment
  */
@@ -612,191 +801,4 @@ export const useCreateAppointmentComplete = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions, queryClient);
     }
-    /**
- * Get available time slots for a date
- * @summary Get Availability
- */
-export const listAppointmentAvailability = (
-    params: ListAppointmentAvailabilityParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/appointments/availability`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getListAppointmentAvailabilityQueryKey = (params?: ListAppointmentAvailabilityParams,) => {
-    return [
-    `/api/appointments/availability`, ...(params ? [params]: [])
-    ] as const;
-    }
-
     
-export const getListAppointmentAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListAppointmentAvailabilityQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentAvailability>>> = ({ signal }) => listAppointmentAvailability(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListAppointmentAvailabilityQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointmentAvailability>>>
-export type ListAppointmentAvailabilityQueryError = HTTPValidationError
-
-
-export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAppointmentAvailability>>,
-          TError,
-          Awaited<ReturnType<typeof listAppointmentAvailability>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAppointmentAvailability>>,
-          TError,
-          Awaited<ReturnType<typeof listAppointmentAvailability>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get Availability
- */
-
-export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListAppointmentAvailabilityQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * List appointments with filters
- * @summary List Appointments
- */
-export const listAppointmentList = (
-    params?: ListAppointmentListParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<ResponseEnvelopeListAppointmentRead>(
-      {url: `/api/appointments/list`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getListAppointmentListQueryKey = (params?: ListAppointmentListParams,) => {
-    return [
-    `/api/appointments/list`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getListAppointmentListQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListAppointmentListQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentList>>> = ({ signal }) => listAppointmentList(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListAppointmentListQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointmentList>>>
-export type ListAppointmentListQueryError = HTTPValidationError
-
-
-export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
- params: undefined |  ListAppointmentListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAppointmentList>>,
-          TError,
-          Awaited<ReturnType<typeof listAppointmentList>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
- params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAppointmentList>>,
-          TError,
-          Awaited<ReturnType<typeof listAppointmentList>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
- params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List Appointments
- */
-
-export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
- params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListAppointmentListQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-

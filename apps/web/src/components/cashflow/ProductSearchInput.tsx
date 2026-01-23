@@ -98,7 +98,7 @@ export function ProductSearchInput({
               )}
             </div>
           </div>
-          <button
+          <button data-allow-raw="true"
             type="button"
             onClick={handleRemoveProduct}
             className="text-purple-600 hover:text-purple-800 transition-colors"
@@ -219,7 +219,7 @@ export function ProductSearchInput({
                       </div>
                     )}
                     {showReplaceButton && onReplaceClick && (
-                      <button
+                      <button data-allow-raw="true"
                         type="button"
                         onClick={(ev) => {
                           ev.stopPropagation();

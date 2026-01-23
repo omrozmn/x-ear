@@ -15,7 +15,7 @@ export function SupplierDetailPage() {
   // Cast to Extended type to access extra fields if needed
   const supplierData = supplier as unknown as SupplierExtended;
 
-  const { data: productsData, isLoading: productsLoading, error: productsError } = useSupplierProducts(supplierData?.companyName || supplierData?.name);
+  const { data: productsData, isLoading: productsLoading, error: productsError } = useSupplierProducts(supplierData?.companyName || supplierData?.name) as any;
   const deleteSupplierMutation = useDeleteSupplier();
   const updateSupplierMutation = useUpdateSupplier();
 
@@ -217,7 +217,7 @@ export function SupplierDetailPage() {
                     </div>
                   ) : productsError ? (
                     <div className="text-red-500 text-center py-8">Ürünler yüklenirken hata oluştu.</div>
-                  ) : productsData?.data?.products?.length ? (
+                  ) : (productsData as any)?.data?.products?.length ? (
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead>
@@ -229,7 +229,7 @@ export function SupplierDetailPage() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {productsData.data.products.map((item: any) => (
+                          {(productsData as any).data.products.map((item: any) => (
                             <tr key={item.id}>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {item.supplier_product_name || item.product?.name}

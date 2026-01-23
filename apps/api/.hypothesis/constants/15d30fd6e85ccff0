@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/roles.py
+# hypothesis_version: 6.150.2
+
+[201, 400, 403, 404, 409, 500, '/roles', '/roles/{role_id}', 'INVALID_NAME', 'NAME_EXISTS', 'NAME_REQUIRED', 'PERMISSION_NOT_FOUND', 'ROLE_EXISTS', 'ROLE_NOT_FOUND', 'Roles', 'SYSTEM_ROLE', 'createRoles', 'deleteRole', 'deleteRolePermission', 'description', 'invalid role name', 'is_system', 'json', 'listRoles', 'name', 'name required', 'permission not found', 'permission removed', 'permissions_version', 'role deleted', 'role exists', 'role not found', 'role:write', 'updateRole']

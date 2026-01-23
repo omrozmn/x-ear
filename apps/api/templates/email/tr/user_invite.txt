@@ -1,0 +1,17 @@
+{% extends "base.txt" %}
+
+{% block content %}
+{{ app_name }}'e Hoş Geldiniz!
+
+{{ inviter_name }} sizi {{ organization_name }} organizasyonuna davet etti.
+
+Rol: {{ role_name }}
+Bu rol ile sisteme erişim sağlayabilir ve size tanımlanan yetkileri kullanabilirsiniz.
+
+Hesabınızı oluşturmak ve sisteme giriş yapmak için aşağıdaki bağlantıya tıklayın:
+{{ invitation_link }}
+
+Bu davet bağlantısı 7 gün süreyle geçerlidir.
+
+Herhangi bir sorunuz varsa, davet eden kişi ile iletişime geçebilirsiniz.
+{% endblock %}

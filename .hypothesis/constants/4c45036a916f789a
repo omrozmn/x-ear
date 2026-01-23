@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/tool_api/email_notifications.py
+# hypothesis_version: 6.150.2
+
+[100, 255, 400, 429, 500, '/notify', '/tool-api/email', 'AI email request', 'Email recipient', 'Status message', 'Template variables', 'action_plan_hash', 'ai_action_completed', 'ai_proposal_created', 'ai_quota_exceeded', 'error', 'error_message', 'recipient', 'scenario', 'success', 'tenant_id', 'timestamp', 'tool-api', 'tr']

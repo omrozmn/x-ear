@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_addons.py
+# hypothesis_version: 6.150.2
+
+[100, 400, 404, 500, '-', '/admin/addons', '/{addon_id}', 'Add-on not found', 'Admin Addons', 'NOT_FOUND', '[-\\s]+', '[^\\w\\s-]', 'addon', 'addon_type', 'addons', 'code', 'createAdminAddon', 'deleteAdminAddon', 'getAdminAddon', 'limit', 'listAdminAddons', 'message', 'page', 'pagination', 'total', 'totalPages', 'true', 'updateAdminAddon']

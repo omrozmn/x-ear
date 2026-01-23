@@ -19,7 +19,8 @@
 
 import { useCallback, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { chatApiAiChatPost } from '@/api/client/ai.client';
+import type { ChatRequest as ApiChatRequest } from '@/api/generated/schemas';
 import { useAIContext, withAIContext } from './useAIContext';
 import { useAISessionStore } from '../stores/aiSessionStore';
 import { useAIRuntimeStore } from '../stores/aiRuntimeStore';
@@ -27,30 +28,15 @@ import {
   getAIErrorMessage,
   isRetryableError,
   getRetryDelay,
-  getMaxRetries,
   isAIError,
-  extractErrorCode,
 } from '../utils/aiErrorMessages';
 import type {
   ChatMessage,
-  ChatRequest,
   ChatResponse,
   AIError,
   AIErrorCode,
   UseAIChatReturn,
 } from '../types/ai.types';
-
-// =============================================================================
-// Constants
-// =============================================================================
-
-/** API endpoint for chat */
-const CHAT_ENDPOINT = '/api/ai/chat';
-
-/** API base URL from environment */
-const API_BASE_URL = typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
-  : 'http://localhost:5003';
 
 // =============================================================================
 // Types
@@ -138,8 +124,11 @@ function createErrorMessage(errorCode: AIErrorCode): ChatMessage {
  */
 function parseErrorResponse(error: unknown): AIError {
   // Check if it's an axios error with response
-  if (axios.isAxiosError(error) && error.response?.data) {
-    const data = error.response.data;
+  // Check if it's an axios error (Orval uses axios under the hood)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const axiosError = error as any;
+  if (axiosError?.response?.data || axiosError?.isAxiosError) {
+    const data = axiosError.response?.data || {};
 
     // Backend returns error in { code, message, ... } format
     if (data.code && typeof data.code === 'string') {
@@ -153,7 +142,7 @@ function parseErrorResponse(error: unknown): AIError {
     }
 
     // Map HTTP status to error code
-    const status = error.response.status;
+    const status = axiosError.response?.status;
     let code: AIErrorCode = 'INFERENCE_ERROR';
 
     if (status === 429) {
@@ -172,8 +161,8 @@ function parseErrorResponse(error: unknown): AIError {
       code,
       message: getAIErrorMessage(code),
       requestId: data.request_id,
-      retryAfter: error.response.headers?.['retry-after']
-        ? parseInt(error.response.headers['retry-after'], 10)
+      retryAfter: axiosError.response?.headers?.['retry-after']
+        ? parseInt(axiosError.response.headers['retry-after'], 10)
         : undefined,
     };
   }
@@ -267,12 +256,14 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       }
 
       // Build request payload with context
-      const payload: ChatRequest = withAIContext(context, {
+      // Map to API type (snake_case)
+      const payload: ApiChatRequest = {
         prompt: request.prompt,
-        idempotencyKey: request.idempotencyKey,
-        sessionId: sessionId || undefined,
-        ...(request.additionalContext && { context: request.additionalContext }),
-      });
+        idempotency_key: request.idempotencyKey,
+        session_id: sessionId || undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        context: withAIContext(context, request.additionalContext || {}) as any,
+      };
 
       let lastError: AIError | null = null;
       let attempt = 0;
@@ -280,19 +271,29 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
       while (attempt <= maxRetries) {
         try {
-          // Make API request
-          const response = await axios.post<ChatResponse>(
-            `${API_BASE_URL}${CHAT_ENDPOINT}`,
-            payload,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              withCredentials: true,
-            }
-          );
+          // Make API request (returns ApiChatResponse)
+          const apiResponse = await chatApiAiChatPost(payload);
 
-          return response.data;
+          // Map back to local type (camelCase)
+          const response: ChatResponse = {
+            requestId: apiResponse.request_id,
+            status: apiResponse.status,
+            intent: apiResponse.intent ? {
+              intentType: apiResponse.intent.intent_type,
+              confidence: apiResponse.intent.confidence,
+              entities: apiResponse.intent.entities || {},
+              clarificationNeeded: apiResponse.intent.clarification_needed || false,
+              clarificationQuestion: apiResponse.intent.clarification_question || undefined,
+            } : undefined,
+            response: typeof apiResponse.response === 'string' ? apiResponse.response : JSON.stringify(apiResponse.response),
+            needsClarification: apiResponse.needs_clarification || false,
+            clarificationQuestion: apiResponse.clarification_question || undefined,
+            processingTimeMs: apiResponse.processing_time_ms,
+            piiDetected: apiResponse.pii_detected || false,
+            phiDetected: apiResponse.phi_detected || false,
+          };
+
+          return response;
         } catch (error) {
           lastError = parseErrorResponse(error);
 

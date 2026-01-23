@@ -1,7 +1,6 @@
-import {useListSettings} from '@/api/client/settings.client';
+import { useListSettings } from '@/api/client/settings.client';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Input, Select } from '@x-ear/ui-web';
-import { CreditCard, Calculator, Percent, DollarSign } from 'lucide-react';
+import { CreditCard, Calculator, DollarSign } from 'lucide-react';
 
 export interface DeviceAssignment {
   listPrice?: number;
@@ -76,7 +75,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
   };
 
   const [settingsSchemes, setSettingsSchemes] = useState<Record<string, SchemeDef>>({});
-  const [schemeAmount, setSchemeAmount] = useState<number>(0);
+  // const [schemeAmount, setSchemeAmount] = useState<number>(0);
 
   // Type for settings response
   interface SettingsResponse {
@@ -147,7 +146,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
       }
     }
 
-    setSchemeAmount(isFinite(amount) ? amount : 0);
+    // setSchemeAmount(isFinite(amount) ? amount : 0);
     // Do NOT write back to parent formData here to avoid conflicting updates.
     // The canonical source of truth for sgkReduction is the `useDeviceAssignment` hook
     // which computes pricing. We only show the computed scheme amount in this component.

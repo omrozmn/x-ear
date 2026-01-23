@@ -26,9 +26,12 @@ import type {
 
 import type {
   HTTPValidationError,
-  InvoiceCreateRequest,
   ReplacementCreate,
-  ReplacementStatusUpdate
+  ReplacementInvoiceCreate,
+  ReplacementStatusUpdate,
+  ResponseEnvelopeListReplacementRead,
+  ResponseEnvelopeReplacementInvoiceResponse,
+  ResponseEnvelopeReplacementRead
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -46,8 +49,8 @@ export const listPatientReplacements = (
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/replacements`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeListReplacementRead>(
+      {url: `/parties/${partyId}/replacements`, method: 'GET', signal
     },
       );
     }
@@ -57,7 +60,7 @@ export const listPatientReplacements = (
 
 export const getListPatientReplacementsQueryKey = (partyId?: string,) => {
     return [
-    `/api/parties/${partyId}/replacements`
+    `/parties/${partyId}/replacements`
     ] as const;
     }
 
@@ -140,8 +143,8 @@ export const createPatientReplacements = (
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/replacements`, method: 'POST',
+      return customInstance<ResponseEnvelopeReplacementRead>(
+      {url: `/parties/${partyId}/replacements`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: replacementCreate, signal
     },
@@ -205,8 +208,8 @@ export const getReplacement = (
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/replacements/${replacementId}`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeReplacementRead>(
+      {url: `/replacements/${replacementId}`, method: 'GET', signal
     },
       );
     }
@@ -216,7 +219,7 @@ export const getReplacement = (
 
 export const getGetReplacementQueryKey = (replacementId?: string,) => {
     return [
-    `/api/replacements/${replacementId}`
+    `/replacements/${replacementId}`
     ] as const;
     }
 
@@ -298,8 +301,8 @@ export const updateReplacementStatus = (
  ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/replacements/${replacementId}/status`, method: 'PATCH',
+      return customInstance<ResponseEnvelopeReplacementRead>(
+      {url: `/replacements/${replacementId}/status`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: replacementStatusUpdate
     },
@@ -359,15 +362,15 @@ export const useUpdateReplacementStatus = <TError = HTTPValidationError,
  */
 export const createReplacementInvoice = (
     replacementId: string,
-    invoiceCreateRequest: InvoiceCreateRequest,
+    replacementInvoiceCreate: ReplacementInvoiceCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/replacements/${replacementId}/invoice`, method: 'POST',
+      return customInstance<ResponseEnvelopeReplacementInvoiceResponse>(
+      {url: `/replacements/${replacementId}/invoice`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: invoiceCreateRequest, signal
+      data: replacementInvoiceCreate, signal
     },
       );
     }
@@ -375,8 +378,8 @@ export const createReplacementInvoice = (
 
 
 export const getCreateReplacementInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: InvoiceCreateRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: InvoiceCreateRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: ReplacementInvoiceCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: ReplacementInvoiceCreate}, TContext> => {
 
 const mutationKey = ['createReplacementInvoice'];
 const {mutation: mutationOptions} = options ?
@@ -388,7 +391,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReplacementInvoice>>, {replacementId: string;data: InvoiceCreateRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReplacementInvoice>>, {replacementId: string;data: ReplacementInvoiceCreate}> = (props) => {
           const {replacementId,data} = props ?? {};
 
           return  createReplacementInvoice(replacementId,data,)
@@ -400,18 +403,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateReplacementInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof createReplacementInvoice>>>
-    export type CreateReplacementInvoiceMutationBody = InvoiceCreateRequest
+    export type CreateReplacementInvoiceMutationBody = ReplacementInvoiceCreate
     export type CreateReplacementInvoiceMutationError = HTTPValidationError
 
     /**
  * @summary Create Replacement Invoice
  */
 export const useCreateReplacementInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: InvoiceCreateRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReplacementInvoice>>, TError,{replacementId: string;data: ReplacementInvoiceCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createReplacementInvoice>>,
         TError,
-        {replacementId: string;data: InvoiceCreateRequest},
+        {replacementId: string;data: ReplacementInvoiceCreate},
         TContext
       > => {
 
@@ -430,7 +433,7 @@ export const createReturnInvoiceSendToGib = (
       
       
       return customInstance<unknown>(
-      {url: `/api/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
+      {url: `/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
     },
       );
     }

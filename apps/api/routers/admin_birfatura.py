@@ -14,7 +14,7 @@ from models.user import ActivityLog
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.invoices import InvoiceRead
 from schemas.purchase_invoices import PurchaseInvoiceRead
-from schemas.audit import ActivityLogRead
+from schemas.audit import AuditLogRead
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +114,7 @@ async def get_logs(
         logs = query.order_by(ActivityLog.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(data={
-            "logs": [ActivityLogRead.model_validate(log).model_dump(by_alias=True) for log in logs],
+            "logs": [AuditLogRead.model_validate(log).model_dump(by_alias=True) for log in logs],
             "pagination": {
                 "page": page,
                 "limit": limit,

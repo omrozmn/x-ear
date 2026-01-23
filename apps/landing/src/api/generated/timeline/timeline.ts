@@ -27,6 +27,8 @@ import type {
 import type {
   HTTPValidationError,
   ListTimelineParams,
+  ResponseEnvelopeTimelineEventRead,
+  ResponseEnvelopeTimelineListResponse,
   TimelineEventCreate
 } from '.././schemas';
 
@@ -45,7 +47,7 @@ export const listTimeline = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeTimelineListResponse>(
       {url: `/api/timeline`, method: 'GET',
         params, signal
     },
@@ -139,7 +141,7 @@ export const listPartyTimeline = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeTimelineListResponse>(
       {url: `/api/parties/${partyId}/timeline`, method: 'GET', signal
     },
       );
@@ -233,7 +235,7 @@ export const createPartyTimeline = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeTimelineEventRead>(
       {url: `/api/parties/${partyId}/timeline`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: timelineEventCreate, signal
@@ -299,7 +301,7 @@ export const createPartyActivities = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeTimelineEventRead>(
       {url: `/api/parties/${partyId}/activities`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: timelineEventCreate, signal

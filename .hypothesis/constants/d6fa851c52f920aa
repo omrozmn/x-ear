@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/email_logs.py
+# hypothesis_version: 6.150.2
+
+[100, 200, 202, 400, 404, 500, '/admin', '/emails/send', '<[^<]+?>', 'Email Logs', 'Page must be >= 1', 'dateFrom', 'dateTo', 'date_from', 'date_to', 'email_ids', 'emails.send', 'failed', 'filters', 'getEmailLogs', 'manual', 'page', 'pending', 'perPage', 'per_page', 'recipient', 'recipient_count', 'sendManualEmail', 'sent', 'status', 'tenant_id', 'total']

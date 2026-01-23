@@ -13,6 +13,14 @@ interface CacheEntry {
   ttl?: number; // Time to live in milliseconds
 }
 
+interface BlobEntry {
+  id: string;
+  blob: Blob;
+  filename: string;
+  mime: string;
+  createdAt: number;
+}
+
 class IndexedDBManager {
   private db: IDBDatabase | null = null;
   private initPromise: Promise<void> | null = null;
@@ -213,13 +221,13 @@ class IndexedDBManager {
     const store = transaction.objectStore(BLOBS_STORE);
 
     const id = `blob_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const entry = {
+    const entry: BlobEntry = {
       id,
       blob,
       filename: meta.filename || 'file',
-      mime: meta.mime || ((blob as any)?.type || 'application/octet-stream'),
+      mime: meta.mime || blob.type || 'application/octet-stream',
       createdAt: Date.now(),
-    } as any;
+    };
 
     return new Promise<string>((resolve, reject) => {
       const req = store.add(entry);
@@ -237,7 +245,7 @@ class IndexedDBManager {
     return new Promise((resolve, reject) => {
       const req = store.get(id);
       req.onsuccess = () => {
-        const result = req.result as any;
+        const result = req.result as BlobEntry;
         if (!result) return resolve(null);
         resolve({ blob: result.blob, filename: result.filename, mime: result.mime });
       };

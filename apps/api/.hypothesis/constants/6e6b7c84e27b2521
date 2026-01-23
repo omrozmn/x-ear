@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/replacement.py
+# hypothesis_version: 6.150.2
+
+['createdAt', 'createdBy', 'gibSent', 'gibSentDate', 'id', 'newDeviceId', 'newDeviceInfo', 'notes', 'oldDeviceId', 'oldDeviceInfo', 'partyId', 'pending', 'priceDifference', 'replacementReason', 'replacements', 'returnInvoiceId', 'returnInvoiceStatus', 'saleId', 'status', 'tenantId', 'updatedAt']

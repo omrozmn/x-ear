@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Autocomplete, type AutocompleteOption } from '@x-ear/ui-web';
-import { Building2, User, Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { Building2, User, MapPin } from 'lucide-react';
 import type { SupplierExtended } from './supplier-search.types';
 import citiesDataRaw from '../../data/cities.json';
 import countriesData from '../../data/countries.json';
 import currenciesData from '../../data/currencies.json';
 
 // Extract cities array from the JSON structure
-const citiesData = (citiesDataRaw as any).cities || [];
-const allCurrencies = [...currenciesData.top, ...currenciesData.others];
+interface CityData {
+  name: string;
+  districts?: string[];
+}
+const citiesData = (citiesDataRaw as unknown as { cities: CityData[] }).cities || [];
+// const allCurrencies = [...currenciesData.top, ...currenciesData.others]; // Reserved for future payment settings
 
 // Convert to Autocomplete options
 const countryOptions: AutocompleteOption[] = countriesData.map(c => ({
@@ -17,7 +21,7 @@ const countryOptions: AutocompleteOption[] = countriesData.map(c => ({
   value: c.code
 }));
 
-const cityOptions: AutocompleteOption[] = citiesData.map((c: any) => ({
+const cityOptions: AutocompleteOption[] = citiesData.map((c) => ({
   id: c.name,
   label: c.name,
   value: c.name
@@ -58,7 +62,7 @@ export function SupplierFormModal({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedCity, setSelectedCity] = useState<any>(null);
+  const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
 
   const isTurkey = formData.country === 'TR';
   const districts = selectedCity?.districts || [];
@@ -86,8 +90,8 @@ export function SupplierFormModal({
       });
 
       if (supplier.city) {
-        const city = citiesData.find((c: any) => c.name === supplier.city);
-        setSelectedCity(city);
+        const city = citiesData.find((c) => c.name === supplier.city);
+        setSelectedCity(city || null);
       }
     } else {
       setFormData({
@@ -163,8 +167,8 @@ export function SupplierFormModal({
     }
 
     if (field === 'city' && isTurkey) {
-      const city = citiesData.find((c: any) => c.name === value);
-      setSelectedCity(city);
+      const city = citiesData.find((c) => c.name === value);
+      setSelectedCity(city || null);
       setFormData(prev => ({ ...prev, district: '' }));
     }
 

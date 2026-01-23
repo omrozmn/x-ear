@@ -79,16 +79,18 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
 
     // Extract user permissions from response
     let userPermissions: string[] = [];
-    const respData = permissionsResponse as any;
+    const respData = permissionsResponse as unknown as { data?: string[] | { permissions: string[] } } | string[];
 
-    if (respData?.data) {
-      if (Array.isArray(respData.data)) {
-        userPermissions = respData.data;
-      } else if (respData.data.permissions) {
-        userPermissions = respData.data.permissions;
+    if (respData) {
+      if ('data' in respData && respData.data) {
+        if (Array.isArray(respData.data)) {
+          userPermissions = respData.data;
+        } else if (respData.data.permissions) {
+          userPermissions = respData.data.permissions;
+        }
+      } else if (Array.isArray(respData)) {
+        userPermissions = respData;
       }
-    } else if (Array.isArray(respData)) {
-      userPermissions = respData;
     }
 
     // Admin has all permissions

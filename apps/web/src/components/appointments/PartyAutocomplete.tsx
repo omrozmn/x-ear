@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Input, Button } from '@x-ear/ui-web';
 import { Search, User, Plus } from 'lucide-react';
 import { useParties } from '../../hooks/useParties';
@@ -16,7 +16,6 @@ interface PartyAutocompleteProps {
 
 export function PartyAutocomplete({
   value = '',
-  partyId = '',
   onSelect,
   onAddNew,
   placeholder = 'Hasta Seçin',
@@ -29,8 +28,7 @@ export function PartyAutocomplete({
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const { data, isLoading } = useParties();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const parties = data?.parties || [];
+  const parties = useMemo(() => data?.parties || [], [data?.parties]);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -39,8 +37,7 @@ export function PartyAutocomplete({
     if (value !== searchQuery && !isOpen) {
       setSearchQuery(value);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, searchQuery, isOpen]);
 
   // Filter parties based on search query
   useEffect(() => {
@@ -61,7 +58,6 @@ export function PartyAutocomplete({
     });
 
     setFilteredParties(filtered.slice(0, 10)); // Limit to 10 results
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, parties]);
 
   // Handle input change with debounce

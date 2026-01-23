@@ -25,7 +25,6 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  CreateAuthVerifyOtpParams,
   ForgotPasswordRequest,
   HTTPValidationError,
   LoginRequest,
@@ -36,7 +35,7 @@ import type {
   ResponseEnvelopeMessageResponse,
   ResponseEnvelopeRefreshTokenResponse,
   ResponseEnvelopeResetPasswordResponse,
-  ResponseEnvelopeUnionAuthUserReadAdminUserRead,
+  ResponseEnvelopeUnionAuthUserReadAuthAdminUserRead,
   ResponseEnvelopeVerifyOtpResponse,
   SendVerificationOtpRequest,
   SetPasswordRequest,
@@ -184,7 +183,6 @@ export const useCreateAuthForgotPassword = <TError = HTTPValidationError,
  */
 export const createAuthVerifyOtp = (
     verifyOtpRequest: VerifyOtpRequest,
-    params?: CreateAuthVerifyOtpParams,
  signal?: AbortSignal
 ) => {
       
@@ -192,8 +190,7 @@ export const createAuthVerifyOtp = (
       return adminApi<ResponseEnvelopeVerifyOtpResponse>(
       {url: `/api/auth/verify-otp`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: verifyOtpRequest,
-        params, signal
+      data: verifyOtpRequest, signal
     },
       );
     }
@@ -201,8 +198,8 @@ export const createAuthVerifyOtp = (
 
 
 export const getCreateAuthVerifyOtpMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: VerifyOtpRequest;params?: CreateAuthVerifyOtpParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: VerifyOtpRequest;params?: CreateAuthVerifyOtpParams}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: VerifyOtpRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: VerifyOtpRequest}, TContext> => {
 
 const mutationKey = ['createAuthVerifyOtp'];
 const {mutation: mutationOptions} = options ?
@@ -214,10 +211,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthVerifyOtp>>, {data: VerifyOtpRequest;params?: CreateAuthVerifyOtpParams}> = (props) => {
-          const {data,params} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAuthVerifyOtp>>, {data: VerifyOtpRequest}> = (props) => {
+          const {data} = props ?? {};
 
-          return  createAuthVerifyOtp(data,params,)
+          return  createAuthVerifyOtp(data,)
         }
 
         
@@ -233,11 +230,11 @@ const {mutation: mutationOptions} = options ?
  * @summary Verify Otp
  */
 export const useCreateAuthVerifyOtp = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: VerifyOtpRequest;params?: CreateAuthVerifyOtpParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAuthVerifyOtp>>, TError,{data: VerifyOtpRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createAuthVerifyOtp>>,
         TError,
-        {data: VerifyOtpRequest;params?: CreateAuthVerifyOtpParams},
+        {data: VerifyOtpRequest},
         TContext
       > => {
 
@@ -448,7 +445,7 @@ export const getAuthMe = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeUnionAuthUserReadAdminUserRead>(
+      return adminApi<ResponseEnvelopeUnionAuthUserReadAuthAdminUserRead>(
       {url: `/api/auth/me`, method: 'GET', signal
     },
       );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DatePicker } from '@x-ear/ui-web';
-import {useListInventoryMovements, getListInventoryMovementsQueryKey} from '@/api/client/inventory.client';
+import { useListInventoryMovements, getListInventoryMovementsQueryKey } from '@/api/client/inventory.client';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ArrowUpRight, ArrowDownLeft, Calendar, User, Search } from 'lucide-react';
 
@@ -43,7 +43,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
     console.log('🔍 [InventoryMovementsTable] error:', error);
     console.log('🔍 [InventoryMovementsTable] movementsResponseRaw:', JSON.stringify(movementsResponseRaw, null, 2));
 
-    const movementsResponse = movementsResponseRaw as any; // Fix type inference
+    // Cast to expected paginated response structure
+    const movementsResponse = movementsResponseRaw as { data: StockMovement[]; meta: { total: number } } | undefined;
     const movements = movementsResponse?.data || [];
     console.log('🔍 [InventoryMovementsTable] movements array:', movements, 'length:', movements.length);
 
@@ -219,7 +220,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             </div>
 
             {/* Pagination Controls */}
-            {movementsResponse?.data?.meta && (
+            {movementsResponse?.meta && (
                 <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg sm:px-6">
                     <div className="flex items-center justify-between w-full sm:hidden">
                         <button
@@ -234,8 +235,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                         </button>
                         <button
                             onClick={() => setPage((p) => p + 1)}
-                            disabled={page * 20 >= (movementsResponse?.data?.meta?.total || 0)}
-                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md ${page * 20 >= (movementsResponse?.data?.meta?.total || 0)
+                            disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
+                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md ${page * 20 >= (movementsResponse?.meta?.total || 0)
                                 ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
                                 : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
                                 }`}
@@ -246,10 +247,10 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                     <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                         <div>
                             <p className="text-sm text-gray-700">
-                                Toplam <span className="font-medium">{movementsResponse?.data?.meta?.total}</span> sonuçtan{' '}
+                                Toplam <span className="font-medium">{movementsResponse?.meta?.total}</span> sonuçtan{' '}
                                 <span className="font-medium">{(page - 1) * 20 + 1}</span> -{' '}
                                 <span className="font-medium">
-                                    {Math.min(page * 20, movementsResponse?.data?.meta?.total || 0)}
+                                    {Math.min(page * 20, movementsResponse?.meta?.total || 0)}
                                 </span>{' '}
                                 arası gösteriliyor
                             </p>
@@ -270,8 +271,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                                 </button>
                                 <button
                                     onClick={() => setPage((p) => p + 1)}
-                                    disabled={page * 20 >= (movementsResponse?.data?.meta?.total || 0)}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page * 20 >= (movementsResponse?.data?.meta?.total || 0)
+                                    disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
+                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page * 20 >= (movementsResponse?.meta?.total || 0)
                                         ? 'text-gray-300 cursor-not-allowed'
                                         : 'text-gray-500 hover:bg-gray-50'
                                         }`}

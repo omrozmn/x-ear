@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/timeline.py
+# hypothesis_version: 6.150.2
+
+[100, 201, 403, 404, 500, '%H:%M', '%d.%m.%Y', '/timeline', 'Access denied', 'Patient not found', 'Timeline', '_', 'activity_log', 'category', 'color', 'createPartyTimeline', 'date', 'deletePartyTimeline', 'description', 'details', 'details_json', 'entityId', 'entityType', 'icon', 'id', 'listPartyTimeline', 'listTimeline', 'partyId', 'patient', 'source', 'system', 'time', 'timeline', 'timestamp', 'title', 'type', 'user']

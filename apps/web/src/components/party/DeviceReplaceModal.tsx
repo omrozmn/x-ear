@@ -10,6 +10,7 @@ import { ProductSearchInput } from '../cashflow/ProductSearchInput';
 import { apiClient } from '../../api/orval-mutator';
 import { PartyDevice } from '../../types/party';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { Invoice, InvoiceItem } from '../../types/invoice';
 
 // Orval Hooks
 // Generated hooks
@@ -17,12 +18,12 @@ import {
   useCreateReplacementInvoice,
   useCreateReturnInvoiceSendToGib
 } from '@/api/client/replacements.client';
-import { ReplacementInvoiceCreate } from '@/api/generated/schemas';
+import { ReplacementCreate } from '@/api/generated/schemas';
 import { usePartiesGetPartyReplacements, Replacement } from '@/api/custom-hooks/usePartyReplacements';
 
 interface InventoryItem {
   id: string;
-  name?: string;
+  name: string;
   brand?: string;
   model?: string;
   availableInventory?: number;
@@ -41,8 +42,8 @@ interface LinkInvoicePayload {
 
 // Extended replacement type handling parsed fields
 interface FrontendReplacement extends Replacement {
-  old_device_info_parsed?: any;
-  new_device_info_parsed?: any;
+  old_device_info_parsed?: Record<string, unknown> | null;
+  new_device_info_parsed?: Record<string, unknown> | null;
   oldDeviceId?: string; // Aliases for consistency
   newDeviceId?: string;
   supplier?: string;
@@ -55,7 +56,7 @@ interface DeviceReplaceModalProps {
   isOpen: boolean;
   onClose: () => void;
   // newInventoryId and newDeviceInfo are optional
-  onReplace: (deviceId: string, reason: string, notes: string, newInventoryId?: string, newDeviceInfo?: any, selectedSerial?: string) => Promise<void>;
+  onReplace: (deviceId: string, reason: string, notes: string, newInventoryId?: string, newDeviceInfo?: unknown, selectedSerial?: string) => Promise<void>;
 }
 
 export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
@@ -72,10 +73,10 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const [selectedInventory, setSelectedInventory] = useState<InventoryItem | null>(null);
   const [selectedSerial, setSelectedSerial] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const [previewInvoice, setPreviewInvoice] = useState<any | null>(null);
+  const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-  const [invoiceInitialData, setInvoiceInitialData] = useState<any | undefined>(undefined);
+  const [invoiceInitialData, setInvoiceInitialData] = useState<Partial<Invoice> | undefined>(undefined);
   const [invoiceModalMode, setInvoiceModalMode] = useState<'create' | 'edit' | 'quick'>('create');
   const [currentReplacementForInvoice, setCurrentReplacementForInvoice] = useState<string | null>(null);
   const [invoiceDeviceId, setInvoiceDeviceId] = useState<string | null>(null);
@@ -92,7 +93,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
 
   const replacementsList = unwrapArray<Replacement>(replacementsResponse).map((rep) => {
     // Normalization logic
-    const normalize = (field: any) => {
+    const normalize = (field: unknown) => {
       if (!field) return null;
       if (typeof field === 'string') {
         try { return JSON.parse(field); } catch (e) { return field; }
@@ -138,8 +139,8 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       await onReplace(device.id, reason, notes, selectedInventory?.id, selectedInventory ? { id: selectedInventory.id, brand: selectedInventory.brand, model: selectedInventory.model, category: selectedInventory.category, availableInventory: selectedInventory.availableInventory } : undefined, selectedSerial || undefined);
       setActionMessage('Cihaz değişimi kaydedildi');
       showSuccess('Cihaz değişimi kaydedildi');
-    } catch (err: any) {
-      const msg = err.message || 'Cihaz değiştirilemedi';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Cihaz değiştirilemedi';
       setError(msg);
       showError(msg);
     } finally {
@@ -153,8 +154,8 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       const rep = replacementsList.find((r) => r.id === replacementId);
       if (!rep) throw new Error('Replacement not found');
 
-      const supplierName = rep.supplier || rep.new_device_info_parsed?.supplier || rep.new_device_info_parsed?.supplier_name || null;
-      const initial: any = {
+      const supplierName = rep.supplier || (rep.new_device_info_parsed as Record<string, unknown>)?.supplier || (rep.new_device_info_parsed as Record<string, unknown>)?.supplier_name || null;
+      const initial = {
         invoiceType: '50', // İade
         invoice_details: {
           invoice_date: new Date().toISOString().split('T')[0],
@@ -163,29 +164,29 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         customerName: supplierName || undefined,
         items: [
           {
-            description: rep.old_device_info_parsed?.brand ? `${rep.old_device_info_parsed.brand} ${rep.old_device_info_parsed.model || ''}`.trim() : (rep.old_device_info_parsed || rep.old_device_info || 'Cihaz'),
+            description: (rep.old_device_info_parsed as Record<string, unknown>)?.brand ? `${(rep.old_device_info_parsed as Record<string, unknown>).brand} ${(rep.old_device_info_parsed as Record<string, unknown>).model || ''}`.trim() : (JSON.stringify(rep.old_device_info_parsed) || rep.old_device_info || 'Cihaz'),
             quantity: 1,
             unitPrice: rep.price_difference || 0,
             taxRate: 18
           }
         ],
-        notes: `Değişim: ${rep.new_device_info_parsed?.brand || rep.new_device_info_parsed || ''}`
+        notes: `Değişim: ${(rep.new_device_info_parsed as Record<string, unknown>)?.brand || JSON.stringify(rep.new_device_info_parsed) || ''}`
       };
 
-      setInvoiceInitialData(initial);
+      setInvoiceInitialData(initial as unknown as Partial<Invoice>);
       setCurrentReplacementForInvoice(replacementId);
-      setInvoiceDeviceId(rep.old_device_id || rep.oldDeviceId || rep.deviceId || device.id || null);
+      setInvoiceDeviceId(rep.old_device_id || rep.oldDeviceId || (rep as any).deviceId || device.id || null);
       setInvoiceModalMode('quick');
       setTimeout(() => setShowInvoiceModal(true), 0);
       setActionMessage(`Yeni iade faturası için form açıldı (replacement ${replacementId})`);
-    } catch (e: any) {
-      const msg = e.message || 'Fatura oluşturma modalı açılamadı';
+    } catch (e: unknown) {
+      const msg = (e as Error).message || 'Fatura oluşturma modalı açılamadı';
       setActionMessage(msg);
       showError(msg);
     }
   };
 
-  const handleInvoiceCreatedAndLinked = async (createdInvoice: any, replacementId?: string) => {
+  const handleInvoiceCreatedAndLinked = async (createdInvoice: Invoice, replacementId?: string) => {
     try {
       // link with provided invoice id to server replacement
       if (!replacementId) throw new Error('Replacement ID missing');
@@ -193,19 +194,21 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       const body = {
         invoiceId: createdInvoice.id,
         invoiceNumber: createdInvoice.invoiceNumber || createdInvoice.id,
-        supplierInvoiceNumber: createdInvoice.supplierInvoiceNumber || createdInvoice.invoiceNumber
+        supplierInvoiceNumber: (createdInvoice as any).supplierInvoiceNumber || createdInvoice.invoiceNumber
       };
 
       // Use mutation
       await linkInvoiceMutation.mutateAsync({
         replacementId,
-        data: body as unknown as ReplacementInvoiceCreate
+        data: body as unknown as ReplacementCreate
       });
 
       showSuccess('İade faturası oluşturuldu ve kayda bağlandı');
       await refetchReplacements();
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err.message || 'Fatura sunucuya bağlanamadı';
+      showSuccess('İade faturası oluşturuldu ve kayda bağlandı');
+      await refetchReplacements();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || (err as Error).message || 'Fatura sunucuya bağlanamadı';
       showError(msg);
     } finally {
       setShowInvoiceModal(false);
@@ -224,16 +227,18 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       setActionMessage('Fatura GİB outbox içine yazıldı ve işlem tamamlandı');
       showSuccess("Fatura GİB'e gönderildi");
       await refetchReplacements();
-    } catch (e: any) {
-      const msg = e?.response?.data?.message || e.message || 'GİB gönderimi başarısız';
+      showSuccess("Fatura GİB'e gönderildi");
+      await refetchReplacements();
+    } catch (e: unknown) {
+      const msg = (e as any)?.response?.data?.message || (e as Error).message || 'GİB gönderimi başarısız';
       setActionMessage(msg);
       showError(msg);
     }
   };
 
   const renderInvoiceActions = (rep: FrontendReplacement) => {
-    const invoiceId = rep.return_invoice_id || rep.returnInvoiceId || rep.return_invoice?.id || rep.return_invoice_id;
-    const invoiceStatus = rep.return_invoice?.status || rep.returnInvoiceStatus || rep.return_invoice_status || rep.returnInvoice?.status || (rep.gib_sent ? 'gib_sent' : undefined);
+    const invoiceId = rep.return_invoice_id || (rep as any).returnInvoiceId || (rep.return_invoice as any)?.id || rep.return_invoice_id;
+    const invoiceStatus = (rep.return_invoice as any)?.status || (rep as any).returnInvoiceStatus || (rep as any).return_invoice_status || (rep as any).returnInvoice?.status || (rep.gib_sent ? 'gib_sent' : undefined);
 
     if (invoiceId && invoiceStatus === 'gib_sent') {
       return (
@@ -257,8 +262,11 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
               if (!inv) throw new Error('Fatura bulunamadı');
               setPreviewInvoice(inv);
               setPreviewOpen(true);
-            } catch (err: any) {
-              const msg = err.message || 'Fatura yüklenemedi';
+              if (!inv) throw new Error('Fatura bulunamadı');
+              setPreviewInvoice(inv);
+              setPreviewOpen(true);
+            } catch (err: unknown) {
+              const msg = (err as Error).message || 'Fatura yüklenemedi';
               setActionMessage(msg);
               showError(msg);
             }
@@ -277,15 +285,17 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                   invoice_number: inv.invoiceNumber || inv.id,
                   notes: inv.notes || ''
                 },
-                items: (inv.items || []).map((it: any) => ({ description: it.description || it.name || '', quantity: it.quantity || 1, unitPrice: it.unitPrice || it.total || 0, taxRate: it.taxRate || 18 })),
+                items: (inv.items || []).map((it) => ({ description: it.description || it.name || '', quantity: it.quantity || 1, unitPrice: it.unitPrice || it.totalPrice || 0, taxRate: it.taxRate || 18 })),
                 notes: inv.notes || '',
                 id: inv.id
               };
-              setInvoiceInitialData(mapped);
+              setInvoiceInitialData(mapped as any);
               setInvoiceModalMode('edit');
               setTimeout(() => setShowInvoiceModal(true), 0);
-            } catch (err: any) {
-              showError(err?.message || 'Fatura yüklenemedi');
+              setInvoiceModalMode('edit');
+              setTimeout(() => setShowInvoiceModal(true), 0);
+            } catch (err: unknown) {
+              showError((err as Error)?.message || 'Fatura yüklenemedi');
             }
           }}>
             Fatura Düzenle
@@ -309,8 +319,8 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       <Button type="button" size="sm" variant="secondary" className="px-3 py-1 text-sm" onClick={async () => {
         try {
           await handleCreateReturnInvoice(rep.id);
-        } catch (err: any) {
-          showError(err?.message || 'Fatura oluşturulamadı');
+        } catch (err: unknown) {
+          showError((err as Error)?.message || 'Fatura oluşturulamadı');
         }
       }}>
         İade Faturası Oluştur
@@ -383,18 +393,19 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             <div className="mt-3">
               <ProductSearchInput
                 className="w-full"
-                selectedProduct={selectedInventory as any}
+                selectedProduct={selectedInventory as InventoryItem}
                 onSelectProduct={(p) => { setSelectedInventory(p as InventoryItem | null); }}
                 showReplaceButton={true}
-                onReplaceClick={async (item: any) => {
+                onReplaceClick={async (item: InventoryItem) => {
                   try {
                     setIsSubmitting(true);
                     setError(null);
                     await onReplace(device.id, reason, notes, item.id, item ? { id: item.id, brand: item.brand, model: item.model, supplier: item.supplier ?? null, category: item.category } : undefined);
                     showSuccess('Cihaz değişimi kaydedildi');
                     await refetchReplacements();
-                  } catch (err: any) {
-                    const msg = err?.message || 'Cihaz değiştirilemedi';
+                    await refetchReplacements();
+                  } catch (err: unknown) {
+                    const msg = (err as Error)?.message || 'Cihaz değiştirilemedi';
                     setError(msg);
                     showError(msg);
                   } finally {
@@ -412,7 +423,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                     <label className="block text-xs text-gray-600 mb-1">Seri No Seçimi (mevcut)</label>
                     <select value={selectedSerial || ''} onChange={(e) => setSelectedSerial(e.target.value)} className="w-full px-3 py-2 border rounded">
                       <option value="">-- Seri seçin --</option>
-                      {(selectedInventory.availableSerials || []).map((s: string) => (
+                      {(selectedInventory.availableSerials || []).map((s) => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
@@ -438,10 +449,10 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                   <li key={rep.id} className="p-2 border rounded">
                     <div className="flex items-start justify-between">
                       <div className="text-sm">
-                        <div className="font-medium">{rep.replacementReason || 'Değişim'}</div>
+                        <div className="font-medium">{(rep.replacementReason || 'Değişim') as React.ReactNode}</div>
                         <div className="text-xs text-muted-foreground">
-                          Eski: {rep.old_device_info_parsed?.brand || rep.old_device_info?.brand || rep.old_device_info} {rep.old_device_info_parsed?.model || rep.old_device_info?.model || ''}
-                          {' '}• Yeni: {rep.new_device_info_parsed?.brand || rep.new_device_info?.brand || rep.new_device_info} {rep.new_device_info_parsed?.model || rep.new_device_info?.model || ''}
+                          Eski: {(rep.old_device_info_parsed as any)?.brand || (rep.old_device_info as any)?.brand || rep.old_device_info as any} {(rep.old_device_info_parsed as any)?.model || (rep.old_device_info as any)?.model || ''}
+                          {' '}• Yeni: {(rep.new_device_info_parsed as any)?.brand || (rep.new_device_info as any)?.brand || rep.new_device_info as any} {(rep.new_device_info_parsed as any)?.model || (rep.new_device_info as any)?.model || ''}
                         </div>
                         <div className="text-xs text-muted-foreground">Durum: {rep.status}</div>
                       </div>
@@ -488,7 +499,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             setCurrentReplacementForInvoice(null);
           }
         }}
-        onError={(err) => { setActionMessage(err); showError(err); }}
+        onError={(err) => { setActionMessage(typeof err === 'string' ? err : 'Bir hata oluştu'); showError(typeof err === 'string' ? err : 'Bir hata oluştu'); }}
       />
 
     </>

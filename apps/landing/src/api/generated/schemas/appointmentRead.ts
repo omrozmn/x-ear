@@ -11,6 +11,7 @@ import type { AppointmentType } from './appointmentType';
 import type { AppointmentStatus } from './appointmentStatus';
 import type { AppointmentReadNotes } from './appointmentReadNotes';
 import type { AppointmentReadPartyName } from './appointmentReadPartyName';
+import type { AppointmentReadTenantName } from './appointmentReadTenantName';
 import type { AppointmentReadType } from './appointmentReadType';
 
 export interface AppointmentRead {
@@ -28,5 +29,6 @@ export interface AppointmentRead {
   notes?: AppointmentReadNotes;
   tenantId: string;
   partyName?: AppointmentReadPartyName;
+  tenantName?: AppointmentReadTenantName;
   type?: AppointmentReadType;
 }

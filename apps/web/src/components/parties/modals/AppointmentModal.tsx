@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Button, 
-  Input, 
+import {
+  Button,
+  Input,
   Textarea,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
   Alert,
   Spinner
 } from '@x-ear/ui-web';
@@ -61,7 +56,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         const localDateTime = new Date(appointmentDate.getTime() - appointmentDate.getTimezoneOffset() * 60000)
           .toISOString()
           .slice(0, 16);
-        
+
         setFormData({
           date: localDateTime,
           note: appointment.note || '',
@@ -74,7 +69,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         const localDateTime = new Date(nextHour.getTime() - nextHour.getTimezoneOffset() * 60000)
           .toISOString()
           .slice(0, 16);
-        
+
         setFormData({
           date: localDateTime,
           note: '',
@@ -95,7 +90,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     } else {
       const appointmentDate = new Date(formData.date);
       const now = new Date();
-      
+
       if (appointmentDate < now && formData.status === 'scheduled') {
         newErrors.date = 'Geçmiş tarih için randevu durumu "Planlandı" olamaz';
       }
@@ -107,42 +102,42 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setError(null);
     setSuccess(null);
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       const appointmentData = {
         id: appointment?.id || `appt_${Date.now()}`,
         date: new Date(formData.date).toISOString(),
         note: formData.note.trim() || undefined,
         status: formData.status,
-        ...(isEditing 
+        ...(isEditing
           ? { updatedAt: new Date().toISOString() }
           : { createdAt: new Date().toISOString() }
         )
       };
 
       onAppointmentSave(appointmentData);
-      
+
       setSuccess(isEditing ? 'Randevu başarıyla güncellendi' : 'Randevu başarıyla oluşturuldu');
-      
+
       // Reset form after successful submission
       setTimeout(() => {
         setError(null);
         setSuccess(null);
         onClose();
       }, 2000);
-      
+
     } catch (err) {
       setError('Randevu kaydedilirken bir hata oluştu. Lütfen tekrar deneyiniz.');
     } finally {
@@ -152,7 +147,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -332,7 +327,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     type="button"
                     onClick={() => {
                       const currentNote = formData.note.trim();
-                      const newNote = currentNote 
+                      const newNote = currentNote
                         ? `${currentNote}\n• ${quickNote}`
                         : `• ${quickNote}`;
                       handleInputChange('note', newNote);
@@ -344,7 +339,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 ))}
               </div>
             </div>
-            
+
             {/* Status Messages */}
             {error && (
               <Alert variant="error" className="border-red-200 bg-red-50">
@@ -352,7 +347,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 {error}
               </Alert>
             )}
-            
+
             {success && (
               <Alert variant="success" className="border-green-200 bg-green-50">
                 <CheckCircle className="h-4 w-4 text-green-600" />

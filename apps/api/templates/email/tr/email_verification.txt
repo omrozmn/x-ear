@@ -1,0 +1,17 @@
+{% extends "base.txt" %}
+
+{% block content %}
+Merhaba {{ user_name }},
+
+{{ app_name }} hesabınızı oluşturduğunuz için teşekkür ederiz!
+
+Hesabınızı aktifleştirmek ve e-posta adresinizi doğrulamak için aşağıdaki bağlantıya tıklayın:
+{{ verification_link }}
+
+Bu doğrulama bağlantısı 24 saat süreyle geçerlidir.
+
+Neden e-posta doğrulaması gerekli?
+E-posta doğrulaması, hesabınızın güvenliğini sağlar ve önemli bildirimleri almanızı garanti eder.
+
+Eğer bu hesabı siz oluşturmadıysanız, bu e-postayı görmezden gelebilirsiniz.
+{% endblock %}

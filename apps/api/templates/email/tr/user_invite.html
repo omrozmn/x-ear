@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ app_name }}'e Hoş Geldiniz!</h2>
+
+<p><strong>{{ inviter_name }}</strong> sizi <strong>{{ organization_name }}</strong> organizasyonuna davet etti.</p>
+
+<div class="info">
+    <p><strong>Rol:</strong> {{ role_name }}</p>
+    <p>Bu rol ile sisteme erişim sağlayabilir ve size tanımlanan yetkileri kullanabilirsiniz.</p>
+</div>
+
+<p>Hesabınızı oluşturmak ve sisteme giriş yapmak için aşağıdaki bağlantıya tıklayın:</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ invitation_link }}" class="button">
+        Hesabımı Oluştur
+    </a>
+</div>
+
+<p>Bu davet bağlantısı <strong>7 gün</strong> süreyle geçerlidir.</p>
+
+<p>Herhangi bir sorunuz varsa, davet eden kişi ile iletişime geçebilirsiniz.</p>
+{% endblock %}

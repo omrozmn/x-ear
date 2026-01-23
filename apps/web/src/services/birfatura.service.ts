@@ -32,7 +32,7 @@ export interface BirFaturaResponse {
 export interface InvoiceStatus {
   status: 'draft' | 'pending' | 'sent' | 'approved' | 'rejected' | 'cancelled';
   gibStatus?: 'pending' | 'approved' | 'rejected';
-  gibResponse?: any;
+  gibResponse?: Record<string, unknown>;
   birfaturaStatus?: string;
   lastUpdated?: string;
   error?: string;
@@ -87,7 +87,7 @@ export interface InBoxDocumentsResponse {
       total: number;
       limit: number;
       page: number;
-      objects: any[];
+      objects: Record<string, unknown>[];
     };
   };
 }
@@ -164,7 +164,7 @@ class BirFaturaService {
 
       // Try to decompress (gzip)
       try {
-        const ds = new DecompressionStream('gzip');
+        const ds = new (window as any).DecompressionStream('gzip');
         const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
         return await decompressed.blob();
       } catch {
@@ -202,7 +202,7 @@ class BirFaturaService {
 
       // Try to decompress (gzip)
       try {
-        const ds = new DecompressionStream('gzip');
+        const ds = new (window as any).DecompressionStream('gzip');
         const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
         return await decompressed.text();
       } catch {
@@ -253,8 +253,8 @@ class BirFaturaService {
 
       const data = resp?.data || {};
       return {
-        success: !!data?.Success,
-        message: data?.Message || data?.Result?.Description,
+        success: !!(data as any)?.Success,
+        message: (data as any)?.Message || (data as any)?.Result?.Description,
       };
     } catch (error) {
       console.error('BirFatura sendInBoxInvoiceAnswer error:', error);
@@ -279,9 +279,9 @@ class BirFaturaService {
       const resp = await api.postApiOutEBelgeV2SendBasicInvoiceFromModel(body);
       const data = resp?.data || {};
       return {
-        success: !!data?.Success,
-        birfaturaId: data?.Result?.invoiceNo || undefined,
-        message: data?.Message,
+        success: !!(data as any)?.Success,
+        birfaturaId: (data as any)?.Result?.invoiceNo || undefined,
+        message: (data as any)?.Message,
       };
     } catch (error) {
       console.error('BirFatura createAndSend error:', error);
@@ -294,34 +294,9 @@ class BirFaturaService {
 
   /**
    * Sadece fatura oluştur (göndermeden)
-   * NOT: createEfaturaCreate fonksiyonu API'de mevcut değil, bu method kullanılmıyor
    */
   async create(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     throw new Error('createEfaturaCreate fonksiyonu API\'de mevcut değil. createEfaturaRetry kullanın.');
-    // try {
-    //   // const api = getOutEBelgeV2API();
-    //   // createEfaturaCreate is incorrectly typed in generated client (takes no args)
-    //   // but the backend expects the invoice object. Using unknown cast to bypass but avoid 'any'.
-    //   const response = await (createEfaturaCreate as unknown as (data: unknown) => Promise<unknown>)(invoiceData);
-    //   // unwrapObject handles the response structure which might be { data: ... } or direct
-    //   const data = unwrapObject<any>(response);
-
-    //   if (!data.Success) {
-    //     throw new Error('Fatura oluşturulamadı');
-    //   }
-
-    //   return {
-    //     success: true,
-    //     invoiceId: data.Result?.id || data.Result?.invoiceId,
-    //     message: 'Fatura başarıyla oluşturuldu',
-    //   };
-    // } catch (error) {
-    //   console.error('BirFatura create error:', error);
-    //   return {
-    //     success: false,
-    //     error: error instanceof Error ? error.message : 'Bilinmeyen hata',
-    //   };
-    // }
   }
 
   /**
@@ -333,8 +308,8 @@ class BirFaturaService {
       const resp = await api.postApiOutEBelgeV2ReEnvelopeAndSend({ uuid: invoiceId });
       const data = resp?.data || {};
       return {
-        success: !!data?.Success,
-        message: data?.Message,
+        success: !!(data as any)?.Success,
+        message: (data as any)?.Message,
       };
     } catch (error) {
       console.error('BirFatura send error:', error);
@@ -353,10 +328,10 @@ class BirFaturaService {
     try {
       const api = getOutEBelgeV2API();
       const resp = await api.postApiOutEBelgeV2GetEnvelopeStatusFromGIB({ envelopeID: invoiceId });
-      const data = resp?.data || {};
+      const data = resp?.data;
       return {
-        status: (((data as Record<string, unknown>)?.Result ?? (data as Record<string, unknown>)?.status) as InvoiceStatus['status']) || 'pending',
-        message: data?.Message || data?.message,
+        status: ((data as any)?.Result as InvoiceStatus['status']) || ((data as any)?.status as InvoiceStatus['status']) || 'pending',
+        message: ((data as any)?.Message as string) || ((data as any)?.message as string),
       };
     } catch (error) {
       console.error('BirFatura getStatus error:', error);
@@ -373,10 +348,15 @@ class BirFaturaService {
   async getXML(invoiceId: string): Promise<XMLResponse | null> {
     try {
       const api = getOutEBelgeV2API();
-      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({ documentUUID: invoiceId, inOutCode: 'OUT', systemTypeCodes: 'EFATURA', fileExtension: 'XML' } as unknown as Record<string, unknown>);
-      const data = resp?.data || {};
+      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({
+        documentUUID: invoiceId,
+        inOutCode: 'OUT',
+        systemTypeCodes: 'EFATURA',
+        fileExtension: 'XML'
+      } as unknown as Record<string, unknown>);
+      const data = resp?.data as Record<string, unknown> | undefined;
       return {
-        xml: data?.Result?.content || data?.Result?.content || '',
+        xml: (data?.Result as any)?.content || '',
         format: 'UBL-TR',
         encoding: 'UTF-8',
       };
@@ -391,11 +371,10 @@ class BirFaturaService {
    */
   async retry(invoiceId: string): Promise<BirFaturaResponse> {
     try {
-      // const api = getOutEBelgeV2API();
       const response = await createEfaturaRetry(invoiceId);
-      const data = unwrapObject<any>(response);
+      const data = unwrapObject<Record<string, unknown>>(response);
 
-      if (!data.Success) {
+      if (!data || !data.Success) {
         throw new Error('Yeniden gönderilemedi');
       }
 
@@ -419,15 +398,10 @@ class BirFaturaService {
    */
   async cancel(invoiceId: string, reason?: string): Promise<BirFaturaResponse> {
     try {
-      // const api = getOutEBelgeV2API();
-      // createEfaturaCancel expects just the ID as a path param, 
-      // check if it accepts a body for reason? The simplified function signature only shows invoiceId.
-      // If reason is required by backend but not in signature, we might need custom request or query param.
-      // For now, assuming ID is enough or reason is passed differently.
       const response = await createEfaturaCancel(invoiceId);
-      const data = unwrapObject<any>(response);
+      const data = unwrapObject<Record<string, unknown>>(response);
 
-      if (!data.Success) {
+      if (!data || !data.Success) {
         throw new Error('Fatura iptal edilemedi');
       }
 
@@ -441,7 +415,7 @@ class BirFaturaService {
       return {
         success: false,
         invoiceId,
-        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
+        error: reason || (error instanceof Error ? error.message : 'Bilinmeyen hata'),
       };
     }
   }
@@ -455,21 +429,21 @@ class BirFaturaService {
     results: BirFaturaResponse[];
   }> {
     const results: BirFaturaResponse[] = [];
-    let success = 0;
-    let failed = 0;
+    let successCount = 0;
+    let failedCount = 0;
 
     for (const invoiceId of invoiceIds) {
       const result = await this.send(invoiceId);
       results.push(result);
 
       if (result.success) {
-        success++;
+        successCount++;
       } else {
-        failed++;
+        failedCount++;
       }
     }
 
-    return { success, failed, results };
+    return { success: successCount, failed: failedCount, results };
   }
 
   /**

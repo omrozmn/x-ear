@@ -15,7 +15,6 @@
 import React from 'react';
 import { AIFeatureWrapper, useAIFeatureAvailability } from './AIFeatureWrapper';
 import { AIChatWidget } from './AIChatWidget';
-import { AIActionPreview } from './AIActionPreview';
 import { PendingActionBadge } from './PendingActionBadge';
 import type { AICapability } from '../types/ai.types';
 
@@ -30,7 +29,7 @@ import type { AICapability } from '../types/ai.types';
  */
 export function AIChatFeatureExample(): React.ReactElement {
   return (
-    <AIFeatureWrapper 
+    <AIFeatureWrapper
       capability="chat"
       fallback={
         <div className="p-4 bg-gray-100 rounded-lg text-gray-600">
@@ -55,11 +54,11 @@ export function AIChatFeatureExample(): React.ReactElement {
  */
 export function AIHiddenFeatureExample(): React.ReactElement | null {
   return (
-    <AIFeatureWrapper 
+    <AIFeatureWrapper
       capability="actions"
       hideWhenUnavailable
     >
-      <button className="px-4 py-2 bg-blue-500 text-white rounded">
+      <button data-allow-raw="true" className="px-4 py-2 bg-blue-500 text-white rounded">
         AI ile İşlem Yap
       </button>
     </AIFeatureWrapper>
@@ -114,7 +113,7 @@ export function AIActionButtonExample(): React.ReactElement {
   return (
     <AIFeatureWrapper capability="actions" hideWhenUnavailable>
       <PendingActionBadge actionType="create_party" position="top-right">
-        <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        <button data-allow-raw="true" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
           Hasta Ekle (AI)
         </button>
       </PendingActionBadge>
@@ -134,17 +133,16 @@ export function AIActionButtonExample(): React.ReactElement {
  */
 export function AIDynamicFallbackExample(): React.ReactElement {
   return (
-    <AIFeatureWrapper 
+    <AIFeatureWrapper
       capability="ocr"
       fallback={(reason, message) => (
-        <div className={`p-4 rounded-lg ${
-          reason === 'quota_exceeded' 
-            ? 'bg-yellow-50 border-yellow-300' 
+        <div className={`p-4 rounded-lg ${reason === 'quota_exceeded'
+            ? 'bg-yellow-50 border-yellow-300'
             : 'bg-red-50 border-red-300'
-        } border`}>
+          } border`}>
           <h3 className="font-semibold">
-            {reason === 'quota_exceeded' 
-              ? 'Günlük Limit Aşıldı' 
+            {reason === 'quota_exceeded'
+              ? 'Günlük Limit Aşıldı'
               : 'OCR Kullanılamıyor'}
           </h3>
           <p className="text-sm mt-1">{message}</p>
@@ -171,7 +169,7 @@ export function AIDynamicFallbackExample(): React.ReactElement {
  */
 export function AIPartyContextExample(): React.ReactElement {
   return (
-    <AIFeatureWrapper 
+    <AIFeatureWrapper
       capability="actions"
       requirePartyContext
       fallback={
@@ -230,16 +228,4 @@ export function withAIFeature<P extends object>(
   return WrappedComponent;
 }
 
-// =============================================================================
-// Default Export
-// =============================================================================
 
-export default {
-  AIChatFeatureExample,
-  AIHiddenFeatureExample,
-  AIConditionalFeatureExample,
-  AIActionButtonExample,
-  AIDynamicFallbackExample,
-  AIPartyContextExample,
-  withAIFeature,
-};

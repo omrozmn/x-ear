@@ -21,9 +21,16 @@ import type { SaleReadSgkCoverage } from './saleReadSgkCoverage';
 import type { SaleReadFinalAmount } from './saleReadFinalAmount';
 import type { SaleReadPaidAmount } from './saleReadPaidAmount';
 import type { SaleReadPatientPayment } from './saleReadPatientPayment';
+import type { SaleReadRemainingAmount } from './saleReadRemainingAmount';
 import type { SaleReadRightEarAssignmentId } from './saleReadRightEarAssignmentId';
 import type { SaleReadLeftEarAssignmentId } from './saleReadLeftEarAssignmentId';
 import type { SaleReadReportStatus } from './saleReadReportStatus';
+import type { SaleReadPatient } from './saleReadPatient';
+import type { SaleReadDevices } from './saleReadDevices';
+import type { SaleReadPaymentPlan } from './saleReadPaymentPlan';
+import type { SaleReadPaymentRecords } from './saleReadPaymentRecords';
+import type { SaleReadPayments } from './saleReadPayments';
+import type { SaleReadInvoice } from './saleReadInvoice';
 
 /**
  * Schema for reading a sale - matches Sale.to_dict() output
@@ -50,7 +57,14 @@ export interface SaleRead {
   finalAmount?: SaleReadFinalAmount;
   paidAmount?: SaleReadPaidAmount;
   patientPayment?: SaleReadPatientPayment;
+  remainingAmount?: SaleReadRemainingAmount;
   rightEarAssignmentId?: SaleReadRightEarAssignmentId;
   leftEarAssignmentId?: SaleReadLeftEarAssignmentId;
   reportStatus?: SaleReadReportStatus;
+  patient?: SaleReadPatient;
+  devices?: SaleReadDevices;
+  paymentPlan?: SaleReadPaymentPlan;
+  paymentRecords?: SaleReadPaymentRecords;
+  payments?: SaleReadPayments;
+  invoice?: SaleReadInvoice;
 }

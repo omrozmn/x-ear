@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/policies/rules.py
+# hypothesis_version: 6.150.2
+
+[100, 1000, '*', '1.0.0', 'action_pattern', 'admin', 'blocked_actions', 'blocked_resources', 'blocked_risk_levels', 'compliance', 'compliance_type', 'critical', 'current_rate', 'current_request_rate', 'description', 'enabled', 'error', 'general', 'high', 'limit', 'low', 'max_without_approval', 'medium', 'missing_permissions', 'priority', 'rbac', 'required_permissions', 'required_roles', 'resource', 'risk_level', 'risk_threshold', 'rule_id', 'rule_type', 'rules', 'super_admin', 'target_tenant', 'tenant_isolation', 'type', 'user_roles', 'user_tenant', 'version', 'warning']

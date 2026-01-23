@@ -248,7 +248,7 @@ export class PartyOfflineSync {
         }
 
         try {
-          const data = await customInstance<any>({ url, method: 'GET' });
+          const data = await customInstance<Record<string, any>>({ url, method: 'GET' });
           parties.push(...(data.data || []));
           cursor = data.meta?.nextCursor;
           hasMore = !!cursor;
@@ -297,8 +297,8 @@ export class PartyOfflineSync {
     const queryClient = window.__REACT_QUERY_CLIENT__;
     if (queryClient) {
       const queries = queryClient.getQueryCache().getAll();
-      const activePartyQueries = queries.filter((query: any) =>
-        query.queryKey?.[0] === 'parties' && query.state.fetchStatus === 'fetching'
+      const activePartyQueries = queries.filter((query) =>
+        (query.queryKey as unknown[])?.[0] === 'parties' && query.state.fetchStatus === 'fetching'
       );
       if (activePartyQueries.length > 0) {
         return true;
@@ -307,8 +307,8 @@ export class PartyOfflineSync {
 
     // Check for ongoing fetch requests (basic heuristic)
     const performanceEntries = performance.getEntriesByType('navigation');
-    const recentRequests = performanceEntries.filter((entry: any) =>
-      entry.name?.includes('/api/parties') &&
+    const recentRequests = performanceEntries.filter((entry) =>
+      (entry as PerformanceEntry & { name: string }).name?.includes('/api/parties') &&
       (Date.now() - entry.startTime) < 5000 // Within last 5 seconds
     );
 

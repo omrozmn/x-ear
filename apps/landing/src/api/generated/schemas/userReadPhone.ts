@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Phone number
- */
 export type UserReadPhone = string | null;

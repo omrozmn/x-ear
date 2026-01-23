@@ -63,6 +63,18 @@ interface SyncStatus {
   error?: string;
 }
 
+interface OutboxItem {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  data: Record<string, unknown>; // Use Record instead of any for payload
+  createdAt: string;
+  retryCount: number;
+  lastRetryAt?: string;
+  error?: string;
+}
+
 // Simple localStorage-based implementation for now
 class SimpleCommunicationSync {
   private readonly STORAGE_KEYS = {
@@ -101,7 +113,7 @@ class SimpleCommunicationSync {
     localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
 
     // Add to outbox
-    this.addToOutbox('create', 'message', message.id, messageWithSync);
+    this.addToOutbox('create', 'message', message.id, messageWithSync as unknown as Record<string, unknown>);
     this.notifyListeners();
 
     // Attempt sync if online
@@ -124,7 +136,7 @@ class SimpleCommunicationSync {
     };
 
     localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
-    this.addToOutbox('update', 'message', id, updates);
+    this.addToOutbox('update', 'message', id, updates as Record<string, unknown>);
     this.notifyListeners();
 
     if (navigator.onLine) {
@@ -177,7 +189,7 @@ class SimpleCommunicationSync {
     templates.push(templateWithSync);
     localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
 
-    this.addToOutbox('create', 'template', template.id, templateWithSync);
+    this.addToOutbox('create', 'template', template.id, templateWithSync as unknown as Record<string, unknown>);
     this.notifyListeners();
 
     if (navigator.onLine) {
@@ -199,7 +211,7 @@ class SimpleCommunicationSync {
     };
 
     localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
-    this.addToOutbox('update', 'template', id, updates);
+    this.addToOutbox('update', 'template', id, updates as Record<string, unknown>);
     this.notifyListeners();
 
     if (navigator.onLine) {
@@ -212,7 +224,7 @@ class SimpleCommunicationSync {
     const filtered = templates.filter(t => t.id !== id);
 
     localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(filtered));
-    this.addToOutbox('delete', 'template', id, null);
+    this.addToOutbox('delete', 'template', id, {});
     this.notifyListeners();
 
     if (navigator.onLine) {
@@ -246,9 +258,9 @@ class SimpleCommunicationSync {
   }
 
   // Outbox management
-  private addToOutbox(action: string, entityType: string, entityId: string, data: any): void {
+  private addToOutbox(action: string, entityType: string, entityId: string, data: Record<string, unknown>): void {
     const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
-    const outbox = stored ? JSON.parse(stored) : [];
+    const outbox: OutboxItem[] = stored ? JSON.parse(stored) : [];
 
     outbox.push({
       id: `${entityType}_${action}_${entityId}_${Date.now()}`,
@@ -271,8 +283,8 @@ class SimpleCommunicationSync {
 
     try {
       const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
-      const outbox = stored ? JSON.parse(stored) : [];
-      const remaining: any[] = [];
+      const outbox: OutboxItem[] = stored ? JSON.parse(stored) : [];
+      const remaining: OutboxItem[] = [];
 
       for (const item of outbox) {
         try {
@@ -294,13 +306,13 @@ class SimpleCommunicationSync {
     }
   }
 
-  private async syncOutboxItem(item: any): Promise<void> {
+  private async syncOutboxItem(item: OutboxItem): Promise<void> {
     try {
       if (item.entityType === 'template') {
         if (item.action === 'create') {
-          await createCommunicationTemplates(item.data);
+          await createCommunicationTemplates(item.data as any);
         } else if (item.action === 'update') {
-          await updateCommunicationTemplate(item.entityId, item.data);
+          await updateCommunicationTemplate(item.entityId, item.data as any);
         } else if (item.action === 'delete') {
           await deleteCommunicationTemplate(item.entityId);
         }
@@ -309,16 +321,16 @@ class SimpleCommunicationSync {
           const msgData = item.data;
           if (msgData.type === 'sms') {
             await createCommunicationMessageSendSms({
-              phoneNumber: msgData.recipient,
-              message: msgData.content,
-              partyId: msgData.partyId
+              phoneNumber: msgData.recipient as string,
+              message: msgData.content as string,
+              partyId: msgData.partyId as string
             });
           } else if (msgData.type === 'email') {
             await createCommunicationMessageSendEmail({
-              toEmail: msgData.recipient,
-              subject: msgData.subject || 'No Subject',
-              bodyText: msgData.content,
-              partyId: msgData.partyId
+              toEmail: msgData.recipient as string,
+              subject: (msgData.subject as string) || 'No Subject',
+              bodyText: msgData.content as string,
+              partyId: msgData.partyId as string
             });
           }
         }

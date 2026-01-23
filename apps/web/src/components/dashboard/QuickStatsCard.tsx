@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, DollarSign, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { Users, DollarSign, Calendar, Clock } from 'lucide-react';
 
 interface QuickStatsCardProps {
   stats: {

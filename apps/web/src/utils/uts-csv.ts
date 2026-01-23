@@ -1,9 +1,22 @@
 import Papa from 'papaparse';
 import mapCsvRowToUtsPayload from './uts-mapping';
 
-export function parseAndMapCsv(content: string) {
-  const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
-  const rows = (parsed.data as any[]).filter(Boolean);
+export interface UtsPayload {
+  serial: string;
+  manufacturer: string;
+  model: string;
+  partyTc: string;
+}
+
+export interface UtsCsvPreview {
+  rows: Record<string, string>[];
+  mapped: { raw: Record<string, string>; mapped: UtsPayload }[];
+  errors: { row: number; errors: string[] }[];
+}
+
+export function parseAndMapCsv(content: string): UtsCsvPreview {
+  const parsed = Papa.parse<Record<string, string>>(content, { header: true, skipEmptyLines: true });
+  const rows = parsed.data.filter(Boolean);
 
   const mapped = rows.map((r) => ({ raw: r, mapped: mapCsvRowToUtsPayload(r) }));
 

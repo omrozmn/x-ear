@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Input } from '@x-ear/ui-web';
+import { Input, Button } from '@x-ear/ui-web';
 import { ArrowLeft, Phone, Lock, CheckCircle, Eye, EyeOff, User, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import '../styles/login-animations.css';
@@ -172,13 +172,15 @@ export function ForgotPasswordPage() {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={isLoading || !identifier.trim()}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+              disabled={!identifier.trim()}
+              loading={isLoading}
+              fullWidth
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
             >
-              {isLoading ? 'Kontrol Ediliyor...' : 'Devam Et'}
-            </button>
+              Devam Et
+            </Button>
           </form>
         );
 
@@ -212,20 +214,22 @@ export function ForgotPasswordPage() {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setStep('identifier')}
-                className="flex-1 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
+                className="flex-1 py-3 rounded-xl"
               >
                 Geri
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                disabled={isLoading || !fullPhone.trim()}
+                loading={isLoading}
+                disabled={!fullPhone.trim()}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg"
               >
-                {isLoading ? 'Gönderiliyor...' : 'Kod Gönder'}
-              </button>
+                Kod Gönder
+              </Button>
             </div>
           </form>
         );
@@ -259,20 +263,22 @@ export function ForgotPasswordPage() {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setStep('identifier')}
-                className="flex-1 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
+                className="flex-1 py-3 rounded-xl"
               >
                 Baştan Başla
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                disabled={isLoading || otp.length !== 6}
+                loading={isLoading}
+                disabled={otp.length !== 6}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg"
               >
-                {isLoading ? 'Doğrulanıyor...' : 'Kodu Doğrula'}
-              </button>
+                Kodu Doğrula
+              </Button>
             </div>
           </form>
         );
@@ -303,8 +309,9 @@ export function ForgotPasswordPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   disabled={isLoading}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
@@ -314,7 +321,7 @@ export function ForgotPasswordPage() {
                   ) : (
                     <Eye className="h-5 w-5" />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -333,8 +340,9 @@ export function ForgotPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={isLoading}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   disabled={isLoading}
@@ -344,24 +352,19 @@ export function ForgotPasswordPage() {
                   ) : (
                     <Eye className="h-5 w-5" />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={isLoading || !newPassword.trim() || !confirmPassword.trim()}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+              loading={isLoading}
+              disabled={!newPassword.trim() || !confirmPassword.trim()}
+              fullWidth
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                  Şifre Güncelleniyor...
-                </div>
-              ) : (
-                'Şifreyi Güncelle'
-              )}
-            </button>
+              Şifreyi Güncelle
+            </Button>
           </form>
         );
 

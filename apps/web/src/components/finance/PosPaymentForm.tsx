@@ -5,7 +5,7 @@ import {
     Alert,
     Loading
 } from '@x-ear/ui-web';
-import {useCreatePaymentPoPaytrInitiate} from '@/api/client/payments.client';
+import { useCreatePaymentPoPaytrInitiate } from '@/api/client/payments.client';
 
 interface PosPaymentFormProps {
     saleId: string;
@@ -50,16 +50,18 @@ export const PosPaymentForm: React.FC<PosPaymentFormProps> = ({
                 installment_count: installmentCount
             }
         }, {
-            onSuccess: (response: any) => {
+            onSuccess: (response: unknown) => {
+                const res = response as { iframe_url?: string; error?: string };
                 // Response structure: { iframe_url, payment_record_id } or { error }
-                if (response?.iframe_url) {
-                    setIframeUrl(response.iframe_url);
+                if (res?.iframe_url) {
+                    setIframeUrl(res.iframe_url);
                 } else {
-                    setError(response?.error || 'Ödeme başlatılamadı');
+                    setError(res?.error || 'Ödeme başlatılamadı');
                 }
             },
-            onError: (err: any) => {
-                setError(err.message || 'Bir hata oluştu');
+            onError: (err: unknown) => {
+                const errorObj = err as { message?: string };
+                setError(errorObj.message || 'Bir hata oluştu');
             }
         });
     };

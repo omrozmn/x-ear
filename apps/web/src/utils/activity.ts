@@ -1,11 +1,15 @@
 import { parseISO, format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import type { ActivityLogRead } from '@/api/generated/schemas';
 
 // Create a readable, modern single-sentence activity formatter (Turkish)
-// Create a readable, modern single-sentence activity formatter (Turkish)
-export function formatActivitySentence(act: any): string {
+export function formatActivitySentence(act: ActivityLogRead | Record<string, unknown>): string {
+  // Use wrapper for safe access
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const safeAct: any = act;
+
   // Accept various timestamp keys
-  const ts = act?.createdAt || act?.created_at || act?.timestamp || act?.date || act?.time || null;
+  const ts = safeAct?.createdAt || safeAct?.created_at || safeAct?.timestamp || safeAct?.date || safeAct?.time || null;
   let timeStr = '';
   if (ts) {
     try {
@@ -17,10 +21,10 @@ export function formatActivitySentence(act: any): string {
   }
 
   // Use userName or fullName from backend if available (populated by to_dict_with_user)
-  const user = act?.userName || act?.fullName || act?.user?.fullName || act?.user?.username || act?.user || act?.userId || 'Sistem';
+  const user = safeAct?.userName || safeAct?.fullName || safeAct?.user?.fullName || safeAct?.user?.username || safeAct?.user || safeAct?.userId || 'Sistem';
 
   // Clean up raw action
-  const rawAction = (act?.action || act?.type || act?.message || '').toString();
+  const rawAction = (safeAct?.action || safeAct?.type || safeAct?.message || '').toString();
 
   // Try to parse dot notation (e.g. auth.login -> entity=auth, verb=login)
   let derivedVerb = rawAction;
@@ -78,13 +82,13 @@ export function formatActivitySentence(act: any): string {
   const verb = verbMap[cleanVerb] || cleanVerb;
 
   // Use provided entity type or derived one
-  const entityType = act?.entityType || act?.entity || derivedEntity || '';
+  const entityType = safeAct?.entityType || safeAct?.entity || derivedEntity || '';
   // Translate entity type if possible
   const displayEntityType = entityMap[entityType.toLowerCase()] || entityType;
 
-  const entityId = act?.entityId || '';
-  const partyName = act?.partyName || act?.data?.partyName;
-  const message = act?.message;
+  const entityId = safeAct?.entityId || '';
+  const partyName = safeAct?.partyName || safeAct?.data?.partyName;
+  const message = safeAct?.message;
 
   // Construct sentence
   // Format: [Time] — [User] [Entity] [Verb] ([ID])

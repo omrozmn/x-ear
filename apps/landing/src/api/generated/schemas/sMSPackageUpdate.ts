@@ -5,16 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSPackageUpdateName } from './sMSPackageUpdateName';
-import type { SMSPackageUpdateDescription } from './sMSPackageUpdateDescription';
-import type { SMSPackageUpdateSmsCount } from './sMSPackageUpdateSmsCount';
-import type { SMSPackageUpdatePrice } from './sMSPackageUpdatePrice';
-import type { SMSPackageUpdateIsActive } from './sMSPackageUpdateIsActive';
+import type { SmsPackageUpdateName } from './smsPackageUpdateName';
+import type { SmsPackageUpdateDescription } from './smsPackageUpdateDescription';
+import type { SmsPackageUpdateSmsCount } from './smsPackageUpdateSmsCount';
+import type { SmsPackageUpdatePrice } from './smsPackageUpdatePrice';
+import type { SmsPackageUpdateCurrency } from './smsPackageUpdateCurrency';
+import type { SmsPackageUpdateIsActive } from './smsPackageUpdateIsActive';
 
-export interface SMSPackageUpdate {
-  name?: SMSPackageUpdateName;
-  description?: SMSPackageUpdateDescription;
-  smsCount?: SMSPackageUpdateSmsCount;
-  price?: SMSPackageUpdatePrice;
-  isActive?: SMSPackageUpdateIsActive;
+export interface SmsPackageUpdate {
+  name?: SmsPackageUpdateName;
+  description?: SmsPackageUpdateDescription;
+  smsCount?: SmsPackageUpdateSmsCount;
+  price?: SmsPackageUpdatePrice;
+  currency?: SmsPackageUpdateCurrency;
+  isActive?: SmsPackageUpdateIsActive;
 }

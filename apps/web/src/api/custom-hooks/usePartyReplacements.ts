@@ -10,8 +10,8 @@ export interface Replacement {
     sale_id?: string;
     old_device_id?: string;
     new_device_id?: string;
-    old_device_info?: any;
-    new_device_info?: any;
+    old_device_info?: Record<string, unknown>;
+    new_device_info?: Record<string, unknown>;
     replacement_reason?: string;
     status: string;
     price_difference?: number;
@@ -22,7 +22,7 @@ export interface Replacement {
     gib_sent?: boolean;
     return_invoice_id?: string;
     return_invoice_status?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export type PartiesGetPartyReplacements200 = {

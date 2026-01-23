@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/notifications.py
+# hypothesis_version: 6.150.2
+
+['bodyTemplate', 'email', 'emailBodyHtml', 'emailBodyText', 'emailEnabled', 'emailFromAddress', 'emailFromName', 'emailSubject', 'emailToAddresses', 'emailToType', 'error', 'in_app', 'info', 'isActive', 'isRead', 'manual', 'notificationType', 'push', 'pushEnabled', 'readAt', 'sms', 'smsEnabled', 'success', 'templateCategory', 'tenantId', 'titleTemplate', 'triggerConditions', 'triggerEvent', 'userId', 'warning']

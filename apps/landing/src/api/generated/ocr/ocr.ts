@@ -32,6 +32,15 @@ import type {
   ListOcrJobsParams,
   OCRProcessRequest,
   PatientExtractionRequest,
+  ResponseEnvelopeListOcrJobRead,
+  ResponseEnvelopeOcrDebugResponse,
+  ResponseEnvelopeOcrEntitiesResponse,
+  ResponseEnvelopeOcrHealthResponse,
+  ResponseEnvelopeOcrInitResponse,
+  ResponseEnvelopeOcrJobRead,
+  ResponseEnvelopeOcrPatientResponse,
+  ResponseEnvelopeOcrProcessResponse,
+  ResponseEnvelopeOcrSimilarityResponse,
   SimilarityRequest
 } from '.././schemas';
 
@@ -50,7 +59,7 @@ export const listOcrHealth = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrHealthResponse>(
       {url: `/api/ocr/health`, method: 'GET', signal
     },
       );
@@ -143,7 +152,7 @@ export const createOcrInitDb = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrInitResponse>(
       {url: `/api/ocr/init-db`, method: 'POST', signal
     },
       );
@@ -206,7 +215,7 @@ export const createOcrInitialize = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrInitResponse>(
       {url: `/api/ocr/initialize`, method: 'POST', signal
     },
       );
@@ -269,7 +278,7 @@ export const createOcrProcess = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrProcessResponse>(
       {url: `/api/ocr/process`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: oCRProcessRequest, signal
@@ -334,7 +343,7 @@ export const createOcrSimilarity = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrSimilarityResponse>(
       {url: `/api/ocr/similarity`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: similarityRequest, signal
@@ -399,7 +408,7 @@ export const createOcrEntities = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrEntitiesResponse>(
       {url: `/api/ocr/entities`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: entityExtractionRequest, signal
@@ -464,7 +473,7 @@ export const createOcrExtractPatient = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrPatientResponse>(
       {url: `/api/ocr/extract_patient`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: patientExtractionRequest, signal
@@ -529,7 +538,7 @@ export const createOcrDebugNer = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrDebugResponse>(
       {url: `/api/ocr/debug_ner`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: debugNERRequest, signal
@@ -594,7 +603,7 @@ export const listOcrJobs = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListOcrJobRead>(
       {url: `/api/ocr/jobs`, method: 'GET',
         params, signal
     },
@@ -688,7 +697,7 @@ export const createOcrJobs = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrJobRead>(
       {url: `/api/ocr/jobs`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createJobRequest, signal
@@ -753,7 +762,7 @@ export const getOcrJob = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeOcrJobRead>(
       {url: `/api/ocr/jobs/${jobId}`, method: 'GET', signal
     },
       );

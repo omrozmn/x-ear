@@ -10,6 +10,7 @@ import {
     useCreateUserMePassword,
     getListUserMeQueryKey
 } from '@/api/client/users.client';
+import { ResponseEnvelopeUserRead, UserRead, UserUpdate } from '@/api/generated/schemas';
 
 
 export const DesktopProfilePage: React.FC = () => {
@@ -92,14 +93,19 @@ export const DesktopProfilePage: React.FC = () => {
 
     const updateMeMutation = useUpdateUserMe({
         mutation: {
-            onSuccess: (data: unknown) => {
+            onSuccess: (responseData: ResponseEnvelopeUserRead) => {
                 toast.success('Profil bilgileri güncellendi');
-                const responseData = data as { data?: UserData } | UserData;
-                const updatedUser = 'data' in responseData ? responseData.data : responseData;
+                const updatedUser = responseData.data;
                 if (updatedUser && user) {
                     setUser({
                         ...user,
-                        ...updatedUser,
+                        email: updatedUser.email,
+                        firstName: updatedUser.firstName,
+                        lastName: updatedUser.lastName,
+                        fullName: updatedUser.fullName,
+                        name: updatedUser.fullName || `${updatedUser.firstName} ${updatedUser.lastName}`,
+                        username: updatedUser.username || user.username,
+                        phone: updatedUser.phone || user.phone,
                     });
                 }
             },
@@ -137,17 +143,22 @@ export const DesktopProfilePage: React.FC = () => {
 
     // Data synchronization effect
     React.useEffect(() => {
-        const responseData = userDataResponse as any;
-        const freshUser = responseData?.data || responseData;
-
+        const freshUser = userDataResponse?.data;
         if (freshUser && (freshUser.id || freshUser.email)) {
             // Update Global Store
             if (JSON.stringify(freshUser) !== JSON.stringify(user)) {
                 setUser({
                     ...user!,
-                    ...freshUser,
+                    email: freshUser.email,
+                    firstName: freshUser.firstName,
+                    lastName: freshUser.lastName,
+                    fullName: freshUser.fullName,
                     name: freshUser.fullName || freshUser.firstName || user?.name || '',
-                } as any);
+                    username: freshUser.username || user?.username,
+                    phone: freshUser.phone || user?.phone,
+                    role: freshUser.role || user?.role || 'user',
+                    tenantId: freshUser.tenantId || user?.tenantId || '',
+                });
             }
 
             // Sync Local Form State
@@ -226,13 +237,14 @@ export const DesktopProfilePage: React.FC = () => {
 
     const handleUpdateProfile = (e: React.FormEvent) => {
         e.preventDefault();
+        const payload: UserUpdate = {
+            firstName,
+            lastName,
+            username: username || undefined,
+            email
+        };
         updateMeMutation.mutate({
-            data: {
-                firstName,
-                lastName,
-                username,
-                email
-            } as any
+            data: payload
         });
     };
 

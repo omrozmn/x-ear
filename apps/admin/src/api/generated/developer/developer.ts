@@ -21,7 +21,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPartySearchFiltersPaymentPlanCreatePermissionReadSmsHeaderRequestUpdateSMSLogReadSmsProviderConfigCreateTenantStatsUserProfile
+  ResponseEnvelopeSchemaRegistryResponse
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -33,6 +33,9 @@ import { adminApi } from '../../orval-mutator';
  * This endpoint exists solely to force Pydantic to generate OpenAPI schemas 
 for models that are required by the frontend/SDK but not yet used 
 in active API endpoints.
+
+By using a structured model instead of a Union, we avoid excessively 
+long auto-generated filenames in the frontend.
  * @summary Schema Registry
  */
 export const listDeveloperSchemaRegistry = (
@@ -41,7 +44,7 @@ export const listDeveloperSchemaRegistry = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeListUnionDeviceAssignmentUpdateInstallmentPaymentPasswordChangeRequestPartySearchFiltersPaymentPlanCreatePermissionReadSmsHeaderRequestUpdateSMSLogReadSmsProviderConfigCreateTenantStatsUserProfile>(
+      return adminApi<ResponseEnvelopeSchemaRegistryResponse>(
       {url: `/api/developer/schema-registry`, method: 'GET', signal
     },
       );

@@ -7,8 +7,10 @@
  */
 import type { InvoiceSyncRequestStartDate } from './invoiceSyncRequestStartDate';
 import type { InvoiceSyncRequestEndDate } from './invoiceSyncRequestEndDate';
+import type { InvoiceSyncRequestDirection } from './invoiceSyncRequestDirection';
 
 export interface InvoiceSyncRequest {
-  start_date?: InvoiceSyncRequestStartDate;
-  end_date?: InvoiceSyncRequestEndDate;
+  startDate?: InvoiceSyncRequestStartDate;
+  endDate?: InvoiceSyncRequestEndDate;
+  direction?: InvoiceSyncRequestDirection;
 }

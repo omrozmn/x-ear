@@ -11,8 +11,8 @@ interface WithholdingModalProps {
 }
 
 interface WithholdingData {
-  withholdingRate: number;
-  taxFreeAmount: number;
+  withholdingRate: number | '';
+  taxFreeAmount: number | '';
   withholdingAmount: number;
 }
 
@@ -37,8 +37,11 @@ export function WithholdingModal({
 
   // Otomatik hesaplama
   useEffect(() => {
-    if (formData.withholdingRate && formData.taxFreeAmount) {
-      const calculated = (formData.withholdingRate / 100) * formData.taxFreeAmount;
+    const rate = typeof formData.withholdingRate === 'number' ? formData.withholdingRate : 0;
+    const amount = typeof formData.taxFreeAmount === 'number' ? formData.taxFreeAmount : 0;
+
+    if (rate > 0 && amount > 0) {
+      const calculated = (rate / 100) * amount;
       setFormData(prev => ({
         ...prev,
         withholdingAmount: parseFloat(calculated.toFixed(2))
@@ -48,6 +51,7 @@ export function WithholdingModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Re-surface as pure numbers for the callback if needed, or send as is
     onSave(formData);
     onClose();
   };
@@ -78,10 +82,10 @@ export function WithholdingModal({
                       <Input
                         type="number"
                         step="0.01"
-                        value={formData.withholdingRate === ('' as unknown as number) ? '' : String(formData.withholdingRate)}
+                        value={String(formData.withholdingRate)}
                         onChange={(e) => setFormData({
                           ...formData,
-                          withholdingRate: e.target.value === '' ? '' as any : parseFloat(e.target.value)
+                          withholdingRate: e.target.value === '' ? '' : parseFloat(e.target.value)
                         })}
                         className="w-full"
                         placeholder="Örn: 50"
@@ -100,10 +104,10 @@ export function WithholdingModal({
                       <Input
                         type="number"
                         step="0.01"
-                        value={formData.taxFreeAmount === ('' as unknown as number) ? '' : String(formData.taxFreeAmount)}
+                        value={String(formData.taxFreeAmount)}
                         onChange={(e) => setFormData({
                           ...formData,
-                          taxFreeAmount: e.target.value === '' ? '' as any : parseFloat(e.target.value)
+                          taxFreeAmount: e.target.value === '' ? '' : parseFloat(e.target.value)
                         })}
                         className="w-full"
                         placeholder="0.00"
@@ -133,14 +137,14 @@ export function WithholdingModal({
                     </div>
 
                     {/* Hesaplama Özeti */}
-                    {formData.withholdingRate > 0 && formData.taxFreeAmount > 0 && (
+                    {Number(formData.withholdingRate) > 0 && Number(formData.taxFreeAmount) > 0 && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex items-start">
                           <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
                           <div className="text-sm text-blue-700">
                             <p className="font-medium mb-1">Hesaplama:</p>
                             <p>
-                              {formData.withholdingRate}% × {formData.taxFreeAmount.toFixed(2)} TL = {' '}
+                              {formData.withholdingRate}% × {Number(formData.taxFreeAmount).toFixed(2)} TL = {' '}
                               <span className="font-semibold">{formData.withholdingAmount.toFixed(2)} TL</span>
                             </p>
                           </div>
@@ -155,7 +159,7 @@ export function WithholdingModal({
                         <div className="text-sm text-yellow-700">
                           <p className="font-medium mb-1">Dikkat:</p>
                           <p>
-                            Tevkifat iade bilgileri fatura satırına kaydedilecektir. 
+                            Tevkifat iade bilgileri fatura satırına kaydedilecektir.
                             Bu bilgiler BirFatura üzerinden GİB'e gönderilecektir.
                           </p>
                         </div>

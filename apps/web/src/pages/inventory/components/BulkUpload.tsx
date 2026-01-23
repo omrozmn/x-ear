@@ -104,7 +104,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               break;
             case 'category':
             case 'kategori':
-              item.category = value as any;
+              item.category = value as import('../../../types/inventory').InventoryCategory;
               break;
             case 'barcode':
             case 'barkod':
@@ -272,7 +272,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               break;
             case 'category':
             case 'kategori':
-              item.category = value as any;
+              item.category = value as import('../../../types/inventory').InventoryCategory;
               break;
             case 'barcode':
             case 'barkod':

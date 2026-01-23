@@ -17,7 +17,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from pydantic import BaseModel, Field
 
 from ai.config import get_ai_config, AIPhase
@@ -113,12 +113,31 @@ class HealthResponse(BaseModel):
 # Dependencies
 # =============================================================================
 
-async def get_current_user_context() -> Dict[str, Any]:
-    """Get current user context from request."""
-    # TODO: Integrate with actual auth system
+async def get_current_user_context(request: Request) -> Dict[str, Any]:
+    """
+    Get current user context from request state.
+    
+    The JWT auth middleware sets tenant_id and user_id in request.state.
+    This dependency extracts them for use in the endpoint.
+    
+    Returns:
+        Dict with user_id and tenant_id
+    """
+    # Extract from request.state (set by JWT auth middleware)
+    tenant_id = getattr(request.state, "tenant_id", None)
+    user_id = getattr(request.state, "user_id", None)
+    
+    if not tenant_id or not user_id:
+        # This should not happen if JWT middleware is working correctly
+        logger.error("Missing tenant_id or user_id in request.state")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
     return {
-        "user_id": "user_placeholder",
-        "tenant_id": "tenant_placeholder",
+        "user_id": user_id,
+        "tenant_id": tenant_id,
     }
 
 

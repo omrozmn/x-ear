@@ -3,15 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
 import { DollarSign, Shield, CreditCard, Clock } from 'lucide-react';
 import { SaleRead } from '../../api/generated/schemas';
 
+// Extended interface to handle runtime properties missing from schema
+interface ExtendedSaleRead extends SaleRead {
+  partyPayment?: number;
+  paidAmount?: number;
+  remainingAmount?: number;
+}
+
 interface SalesSummaryCardsProps {
   sales: SaleRead[];
   sgkCoverageCalculation?: any;
 }
 
 export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
-  sales,
+  sales: rawSales,
   sgkCoverageCalculation
 }) => {
+  const sales = rawSales as unknown as ExtendedSaleRead[];
   const totalSales = sales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0);
   const totalSGKCoverage = sales.reduce((sum, sale) => sum + (sale.sgkCoverage || 0), 0);
 

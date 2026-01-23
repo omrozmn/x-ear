@@ -9,12 +9,12 @@ echo ""
 
 # 1. Backend'den OpenAPI generate et
 echo "📝 Backend route'lardan OpenAPI generate ediliyor..."
-cd "$(dirname "$0")/.."
-python scripts/generate_openapi.py --output ../../openapi.generated.yaml
+cd "$(dirname "$0")"
+python export_openapi.py --output ../../openapi.generated.yaml
 
 # 2. Manuel spec ile merge et
 echo "🔀 Manuel spec ile merge ediliyor..."
-python scripts/merge_openapi.py
+python merge_openapi.py
 
 echo ""
 echo "🎨 Frontend API client'ları regenerate ediliyor..."
@@ -22,7 +22,7 @@ echo ""
 
 # 3. Web app
 echo "  📱 Web app..."
-cd ../web
+cd ../../web
 npm run gen:api
 echo "     ✅ Web app tamamlandı"
 

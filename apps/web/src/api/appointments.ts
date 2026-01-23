@@ -6,7 +6,7 @@ interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
-  meta?: any;
+  meta?: Record<string, unknown>;
   requestId: string;
   timestamp: string;
 }

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Merhaba {{ user_name }},</h2>
+
+<p>{{ app_name }} hesabınızı oluşturduğunuz için teşekkür ederiz!</p>
+
+<p>Hesabınızı aktifleştirmek ve e-posta adresinizi doğrulamak için aşağıdaki bağlantıya tıklayın:</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ verification_link }}" class="button">
+        E-posta Adresimi Doğrula
+    </a>
+</div>
+
+<p>Bu doğrulama bağlantısı <strong>24 saat</strong> süreyle geçerlidir.</p>
+
+<div class="info">
+    <p><strong>Neden e-posta doğrulaması gerekli?</strong></p>
+    <p>E-posta doğrulaması, hesabınızın güvenliğini sağlar ve önemli bildirimleri almanızı garanti eder.</p>
+</div>
+
+<p>Eğer bu hesabı siz oluşturmadıysanız, bu e-postayı görmezden gelebilirsiniz.</p>
+{% endblock %}

@@ -4,18 +4,14 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { 
-  MessageSquare, 
-  Mail, 
-  Send, 
-  Clock, 
-  CheckCircle, 
+import {
+  MessageSquare,
+  Mail,
+  Send,
+  Clock,
+  CheckCircle,
   AlertCircle,
   History,
-  Plus,
-  Filter,
-  Search,
-  Calendar,
   User,
   Phone,
   AtSign
@@ -105,10 +101,10 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const { 
+  const {
     getMessages,
-    getTemplates,
-    saveMessage, 
+    // getTemplates, // Available but using local QUICK_TEMPLATES
+    saveMessage,
     syncStatus
   } = useCommunicationOfflineSync();
 
@@ -117,7 +113,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
   // Party'a ait mesajları filtrele
   const partyMessages = useMemo(() => {
     const allMessages = getMessages();
-    return allMessages.filter(message => 
+    return allMessages.filter(message =>
       message.partyId === party.id ||
       message.recipient === party.phone ||
       message.recipient === party.email
@@ -129,16 +125,16 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
     return partyMessages.filter(message => {
       // Durum filtresi
       if (statusFilter !== 'all' && message.status !== statusFilter) return false;
-      
+
       // Arama filtresi
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           message.content?.toLowerCase().includes(searchLower) ||
           message.subject?.toLowerCase().includes(searchLower);
         if (!matchesSearch) return false;
       }
-      
+
       return true;
     });
   }, [partyMessages, statusFilter, searchTerm]);
@@ -146,7 +142,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
   // Template seçildiğinde içeriği doldur
   const handleTemplateSelect = useCallback((templateId: string) => {
     setSelectedTemplate(templateId);
-    
+
     const template = QUICK_TEMPLATES.find(t => t.id === templateId);
     if (template) {
       // Template değişkenlerini hasta bilgileriyle değiştir
@@ -155,7 +151,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       content = content.replace(/\{\{partyName\}\}/g, partyFullName || '');
       content = content.replace(/\{\{partyPhone\}\}/g, party.phone || '');
       content = content.replace(/\{\{partyEmail\}\}/g, party.email || '');
-      
+
       setMessageContent(content);
       setMessageSubject(template.subject || '');
       setMessageType(template.type);
@@ -178,7 +174,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
     setIsLoading(true);
 
     try {
-      const scheduledAt = isScheduled && scheduleDate && scheduleTime 
+      const scheduledAt = isScheduled && scheduleDate && scheduleTime
         ? new Date(`${scheduleDate}T${scheduleTime}`).toISOString()
         : undefined;
 
@@ -203,7 +199,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       });
 
       success(scheduledAt ? 'Mesaj zamanlandı' : 'Mesaj gönderildi');
-      
+
       // Form'u temizle
       setMessageContent('');
       setMessageSubject('');
@@ -211,20 +207,20 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       setIsScheduled(false);
       setScheduleDate('');
       setScheduleTime('');
-      
+
     } catch (err) {
       error('Mesaj gönderme sırasında hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
     } finally {
       setIsLoading(false);
     }
   }, [
-    messageContent, 
-    messageType, 
-    party, 
-    messageSubject, 
-    isScheduled, 
-    scheduleDate, 
-    scheduleTime, 
+    messageContent,
+    messageType,
+    party,
+    messageSubject,
+    isScheduled,
+    scheduleDate,
+    scheduleTime,
     selectedTemplate,
     saveMessage,
     success,
@@ -312,11 +308,10 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('send')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'send'
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'send'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+              }`}
           >
             <div className="flex items-center space-x-2">
               <Send className="w-4 h-4" />
@@ -325,11 +320,10 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'history'
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+              }`}
           >
             <div className="flex items-center space-x-2">
               <History className="w-4 h-4" />
@@ -383,9 +377,8 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                   <button
                     key={template.id}
                     onClick={() => handleTemplateSelect(template.id)}
-                    className={`p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors ${
-                      selectedTemplate === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                    }`}
+                    className={`p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors ${selectedTemplate === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                      }`}
                   >
                     <div className="font-medium text-sm text-gray-900">{template.name}</div>
                     <div className="text-xs text-gray-600 mt-1 line-clamp-2">{template.content}</div>
@@ -529,7 +522,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                           )}
                           <span className="font-medium text-sm">{message.type.toUpperCase()}</span>
                         </div>
-                        
+
                         <Badge className={getStatusColor(message.status)}>
                           <div className="flex items-center space-x-1">
                             {getStatusIcon(message.status)}
@@ -537,15 +530,15 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                           </div>
                         </Badge>
                       </div>
-                      
+
                       {message.subject && (
                         <div className="font-medium text-gray-900 mb-1">{message.subject}</div>
                       )}
-                      
+
                       <div className="text-sm text-gray-700 mb-2 line-clamp-3">
                         {message.content}
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 text-xs text-gray-500">
                         <span>Oluşturulma: {new Date(message.createdAt).toLocaleString('tr-TR')}</span>
                         {message.sentAt && (
@@ -565,7 +558,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
               <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Mesaj bulunamadı</h3>
               <p className="text-gray-600">
-                {searchTerm || statusFilter !== 'all' 
+                {searchTerm || statusFilter !== 'all'
                   ? 'Arama kriterlerinize uygun mesaj bulunamadı.'
                   : 'Bu hasta ile henüz mesaj alışverişi yapılmamış.'
                 }

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Device brand
+ */
 export type DeviceCreateBrand = string | null;

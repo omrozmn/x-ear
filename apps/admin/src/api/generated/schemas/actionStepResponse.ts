@@ -8,21 +8,13 @@
 import type { ActionStepResponseParameters } from './actionStepResponseParameters';
 
 /**
- * Response for a single action step.
+ * Step in an action plan.
  */
 export interface ActionStepResponse {
-  /** Step number in sequence */
   step_number: number;
-  /** Tool to execute */
   tool_name: string;
-  /** Schema version of the tool */
-  tool_schema_version: string;
-  /** Tool parameters */
-  parameters: ActionStepResponseParameters;
-  /** Step description */
   description: string;
-  /** Risk level of this step */
+  parameters: ActionStepResponseParameters;
   risk_level: string;
-  /** Whether this step requires approval */
   requires_approval: boolean;
 }

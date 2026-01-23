@@ -505,4 +505,5 @@ class TestRealTemplates:
         
         template = registry.get_template("intent_classifier")
         assert template.verify_hash() is True
-        assert "intent" in template.content.lower()
+        # Check for "niyet" (Turkish for intent) instead of "intent" due to Turkish locale
+        assert "niyet" in template.content.lower() or "intent" in template.content.lower()

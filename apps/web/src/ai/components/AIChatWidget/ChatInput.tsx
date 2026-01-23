@@ -23,30 +23,30 @@ export interface ChatInputProps {
    * Callback when user sends a message
    */
   onSend: (message: string) => void;
-  
+
   /**
    * Whether the input is disabled
    * @default false
    */
   disabled?: boolean;
-  
+
   /**
    * Placeholder text for the input
    * @default "Mesajınızı yazın..."
    */
   placeholder?: string;
-  
+
   /**
    * Whether the AI is currently processing (shows loading state)
    * @default false
    */
   isLoading?: boolean;
-  
+
   /**
    * Additional CSS classes
    */
   className?: string;
-  
+
   /**
    * Auto-focus the input on mount
    * @default true
@@ -62,18 +62,18 @@ export interface ChatInputProps {
  * Send icon SVG
  */
 const SendIcon = () => (
-  <svg 
-    className="w-5 h-5" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
     viewBox="0 0 24 24"
     aria-hidden="true"
   >
-    <path 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      strokeWidth={2} 
-      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
     />
   </svg>
 );
@@ -82,23 +82,23 @@ const SendIcon = () => (
  * Loading spinner SVG
  */
 const LoadingSpinner = () => (
-  <svg 
-    className="w-5 h-5 animate-spin" 
-    fill="none" 
+  <svg
+    className="w-5 h-5 animate-spin"
+    fill="none"
     viewBox="0 0 24 24"
     aria-hidden="true"
   >
-    <circle 
-      className="opacity-25" 
-      cx="12" 
-      cy="12" 
-      r="10" 
-      stroke="currentColor" 
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
       strokeWidth="4"
     />
-    <path 
-      className="opacity-75" 
-      fill="currentColor" 
+    <path
+      className="opacity-75"
+      fill="currentColor"
       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
     />
   </svg>
@@ -134,7 +134,6 @@ export function ChatInput({
 }: ChatInputProps): React.ReactElement {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -148,7 +147,7 @@ export function ChatInput({
    */
   const handleSubmit = useCallback((e?: React.FormEvent) => {
     e?.preventDefault();
-    
+
     const trimmedValue = inputValue.trim();
     if (!trimmedValue || disabled || isLoading) {
       return;
@@ -156,7 +155,7 @@ export function ChatInput({
 
     onSend(trimmedValue);
     setInputValue('');
-    
+
     // Re-focus input after sending
     inputRef.current?.focus();
   }, [inputValue, disabled, isLoading, onSend]);
@@ -182,12 +181,13 @@ export function ChatInput({
   const canSend = inputValue.trim().length > 0 && !isDisabled;
 
   return (
-    <form 
+    <form
       onSubmit={handleSubmit}
       className={`flex items-center gap-2 p-3 border-t border-gray-200 bg-white ${className}`}
     >
       {/* Text input */}
-      <input
+      <input data-allow-raw="true"
+        data-allow-raw="true"
         ref={inputRef}
         type="text"
         value={inputValue}
@@ -208,15 +208,16 @@ export function ChatInput({
       />
 
       {/* Send button */}
-      <button
+      <button data-allow-raw="true"
+        data-allow-raw="true"
         type="submit"
         disabled={!canSend}
         className={`
           flex items-center justify-center
           w-10 h-10 rounded-full
           transition-colors
-          ${canSend 
-            ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' 
+          ${canSend
+            ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }
           focus:outline-none

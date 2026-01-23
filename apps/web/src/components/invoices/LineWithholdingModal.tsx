@@ -35,7 +35,7 @@ export function LineWithholdingModal({
   itemName,
   itemAmount
 }: LineWithholdingModalProps) {
-  const [formData, setFormData] = useState<LineWithholdingData>({
+  const [formData, setFormData] = useState<Omit<LineWithholdingData, 'rate'> & { rate: number | '' }>({
     code: initialData?.code || '',
     rate: initialData?.rate ?? 0,
     amount: initialData?.amount ?? 0
@@ -49,8 +49,9 @@ export function LineWithholdingModal({
 
   // Otomatik hesaplama
   useEffect(() => {
-    if (formData.rate && itemAmount) {
-      const calculated = (formData.rate / 100) * itemAmount;
+    const rateVal = typeof formData.rate === 'number' ? formData.rate : 0;
+    if (rateVal && itemAmount) {
+      const calculated = (rateVal / 100) * itemAmount;
       setFormData(prev => ({
         ...prev,
         amount: parseFloat(calculated.toFixed(2))
@@ -71,7 +72,7 @@ export function LineWithholdingModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave(formData as LineWithholdingData);
     onClose();
   };
 
@@ -126,17 +127,17 @@ export function LineWithholdingModal({
                         Tevkifat Oranı (%)
                       </label>
                       <Input
-                          type="number"
-                          step="0.01"
-                          value={formData.rate === ('' as unknown as number) ? '' : String(formData.rate)}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            rate: e.target.value === '' ? '' as any : parseFloat(e.target.value)
-                          })}
-                          className="w-full"
-                          placeholder="20"
-                          required
-                        />
+                        type="number"
+                        step="0.01"
+                        value={String(formData.rate)}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          rate: e.target.value === '' ? '' : parseFloat(e.target.value)
+                        })}
+                        className="w-full"
+                        placeholder="20"
+                        required
+                      />
                     </div>
 
                     {/* Hesaplanan Tevkifat Tutarı */}
@@ -157,7 +158,7 @@ export function LineWithholdingModal({
                     </div>
 
                     {/* Hesaplama Özeti */}
-                    {formData.rate > 0 && (
+                    {Number(formData.rate) > 0 && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <div className="flex items-start">
                           <CheckCircle className="text-green-400 mr-2 flex-shrink-0" size={18} />

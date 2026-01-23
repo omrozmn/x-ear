@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>SMTP Test E-postası</h2>
+
+<p>Merhaba {{ user_name }},</p>
+
+<div class="info">
+    <p><strong>✅ SMTP Yapılandırması Başarılı!</strong></p>
+    <p>Bu e-posta, SMTP yapılandırmanızın doğru çalıştığını doğrulamak için gönderilmiştir.</p>
+</div>
+
+<p><strong>Test Detayları:</strong></p>
+<ul>
+    <li><strong>Tenant:</strong> {{ tenant_name }}</li>
+    <li><strong>Gönderim Zamanı:</strong> {{ current_year }}</li>
+    <li><strong>E-posta Sistemi:</strong> {{ app_name }}</li>
+</ul>
+
+<p>SMTP yapılandırmanız başarıyla tamamlandı ve e-posta gönderimi aktif durumda.</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <p style="font-size: 48px; margin: 0;">✉️</p>
+    <p style="color: #28a745; font-weight: bold; margin: 10px 0;">Test Başarılı</p>
+</div>
+
+<p>Artık sistem üzerinden e-posta gönderebilirsiniz.</p>
+{% endblock %}

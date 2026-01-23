@@ -24,6 +24,8 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
+import { SaleRead } from '@/api/generated/schemas/saleRead';
+
 import {
   useListPartyPaymentRecords,
   useCreatePaymentRecords,
@@ -31,15 +33,12 @@ import {
   getListPartyPaymentRecordsQueryKey,
   getListSalePromissoryNotesQueryKey
 } from '../../api/generated/payments/payments';
-import type { RoutersPaymentsPaymentRecordCreate as PaymentRecordCreate } from '@/api/generated/schemas/routersPaymentsPaymentRecordCreate';
+import type { PaymentRecordCreate } from '@/api/generated/schemas/paymentRecordCreate';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
-// Local Sale interface as it is missing in exports
-interface Sale {
-  id?: string;
-  partyId: string;
-  totalAmount?: number;
-  [key: string]: any;
-}
+
+// interface ExtendedSaleRead extends SaleRead {
+//   partyPayment?: number;
+// }
 
 interface PaymentRecord {
   id: string;
@@ -82,7 +81,7 @@ interface PaymentSummary {
 interface PaymentTrackingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  sale: Sale;
+  sale: SaleRead;
   onPaymentUpdate: () => void;
 }
 
@@ -141,11 +140,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   const createPaymentMutation = useCreatePaymentRecords();
 
-  // Unwrap data
+  // Unwrap data safely using strict types
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const realPaymentRecords = unwrapArray<any>(paymentRecordsResponse) || [];
+  const realPaymentRecords = unwrapArray<PaymentRecord>(paymentRecordsResponse) || [];
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const realPromissoryNotes = unwrapArray<any>(promissoryNotesResponse) || [];
+  const realPromissoryNotes = unwrapArray<PromissoryNote>(promissoryNotesResponse) || [];
 
   // Mock Installments (Backend Missing) and Data Sync
   useEffect(() => {
@@ -388,7 +387,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
             ].map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
-                onClick={() => setActiveTab(key as any)}
+                onClick={() => setActiveTab(key as typeof activeTab)}
                 className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === key
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'

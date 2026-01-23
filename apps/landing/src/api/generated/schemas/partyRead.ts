@@ -32,6 +32,8 @@ import type { PartyReadBranchId } from './partyReadBranchId';
 import type { PartyReadBranchName } from './partyReadBranchName';
 import type { PartyReadTags } from './partyReadTags';
 import type { PartyReadSgkInfo } from './partyReadSgkInfo';
+import type { PartyReadRoles } from './partyReadRoles';
+import type { PartyReadHearingProfile } from './partyReadHearingProfile';
 
 /**
  * Schema for reading party data - matches Party.to_dict() output
@@ -68,4 +70,6 @@ export interface PartyRead {
   branchName?: PartyReadBranchName;
   tags?: PartyReadTags;
   sgkInfo?: PartyReadSgkInfo;
+  roles?: PartyReadRoles;
+  hearingProfile?: PartyReadHearingProfile;
 }

@@ -120,7 +120,7 @@ export const useDeleteSupplier = () => {
   });
 };
 
-export const useSupplierProducts = (supplierName?: string): any => {
+export const useSupplierProducts = (supplierName?: string): unknown => {
   return useListInventory(
     { supplier: supplierName, per_page: 100 },
     {
@@ -130,12 +130,12 @@ export const useSupplierProducts = (supplierName?: string): any => {
         select: (data) => {
           // We need to return data in a structure that matches { data: { products: [...] } }
           // Because SupplierDetailPage expects productsData.data.products
-          const items = (data as any)?.data || [];
+          const items = (data as Record<string, any>)?.data || [];
           return {
             data: {
               products: items
             }
-          } as any;
+          } as unknown;
         }
       }
     }

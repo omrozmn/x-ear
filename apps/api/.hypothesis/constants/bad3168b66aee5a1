@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/birfatura.py
+# hypothesis_version: 6.150.2
+
+[400, 500, 502, '/EFatura/Create', '0', '1', '1234567890', '34710', 'Atatürk Cad. No:123', 'BIRFATURA_MOCK', 'BirFatura', 'FLASK_ENV', 'Kadıköy', 'Merkez Ofis', 'Message', 'Success', 'TEMELFATURA', 'TICARIFATURA', 'Temel Fatura', 'Tenant not found', 'Ticari Fatura', 'address', 'api_key', 'base64', 'birfatura', 'city', 'createEfaturaCancel', 'createEfaturaCreate', 'createEfaturaRetry', 'data', 'district', 'document.xml', 'documentBase64', 'fileName', 'filename', 'id', 'imported', 'integration_key', 'invoice_integration', 'isEInvoiceUser', 'label', 'name', 'postalCode', 'production', 'reason', 'secret_key', 'send_document_v2', 'success', 'taxNumber', 'tcNumber', 'value', 'xml', 'Örnek Müşteri A.Ş.', 'İstanbul']

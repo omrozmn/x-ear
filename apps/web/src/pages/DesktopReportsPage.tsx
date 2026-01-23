@@ -28,7 +28,8 @@ import {
 import { Button, Input, Select } from '@x-ear/ui-web';
 import { usePermissions } from '../hooks/usePermissions';
 import { unwrapObject, unwrapArray, unwrapPaginated } from '../utils/response-unwrap';
-import {useListReportOverview,
+import {
+  useListReportOverview,
   useListReportPatients as useListReportParties,
   useListReportFinancial,
   useListActivityLogs,
@@ -42,7 +43,8 @@ import {useListReportOverview,
   getListReportOverviewQueryKey,
   getListReportFinancialQueryKey,
   getListReportPatientsQueryKey as getListReportPartiesQueryKey,
-  useListActivityLogFilterOptions,} from '@/api/client/reports.client';
+  useListActivityLogFilterOptions,
+} from '@/api/client/reports.client';
 
 type TabId = 'overview' | 'sales' | 'parties' | 'promissory' | 'remaining' | 'activity' | 'pos_movements';
 
@@ -55,8 +57,84 @@ interface FilterState {
   days: number;
 }
 
+interface ReportOverview {
+  total_revenue?: number;
+  total_sales?: number;
+  appointment_rate?: number;
+  conversion_rate?: number;
+  total_parties?: number;
+  new_parties?: number;
+  total_appointments?: number;
+}
+
+interface ReportFinancial {
+  payment_methods?: Record<string, { amount: number }>;
+  revenue_trend?: Record<string, number>;
+  product_sales?: Record<string, { sales: number; revenue: number }>;
+}
+
+interface ReportParties {
+  party_segments?: {
+    new: number;
+    active: number;
+    trial: number;
+    inactive: number;
+  };
+  status_distribution?: Record<string, number>;
+}
+
+interface ActivityLogDetail {
+  id: string;
+  createdAt: string;
+  action: string;
+  userId: string;
+  userName?: string;
+  userEmail?: string;
+  branchId?: string;
+  branchName?: string;
+  role?: string;
+  entityType?: string;
+  entityId?: string;
+  ipAddress?: string;
+  isCritical?: boolean;
+  message?: string;
+  data?: Record<string, unknown>;
+  details?: Record<string, unknown>;
+}
+
+interface ReportPromissoryNotes {
+  summary?: {
+    totalNotes: number;
+    totalCollected: number;
+    activeNotes: number;
+    overdueNotes: number;
+  };
+  monthlyCounts?: { month: number; count: number }[];
+  monthlyRevenue?: { month: number; revenue: number }[];
+}
+
+interface ReportPromissoryNoteByParty {
+  partyId: string;
+  partyName: string;
+  phone?: string;
+  activeNotes: number;
+  overdueNotes: number;
+  totalAmount: number;
+  remainingAmount: number;
+}
+
+interface ReportPromissoryNoteListItem {
+  id: string;
+  partyName: string;
+  amount: number;
+  paidAmount: number;
+  dueDate: string;
+  status: string;
+  referenceNumber?: string;
+}
+
 // Activity Log Detail Modal
-function ActivityLogDetailModal({ log, onClose }: { log: any; onClose: () => void }) {
+function ActivityLogDetailModal({ log, onClose }: { log: ActivityLogDetail; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
@@ -232,8 +310,8 @@ function OverviewTab({ filters }: { filters: FilterState }) {
     );
   }
 
-  const overview = unwrapObject<any>(overviewData);
-  const financial = unwrapObject<any>(financialData);
+  const overview = unwrapObject<ReportOverview>(overviewData);
+  const financial = unwrapObject<ReportFinancial>(financialData);
 
   return (
     <div className="space-y-6">
@@ -289,10 +367,10 @@ function OverviewTab({ filters }: { filters: FilterState }) {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ödeme Yöntemleri</h3>
           <div className="space-y-3">
-            {financial?.payment_methods && Object.entries(financial.payment_methods).map(([method, data]: [string, any]) => (
+            {financial?.payment_methods && Object.entries(financial.payment_methods).map(([method, data]) => (
               <div key={method} className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400 capitalize">{method}</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(data?.amount || 0)}</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(data.amount || 0)}</span>
               </div>
             ))}
             {(!financial?.payment_methods || Object.keys(financial.payment_methods).length === 0) && (
@@ -340,7 +418,7 @@ function SalesTab({ filters }: { filters: FilterState }) {
     );
   }
 
-  const financial = unwrapObject<any>(financialData);
+  const financial = unwrapObject<ReportFinancial>(financialData);
 
   return (
     <div className="space-y-6">
@@ -351,7 +429,7 @@ function SalesTab({ filters }: { filters: FilterState }) {
         <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Gelir Trendi</h4>
         {financial?.revenue_trend && Object.keys(financial.revenue_trend).length > 0 ? (
           <div className="grid grid-cols-6 gap-4">
-            {Object.entries(financial.revenue_trend).map(([month, amount]: [string, any]) => (
+            {Object.entries(financial.revenue_trend).map(([month, amount]) => (
               <div key={month} className="text-center">
                 <div className="h-24 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-end justify-center mb-2">
                   <div
@@ -383,12 +461,12 @@ function SalesTab({ filters }: { filters: FilterState }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {Object.entries(financial.product_sales).map(([brand, data]: [string, any]) => (
+                {Object.entries(financial.product_sales).map(([brand, data]) => (
                   <tr key={brand} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
                     <td className="px-4 py-3 font-medium">{brand}</td>
-                    <td className="px-4 py-3 text-right">{data?.sales || 0}</td>
+                    <td className="px-4 py-3 text-right">{data.sales || 0}</td>
                     <td className="px-4 py-3 text-right font-medium text-green-600">
-                      {formatCurrency(data?.revenue || 0)}
+                      {formatCurrency(data.revenue || 0)}
                     </td>
                   </tr>
                 ))}
@@ -430,7 +508,7 @@ function PartiesTab({ filters }: { filters: FilterState }) {
     );
   }
 
-  const parties = unwrapObject<any>(partiesData);
+  const parties = unwrapObject<ReportParties>(partiesData);
 
   return (
     <div className="space-y-6">
@@ -484,7 +562,7 @@ function PartiesTab({ filters }: { filters: FilterState }) {
           <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Randevu Durumu Dağılımı</h4>
           <div className="space-y-4">
             {parties?.status_distribution && Object.keys(parties.status_distribution).length > 0 ? (
-              Object.entries(parties.status_distribution).map(([status, count]: [string, any]) => {
+              Object.entries(parties.status_distribution).map(([status, count]) => {
                 const statusLabels: Record<string, string> = {
                   'SCHEDULED': 'Planlandı',
                   'COMPLETED': 'Tamamlandı',
@@ -566,9 +644,9 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
     );
   }
 
-  const notes = unwrapObject<any>(notesData);
-  const byParty = unwrapArray<any>(byPartyData);
-  const { data: list, meta: listMeta } = unwrapPaginated<any>(listData);
+  const notes = unwrapObject<ReportPromissoryNotes>(notesData);
+  const byParty = unwrapArray<ReportPromissoryNoteByParty>(byPartyData);
+  const { data: list, meta: listMeta } = unwrapPaginated<ReportPromissoryNoteListItem>(listData);
 
   return (
     <div className="space-y-6">
@@ -641,8 +719,9 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
           <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Sayısı</h4>
           {notes?.monthlyCounts && notes.monthlyCounts.length > 0 ? (
             <div className="flex items-end gap-2 h-40">
-              {notes.monthlyCounts.map((item: any, idx: number) => {
-                const maxCount = Math.max(...notes.monthlyCounts.map((i: any) => i.count));
+              {notes.monthlyCounts.map((item, idx) => {
+                const counts = notes.monthlyCounts || [];
+                const maxCount = Math.max(...counts.map((i) => i.count));
                 const height = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center">
@@ -667,8 +746,9 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
           <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Tahsilatı</h4>
           {notes?.monthlyRevenue && notes.monthlyRevenue.length > 0 ? (
             <div className="flex items-end gap-2 h-40">
-              {notes.monthlyRevenue.map((item: any, idx: number) => {
-                const maxRevenue = Math.max(...notes.monthlyRevenue.map((i: any) => i.revenue));
+              {notes.monthlyRevenue.map((item, idx) => {
+                const revenues = notes.monthlyRevenue || [];
+                const maxRevenue = Math.max(...revenues.map((i) => i.revenue));
                 const height = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center">
@@ -712,7 +792,7 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {byParty.map((party: any) => (
+                {byParty.map((party) => (
                   <tr key={party.partyId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900 dark:text-white">{party.partyName}</p>
@@ -782,7 +862,7 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
                 ].map(tab => (
                   <Button
                     key={tab.key}
-                    onClick={() => { setListFilter(tab.key as any); setListPage(1); }}
+                    onClick={() => { setListFilter(tab.key as "active" | "overdue" | "paid" | "all"); setListPage(1); }}
                     variant="ghost"
                     className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors !w-auto !h-auto rounded-none rounded-t-md ${listFilter === tab.key
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/10'
@@ -853,10 +933,10 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
             </div>
 
             {/* Pagination */}
-            {listMeta && listMeta.totalPages > 1 && (
+            {(listMeta as any) && (listMeta as any).totalPages > 1 && (
               <div className="px-4 py-3 border-t flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                  Toplam {listMeta.total} senet
+                  Toplam {(listMeta as any).total} senet
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -867,11 +947,11 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <span className="text-sm">
-                    {listPage} / {listMeta.totalPages}
+                    {listPage} / {(listMeta as any).totalPages}
                   </span>
                   <button
-                    onClick={() => setListPage(p => Math.min(listMeta.totalPages, p + 1))}
-                    disabled={listPage >= listMeta.totalPages}
+                    onClick={() => setListPage(p => Math.min((listMeta as any).totalPages, p + 1))}
+                    disabled={listPage >= (listMeta as any).totalPages}
                     className="p-1.5 border rounded disabled:opacity-50 hover:bg-gray-100"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -1083,10 +1163,10 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
             </div>
 
             {/* Pagination */}
-            {meta && meta.totalPages > 1 && (
+            {(meta as any) && (meta as any).totalPages > 1 && (
               <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                  Toplam {meta.total} hasta
+                  Toplam {(meta as any).total} hasta
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1097,10 +1177,10 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
                   >
                     Önceki
                   </Button>
-                  <span className="text-sm">{page} / {meta.totalPages}</span>
+                  <span className="text-sm">{page} / {(meta as any).totalPages}</span>
                   <Button
-                    onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
-                    disabled={page >= meta.totalPages}
+                    onClick={() => setPage(p => Math.min((meta as any).totalPages, p + 1))}
+                    disabled={page >= (meta as any).totalPages}
                     variant="outline"
                     className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
@@ -1269,10 +1349,10 @@ function ActivityTab() {
             </div>
 
             {/* Pagination */}
-            {pagination && pagination.total > 0 && (
+            {(pagination as any) && (pagination as any).total > 0 && (
               <div className="px-4 py-3 border-t bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Toplam {pagination.total} kayit, Sayfa {page}/{pagination.totalPages}
+                  Toplam {(pagination as any).total} kayit, Sayfa {page}/{(pagination as any).totalPages}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1297,8 +1377,8 @@ function ActivityTab() {
                     ]}
                   />
                   <Button
-                    onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
-                    disabled={page >= pagination.totalPages}
+                    onClick={() => setPage(p => Math.min(Number((pagination as any).totalPages), p + 1))}
+                    disabled={page >= Number((pagination as any).totalPages)}
                     variant="outline"
                     className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
@@ -1454,10 +1534,10 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
             </div>
 
             {/* Pagination */}
-            {meta && meta.total_pages > 1 && (
+            {(meta as any) && (meta as any).total_pages > 1 && (
               <div className="px-4 py-3 border-t bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Toplam {meta.total} işlem
+                  Toplam {(meta as any).total} işlem
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1468,10 +1548,10 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
                   >
                     Önceki
                   </Button>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">{page} / {meta.total_pages}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{page} / {(meta as any).total_pages}</span>
                   <Button
-                    onClick={() => setPage(p => Math.min(meta.total_pages, p + 1))}
-                    disabled={page >= meta.total_pages}
+                    onClick={() => setPage(p => Math.min(Number((meta as any).total_pages), p + 1))}
+                    disabled={page >= Number((meta as any).total_pages)}
                     variant="outline"
                     className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >

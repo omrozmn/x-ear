@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
-import { FileText, AlertTriangle, Info, CheckCircle, User } from 'lucide-react';
+import { FileText, AlertTriangle, Info, User } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface PartyNote {
@@ -132,6 +132,8 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     }
   };
 
+  // Helper functions for commented-out priority/tags UI sections
+  /*
   const removeTag = (tagToRemove: string) => {
     setFormData(prev => ({
       ...prev,
@@ -163,33 +165,24 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
 
   const getPriorityText = (priority: string): string => {
     switch (priority) {
-      case 'low':
-        return 'Düşük';
-      case 'medium':
-        return 'Orta';
-      case 'high':
-        return 'Yüksek';
-      case 'critical':
-        return 'Kritik';
-      default:
-        return priority;
+      case 'low': return 'Düşük';
+      case 'medium': return 'Orta';
+      case 'high': return 'Yüksek';
+      case 'critical': return 'Kritik';
+      default: return priority;
     }
   };
 
   const getCategoryText = (category: string): string => {
     switch (category) {
-      case 'medical':
-        return 'Tıbbi';
-      case 'administrative':
-        return 'İdari';
-      case 'technical':
-        return 'Teknik';
-      case 'general':
-        return 'Genel';
-      default:
-        return category;
+      case 'medical': return 'Tıbbi';
+      case 'administrative': return 'İdari';
+      case 'technical': return 'Teknik';
+      case 'general': return 'Genel';
+      default: return category;
     }
   };
+  */
 
   return (
     <Modal
@@ -269,7 +262,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
                     name="priority"
                     value={priority.value}
                     checked={formData.priority === priority.value}
-                    onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as PartyNote['priority'] }))}
                     className="sr-only"
                   />
                   <div className={`flex items-center justify-center p-2 border rounded-lg cursor-pointer transition-colors text-sm ${
@@ -291,7 +284,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
             </label>
             <select
               value={formData.category || 'general'}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as PartyNote['category'] }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="medical">Tıbbi</option>
@@ -309,7 +302,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           </label>
           <select
             value={formData.category || 'general'}
-            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
+            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as PartyNote['category'] }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="general">Genel</option>

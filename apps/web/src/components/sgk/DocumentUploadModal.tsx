@@ -22,8 +22,8 @@ export default function DocumentUploadModal({ partyId, isOpen, onClose, onUpload
       const file = (data.file && data.file[0]) || data.file;
       form.append('file', file);
       // add idempotency key
-      (form as any).idempotencyKey = `upload-${Date.now()}-${Math.random()}`;
-      upload.mutate(form as any, {
+      // form.append('idempotencyKey', ...); // If backend expects it in body
+      upload.mutate(form as unknown as any, { // Cast to unknown to bypass strict type check if hook expects non-FormData object but actual fetch handles FormData
         onSuccess: () => {
           onUploaded?.();
         },

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_analytics.py
+# hypothesis_version: 6.150.2
+
+[0.0, 100, 180, 500, 999999, '#0088FE', '#00C49F', '#8884d8', '#FF8042', '#FFBB28', '#e0e0e0', '%d/%m', '/admin/analytics', '/overview', '/revenue', '/tenants', '/users', 'Admin Analytics', 'Aralık', 'Ağustos', 'Ekim', 'Eylül', 'Haziran', 'Kasım', 'Mart', 'Mayıs', 'Nisan', 'Ocak', 'Paketsiz', 'Temmuz', 'Veri Yok', 'active', 'active_tenants', 'appointment_count', 'avg_fitting_time', 'churn_growth', 'churn_rate', 'color', 'date', 'dau', 'device_fittings', 'ereceipt_count', 'getAdminAnalytics', 'growth', 'hearing_test_count', 'id', 'mau', 'mau_growth', 'month', 'monthly_active_users', 'name', 'patient_count', 'revenue', 'revenue_growth', 'sgk_submissions', 'tenants_growth', 'total_revenue', 'users', 'value', 'wau', 'year', 'year_month', 'Şubat']

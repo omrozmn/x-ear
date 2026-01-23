@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
-import { 
-  InvoiceFormSchema, 
-  InvoiceFormData, 
-  InvoiceFieldDefinition, 
-  InvoiceFieldSection 
+import {
+  InvoiceFormSchema,
+  InvoiceFormData,
+  InvoiceFieldDefinition,
+  InvoiceFieldSection
 } from '../types/invoice-schema';
 
 interface ConditionalFieldsHookResult {
   visibleSections: InvoiceFieldSection[];
   visibleFields: Record<string, InvoiceFieldDefinition[]>;
   shouldShowSection: (section: InvoiceFieldSection) => boolean;
-  shouldShowField: (field: InvoiceFieldDefinition, sectionData: any) => boolean;
+  shouldShowField: (field: InvoiceFieldDefinition, sectionData: Record<string, unknown>) => boolean;
   getFieldDependencies: (sectionName: string, fieldId: string) => string[];
   validateDependencies: (formData: InvoiceFormData) => Record<string, string[]>;
 }
@@ -19,7 +19,7 @@ export const useConditionalFields = (
   schema: InvoiceFormSchema,
   formData: InvoiceFormData
 ): ConditionalFieldsHookResult => {
-  
+
   // Check if a section should be visible based on conditions
   const shouldShowSection = (section: InvoiceFieldSection): boolean => {
     if (!section.conditional) return true;
@@ -31,7 +31,7 @@ export const useConditionalFields = (
   };
 
   // Check if a field should be visible based on conditions
-  const shouldShowField = (field: InvoiceFieldDefinition, sectionData: any): boolean => {
+  const shouldShowField = (field: InvoiceFieldDefinition, sectionData: Record<string, unknown>): boolean => {
     if (!field.conditional) return true;
 
     const { dependsOn, condition, value } = field.conditional;
@@ -42,8 +42,8 @@ export const useConditionalFields = (
 
   // Evaluate condition based on type
   const evaluateCondition = (
-    fieldValue: any, 
-    condition: string, 
+    fieldValue: unknown,
+    condition: string,
     expectedValue: string | number | boolean
   ): boolean => {
     switch (condition) {
@@ -63,7 +63,7 @@ export const useConditionalFields = (
   };
 
   // Get nested value from form data
-  const getNestedValue = (data: any, path: string): any => {
+  const getNestedValue = (data: Record<string, unknown>, path: string): unknown => {
     if (path.includes('.')) {
       const [section, field] = path.split('.');
       return data[section]?.[field];
@@ -74,11 +74,11 @@ export const useConditionalFields = (
   // Get visible sections based on invoice type and conditions
   const visibleSections = useMemo(() => {
     const invoiceTypeConfig = schema.invoiceTypes[formData.invoiceType];
-    
+
     if (!invoiceTypeConfig) return [];
 
     const sections: InvoiceFieldSection[] = [];
-    
+
     // Add required sections
     invoiceTypeConfig.requiredFields.forEach(sectionKey => {
       const section = schema.fieldDefinitions[sectionKey];
@@ -102,10 +102,10 @@ export const useConditionalFields = (
   // Get visible fields for each section
   const visibleFields = useMemo(() => {
     const result: Record<string, InvoiceFieldDefinition[]> = {};
-    
+
     visibleSections.forEach(section => {
-      const sectionData = formData[section.name] || {};
-      result[section.name] = Object.values(section.fields).filter(field => 
+      const sectionData = (formData as any)[section.name] || ({} as Record<string, unknown>);
+      result[section.name] = Object.values(section.fields).filter(field =>
         shouldShowField(field, sectionData)
       );
     });
@@ -117,7 +117,7 @@ export const useConditionalFields = (
   // Get field dependencies for a specific field
   const getFieldDependencies = (sectionName: string, fieldId: string): string[] => {
     const dependencies: string[] = [];
-    
+
     // Check section dependencies
     const section = schema.fieldDefinitions[sectionName];
     if (section?.conditional) {
@@ -143,13 +143,13 @@ export const useConditionalFields = (
     const missingDependencies: Record<string, string[]> = {};
 
     visibleSections.forEach(section => {
-      const sectionData = data[section.name] || {};
-      
+      const sectionData = (formData as any)[section.name] || ({} as Record<string, unknown>);
+
       Object.values(section.fields).forEach(field => {
         if (shouldShowField(field, sectionData) && field.conditional) {
           const { dependsOn } = field.conditional;
           const depValue = sectionData[dependsOn];
-          
+
           if (depValue === undefined || depValue === null || depValue === '') {
             const fieldKey = `${section.name}.${field.id}`;
             if (!missingDependencies[fieldKey]) {
@@ -189,7 +189,7 @@ export const useFieldVisibility = (
   // Get all visible field paths
   const visibleFieldPaths = useMemo(() => {
     const paths: string[] = [];
-    
+
     visibleSections.forEach(section => {
       const fields = visibleFields[section.name] || [];
       fields.forEach(field => {
@@ -208,7 +208,7 @@ export const useFieldVisibility = (
   // Get section visibility status
   const getSectionVisibility = () => {
     const visibility: Record<string, boolean> = {};
-    
+
     Object.keys(schema.fieldDefinitions).forEach(sectionKey => {
       const section = schema.fieldDefinitions[sectionKey];
       visibility[sectionKey] = shouldShowSection(section);
@@ -222,7 +222,7 @@ export const useFieldVisibility = (
     const section = schema.fieldDefinitions[sectionName];
     if (!section) return {};
 
-    const sectionData = formData[sectionName] || {};
+    const sectionData = (formData[sectionName] || {}) as Record<string, unknown>;
     const visibility: Record<string, boolean> = {};
 
     Object.values(section.fields).forEach(field => {
@@ -249,9 +249,9 @@ export const useFieldAnimations = (
 ) => {
   const [animatingFields, setAnimatingFields] = useState<Set<string>>(new Set());
 
-  const animateFieldChange = (fieldPath: string, isVisible: boolean) => {
+  const animateFieldChange = (fieldPath: string) => {
     setAnimatingFields((prev: Set<string>) => new Set(prev).add(fieldPath));
-    
+
     setTimeout(() => {
       setAnimatingFields((prev: Set<string>) => {
         const newSet = new Set(prev);

@@ -422,17 +422,17 @@ export const useCreateSgkUpload = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get SGK documents for a specific patient
- * @summary Get Patient Sgk Documents
+ * Get SGK documents for a specific party
+ * @summary Get Party Sgk Documents
  */
-export const listPatientSgkDocuments = (
-    patientId: string,
+export const listPartySgkDocuments = (
+    partyId: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<unknown>(
-      {url: `/api/patients/${patientId}/sgk-documents`, method: 'GET', signal
+      {url: `/api/parties/${partyId}/sgk-documents`, method: 'GET', signal
     },
       );
     }
@@ -440,69 +440,69 @@ export const listPatientSgkDocuments = (
 
 
 
-export const getListPatientSgkDocumentsQueryKey = (patientId?: string,) => {
+export const getListPartySgkDocumentsQueryKey = (partyId?: string,) => {
     return [
-    `/api/patients/${patientId}/sgk-documents`
+    `/api/parties/${partyId}/sgk-documents`
     ] as const;
     }
 
     
-export const getListPatientSgkDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>>, }
+export const getListPartySgkDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof listPartySgkDocuments>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartySgkDocuments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPatientSgkDocumentsQueryKey(patientId);
+  const queryKey =  queryOptions?.queryKey ?? getListPartySgkDocumentsQueryKey(partyId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientSgkDocuments>>> = ({ signal }) => listPatientSgkDocuments(patientId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPartySgkDocuments>>> = ({ signal }) => listPartySgkDocuments(partyId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPartySgkDocuments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type ListPatientSgkDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientSgkDocuments>>>
-export type ListPatientSgkDocumentsQueryError = HTTPValidationError
+export type ListPartySgkDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof listPartySgkDocuments>>>
+export type ListPartySgkDocumentsQueryError = HTTPValidationError
 
 
-export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>> & Pick<
+export function useListPartySgkDocuments<TData = Awaited<ReturnType<typeof listPartySgkDocuments>>, TError = HTTPValidationError>(
+ partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartySgkDocuments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientSgkDocuments>>,
+          Awaited<ReturnType<typeof listPartySgkDocuments>>,
           TError,
-          Awaited<ReturnType<typeof listPatientSgkDocuments>>
+          Awaited<ReturnType<typeof listPartySgkDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>> & Pick<
+export function useListPartySgkDocuments<TData = Awaited<ReturnType<typeof listPartySgkDocuments>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartySgkDocuments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listPatientSgkDocuments>>,
+          Awaited<ReturnType<typeof listPartySgkDocuments>>,
           TError,
-          Awaited<ReturnType<typeof listPatientSgkDocuments>>
+          Awaited<ReturnType<typeof listPartySgkDocuments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>>, }
+export function useListPartySgkDocuments<TData = Awaited<ReturnType<typeof listPartySgkDocuments>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartySgkDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get Patient Sgk Documents
+ * @summary Get Party Sgk Documents
  */
 
-export function useListPatientSgkDocuments<TData = Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientSgkDocuments>>, TError, TData>>, }
+export function useListPartySgkDocuments<TData = Awaited<ReturnType<typeof listPartySgkDocuments>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPartySgkDocuments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListPatientSgkDocumentsQueryOptions(patientId,options)
+  const queryOptions = getListPartySgkDocumentsQueryOptions(partyId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

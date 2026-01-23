@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseEnvelopeUnionSMSProviderConfigReadNoneTypeError = unknown | null;
+export type ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeError = unknown | null;

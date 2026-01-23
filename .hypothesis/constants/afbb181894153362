@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/birfatura/invoice_sync.py
+# hypothesis_version: 6.150.2
+
+['0', '1', 'BIRFATURA_MOCK', 'EFATURA', 'FLASK_ENV', 'INCOMING', 'INVOICE', 'InBoxInvoices', 'OUTGOING', 'OutBoxEDocuments', 'PENDING', 'RECEIVED', 'Result', 'SENT', 'Success', 'address', 'api_key', 'birfatura', 'city', 'currency', 'documentType', 'documentUUID', 'duplicates', 'endDateTime', 'errors', 'incoming', 'integration_key', 'invoiceDate', 'invoiceId', 'invoiceNumber', 'invoice_integration', 'issueDate', 'line_total', 'name', 'objects', 'outgoing', 'pageNumber', 'pageSize', 'product_code', 'product_description', 'product_name', 'production', 'quantity', 'receiverName', 'receiverTaxNumber', 'receiverVKN', 'secret_key', 'startDateTime', 'subtotal', 'systemType', 'tax_amount', 'tax_number', 'tax_office', 'tax_rate', 'total', 'total_amount', 'unit', 'unit_price', 'uuid']

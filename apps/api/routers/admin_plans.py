@@ -11,7 +11,7 @@ import uuid
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope
-from schemas.plans import PlanCreate, PlanUpdate, PlanRead
+from schemas.plans import PlanCreate, PlanUpdate, DetailedPlanRead
 from models.admin_user import AdminUser
 from models.plan import Plan, PlanType, BillingInterval
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -55,7 +55,7 @@ def list_plans(
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data={
-            "items": [PlanRead.model_validate(p) for p in plans],
+            "items": [DetailedPlanRead.model_validate(p) for p in plans],
             "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
         })
     except Exception as e:
@@ -87,7 +87,7 @@ def create_plan(
         db_session.add(plan)
         db_session.commit()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return ResponseEnvelope(data={"plan": PlanRead.model_validate(plan)})
+        return ResponseEnvelope(data={"plan": DetailedPlanRead.model_validate(plan)})
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create plan error: {e}")
@@ -104,7 +104,7 @@ def get_plan(
     if not plan:
         raise HTTPException(status_code=404, detail={"message": "Plan not found", "code": "NOT_FOUND"})
     # Use Pydantic schema for type-safe serialization (NO to_dict())
-    return ResponseEnvelope(data={"plan": PlanRead.model_validate(plan).model_dump(by_alias=True, include_relationships=True)})
+    return ResponseEnvelope(data={"plan": DetailedPlanRead.model_validate(plan).model_dump(by_alias=True, include_relationships=True)})
 
 @router.put("/{plan_id}", operation_id="updateAdminPlan", response_model=PlanDetailResponse)
 def update_plan(
@@ -132,7 +132,7 @@ def update_plan(
         plan.updated_at = datetime.utcnow()
         db_session.commit()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return ResponseEnvelope(data={"plan": PlanRead.model_validate(plan)})
+        return ResponseEnvelope(data={"plan": DetailedPlanRead.model_validate(plan)})
     except HTTPException:
         raise
     except Exception as e:

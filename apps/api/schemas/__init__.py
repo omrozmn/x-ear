@@ -71,8 +71,8 @@ from .users import (
     UserRead,
     UserProfile,
     RoleBase,
-    RoleRead,
-    PermissionRead,
+    UserRoleRead,
+    UserPermissionRead,
 )
 
 # Branch schemas
@@ -139,6 +139,7 @@ from .auth import (
     OTPVerifyRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
+    AuthAdminUserRead,
 )
 
 # Appointment schemas
@@ -159,6 +160,7 @@ from .campaigns import (
     SMSLogStatus,
     SMSLogRead,
 )
+from .notification_templates import EmailTemplateRead
 
 # SMS schemas
 from .sms import *
@@ -168,7 +170,7 @@ from .plans import (
     PlanBase,
     PlanCreate,
     PlanUpdate,
-    PlanRead,
+    DetailedPlanRead,
     Plan,
     PlanInput,
 )
@@ -195,10 +197,11 @@ from .roles import (
 from .activity_logs import (
     ActivityLogBase,
     ActivityLogCreate,
-    ActivityLogRead,
     ActivityLogStats,
     ActivityLog,
 )
+from .audit import AuditLogRead
+from .sms_packages import DetailedSmsPackageRead
 
 # AI Layer schemas
 from .ai import (
@@ -246,6 +249,22 @@ from .ai import (
     AIActionListResponse,
     AIAuditLogListResponse,
     AIUsageListResponse,
+)
+
+# Email Integration schemas
+from .email import (
+    EmailStatus,
+    SMTPConfigBase,
+    SMTPConfigCreate,
+    SMTPConfigUpdate,
+    SMTPConfigResponse,
+    SendTestEmailRequest,
+    SendTestEmailResponse,
+    SendEmailRequest,
+    SendEmailResponse,
+    EmailLogResponse,
+    EmailLogListRequest,
+    EmailLogListResponse,
 )
 
 __all__ = [
@@ -417,4 +436,24 @@ __all__ = [
     "AIActionListResponse",
     "AIAuditLogListResponse",
     "AIUsageListResponse",
+    # Email Integration
+    "EmailStatus",
+    "SMTPConfigBase",
+    "SMTPConfigCreate",
+    "SMTPConfigUpdate",
+    "SMTPConfigResponse",
+    "SendTestEmailRequest",
+    "SendTestEmailResponse",
+    "SendEmailRequest",
+    "SendEmailResponse",
+    "EmailLogResponse",
+    "EmailLogListRequest",
+    "EmailLogListResponse",
+    "AuthAdminUserRead",
+    "AuditLogRead",
+    "EmailTemplateRead",
+    "DetailedPlanRead",
+    "DetailedSmsPackageRead",
+    "UserRoleRead",
+    "UserPermissionRead",
 ]

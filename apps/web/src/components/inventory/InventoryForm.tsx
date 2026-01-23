@@ -1,10 +1,10 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
 import { Save, X, AlertCircle, Package } from 'lucide-react';
-import { 
-  InventoryFormData, 
-  InventoryCategory, 
-  InventoryType, 
+import {
+  InventoryFormData,
+  InventoryCategory,
+  InventoryType,
   EarDirection,
   InventoryItem,
   CreateInventoryData,
@@ -55,17 +55,18 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [featureInput, setFeatureInput] = useState('');
-  
+
   // KDV and calculated fields - Load from localStorage
   const [kdvRate, setKdvRate] = useState<number>(() => {
     const saved = localStorage.getItem('inventory_kdv_rate');
     return saved ? parseFloat(saved) : 20;
   });
-  const [onTrial, setOnTrial] = useState<number>(0);
-  const [priceWithKdv, setPriceWithKdv] = useState<number>(0);
-  const [kdvAmount, setKdvAmount] = useState<number>(0);
+  // Computed values exposed for potential future display
+  // const [onTrial, setOnTrial] = useState<number>(0);
+  // const [priceWithKdv, setPriceWithKdv] = useState<number>(0);
+  // const [kdvAmount, setKdvAmount] = useState<number>(0);
   const [totalInventoryValue, setTotalInventoryValue] = useState<number>(0);
-  
+
   // KDV Dahil checkboxes - Load from localStorage
   const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(() => {
     const saved = localStorage.getItem('inventory_price_kdv_included');
@@ -75,7 +76,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     const saved = localStorage.getItem('inventory_cost_kdv_included');
     return saved === 'true';
   });
-  
+
   // Serial number management
   const [isSerialModalOpen, setIsSerialModalOpen] = useState<boolean>(false);
   const [serials, setSerials] = useState<string[]>([]);
@@ -104,7 +105,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         warranty: item.warranty || 12,
         location: item.location || ''
       });
-      
+
       // Load serials if item exists
       setSerials(item.availableSerials || []);
     }
@@ -126,17 +127,18 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
   // Calculate KDV and total inventory value automatically
   useEffect(() => {
     // Calculate prices based on KDV inclusion
-    const priceExcludingKdv = isPriceKdvIncluded 
-      ? formData.price / (1 + kdvRate / 100) 
+    const priceExcludingKdv = isPriceKdvIncluded
+      ? formData.price / (1 + kdvRate / 100)
       : formData.price;
-    const calculatedPriceWithKdv = isPriceKdvIncluded 
-      ? formData.price 
+    const calculatedPriceWithKdv = isPriceKdvIncluded
+      ? formData.price
       : formData.price * (1 + kdvRate / 100);
-    const calculatedKdvAmount = calculatedPriceWithKdv - priceExcludingKdv;
-    
-    setPriceWithKdv(calculatedPriceWithKdv);
-    setKdvAmount(calculatedKdvAmount);
-    
+    // const calculatedKdvAmount = calculatedPriceWithKdv - priceExcludingKdv;
+
+    // Update state with calculated values - commented out as not displayed
+    // setPriceWithKdv(calculatedPriceWithKdv);
+    // setKdvAmount(calculatedKdvAmount);
+
     // Calculate total inventory value (always use price excluding KDV)
     const totalValue = priceExcludingKdv * formData.availableInventory;
     setTotalInventoryValue(totalValue);
@@ -179,7 +181,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -195,14 +197,14 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         const categoryPrefix = finalFormData.category.substring(0, 2).toUpperCase();
         finalFormData.stockCode = `${brandPrefix}-${categoryPrefix}-${timestamp}`;
       }
-      
+
       // Convert empty barcode to null to avoid UNIQUE constraint issues
       if (!finalFormData.barcode || finalFormData.barcode.trim() === '') {
         finalFormData.barcode = undefined;
       }
-      
+
       let savedItem: InventoryItem;
-      
+
       if (item) {
         // Update existing item
         const updateData: UpdateInventoryData = {
@@ -229,12 +231,12 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         });
         savedItem = await inventoryService.createItem(createData);
       }
-      
+
       onSave(savedItem);
     } catch (error) {
       console.error('Save failed:', error);
-      setErrors({ 
-        submit: error instanceof Error ? error.message : 'Kaydetme işlemi başarısız oldu' 
+      setErrors({
+        submit: error instanceof Error ? error.message : 'Kaydetme işlemi başarısız oldu'
       });
     } finally {
       setLoading(false);
@@ -269,24 +271,25 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
   const handleSaveSerials = (newSerials: string[]) => {
     // Update local state
     setSerials(newSerials);
-    
+
     // Also update formData so it gets saved when form is submitted
     setFormData(prev => ({
       ...prev,
       availableSerials: newSerials
     }));
-    
+
     setIsSerialModalOpen(false);
   };
 
-  const categoryTypes: Record<InventoryCategory, InventoryType[]> = {
-    hearing_aid: ['digital_programmable', 'rechargeable_digital'],
-    battery: ['zinc_air'],
-    accessory: ['maintenance_kit'],
-    ear_mold: ['custom_silicone'],
-    cleaning_supplies: ['maintenance_kit'],
-    amplifiers: ['wireless_amplifier']
-  };
+  // Category-to-type mapping - reserved for potential dynamic type selection
+  // const categoryTypes: Record<InventoryCategory, InventoryType[]> = {
+  //   hearing_aid: ['digital_programmable', 'rechargeable_digital'],
+  //   battery: ['zinc_air'],
+  //   accessory: ['maintenance_kit'],
+  //   ear_mold: ['custom_silicone'],
+  //   cleaning_supplies: ['maintenance_kit'],
+  //   amplifiers: ['wireless_amplifier']
+  // };
 
   return (
     <div className={className}>
@@ -306,7 +309,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         <div className="border-b border-gray-200 pb-2 mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Temel Bilgiler</h3>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -316,9 +319,8 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.name ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-300' : 'border-gray-300'
+                }`}
               placeholder="Ürün adını girin"
             />
             {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -398,7 +400,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
           <h3 className="text-lg font-semibold text-gray-900">Stok ve Fiyatlandırma</h3>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -412,9 +414,8 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 const val = e.target.value;
                 handleInputChange('availableInventory', val === '' ? 0 : parseInt(val) || 0);
               }}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.availableInventory ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.availableInventory ? 'border-red-300' : 'border-gray-300'
+                }`}
             />
             {errors.availableInventory && <p className="mt-1 text-sm text-red-600">{errors.availableInventory}</p>}
           </div>
@@ -428,9 +429,8 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               min="0"
               value={formData.reorderLevel}
               onChange={(e) => handleInputChange('reorderLevel', e.target.value === '' ? 0 : parseInt(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.reorderLevel ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reorderLevel ? 'border-red-300' : 'border-gray-300'
+                }`}
             />
             {errors.reorderLevel && <p className="mt-1 text-sm text-red-600">{errors.reorderLevel}</p>}
           </div>
@@ -463,9 +463,8 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 const val = e.target.value;
                 handleInputChange('price', val === '' ? 0 : parseFloat(val) || 0);
               }}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.price ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.price ? 'border-red-300' : 'border-gray-300'
+                }`}
             />
             {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
             {isPriceKdvIncluded ? (
@@ -505,9 +504,8 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 const val = e.target.value;
                 handleInputChange('cost', val === '' ? 0 : parseFloat(val) || 0);
               }}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.cost ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.cost ? 'border-red-300' : 'border-gray-300'
+                }`}
             />
             {errors.cost && <p className="mt-1 text-sm text-red-600">{errors.cost}</p>}
             {isCostKdvIncluded ? (
@@ -561,7 +559,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
           <h3 className="text-lg font-semibold text-gray-900">Tedarik ve Detaylar</h3>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <SupplierAutocomplete
@@ -614,9 +612,8 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               min="0"
               value={formData.warranty}
               onChange={(e) => handleInputChange('warranty', e.target.value === '' ? 0 : parseInt(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.warranty ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.warranty ? 'border-red-300' : 'border-gray-300'
+                }`}
             />
             {errors.warranty && <p className="mt-1 text-sm text-red-600">{errors.warranty}</p>}
           </div>
@@ -648,7 +645,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
           <h3 className="text-lg font-semibold text-gray-900">Özellikler ve Seri Numaralar</h3>
         </div>
-        
+
         {/* Features */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -714,7 +711,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
           <h3 className="text-lg font-semibold text-gray-900">Açıklama</h3>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Açıklama

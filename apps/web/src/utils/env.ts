@@ -1,8 +1,14 @@
+declare global {
+  interface Window {
+    __ENV__?: Record<string, string | undefined>;
+  }
+}
+
 export function getEnvVar(key: string, fallback?: string): string | undefined {
   try {
     // Vite / import.meta.env
-    if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
-      const v = (import.meta as any).env[key];
+    if (typeof import.meta.env !== 'undefined') {
+      const v = import.meta.env[key];
       if (v !== undefined) return v;
     }
   } catch (e) {
@@ -10,8 +16,8 @@ export function getEnvVar(key: string, fallback?: string): string | undefined {
   }
 
   try {
-    if (typeof process !== 'undefined' && (process as any).env) {
-      const v = (process as any).env[key];
+    if (typeof process !== 'undefined' && process.env) {
+      const v = process.env[key];
       if (v !== undefined) return v;
     }
   } catch (e) {

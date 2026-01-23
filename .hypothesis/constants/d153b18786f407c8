@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/pos_commission.py
+# hypothesis_version: 6.150.2
+
+[2.49, 2.75, 2.99, 3.25, 3.49, 3.75, 3.99, 4.25, 4.49, 4.75, 4.99, 5.25, 5.49, 100, 400, 404, 501, '/api/pos/commission', '/calculate', '/installment-options', '/rates', '/rates/system', '1', 'Invalid amount', 'POS Commission', 'Rates required', 'Tek Çekim', 'Tenant not found', 'Tenant rates updated', 'available_providers', 'commission_amount', 'commission_rate', 'data', 'defaults', 'effective_rates', 'gross_amount', 'installment_count', 'is_custom', 'iyzico', 'label', 'message', 'monthly_payment', 'net_amount', 'options', 'paytr', 'pos_commission_rates', 'provider', 'rates', 'settings', 'success', 'system_rates', 'tenant_rates', 'xear_pos']

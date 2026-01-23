@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/device_replacement.py
+# hypothesis_version: 6.150.2
+
+[100, 255, 'ReturnInvoice', 'all, delete-orphan', 'createdAt', 'date', 'device_replacements', 'devices.id', 'gibSent', 'gibSentDate', 'id', 'invoiceCreatedDate', 'invoiceId', 'invoiceNote', 'invoiceNumber', 'newDeviceInfo', 'newInventoryId', 'oldDeviceId', 'oldDeviceInfo', 'parties.id', 'partyId', 'pending_invoice', 'replacement', 'replacementId', 'returnInvoiceNote', 'return_invoices', 'status', 'supplierInvoiceDate', 'supplierInvoiceId', 'supplierName', 'tenants.id', 'updatedAt']

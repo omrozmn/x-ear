@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/tenant.py
+# hypothesis_version: 6.150.2
+
+[100, 255, '-', 'TenantSMTPConfig', '[-\\s]+', '[^\\w\\s-]', 'active', 'affiliate_user.id', 'billingEmail', 'cancelled', 'companyInfo', 'createdAt', 'currentPlan', 'currentPlanId', 'currentUsers', 'deletedAt', 'description', 'dynamic', 'featureUsage', 'id', 'idx_tenants_slug', 'idx_tenants_status', 'isActive', 'maxUsers', 'name', 'ownerEmail', 'settings', 'slug', 'status', 'subscriptionEndDate', 'suspended', 'tenant', 'tenants', 'trial', 'updatedAt', 'xear_hearing']

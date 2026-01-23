@@ -2,21 +2,9 @@ import * as React from 'react';
 import { Button, Input } from '@x-ear/ui-web';
 import { useStartBulkUtsRegistration } from '@/hooks/uts/useUts';
 import { outbox } from '@/utils/outbox';
-import parseAndMapCsv from '@/utils/uts-csv';
+import { parseAndMapCsv, UtsPayload, UtsCsvPreview } from '@/utils/uts-csv';
 
-// Types derived from CSV parsing utilities
-type UtsPayload = {
-  serial: string;
-  manufacturer: string;
-  model: string;
-  partyTc: string;
-};
-
-type UtsCsvPreview = {
-  rows: Record<string, string>[];
-  mapped: { raw: Record<string, string>; mapped: UtsPayload }[];
-  errors: { row: number; errors: string[] }[];
-};
+// Removed redundant local types UtsPayload and UtsCsvPreview
 
 export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = ({ onStarted }) => {
   const [fileContent, setFileContent] = React.useState<string>('');
@@ -30,7 +18,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
     reader.onload = () => {
       const text = String(reader.result || '');
       setFileContent(text);
-      const parsed = parseAndMapCsv(text) as UtsCsvPreview;
+      const parsed = parseAndMapCsv(text);
       setPreview(parsed);
     };
     reader.readAsText(file);
@@ -52,8 +40,8 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
       });
 
       // Also trigger immediate processing via mutation for online case
-      const res = await (startBulk as ReturnType<typeof useStartBulkUtsRegistration>).mutateAsync({ csv: fileContent } as any);
-      const jobId = (res as { jobId?: string }).jobId || `queued-${Date.now()}`;
+      const res = await startBulk.mutateAsync({ csv: fileContent } as unknown as any);
+      const jobId = (res as { jobId?: string })?.jobId || `queued-${Date.now()}`;
       onStarted?.(jobId);
     } catch (err) {
       console.error('Failed to start UTS bulk registration:', err);
@@ -103,7 +91,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
         </div>
       )}
       <div style={{ marginTop: 8 }}>
-        <Button onClick={handleSubmit} disabled={(startBulk as ReturnType<typeof useStartBulkUtsRegistration>).isPending || !fileContent}>
+        <Button onClick={handleSubmit} disabled={startBulk.isPending || !fileContent}>
           CSV ile Toplu Kayıt
         </Button>
       </div>

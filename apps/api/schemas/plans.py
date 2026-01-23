@@ -36,12 +36,12 @@ class PlanUpdate(AppBaseModel):
     max_users: Optional[int] = Field(None, alias="maxUsers")
 
 
-class PlanRead(PlanBase, IDMixin, TimestampMixin):
+class DetailedPlanRead(PlanBase, IDMixin, TimestampMixin):
     """Schema for reading a plan"""
     slug: Optional[str] = None
     tenant_count: int = Field(0, alias="tenantCount", description="Number of tenants using this plan")
 
 
 # Type aliases for frontend compatibility
-Plan = PlanRead
+Plan = DetailedPlanRead
 PlanInput = PlanCreate

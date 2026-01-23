@@ -4,17 +4,17 @@
  * @version 1.0.0
  */
 
-import React, { useState, useMemo } from 'react';
-import { Button, Input, Tabs, TabsContent, TabsList, TabsTrigger, Modal, Pagination } from '@x-ear/ui-web';
-import { useNavigate, Outlet, useParams } from '@tanstack/react-router';
+import React, { useState } from 'react';
+import { Button, Input, Modal, Pagination } from '@x-ear/ui-web';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { useParties, useCreateParty, useDeleteParty } from '../hooks/useParties';
 import { Party } from '../types/party';
-import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw, Upload, Edit, Trash2, X, Settings } from 'lucide-react';
+import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings } from 'lucide-react';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
 import { useUpdateParty } from '../hooks/useParties';
 import { PartyFilters } from '../components/parties/PartyFilters';
 import { PartyList } from '../components/parties/PartyList';
-import { PartyCSVUpload } from '../components/parties/csv/PartyCSVUpload';
+// import { PartyCSVUpload } from '../components/parties/csv/PartyCSVUpload'; // UniversalImporter is used instead
 import UniversalImporter from '../components/importer/UniversalImporter';
 import { useToastHelpers, Card } from '@x-ear/ui-web';
 import partiesSchema from '../components/importer/schemas/parties';
@@ -27,7 +27,7 @@ import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
 export function DesktopPartiesPage() {
   const { success: showSuccess, error: showError } = useToastHelpers();
   const navigate = useNavigate();
-  const { partyId } = useParams({ strict: false }) as { partyId?: string };
+  useParams({ strict: false });
 
   // State
   const [searchValue, setSearchValue] = useState('');
@@ -103,10 +103,12 @@ export function DesktopPartiesPage() {
     setSearchValue('');
   };
 
+  /*
   const handleCSVUpload = async (file: File) => {
     // TODO: Implement CSV upload logic
     setShowCSVModal(false);
   };
+  */
 
   const handleDeleteParty = (party: Party) => {
     setPartyToDelete(party);

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/schemas/llm_outputs.py
+# hypothesis_version: 6.150.2
+
+[0.0, 0.5, 0.8, 1.0, '<script', 'ActionPlanOutput', 'Additional metadata', 'Error code', 'Parameter name', 'Parameter value', 'Type of user intent', 'Validation errors', 'Validation warnings', '\\{\\{.*\\}\\}', '^[a-zA-Z0-9_-]+$', '^[a-z][a-z0-9_]*$', 'action', 'after', 'cancellation', 'capability_inquiry', 'clarification', 'confirmation', 'critical', 'data:text/html', 'entities', 'greeting', 'high', 'javascript:', 'low', 'medium', 'message', 'operation_id', 'plan_id', 'query', 'slot_fill', 'tool_id', 'unknown', 'user']

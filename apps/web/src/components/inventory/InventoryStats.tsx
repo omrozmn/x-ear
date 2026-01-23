@@ -1,21 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import {listInventoryStats} from '@/api/client/inventory.client';
+import { listInventoryStats } from '@/api/client/inventory.client';
 
 interface InventoryStatsProps {
   className?: string;
 }
+
+import type { InventoryStats as BaseInventoryStats } from '@/api/generated/schemas';
 
 interface InventoryStats {
   total: number;
   totalValue: number;
   lowStock: number;
   outOfStock: number;
+  totalStock?: number;
   byCategory?: Record<string, number>;
   byStatus?: Record<string, number>;
   hearingAid?: {
     count: number;
     stock: number;
   };
+}
+
+interface ExtendedInventoryStats extends BaseInventoryStats {
+  dbTotalItems?: number;
+  totalStock?: string | number;
+  categoryBreakdown?: Record<string, { count: number }>;
+  hearingAid?: {
+    count: number;
+    stock: number;
+  };
+  lowStockCount?: number; // Backend specific
+  outOfStockCount?: number; // Backend specific
 }
 
 export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }) => {
@@ -27,27 +42,27 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     const loadStats = async () => {
       try {
         setLoading(true);
-        const response = await listInventoryStats() as any;
-        const data = response?.data || response || {};
+        const response = await listInventoryStats();
+        // The API returns more fields than the Orval schema defines
+        const data = (response?.data || response || {}) as ExtendedInventoryStats;
 
         const calculatedStats: InventoryStats = {
           // Use DB-level totals returned by the stats endpoint (avoids pagination limits)
           total: data.dbTotalItems ?? data.totalItems ?? 0,
-          totalValue: parseFloat(data.totalValue ?? 0),
-          lowStock: data.lowStockCount ?? 0,
-          outOfStock: data.outOfStockCount ?? 0,
-          byCategory: data.categoryBreakdown ? Object.keys(data.categoryBreakdown).reduce((acc: any, k: string) => {
-            acc[k] = data.categoryBreakdown[k].count ?? 0; return acc;
+          totalValue: typeof data.totalValue === 'string' ? parseFloat(data.totalValue) : (data.totalValue ?? 0),
+          lowStock: data.lowStockCount ?? data.lowStock ?? 0,
+          outOfStock: data.outOfStockCount ?? data.outOfStock ?? 0,
+          byCategory: data.categoryBreakdown ? Object.keys(data.categoryBreakdown).reduce((acc: Record<string, number>, k: string) => {
+            acc[k] = data.categoryBreakdown?.[k]?.count ?? 0;
+            return acc;
           }, {}) : {},
           byStatus: {},
-          // totalStock provided by backend (sum of available_inventory)
-          // default to 0 when missing
-          ...(data.totalStock !== undefined ? { totalStock: parseInt(data.totalStock, 10) || 0 } : {})
+          totalStock: typeof data.totalStock === 'string' ? parseInt(data.totalStock, 10) : (data.totalStock ?? 0)
         };
 
         // Attach hearing-aid info if available
         if (data.hearingAid) {
-          (calculatedStats as any).hearingAid = {
+          calculatedStats.hearingAid = {
             count: data.hearingAid.count || 0,
             stock: data.hearingAid.stock || 0
           };
@@ -123,7 +138,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     {
       name: 'Toplam Ürün',
       value: stats.total.toLocaleString(),
-      subtitle: (stats as any).totalStock !== undefined ? `Stok: ${(stats as any).totalStock.toLocaleString()}` : undefined,
+      subtitle: stats.totalStock !== undefined ? `Stok: ${stats.totalStock.toLocaleString()}` : undefined,
       icon: (
         <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -168,7 +183,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
   ];
 
   // If backend provided hearing-aid KPIs, add a dedicated card
-  const hearingAidInfo = (stats as any).hearingAid;
+  const hearingAidInfo = stats.hearingAid;
   if (hearingAidInfo) {
     statCards.splice(1, 0, {
       name: 'Toplam İşitme Cihazı',

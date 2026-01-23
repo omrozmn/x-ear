@@ -18,6 +18,13 @@ db_url = os.getenv('DATABASE_URL')
 if db_url:
     config.set_main_option('sqlalchemy.url', db_url)
 
+# Patch JSONB for SQLite compatibility
+# AI models use JSONB (PostgreSQL type) but we use SQLite in dev
+if db_url and db_url.startswith('sqlite'):
+    import sqlalchemy.dialects.postgresql
+    from sqlalchemy.types import JSON
+    sqlalchemy.dialects.postgresql.JSONB = JSON
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -26,6 +33,8 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 from models import db
+# Import AI models to include them in metadata
+from ai.models import AIRequest, AIAction, AIAuditLog, AIUsage  # noqa
 target_metadata = db.metadata
 
 # other values from the config, defined by the needs of env.py,

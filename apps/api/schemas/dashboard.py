@@ -4,7 +4,7 @@ Dashboard Schemas
 from typing import Optional, List, Dict, Any, Union
 from pydantic import Field
 from .base import AppBaseModel
-from .audit import ActivityLogRead
+from .audit import AuditLogRead
 
 class DashboardKPIs(AppBaseModel):
     total_patients: int = Field(0, alias="totalPatients")

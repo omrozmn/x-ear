@@ -5,9 +5,9 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ActionPlanResponse } from './actionPlanResponse';
+import type { AiActionPlanResponse } from './aiActionPlanResponse';
 
 /**
  * Action plan
  */
-export type GetActionResponsePlan = ActionPlanResponse | null;
+export type GetActionResponsePlan = AiActionPlanResponse | null;

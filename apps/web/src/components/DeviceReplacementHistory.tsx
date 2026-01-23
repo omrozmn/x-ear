@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
+import {
+  Card,
+  CardContent,
+  CardHeader,
   CardTitle,
   Badge,
   Button
 } from '@x-ear/ui-web';
-import { 
-  History, 
-  ArrowRight, 
-  Calendar, 
-  User, 
-  FileText, 
+import {
+  History,
+  ArrowRight,
+  Calendar,
+  User,
+  FileText,
   Eye,
   RefreshCw,
   AlertCircle,
@@ -55,9 +55,9 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
 
   // Listen for global replacement created events to refresh list
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       try {
-        const detail = e?.detail;
+        const detail = (e as CustomEvent).detail;
         // If event contains party info, only reload when it matches
         if (!detail || !detail.party_id || detail.party_id === partyId) {
           loadReplacements();
@@ -150,9 +150,9 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
             <AlertCircle className="h-6 w-6" />
             <span className="ml-2">{error}</span>
           </div>
-          <Button 
-            onClick={loadReplacements} 
-            variant="outline" 
+          <Button
+            onClick={loadReplacements}
+            variant="outline"
             className="w-full mt-4"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -187,12 +187,12 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                 {index < replacements.length - 1 && (
                   <div className="absolute left-6 top-16 bottom-0 w-px bg-border" />
                 )}
-                
+
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 mt-1">
                     {getStatusIcon(replacement.status)}
                   </div>
-                  
+
                   <div className="flex-1 space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
@@ -215,7 +215,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                           )}
                         </div>
                       </div>
-                      
+
                       {replacement.returnInvoiceId && (
                         <Button
                           variant="ghost"
@@ -238,9 +238,9 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                             SN: {replacement.oldDeviceInfo.serialNumber}
                           </div>
                         </div>
-                        
+
                         <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mx-3" />
-                        
+
                         <div className="space-y-1">
                           <div className="text-sm font-medium">Yeni Cihaz</div>
                           <div className="text-xs text-muted-foreground">
@@ -251,14 +251,13 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                           </div>
                         </div>
                       </div>
-                      
+
                       {replacement.priceDifference !== 0 && (
                         <div className="mt-2 pt-2 border-t">
                           <div className="text-xs text-muted-foreground">
-                            Fiyat Farkı: 
-                            <span className={`ml-1 font-medium ${
-                              (replacement.priceDifference || 0) > 0 ? 'text-green-600' : 'text-red-600'
-                            }`}>
+                            Fiyat Farkı:
+                            <span className={`ml-1 font-medium ${(replacement.priceDifference || 0) > 0 ? 'text-green-600' : 'text-red-600'
+                              }`}>
                               {(replacement.priceDifference || 0) > 0 ? '+' : ''}
                               {(replacement.priceDifference || 0).toLocaleString('tr-TR')} ₺
                             </span>
@@ -279,12 +278,12 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
             ))}
           </div>
         )}
-        
+
         <div className="border-t my-4" />
-        
-        <Button 
-          onClick={loadReplacements} 
-          variant="ghost" 
+
+        <Button
+          onClick={loadReplacements}
+          variant="ghost"
           className="w-full"
         >
           <RefreshCw className="h-4 w-4 mr-2" />

@@ -26,7 +26,9 @@ import type {
 
 import type {
   DocumentCreate,
-  HTTPValidationError
+  HTTPValidationError,
+  ResponseEnvelopeDocumentRead,
+  ResponseEnvelopeListDocumentRead
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -44,7 +46,7 @@ export const listPatientDocuments = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListDocumentRead>(
       {url: `/api/parties/${partyId}/documents`, method: 'GET', signal
     },
       );
@@ -138,7 +140,7 @@ export const createPatientDocuments = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeDocumentRead>(
       {url: `/api/parties/${partyId}/documents`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: documentCreate, signal

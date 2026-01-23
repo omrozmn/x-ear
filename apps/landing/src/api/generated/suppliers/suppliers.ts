@@ -31,6 +31,8 @@ import type {
   ResponseEnvelopeListSupplierRead,
   ResponseEnvelopeNoneType,
   ResponseEnvelopeSupplierRead,
+  ResponseEnvelopeSupplierSearchResponse,
+  ResponseEnvelopeSupplierStats,
   SupplierCreate,
   SupplierUpdate
 } from '.././schemas';
@@ -209,7 +211,7 @@ export const listSupplierSearch = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSupplierSearchResponse>(
       {url: `/api/suppliers/search`, method: 'GET',
         params, signal
     },
@@ -303,7 +305,7 @@ export const listSupplierStats = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSupplierStats>(
       {url: `/api/suppliers/stats`, method: 'GET', signal
     },
       );

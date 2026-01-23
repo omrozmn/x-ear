@@ -25,10 +25,10 @@ import { unwrapObject, unwrapArray } from '../utils/response-unwrap';
 import {
   createInvoice,
   getInvoice,
-  listInvoices,
+  // listInvoices, // Using listAdminInvoices instead
   listAdminInvoices,
   updateInvoice,
-  deleteInvoice,
+  // deleteInvoice, // Soft delete via update preferred
   createInvoiceSendToGib,
   createInvoiceBulkUpload,
   createInvoiceIssue,
@@ -40,12 +40,12 @@ import {
   InvoiceRead,
   ResponseEnvelopeInvoiceRead,
   ResponseEnvelopeListInvoiceRead,
-  ResponseEnvelope,
-  ResponseEnvelopeInvoiceIssueResponse,
+  // ResponseEnvelope, // Type only, using specific wrappers
+
   SchemasBaseResponseEnvelopeBulkUploadResponse2,
   SchemasInvoicesBulkUploadResponse as BulkUploadResponse
 } from '@/api/generated/schemas';
-import { apiClient } from '../api/orval-mutator';
+// import { apiClient } from '../api/orval-mutator'; // Not used - using orval hooks directly
 
 // Extended interface for InvoiceRead with optional legacy/extended fields
 interface ExtendedInvoiceRead extends Omit<InvoiceRead, 'notes'> {
@@ -404,7 +404,7 @@ export class InvoiceService {
     const existing = await this.getInvoice(id);
     if (!existing) throw new Error('Fatura bulunamadı');
 
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       partyId: existing.customerId,
       customerName: existing.customerName,
       partyName: existing.partyName,
@@ -422,7 +422,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoice(payload as InvoiceCreate);
+      const response = await createInvoice(payload as unknown as InvoiceCreate);
       const created = unwrapObject<InvoiceRead>(response);
 
       if (created && created.id) {
@@ -432,7 +432,7 @@ export class InvoiceService {
       // fallback to local create
     }
 
-    return this.createInvoice(payload as CreateInvoiceData);
+    return this.createInvoice(payload as unknown as CreateInvoiceData);
   }
 
   /**
@@ -441,7 +441,7 @@ export class InvoiceService {
   async copyInvoiceWithCancellation(id: string): Promise<{ copy: Invoice; cancellation: Invoice }> {
     const copy = await this.copyInvoice(id);
 
-    const cancelPayload: any = {
+    const cancelPayload: Record<string, unknown> = {
       partyId: copy.customerId,
       customerName: copy.customerName,
       partyName: copy.partyName,
@@ -459,7 +459,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoice(cancelPayload as InvoiceCreate);
+      const response = await createInvoice(cancelPayload as unknown as InvoiceCreate);
       const cancellation = unwrapObject<InvoiceRead>(response);
       if (cancellation && cancellation.id) {
         const persisted = await this.persistServerInvoice(cancellation);
@@ -469,7 +469,7 @@ export class InvoiceService {
       // fallback
     }
 
-    const cancellation = await this.createInvoice(cancelPayload as CreateInvoiceData);
+    const cancellation = await this.createInvoice(cancelPayload as unknown as CreateInvoiceData);
     return { copy, cancellation };
   }
 
@@ -722,7 +722,7 @@ export class InvoiceService {
       await createInvoiceSendToGib(Number(id));
       // Try to refresh server state
       const response = await getInvoice(Number(id));
-      const serverInv = unwrapObject<any>(response);
+      const serverInv = unwrapObject<Record<string, unknown>>(response);
       if (serverInv && typeof serverInv === 'object' && serverInv.id) {
         // Mirror server state locally
         await this.updateInvoice(id, { status: (serverInv.status as InvoiceStatus) || 'sent' });
@@ -749,7 +749,7 @@ export class InvoiceService {
       const serverId = await this.resolveServerId(id);
       if (!serverId) return { success: false, error: 'Fatura henüz sunucuya gönderilmedi; önce senkronize edin.' };
 
-      const response = await createInvoiceIssue(Number(serverId)) as ResponseEnvelopeInvoiceIssueResponse;
+      const response = await createInvoiceIssue(Number(serverId)) as ResponseEnvelopeInvoiceRead;
 
       if (!response.success) {
         return { success: false, error: (response.error as Record<string, unknown>)?.message as string || 'Issue failed' };
@@ -824,7 +824,7 @@ export class InvoiceService {
     }
   }
 
-  async submitBulkEFatura(submission: EFaturaBulkSubmission): Promise<{ success: boolean; results?: any[]; error?: string }> {
+  async submitBulkEFatura(submission: EFaturaBulkSubmission): Promise<{ success: boolean; results?: unknown[]; error?: string }> {
     try {
       const results: Array<{ invoiceId: string; success: boolean; ettn?: string; error?: string }> = [];
 
@@ -852,7 +852,7 @@ export class InvoiceService {
   }
 
   // New P1 Features
-  async bulkUploadInvoices(file: File): Promise<{ processed: number; success: boolean; errors: any[] }> {
+  async bulkUploadInvoices(file: File): Promise<{ processed: number; success: boolean; errors: unknown[] }> {
     try {
       const response = await createInvoiceBulkUpload({ file });
       const envelope = response as unknown as SchemasBaseResponseEnvelopeBulkUploadResponse2;
@@ -869,13 +869,13 @@ export class InvoiceService {
     }
   }
 
-  async getPrintQueue(): Promise<any[]> {
+  async getPrintQueue(): Promise<unknown[]> {
     // TODO: Implement listInvoicePrintQueue when available in generated API
     console.warn('listInvoicePrintQueue API not available');
     return [];
   }
 
-  async addToPrintQueue(invoiceIds: string | string[]): Promise<any> {
+  async addToPrintQueue(invoiceIds: string | string[]): Promise<unknown> {
     try {
       const ids = Array.isArray(invoiceIds) ? invoiceIds : [invoiceIds];
       const numericIds = ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
@@ -986,7 +986,7 @@ export class InvoiceService {
   }
 
   // Export Operations
-  async exportInvoices(options: InvoiceExportOptions): Promise<{ success: boolean; data?: any; error?: string }> {
+  async exportInvoices(options: InvoiceExportOptions): Promise<{ success: boolean; data?: unknown; error?: string }> {
     try {
       const result = await this.getInvoices(options.filters);
 

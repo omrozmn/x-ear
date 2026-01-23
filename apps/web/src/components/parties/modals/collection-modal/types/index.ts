@@ -1,7 +1,16 @@
 import { Party } from '../../../../../types/party/party-base.types';
-import { PaymentRecord } from '../../../../../types/party/party-communication.types';
-import { SaleRead as Sale } from '@/api/generated/schemas/saleRead';
-import { PaymentRecordRead as OrvalPaymentRecord } from '@/api/generated/schemas/paymentRecordRead';
+import { Sale, PaymentRecord } from '../../../../../types/party/party-communication.types';
+import { SaleRead } from '@/api/generated/schemas/saleRead';
+
+// Locally defined PaymentRecordRead since schema is missing or mapped to generic
+export interface PaymentRecordRead {
+  id: string;
+  amount: number;
+  paymentDate?: string;
+  paymentMethod?: string;
+  status?: string;
+  notes?: string;
+}
 
 export interface PromissoryNote {
   id: string;
@@ -21,9 +30,9 @@ export interface CollectionModalProps {
   onClose: () => void;
   party: Party;
   sale: Sale;
-  onPaymentCreate: (paymentData: OrvalPaymentRecord) => void;
-  onPromissoryPaymentCreate?: (paymentData: OrvalPaymentRecord) => void;
-  onCreatePromissoryNote?: (noteData: Record<string, unknown>) => void;
+  onPaymentCreate: (paymentData: PaymentRecordRead) => void;
+  onPromissoryPaymentCreate?: (paymentData: PaymentRecordRead) => void;
+  onCreatePromissoryNote?: (noteData: PromissoryNoteFormData) => void;
 }
 
 export interface PaymentFormData {

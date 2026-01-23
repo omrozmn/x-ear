@@ -19,7 +19,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Set
 from enum import Enum
 
@@ -80,7 +80,10 @@ class ActionPlan:
     requires_approval: bool
     plan_hash: str
     tool_schema_versions: Dict[str, str]
+    missing_parameters: List[str] = field(default_factory=list)
+    slot_filling_prompt: Optional[str] = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
     
     @property
     def step_count(self) -> int:
@@ -97,8 +100,11 @@ class ActionPlan:
             "requiresApproval": self.requires_approval,
             "planHash": self.plan_hash,
             "toolSchemaVersions": self.tool_schema_versions,
+            "missingParameters": self.missing_parameters,
+            "slotFillingPrompt": self.slot_filling_prompt,
             "stepCount": self.step_count,
             "createdAt": self.created_at.isoformat(),
+            "expiresAt": self.expires_at.isoformat() if self.expires_at else None,
         }
 
 
@@ -173,12 +179,17 @@ class ActionPlanner:
     - Enforce tenant isolation
     - Generate rollback procedures
     - Record tool schema versions
+    - Identify missing parameters and generate slot-filling prompts
+    - Enforce action plan timeouts
     
     This agent is READ-ONLY and never executes actions.
     """
     
     # Risk levels that require approval
     APPROVAL_REQUIRED_RISK_LEVELS = {RiskLevel.HIGH, RiskLevel.CRITICAL}
+    
+    # Slot-filling timeout (Requirement 4.5)
+    SLOT_FILL_TIMEOUT_MINUTES = 5
     
     def __init__(
         self,
@@ -250,6 +261,56 @@ class ActionPlanner:
         """Get description of available tools for LLM."""
         return self.tool_registry.get_tool_descriptions_for_llm()
     
+    def _get_required_parameters(self, tool_operations: List[dict]) -> List[str]:
+        """
+        Get list of required parameters for the given tool operations.
+        
+        Args:
+            tool_operations: List of tool operations
+            
+        Returns:
+            List of required parameter names
+        """
+        required_params = []
+        for op in tool_operations:
+            tool_name = op.get("tool_name")
+            try:
+                tool = self.tool_registry.get_tool(tool_name)
+                # Get required parameters from tool schema
+                # For now, we'll use a simple heuristic based on common patterns
+                if tool_name == "patient_create":
+                    required_params.extend(["first_name", "last_name", "phone"])
+                elif tool_name == "appointment_create":
+                    required_params.extend(["party_id", "date", "time"])
+                elif tool_name == "device_assign":
+                    required_params.extend(["party_id", "device_id"])
+            except Exception:
+                continue
+        return required_params
+    
+    def _generate_slot_prompt(self, parameter_name: str) -> str:
+        """
+        Generate user-friendly prompt for missing parameter.
+        
+        Args:
+            parameter_name: Name of the missing parameter
+            
+        Returns:
+            User-friendly prompt asking for the parameter
+        """
+        prompts = {
+            "party_id": "Hangi kişi veya kuruluş için işlem yapmak istiyorsunuz? Lütfen isim veya ID belirtin.",
+            "first_name": "Lütfen adını belirtin.",
+            "last_name": "Lütfen soyadını belirtin.",
+            "phone": "Lütfen telefon numarasını belirtin.",
+            "email": "Lütfen e-posta adresini belirtin.",
+            "device_id": "Hangi cihazdan bahsediyorsunuz? Lütfen cihaz adı veya seri numarasını belirtin.",
+            "amount": "Miktar nedir? Lütfen bir sayı belirtin.",
+            "date": "Hangi tarih için? Lütfen tarihi belirtin (örn: 2025-01-25).",
+            "time": "Saat kaçta? Lütfen saati belirtin (örn: 14:30).",
+        }
+        return prompts.get(parameter_name, f"Lütfen {parameter_name} bilgisini belirtin.")
+    
     async def create_plan(
         self,
         intent: IntentOutput,
@@ -284,7 +345,7 @@ class ActionPlanner:
         prompt = INTENT_TO_TOOL_PROMPT.format(
             available_tools=self._get_available_tools_description(),
             intent_type=intent.intent_type.value,
-            entities=json.dumps(intent.entities),
+            entities=json.dumps(intent.entities, ensure_ascii=False),
             reasoning=intent.reasoning or "No reasoning provided",
         )
         
@@ -376,12 +437,26 @@ class ActionPlanner:
                 processing_time_ms=(time.time() - start_time) * 1000,
             )
         
+        # Identify missing parameters (Requirement 4.3)
+        required_params = self._get_required_parameters(plan_data["actions"])
+        provided_params = set(intent.entities.keys())
+        missing_params = [p for p in required_params if p not in provided_params]
+        
+        # Generate slot-filling prompt if needed
+        slot_prompt = None
+        if missing_params:
+            slot_prompt = self._generate_slot_prompt(missing_params[0])
+        
         # Calculate overall risk
         overall_risk = self._calculate_overall_risk(steps)
         requires_approval = overall_risk in self.APPROVAL_REQUIRED_RISK_LEVELS
         
         # Compute plan hash
         plan_hash = self._compute_plan_hash(steps)
+        
+        # Set expiration time (Requirement 4.5)
+        now = datetime.now(timezone.utc)
+        expires_at = now + timedelta(minutes=self.SLOT_FILL_TIMEOUT_MINUTES)
         
         # Create plan
         plan = ActionPlan(
@@ -394,6 +469,10 @@ class ActionPlanner:
             requires_approval=requires_approval,
             plan_hash=plan_hash,
             tool_schema_versions=tool_schema_versions,
+            missing_parameters=missing_params,
+            slot_filling_prompt=slot_prompt,
+            created_at=now,
+            expires_at=expires_at,
         )
         
         return ActionPlannerResult(
@@ -446,7 +525,7 @@ class ActionPlanner:
         Create a simple plan without LLM.
         
         Used as fallback when LLM is unavailable.
-        Maps common intents to predefined tool sequences.
+        Maps common intents to predefined tool sequences using extracted entities.
         """
         start_time = time.time()
         
@@ -457,11 +536,67 @@ class ActionPlanner:
                 processing_time_ms=(time.time() - start_time) * 1000,
             )
         
-        # Simple mapping for common intents
-        steps = []
-        tool_schema_versions = {}
+        # Patient creation with entities
+        if intent.intent_type == IntentType.ACTION and intent.entities:
+            # Check if we have patient creation entities
+            if "first_name" in intent.entities and "phone" in intent.entities:
+                # Build parameters from entities
+                parameters = {
+                    "first_name": intent.entities.get("first_name"),
+                    "last_name": intent.entities.get("last_name", ""),
+                    "phone": intent.entities.get("phone"),
+                    "tenant_id": tenant_id,
+                }
+                
+                # Add optional fields if present
+                if "email" in intent.entities:
+                    parameters["email"] = intent.entities["email"]
+                if "tc_number" in intent.entities:
+                    parameters["tc_number"] = intent.entities["tc_number"]
+                
+                # Check permissions
+                required_permissions = {"party:write"}
+                denied = self._check_permissions(user_permissions, required_permissions)
+                if denied:
+                    return ActionPlannerResult(
+                        status=PlannerStatus.PERMISSION_DENIED,
+                        denied_permissions=denied,
+                        error_message=f"Missing permissions: {', '.join(denied)}",
+                        processing_time_ms=(time.time() - start_time) * 1000,
+                    )
+                
+                # Create step
+                tool = self.tool_registry.get_tool("patient_create")
+                step = ActionStep(
+                    step_number=1,
+                    tool_name="patient_create",
+                    tool_schema_version=tool.schema_version,
+                    parameters=parameters,
+                    description=f"{parameters['first_name']} {parameters['last_name']} için hasta kaydı oluştur",
+                    risk_level=tool.risk_level,
+                    requires_approval=False,
+                )
+                
+                # Create plan
+                plan = ActionPlan(
+                    plan_id=self._generate_plan_id(tenant_id, user_id),
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    intent=intent,
+                    steps=[step],
+                    overall_risk_level=RiskLevel.MEDIUM,
+                    requires_approval=False,
+                    plan_hash=self._compute_plan_hash([step]),
+                    tool_schema_versions={"patient_create": tool.schema_version},
+                )
+                
+                return ActionPlannerResult(
+                    status=PlannerStatus.SUCCESS,
+                    plan=plan,
+                    processing_time_ms=(time.time() - start_time) * 1000,
+                )
         
-        # For now, return no actions - specific mappings would be added based on business logic
+        # No specific mapping found
         return ActionPlannerResult(
             status=PlannerStatus.NO_ACTIONS_NEEDED,
             processing_time_ms=(time.time() - start_time) * 1000,
@@ -484,6 +619,20 @@ class ActionPlanner:
                 drift_status[tool_name] = True  # Tool no longer exists
         
         return drift_status
+    
+    def is_expired(self, plan: ActionPlan) -> bool:
+        """
+        Check if action plan has expired.
+        
+        Args:
+            plan: Action plan to check
+            
+        Returns:
+            True if plan has expired, False otherwise
+        """
+        if plan.expires_at is None:
+            return False
+        return datetime.now(timezone.utc) > plan.expires_at
 
 
 # Global instance

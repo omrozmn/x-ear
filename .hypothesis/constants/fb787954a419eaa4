@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/reports.py
+# hypothesis_version: 6.150.2
+
+['activeNotes', 'ageDistribution', 'appointmentRate', 'clickRate', 'conversionRate', 'dailyBreakdown', 'deliveredCount', 'deliveryRate', 'dueDate', 'errorMessage', 'failCount', 'monthlyCounts', 'monthlyRevenue', 'netCash', 'newPatients', 'noteNumber', 'openRate', 'overdueNotes', 'paidAmount', 'paidNotes', 'partyId', 'partyName', 'patientName', 'patientSegments', 'paymentMethods', 'posProvider', 'posTransactionId', 'productSales', 'remainingAmount', 'revenueTrend', 'saleCount', 'saleId', 'sentCount', 'smsTrends', 'statusDistribution', 'successCount', 'totalAmount', 'totalAppointments', 'totalCollected', 'totalExpenses', 'totalNotes', 'totalParties', 'totalPatients', 'totalRemaining', 'totalRevenue', 'totalSales', 'totalVolume']

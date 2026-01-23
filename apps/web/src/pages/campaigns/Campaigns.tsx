@@ -109,7 +109,6 @@ const CampaignsPage: React.FC = () => {
         { query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false } }
     );
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const branchOptions = useMemo(() => {
         const items: any[] = [];
 
@@ -124,7 +123,7 @@ const CampaignsPage: React.FC = () => {
         return items
             .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
             .map((branch) => ({ value: branch.id, label: branch.name ?? '\u015eube' }));
-    }, []);
+    }, [branchesData]);
 
     // Fetch first party for preview
     const { data: partiesData, isLoading: partiesLoading, isError: partiesError } = useListParties(

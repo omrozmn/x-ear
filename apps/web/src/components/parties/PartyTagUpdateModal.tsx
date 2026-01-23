@@ -35,7 +35,7 @@ export function PartyTagUpdateModal({
   const allBranches = unwrapArray<BranchRead>(branchesResponse) || [];
 
   // Filter branches by party's tenant_id (for super admin viewing different tenants)
-  const partyTenantId = (party as any)?.tenantId || (party as any)?.tenant_id;
+  const partyTenantId = 'tenantId' in (party || {}) ? (party as { tenantId?: string }).tenantId : undefined;
 
   console.log('[PartyTagUpdateModal] Party tenantId:', partyTenantId);
   console.log('[PartyTagUpdateModal] All branches:', allBranches.map(b => ({ id: b.id, name: b.name, tenantId: b.tenantId })));
@@ -60,7 +60,7 @@ export function PartyTagUpdateModal({
       setAcquisitionType(party.acquisitionType || '');
 
       // Set branchId from party data - ensure it's a string
-      const currentBranchId = String((party as any)?.branchId || (party as any)?.branch_id || '');
+      const currentBranchId = 'branchId' in party ? String((party as { branchId?: string }).branchId || '') : '';
       setBranchId(currentBranchId);
     }
   }, [party]);
@@ -72,7 +72,7 @@ export function PartyTagUpdateModal({
     setIsSubmitting(true);
     try {
       // Only send branchId if it's not empty
-      const updates: any = {
+      const updates: { status: PartyStatus; segment: PartySegment; acquisitionType: string; branchId?: string } = {
         status,
         segment,
         acquisitionType,

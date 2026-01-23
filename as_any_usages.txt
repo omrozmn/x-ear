@@ -1,0 +1,271 @@
+apps/web/vite.config.ts:11:    TanStackRouterVite() as any,
+apps/web/src/stores/authStore.ts:205:              const fullName = (userData as any).fullName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+apps/web/src/stores/authStore.ts:208:                ...(userData as any),
+apps/web/src/stores/authStore.ts:447:          }) as any;
+apps/web/src/stores/authStore.ts:535:          }) as any;
+apps/web/src/stores/authStore.ts:563:          }) as any;
+apps/web/src/stores/authStore.ts:612:          const responseData = await refreshTokenApi() as any;
+apps/web/src/stores/authStore.ts:652:            const responseData = response as any;
+apps/web/src/stores/authStore.ts:670:                ...(userData as any), // Spread base properties from UserRead
+apps/web/src/utils/outbox.ts:453:    if (data && (data as any).blobId) {
+apps/web/src/utils/outbox.ts:455:      const blobRef = await indexedDBManager.getFileBlob((data as any).blobId);
+apps/web/src/utils/outbox.ts:461:      if ((data as any).filename) form.append('filename', (data as any).filename);
+apps/web/src/utils/outbox.ts:462:      if ((data as any).mime) form.append('mime', (data as any).mime);
+apps/web/src/utils/indexeddb.ts:220:      mime: meta.mime || ((blob as any)?.type || 'application/octet-stream'),
+apps/web/src/utils/indexeddb.ts:222:    } as any;
+apps/web/src/utils/indexeddb.ts:240:        const result = req.result as any;
+apps/web/src/utils/response-unwrap.ts:23:  const anyResponse = response as any;
+apps/web/src/utils/response-unwrap.ts:62:  const anyResponse = response as any;
+apps/web/src/utils/response-unwrap.ts:104:  const anyResponse = response as any;
+apps/web/src/utils/response-unwrap.ts:138:  const anyResponse = response as any;
+apps/web/src/utils/response-unwrap.ts:175:  const anyResponse = response as any;
+apps/web/src/utils/response-unwrap.ts:215:  const anyResponse = response as any;
+apps/web/src/utils/party-matching.ts:184:      const addr = p.address as any;
+apps/web/src/utils/env.ts:4:    if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+apps/web/src/utils/env.ts:5:      const v = (import.meta as any).env[key];
+apps/web/src/utils/env.ts:13:    if (typeof process !== 'undefined' && (process as any).env) {
+apps/web/src/utils/env.ts:14:      const v = (process as any).env[key];
+apps/web/src/utils/uts-csv.ts:6:  const rows = (parsed.data as any[]).filter(Boolean);
+apps/web/src/components/ui/ConfirmDialog.tsx:35:            variant={buttonVariant as any}
+apps/web/src/components/payments/PaymentTrackingModal.tsx:390:                onClick={() => setActiveTab(key as any)}
+apps/web/src/components/importer/UniversalImporter.tsx:42:  const headers = (aoa[0] as any[]).map(h => String(h || '').trim());
+apps/web/src/components/importer/UniversalImporter.tsx:45:    const rowArr = aoa[i] as any[];
+apps/web/src/components/forms/AppointmentSchedulingForm.tsx:294:              onChange={(e) => setFormData(prev => ({ ...prev, appointmentType: e.target.value as any }))}
+apps/web/src/components/forms/AppointmentSchedulingForm.tsx:374:              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+apps/web/src/components/forms/PartyNoteForm.tsx:272:                    onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
+apps/web/src/components/forms/PartyNoteForm.tsx:294:              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
+apps/web/src/components/forms/PartyNoteForm.tsx:312:            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
+apps/web/src/components/suppliers/SupplierFormModal.tsx:10:const citiesData = (citiesDataRaw as any).cities || [];
+apps/web/src/components/CommunicationTemplates.tsx:131:      const response = await listCommunicationTemplates() as any;
+apps/web/src/components/CommunicationTemplates.tsx:213:        ) as any;
+apps/web/src/components/CommunicationTemplates.tsx:224:        const response = await createCommunicationTemplates(formData) as any;
+apps/web/src/components/CommunicationTemplates.tsx:248:      const response = await deleteCommunicationTemplate(template.id!) as any;
+apps/web/src/components/invoices/ProductSearchModal.tsx:81:      } as any);
+apps/web/src/components/invoices/LineWithholdingModal.tsx:134:                            rate: e.target.value === '' ? '' as any : parseFloat(e.target.value)
+apps/web/src/components/invoices/ProductLinesSection.tsx:205:        console.log('✅ API inventory response', { status: (resp as any)?.status, itemsCount: apiItems.length });
+apps/web/src/components/invoices/ProductLinesSection.tsx:217:          supplier: typeof item.supplier === 'object' ? (item.supplier as any)?.name || '' : String(item.supplier || ''),
+apps/web/src/components/invoices/ProductLinesSection.tsx:448:      const resp = await createInventory(body as any); // Create body might need Strict type
+apps/web/src/components/invoices/ProductLinesSection.tsx:786:                    value={(line.quantity as any) === '' || line.quantity === undefined ? '' : String(line.quantity)}
+apps/web/src/components/invoices/SGKInvoiceSection.tsx:115:                                onChange={(e) => handleChange('additionalInfo', e.target.value as any)}
+apps/web/src/components/invoices/CustomerSectionCompact.tsx:155:    if (!addressText && (party as any).address) {
+apps/web/src/components/invoices/CustomerSectionCompact.tsx:156:      const a = (party as any).address;
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:355:                                formData={extendedData as any}
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:605:                type: (typeof extendedData.type === 'string' ? extendedData.type : 'sales') as any, // fallback
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:609:                customerAddress: extendedData.customerAddress && typeof extendedData.customerAddress === 'object' ? extendedData.customerAddress as any : undefined,
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:610:                billingAddress: (extendedData.billingAddress || extendedData.customerAddress) as any,
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:611:                shippingAddress: extendedData.shippingAddress as any,
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:618:                paymentMethod: extendedData.paymentMethod as any,
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:621:                notes: (extendedData.notes as any)?.note || (typeof extendedData.notes === 'string' ? extendedData.notes : undefined),
+apps/web/src/components/invoices/InvoiceFormExtended.tsx:634:                status: typeof extendedData.status === 'string' ? extendedData.status as any : 'draft',
+apps/web/src/components/invoices/InvoiceList.tsx:248:            selectedInvoices={Array.from(selectedIds).map(id => invoices.find(i => i.id === id)).filter(Boolean) as any}
+apps/web/src/components/invoices/InvoiceList.tsx:351:                              <Button onClick={(e) => { e.stopPropagation(); const saleId = (invoice as any).saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
+apps/web/src/components/invoices/WithholdingModal.tsx:84:                          withholdingRate: e.target.value === '' ? '' as any : parseFloat(e.target.value)
+apps/web/src/components/invoices/WithholdingModal.tsx:106:                          taxFreeAmount: e.target.value === '' ? '' as any : parseFloat(e.target.value)
+apps/web/src/components/invoices/WithholdingCard.tsx:47:            onChange={(e) => setFormData({ ...formData, withholdingRate: e.target.value === '' ? '' as any : parseFloat(e.target.value) })}
+apps/web/src/components/invoices/WithholdingCard.tsx:59:            onChange={(e) => setFormData({ ...formData, taxFreeAmount: e.target.value === '' ? '' as any : parseFloat(e.target.value) })}
+apps/web/src/components/invoices/CustomerSection.tsx:111:        data: { search: query } as any
+apps/web/src/components/party/PartyDeviceCard.tsx:122:    const dp: any = device as any;
+apps/web/src/components/party/DeviceEditModal.tsx:129:        reportStatus: (['raporlu', 'received', 'has_report', 'true'].includes(String(device.reportStatus || (device as any).report_status || '').toLowerCase().trim()) ? 'received' :
+apps/web/src/components/party/DeviceEditModal.tsx:130:          ['bekleniyor', 'pending'].includes(String(device.reportStatus || (device as any).report_status || '').toLowerCase().trim()) ? 'pending' :
+apps/web/src/components/party/DeviceEditModal.tsx:131:            ['none', 'raporsuz', 'null', 'undefined', ''].includes(String(device.reportStatus || (device as any).report_status || '').toLowerCase().trim()) ? 'none' : '')
+apps/web/src/components/party/DeviceEditModal.tsx:171:    const searchString = [d.brand, d.model, (d as any).name, d.type].filter(Boolean).join(' ').toLowerCase();
+apps/web/src/components/party/InventoryMovementsTable.tsx:46:    const movementsResponse = movementsResponseRaw as any; // Fix type inference
+apps/web/src/components/party/DeviceReplaceModal.tsx:386:                selectedProduct={selectedInventory as any}
+apps/web/src/components/appointments/AppointmentForm.tsx:175:        gender: 'OTHER' as any, // Cast to any to avoid strict enum check for now, or use correct enum
+apps/web/src/components/appointments/AppointmentForm.tsx:176:        status: 'ACTIVE' as any,
+apps/web/src/components/appointments/AppointmentForm.tsx:177:        segment: 'NEW' as any
+apps/web/src/components/layout/MainLayout.tsx:383:                      to={"/settings" as any}
+apps/web/src/components/layout/MainLayout.tsx:407:                        navigate({ to: '/login' as any });
+apps/web/src/components/layout/PagePermissionsViewer.tsx:82:    const respData = permissionsResponse as any;
+apps/web/src/components/layout/DebugRoleSwitcher.tsx:73:        const data = (response as any)?.data || response;
+apps/web/src/components/layout/DebugRoleSwitcher.tsx:136:        const data = (response as any)?.data || response;
+apps/web/src/components/layout/DebugRoleSwitcher.tsx:171:  const roles = (rolesResponse as any)?.data?.roles || [];
+apps/web/src/components/uts/UTSBulkUpload.tsx:55:      const res = await (startBulk as ReturnType<typeof useStartBulkUtsRegistration>).mutateAsync({ csv: fileContent } as any);
+apps/web/src/components/uts/UTSRegisterModal.tsx:23:      await startBulk.mutateAsync({ csv: data.csv } as any);
+apps/web/src/components/cashflow/PartySearchInput.tsx:103:                  onSelectParty(party as any);
+apps/web/src/components/modals/InvoiceModalContent.tsx:67:        const id = (initialData as any)?.id as string;
+apps/web/src/components/modals/InvoiceModalContent.tsx:68:        const updated = await invoiceService.updateInvoice(id, formData as any);
+apps/web/src/components/modals/InvoiceModalContent.tsx:233:            invoice={initialData as any}
+apps/web/src/components/modals/PromissoryNotesModal.tsx:57:      const payload = (response as any) ?? {};
+apps/web/src/components/dashboard/CashRegisterModal.tsx:102:                onClick={() => setFormData({ ...formData, recordType: value as any })}
+apps/web/src/components/__tests__/LoginForm.test.tsx:37:    (useAuthStore as any).getState = vi.fn(() => baseState);
+apps/web/src/components/__tests__/LoginForm.test.tsx:86:    (useAuthStore as any).getState = vi.fn(() => loadingState);
+apps/web/src/components/__tests__/LoginForm.test.tsx:97:    (useAuthStore as any).getState = vi.fn(() => errorState);
+apps/web/src/components/inventory/InventoryStats.tsx:30:        const response = await listInventoryStats() as any;
+apps/web/src/components/inventory/InventoryStats.tsx:50:          (calculatedStats as any).hearingAid = {
+apps/web/src/components/inventory/InventoryStats.tsx:126:      subtitle: (stats as any).totalStock !== undefined ? `Stok: ${(stats as any).totalStock.toLocaleString()}` : undefined,
+apps/web/src/components/inventory/InventoryStats.tsx:171:  const hearingAidInfo = (stats as any).hearingAid;
+apps/web/src/components/sgk/DocumentUploadModal.tsx:25:      (form as any).idempotencyKey = `upload-${Date.now()}-${Math.random()}`;
+apps/web/src/components/sgk/DocumentUploadModal.tsx:26:      upload.mutate(form as any, {
+apps/web/src/components/sgk/modals/SGKApprovalModal.tsx:196:            variant={getSubmitButtonVariant() as any}
+apps/web/src/components/sgk/CameraCapture.tsx:59:      const capabilities = videoTrack.getCapabilities() as any;
+apps/web/src/components/sgk/CameraCapture.tsx:82:      const capabilities = videoTrack.getCapabilities() as any;
+apps/web/src/components/sgk/CameraCapture.tsx:87:            advanced: [{ torch: !flashEnabled } as any]
+apps/web/src/components/templates/InvoiceTemplateManager.tsx:355:                onChange={(e) => setState(prev => ({ ...prev, sortBy: e.target.value as any }))}
+apps/web/src/components/templates/InvoiceTemplateManager.tsx:372:                onChange={(e) => setState(prev => ({ ...prev, sortOrder: e.target.value as any }))}
+apps/web/src/components/templates/InvoiceTemplateManager.tsx:674:              initialData={template?.templateData as any}
+apps/web/src/components/parties/PartyFormModal.tsx:116:        city: (typeof initialData.address === 'object' ? (initialData.address as any)?.city : initialData.addressCity) || '',
+apps/web/src/components/parties/PartyFormModal.tsx:117:        district: (typeof initialData.address === 'object' ? (initialData.address as any)?.district : initialData.addressDistrict) || '',
+apps/web/src/components/parties/PartyNotesTab.tsx:40:      const response = await listPartyNotes(party.id) as any;
+apps/web/src/components/parties/PartyTagUpdateModal.tsx:38:  const partyTenantId = (party as any)?.tenantId || (party as any)?.tenant_id;
+apps/web/src/components/parties/PartyTagUpdateModal.tsx:63:      const currentBranchId = String((party as any)?.branchId || (party as any)?.branch_id || '');
+apps/web/src/components/parties/party/LoanerInfoCard.tsx:28:                        {(device as any).loanerSerialNumberLeft && (device as any).loanerSerialNumberRight ? (
+apps/web/src/components/parties/party/LoanerInfoCard.tsx:30:                                <p className="text-xs"><strong className="text-blue-700">Sol SN:</strong> {(device as any).loanerSerialNumberLeft}</p>
+apps/web/src/components/parties/party/LoanerInfoCard.tsx:31:                                <p className="text-xs"><strong className="text-red-700">Sağ SN:</strong> {(device as any).loanerSerialNumberRight}</p>
+apps/web/src/components/parties/party/PartySaleCard.tsx:49:    } as any);
+apps/web/src/components/parties/party/PartySaleCard.tsx:239:            {!((sale as any).invoice) ? (
+apps/web/src/components/parties/PartyRightsSection.tsx:38:        sgkNo: (party.hearingProfile?.sgkInfo as any)?.sgkNumber || party.sgkInfo?.sgkNumber || '12345678901',
+apps/web/src/components/parties/PartySalesTab.tsx:562:            //         paymentMethod: (sale as any).paymentMethod,
+apps/web/src/components/parties/PartySalesTab.tsx:563:            //         soldBy: (sale as any).soldBy,
+apps/web/src/components/parties/PartySalesTab.tsx:564:            //         sgkCoverage: (sale as any).sgkCoverage,
+apps/web/src/components/parties/PartySalesTab.tsx:572:            //           onSaleClick={(s) => handleEditSaleClick(s as any)}
+apps/web/src/components/parties/PartySalesTab.tsx:788:            sale={selectedSale as any}
+apps/web/src/components/parties/PartySalesTab.tsx:803:            sale={selectedSale as any}
+apps/web/src/components/parties/PartySalesTab.tsx:821:            sale={selectedSale as any}
+apps/web/src/components/parties/modals/EditSaleModal.tsx:118:              sale={sale as any}
+apps/web/src/components/parties/modals/PaymentSummary.tsx:167:        sale={sale as any}
+apps/web/src/components/parties/modals/collection-modal/CollectionModal.tsx:38:  } = useCollection(sale as any, isOpen);
+apps/web/src/components/parties/modals/collection-modal/CollectionModal.tsx:58:      onCreatePromissoryNote(formData as any);
+apps/web/src/components/parties/modals/collection-modal/CollectionModal.tsx:97:              sale={sale as any}
+apps/web/src/components/parties/PartyForm.tsx:134:        address: (formData.address as any) || '',
+apps/web/src/components/parties/PartyAppointmentsTab.tsx:48:      const response = await listPartyAppointments(party.id) as any;
+apps/web/src/components/parties/PartyAppointmentsTab.tsx:327:                // appointmentType: (formData.get('type') as any) || 'General',
+apps/web/src/components/parties/PartyFilters.tsx:235:                  filters.acquisitionType?.includes(option.value as any)
+apps/web/src/components/parties/PartyFilters.tsx:237:                    : [...(filters.acquisitionType || []), option.value as any]
+apps/web/src/components/parties/PartyFilters.tsx:239:                className={`px-2 py-1 text-xs rounded-full border transition-colors ${filters.acquisitionType?.includes(option.value as any)
+apps/web/src/components/parties/__tests__/PartyMigrationVerification.test.tsx:18:    party: null as any,
+apps/web/src/components/parties/__tests__/PartyMigrationVerification.test.tsx:94:    } as any;
+apps/web/src/components/parties/__tests__/PartyMigrationVerification.test.tsx:98:    const mockUseParams = useParams as any;
+apps/web/src/components/parties/PartyList.tsx:113:    const p = party as any;
+apps/web/src/components/parties/PartyDocumentsTab.tsx:60:      const response = await listPartyDocuments(partyId) as any;
+apps/web/src/components/communication/CommunicationTemplates.tsx:24:    setTemplates(getTemplates() as any);
+apps/web/src/components/communication/CommunicationCenter.tsx:499:      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+apps/web/src/components/communication/CommunicationCenter.tsx:546:                    onChange={(value) => setFilterType(value as any)}
+apps/web/src/components/communication/CommunicationCenter.tsx:561:                    onChange={(value) => setFilterStatus(value as any)}
+apps/web/src/components/communication/CommunicationCenter.tsx:579:                    onChange={(value) => setFilterMessageType(value as any)}
+apps/web/src/components/invoice/InvoiceBulkOperations.tsx:220:      const resp = await invoiceService.submitBulkEFatura({ invoiceIds: ids, submissionDate: new Date().toISOString() } as any);
+apps/web/src/components/invoice/InvoiceBulkOperations.tsx:416:              onChange={(e) => setExportOptions(prev => ({ ...prev, format: e.target.value as any }))}
+apps/web/src/hooks/party/usePartyMutations.ts:79:        status: (partyData.status as any) || 'active', // Cast needed if string vs Enum mismatch, or fix types
+apps/web/src/hooks/party/usePartyMutations.ts:80:        segment: (partyData.segment as any) || 'NEW',
+apps/web/src/hooks/party/usePartyMutations.ts:81:        acquisitionType: partyData.acquisitionType as any,
+apps/web/src/hooks/party/useParty.ts:23:    status: (data.status as any) || 'active',
+apps/web/src/hooks/party/useParty.ts:24:    segment: (data.segment as any) || 'NEW',
+apps/web/src/hooks/party/useParty.ts:84:      const result = await apiService.updateParty(party.id, updates as any);
+apps/web/src/hooks/party/usePartySales.ts:103:        paymentStatus: (sale.status as any) ?? 'pending',
+apps/web/src/hooks/uts/useUts.spec.ts:13:    const res = await (utsService as any).createUtRegistrationBulk({ rows: [{ serial: 's1' }] });
+apps/web/src/hooks/uts/useUts.spec.ts:14:    expect((utsService as any).createUtRegistrationBulk).toHaveBeenCalled();
+apps/web/src/hooks/common/useIdempotency.ts:3:    if (typeof crypto !== 'undefined' && (crypto as any).randomUUID) {
+apps/web/src/hooks/common/useIdempotency.ts:4:      return `${prefix}_${(crypto as any).randomUUID()}`;
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:45:    (sgkService.listDocuments as any).mockResolvedValue({ data: [{ id: 'doc1' }] });
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:50:    await waitFor(() => (result.current as any).isSuccess);
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:55:    (sgkService.uploadDocument as any).mockResolvedValue({});
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:61:      (result.current as any).mutate({ append: 'data', idempotencyKey: 'key-1' } as any);
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:64:    await waitFor(() => (result.current as any).isSuccess);
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:69:    (sgkService.deleteDocument as any).mockResolvedValue({});
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:75:      (result.current as any).mutate({ id: 'doc1', idempotencyKey: 'k1' });
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:78:    await waitFor(() => (result.current as any).isSuccess);
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:84:    (sgkService.uploadDocument as any).mockRejectedValue(new Error('Network error'));
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:85:    (indexedDBManager.saveFileBlob as any).mockResolvedValue('blob-123');
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:86:    (outbox.addOperation as any).mockResolvedValue({ id: 'op-1' });
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:94:      (result.current as any).mutate({ file }, {});
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:97:    await waitFor(() => (result.current as any).isSuccess);
+apps/web/src/hooks/sgk/useSgkDocuments.spec.tsx:103:    const data = (result.current as any).data;
+apps/web/src/hooks/sgk/useSgkDocuments.ts:45:          if (file && ((file as any) instanceof File || (file as any) instanceof Blob)) {
+apps/web/src/hooks/useVirtualScroll.ts:173:      const memory = (performance as any).memory;
+apps/web/src/hooks/useParties.ts:232:          status: filters.status ? [filters.status as any] : undefined, // Wrap single filter in array
+apps/web/src/hooks/useParties.ts:233:          segment: filters.segment ? [filters.segment as any] : undefined,
+apps/web/src/hooks/usePermissions.ts:142:   * Check if user has any of the specified permissions
+apps/web/src/hooks/useSuppliers.ts:133:          const items = (data as any)?.data || [];
+apps/web/src/hooks/useSuppliers.ts:138:          } as any;
+apps/web/src/routeTree.gen.ts:48:} as any)
+apps/web/src/routeTree.gen.ts:53:} as any)
+apps/web/src/routeTree.gen.ts:58:} as any)
+apps/web/src/routeTree.gen.ts:63:} as any)
+apps/web/src/routeTree.gen.ts:68:} as any)
+apps/web/src/routeTree.gen.ts:73:} as any)
+apps/web/src/routeTree.gen.ts:78:} as any)
+apps/web/src/routeTree.gen.ts:83:} as any)
+apps/web/src/routeTree.gen.ts:88:} as any)
+apps/web/src/routeTree.gen.ts:93:} as any)
+apps/web/src/routeTree.gen.ts:98:} as any)
+apps/web/src/routeTree.gen.ts:103:} as any)
+apps/web/src/routeTree.gen.ts:108:} as any)
+apps/web/src/routeTree.gen.ts:113:} as any)
+apps/web/src/routeTree.gen.ts:118:} as any)
+apps/web/src/routeTree.gen.ts:123:} as any)
+apps/web/src/routeTree.gen.ts:128:} as any)
+apps/web/src/routeTree.gen.ts:133:} as any)
+apps/web/src/routeTree.gen.ts:138:} as any)
+apps/web/src/routeTree.gen.ts:143:} as any)
+apps/web/src/routeTree.gen.ts:148:} as any)
+apps/web/src/routeTree.gen.ts:153:} as any)
+apps/web/src/routeTree.gen.ts:158:} as any)
+apps/web/src/routeTree.gen.ts:163:} as any)
+apps/web/src/routeTree.gen.ts:168:} as any)
+apps/web/src/routeTree.gen.ts:173:} as any)
+apps/web/src/routeTree.gen.ts:178:} as any)
+apps/web/src/routeTree.gen.ts:183:} as any)
+apps/web/src/routeTree.gen.ts:188:} as any)
+apps/web/src/routeTree.gen.ts:193:} as any)
+apps/web/src/routeTree.gen.ts:198:} as any)
+apps/web/src/api/orval-mutator.ts:187:  (resourceError as any).retryAfter = 5000; // Suggest retry after 5 seconds
+apps/web/src/api/orval-mutator.ts:188:  (resourceError as any).originalError = error;
+apps/web/src/api/orval-mutator.ts:287:        if (!(apiClient as any)._refreshing) {
+apps/web/src/api/orval-mutator.ts:288:          (apiClient as any)._refreshing = true;
+apps/web/src/api/orval-mutator.ts:289:          (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
+apps/web/src/api/orval-mutator.ts:322:              hasAccessToken: !!(refreshResp.data as any).access_token || !!(refreshResp.data as any).accessToken
+apps/web/src/api/orval-mutator.ts:326:              const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
+apps/web/src/api/orval-mutator.ts:331:                (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(newToken));
+apps/web/src/api/orval-mutator.ts:334:                (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+apps/web/src/api/orval-mutator.ts:338:              (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+apps/web/src/api/orval-mutator.ts:344:            (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+apps/web/src/api/orval-mutator.ts:348:            (apiClient as any)._refreshing = false;
+apps/web/src/api/orval-mutator.ts:349:            (apiClient as any)._refreshSubscribers = [];
+apps/web/src/api/orval-mutator.ts:356:          (apiClient as any)._refreshSubscribers.push((token: string | null) => {
+apps/web/src/api/dashboard.ts:7:  const res = await listDashboardChartPartyDistribution() as any; // API returns data despite void type
+apps/web/src/api/dashboard.ts:19:  return useQuery(queryOptions as any);
+apps/web/src/pages/settings/Integration.tsx:81:            const payload = configData.data as any;
+apps/web/src/pages/settings/Integration.tsx:211:        ? (headersData?.data as any[])
+apps/web/src/pages/settings/TeamMembersTab.tsx:133:        // Use 'as any' only if strictly necessary to bypass type mismatch between generated schemas
+apps/web/src/pages/settings/TeamMembersTab.tsx:136:        inviteMutation.mutate({ data: payload as any });
+apps/web/src/pages/settings/TeamMembersTab.tsx:165:            // If not, this might be why 'as any' was used. Strict UserRead might break this.
+apps/web/src/pages/settings/TeamMembersTab.tsx:167:            branchId: (user as any).branches && (user as any).branches.length > 0 ? (user as any).branches[0].id : '',
+apps/web/src/pages/settings/TeamMembersTab.tsx:190:            await updateUserMutation.mutateAsync({ userId: editingUser.id, data: extendedPayload as any });
+apps/web/src/pages/settings/TeamMembersTab.tsx:240:    // However, the previous code suggested `(usersResponse as any)?.data`.
+apps/web/src/pages/dashboard/MobileDashboard.tsx:71:                                        navigate({ to: action.to as any });
+apps/web/src/pages/DesktopReportsPage.tsx:785:                    onClick={() => { setListFilter(tab.key as any); setListPage(1); }}
+apps/web/src/pages/DesktopProfilePage.tsx:140:        const responseData = userDataResponse as any;
+apps/web/src/pages/DesktopProfilePage.tsx:150:                } as any);
+apps/web/src/pages/DesktopProfilePage.tsx:235:            } as any
+apps/web/src/pages/inventory/components/BrandAutocomplete.tsx:84:      const responseData = brandsData as any;
+apps/web/src/pages/inventory/components/ProductInfoSection.tsx:85:                onChange={(value) => onEditChange({ category: value as any })}
+apps/web/src/pages/inventory/components/SupplierAutocomplete.tsx:123:      } else if ((suppliersData as any)?.data) {
+apps/web/src/pages/inventory/components/SupplierAutocomplete.tsx:124:        const innerData = (suppliersData as any).data;
+apps/web/src/pages/inventory/components/SupplierAutocomplete.tsx:245:      await createSupplierMutation.mutateAsync({ data: { name: newSupplier } } as any);
+apps/web/src/pages/inventory/components/CategoryAutocomplete.tsx:80:      const responseData = categoriesData as any;
+apps/web/src/pages/inventory/components/AdvancedFilters.tsx:195:      const range = value as any;
+apps/web/src/pages/inventory/components/AdvancedFilters.tsx:199:      const range = value as any;
+apps/web/src/pages/inventory/components/AdvancedFilters.tsx:373:                onChange={(v) => onFiltersChange({ ...filters, category: (v || undefined) as any })}
+apps/web/src/pages/inventory/components/BulkUpload.tsx:107:              item.category = value as any;
+apps/web/src/pages/inventory/components/BulkUpload.tsx:275:              item.category = value as any;
+apps/web/src/pages/DesktopInvoicesPage.tsx:156:      filtered = filtered.filter(invoice => state.filters.type!.includes(invoice.type as any));
+apps/web/src/pages/DesktopInvoicesPage.tsx:352:                onClick={() => setState(prev => ({ ...prev, currentView: tab.key as any }))}
+apps/web/src/pages/parties/PartyListPage.tsx:83:    status: (party.status as any) || 'active',
+apps/web/src/pages/parties/PartyListPage.tsx:353:            <span className="text-sm text-red-700">{(currentError as any) instanceof Error ? (currentError as any).message : String(currentError)}</span>
+apps/web/src/pages/InventoryDetailPage.tsx:280:      const response = await updateInventory(id, { features } as unknown as any);
+apps/web/src/pages/campaigns/SmsAutomationTab.tsx:274:            } else if ((headersData as any)?.data) {
+apps/web/src/pages/campaigns/SmsAutomationTab.tsx:275:                const innerData = (headersData as any).data;
+apps/web/src/pages/campaigns/SingleSmsTab.tsx:60:        } else if ((headersData as any)?.data) {
+apps/web/src/pages/campaigns/SingleSmsTab.tsx:61:            const innerData = (headersData as any).data;
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:117:            } else if ((branchesData as any)?.data) {
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:118:                const innerData = (branchesData as any).data;
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:138:            } else if ((headersData as any)?.data) {
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:139:                const innerData = (headersData as any).data;
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:181:        } else if ((partiesData as any)?.data) {
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:182:            const innerData = (partiesData as any).data;
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:194:        if (audienceFilters.segment) (params as any).segment = audienceFilters.segment;
+apps/web/src/pages/campaigns/BulkSmsTab.tsx:212:    const filterRecipientCount = (partiesCountQuery.data as any)?.count ?? 0;
+apps/web/src/pages/campaigns/SmsPage.tsx:28:    const creditBalance = (creditData as any)?.data?.credit ?? 0;
+apps/web/src/pages/reports/ActivityLogs.tsx:155:    const { data: logsResponse, isLoading } = useListActivityLogs(queryParams as any);
+apps/web/src/pages/reports/ActivityLogs.tsx:162:    const options = (filterResponse as any)?.data;
+apps/web/src/routes/index.tsx:236:  const raw = (data as any)?.data || [];

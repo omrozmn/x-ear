@@ -9,10 +9,6 @@ import {
   Button,
   Input,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Textarea,
   DatePicker,
   Text,
@@ -23,7 +19,7 @@ import {
   Alert,
   AlertDescription,
 } from '@x-ear/ui-web';
-import { Appointment, AppointmentStatus, AppointmentType } from '../../types/appointment';
+import { Appointment } from '../../types/appointment';
 import { PartyAutocomplete } from './PartyAutocomplete';
 import { Party } from '../../types/party/party-base.types';
 
@@ -53,30 +49,11 @@ interface AppointmentFormModalProps {
   error?: string | null;
 }
 
-// Time slots for appointment scheduling
-const TIME_SLOTS = [
-  { value: '08:00', label: '08:00' },
-  { value: '08:30', label: '08:30' },
-  { value: '09:00', label: '09:00' },
-  { value: '09:30', label: '09:30' },
-  { value: '10:00', label: '10:00' },
-  { value: '10:30', label: '10:30' },
-  { value: '11:00', label: '11:00' },
-  { value: '11:30', label: '11:30' },
-  { value: '12:00', label: '12:00' },
-  { value: '12:30', label: '12:30' },
-  { value: '13:00', label: '13:00' },
-  { value: '13:30', label: '13:30' },
-  { value: '14:00', label: '14:00' },
-  { value: '14:30', label: '14:30' },
-  { value: '15:00', label: '15:00' },
-  { value: '15:30', label: '15:30' },
-  { value: '16:00', label: '16:00' },
-  { value: '16:30', label: '16:30' },
-  { value: '17:00', label: '17:00' },
-  { value: '17:30', label: '17:30' },
-  { value: '18:00', label: '18:00' },
-];
+// Time slots for dropdown (using native time input instead)
+// const TIME_SLOTS = [
+//   { value: '08:00', label: '08:00' },
+//   ... // See component - using native time input
+// ];
 
 const APPOINTMENT_TYPES = [
   { value: 'consultation', label: 'Konsültasyon' },

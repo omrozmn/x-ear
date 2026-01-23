@@ -8,13 +8,13 @@ from database import get_db
 from models.user import ActivityLog
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
-from schemas.audit import ActivityLogRead
+from schemas.audit import AuditLogRead
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/audit", tags=["Audit"])
 
-@router.get("", operation_id="listAudit", response_model=ResponseEnvelope[List[ActivityLogRead]])
+@router.get("", operation_id="listAudit", response_model=ResponseEnvelope[List[AuditLogRead]])
 async def list_audit(
     entity_type: Optional[str] = None,
     limit: int = Query(200, ge=1, le=500),
@@ -29,7 +29,7 @@ async def list_audit(
             query = query.filter(ActivityLog.entity_type == entity_type)
         
         items = query.limit(limit).all()
-        return ResponseEnvelope(data=[ActivityLogRead.model_validate(i) for i in items])
+        return ResponseEnvelope(data=[AuditLogRead.model_validate(i) for i in items])
     except Exception as e:
         logger.error(f"List audit error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

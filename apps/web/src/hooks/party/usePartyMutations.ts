@@ -76,9 +76,9 @@ export function usePartyMutations() {
         email: partyData.email || '',
         tcNumber: partyData.tcNumber || undefined,
         birthDate: partyData.birthDate || undefined,
-        status: (partyData.status as any) || 'active', // Cast needed if string vs Enum mismatch, or fix types
-        segment: (partyData.segment as any) || 'NEW',
-        acquisitionType: partyData.acquisitionType as any,
+        status: (partyData.status as 'active' | 'passive' | 'archived') || 'active',
+        segment: (partyData.segment as 'NEW' | 'LOYAL' | 'VIP' | 'Risk') || 'NEW',
+        acquisitionType: (partyData.acquisitionType as 'walk_in' | 'referral' | 'digital' | 'campaign') || 'walk_in',
         tags: partyData.tags || [],
         addressFull: partyData.address || undefined, // Map simple address string to addressFull
         // Default required fields
@@ -207,8 +207,8 @@ export function usePartyMutations() {
         const idempotencyKey = generateIdempotencyKey();
 
         try {
-          const createdParty = await syncService.createParty(partyData as LocalParty, idempotencyKey);
-          createdParties.push(createdParty as Party);
+          const createdParty = await syncService.createParty(partyData as unknown as LocalParty, idempotencyKey);
+          createdParties.push(createdParty as unknown as Party);
           options?.onProgress?.(i + 1, total);
         } catch (err) {
           console.error(`Failed to create party ${i + 1}:`, err);
@@ -252,9 +252,9 @@ export function usePartyMutations() {
         const idempotencyKey = generateIdempotencyKey();
 
         try {
-          const fullParty = { ...data, id } as LocalParty;
+          const fullParty = { ...data, id } as unknown as LocalParty;
           const updatedParty = await syncService.updateParty(fullParty, idempotencyKey);
-          updatedParties.push(updatedParty as Party);
+          updatedParties.push(updatedParty as unknown as Party);
           options?.onProgress?.(i + 1, total);
         } catch (err) {
           console.error(`Failed to update party ${id}:`, err);

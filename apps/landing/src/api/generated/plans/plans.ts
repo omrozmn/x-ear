@@ -28,8 +28,8 @@ import type {
   HTTPValidationError,
   PlanCreate,
   PlanUpdate,
-  ResponseEnvelopeListPlanRead,
-  ResponseEnvelopePlanRead
+  ResponseEnvelopeDetailedPlanRead,
+  ResponseEnvelopeListDetailedPlanRead
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -47,7 +47,7 @@ export const listPlans = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeListPlanRead>(
+      return customInstance<ResponseEnvelopeListDetailedPlanRead>(
       {url: `/api/plans`, method: 'GET', signal
     },
       );
@@ -140,7 +140,7 @@ export const createPlan = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopePlanRead>(
+      return customInstance<ResponseEnvelopeDetailedPlanRead>(
       {url: `/api/plans`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: planCreate, signal
@@ -205,7 +205,7 @@ export const listPlanAdmin = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeListPlanRead>(
+      return customInstance<ResponseEnvelopeListDetailedPlanRead>(
       {url: `/api/plans/admin`, method: 'GET', signal
     },
       );
@@ -298,7 +298,7 @@ export const updatePlan = (
  ) => {
       
       
-      return customInstance<ResponseEnvelopePlanRead>(
+      return customInstance<ResponseEnvelopeDetailedPlanRead>(
       {url: `/api/plans/${planId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: planUpdate

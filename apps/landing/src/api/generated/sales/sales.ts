@@ -33,7 +33,9 @@ import type {
   PaymentPlanCreate,
   ResponseEnvelopeAny,
   ResponseEnvelopeDeviceAssignmentCreateResponse,
+  ResponseEnvelopeDeviceAssignmentRead,
   ResponseEnvelopeListSaleRead,
+  ResponseEnvelopeSaleRead,
   ResponseEnvelopeSaleRecalcResponse,
   SaleCreate,
   SaleRecalcRequest,
@@ -215,7 +217,7 @@ export const getSale = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeAny>(
+      return customInstance<ResponseEnvelopeSaleRead>(
       {url: `/api/sales/${saleId}`, method: 'GET', signal
     },
       );
@@ -307,7 +309,7 @@ export const updateSale = (
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSaleRead>(
       {url: `/api/sales/${saleId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: saleUpdate
@@ -810,7 +812,7 @@ export const useCreateSaleRecalc = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Assign devices to a patient with sale record creation.
+ * Assign devices to a party with sale record creation.
 
 This is the main endpoint for device assignment workflow:
 1. Creates a Sale record
@@ -820,15 +822,15 @@ This is the main endpoint for device assignment workflow:
 5. Creates payment plan if needed
  * @summary Create Device Assignments
  */
-export const createPatientDeviceAssignments = (
-    patientId: string,
+export const createPartyDeviceAssignments = (
+    partyId: string,
     deviceAssignmentCreate: DeviceAssignmentCreate,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<ResponseEnvelopeDeviceAssignmentCreateResponse>(
-      {url: `/api/patients/${patientId}/device-assignments`, method: 'POST',
+      {url: `/api/parties/${partyId}/device-assignments`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: deviceAssignmentCreate, signal
     },
@@ -837,11 +839,11 @@ export const createPatientDeviceAssignments = (
   
 
 
-export const getCreatePatientDeviceAssignmentsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, TError,{patientId: string;data: DeviceAssignmentCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, TError,{patientId: string;data: DeviceAssignmentCreate}, TContext> => {
+export const getCreatePartyDeviceAssignmentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPartyDeviceAssignments>>, TError,{partyId: string;data: DeviceAssignmentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPartyDeviceAssignments>>, TError,{partyId: string;data: DeviceAssignmentCreate}, TContext> => {
 
-const mutationKey = ['createPatientDeviceAssignments'];
+const mutationKey = ['createPartyDeviceAssignments'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -851,10 +853,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, {patientId: string;data: DeviceAssignmentCreate}> = (props) => {
-          const {patientId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPartyDeviceAssignments>>, {partyId: string;data: DeviceAssignmentCreate}> = (props) => {
+          const {partyId,data} = props ?? {};
 
-          return  createPatientDeviceAssignments(patientId,data,)
+          return  createPartyDeviceAssignments(partyId,data,)
         }
 
         
@@ -862,23 +864,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreatePatientDeviceAssignmentsMutationResult = NonNullable<Awaited<ReturnType<typeof createPatientDeviceAssignments>>>
-    export type CreatePatientDeviceAssignmentsMutationBody = DeviceAssignmentCreate
-    export type CreatePatientDeviceAssignmentsMutationError = HTTPValidationError
+    export type CreatePartyDeviceAssignmentsMutationResult = NonNullable<Awaited<ReturnType<typeof createPartyDeviceAssignments>>>
+    export type CreatePartyDeviceAssignmentsMutationBody = DeviceAssignmentCreate
+    export type CreatePartyDeviceAssignmentsMutationError = HTTPValidationError
 
     /**
  * @summary Create Device Assignments
  */
-export const useCreatePatientDeviceAssignments = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, TError,{patientId: string;data: DeviceAssignmentCreate}, TContext>, }
+export const useCreatePartyDeviceAssignments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPartyDeviceAssignments>>, TError,{partyId: string;data: DeviceAssignmentCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createPatientDeviceAssignments>>,
+        Awaited<ReturnType<typeof createPartyDeviceAssignments>>,
         TError,
-        {patientId: string;data: DeviceAssignmentCreate},
+        {partyId: string;data: DeviceAssignmentCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreatePatientDeviceAssignmentsMutationOptions(options);
+      const mutationOptions = getCreatePartyDeviceAssignmentsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -900,7 +902,7 @@ export const updateDeviceAssignment = (
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeDeviceAssignmentRead>(
       {url: `/api/device-assignments/${assignmentId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: deviceAssignmentUpdate
@@ -965,7 +967,7 @@ export const createDeviceAssignmentReturnLoaner = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeDeviceAssignmentRead>(
       {url: `/api/device-assignments/${assignmentId}/return-loaner`, method: 'POST', signal
     },
       );

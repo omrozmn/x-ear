@@ -8,7 +8,7 @@
 import type { RoleReadCreatedAt } from './roleReadCreatedAt';
 import type { RoleReadUpdatedAt } from './roleReadUpdatedAt';
 import type { RoleReadDescription } from './roleReadDescription';
-import type { SchemasRolesPermissionRead } from './schemasRolesPermissionRead';
+import type { PermissionRead } from './permissionRead';
 
 /**
  * Schema for reading a role - matches Role.to_dict() output
@@ -27,5 +27,5 @@ export interface RoleRead {
   /** Is system role */
   isSystem?: boolean;
   /** Role permissions */
-  permissions?: SchemasRolesPermissionRead[];
+  permissions?: PermissionRead[];
 }

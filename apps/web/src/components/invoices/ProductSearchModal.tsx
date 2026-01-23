@@ -1,6 +1,6 @@
 import { Input, Button } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
-import {listInventory} from '@/api/client/inventory.client';
+import { listInventory } from '@/api/client/inventory.client';
 import { AUTH_TOKEN } from '@/constants/storage-keys';
 
 // Local InventoryItem type for API responses
@@ -60,7 +60,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
       console.debug('[ProductSearchModal] Query < 2 chars → clear results');
       setProducts([]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const searchProducts = async () => {
@@ -78,15 +78,15 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
         page: 1,
         per_page: 20,
         search: searchQuery,
-      } as any);
-      
+      });
+
       console.debug('[ProductSearchModal] Inventory response', {
         itemsCount: Array.isArray(res) ? res.length : 0,
       });
-      const items: InventoryItem[] = (res ?? []) as InventoryItem[];
+      const items: InventoryItem[] = (Array.isArray(res) ? res : []) as unknown as InventoryItem[];
 
       // InventoryItem'ları UI Product formatına dönüştür
-      const mappedProducts: Product[] = items.map((item: any) => ({
+      const mappedProducts: Product[] = items.map((item) => ({
         id: item.id || '',
         name: item.name,
         code: item.barcode,
@@ -100,9 +100,10 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
 
       setProducts(mappedProducts);
       console.debug('[ProductSearchModal] Mapped products', { count: mappedProducts.length });
-    } catch (error: any) {
-      const status = error?.response?.status;
-      const code = error?.code;
+    } catch (error: unknown) {
+      const err = error as { response?: { status: number }, code?: string };
+      const status = err.response?.status;
+      const code = err.code;
       console.error('Ürün arama hatası:', { status, code, error });
       setProducts([]);
     } finally {

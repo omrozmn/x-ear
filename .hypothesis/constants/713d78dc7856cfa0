@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/email.py
+# hypothesis_version: 6.150.2
+
+[100, 120, 255, 500, 65535, '@', 'Email recipients', 'Email subject', 'Filter by date from', 'Filter by date to', 'Filter by status', 'From display name', 'From email address', 'HTML email body', 'Invalid email format', 'Items per page', 'Page number', 'SMTP server port', 'Status message', 'Template variables', 'Test email recipient', 'Use SSL/TLS', 'Use STARTTLS', 'bounced', 'dateFrom', 'dateTo', 'description', 'failed', 'from_email', 'json_schema_extra', 'pending', 'perPage', 'per_page', 'port', 'recipients', 'sent', 'timeout']

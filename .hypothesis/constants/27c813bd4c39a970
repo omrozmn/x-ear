@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_campaigns.py
+# hypothesis_version: 6.150.2
+
+[100, 400, 404, 500, '+00:00', '/api/admin/campaigns', '/{campaign_id}', 'Admin-Campaigns', 'Campaign not found', 'Z', 'active', 'adminCreateCampaign', 'adminGetCampaigns', 'campaign', 'campaigns', 'campaigns.manage', 'campaigns.read', 'data', 'deleteAdminCampaign', 'getAdminCampaign', 'id', 'inactive', 'limit', 'message', 'page', 'pagination', 'success', 'total', 'totalPages', 'updateAdminCampaign']

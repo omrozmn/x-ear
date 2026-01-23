@@ -120,8 +120,8 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
       // Handle response wrapping (using unwrapPaginated logic concepts)
       if (Array.isArray(suppliersData)) {
         supplierArray = suppliersData;
-      } else if ((suppliersData as any)?.data) {
-        const innerData = (suppliersData as any).data;
+      } else if ((suppliersData as Record<string, any>)?.data) {
+        const innerData = (suppliersData as Record<string, any>).data;
         if (Array.isArray(innerData)) {
           supplierArray = innerData;
         } else if (innerData?.data && Array.isArray(innerData.data)) {
@@ -242,7 +242,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     if (!newSupplier) return;
 
     try {
-      await createSupplierMutation.mutateAsync({ data: { name: newSupplier } } as any);
+      await createSupplierMutation.mutateAsync({ data: { name: newSupplier, companyName: newSupplier } });
       console.log('✅ New supplier created:', newSupplier);
 
       // Invalidate React Query cache to refetch suppliers

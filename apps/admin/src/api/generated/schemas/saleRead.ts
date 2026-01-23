@@ -21,6 +21,7 @@ import type { SaleReadSgkCoverage } from './saleReadSgkCoverage';
 import type { SaleReadFinalAmount } from './saleReadFinalAmount';
 import type { SaleReadPaidAmount } from './saleReadPaidAmount';
 import type { SaleReadPatientPayment } from './saleReadPatientPayment';
+import type { SaleReadRemainingAmount } from './saleReadRemainingAmount';
 import type { SaleReadRightEarAssignmentId } from './saleReadRightEarAssignmentId';
 import type { SaleReadLeftEarAssignmentId } from './saleReadLeftEarAssignmentId';
 import type { SaleReadReportStatus } from './saleReadReportStatus';
@@ -56,6 +57,7 @@ export interface SaleRead {
   finalAmount?: SaleReadFinalAmount;
   paidAmount?: SaleReadPaidAmount;
   patientPayment?: SaleReadPatientPayment;
+  remainingAmount?: SaleReadRemainingAmount;
   rightEarAssignmentId?: SaleReadRightEarAssignmentId;
   leftEarAssignmentId?: SaleReadLeftEarAssignmentId;
   reportStatus?: SaleReadReportStatus;

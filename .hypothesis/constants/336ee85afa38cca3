@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/approval_gate.py
+# hypothesis_version: 6.150.2
+
+['Action approved', 'actionId', 'actionPlan', 'actionPlanHash', 'action_id', 'approvalToken', 'approved', 'approvedAt', 'approvedBy', 'approver_id', 'auto_approved', 'createdAt', 'decision', 'error', 'error_type', 'expired', 'expiresAt', 'id', 'pending_approval', 'reason', 'rejected', 'rejectionReason', 'rejector_id', 'requiredPermissions', 'requiresApproval', 'riskLevel', 'riskReasoning', 'risk_level', 'rollbackPlan', 'status', 'tenantId', 'tenant_id', 'token_id', 'userId']

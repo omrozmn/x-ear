@@ -25,14 +25,15 @@ interface ExtendedDeviceAssignmentRead extends DeviceAssignmentRead {
   battery_type?: string;
   type?: string;
   deviceType?: string;
-  settings?: any;
+
+  settings?: Record<string, unknown>;
   status?: string; // Override or add status if missing
   side?: string;
-  ear?: any; // Override ear type from schema if needed
+  ear?: string; // Override ear type from schema if needed
   sgkScheme?: string;
   sgk_scheme?: string;
   // Fallback for fields that might be missing in DeviceAssignmentRead definition but present in API
-  deviceId?: any;
+  deviceId?: string;
 }
 
 // Unified search result type for internal use
@@ -229,8 +230,9 @@ export function useParties(options: UsePartiesOptions = {}) {
         // Use search service for complex queries
         const partyFilters: PartyFilters = {
           search: filters.search,
-          status: filters.status ? [filters.status as any] : undefined, // Wrap single filter in array
-          segment: filters.segment ? [filters.segment as any] : undefined,
+
+          status: filters.status ? (filters.status as unknown as PartyStatus[]) : undefined,
+          segment: filters.segment ? (filters.segment as unknown as PartySegment[]) : undefined,
           page: filters.page,
           limit: filters.limit
         };

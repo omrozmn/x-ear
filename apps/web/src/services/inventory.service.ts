@@ -243,7 +243,7 @@ export class InventoryService {
     if (filters.search) {
       if (filters.enableFuzzySearch) {
         // Use fuzzy search for better matching
-        const fuzzyResults = searchProducts(filters.search, allItems, {
+        const fuzzyResults = searchProducts(filters.search, allItems as any, {
           maxResults: filters.maxResults || 50,
           threshold: 0.3,
           enablePhonetic: true,
@@ -257,7 +257,7 @@ export class InventoryService {
         });
 
         // Extract items from fuzzy search results and maintain order by relevance
-        filteredItems = fuzzyResults.map(result => result.item as InventoryItem);
+        filteredItems = fuzzyResults.map(result => result.item as unknown as InventoryItem);
 
         // Track search analytics
         const executionTime = performance.now() - startTime;

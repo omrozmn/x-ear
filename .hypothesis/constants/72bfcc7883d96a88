@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/production_order.py
+# hypothesis_version: 6.150.2
+
+[100, 'id', 'manufacturer', 'new', 'notes', 'orderNumber', 'partyId', 'prod', 'productType', 'production_orders', 'status', 'tenantId']

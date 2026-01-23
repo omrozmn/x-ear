@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/hearing_profile_service.py
+# hypothesis_version: 6.150.2
+
+[403, 404, 'ACCESS_DENIED', 'Access denied', 'E-receipt not found', 'HearingProfile', 'PATIENT_NOT_FOUND', 'Patient not found', '[]', 'audiogramData', 'audiologist', 'conductedBy', 'date', 'doctorName', 'json', 'materials', 'number', 'pending', 'receiptDate', 'receiptNumber', 'results', 'status', 'testDate']

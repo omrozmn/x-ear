@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/quota_handler.py
+# hypothesis_version: 6.150.2
+
+[0.8, 100, 'AI quota exceeded', 'QUOTA_EXCEEDED', 'QuotaHandler', 'Unlimited quota', 'currentUsage', 'current_usage', 'errorCode', 'exceeded', 'isAvailable', 'message', 'ok', 'percentageUsed', 'quotaLimit', 'quota_limit', 'remaining', 'retryAfter', 'status', 'tenantId', 'tenant_id', 'tomorrow', 'unlimited', 'usageType', 'usage_type', 'warning']

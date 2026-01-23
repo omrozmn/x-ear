@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/payment_integrations.py
+# hypothesis_version: 6.150.2
+
+[0.01, 100, 400, 403, 404, 500, '****', '+00:00', '/payments/pos', '/paytr/callback', '/paytr/config', '/paytr/initiate', '/transactions', '0', '1', '12', '127.0.0.1', '5555555555', 'Adres Yok', 'FRONTEND_URL', 'Invalid amount', 'Misafir Kullanici', 'OK', 'PayTR config updated', 'PayTR error', 'PaymentIntegrations', 'Pesin Tahsilat', 'Sale not found', 'Tahsilat', 'Tenant not found', 'Unauthorized', 'Unknown Error', 'X-Forwarded-For', 'Z', 'address_full', 'admin', 'branch_id', 'card', 'enabled', 'error', 'failed', 'hash', 'merchant_id', 'merchant_key', 'merchant_oid', 'merchant_salt', 'noreply@xear.com', 'paid', 'partial', 'payment', 'paytr', 'pending', 'pos_integration', 'provider', 'ptr', 'settings', 'status', 'success', 'tenant_admin', 'test_mode', 'token', 'total_amount']

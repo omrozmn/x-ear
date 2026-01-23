@@ -95,7 +95,7 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
     }
   };
 
-  const getSubmitButtonVariant = () => {
+  const getSubmitButtonVariant = (): "primary" | "danger" | "outline" => {
     switch (approvalType) {
       case 'approve':
         return 'primary';
@@ -154,11 +154,10 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
         </div>
 
         {/* Seçilen Onay Türüne Göre Açıklama */}
-        <div className={`p-3 rounded-lg border-l-4 ${
-          approvalType === 'approve' ? 'bg-green-50 border-green-400' :
-          approvalType === 'reject' ? 'bg-red-50 border-red-400' :
-          'bg-yellow-50 border-yellow-400'
-        }`}>
+        <div className={`p-3 rounded-lg border-l-4 ${approvalType === 'approve' ? 'bg-green-50 border-green-400' :
+            approvalType === 'reject' ? 'bg-red-50 border-red-400' :
+              'bg-yellow-50 border-yellow-400'
+          }`}>
           <p className={`text-sm font-medium ${getApprovalTypeColor(approvalType)}`}>
             {approvalType === 'approve' && 'Bu talep onaylanacak ve işleme alınacaktır.'}
             {approvalType === 'reject' && 'Bu talep reddedilecek ve hasta bilgilendirilecektir.'}
@@ -172,8 +171,8 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
             label="Notlar"
             placeholder={
               approvalType === 'approve' ? 'Onay notları (isteğe bağlı)...' :
-              approvalType === 'reject' ? 'Red gerekçesi...' :
-              'Talep edilen ek bilgiler...'
+                approvalType === 'reject' ? 'Red gerekçesi...' :
+                  'Talep edilen ek bilgiler...'
             }
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -193,7 +192,7 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
             İptal
           </Button>
           <Button
-            variant={getSubmitButtonVariant() as any}
+            variant={getSubmitButtonVariant()}
             onClick={handleSubmit}
             disabled={isSubmitting || (approvalType !== 'approve' && !notes)}
             loading={isSubmitting}

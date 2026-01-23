@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/user_app_role.py
+# hypothesis_version: 6.150.2
+
+['App', 'Role', 'User', 'appId', 'app_id', 'app_roles', 'apps.id', 'dynamic', 'id', 'role', 'roleId', 'role_id', 'roles.id', 'uar', 'uq_user_app_role', 'userId', 'user_app_roles', 'user_id', 'user_roles', 'users.id']

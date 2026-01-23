@@ -40,10 +40,11 @@
     }
   },
   "include": [
-    "src",
-    "src/types",
-    "../../packages/ui-web/src",
-    "../../packages/core/src"
+    "src/**/*",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../../packages/ui-web/src/**/*",
+    "../../packages/core/src/**/*"
   ],
   "references": [
     {

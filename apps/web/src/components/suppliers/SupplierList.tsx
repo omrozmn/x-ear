@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Badge, Button, DataTable, Column, TableAction } from '@x-ear/ui-web';
+import React, { useMemo } from 'react';
+import { Badge, DataTable, Column, TableAction } from '@x-ear/ui-web';
 import {
   Building2,
   User,
@@ -38,12 +38,12 @@ export function SupplierList({
   onEditSupplier,
   onDeleteSupplier,
   onSort,
-  sortBy,
-  sortOrder,
+  // sortBy, // Props defined in interface but not used in component
+  // sortOrder, // Props defined in interface but not used in component
   pagination
 }: SupplierListProps) {
 
-  
+
 
   const columns: Column<SupplierExtended>[] = useMemo(() => [
     {
@@ -177,7 +177,7 @@ export function SupplierList({
         loading={isLoading}
         actions={actions}
         sortable={true}
-        onSort={(key, direction) => onSort?.(key)}
+        onSort={(key) => onSort?.(key)}
         onRowClick={onSupplierClick}
         rowKey="id"
         emptyText="Tedarikçi bulunamadı"

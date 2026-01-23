@@ -27,18 +27,18 @@ export const apiClientExtended = {
     return { data: response.data };
   },
 
-  async post<T>(path: string, body: any): Promise<{ data: T }> {
+  async post<T>(path: string, body: unknown): Promise<{ data: T }> {
     const response = await apiClient.post<T>(path, body);
     return { data: response.data };
   },
 
-  async put<T>(path: string, body: any): Promise<{ data: T }> {
+  async put<T>(path: string, body: unknown): Promise<{ data: T }> {
     const response = await apiClient.put<T>(path, body);
     return { data: response.data };
   },
 
-  async delete(path: string): Promise<{ data: any }> {
-    const response = await apiClient.delete<any>(path);
+  async delete(path: string): Promise<{ data: unknown }> {
+    const response = await apiClient.delete<unknown>(path);
     return { data: response.data };
   },
 };

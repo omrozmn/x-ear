@@ -27,7 +27,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
           Ürün Bilgileri
         </h2>
-      
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -82,7 +82,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
             {isEditMode ? (
               <CategoryAutocomplete
                 value={editedItem.category || ''}
-                onChange={(value) => onEditChange({ category: value as any })}
+                onChange={(value) => onEditChange({ category: value as import('../../../types/inventory').InventoryCategory })}
                 label="Kategori"
               />
             ) : (

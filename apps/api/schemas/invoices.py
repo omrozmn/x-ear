@@ -167,7 +167,7 @@ class InvoiceIssueResponse(AppBaseModel):
     outbox: EFaturaOutboxRead
 
 class InvoiceCopyCancelResponse(AppBaseModel):
-    copy: InvoiceRead
+    copy_invoice: InvoiceRead  # Renamed from 'copy' to avoid shadowing BaseModel.copy()
     cancellation: InvoiceRead
 
 # Type aliases for frontend compatibility

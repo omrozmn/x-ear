@@ -14,7 +14,7 @@ export const generateIdempotencyKey = (): string => {
  */
 export const createDeterministicKey = (
   operation: string,
-  data: any,
+  data: unknown,
   userId?: string
 ): string => {
   const dataHash = btoa(JSON.stringify(data)).replace(/[^a-zA-Z0-9]/g, '');
@@ -43,9 +43,9 @@ export const extractTimestampFromKey = (key: string): number | null => {
 export const isKeyExpired = (key: string, expiryMinutes: number = 60): boolean => {
   const timestamp = extractTimestampFromKey(key);
   if (!timestamp) return false;
-  
+
   const now = Date.now();
   const expiryTime = timestamp + (expiryMinutes * 60 * 1000);
-  
+
   return now > expiryTime;
 };

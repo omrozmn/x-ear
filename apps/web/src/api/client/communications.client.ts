@@ -24,4 +24,4 @@ export {
   getListCommunicationTemplatesQueryKey,
 } from '@/api/generated/index';
 
-export type { } from '@/api/generated/schemas';
+export type { RoutersCommunicationsTemplateCreate } from '@/api/generated/schemas';

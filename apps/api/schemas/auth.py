@@ -117,7 +117,7 @@ class AuthUserRead(AppBaseModel):
             updated_at=user.updated_at if hasattr(user, 'updated_at') else None,
         )
 
-class AdminUserRead(AppBaseModel):
+class AuthAdminUserRead(AppBaseModel):
     """
     Admin user data returned in auth responses.
     """
@@ -130,13 +130,15 @@ class AdminUserRead(AppBaseModel):
     mfa_enabled: bool = Field(False, alias="mfaEnabled", description="MFA Status")
     last_login: Optional[datetime] = Field(None, alias="lastLogin", description="Last login timestamp")
     created_at: Optional[datetime] = Field(None, alias="createdAt", description="Account creation timestamp")
+    username: Optional[str] = Field(None, description="Username")
     is_super_admin: bool = Field(False, alias="isSuperAdmin", description="Super Admin status")
     
     @classmethod
-    def from_model(cls, user) -> "AdminUserRead":
+    def from_model(cls, user) -> "AuthAdminUserRead":
         """Create from AdminUser model instance"""
         return cls(
             id=user.id,
+            username=getattr(user, 'username', user.email),
             email=user.email,
             first_name=user.first_name,
             last_name=user.last_name,
@@ -149,7 +151,7 @@ class AdminUserRead(AppBaseModel):
         )
     
     @classmethod
-    def from_admin_model(cls, user) -> "AdminUserRead":
+    def from_admin_model(cls, user) -> "AuthAdminUserRead":
         """Alias for from_model - for clarity when used with AdminUser"""
         return cls.from_model(user)
 
@@ -167,7 +169,7 @@ class LoginResponse(AppBaseModel):
     """
     access_token: str = Field(..., alias="accessToken", description="JWT access token")
     refresh_token: str = Field(..., alias="refreshToken", description="JWT refresh token")
-    user: Union[AuthUserRead, AdminUserRead] = Field(..., description="Authenticated user data")
+    user: Union[AuthUserRead, AuthAdminUserRead] = Field(..., description="Authenticated user data")
     requires_phone_verification: bool = Field(False, alias="requiresPhoneVerification", description="Whether phone verification is required")
 
 

@@ -8,9 +8,9 @@ import { Button } from '@x-ear/ui-web';
 interface InvoiceModalContentProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: (invoice: any) => void;
+  onSuccess?: (invoice: Invoice) => void;
   onError?: (error: string) => void;
-  initialData?: any;
+  initialData?: Invoice | null;
   partyId?: string;
   deviceId?: string;
   mode?: 'create' | 'quick' | 'template' | 'edit';
@@ -64,8 +64,9 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
       const invoiceService = new InvoiceService();
       // Only update when explicitly in edit mode
       if (mode === 'edit') {
-        const id = (initialData as any)?.id as string;
-        const updated = await invoiceService.updateInvoice(id, formData as any);
+        const id = initialData?.id;
+        if (!id) throw new Error('Düzenleme için fatura ID bulunamadı');
+        const updated = await invoiceService.updateInvoice(id, formData);
         setCreatedInvoice(updated);
         if (onSuccess) onSuccess(updated);
         onClose();
@@ -230,8 +231,8 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
           )}
 
           <InvoiceFormExtended
-            invoice={initialData as any}
-            initialData={initialData}
+            invoice={initialData || undefined}
+            initialData={initialData as any}
             onSubmit={handleSubmit}
             onCancel={onClose}
             isLoading={isSubmitting}

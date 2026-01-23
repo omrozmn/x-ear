@@ -158,7 +158,7 @@ const Roles: React.FC = () => {
         setFormData({
             name: role.name,
             description: role.description || '',
-            permissions: role.permissions?.map(p => p.code) || [],
+            permissions: role.permissions?.map(p => p.name) || [],
         });
         setIsEditModalOpen(true);
     };
@@ -282,9 +282,9 @@ const Roles: React.FC = () => {
                                 <span
                                     key={perm.id}
                                     className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full"
-                                    title={perm.label}
+                                    title={perm.description as string}
                                 >
-                                    {perm.code.split('.').slice(-1)[0]}
+                                    {perm.name.split('.').slice(-1)[0]}
                                 </span>
                             ))}
                             {(role.permissions?.length || 0) > 5 && (
@@ -363,23 +363,23 @@ const Roles: React.FC = () => {
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            checked={formData.permissions.includes(perm.code)}
+                                                            checked={formData.permissions.includes(perm.name)}
                                                             onChange={(e) => {
                                                                 if (e.target.checked) {
                                                                     setFormData(prev => ({
                                                                         ...prev,
-                                                                        permissions: [...prev.permissions, perm.code]
+                                                                        permissions: [...prev.permissions, perm.name]
                                                                     }));
                                                                 } else {
                                                                     setFormData(prev => ({
                                                                         ...prev,
-                                                                        permissions: prev.permissions.filter(p => p !== perm.code)
+                                                                        permissions: prev.permissions.filter(p => p !== perm.name)
                                                                     }));
                                                                 }
                                                             }}
                                                             className="rounded border-gray-300 text-primary focus:ring-primary"
                                                         />
-                                                        <span className="text-sm text-gray-700 dark:text-gray-300">{perm.label}</span>
+                                                        <span className="text-sm text-gray-700 dark:text-gray-300">{(perm as any).label || perm.name}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -491,20 +491,20 @@ const Roles: React.FC = () => {
                                             </h4>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {group.permissions.map(perm => {
-                                                    const currentPerms = selectedRole?.permissions?.map(p => p.code) || [];
-                                                    const isActive = currentPerms.includes(perm.code);
+                                                    const currentPerms = selectedRole?.permissions?.map(p => p.name) || [];
+                                                    const isActive = currentPerms.includes(perm.name);
 
                                                     return (
                                                         <button
                                                             key={perm.id}
-                                                            onClick={() => handleTogglePermission(selectedRole!.id, perm.code, currentPerms)}
+                                                            onClick={() => handleTogglePermission(selectedRole!.id, perm.name, currentPerms)}
                                                             disabled={updatePermissionsMutation.isPending}
                                                             className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${isActive
                                                                 ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400'
                                                                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
                                                                 }`}
                                                         >
-                                                            <span className="text-sm truncate">{perm.label}</span>
+                                                            <span className="text-sm truncate">{(perm as any).label || perm.name}</span>
                                                             {isActive ? (
                                                                 <Check className="h-4 w-4 flex-shrink-0" />
                                                             ) : (

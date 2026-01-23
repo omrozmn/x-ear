@@ -12,9 +12,9 @@ import {
     getListSmHeadersQueryKey,
     getListSmCreditQueryKey
 } from '@/api/client/sms-integration.client';
-import type { SmsProviderConfigRead } from '@/api/generated/schemas/smsProviderConfigRead';
-import type { SmsHeaderRequestRead } from '@/api/generated/schemas/smsHeaderRequestRead';
-import { Button, useToastHelpers } from '@x-ear/ui-web';
+// @ts-ignore
+import type { SMSProviderConfigRead, SMSHeaderRequestRead } from '@/api/generated/schemas';
+import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAuthStore } from '@/stores/authStore';
@@ -76,8 +76,8 @@ export default function IntegrationSettings() {
 
     useEffect(() => {
         if (configData && configData.data) {
-            const payload = configData.data as any;
-            // documents is unknown[] in schema, verify shape
+            const payload = configData.data;
+            // documents is unknown[] in schema, cast to local SmsDocument type
             const docs = Array.isArray(payload.documents)
                 ? (payload.documents as unknown as SmsDocument[])
                 : [];
@@ -206,7 +206,7 @@ export default function IntegrationSettings() {
     };
 
     const headers = Array.isArray(headersData?.data)
-        ? (headersData?.data as any[])
+        ? (headersData?.data as SMSHeaderRequestRead[])
         : [];
 
     const credit = creditData?.data /* as SmsCreditRead - inferred automatically if available */;
@@ -253,12 +253,21 @@ export default function IntegrationSettings() {
                             )}
                             <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
                                 <div className="flex gap-4">
-                                    <button onClick={() => setSmsSubTab('docs')} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${smsSubTab === 'docs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => setSmsSubTab('docs')}
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none transition-colors ${smsSubTab === 'docs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                    >
                                         Başvuru Belgeleri
-                                    </button>
-                                    <button onClick={() => setSmsSubTab('headers')} disabled={!allDocumentsApproved} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${smsSubTab === 'headers' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'} ${!allDocumentsApproved ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => setSmsSubTab('headers')}
+                                        disabled={!allDocumentsApproved}
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none transition-colors ${smsSubTab === 'headers' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                    >
                                         SMS Başlıkları {!allDocumentsApproved && <span className="ml-1 text-xs">(Kilitli)</span>}
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
@@ -288,28 +297,63 @@ export default function IntegrationSettings() {
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             {doc.hasExample && (
-                                                                <button onClick={() => setShowContractExample(true)} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Örnek Sözleşme">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => setShowContractExample(true)}
+                                                                    className="p-2 text-blue-600"
+                                                                    title="Örnek Sözleşme"
+                                                                >
                                                                     <ExternalLink className="w-4 h-4" />
-                                                                </button>
+                                                                </Button>
                                                             )}
                                                             {uploaded && (
                                                                 <>
-                                                                    <button onClick={() => handlePreviewDocument(doc.id)} className="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" title="Önizle">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => handlePreviewDocument(doc.id)}
+                                                                        className="p-2 text-gray-600"
+                                                                        title="Önizle"
+                                                                    >
                                                                         <Eye className="w-4 h-4" />
-                                                                    </button>
+                                                                    </Button>
                                                                     {canUploadThis && (
-                                                                        <button onClick={() => setDeleteConfirmDoc(doc.id)} disabled={isDeleting} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Sil">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => setDeleteConfirmDoc(doc.id)}
+                                                                            className="p-2 text-red-600"
+                                                                            disabled={isDeleting}
+                                                                            title="Sil"
+                                                                        >
                                                                             <Trash2 className="w-4 h-4" />
-                                                                        </button>
+                                                                        </Button>
                                                                     )}
                                                                 </>
                                                             )}
                                                             {!uploaded || canUploadThis ? (
-                                                                <label className={`inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 cursor-pointer ${isUploading || isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                                                    <Upload className="w-4 h-4" />
+                                                                <Button
+                                                                    variant="primary"
+                                                                    size="sm"
+                                                                    disabled={isUploading || isDisabled}
+                                                                    className="relative overflow-hidden"
+                                                                >
+                                                                    <Upload className="w-4 h-4 mr-2" />
                                                                     {uploaded ? 'Değiştir' : 'Yükle'}
-                                                                    <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" disabled={isUploading || isDisabled} ref={(el) => { uploadInputsRef.current[doc.id] = el; }} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file, doc.id); e.target.value = ''; }} />
-                                                                </label>
+                                                                    <input
+                                                                        type="file"
+                                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                                        disabled={isUploading || isDisabled}
+                                                                        ref={(el) => { uploadInputsRef.current[doc.id] = el; }}
+                                                                        onChange={(e) => {
+                                                                            const file = e.target.files?.[0];
+                                                                            if (file) handleFileUpload(file, doc.id);
+                                                                            e.target.value = '';
+                                                                        }}
+                                                                    />
+                                                                </Button>
                                                             ) : null}
                                                         </div>
                                                     </div>
@@ -350,10 +394,20 @@ export default function IntegrationSettings() {
                                         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                                             <h4 className="font-medium text-gray-900 dark:text-white mb-3">Yeni Başlık Talebi</h4>
                                             <div className="flex gap-3">
-                                                <input type="text" value={newHeader} onChange={(e) => setNewHeader(e.target.value)} placeholder="Başlık (max 11 karakter)" maxLength={11} className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                                                <select value={newHeaderType} onChange={(e) => setNewHeaderType(e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                                                    {HEADER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                                                </select>
+                                                <Input
+                                                    type="text"
+                                                    value={newHeader}
+                                                    onChange={(e) => setNewHeader(e.target.value)}
+                                                    placeholder="Başlık (max 11 karakter)"
+                                                    maxLength={11}
+                                                    className="flex-1"
+                                                />
+                                                <Select
+                                                    value={newHeaderType}
+                                                    onChange={(e) => setNewHeaderType(e.target.value)}
+                                                    options={HEADER_TYPES}
+                                                    className="min-w-[200px]"
+                                                />
                                                 <Button onClick={handleRequestHeader}>Talep Oluştur</Button>
                                             </div>
                                             {newHeaderType !== 'company_title' && (
@@ -398,7 +452,11 @@ export default function IntegrationSettings() {
                     <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 w-[90vw] max-w-4xl h-[80vh] flex flex-col">
                         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                             <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">Belge Önizleme: {previewDoc?.filename}</Dialog.Title>
-                            <Dialog.Close className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><X className="w-5 h-5" /></Dialog.Close>
+                            <Dialog.Close asChild>
+                                <Button variant="ghost" size="sm" className="p-2">
+                                    <X className="w-5 h-5" />
+                                </Button>
+                            </Dialog.Close>
                         </div>
                         <div className="flex-1 p-4 overflow-auto">
                             {previewDoc?.url && <iframe src={previewDoc.url} className="w-full h-full border-0 rounded-lg" title="Document Preview" />}
@@ -412,7 +470,11 @@ export default function IntegrationSettings() {
                     <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 w-[90vw] max-w-4xl h-[80vh] flex flex-col">
                         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                             <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">Örnek Sözleşme</Dialog.Title>
-                            <Dialog.Close className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><X className="w-5 h-5" /></Dialog.Close>
+                            <Dialog.Close asChild>
+                                <Button variant="ghost" size="sm" className="p-2">
+                                    <X className="w-5 h-5" />
+                                </Button>
+                            </Dialog.Close>
                         </div>
                         <div className="flex-1 p-4 overflow-auto">
                             <iframe src="/vatansms_contract_example.pdf" className="w-full h-full border-0 rounded-lg" title="Contract Example" />

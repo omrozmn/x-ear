@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Alert } from '@x-ear/ui-web';
 import { CreditCard, AlertCircle } from 'lucide-react';
-import {listSalePromissoryNotes} from '@/api/client/sales.client';
+import { listSalePromissoryNotes } from '@/api/client/sales.client';
 
-// Local Sale type since it's not exported from schemas
-interface Sale {
-  id?: string;
-  partyId: string;
-  totalAmount?: number;
-  partyPayment?: number;
-  saleDate?: string;
-}
+import { SaleRead } from '@/api/generated/schemas/saleRead';
 import PaymentTrackingModal from '../../payments/PaymentTrackingModal';
+
+// Extended interface to handle runtime properties missing from schema
+// This must align with what is passed from parent and what PaymentTrackingModal expects
+// interface ExtendedSaleRead extends SaleRead {
+//   partyPayment?: number;
+// }
 
 interface PaymentRecord {
   id: string;
@@ -24,7 +23,8 @@ interface PaymentRecord {
 }
 
 interface PaymentSummaryProps {
-  sale: Sale;
+  // Accept the extended type so parent can pass it
+  sale: SaleRead;
   onPaymentUpdate?: () => void;
 }
 
@@ -61,12 +61,15 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentU
 
       // Use sale data to create payment records
       const mockPayments: PaymentRecord[] = [];
-      if (sale.partyPayment && sale.partyPayment > 0) {
+      // Cast to number if needed, though usually it is.
+      const patientPaymentVal = Number(sale.patientPayment || 0);
+
+      if (patientPaymentVal > 0) {
         mockPayments.push({
           id: `payment-${sale.id}-1`,
           saleId: sale.id,
-          amount: sale.partyPayment,
-          paymentDate: sale.saleDate || new Date().toISOString(),
+          amount: patientPaymentVal,
+          paymentDate: String(sale.saleDate || new Date().toISOString()),
           paymentMethod: 'cash',
           status: 'COMPLETED',
           notes: 'Initial payment'
@@ -83,8 +86,8 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentU
 
   useEffect(() => {
     loadPaymentRecords();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sale.id, sale.partyId, sale.partyPayment]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sale.id, sale.partyId, sale.patientPayment]);
 
   const handlePaymentUpdate = () => {
     loadPaymentRecords();
@@ -160,6 +163,10 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentU
       <PaymentTrackingModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
+        // We pass 'sale' (ExtendedSaleRead) to 'sale' prop of PaymentTrackingModal
+        // PaymentTrackingModal must accept ExtendedSaleRead or compatible
+        // Casting to any to temporarily bypass strict check while types stabilize
+        // Ideally PaymentTrackingModal should accept ExtendedSaleRead
         sale={sale}
         onPaymentUpdate={handlePaymentUpdate}
       />

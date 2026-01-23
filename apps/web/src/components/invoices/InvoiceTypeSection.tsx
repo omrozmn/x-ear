@@ -1,5 +1,5 @@
-import { Select, Input, Checkbox, DatePicker } from '@x-ear/ui-web';
-import { useState, useEffect } from 'react';
+// import { Select, Input, Checkbox, DatePicker } from '@x-ear/ui-web'; // UI components not used
+import { useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { getCurrencyRestrictions } from '../../utils/currencyManager';
 
@@ -17,8 +17,8 @@ export function InvoiceTypeSection({
   invoiceType,
   scenario,
   currency,
-  specialTaxBase,
-  returnInvoiceDetails,
+  // specialTaxBase, // Not used in current implementation
+  // returnInvoiceDetails, // Not used in current implementation
   onChange,
   onSGKModeChange
 }: InvoiceTypeSectionProps) {
@@ -63,13 +63,13 @@ export function InvoiceTypeSection({
       // Bu işlem ProductLinesSection'da yapılacak
       console.log('İade faturası seçildi - KDV oranları 0 yapılmalı');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoiceType, scenario, currency, onSGKModeChange]);
 
-  // Koşullu görünürlük kontrolleri
-  const showWithholdingFields = withholdingTypes.includes(invoiceType);
-  const showSpecialBaseFields = specialBaseTypes.includes(invoiceType);
-  const showReturnFields = returnTypes.includes(invoiceType);
+  // Koşullu görünürlük kontrolleri (currently not used in JSX but kept for future use)
+  // const showWithholdingFields = withholdingTypes.includes(invoiceType);
+  // const showSpecialBaseFields = specialBaseTypes.includes(invoiceType);
+  // const showReturnFields = returnTypes.includes(invoiceType);
   const showSGKInfo = isSGKType;
 
   // Filter available invoice types based on selected scenario
@@ -99,51 +99,51 @@ export function InvoiceTypeSection({
 
   return (
     <div className="space-y-4">
-        {/* Fatura Tipi */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Fatura Tipi <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={invoiceType}
-            onChange={(e) => onChange('invoiceType', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
-          >
-            {invoiceTypes
-              .filter((type) => allowedTypes.includes(type.value))
-              .map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-          </select>
-        </div>
+      {/* Fatura Tipi */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Fatura Tipi <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={invoiceType}
+          onChange={(e) => onChange('invoiceType', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          required
+        >
+          {invoiceTypes
+            .filter((type) => allowedTypes.includes(type.value))
+            .map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+        </select>
+      </div>
 
-        {/* SGK Bilgilendirme */}
-        {showSGKInfo && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
-              <div>
-                <h4 className="text-sm font-medium text-blue-800 mb-1">
-                  SGK Faturası
-                </h4>
-                <p className="text-sm text-blue-700">
-                  SGK faturası için müşteri bilgileri otomatik olarak ayarlanacaktır. Para birimi TRY olmalıdır.
-                </p>
-              </div>
+      {/* SGK Bilgilendirme */}
+      {showSGKInfo && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
+            <div>
+              <h4 className="text-sm font-medium text-blue-800 mb-1">
+                SGK Faturası
+              </h4>
+              <p className="text-sm text-blue-700">
+                SGK faturası için müşteri bilgileri otomatik olarak ayarlanacaktır. Para birimi TRY olmalıdır.
+              </p>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Special-case checkboxes removed (handled via scenario / invoice type) */}
+      {/* Special-case checkboxes removed (handled via scenario / invoice type) */}
 
-        {/* Özel matrah detayları taşındı: sağ sütunda gösterilecektir */}
+      {/* Özel matrah detayları taşındı: sağ sütunda gösterilecektir */}
 
-        {/* Backdated invoice UI removed (handled in other flows) */}
+      {/* Backdated invoice UI removed (handled in other flows) */}
 
-        {/* Return invoice details are shown in the right-hand sidebar now */}
+      {/* Return invoice details are shown in the right-hand sidebar now */}
     </div>
   );
 }

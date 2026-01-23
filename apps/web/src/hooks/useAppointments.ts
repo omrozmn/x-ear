@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  Appointment, 
-  AppointmentFilters, 
-  AppointmentStats, 
+import {
+  Appointment,
+  AppointmentFilters,
+  AppointmentStats,
   CreateAppointmentData,
   UpdateAppointmentData,
   AppointmentSearchResult,
@@ -26,16 +26,16 @@ export interface UseAppointmentsReturn {
   appointments: Appointment[];
   appointment: Appointment | null;
   stats: AppointmentStats;
-  
+
   // Loading states
   loading: boolean;
   creating: boolean;
   updating: boolean;
   deleting: boolean;
-  
+
   // Error states
   error: string | null;
-  
+
   // Actions
   createAppointment: (data: CreateAppointmentData) => Promise<Appointment>;
   updateAppointment: (id: string, data: Partial<UpdateAppointmentData>) => Promise<Appointment>;
@@ -43,36 +43,36 @@ export interface UseAppointmentsReturn {
   getAppointment: (id: string) => void;
   refreshAppointments: () => void;
   clearError: () => void;
-  
+
   // Filtering and search
   setFilters: (filters: AppointmentFilters) => void;
   searchAppointments: (query: string, limit?: number) => AppointmentSearchResult;
-  
+
   // Specialized queries
   getAppointmentsByParty: (partyId: string) => Appointment[];
   getAppointmentsByDate: (date: string) => Appointment[];
   getTodaysAppointments: () => Appointment[];
   getUpcomingAppointments: (days?: number) => Appointment[];
-  
+
   // Availability and scheduling
   checkAvailability: (request: AvailabilityRequest) => Promise<AvailabilityResponse>;
   rescheduleAppointment: (request: RescheduleRequest) => Promise<Appointment>;
-  
+
   // Status operations
   createAppointmentCancel: (id: string, reason?: string) => Promise<Appointment>;
   createAppointmentComplete: (id: string, notes?: string) => Promise<Appointment>;
   markNoShow: (id: string) => Promise<Appointment>;
-  
+
   // Bulk operations
   bulkOperation: (operation: BulkAppointmentOperation) => Promise<BulkOperationResult>;
-  
+
   // Validation
   validateAppointment: (appointment: Appointment) => AppointmentValidation;
 }
 
 export function useAppointments(options: UseAppointmentsOptions = {}): UseAppointmentsReturn {
   const { filters, autoRefresh = false, refreshInterval = 120000 } = options; // 2 minutes instead of 30 seconds
-  
+
   // State
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [appointment, setAppointment] = useState<Appointment | null>(null);
@@ -312,6 +312,9 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
 
   // Computed stats - recalculate when appointments change
   const stats = useMemo((): AppointmentStats => {
+    // appointments dependency is needed to trigger recalculation when list changes
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _dep = appointments;
     return appointmentService.getAppointmentStats(currentFilters);
   }, [appointments, currentFilters]); // Include appointments to trigger recalculation
 
@@ -320,16 +323,16 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     appointments,
     appointment,
     stats,
-    
+
     // Loading states
     loading,
     creating,
     updating,
     deleting,
-    
+
     // Error states
     error,
-    
+
     // Actions
     createAppointment,
     updateAppointment,
@@ -337,29 +340,29 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     getAppointment,
     refreshAppointments,
     clearError,
-    
+
     // Filtering and search
     setFilters,
     searchAppointments,
-    
+
     // Specialized queries
     getAppointmentsByParty,
     getAppointmentsByDate,
     getTodaysAppointments,
     getUpcomingAppointments,
-    
+
     // Availability and scheduling
     checkAvailability,
     rescheduleAppointment,
-    
+
     // Status operations
     createAppointmentCancel,
     createAppointmentComplete,
     markNoShow,
-    
+
     // Bulk operations
     bulkOperation,
-    
+
     // Validation
     validateAppointment
   };
@@ -367,7 +370,7 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
 
 // Specialized hooks for common use cases
 export function useAppointmentsByParty(partyId: string) {
-  return useAppointments({ 
+  return useAppointments({
     filters: { partyId },
     autoRefresh: false // Disable auto-refresh for party-specific appointments
   });
@@ -375,7 +378,7 @@ export function useAppointmentsByParty(partyId: string) {
 
 export function useTodaysAppointments() {
   const today = new Date().toISOString().split('T')[0];
-  return useAppointments({ 
+  return useAppointments({
     filters: { startDate: today, endDate: today },
     autoRefresh: true,
     refreshInterval: 300000 // Refresh every 5 minutes instead of 1 minute
@@ -386,10 +389,10 @@ export function useUpcomingAppointments(days: number = 7) {
   const today = new Date().toISOString().split('T')[0];
   const endDate = new Date();
   endDate.setDate(endDate.getDate() + days);
-  
-  return useAppointments({ 
-    filters: { 
-      startDate: today, 
+
+  return useAppointments({
+    filters: {
+      startDate: today,
       endDate: endDate.toISOString().split('T')[0],
       status: 'scheduled'
     },

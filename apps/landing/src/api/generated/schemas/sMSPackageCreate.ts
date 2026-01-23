@@ -5,12 +5,15 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSPackageCreateDescription } from './sMSPackageCreateDescription';
+import type { SmsPackageCreateDescription } from './smsPackageCreateDescription';
 
-export interface SMSPackageCreate {
+export interface SmsPackageCreate {
   name: string;
-  description?: SMSPackageCreateDescription;
+  description?: SmsPackageCreateDescription;
+  /** */
   smsCount: number;
+  /** */
   price: number;
+  currency?: string;
   isActive?: boolean;
 }

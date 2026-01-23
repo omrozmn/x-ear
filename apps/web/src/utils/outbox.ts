@@ -38,6 +38,18 @@ export interface OutboxEvent {
   timestamp: number;
 }
 
+// Interface for blob data stored in outbox operations
+interface OutboxBlobData {
+  blobId: string;
+  filename?: string;
+  mime?: string;
+  [key: string]: unknown;
+}
+
+function isOutboxBlobData(data: unknown): data is OutboxBlobData {
+  return typeof data === 'object' && data !== null && 'blobId' in data && typeof (data as OutboxBlobData).blobId === 'string';
+}
+
 export class IndexedDBOutbox {
   private dbName = 'XEarOutbox';
   private dbVersion = 2; // Incremented for schema migration
@@ -450,16 +462,16 @@ export class IndexedDBOutbox {
       : `${API_BASE_URL}${endpoint}`;
 
     // If operation references a stored blob, retrieve it and send multipart/form-data
-    if (data && (data as any).blobId) {
+    if (data && isOutboxBlobData(data)) {
       const { indexedDBManager } = await import('./indexeddb');
-      const blobRef = await indexedDBManager.getFileBlob((data as any).blobId);
+      const blobRef = await indexedDBManager.getFileBlob(data.blobId);
       if (!blobRef) throw new Error('Blob not found for outbox operation');
 
       const form = new FormData();
       form.append('file', blobRef.blob, blobRef.filename || 'file');
       // append metadata
-      if ((data as any).filename) form.append('filename', (data as any).filename);
-      if ((data as any).mime) form.append('mime', (data as any).mime);
+      if (data.filename) form.append('filename', data.filename);
+      if (data.mime) form.append('mime', data.mime);
 
       try {
         // Use customInstance for blob upload - maintains auth + retry logic

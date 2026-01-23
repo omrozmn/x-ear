@@ -1,0 +1,19 @@
+{% extends "base.txt" %}
+
+{% block content %}
+SMTP Test E-postası
+
+Merhaba {{ user_name }},
+
+✅ SMTP YAPILANDIRMASI BAŞARILI!
+Bu e-posta, SMTP yapılandırmanızın doğru çalıştığını doğrulamak için gönderilmiştir.
+
+Test Detayları:
+- Tenant: {{ tenant_name }}
+- Gönderim Zamanı: {{ current_year }}
+- E-posta Sistemi: {{ app_name }}
+
+SMTP yapılandırmanız başarıyla tamamlandı ve e-posta gönderimi aktif durumda.
+
+Artık sistem üzerinden e-posta gönderebilirsiniz.
+{% endblock %}

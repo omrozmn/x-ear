@@ -8,7 +8,6 @@ import { Edit2, Save, X } from 'lucide-react';
 import type { CashRecord, TransactionType, RecordType } from '../../types/cashflow';
 import { RECORD_TYPE_LABELS } from '../../types/cashflow';
 import { PartySearchInput } from './PartySearchInput';
-import { ProductSearchInput } from './ProductSearchInput';
 import { RecordTypeSelector } from './RecordTypeSelector';
 
 interface CashRecordDetailModalProps {
@@ -25,11 +24,6 @@ interface Party {
   lastName: string;
 }
 
-interface InventoryItem {
-  id: string;
-  name: string;
-}
-
 export function CashRecordDetailModal({
   record,
   isOpen,
@@ -41,7 +35,6 @@ export function CashRecordDetailModal({
   const [transactionType, setTransactionType] = useState<TransactionType | ''>('');
   const [recordType, setRecordType] = useState<RecordType | ''>('');
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<InventoryItem | null>(null);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
 
@@ -149,8 +142,8 @@ export function CashRecordDetailModal({
                 <p className="text-base">
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${record.transactionType === 'income'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                       }`}
                   >
                     {record.transactionType === 'income' ? 'Gelir' : 'Gider'}
@@ -166,8 +159,8 @@ export function CashRecordDetailModal({
               <div>
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Tutar</label>
                 <p className={`text-xl font-bold ${record.transactionType === 'income'
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
                   }`}>
                   {record.transactionType === 'income' ? '+' : '-'}
                   {formatCurrency(record.amount)}
@@ -230,7 +223,7 @@ export function CashRecordDetailModal({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Açıklama (İsteğe Bağlı)
               </label>
-              <textarea
+              <textarea data-allow-raw="true"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}

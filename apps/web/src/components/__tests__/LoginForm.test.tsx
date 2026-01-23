@@ -34,7 +34,7 @@ describe('LoginForm', () => {
     vi.clearAllMocks();
     mockUseAuthStore.mockReturnValue(baseState);
     // Mock getState static method
-    (useAuthStore as any).getState = vi.fn(() => baseState);
+    useAuthStore.getState = vi.fn().mockReturnValue(baseState);
   });
 
   it('renders login form correctly', () => {
@@ -83,7 +83,7 @@ describe('LoginForm', () => {
   it('disables submit button when loading', () => {
     const loadingState = { ...baseState, isLoading: true };
     mockUseAuthStore.mockReturnValue(loadingState);
-    (useAuthStore as any).getState = vi.fn(() => loadingState);
+    useAuthStore.getState = vi.fn().mockReturnValue(loadingState);
 
     customRender(<LoginForm />);
 
@@ -94,7 +94,7 @@ describe('LoginForm', () => {
   it('displays error message when login fails', () => {
     const errorState = { ...baseState, error: 'Invalid credentials' };
     mockUseAuthStore.mockReturnValue(errorState);
-    (useAuthStore as any).getState = vi.fn(() => errorState);
+    useAuthStore.getState = vi.fn().mockReturnValue(errorState);
 
     customRender(<LoginForm />);
 

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/dependencies.py
+# hypothesis_version: 6.150.2
+
+[401, '/api/auth/login', 'AUTH_FORBIDDEN', 'Admin user inactive', 'Admin user not found', 'ENVIRONMENT', 'HS256', 'Invalid token', 'JWT_SECRET_KEY', 'TENANT_MISSING', 'User inactive', 'User not found', 'admin_', 'code', 'development', 'message', 'permissions', 'prod', 'production', 'role', 'staging', 'sub', 'super_admin', 'tenant_admin']

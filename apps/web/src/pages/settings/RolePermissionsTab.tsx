@@ -16,6 +16,7 @@ import {
 import { RoleRead, ResponseEnvelopeListRoleRead } from '@/api/generated/schemas';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
+import { Button, Input, Checkbox } from '@x-ear/ui-web';
 import { AxiosError } from 'axios';
 
 // Permission categories with icons
@@ -399,24 +400,21 @@ export function RolePermissionsTab() {
         </div>
         {hasChanges && (
           <div className="flex items-center space-x-3">
-            <button
+            <Button
+              variant="outline"
               onClick={handleReset}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-4 py-2"
             >
-              Sifirla
-            </button>
-            <button
+              Sıfırla
+            </Button>
+            <Button
               onClick={handleSave}
-              disabled={updateMutation.isPending}
-              className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              loading={updateMutation.isPending}
+              icon={<Save className="w-5 h-5" />}
+              className="px-4 py-2"
             >
-              {updateMutation.isPending ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              ) : (
-                <Save className="w-5 h-5 mr-2" />
-              )}
               Kaydet
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -425,21 +423,22 @@ export function RolePermissionsTab() {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div className="flex justify-between items-center mb-3">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rol Seçin</label>
-          <button
+          <Button
             onClick={() => {
               setNewRoleName('');
               setCreateModalOpen(true);
             }}
-            className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            variant="success"
+            size="sm"
+            icon={<Plus className="w-4 h-4" />}
           >
-            <Plus className="w-4 h-4 mr-1" />
             Yeni Rol Oluştur
-          </button>
+          </Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {rolesList.map(role => (
             <div key={role.id} className="flex items-center">
-              <button
+              <Button
                 onClick={() => {
                   if (hasChanges) {
                     setPendingRole(role.name);
@@ -448,23 +447,24 @@ export function RolePermissionsTab() {
                     setSelectedRole(role.name);
                   }
                 }}
-                className={`px-4 py-2.5 rounded-l-lg font-medium transition-colors ${selectedRole === role.name
-                  ? 'bg-indigo-600 text-white'
+                className={`px-4 py-2.5 rounded-r-none font-medium transition-colors ${selectedRole === role.name
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
               >
                 {ROLE_LABELS[role.name] || role.name}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={(e) => handleEditRole(role, e)}
-                className={`px-2 py-2.5 rounded-r-lg transition-colors border-l ${selectedRole === role.name
+                className={`px-2 py-2.5 rounded-l-none border-l ${selectedRole === role.name
                   ? 'bg-indigo-700 text-white border-indigo-500 hover:bg-indigo-800'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                   }`}
                 title="Rol adını düzenle"
               >
                 <Pencil className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -484,33 +484,31 @@ export function RolePermissionsTab() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Rol Adı</label>
-            <input
+            <Input
               type="text"
               value={editRoleName}
               onChange={(e) => setEditRoleName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full"
               placeholder="Rol adı girin"
             />
           </div>
           <div className="flex justify-end gap-3">
-            <button
+            <Button
+              variant="outline"
               onClick={() => {
                 setEditModalOpen(false);
                 setEditingRole(null);
                 setEditRoleName('');
               }}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               İptal
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleSaveEditRole}
-              disabled={updateRoleMutation.isPending}
-              className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              loading={updateRoleMutation.isPending}
             >
-              {updateRoleMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Kaydet
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
@@ -528,32 +526,31 @@ export function RolePermissionsTab() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Rol Adı</label>
-            <input
+            <Input
               type="text"
               value={newRoleName}
               onChange={(e) => setNewRoleName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full"
               placeholder="Yeni rol adı girin"
             />
           </div>
           <div className="flex justify-end gap-3">
-            <button
+            <Button
+              variant="outline"
               onClick={() => {
                 setCreateModalOpen(false);
                 setNewRoleName('');
               }}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               İptal
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleCreateRole}
-              disabled={createRoleMutation.isPending}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              variant="success"
+              loading={createRoleMutation.isPending}
             >
-              {createRoleMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Oluştur
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
@@ -610,15 +607,12 @@ export function RolePermissionsTab() {
                     <span className="text-indigo-600 dark:text-indigo-400 mr-3">{group.icon}</span>
                     <span className="font-medium text-gray-900 dark:text-white">{group.label}</span>
                   </div>
-                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${allSelected
-                    ? 'bg-indigo-600 border-indigo-600'
-                    : someSelected
-                      ? 'bg-indigo-200 border-indigo-600'
-                      : 'border-gray-300 dark:border-gray-600'
-                    }`}>
-                    {allSelected && <Check className="w-3 h-3 text-white" />}
-                    {someSelected && !allSelected && <div className="w-2 h-2 bg-indigo-600 rounded-sm" />}
-                  </div>
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={someSelected && !allSelected}
+                    readOnly
+                    className="pointer-events-none"
+                  />
                 </div>
 
                 {/* Permissions List */}
@@ -665,12 +659,11 @@ export function RolePermissionsTab() {
                             </div>
                           )}
                         </div>
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ml-3 ${isSelected
-                          ? 'bg-indigo-600 border-indigo-600'
-                          : 'border-gray-300 dark:border-gray-600'
-                          }`}>
-                          {isSelected && <Check className="w-3 h-3 text-white" />}
-                        </div>
+                        <Checkbox
+                          checked={isSelected}
+                          readOnly
+                          className="pointer-events-none"
+                        />
                       </div>
                     );
                   })}

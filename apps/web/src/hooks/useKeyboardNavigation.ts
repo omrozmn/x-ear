@@ -266,18 +266,19 @@ export const useCalendarKeyboardNavigation = (options: CalendarKeyboardNavigatio
 };
 
 // Appointment list keyboard navigation hook
-export interface AppointmentListKeyboardNavigationOptions {
-  appointments: any[];
+// Appointment list keyboard navigation hook
+export interface AppointmentListKeyboardNavigationOptions<T = unknown> {
+  appointments: T[];
   selectedIndex: number;
   onSelectionChange: (index: number) => void;
-  onAppointmentSelect?: (appointment: any) => void;
-  onAppointmentEdit?: (appointment: any) => void;
-  onAppointmentDelete?: (appointment: any) => void;
+  onAppointmentSelect?: (appointment: T) => void;
+  onAppointmentEdit?: (appointment: T) => void;
+  onAppointmentDelete?: (appointment: T) => void;
   onEscape?: () => void;
   enabled?: boolean;
 }
 
-export const useAppointmentListKeyboardNavigation = (options: AppointmentListKeyboardNavigationOptions) => {
+export const useAppointmentListKeyboardNavigation = <T = unknown>(options: AppointmentListKeyboardNavigationOptions<T>) => {
   const {
     appointments,
     selectedIndex,
@@ -308,17 +309,17 @@ export const useAppointmentListKeyboardNavigation = (options: AppointmentListKey
     }
   }, [selectedIndex, appointments, onAppointmentSelect]);
 
-  const handleEdit = useCallback(() => {
-    if (selectedIndex >= 0 && selectedIndex < appointments.length) {
-      onAppointmentEdit?.(appointments[selectedIndex]);
-    }
-  }, [selectedIndex, appointments, onAppointmentEdit]);
+  // const handleEdit = useCallback(() => {
+  //   if (selectedIndex >= 0 && selectedIndex < appointments.length) {
+  //     onAppointmentEdit?.(appointments[selectedIndex]);
+  //   }
+  // }, [selectedIndex, appointments, onAppointmentEdit]);
 
-  const handleDelete = useCallback(() => {
-    if (selectedIndex >= 0 && selectedIndex < appointments.length) {
-      onAppointmentDelete?.(appointments[selectedIndex]);
-    }
-  }, [selectedIndex, appointments, onAppointmentDelete]);
+  // const handleDelete = useCallback(() => {
+  //   if (selectedIndex >= 0 && selectedIndex < appointments.length) {
+  //     onAppointmentDelete?.(appointments[selectedIndex]);
+  //   }
+  // }, [selectedIndex, appointments, onAppointmentDelete]);
 
   return useKeyboardNavigation({
     onArrowUp: () => navigateSelection('up'),

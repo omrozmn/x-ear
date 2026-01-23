@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit2, Shield, Lock, Save, X, AlertCircle, CheckCircle2, Search } from 'lucide-react';
+import { Plus, Trash2, Edit2, Shield, Lock, X, AlertCircle, CheckCircle2, Search } from 'lucide-react';
+import { Button, Input, Textarea, Checkbox } from '@x-ear/ui-web';
 import {
     useListRoles,
     useCreateRoles,
     useUpdateRole,
     useDeleteRole
 } from '../../api/generated/roles/roles';
-import { RoutersRolesRoleCreate as RoleCreate } from '../../api/generated/schemas';
-import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
+import { unwrapArray } from '../../utils/response-unwrap';
 
 interface Role {
     id: string;
@@ -126,25 +126,24 @@ export default function RolesSettings() {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Rol Yönetimi</h1>
                     <p className="text-gray-500 dark:text-gray-400">Rolleri ve yetkilerini yönetin</p>
                 </div>
-                <button
+                <Button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    icon={<Plus className="w-5 h-5" />}
                 >
-                    <Plus className="w-5 h-5 mr-2" />
                     Yeni Rol Oluştur
-                </button>
+                </Button>
             </div>
 
             {/* Search Bar */}
             <div className="mb-6">
                 <div className="relative">
-                    <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                    <input
+                    <Input
                         type="text"
                         placeholder="Rol ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        leftIcon={<Search className="w-5 h-5 text-gray-400" />}
+                        className="w-full"
                     />
                 </div>
             </div>
@@ -190,20 +189,23 @@ export default function RolesSettings() {
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() => handleEditRole(role)}
-                                        className="text-gray-400 hover:text-indigo-600 transition-colors"
                                         title="Düzenle"
                                     >
                                         <Edit2 className="w-4 h-4" />
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() => handleDeleteRole(role.id)}
-                                        className="text-gray-400 hover:text-red-600 transition-colors"
+                                        className="text-gray-400 hover:text-red-600"
                                         title="Sil"
                                     >
                                         <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
@@ -261,14 +263,14 @@ export default function RolesSettings() {
                                     <label htmlFor="role-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Rol Adı *
                                     </label>
-                                    <input
+                                    <Input
                                         id="role-name"
                                         type="text"
                                         required
                                         value={roleData.name}
                                         onChange={(e) => setRoleData({ ...roleData, name: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                         placeholder="Örn: Satış Müdürü"
+                                        className="w-full"
                                     />
                                 </div>
 
@@ -276,12 +278,12 @@ export default function RolesSettings() {
                                     <label htmlFor="role-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Açıklama
                                     </label>
-                                    <textarea
+                                    <Textarea
                                         id="role-description"
                                         value={roleData.description}
                                         onChange={(e) => setRoleData({ ...roleData, description: e.target.value })}
                                         rows={3}
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full"
                                         placeholder="Bu rolün görevleri ve sorumlulukları..."
                                     />
                                 </div>
@@ -299,10 +301,7 @@ export default function RolesSettings() {
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {category.permissions.map((perm) => (
                                                         <label key={perm} className="flex items-center space-x-2 text-sm">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                            />
+                                                            <Checkbox />
                                                             <span className="text-gray-700 dark:text-gray-300">
                                                                 {perm.split(':')[1]}
                                                             </span>
@@ -322,27 +321,21 @@ export default function RolesSettings() {
                                 )}
 
                                 <div className="flex space-x-3 pt-4">
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="outline"
                                         onClick={() => setIsCreateModalOpen(false)}
-                                        className="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        className="flex-1"
                                     >
                                         İptal
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="submit"
-                                        disabled={createRoleMutation.isPending}
-                                        className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center"
+                                        loading={createRoleMutation.isPending}
+                                        className="flex-1"
                                     >
-                                        {createRoleMutation.isPending ? (
-                                            'Oluşturuluyor...'
-                                        ) : (
-                                            <>
-                                                <Save className="w-4 h-4 mr-2" />
-                                                Oluştur
-                                            </>
-                                        )}
-                                    </button>
+                                        Oluştur
+                                    </Button>
                                 </div>
                             </form>
                         )}
@@ -358,16 +351,17 @@ export default function RolesSettings() {
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                 Rol Düzenle: {selectedRole.name}
                             </h2>
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => {
                                     setIsEditModalOpen(false);
                                     setCreateError('');
                                     setRoleData({ name: '', description: '' });
                                 }}
-                                className="text-gray-400 hover:text-gray-600"
                             >
                                 <X className="w-6 h-6" />
-                            </button>
+                            </Button>
                         </div>
 
                         <form onSubmit={handleUpdateRole} className="space-y-4">
@@ -375,12 +369,12 @@ export default function RolesSettings() {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Rol Adı *
                                 </label>
-                                <input
+                                <Input
                                     type="text"
                                     required
                                     value={roleData.name}
                                     onChange={(e) => setRoleData({ ...roleData, name: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full"
                                 />
                             </div>
 
@@ -388,11 +382,11 @@ export default function RolesSettings() {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Açıklama
                                 </label>
-                                <textarea
+                                <Textarea
                                     value={roleData.description}
                                     onChange={(e) => setRoleData({ ...roleData, description: e.target.value })}
                                     rows={3}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full"
                                 />
                             </div>
 
@@ -404,24 +398,25 @@ export default function RolesSettings() {
                             )}
 
                             <div className="flex space-x-3 pt-4">
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={() => {
                                         setIsEditModalOpen(false);
                                         setCreateError('');
                                         setRoleData({ name: '', description: '' });
                                     }}
-                                    className="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    className="flex-1"
                                 >
                                     İptal
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="submit"
-                                    disabled={updateRoleMutation.isPending}
-                                    className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                                    loading={updateRoleMutation.isPending}
+                                    className="flex-1"
                                 >
-                                    {updateRoleMutation.isPending ? 'Güncelleniyor...' : 'Güncelle'}
-                                </button>
+                                    Güncelle
+                                </Button>
                             </div>
                         </form>
                     </div>

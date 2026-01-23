@@ -118,7 +118,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   interface MenuItem {
     key: string;
     label: string;
-    icon: any; // Lucide icon component
+    icon: React.ComponentType<{ size?: number; className?: string }>;
     href?: string;
     submenu?: { label: string; href: string }[];
   }

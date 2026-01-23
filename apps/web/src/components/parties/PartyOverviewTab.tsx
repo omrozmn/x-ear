@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Party } from '../../types/party/party-base.types';
-import { User, Phone, Mail, MapPin, Tag, AlertCircle, CheckCircle, Plus, Edit, MessageSquare, X } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Tag, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Modal, Input, Textarea } from '@x-ear/ui-web';
 
@@ -13,7 +13,7 @@ interface PartyOverviewTabProps {
 
 export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
   party,
-  onPartyUpdate,
+  // onPartyUpdate, // Available but not used in this tab
   showNoteModal = false,
   onCloseNoteModal,
 }) => {

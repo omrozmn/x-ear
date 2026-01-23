@@ -1,0 +1,4 @@
+{
+  "subject": "🚨 Sistem Hatası - {{ error_type }}",
+  "required_variables": ["error_type", "timestamp", "tenant_name", "error_details", "admin_link"]
+}

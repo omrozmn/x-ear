@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/models/ai_request.py
+# hypothesis_version: 6.150.2
+
+[100.0, 128, 'ai_requests', 'completed', 'completedAt', 'createdAt', 'created_at', 'errorMessage', 'failed', 'id', 'intentConfidence', 'intentData', 'intentType', 'latencyMs', 'legal_hold', 'modelId', 'modelVersion', 'pending', 'processing', 'rejected', 'sessionId', 'status', 'tenantId', 'tenant_id', 'timeout', 'tokensInput', 'tokensOutput', 'userId', 'user_id']

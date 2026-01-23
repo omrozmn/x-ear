@@ -28,10 +28,11 @@ import type {
   HTTPValidationError,
   ListAdminNotificationTemplatesParams,
   ListAdminNotificationsParams,
-  NotificationDetailResponse,
-  NotificationListResponse,
   NotificationSend,
   ResponseEnvelope,
+  ResponseEnvelopeEmailTemplateRead,
+  ResponseEnvelopeListEmailTemplateRead,
+  ResponseEnvelopeListNotificationRead,
   RoutersAdminNotificationsTemplateCreate
 } from '.././schemas';
 
@@ -113,7 +114,7 @@ export const listAdminNotifications = (
 ) => {
       
       
-      return customInstance<NotificationListResponse>(
+      return customInstance<ResponseEnvelopeListNotificationRead>(
       {url: `/api/admin/notifications`, method: 'GET',
         params, signal
     },
@@ -272,7 +273,7 @@ export const listAdminNotificationTemplates = (
 ) => {
       
       
-      return customInstance<NotificationListResponse>(
+      return customInstance<ResponseEnvelopeListEmailTemplateRead>(
       {url: `/api/admin/notifications/templates`, method: 'GET',
         params, signal
     },
@@ -366,7 +367,7 @@ export const createAdminNotificationTemplates = (
 ) => {
       
       
-      return customInstance<NotificationDetailResponse>(
+      return customInstance<ResponseEnvelopeEmailTemplateRead>(
       {url: `/api/admin/notifications/templates`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminNotificationsTemplateCreate, signal
@@ -431,7 +432,7 @@ export const updateAdminNotificationTemplate = (
  ) => {
       
       
-      return customInstance<NotificationDetailResponse>(
+      return customInstance<ResponseEnvelopeEmailTemplateRead>(
       {url: `/api/admin/notifications/templates/${templateId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: routersAdminNotificationsTemplateCreate

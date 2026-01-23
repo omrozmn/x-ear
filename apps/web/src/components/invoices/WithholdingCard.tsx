@@ -14,7 +14,10 @@ interface WithholdingCardProps {
 }
 
 export default function WithholdingCard({ value, onChange }: WithholdingCardProps) {
-  const [formData, setFormData] = useState<WithholdingData>({
+  const [formData, setFormData] = useState<Omit<WithholdingData, 'withholdingRate' | 'taxFreeAmount'> & {
+    withholdingRate: number | '';
+    taxFreeAmount: number | '';
+  }>({
     withholdingRate: value?.withholdingRate ?? 0,
     taxFreeAmount: value?.taxFreeAmount ?? 0,
     withholdingAmount: value?.withholdingAmount ?? 0
@@ -25,14 +28,17 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
   }, [value]);
 
   useEffect(() => {
-    if (formData.withholdingRate && formData.taxFreeAmount) {
-      const calculated = (formData.withholdingRate / 100) * formData.taxFreeAmount;
+    const rate = typeof formData.withholdingRate === 'number' ? formData.withholdingRate : 0;
+    const amount = typeof formData.taxFreeAmount === 'number' ? formData.taxFreeAmount : 0;
+
+    if (rate && amount) {
+      const calculated = (rate / 100) * amount;
       setFormData(prev => ({ ...prev, withholdingAmount: parseFloat(calculated.toFixed(2)) }));
     }
   }, [formData.withholdingRate, formData.taxFreeAmount]);
 
   const handleSave = () => {
-    onChange(formData);
+    onChange(formData as WithholdingData);
   };
 
   return (
@@ -43,8 +49,8 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
           <Input
             type="number"
             step="0.01"
-            value={formData.withholdingRate === ('' as unknown as number) ? '' : String(formData.withholdingRate)}
-            onChange={(e) => setFormData({ ...formData, withholdingRate: e.target.value === '' ? '' as any : parseFloat(e.target.value) })}
+            value={String(formData.withholdingRate)}
+            onChange={(e) => setFormData({ ...formData, withholdingRate: e.target.value === '' ? '' : parseFloat(e.target.value) })}
             placeholder="Örn: 50"
             fullWidth
           />
@@ -55,8 +61,8 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
           <Input
             type="number"
             step="0.01"
-            value={formData.taxFreeAmount === ('' as unknown as number) ? '' : String(formData.taxFreeAmount)}
-            onChange={(e) => setFormData({ ...formData, taxFreeAmount: e.target.value === '' ? '' as any : parseFloat(e.target.value) })}
+            value={String(formData.taxFreeAmount)}
+            onChange={(e) => setFormData({ ...formData, taxFreeAmount: e.target.value === '' ? '' : parseFloat(e.target.value) })}
             placeholder="0.00"
             fullWidth
           />
@@ -73,7 +79,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
               <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
               <div className="text-sm text-blue-700">
                 <p className="font-medium mb-1">Hesaplama:</p>
-                <p>{formData.withholdingRate}% × {formData.taxFreeAmount.toFixed(2)} TL = <span className="font-semibold">{formData.withholdingAmount.toFixed(2)} TL</span></p>
+                <p>{formData.withholdingRate}% × {Number(formData.taxFreeAmount).toFixed(2)} TL = <span className="font-semibold">{formData.withholdingAmount.toFixed(2)} TL</span></p>
               </div>
             </div>
           </div>

@@ -22,8 +22,12 @@ class IntentType(str, Enum):
     ACTION = "action"               # Request to perform action
     CLARIFICATION = "clarification" # Need more information
     CONFIRMATION = "confirmation"   # Confirm previous action
-    CANCELLATION = "cancellation"   # Cancel previous action
+    CANCELLATION = "cancellation"   # Cancel previous action (alias: CANCEL)
+    CANCEL = "cancellation"         # Alias for CANCELLATION
+    CAPABILITY_INQUIRY = "capability_inquiry"  # Ask what AI can do
+    SLOT_FILL = "slot_fill"         # Provide missing information
     UNKNOWN = "unknown"             # Cannot determine intent
+    GREETING = "greeting"           # Social greeting
 
 
 class ConfidenceLevel(str, Enum):
@@ -73,6 +77,10 @@ class IntentOutput(BaseModel):
     reasoning: Optional[str] = Field(
         default=None,
         description="LLM's reasoning for the classification"
+    )
+    conversational_response: Optional[str] = Field(
+        default=None,
+        description="Friendly response to the user in their language"
     )
     
     @property

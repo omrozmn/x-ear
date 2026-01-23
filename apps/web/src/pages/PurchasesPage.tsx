@@ -10,7 +10,7 @@ export function PurchasesPage() {
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const [filters, setFilters] = useState<PurchaseFilters>({});
   const [viewMode, setViewMode] = useState<'list' | 'form' | 'details'>('list');
-  const [showFilters, setShowFilters] = useState(false);
+  // const [showFilters, setShowFilters] = useState(false); // Filter UI is now inline
   const { success: showSuccess, error: showError } = useToastHelpers();
 
   const handlePurchaseSelect = (purchase: Purchase) => {
@@ -18,10 +18,12 @@ export function PurchasesPage() {
     setViewMode('details');
   };
 
+  /*
   const handleCreatePurchase = () => {
     setSelectedPurchase(null);
     setViewMode('form');
   };
+  */
 
   const [isImporterOpen, setIsImporterOpen] = useState(false);
 
@@ -61,6 +63,7 @@ export function PurchasesPage() {
     setSelectedPurchase(null);
   };
 
+  /* Helper functions moved to PurchaseDetails component to avoid duplication
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('tr-TR');
   };
@@ -95,6 +98,7 @@ export function PurchasesPage() {
       default: return status;
     }
   };
+  */
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

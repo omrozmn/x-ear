@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/activity_logs.py
+# hypothesis_version: 6.150.2
+
+['Action type', 'Additional details', 'Critical logs count', 'Entity ID', 'Entity type', 'Is critical action', 'Log message', 'Top actions', 'Total logs', 'entityId', 'entityType', 'isCritical', 'last24Hours', 'tenantId', 'topActions', 'userEmail', 'userId', 'userName']

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/admin.py
+# hypothesis_version: 6.150.2
+
+['accessToken', 'activeTenants', 'displayName', 'effectiveRole', 'effectiveTenantId', 'isImpersonating', 'monthlyRevenue', 'pageKey', 'permissionCount', 'realUserEmail', 'refreshToken', 'requiredPermissions', 'tenantName', 'tenantStatus', 'todayAppointments', 'totalPatients', 'totalTenants', 'totalUsers']

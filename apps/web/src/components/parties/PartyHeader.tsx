@@ -8,13 +8,8 @@ import {
   Calendar,
   User,
   Edit,
-  Trash2,
-  Printer,
-  Download,
   MessageSquare,
-  MoreHorizontal,
-  FileText,
-  Copy
+  FileText
 } from 'lucide-react';
 
 // Badge component
@@ -62,11 +57,11 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
   onEdit,
   onTagUpdate,
   onCall,
-  onDelete,
-  onPrint,
-  onExport,
+  // onDelete, // Currently unused
+  // onPrint, // Currently unused
+  // onExport, // Currently unused
   onSendSMS,
-  onCopyInfo,
+  // onCopyInfo, // Currently unused
   onGenerateReport,
   onAddNote,
   isLoading,
@@ -128,12 +123,14 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
     return typeMap[type || ''] || type || 'Belirtilmemiş';
   };
 
+  /*
   const formatPriorityScore = (score?: number) => {
     if (!score) return 'Düşük';
     if (score >= 80) return 'Yüksek';
     if (score >= 50) return 'Orta';
     return 'Düşük';
   };
+  */
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Belirtilmemiş';
@@ -153,7 +150,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
     return phone.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '($1) $2 $3 $4');
   };
 
-  const statusInfo = formatStatus(party.status || undefined);
+  // const statusInfo = formatStatus(party.status || undefined); // Not used in render
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">

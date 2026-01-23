@@ -246,7 +246,7 @@ class ToolRegistry:
         if allowed:
             self._allowlist.add(definition.tool_id)
         
-        logger.info(f"Registered tool: {definition.tool_id} v{definition.schema_version}")
+        # logger.info(f"Registered tool: {definition.tool_id} v{definition.schema_version}")
     
     def get_tool(self, tool_id: str) -> ToolDefinition:
         """Get a tool definition by ID."""
@@ -299,7 +299,7 @@ class ToolRegistry:
         
         # Check required parameters
         for param in tool.parameters:
-            if param.required and param.name not in parameters:
+            if param.required and param.name not in parameters and param.default is None:
                 errors.append(f"Missing required parameter: {param.name}")
             
             if param.name in parameters:
@@ -372,10 +372,16 @@ class ToolRegistry:
         if errors:
             raise ToolValidationError(tool_id, errors)
         
+        # Apply defaults
+        final_params = parameters.copy()
+        for param in tool.parameters:
+            if param.name not in final_params and param.default is not None:
+                final_params[param.name] = param.default
+
         # Execute handler
         handler = self._handlers[tool_id]
         try:
-            result = handler(parameters, mode)
+            result = handler(final_params, mode)
             result.execution_time_ms = (time.time() - start_time) * 1000
             return result
         except Exception as e:
@@ -459,6 +465,14 @@ def register_tool(
         return func
     return decorator
 
+# Auto-initialize on import
+# Imports must be at the end to avoid circular imports since allowlist/crm_tools need ToolParameter etc.
+try:
+    from ai.tools import allowlist
+    from ai.tools import crm_tools
+except ImportError:
+    # Handle partial initialization or circular import gracefully during development
+    pass
 
 __all__ = [
     "RiskLevel",

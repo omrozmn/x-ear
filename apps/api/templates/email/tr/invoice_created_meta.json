@@ -1,0 +1,4 @@
+{
+  "subject": "Yeni Fatura - {{ invoice_number }}",
+  "required_variables": ["invoice_number", "amount", "currency", "due_date", "invoice_link", "payment_status"]
+}

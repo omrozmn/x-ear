@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSPackageUpdateSmsCount = number | null;
+export type SmsPackageUpdateSmsCount = number | null;

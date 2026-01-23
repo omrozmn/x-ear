@@ -5,12 +5,10 @@ import {
   Textarea,
   Select,
   Badge,
-  Card,
-  CardContent,
   Spinner,
   Checkbox
 } from '@x-ear/ui-web';
-import { DollarSign, Calendar, Receipt, CreditCard, Banknote, AlertCircle, CheckCircle } from 'lucide-react';
+import { DollarSign, Receipt, CreditCard, Banknote } from 'lucide-react';
 import type { CollectionState, PaymentCalculations } from '../types';
 import type { PaymentRecord } from '../../../../../types/party/party-communication.types';
 

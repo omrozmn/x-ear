@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/inventory.py
+# hypothesis_version: 6.150.2
+
+[201, 404, 500, '+00:00', ',', '/inventory', '/inventory/low-stock', '/inventory/search', '/inventory/stats', '/inventory/units', '/inventory/{item_id}', 'Inventory', 'Item deleted', 'Item not found', 'Z', 'admin', 'asc', 'assign_', 'available_serials', 'branches', 'brand', 'brands', 'categories', 'category', 'createInventory', 'createdAt', 'deleteInventory', 'desc', 'filters', 'getInventory', 'id', 'items', 'json', 'limit', 'listInventory', 'listInventorySearch', 'listInventoryStats', 'listInventoryUnits', 'low_stock', 'max', 'min', 'name', 'out_of_stock', 'page', 'pagination', 'partyId', 'partyName', 'perPage', 'per_page', 'price', 'priceRange', 'sale_', 'serials', 'stock', 'suppliers', 'tenant_id', 'total', 'totalPages', 'total_items', 'total_pages', 'total_value', 'units', 'updateInventory']

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/invoices_actions.py
+# hypothesis_version: 6.150.2
+
+[400, 404, 500, '\n[copy created]', '..', '/api/invoices', '/{invoice_id}/copy', '/{invoice_id}/issue', '/{invoice_id}/pdf', 'Invoice Actions', 'Invoice not found', 'X', 'application/pdf', 'createInvoiceCopy', 'createInvoiceIssue', 'device_price', 'docs', 'draft', 'efatura_outbox', 'error', 'examples', 'id', 'instance', 'invoice', 'invoiceNumber', 'invoice_issued', 'invoice_number', 'items', 'kargo fisi.pdf', 'listInvoicePdf', 'notes', 'patient_name', 'pending', 'sent', 'sent_to_gib', 'system', 'total_amount']

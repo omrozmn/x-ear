@@ -8,6 +8,23 @@ import { apiClient } from '../../api/orval-mutator';
 
 
 export type FieldDef = { key: string; label: string };
+export type RowData = Record<string, unknown>;
+
+interface ImportError {
+  row: number;
+  issues: string[];
+}
+
+interface BulkUploadResponse {
+  created?: number;
+  updated?: number;
+  errors?: Array<{
+    row?: number;
+    index?: number;
+    error?: string;
+    [key: string]: unknown;
+  }>;
+}
 
 interface UniversalImporterProps {
   isOpen: boolean;
@@ -23,7 +40,7 @@ interface UniversalImporterProps {
 
 const defaultSchema = z.record(z.any());
 
-const readFile = async (file: File): Promise<{ headers: string[]; rows: Record<string, any>[] }> => {
+const readFile = async (file: File): Promise<{ headers: string[]; rows: RowData[] }> => {
   const name = file.name.toLowerCase();
   if (name.endsWith('.csv') || name.endsWith('.txt')) {
     const text = await file.text();
@@ -37,13 +54,13 @@ const readFile = async (file: File): Promise<{ headers: string[]; rows: Record<s
   const wb = XLSX.read(ab, { type: 'array' });
   const sheetName = wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
-  const aoa = XLSX.utils.sheet_to_json<any>(ws, { header: 1, raw: false });
+  const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false });
   if (!aoa || aoa.length === 0) return { headers: [], rows: [] };
-  const headers = (aoa[0] as any[]).map(h => String(h || '').trim());
-  const rows: Record<string, any>[] = [];
+  const headers = (aoa[0] as unknown[]).map(h => String(h || '').trim());
+  const rows: RowData[] = [];
   for (let i = 1; i < aoa.length; i++) {
-    const rowArr = aoa[i] as any[];
-    const obj: Record<string, any> = {};
+    const rowArr = aoa[i] as unknown[];
+    const obj: RowData = {};
     for (let j = 0; j < headers.length; j++) {
       obj[headers[j]] = rowArr[j];
     }
@@ -76,10 +93,10 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileHeaders, setFileHeaders] = useState<string[]>([]);
-  const [fileRows, setFileRows] = useState<Record<string, any>[]>([]);
+  const [fileRows, setFileRows] = useState<RowData[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
-  const [preview, setPreview] = useState<Record<string, any>[]>([]);
-  const [errors, setErrors] = useState<Array<{ row: number; issues: string[] }>>([]);
+  const [preview, setPreview] = useState<RowData[]>([]);
+  const [errors, setErrors] = useState<ImportError[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<number>(1);
   const [importResult, setImportResult] = useState<{ created: number; updated: number; errors: any[] } | null>(null);
@@ -118,18 +135,18 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         console.error('Failed to parse file', err);
       }
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
-  const sanitizeRowForPreview = (row: Record<string, any>) => {
-    const sanitized: Record<string, any> = {};
+  const sanitizeRowForPreview = (row: RowData) => {
+    const sanitized: RowData = {};
     Object.entries(row).forEach(([k, v]) => sanitized[k] = sanitizeCell(v));
     return sanitized;
   };
 
-  const buildMappedRows = () => {
-    return fileRows.map((r, idx) => {
-      const out: Record<string, any> = {};
+  const buildMappedRows = (): RowData[] => {
+    return fileRows.map((r) => {
+      const out: RowData = {};
       entityFields.forEach(f => {
         const fileKey = mapping[f.key];
         out[f.key] = fileKey ? r[fileKey] : undefined;
@@ -140,13 +157,17 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
 
   const validatePreview = () => {
     const rows = buildMappedRows();
-    const errs: Array<{ row: number; issues: string[] }> = [];
+    const errs: ImportError[] = [];
     for (let i = 0; i < Math.min(rows.length, previewRows); i++) {
       try {
         schema.parse(rows[i]);
-      } catch (e: any) {
-        const issues = e.errors ? e.errors.map((it: any) => `${it.path.join('.')}: ${it.message}`) : [String(e)];
-        errs.push({ row: i + 1, issues });
+      } catch (e: unknown) {
+        if (e && typeof e === 'object' && 'errors' in e) {
+          const issues = (e as z.ZodError).errors.map((it) => `${it.path.join('.')}: ${it.message}`);
+          errs.push({ row: i + 1, issues });
+        } else {
+          errs.push({ row: i + 1, issues: [String(e)] });
+        }
       }
     }
     setErrors(errs);
@@ -163,15 +184,19 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
     try {
       const rows = buildMappedRows();
       // client-side validate all rows and collect errors
-      const allErrors: Array<{ row: number; issues: string[] }> = [];
-      const validRows: Record<string, any>[] = [];
+      const allErrors: ImportError[] = [];
+      const validRows: RowData[] = [];
       for (let i = 0; i < rows.length; i++) {
         try {
-          const parsed = schema.parse(rows[i]);
+          const parsed = schema.parse(rows[i]) as RowData;
           validRows.push(parsed);
-        } catch (e: any) {
-          const issues = e.errors ? e.errors.map((it: any) => `${it.path.join('.')}: ${it.message}`) : [String(e)];
-          allErrors.push({ row: i + 1, issues });
+        } catch (e: unknown) {
+          if (e && typeof e === 'object' && 'errors' in e) {
+            const issues = (e as z.ZodError).errors.map((it) => `${it.path.join('.')}: ${it.message}`);
+            allErrors.push({ row: i + 1, issues });
+          } else {
+            allErrors.push({ row: i + 1, issues: [String(e)] });
+          }
         }
       }
 
@@ -192,7 +217,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           form.append('file', blob, 'import.csv');
 
           const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk_upload';
-          const resp = await apiClient.post(endpoint, form, {
+          const resp = await apiClient.post<BulkUploadResponse>(endpoint, form, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
 
@@ -203,7 +228,10 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
             const serverErrors = resp.data.errors || [];
             if (serverErrors.length > 0) {
               // normalize to same shape as client errors
-              const sErrors = serverErrors.map((it: any) => ({ row: it.row || it.index || 0, issues: [it.error || JSON.stringify(it)] }));
+              const sErrors = serverErrors.map((it) => ({
+                row: it.row || it.index || 0,
+                issues: [it.error || JSON.stringify(it)]
+              }));
               allErrors.push(...sErrors);
               setErrors(allErrors.slice(0, 200));
             }

@@ -82,6 +82,8 @@ from . import invoice_management
 from . import invoices_actions
 from . import communications
 from . import sms_integration
+# Email integration routers
+from . import smtp_config
 
 __all__ = [
     "sms",
@@ -164,4 +166,6 @@ __all__ = [
     "invoices_actions",
     "communications",
     "sms_integration",
+    # Email integration
+    "smtp_config",
 ]

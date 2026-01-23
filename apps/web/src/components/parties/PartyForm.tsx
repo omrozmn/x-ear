@@ -44,7 +44,7 @@ export function PartyForm({ party, onSave, onCancel, isModal = false }: PartyFor
         tcNumber: party.tcNumber || '',
         birthDate: party.birthDate || '',
         email: party.email || '',
-        address: typeof party.address === 'string' ? party.address : party.addressFull || '',
+        address: party.addressFull || '',
         gender: party.gender || '',
         branch: party.branch || '',
         status: (party.status as PartyStatus) || 'ACTIVE',
@@ -131,7 +131,9 @@ export function PartyForm({ party, onSave, onCancel, isModal = false }: PartyFor
         segment: segmentValue,
         label: labelValue,
         acquisitionType: acquisitionValue,
-        address: (formData.address as any) || '',
+        // explicitly map address string to addressFull and clear address object to satisfy type
+        addressFull: formData.address,
+        address: undefined,
         tags: party?.tags || [],
         notes: formData.notes ? [{
           id: Date.now().toString(),

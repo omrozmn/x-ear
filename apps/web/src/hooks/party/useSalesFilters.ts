@@ -1,6 +1,17 @@
 import { useState, useMemo } from 'react';
 
-export const useSalesFilters = (sales: any[]) => {
+export interface FilterableSale {
+  productId?: string;
+  paymentMethod?: string;
+  seller?: string;
+  notes?: string;
+  status?: string;
+  createdAt?: string;
+  date?: string;
+  [key: string]: unknown;
+}
+
+export const useSalesFilters = <T extends FilterableSale>(sales: T[]) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
@@ -12,17 +23,17 @@ export const useSalesFilters = (sales: any[]) => {
     if (!sales || !Array.isArray(sales)) {
       return [];
     }
-    
+
     return sales.filter(sale => {
       // Search term filter
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           sale.productId?.toLowerCase().includes(term) ||
           sale.paymentMethod?.toLowerCase().includes(term) ||
           sale.seller?.toLowerCase().includes(term) ||
           sale.notes?.toLowerCase().includes(term);
-        
+
         if (!matchesSearch) return false;
       }
 
@@ -38,13 +49,16 @@ export const useSalesFilters = (sales: any[]) => {
 
       // Date range filter
       if (dateFrom || dateTo) {
-        const saleDate = new Date(sale.createdAt || sale.date);
-        
+        const dateStr = sale.createdAt || sale.date;
+        if (!dateStr) return false;
+
+        const saleDate = new Date(dateStr);
+
         if (dateFrom) {
           const fromDate = new Date(dateFrom);
           if (saleDate < fromDate) return false;
         }
-        
+
         if (dateTo) {
           const toDate = new Date(dateTo);
           toDate.setHours(23, 59, 59, 999); // End of day
@@ -65,11 +79,11 @@ export const useSalesFilters = (sales: any[]) => {
   };
 
   const hasActiveFilters = useMemo(() => {
-    return searchTerm !== '' || 
-           statusFilter !== 'all' || 
-           paymentMethodFilter !== 'all' || 
-           dateFrom !== '' || 
-           dateTo !== '';
+    return searchTerm !== '' ||
+      statusFilter !== 'all' ||
+      paymentMethodFilter !== 'all' ||
+      dateFrom !== '' ||
+      dateTo !== '';
   }, [searchTerm, statusFilter, paymentMethodFilter, dateFrom, dateTo]);
 
   return {

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/appointment.py
+# hypothesis_version: 6.150.2
+
+['Bilgi yok', 'appointmentType', 'appointments', 'apt', 'branchId', 'check-up', 'checkup', 'clinicianId', 'clinician_id', 'consultation', 'control', 'date', 'device_fitting', 'device_trial', 'duration', 'fitting', 'follow-up', 'followup', 'hearing_test', 'id', 'ix_appointment_date', 'notes', 'other', 'parties.id', 'partyId', 'partyName', 'party_id', 'repair', 'scheduled', 'status', 'tenantId', 'tenant_id', 'tenants.id', 'test', 'time', 'trial', 'type', 'uq_appointment_slot']

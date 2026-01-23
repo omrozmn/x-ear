@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToastHelpers, Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { PartyApiService } from '../../../services/party/party-api.service';
-import {listInventory} from '@/api/client/inventory.client';
+import { listInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../../../utils/response-unwrap';
 
 // InventoryItem type definition (since schema may not export it directly)
@@ -133,41 +133,34 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
-        {/* eslint-disable-next-line no-restricted-syntax */}
-        <input
+        <Input
           ref={inputRef}
           type="text"
-          data-allow-raw="true"
           value={searchTerm}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           placeholder={placeholder}
-          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-
-        {/* Search Icon */}
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-          </svg>
-        </div>
-
-        {/* Clear Button */}
-        {searchTerm && (
-          <>
-            {/* eslint-disable-next-line no-restricted-syntax */}
-            <button
-              type="button"
-              data-allow-raw="true"
-              onClick={handleClear}
-              className="absolute inset-y-0 right-8 flex items-center pr-1 text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+          fullWidth
+          rightIcon={
+            <div className="flex items-center gap-1">
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClear}
+                  className="p-1 h-auto text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </Button>
+              )}
+              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
-            </button>
-          </>
-        )}
+            </div>
+          }
+        />
       </div>
 
       {/* Dropdown */}

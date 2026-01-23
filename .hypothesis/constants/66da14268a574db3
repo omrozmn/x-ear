@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/notification_templates.py
+# hypothesis_version: 6.150.2
+
+[',', 'before', 'bodyTemplate', 'emailBodyHtml', 'emailBodyText', 'emailFromAddress', 'emailFromName', 'emailSubject', 'emailToAddresses', 'emailToType', 'isActive', 'push', 'templateCategory', 'titleTemplate', 'triggerConditions', 'triggerEvent', 'variables']

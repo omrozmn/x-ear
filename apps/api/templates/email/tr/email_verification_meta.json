@@ -1,0 +1,4 @@
+{
+  "subject": "E-posta Adresinizi Doğrulayın - {{ app_name }}",
+  "required_variables": ["verification_link", "user_name"]
+}

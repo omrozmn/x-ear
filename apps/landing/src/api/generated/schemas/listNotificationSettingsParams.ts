@@ -7,5 +7,5 @@
  */
 
 export type ListNotificationSettingsParams = {
-user_id: string;
+user_id?: string | null;
 };

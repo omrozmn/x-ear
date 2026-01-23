@@ -5,29 +5,31 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Loading
 } from '@x-ear/ui-web';
-import { Plus, Grid, List, RefreshCw, FileText, Eye, CheckCircle, Send, AlertCircle } from 'lucide-react';
+import { Plus, RefreshCw, FileText, Eye, CheckCircle, Send, AlertCircle } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
-import { ResponseEnvelopeListSaleRead, SaleRead, PaymentRecordRead } from '../../api/generated/schemas';
+import { ResponseEnvelopeListSaleRead } from '../../api/generated/schemas/responseEnvelopeListSaleRead';
+import { SaleRead } from '../../api/generated/schemas/saleRead';
+// import { PaymentRecordRead } from '../../api/generated/schemas/paymentRecordRead';
+// Local definition since schema is missing
+interface PaymentRecordRead {
+  id: string;
+  amount: number;
+  paymentDate?: string;
+  paymentMethod?: string;
+  status?: string;
+  notes?: string;
+}
 import { PartySaleFormRefactored } from '../forms/party-sale-form/PartySaleFormRefactored';
 import { CollectionModal } from './modals/CollectionModal';
 import PromissoryNoteModal from './modals/PromissoryNoteModal';
 import EditSaleModal from './modals/EditSaleModal';
 import { ReturnExchangeModal } from './modals/ReturnExchangeModal';
 import ProformaModal from './modals/ProformaModal';
-import { sgkService } from '../../services/sgk.service';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { SGKInfoCard } from './SGKInfoCard';
 import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
-import { PartySaleCard } from './party/PartySaleCard';
 import { SalesTableView } from './party/SalesTableView';
 import { listSales } from '@/api/client/sales.client';
 import { PARTY_SALES_DATA } from '../../constants/storage-keys';
@@ -77,16 +79,15 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [amountRangeMax, setAmountRangeMax] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedSales, setSelectedSales] = useState<string[]>([]);
+  const [selectedSales] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   // SGK states
-  const [sgkPartyInfo, setSgkPartyInfo] = useState<{
-    hasInsurance: boolean;
-    coveragePercentage: number;
-  } | null>(null);
-  const [sgkLoading, setSgkLoading] = useState(false);
+  // const [sgkPartyInfo, setSgkPartyInfo] = useState<{
+  //   hasInsurance: boolean;
+  //   coveragePercentage: number;
+  // } | null>(null);
+  // const [sgkLoading, setSgkLoading] = useState(false);
   const [sgkCoverageCalculation, setSgkCoverageCalculation] = useState<{
     totalCoverage: number;
     partyPayment: number;
@@ -104,7 +105,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [deviceReplacements, setDeviceReplacements] = useState<DeviceReplacement[]>([]);
   const [replacementsLoading, setReplacementsLoading] = useState(false);
   const [showDeviceReplacementModal, setShowDeviceReplacementModal] = useState(false);
-  const [selectedReplacement, setSelectedReplacement] = useState<DeviceReplacement | null>(null);
+  // const [selectedReplacement, setSelectedReplacement] = useState<DeviceReplacement | null>(null);
 
   const loadPartySales = async () => {
     if (!party.id) return;
@@ -121,13 +122,12 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
 
       // Unwrap response
       let salesData: SaleRead[] = [];
-      if (response && typeof response === 'object') {
-        if ('data' in response && Array.isArray(response.data)) {
-          // Type assertion needed because response.data can be various things in generated types
-          salesData = response.data as unknown as SaleRead[];
-        } else if (Array.isArray(response)) {
-          salesData = response as unknown as SaleRead[];
-        }
+      // Type guard for ResponseEnvelope
+      if (Array.isArray(response)) {
+        salesData = response;
+      } else if (response && typeof response === 'object' && 'data' in response) {
+        // Safe cast after check
+        salesData = (response as ResponseEnvelopeListSaleRead).data || [];
       }
 
       console.log('💎 Raw salesData before transform:', salesData);
@@ -193,6 +193,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const loadSGKPartyInfo = async () => {
     if (!party.id) return;
 
+    /*
     setSgkLoading(true);
     try {
       // TODO: Implement SGK service
@@ -211,6 +212,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     } finally {
       setSgkLoading(false);
     }
+    */
   };
 
   const loadDeviceReplacements = async () => {
@@ -344,6 +346,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   }, [sales, searchTerm, statusFilter, paymentMethodFilter, amountRangeMin, amountRangeMax, sortBy, sortOrder]);
 
   // Event handlers with proper typing
+  /*
   const handleNewSale = (saleData: SaleRead) => {
     console.log('New sale created:', saleData);
     loadPartySales();
@@ -359,6 +362,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     console.log('Delete sale:', saleId);
     // TODO: Implement delete functionality
   };
+  */
 
   const handleExportSales = (sales: SaleRead[]) => {
     console.log('Export sales:', sales);
@@ -383,12 +387,14 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     setSelectedSale(sale);
     setShowPromissoryNoteModal(true);
   };
+  /*
   const handleQueryPartyRights = async () => {
     await loadSGKPartyInfo();
   };
+  */
 
   // Function to safely open modals that require a sale
-  const handleSaleAction = (action: () => void) => {
+  const handleSaleAction = () => {
     // This logic is tricky because the header buttons don't have a sale selected contextually
     // So we just warn the user.
     warning('Lütfen işlem yapmak istediğiniz satışı listeden seçiniz.');
@@ -430,10 +436,10 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             Senet
           </Button> 
           */}
-          <Button onClick={() => handleSaleAction(() => setShowReturnExchangeModal(true))} variant="outline">
+          <Button onClick={() => handleSaleAction()} variant="outline">
             İade/Değişim
           </Button>
-          <Button onClick={() => handleSaleAction(() => setShowDeviceReplacementModal(true))} variant="outline">
+          <Button onClick={() => handleSaleAction()} variant="outline">
             Cihaz Değişimi
           </Button>
         </div>
@@ -528,44 +534,6 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
               onCollectPayment={(sale) => handleCollectionClick(sale as SaleRead)}
               onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as SaleRead)}
             />
-            // ) : (
-            //   <div className="grid grid-cols-1 gap-4">
-            //     {filteredSales.map((sale) => {
-            //       const paid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
-            //       const discount = sale.discountAmount || 0;
-            //       const finalAmt = (sale.totalAmount ?? 0) - discount;
-            //       const remaining = Math.max(finalAmt - paid, 0);
-            //       const mappedSale = {
-            //         id: sale.id as string,
-            //         partyId: sale.partyId || party.id || '',
-            //         productId: sale.productId as string | undefined,
-            //         saleDate: sale.saleDate || new Date().toISOString(),
-            //         listPriceTotal: sale.listPriceTotal as number | undefined,
-            //         totalAmount: sale.totalAmount ?? 0,
-            //         discountAmount: discount,
-            //         finalAmount: finalAmt,
-            //         paidAmount: paid,
-            //         remainingAmount: remaining,
-            //         paymentStatus: sale.status === 'COMPLETED' ? 'completed' :
-            //           sale.status === 'CANCELLED' ? 'cancelled' : 'pending',
-            //         paymentMethod: (sale as any).paymentMethod,
-            //         soldBy: (sale as any).soldBy,
-            //         sgkCoverage: (sale as any).sgkCoverage,
-            //         createdAt: sale.createdAt || new Date().toISOString(),
-            //         updatedAt: sale.updatedAt || new Date().toISOString()
-            //       } as PartySale;
-            //       return (
-            //         <PartySaleCard
-            //           key={sale.id}
-            //           sale={mappedSale}
-            //           onSaleClick={(s) => handleEditSaleClick(s as any)}
-            //           onCollectPayment={() => handleCollectionClick(sale)}
-            //           onManagePromissoryNotes={() => handlePromissoryNoteClick(sale)}
-            //         />
-            //       );
-            //     })}
-            //   </div>
-            // )
           )}
         </CardContent>
       </Card>
@@ -757,7 +725,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             isOpen={showCollectionModal}
             onClose={() => setShowCollectionModal(false)}
             party={party}
-            sale={selectedSale}
+            sale={selectedSale as any}
             onPaymentCreate={(paymentData: PaymentRecordRead) => {
               console.log('Payment created:', paymentData);
               setShowCollectionModal(false);
@@ -783,13 +751,13 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
         </div>
       )}
 
-      {showEditSaleModal && (
+      {showEditSaleModal && selectedSale && (
         <div className="fixed inset-0 z-[9999]">
           <EditSaleModal
             isOpen={showEditSaleModal}
             onClose={() => setShowEditSaleModal(false)}
             party={party}
-            sale={selectedSale as any}
+            sale={selectedSale}
             onSaleUpdate={(saleData) => {
               console.log('Sale updated:', saleData);
               setShowEditSaleModal(false);
@@ -807,7 +775,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             isOpen={showReturnExchangeModal}
             onClose={() => setShowReturnExchangeModal(false)}
             party={party}
-            sale={selectedSale as any}
+            sale={selectedSale}
             onReturnExchangeCreate={() => {
               setShowReturnExchangeModal(false);
               loadPartySales();

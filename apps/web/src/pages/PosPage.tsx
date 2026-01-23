@@ -5,7 +5,7 @@ import {
     useCreatePaymentPoPaytrInitiate,
     useCreatePoCommissionInstallmentOptions
 } from '@/api/client/payments.client';
-import { CreditCard, AlertTriangle, ShieldCheck, Check, TrendingDown, User, X } from 'lucide-react';
+import { CreditCard, AlertTriangle, ShieldCheck, Check, TrendingDown } from 'lucide-react';
 
 interface InitPaymentPayload {
     amount: number;
@@ -27,8 +27,8 @@ export default function PosPage() {
     const [installmentOptions, setInstallmentOptions] = useState<any[]>([]);
     const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
     const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null);
-    const [selectedPartyName, setSelectedPartyName] = useState<string>('');
-    const { success, error } = useToastHelpers();
+    const [, setSelectedPartyName] = useState<string>(''); // Value unused, setter used in reset
+    const { success } = useToastHelpers();
 
     const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
         defaultValues: {
@@ -39,7 +39,7 @@ export default function PosPage() {
     });
 
     const amount = watch('amount');
-    const partyName = watch('partyName');
+    // const partyName = watch('partyName'); // Watched but not directly used
     const { mutate: initiatePayment, isPending } = useCreatePaymentPoPaytrInitiate();
     const { mutate: getInstallments, isPending: loadingInstallments } = useCreatePoCommissionInstallmentOptions();
 

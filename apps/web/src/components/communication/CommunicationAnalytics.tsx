@@ -4,13 +4,7 @@ import {
   TrendingDown,
   MessageSquare,
   Mail,
-  Users,
-  Clock,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Calendar,
-  Filter,
   Download,
   RefreshCw
 } from 'lucide-react';
@@ -79,14 +73,15 @@ interface CommunicationAnalyticsProps {
   onRefresh?: () => void;
 }
 
-const COLORS = {
-  primary: '#3B82F6',
-  success: '#10B981',
-  warning: '#F59E0B',
-  danger: '#EF4444',
-  info: '#06B6D4',
-  purple: '#8B5CF6'
-};
+// Color palette - reserved for chart integration
+// const COLORS = {
+//   primary: '#3B82F6',
+//   success: '#10B981',
+//   warning: '#F59E0B',
+//   danger: '#EF4444',
+//   info: '#06B6D4',
+//   purple: '#8B5CF6'
+// };
 
 
 export default function CommunicationAnalytics({ dateRange, onRefresh }: CommunicationAnalyticsProps) {

@@ -6,26 +6,15 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ActionStepResponse } from './actionStepResponse';
-import type { ActionPlanResponseApprovalToken } from './actionPlanResponseApprovalToken';
+import type { ActionPlanResponseEstimatedDurationSeconds } from './actionPlanResponseEstimatedDurationSeconds';
 
 /**
- * Response containing an action plan.
+ * Action plan to be executed.
  */
 export interface ActionPlanResponse {
-  /** Unique plan identifier */
   plan_id: string;
-  /** Plan status */
-  status: string;
-  /** Action steps */
   steps: ActionStepResponse[];
-  /** Overall risk level */
   overall_risk_level: string;
-  /** Whether approval is required */
   requires_approval: boolean;
-  /** Hash of the plan for integrity */
-  plan_hash: string;
-  /** Approval token if required */
-  approval_token?: ActionPlanResponseApprovalToken;
-  /** Creation timestamp */
-  created_at: string;
+  estimated_duration_seconds?: ActionPlanResponseEstimatedDurationSeconds;
 }

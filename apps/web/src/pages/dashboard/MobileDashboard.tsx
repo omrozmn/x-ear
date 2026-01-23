@@ -68,7 +68,7 @@ export const MobileDashboard: React.FC = () => {
                                 <button
                                     key={idx}
                                     onClick={() => {
-                                        navigate({ to: action.to as any });
+                                        navigate({ to: action.to });
                                         triggerSelection();
                                     }}
                                     className="flex flex-col items-center gap-2 group active:scale-95 transition-transform duration-100"

@@ -51,14 +51,16 @@ export function usePollUtsJob(jobId: string, opts?: { interval?: number; onCompl
     },
   });
 
+  const onComplete = opts?.onComplete;
+
   useEffect(() => {
     if (query.data && isUtsJobStatus(query.data)) {
       const { status } = query.data;
-      if (status === 'completed' && opts?.onComplete) {
-        opts.onComplete(query.data);
+      if (status === 'completed' && onComplete) {
+        onComplete(query.data);
       }
     }
-  }, [query.data, opts?.onComplete]);
+  }, [query.data, onComplete]);
 
   return query;
 }

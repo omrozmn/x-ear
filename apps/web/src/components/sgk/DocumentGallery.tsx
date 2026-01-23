@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Grid, List, Download, Trash2, Eye, Filter, RotateCcw, ZoomIn, ZoomOut, X, ChevronLeft, ChevronRight, Clock, CheckCircle, AlertCircle, FileText, MoreVertical, SortAsc, SortDesc, CheckSquare, Square, RefreshCw, Calendar, HardDrive, User } from 'lucide-react';
+import { Search, Grid, List, Download, Trash2, Eye, Filter, RotateCcw, Clock, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
 import DocumentViewer from './DocumentViewer';
 import DocumentPreview from './DocumentPreview';
@@ -7,8 +7,6 @@ import { SGKDocument, SGKDocumentType } from '../../types/sgk';
 
 interface DocumentGalleryProps {
   documents: SGKDocument[];
-  onDocumentSelect?: (document: SGKDocument) => void;
-  onDocumentDelete?: (documentId: string) => void;
   onBulkDelete?: (documentIds: string[]) => void;
   onBulkDownload?: (documentIds: string[]) => void;
   onRefresh?: () => void;
@@ -20,8 +18,6 @@ type SortBy = 'name' | 'date' | 'size' | 'type';
 
 export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
   documents,
-  onDocumentSelect,
-  onDocumentDelete,
   onBulkDelete,
   onBulkDownload,
   onRefresh,
@@ -32,7 +28,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
   const [selectedType, setSelectedType] = useState<SGKDocumentType | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'processing' | 'completed' | 'failed'>('all');
   const [sortBy, setSortBy] = useState<SortBy>('date');
-  
+
   // Advanced filters
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
   const [fileSizeRange, setFileSizeRange] = useState<{ min: number; max: number }>({ min: 0, max: 100 });
@@ -47,14 +43,14 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
     const filtered = documents.filter(doc => {
       // Search filter
       const matchesSearch = doc.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (doc.ocrText && doc.ocrText.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+        (doc.ocrText && doc.ocrText.toLowerCase().includes(searchTerm.toLowerCase()));
+
       // Type filter
       const matchesType = selectedType === 'all' || doc.documentType === selectedType;
-      
+
       // Status filter
       const matchesStatus = selectedStatus === 'all' || doc.processingStatus === selectedStatus;
-      
+
       // Date range filter
       let matchesDateRange = true;
       if (dateRange.start || dateRange.end) {
@@ -66,14 +62,14 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
           matchesDateRange = matchesDateRange && docDate <= new Date(dateRange.end);
         }
       }
-      
+
       // File size filter (in MB)
       let matchesFileSize = true;
       if (doc.fileSize) {
         const fileSizeMB = doc.fileSize / (1024 * 1024);
         matchesFileSize = fileSizeMB >= fileSizeRange.min && fileSizeMB <= fileSizeRange.max;
       }
-      
+
       return matchesSearch && matchesType && matchesStatus && matchesDateRange && matchesFileSize;
     });
 
@@ -330,7 +326,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
               ]}
             />
           </div>
-          
+
           {/* Advanced Filters Toggle */}
           <div className="flex justify-between items-center">
             <Button
@@ -344,12 +340,12 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
               {showAdvancedFilters ? ' (Gizle)' : ' (Göster)'}
             </Button>
           </div>
-          
+
           {/* Advanced Filters */}
           {showAdvancedFilters && (
             <div className="border-t pt-4 space-y-4">
               <h3 className="text-sm font-medium text-gray-700">Gelişmiş Filtreler</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Date Range Filter */}
                 <div className="space-y-2">
@@ -369,7 +365,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     />
                   </div>
                 </div>
-                
+
                 {/* File Size Filter */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -405,7 +401,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               {/* Clear Filters */}
               <div className="flex justify-end">
                 <Button
@@ -463,9 +459,8 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
             return (
               <div
                 key={document.id}
-                className={`relative bg-white border rounded-lg p-4 hover:shadow-md transition-shadow ${
-                  selectedDocuments.has(document.id) ? 'ring-2 ring-blue-500' : ''
-                }`}
+                className={`relative bg-white border rounded-lg p-4 hover:shadow-md transition-shadow ${selectedDocuments.has(document.id) ? 'ring-2 ring-blue-500' : ''
+                  }`}
               >
                 {/* Selection checkbox */}
                 <Checkbox
@@ -577,9 +572,8 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                   return (
                     <tr
                       key={document.id}
-                      className={`hover:bg-gray-50 ${
-                        selectedDocuments.has(document.id) ? 'bg-blue-50' : ''
-                      }`}
+                      className={`hover:bg-gray-50 ${selectedDocuments.has(document.id) ? 'bg-blue-50' : ''
+                        }`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Checkbox
@@ -660,36 +654,36 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
       )}
 
       {/* Document Preview Modal */}
-       {previewDocument && (
-         <DocumentPreview
-           result={{
-             fileName: previewDocument.filename,
-             status: 'processed',
-             result: {
-               document_type: previewDocument.documentType,
-               ocr_text: previewDocument.ocrText || '',
-               pdf_generated: false,
-               pdf_filename: undefined,
-               confidence_score: undefined,
-               file_size: previewDocument.fileSize,
-               created_at: previewDocument.uploadedAt,
-               image_url: previewDocument.fileUrl,
-               matched_party: undefined
-             }
-           }}
-           isOpen={!!previewDocument}
-           onClose={() => setPreviewDocument(null)}
-           onChangeDocumentType={() => {
-             // Handle document type change
-             console.log('Document type changed for:', previewDocument.id);
-           }}
-           onSave={() => {
-             // Handle save
-             console.log('Document saved:', previewDocument.id);
-             setPreviewDocument(null);
-           }}
-         />
-       )}
+      {previewDocument && (
+        <DocumentPreview
+          result={{
+            fileName: previewDocument.filename,
+            status: 'processed',
+            result: {
+              document_type: previewDocument.documentType,
+              ocr_text: previewDocument.ocrText || '',
+              pdf_generated: false,
+              pdf_filename: undefined,
+              confidence_score: undefined,
+              file_size: previewDocument.fileSize,
+              created_at: previewDocument.uploadedAt,
+              image_url: previewDocument.fileUrl,
+              matched_party: undefined
+            }
+          }}
+          isOpen={!!previewDocument}
+          onClose={() => setPreviewDocument(null)}
+          onChangeDocumentType={() => {
+            // Handle document type change
+            console.log('Document type changed for:', previewDocument.id);
+          }}
+          onSave={() => {
+            // Handle save
+            console.log('Document saved:', previewDocument.id);
+            setPreviewDocument(null);
+          }}
+        />
+      )}
     </div>
   );
 };

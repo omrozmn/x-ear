@@ -46,3 +46,4 @@ export * from './admin-tenants.client';
 export * from './dashboard.client';
 export * from './admin.client';
 export * from './settings.client';
+export * from './ai.client';

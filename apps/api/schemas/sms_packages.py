@@ -7,7 +7,7 @@ from pydantic import Field, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
-class SmsPackageRead(AppBaseModel, IDMixin, TimestampMixin):
+class DetailedSmsPackageRead(AppBaseModel, IDMixin, TimestampMixin):
     """Schema for reading an SMS package - matches SmsPackage.to_dict() output"""
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     
