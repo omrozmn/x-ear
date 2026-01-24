@@ -53,7 +53,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 // System roles that cannot be deleted (but can be renamed)
-const SYSTEM_ROLES = ['tenant_admin'];
+const _SYSTEM_ROLES = ['tenant_admin'];
 
 // Local Permission interface - matches actual API response shape
 interface Permission {
