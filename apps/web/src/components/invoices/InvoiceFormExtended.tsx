@@ -10,7 +10,7 @@ import ExportDetailsCard from './ExportDetailsCard';
 import { SGKInvoiceSection } from './SGKInvoiceSection';
 import { GovernmentSection, GOVERNMENT_EXEMPTION_REASONS } from './GovernmentSection';
 import WithholdingCard from './WithholdingCard';
-import { Select, Input, Textarea } from '@x-ear/ui-web';
+import { Select, Input } from '@x-ear/ui-web';
 import { WithholdingModal } from './WithholdingModal';
 import { GovernmentInvoiceModal } from './GovernmentInvoiceModal';
 import { SGKInvoiceData } from '../../types/invoice';

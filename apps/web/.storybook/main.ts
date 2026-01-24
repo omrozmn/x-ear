@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import { resolve } from 'path';
 
 const config: StorybookConfig = {
   stories: [
@@ -21,14 +22,14 @@ const config: StorybookConfig = {
     },
   },
   viteFinal: async (config) => {
-    // Ensure Vite can resolve workspace packages
+    // Ensure Vite can resolve workspace packages - use relative paths for CI compatibility
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@x-ear/ui-web': '/Users/omerozmen/Desktop/x-ear web app/x-ear/packages/ui-web/src',
-      '@x-ear/core': '/Users/omerozmen/Desktop/x-ear web app/x-ear/packages/core/src',
+      '@x-ear/ui-web': resolve(__dirname, '../../../packages/ui-web/src'),
+      '@x-ear/core': resolve(__dirname, '../../../packages/core/src'),
     };
-    
+
     return config;
   },
 };

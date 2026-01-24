@@ -77,7 +77,72 @@ var PatientService = class {
    * Checks if patient data needs verification
    */
   static needsVerification(patient) {
-    return !patient.contactInfo.phone || !patient.contactInfo.email || !patient.tcNumber;
+    return !patient.contactInfo?.phone || !patient.contactInfo?.email || !patient.tcNumber;
+  }
+  /**
+   * Calculates patient priority score based on various factors
+   */
+  static calculatePriorityScore(patient) {
+    let score = 0;
+    const age = this.calculateAge(patient.birthDate);
+    if (age >= 65) score += 20;
+    else if (age >= 50) score += 10;
+    if (this.needsVerification(patient)) score -= 15;
+    if (patient.devices && patient.devices.length > 0) {
+      const hasTrialDevice = patient.devices.some((d) => d.status === "trial");
+      if (hasTrialDevice) score += 25;
+    }
+    if (patient.communications && patient.communications.length > 0) {
+      const recentComm = patient.communications.find((c) => {
+        const commDate = new Date(c.date);
+        const daysDiff = (Date.now() - commDate.getTime()) / (1e3 * 60 * 60 * 24);
+        return daysDiff <= 7;
+      });
+      if (recentComm) score += 10;
+    }
+    return Math.max(0, Math.min(100, score));
+  }
+  /**
+   * Adds a note to a patient
+   */
+  static addNote(patient, note) {
+    const newNote = {
+      ...note,
+      id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+    return {
+      ...patient,
+      notes: [...patient.notes || [], newNote]
+    };
+  }
+  /**
+   * Updates a device for a patient
+   */
+  static updateDevice(patient, deviceId, updates) {
+    const devices = patient.devices || [];
+    const deviceIndex = devices.findIndex((device) => device.id === deviceId);
+    if (deviceIndex === -1) {
+      throw new Error(`Device with ID ${deviceId} not found`);
+    }
+    const updatedDevices = [...devices];
+    updatedDevices[deviceIndex] = { ...updatedDevices[deviceIndex], ...updates };
+    return {
+      ...patient,
+      devices: updatedDevices
+    };
+  }
+  /**
+   * Adds a communication record to a patient
+   */
+  static addCommunication(patient, communication) {
+    const newCommunication = {
+      ...communication,
+      id: `comm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+    return {
+      ...patient,
+      communications: [...patient.communications || [], newCommunication]
+    };
   }
 };
 
@@ -1536,10 +1601,267 @@ var createStorageManager = (prefix, storageType = "localStorage") => {
     }
   };
 };
+
+// src/services/inventory.ts
+var InventoryService = class {
+  constructor(apiClient) {
+    this.apiClient = apiClient;
+  }
+  /**
+   * Get inventory items with filtering and pagination
+   */
+  async getInventoryItems(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append("search", filters.search);
+    if (filters.category && filters.category !== "All") params.append("category", filters.category);
+    if (filters.brand && filters.brand !== "All") params.append("brand", filters.brand);
+    if (filters.status && filters.status !== "All") params.append("status", filters.status.toLowerCase());
+    if (filters.lowStock) params.append("lowStock", "true");
+    if (filters.page) params.append("page", filters.page.toString());
+    if (filters.pageSize) params.append("pageSize", filters.pageSize.toString());
+    if (filters.sortBy) params.append("sortBy", filters.sortBy);
+    if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
+    const response = await this.apiClient.get(`/inventory?${params.toString()}`);
+    return response.data;
+  }
+  /**
+   * Get a single inventory item by ID
+   */
+  async getInventoryItem(id) {
+    const response = await this.apiClient.get(`/inventory/${id}`);
+    return response.data;
+  }
+  /**
+   * Create a new inventory item
+   */
+  async createInventoryItem(data) {
+    const vatIncludedPrice = data.unitPrice * 1.18;
+    const totalValue = data.stock * vatIncludedPrice;
+    const payload = {
+      ...data,
+      vatIncludedPrice,
+      totalValue,
+      status: data.status || "active"
+    };
+    const response = await this.apiClient.post("/inventory", payload);
+    return response.data;
+  }
+  /**
+   * Update an existing inventory item
+   */
+  async updateInventoryItem(data) {
+    const { id, ...updateData } = data;
+    if (updateData.unitPrice !== void 0 || updateData.stock !== void 0) {
+      const currentItem = await this.getInventoryItem(id);
+      const unitPrice = updateData.unitPrice ?? currentItem.unitPrice;
+      const stock = updateData.stock ?? currentItem.stock;
+      updateData.vatIncludedPrice = unitPrice * 1.18;
+      updateData.totalValue = stock * updateData.vatIncludedPrice;
+    }
+    const response = await this.apiClient.put(`/inventory/${id}`, updateData);
+    return response.data;
+  }
+  /**
+   * Delete an inventory item
+   */
+  async deleteInventoryItem(id) {
+    await this.apiClient.delete(`/inventory/${id}`);
+  }
+  /**
+   * Delete multiple inventory items
+   */
+  async deleteInventoryItems(ids) {
+    await this.apiClient.post("/inventory/bulk-delete", { ids });
+  }
+  /**
+   * Get inventory statistics
+   */
+  async getInventoryStats() {
+    const response = await this.apiClient.get("/inventory/stats");
+    return response.data;
+  }
+  /**
+   * Upload inventory items from CSV
+   */
+  async bulkUploadInventory(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await this.apiClient.post("/inventory/bulk-upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    });
+    return response.data;
+  }
+  /**
+   * Export inventory items to CSV
+   */
+  async exportInventory(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append("search", filters.search);
+    if (filters.category && filters.category !== "All") params.append("category", filters.category);
+    if (filters.brand && filters.brand !== "All") params.append("brand", filters.brand);
+    if (filters.status && filters.status !== "All") params.append("status", filters.status.toLowerCase());
+    if (filters.lowStock) params.append("lowStock", "true");
+    const response = await this.apiClient.get(`/inventory/export?${params.toString()}`, {
+      responseType: "blob"
+    });
+    return response.data;
+  }
+  /**
+   * Get available categories
+   */
+  async getCategories() {
+    const response = await this.apiClient.get("/inventory/categories");
+    return response.data;
+  }
+  /**
+   * Get available brands
+   */
+  async getBrands() {
+    const response = await this.apiClient.get("/inventory/brands");
+    return response.data;
+  }
+  /**
+   * Check if barcode is unique
+   */
+  async checkBarcodeUnique(barcode, excludeId) {
+    const params = new URLSearchParams();
+    params.append("barcode", barcode);
+    if (excludeId) params.append("excludeId", excludeId);
+    const response = await this.apiClient.get(`/inventory/check-barcode?${params.toString()}`);
+    return response.data.isUnique;
+  }
+  /**
+   * Update stock quantity for an item
+   */
+  async updateStock(id, quantity, operation) {
+    const response = await this.apiClient.patch(`/inventory/${id}/stock`, {
+      quantity,
+      operation
+    });
+    return response.data;
+  }
+  /**
+   * Get low stock items
+   */
+  async getLowStockItems() {
+    const response = await this.apiClient.get("/inventory/low-stock");
+    return response.data;
+  }
+  /**
+   * Generate barcode for a product
+   */
+  async generateBarcode() {
+    const response = await this.apiClient.post("/inventory/generate-barcode");
+    return response.data.barcode;
+  }
+};
+var InventoryUtils = {
+  /**
+   * Calculate VAT included price
+   */
+  calculateVATPrice(unitPrice, vatRate = 0.18) {
+    return unitPrice * (1 + vatRate);
+  },
+  /**
+   * Calculate total value
+   */
+  calculateTotalValue(stock, unitPrice, vatRate = 0.18) {
+    const vatIncludedPrice = this.calculateVATPrice(unitPrice, vatRate);
+    return stock * vatIncludedPrice;
+  },
+  /**
+   * Check if item is low stock
+   */
+  isLowStock(item) {
+    return item.stock <= item.minStock;
+  },
+  /**
+   * Format currency
+   */
+  formatCurrency(amount, currency = "\u20BA") {
+    return `${currency}${amount.toFixed(2)}`;
+  },
+  /**
+   * Generate stock status badge variant
+   */
+  getStockStatusVariant(item) {
+    if (item.stock === 0) return "danger";
+    if (item.stock <= item.minStock) return "warning";
+    return "success";
+  },
+  /**
+   * Parse CSV file to inventory items
+   */
+  async parseCSVFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const csv = e.target?.result;
+          const lines = csv.split("\n");
+          const items = [];
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            const values = line.split(",").map((v) => v.trim());
+            const item = {
+              productName: values[0] || "",
+              brand: values[1] || "",
+              model: values[2] || "",
+              category: values[3] || "",
+              stock: parseInt(values[4]) || 0,
+              minStock: parseInt(values[5]) || 0,
+              unitPrice: parseFloat(values[6]) || 0,
+              barcode: values[7] || void 0,
+              supplier: values[8] || void 0,
+              warrantyPeriod: values[9] || void 0,
+              status: values[10] || "active"
+            };
+            items.push(item);
+          }
+          resolve(items);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsText(file);
+    });
+  },
+  /**
+   * Validate inventory item data
+   */
+  validateInventoryItem(item) {
+    const errors = [];
+    if (!item.productName?.trim()) {
+      errors.push("Product name is required");
+    }
+    if (!item.brand?.trim()) {
+      errors.push("Brand is required");
+    }
+    if (!item.category?.trim()) {
+      errors.push("Category is required");
+    }
+    if (item.stock !== void 0 && item.stock < 0) {
+      errors.push("Stock cannot be negative");
+    }
+    if (item.minStock !== void 0 && item.minStock < 0) {
+      errors.push("Minimum stock cannot be negative");
+    }
+    if (item.unitPrice !== void 0 && item.unitPrice < 0) {
+      errors.push("Unit price cannot be negative");
+    }
+    return errors;
+  }
+};
 export {
   FileParserService,
   FuzzySearch,
   FuzzySearchPresets,
+  InventoryService,
+  InventoryUtils,
   PatientService,
   TypeConverter,
   addDaysToDate,

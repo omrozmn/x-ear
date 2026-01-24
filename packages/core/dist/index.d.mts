@@ -80,8 +80,10 @@ interface Patient extends BaseEntity {
     gender: 'male' | 'female' | 'other';
     contactInfo: ContactInfo;
     status: Status;
-    notes?: string;
+    notes?: PatientNote[];
     medicalHistory?: MedicalHistory[];
+    devices?: PatientDevice[];
+    communications?: PatientCommunication[];
 }
 interface MedicalHistory extends BaseEntity {
     patientId: string;
@@ -91,6 +93,40 @@ interface MedicalHistory extends BaseEntity {
     date: string;
     doctorId?: string;
     notes?: string;
+}
+interface PatientDevice {
+    id: string;
+    brand: string;
+    model: string;
+    serialNumber?: string;
+    side: 'left' | 'right' | 'both';
+    type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
+    status: 'active' | 'trial' | 'returned' | 'replaced';
+    purchaseDate?: string;
+    warrantyExpiry?: string;
+    lastServiceDate?: string;
+    batteryType?: string;
+    price?: number;
+    sgkScheme?: boolean;
+    settings?: Record<string, unknown>;
+}
+interface PatientNote {
+    id: string;
+    text: string;
+    date: string;
+    author: string;
+    type?: 'general' | 'clinical' | 'financial' | 'sgk';
+    isPrivate?: boolean;
+}
+interface PatientCommunication {
+    id: string;
+    type: 'sms' | 'email' | 'call' | 'whatsapp';
+    direction: 'inbound' | 'outbound';
+    content: string;
+    status: 'sent' | 'delivered' | 'read' | 'failed';
+    date: string;
+    author?: string;
+    metadata?: Record<string, unknown>;
 }
 interface PatientCreateRequest {
     firstName: string;
@@ -156,7 +192,7 @@ interface TimeSlot {
     doctorId?: string;
 }
 
-interface InventoryItem extends BaseEntity {
+interface InventoryItem$1 extends BaseEntity {
     name: string;
     description?: string;
     sku: string;
@@ -379,6 +415,22 @@ declare class PatientService {
      * Checks if patient data needs verification
      */
     static needsVerification(patient: Patient): boolean;
+    /**
+     * Calculates patient priority score based on various factors
+     */
+    static calculatePriorityScore(patient: Patient): number;
+    /**
+     * Adds a note to a patient
+     */
+    static addNote(patient: Patient, note: Omit<PatientNote, 'id'>): Patient;
+    /**
+     * Updates a device for a patient
+     */
+    static updateDevice(patient: Patient, deviceId: string, updates: Partial<PatientDevice>): Patient;
+    /**
+     * Adds a communication record to a patient
+     */
+    static addCommunication(patient: Patient, communication: Omit<PatientCommunication, 'id'>): Patient;
 }
 
 interface FuzzySearchOptions<T> extends IFuseOptions<T> {
@@ -878,4 +930,192 @@ declare const createStorageManager: (prefix: string, storageType?: StorageType) 
     getKeys: () => string[];
 };
 
-export { type Address, type ApiError, type ApiResponse, type Appointment, type AppointmentCreateRequest, type AppointmentSearchFilters, type AppointmentStatus, type AppointmentType, type AppointmentUpdateRequest, type AuthUser, type BaseEntity, type Campaign, type CampaignChannel, type CampaignCreateRequest, type CampaignMetrics, type CampaignSearchFilters, type CampaignStatus, type CampaignType, type CampaignUpdateRequest, type ColumnTypeInfo, type ContactInfo, type ConversionOptions, type DashboardSettings, type DataType, type FileParseError, FileParserService, type FileUploadActions, type FileUploadOptions, type FileUploadState, type FilterOptions, FuzzySearch, type FuzzySearchOptions, type FuzzySearchPreset, FuzzySearchPresets, type FuzzySearchResult, type IdempotencyConfig, type InventoryCreateRequest, type InventoryItem, type InventorySearchFilters, type InventoryStatus, type InventoryTransaction, type InventoryUpdateRequest, type MedicalHistory, type Money, type NotificationSettings, type PaginatedResponse, type Pagination, type ParseOptions, type ParsedData, type Patient, type PatientCreateRequest, type PatientSearchFilters, PatientService, type PatientUpdateRequest, type Permission, type PermissionAction, type Status, type StorageType, type Supplier, type TargetAudience, type TimeSlot, type TransactionType, TypeConverter, type TypeDetectionResult, type UseFileUploadReturn, type UseFuzzySearchOptions, type UseFuzzySearchReturn, type User, type UserCreateRequest, type UserPreferences, type UserRole, type UserSearchFilters, type UserStatus, type UserUpdateRequest, addDaysToDate, calculateAge, capitalizeWords, clearStorage, createFuzzySearch, createStorageManager, formatDate, formatDateTime, formatDateTurkish, formatFileSize, formatMoney, formatNumber, formatPercentage, formatPhoneNumber, formatTcNumber, fuzzySearch, getEndOfDay, getStartOfDay, getStorageItem, getStorageKeys, getStorageUsage, isStorageAvailable, isToday, isValidDate, maskSensitiveInfo, removeStorageItem, setStorageItem, toISOString, truncateText, useAdvancedFileUpload, useAdvancedFuzzySearch, useDragDropFileUpload, useFileUpload, useFuzzySearch, useSimpleFileUpload, useSimpleFuzzySearch, validateDate, validateEmail, validateLength, validatePassword, validatePhoneNumber, validateRange, validateRequired, validateTcNumber, validateUrl };
+interface InventoryItem {
+    id: string;
+    productName: string;
+    brand: string;
+    model: string;
+    category: string;
+    stock: number;
+    minStock: number;
+    unitPrice: number;
+    vatIncludedPrice: number;
+    totalValue: number;
+    barcode?: string;
+    supplier?: string;
+    warrantyPeriod?: string;
+    status: 'active' | 'inactive' | 'discontinued';
+    createdAt: string;
+    updatedAt: string;
+}
+interface CreateInventoryItemRequest {
+    productName: string;
+    brand: string;
+    model?: string;
+    category: string;
+    stock: number;
+    minStock: number;
+    unitPrice: number;
+    barcode?: string;
+    supplier?: string;
+    warrantyPeriod?: string;
+    status?: 'active' | 'inactive' | 'discontinued';
+}
+interface UpdateInventoryItemRequest extends Partial<CreateInventoryItemRequest> {
+    id: string;
+    vatIncludedPrice?: number;
+    totalValue?: number;
+}
+interface InventoryFilters {
+    search?: string;
+    category?: string;
+    brand?: string;
+    status?: string;
+    lowStock?: boolean;
+    page?: number;
+    pageSize?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+}
+interface InventoryListResponse {
+    items: InventoryItem[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+}
+interface InventoryStats {
+    totalProducts: number;
+    lowStockCount: number;
+    totalValue: number;
+    activeItems: number;
+    categories: Array<{
+        name: string;
+        count: number;
+    }>;
+    brands: Array<{
+        name: string;
+        count: number;
+    }>;
+}
+interface BulkUploadResult {
+    success: boolean;
+    processed: number;
+    errors: Array<{
+        row: number;
+        message: string;
+    }>;
+}
+interface ApiClient {
+    get(url: string, config?: any): Promise<{
+        data: any;
+    }>;
+    post(url: string, data?: any, config?: any): Promise<{
+        data: any;
+    }>;
+    put(url: string, data?: any, config?: any): Promise<{
+        data: any;
+    }>;
+    patch(url: string, data?: any, config?: any): Promise<{
+        data: any;
+    }>;
+    delete(url: string, config?: any): Promise<{
+        data: any;
+    }>;
+}
+declare class InventoryService {
+    private apiClient;
+    constructor(apiClient: ApiClient);
+    /**
+     * Get inventory items with filtering and pagination
+     */
+    getInventoryItems(filters?: InventoryFilters): Promise<InventoryListResponse>;
+    /**
+     * Get a single inventory item by ID
+     */
+    getInventoryItem(id: string): Promise<InventoryItem>;
+    /**
+     * Create a new inventory item
+     */
+    createInventoryItem(data: CreateInventoryItemRequest): Promise<InventoryItem>;
+    /**
+     * Update an existing inventory item
+     */
+    updateInventoryItem(data: UpdateInventoryItemRequest): Promise<InventoryItem>;
+    /**
+     * Delete an inventory item
+     */
+    deleteInventoryItem(id: string): Promise<void>;
+    /**
+     * Delete multiple inventory items
+     */
+    deleteInventoryItems(ids: string[]): Promise<void>;
+    /**
+     * Get inventory statistics
+     */
+    getInventoryStats(): Promise<InventoryStats>;
+    /**
+     * Upload inventory items from CSV
+     */
+    bulkUploadInventory(file: File): Promise<BulkUploadResult>;
+    /**
+     * Export inventory items to CSV
+     */
+    exportInventory(filters?: InventoryFilters): Promise<Blob>;
+    /**
+     * Get available categories
+     */
+    getCategories(): Promise<string[]>;
+    /**
+     * Get available brands
+     */
+    getBrands(): Promise<string[]>;
+    /**
+     * Check if barcode is unique
+     */
+    checkBarcodeUnique(barcode: string, excludeId?: string): Promise<boolean>;
+    /**
+     * Update stock quantity for an item
+     */
+    updateStock(id: string, quantity: number, operation: 'add' | 'subtract' | 'set'): Promise<InventoryItem>;
+    /**
+     * Get low stock items
+     */
+    getLowStockItems(): Promise<InventoryItem[]>;
+    /**
+     * Generate barcode for a product
+     */
+    generateBarcode(): Promise<string>;
+}
+declare const InventoryUtils: {
+    /**
+     * Calculate VAT included price
+     */
+    calculateVATPrice(unitPrice: number, vatRate?: number): number;
+    /**
+     * Calculate total value
+     */
+    calculateTotalValue(stock: number, unitPrice: number, vatRate?: number): number;
+    /**
+     * Check if item is low stock
+     */
+    isLowStock(item: InventoryItem): boolean;
+    /**
+     * Format currency
+     */
+    formatCurrency(amount: number, currency?: string): string;
+    /**
+     * Generate stock status badge variant
+     */
+    getStockStatusVariant(item: InventoryItem): "success" | "warning" | "danger";
+    /**
+     * Parse CSV file to inventory items
+     */
+    parseCSVFile(file: File): Promise<CreateInventoryItemRequest[]>;
+    /**
+     * Validate inventory item data
+     */
+    validateInventoryItem(item: Partial<CreateInventoryItemRequest>): string[];
+};
+
+export { type Address, type ApiError, type ApiResponse, type Appointment, type AppointmentCreateRequest, type AppointmentSearchFilters, type AppointmentStatus, type AppointmentType, type AppointmentUpdateRequest, type AuthUser, type BaseEntity, type BulkUploadResult, type Campaign, type CampaignChannel, type CampaignCreateRequest, type CampaignMetrics, type CampaignSearchFilters, type CampaignStatus, type CampaignType, type CampaignUpdateRequest, type ColumnTypeInfo, type ContactInfo, type ConversionOptions, type CreateInventoryItemRequest, type DashboardSettings, type DataType, type FileParseError, FileParserService, type FileUploadActions, type FileUploadOptions, type FileUploadState, type FilterOptions, FuzzySearch, type FuzzySearchOptions, type FuzzySearchPreset, FuzzySearchPresets, type FuzzySearchResult, type IdempotencyConfig, type InventoryCreateRequest, type InventoryFilters, type InventoryItem$1 as InventoryItem, type InventoryListResponse, type InventorySearchFilters, InventoryService, type InventoryStats, type InventoryStatus, type InventoryTransaction, type InventoryUpdateRequest, InventoryUtils, type MedicalHistory, type Money, type NotificationSettings, type PaginatedResponse, type Pagination, type ParseOptions, type ParsedData, type Patient, type PatientCommunication, type PatientCreateRequest, type PatientDevice, type PatientNote, type PatientSearchFilters, PatientService, type PatientUpdateRequest, type Permission, type PermissionAction, type Status, type StorageType, type Supplier, type TargetAudience, type TimeSlot, type TransactionType, TypeConverter, type TypeDetectionResult, type UpdateInventoryItemRequest, type UseFileUploadReturn, type UseFuzzySearchOptions, type UseFuzzySearchReturn, type User, type UserCreateRequest, type UserPreferences, type UserRole, type UserSearchFilters, type UserStatus, type UserUpdateRequest, addDaysToDate, calculateAge, capitalizeWords, clearStorage, createFuzzySearch, createStorageManager, formatDate, formatDateTime, formatDateTurkish, formatFileSize, formatMoney, formatNumber, formatPercentage, formatPhoneNumber, formatTcNumber, fuzzySearch, getEndOfDay, getStartOfDay, getStorageItem, getStorageKeys, getStorageUsage, isStorageAvailable, isToday, isValidDate, maskSensitiveInfo, removeStorageItem, setStorageItem, toISOString, truncateText, useAdvancedFileUpload, useAdvancedFuzzySearch, useDragDropFileUpload, useFileUpload, useFuzzySearch, useSimpleFileUpload, useSimpleFuzzySearch, validateDate, validateEmail, validateLength, validatePassword, validatePhoneNumber, validateRange, validateRequired, validateTcNumber, validateUrl };

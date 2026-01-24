@@ -3,7 +3,6 @@ import { Button } from '@x-ear/ui-web';
 import { FileText, Plus, Calendar, DollarSign, Settings, XCircle } from 'lucide-react';
 import { Party, PartyDevice } from '../../types/party';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { listInventory } from '@/api/client/inventory.client';
 import { deleteDevice } from '@/api/client/devices.client';
 import { createPartyDeviceAssignments } from '@/api/client/sales.client';
 import { useCreateReplacement } from '@/api/client/replacements.client';

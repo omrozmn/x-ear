@@ -11,8 +11,7 @@ import {
 } from '@/api/client/appointments.client';
 import type {
   AppointmentRead,
-  AppointmentCreate,
-  AppointmentUpdate
+  AppointmentCreate
 } from '@/api/generated/schemas';
 
 interface PartyAppointmentsTabProps {
