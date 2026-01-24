@@ -585,9 +585,18 @@ async def chat(
     ):
         try:
             planner = get_action_planner()
-            # Extract permissions from user_context (defaults to empty set if not present)
-            # Demo permissions - in production, these come from JWT token
-            permissions = {"party:write", "party:read", "create_patient", "create_appointment", "manage_inventory"}
+            # Extract permissions from user_context
+            # TODO: Production should extract from JWT claims via middleware
+            permissions = set(user_context.get("permissions", []))
+            if not permissions:
+                # Fallback for development/testing - uses correct permission names
+                permissions = {
+                    "parties.view", "parties.create", "parties.edit",
+                    "sales.view", "sales.create",
+                    "devices.view", "devices.assign",
+                    "appointments.view", "appointments.create",
+                    "reports.view",
+                }
             
             # Check for timeout on pending plan (Requirement 4.5)
             if pending_plan:

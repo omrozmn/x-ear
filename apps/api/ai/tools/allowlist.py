@@ -166,7 +166,7 @@ def tenant_config_update(
 # =============================================================================
 
 @register_tool(
-    tool_id="report_generate",
+    tool_id="generateReport",
     name="Generate Report",
     description="Generate a report based on specified parameters",
     category=ToolCategory.REPORT,
@@ -209,9 +209,9 @@ def tenant_config_update(
     ],
     returns="Report data or download URL",
     requires_approval=False,
-    requires_permissions=["reports:read"],
+    requires_permissions=["reports.view"],
 )
-def report_generate(
+def generateReport(
     params: Dict[str, Any],
     mode: ToolExecutionMode,
 ) -> ToolExecutionResult:
@@ -224,11 +224,11 @@ def report_generate(
     
     if mode == ToolExecutionMode.SIMULATE:
         return ToolExecutionResult(
-            tool_id="report_generate",
+            tool_id="generateReport",
             success=True,
             mode=mode,
             simulated_changes={
-                "action": "generate_report",
+                "action": "generateReport",
                 "report_type": report_type,
                 "date_range": f"{date_from} to {date_to}",
                 "tenant_id": tenant_id,
@@ -238,7 +238,7 @@ def report_generate(
         )
     
     return ToolExecutionResult(
-        tool_id="report_generate",
+        tool_id="generateReport",
         success=True,
         mode=mode,
         result={
@@ -246,6 +246,72 @@ def report_generate(
             "tenant_id": tenant_id,
             "status": "generated",
             "download_url": f"/api/reports/{tenant_id}/{report_type}/download",
+        },
+    )
+
+
+@register_tool(
+    tool_id="getReportData",
+    name="Get Report Data",
+    description="Get raw report data for analysis",
+    category=ToolCategory.REPORT,
+    risk_level=RiskLevel.LOW,
+    schema_version="1.0.0",
+    parameters=[
+        ToolParameter(
+            name="report_type",
+            type="string",
+            description="Type of report",
+            required=True,
+            enum=["sales", "inventory", "customers", "financial"],
+        ),
+        ToolParameter(
+            name="date_from",
+            type="string",
+            description="Start date (ISO format)",
+            required=True,
+        ),
+        ToolParameter(
+            name="date_to",
+            type="string",
+            description="End date (ISO format)",
+            required=True,
+        ),
+        ToolParameter(
+            name="tenant_id",
+            type="string",
+            description="Tenant ID",
+            required=True,
+        ),
+    ],
+    returns="Report data as JSON",
+    requires_approval=False,
+    requires_permissions=["reports.view"],
+)
+def getReportData(
+    params: Dict[str, Any],
+    mode: ToolExecutionMode,
+) -> ToolExecutionResult:
+    """Get report data."""
+    report_type = params["report_type"]
+    date_from = params["date_from"]
+    date_to = params["date_to"]
+    tenant_id = params["tenant_id"]
+    
+    # Placeholder: In production, this would query actual report data
+    return ToolExecutionResult(
+        tool_id="getReportData",
+        success=True,
+        mode=mode,
+        result={
+            "report_type": report_type,
+            "tenant_id": tenant_id,
+            "date_range": {"from": date_from, "to": date_to},
+            "data": [],  # Would contain actual data
+            "summary": {
+                "total_count": 0,
+                "generated_at": "placeholder",
+            },
         },
     )
 

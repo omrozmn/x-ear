@@ -335,3 +335,35 @@ def filter_capabilities_by_phase(
             read_only_capabilities.append(cap)
     
     return read_only_capabilities
+
+
+def get_allowed_tool_names(
+    user_permissions: List[str],
+    ai_phase: str
+) -> List[str]:
+    """
+    Get list of tool names allowed for the user in the current phase.
+    
+    Combines permission filtering and phase filtering.
+    
+    Args:
+        user_permissions: List of permissions the user has
+        ai_phase: Current AI phase ("A", "B", or "C")
+        
+    Returns:
+        List of unique tool names allowed
+    """
+    all_caps = get_all_capabilities()
+    
+    # 1. Filter by permissions
+    perm_filtered = filter_capabilities_by_permissions(all_caps, user_permissions)
+    
+    # 2. Filter by phase
+    phase_filtered = filter_capabilities_by_phase(perm_filtered, ai_phase)
+    
+    # 3. Collect unique tool operations
+    allowed_tools = set()
+    for cap in phase_filtered:
+        allowed_tools.update(cap.tool_operations)
+        
+    return list(allowed_tools)

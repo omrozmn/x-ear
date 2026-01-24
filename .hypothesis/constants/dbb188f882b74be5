@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/smtp_config_service.py
+# hypothesis_version: 6.150.2
+
+[120, 465, 587, 65535, '0.0.0.0', '30', '465', '@', 'Password is required', 'SMTP_FROM_EMAIL', 'SMTP_FROM_NAME', 'SMTP_HOST', 'SMTP_PASS', 'SMTP_PORT', 'SMTP_TIMEOUT', 'SMTP_USER', 'SMTP_USE_SSL', 'SMTP_USE_TLS', 'X-Ear CRM', 'domain', 'error', 'false', 'from_email', 'from_name', 'host', 'info@x-ear.com', 'is_valid', 'mail.x-ear.com', 'message', 'not authorized', 'password', 'port', 'server_ip', 'tenant_id', 'timeout', 'true', 'use_ssl', 'use_tls', 'username']

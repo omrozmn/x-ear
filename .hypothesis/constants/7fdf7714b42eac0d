@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/plans.py
+# hypothesis_version: 6.150.2
+
+[201, 400, 403, 404, 500, '/admin', '/plans', '/{plan_id}', 'Plan not found', 'Plans', 'admin', 'createPlan', 'deletePlan', 'features', 'is_visible', 'listPlanAdmin', 'listPlans', 'super_admin', 'updatePlan']

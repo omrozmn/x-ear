@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/crm_tools.py
+# hypothesis_version: 6.150.2
+
+['1.0.0', 'Create Party', 'Get Party By ID', 'List Parties', 'Party details', "Patient's first name", "Patient's last name", 'Search Parties', 'Update Party', 'createParty', 'created', 'db', 'default', 'email', 'firstName', 'first_name', 'getPartyById', 'id', 'integer', 'items', 'lastName', 'last_name', 'listParties', 'name', 'object', 'page', 'parties.create', 'parties.edit', 'parties.view', 'party_id', 'perPage', 'per_page', 'phone', 'search', 'searchParties', 'status', 'string', 'tcNumber', 'tc_number', 'tenant_id', 'total', 'updateParty', 'updated', 'updates']

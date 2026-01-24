@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/appointment_tools.py
+# hypothesis_version: 6.150.2
+
+['+00:00', '1.0.0', 'Appointment details', 'Appointment notes', 'Create Appointment', 'Duration in minutes', 'Filter by patient ID', 'ID of the patient', 'Items per page', 'List Appointments', 'List of appointments', 'Page number', 'Z', 'appointment_id', 'appointment_type', 'appointments.create', 'appointments.view', 'consultation', 'createAppointment', 'date', 'date_from', 'db', 'default', 'duration', 'getAppointmentById', 'integer', 'items', 'listAppointments', 'notes', 'page', 'party_id', 'perPage', 'per_page', 'string', 'tenant_id', 'time', 'total']

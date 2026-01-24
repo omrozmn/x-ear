@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/sales_tools.py
+# hypothesis_version: 6.150.2
+
+['1.0.0', 'Create Sale', 'Created sale details', 'Get Sale By ID', 'Items per page', 'List Invoices', 'List Sales', 'Page number', 'Sale details', 'Sale not found', 'Sale notes', 'Total sale amount', 'createSale', 'createdAt', 'db', 'default', 'getSaleById', 'id', 'integer', 'items', 'listInvoices', 'listSales', 'notes', 'number', 'page', 'partyId', 'party_id', 'pending', 'perPage', 'per_page', 'sale_id', 'sales.create', 'sales.view', 'status', 'string', 'tenant_id', 'total', 'totalAmount', 'total_amount']

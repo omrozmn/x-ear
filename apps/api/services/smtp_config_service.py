@@ -13,6 +13,7 @@ Requirements:
 - 1.6: Support SMTP parameters (host, port, username, password, etc.)
 - 1.7: Use most recently created active configuration
 - 22.1-22.7: Validate SMTP configuration fields
+- Email Deliverability 1.1-1.6: SPF DNS validation
 
 Security Notes:
 - Passwords are encrypted at rest using EncryptionService
@@ -23,12 +24,13 @@ Security Notes:
 
 import os
 import logging
-from typing import Optional
+from typing import Optional, Tuple
 from sqlalchemy.orm import Session
 from email_validator import validate_email, EmailNotValidError
 
 from core.models.email import TenantSMTPConfig
 from services.encryption_service import EncryptionService
+from services.dns_validation_service import DNSValidationService
 from utils.exceptions import ConfigurationError
 
 logger = logging.getLogger(__name__)
@@ -59,21 +61,69 @@ class SMTPConfigService:
         smtp_config = service.get_config_with_decrypted_password(tenant_id)
     """
     
-    def __init__(self, db: Session, encryption_service: EncryptionService):
+    def __init__(self, db: Session, encryption_service: EncryptionService, dns_validation_service: Optional[DNSValidationService] = None):
         """
         Initialize the SMTP configuration service.
         
         Args:
             db: SQLAlchemy database session
             encryption_service: Service for encrypting/decrypting passwords
+            dns_validation_service: Service for DNS validation (optional, created if not provided)
         """
         self.db = db
         self.encryption_service = encryption_service
+        self.dns_validation_service = dns_validation_service or DNSValidationService()
+    
+    def validate_spf_for_config(
+        self,
+        from_email: str,
+        server_ip: Optional[str] = None
+    ) -> Tuple[bool, str]:
+        """
+        Validate SPF DNS record for email domain.
+        
+        Checks if SPF record exists and optionally validates server IP authorization.
+        
+        Args:
+            from_email: From email address (domain will be extracted)
+            server_ip: SMTP server IP to check authorization (optional)
+            
+        Returns:
+            Tuple[bool, str]: (is_valid, message)
+                - is_valid: True if SPF validation passes
+                - message: Success message or error with fix instructions
+                
+        Example:
+            is_valid, msg = service.validate_spf_for_config("info@example.com", "203.0.113.1")
+        """
+        # Extract domain from email
+        domain = from_email.split("@")[-1] if "@" in from_email else from_email
+        
+        # If no server IP provided, just check if SPF record exists
+        if not server_ip:
+            # Use a dummy IP to check if SPF record exists
+            # We'll just validate the record exists, not IP authorization
+            try:
+                is_valid, message = self.dns_validation_service.validate_spf(domain, "0.0.0.0")
+                # If validation fails because IP not authorized, that's OK - record exists
+                if not is_valid and "not authorized" in message.lower():
+                    return True, f"SPF record exists for {domain}"
+                return is_valid, message
+            except Exception as e:
+                logger.warning(
+                    "SPF validation failed",
+                    extra={"domain": domain, "error": str(e)}
+                )
+                return False, f"SPF validation error: {str(e)}"
+        
+        # Validate SPF with server IP
+        return self.dns_validation_service.validate_spf(domain, server_ip)
     
     def create_or_update_config(
         self, 
         config_data: dict,
-        tenant_id: str
+        tenant_id: str,
+        skip_spf_validation: bool = False
     ) -> TenantSMTPConfig:
         """
         Create or update SMTP configuration for tenant.
@@ -81,6 +131,12 @@ class SMTPConfigService:
         Encrypts password before storage and validates configuration fields.
         If an active configuration exists, it will be updated. Otherwise, a new
         configuration is created.
+        
+        SPF Validation:
+        - Validates SPF DNS record for from_email domain
+        - Checks if server_ip (if provided) is authorized in SPF record
+        - Returns 400 error if SPF validation fails (unless skip_spf_validation=True)
+        - Logs SPF validation results for audit trail
         
         Args:
             config_data: Dictionary containing SMTP configuration fields
@@ -93,12 +149,15 @@ class SMTPConfigService:
                 - use_tls: Use STARTTLS (default: False)
                 - use_ssl: Use SSL/TLS (default: True)
                 - timeout: Connection timeout in seconds (default: 30)
+                - server_ip: SMTP server IP for SPF validation (optional)
             tenant_id: Tenant identifier
+            skip_spf_validation: Skip SPF validation (for testing/development)
             
         Returns:
             TenantSMTPConfig: The created or updated configuration
             
         Raises:
+            ValueError: If required fields are missing or SPF validation fails
             SecurityException: If password encryption fails
             
         Example:
@@ -110,14 +169,53 @@ class SMTPConfigService:
                 "from_email": "info@example.com",
                 "from_name": "Example Company",
                 "use_ssl": True,
-                "timeout": 30
+                "timeout": 30,
+                "server_ip": "203.0.113.1"
             }
             config = service.create_or_update_config(config_data, "tenant_123")
         """
+        # Validate from_email is present
+        from_email = config_data.get("from_email")
+        if not from_email:
+            raise ValueError("from_email is required")
+        
+        # SPF Validation (unless explicitly skipped)
+        if not skip_spf_validation:
+            server_ip = config_data.get("server_ip")
+            is_valid, message = self.validate_spf_for_config(from_email, server_ip)
+            
+            # Log SPF validation result
+            logger.info(
+                "SPF validation result",
+                extra={
+                    "tenant_id": tenant_id,
+                    "from_email": from_email,
+                    "server_ip": server_ip,
+                    "is_valid": is_valid,
+                    "message": message
+                }
+            )
+            
+            # Fail if SPF validation fails
+            if not is_valid:
+                logger.error(
+                    "SPF validation failed - rejecting SMTP config",
+                    extra={
+                        "tenant_id": tenant_id,
+                        "from_email": from_email,
+                        "server_ip": server_ip,
+                        "error": message
+                    }
+                )
+                raise ValueError(f"SPF validation failed: {message}")
+        
         # Extract password and encrypt it
         password = config_data.pop("password", None)
         if not password:
             raise ValueError("Password is required")
+        
+        # Remove server_ip from config_data (not stored in database)
+        config_data.pop("server_ip", None)
         
         encrypted_password = self.encryption_service.encrypt_password(password)
         

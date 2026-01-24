@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/email_service.py
+# hypothesis_version: 6.150.2
+
+[500, 1000, 'Date', 'Email metrics reset', 'From', 'Message-ID', 'Subject', 'To', 'alternative', 'attempt', 'connection_time_ms', 'email_log_id', 'emails_sent', 'error_message', 'error_type', 'failed', 'host', 'html', 'idempotency_key', 'max_retries', 'password', 'pending', 'plain', 'port', 'recipient', 'request_id', 'retry_delay_seconds', 'scenario', 'send_duration_ms', 'sent', 'smtp_config', 'tenant_id', 'timeout', 'total_duration_ms', 'tr', 'use_ssl', 'use_tls', 'username', 'utf-8']

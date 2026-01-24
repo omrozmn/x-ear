@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/crm_tools.py
+# hypothesis_version: 6.150.2
+
+['1.0.0', 'Create Party', "Patient's first name", "Patient's last name", 'action', 'createParty', 'created', 'db', 'default', 'email', 'firstName', 'first_name', 'id', 'lastName', 'last_name', 'name', 'party:write', 'phone', 'status', 'string', 'tcNumber', 'tc_number', 'tenant_id']

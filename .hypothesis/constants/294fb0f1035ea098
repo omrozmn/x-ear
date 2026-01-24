@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/email_monitoring.py
+# hypothesis_version: 6.150.2
+
+[10.0, 100, 1000, '***', '***REDACTED***', '@', 'connection_success', 'connection_time_ms', 'duration_ms', 'emails_failed', 'emails_retried', 'emails_sent', 'error_message', 'error_type', 'failed', 'failure_by_type', 'failure_rate_percent', 'last_reset', 'operation', 'password', 'recipient', 'request_id', 'scenario', 'send_count', 'smtp_host', 'smtp_port', 'status', 'success', 'tenant_id']

@@ -32,6 +32,7 @@ from ai.tools import (
     ToolExecutionMode, ToolExecutionResult,
     ToolNotFoundError, ToolNotAllowedError, ToolSchemaDriftError, ToolValidationError,
 )
+from core.database import simulate_rollback
 
 logger = logging.getLogger(__name__)
 
@@ -265,13 +266,55 @@ class Executor:
         step_results = []
         failed_step = None
         
-        for step in plan.steps:
-            step_result = self._execute_step(step, mode, plan.tool_schema_versions)
-            step_results.append(step_result)
-            
-            if step_result.status == "failed":
-                failed_step = step
-                break
+        # Execute steps
+        step_results = []
+        failed_step = None
+        
+        # Context manager for simulation (noop if not simulating)
+        # We use a generator/conditional logic here
+        
+        if mode == ToolExecutionMode.SIMULATE:
+            # logic for rollback simulation
+            try:
+                with simulate_rollback():
+                    # In simulation with rollback, we run tools in EXECUTE mode
+                    # to verify DB constraints, but the DB txn is rolled back at the end.
+                    # Note: Non-DB side effects (emails, etc) must still be guarded by tool logic if possible,
+                    # but currently we assume tools are DB-centric or safe.
+                    
+                    for step in plan.steps:
+                        # Pass EXECUTE to tool so it runs real logic
+                        step_result = self._execute_step(step, ToolExecutionMode.EXECUTE, plan.tool_schema_versions)
+                        
+                        # Patch result to show SIMULATE
+                        step_result.tool_result.mode = ToolExecutionMode.SIMULATE
+                        
+                        step_results.append(step_result)
+                        
+                        if step_result.status == "failed":
+                            failed_step = step
+                            break
+                            
+            except Exception as e:
+                # Catch unexpected errors during simulation
+                 logger.error(f"Simulation execution failed: {e}")
+                 # If we crashed, we might not have results. 
+                 # But we should handle it gracefully.
+                 if not step_results:
+                     # Create a failure result for the first step if nothing ran
+                     failed_step = plan.steps[0] if plan.steps else None
+                 else:
+                     failed_step = plan.steps[len(step_results)-1] if plan.steps else None
+
+        else:
+            # Normal Execution
+            for step in plan.steps:
+                step_result = self._execute_step(step, mode, plan.tool_schema_versions)
+                step_results.append(step_result)
+                
+                if step_result.status == "failed":
+                    failed_step = step
+                    break
         
         # Determine overall status
         if failed_step:

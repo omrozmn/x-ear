@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/agents/action_planner.py
+# hypothesis_version: 6.150.2
+
+[0.0, 0.2, 1000, 1024, '\n\n---\n\n', 'A', '```', 'actions', 'amount', 'appointment_create', 'circuit_open', 'createParty', 'createdAt', 'date', 'deniedPermissions', 'description', 'device_assign', 'device_id', 'email', 'error', 'errorMessage', 'expiresAt', 'first_name', 'intent', 'invalid_intent', 'last_name', 'missingParameters', 'needsApproval', 'no_actions_needed', 'overallRiskLevel', 'parameters', 'party:write', 'party_id', 'permission_denied', 'phone', 'plan', 'planHash', 'planId', 'processingTimeMs', 'requiresApproval', 'riskLevel', 'rollbackProcedure', 'rollback_procedure', 'slotFillingPrompt', 'status', 'stepCount', 'stepNumber', 'steps', 'success', 'tc_number', 'tenantId', 'tenant_id', 'tenant_violation', 'time', 'toolName', 'toolSchemaVersion', 'toolSchemaVersions', 'tool_name', 'userId', 'value']

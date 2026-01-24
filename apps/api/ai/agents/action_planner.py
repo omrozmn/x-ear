@@ -28,6 +28,7 @@ from ai.schemas.llm_outputs import IntentOutput, IntentType, ActionPlanOutput, O
 from ai.tools import ToolRegistry, get_tool_registry, RiskLevel, ToolDefinition, ToolExecutionMode
 from ai.runtime.model_client import LocalModelClient, get_model_client, ModelResponse
 from ai.runtime.circuit_breaker import get_inference_circuit_breaker, CircuitBreakerOpenError
+from ai.capability_registry import get_allowed_tool_names
 
 logger = logging.getLogger(__name__)
 
@@ -257,9 +258,26 @@ class ActionPlanner:
         # Users can only access their own tenant
         return user_tenant_id == target_tenant_id
     
-    def _get_available_tools_description(self) -> str:
-        """Get description of available tools for LLM."""
-        return self.tool_registry.get_tool_descriptions_for_llm()
+    def _get_available_tools_description(self, allowed_tool_names: Optional[List[str]] = None) -> str:
+        """
+        Get description of available tools for LLM.
+        
+        Args:
+            allowed_tool_names: Optional list of tools to include. If None, includes all allowed in registry.
+        """
+        if allowed_tool_names is None:
+            return self.tool_registry.get_tool_descriptions_for_llm()
+            
+        # Filter manually
+        descriptions = []
+        for tool_id in allowed_tool_names:
+            try:
+                tool = self.tool_registry.get_tool(tool_id)
+                descriptions.append(tool.to_llm_description())
+            except Exception:
+                continue
+                
+        return "\n\n---\n\n".join(descriptions)
     
     def _get_required_parameters(self, tool_operations: List[dict]) -> List[str]:
         """
@@ -278,7 +296,7 @@ class ActionPlanner:
                 tool = self.tool_registry.get_tool(tool_name)
                 # Get required parameters from tool schema
                 # For now, we'll use a simple heuristic based on common patterns
-                if tool_name == "patient_create":
+                if tool_name == "createParty":
                     required_params.extend(["first_name", "last_name", "phone"])
                 elif tool_name == "appointment_create":
                     required_params.extend(["party_id", "date", "time"])
@@ -341,9 +359,15 @@ class ActionPlanner:
                 processing_time_ms=(time.time() - start_time) * 1000,
             )
         
+        # Get allowed tools based on permissions and phase
+        allowed_tool_names = get_allowed_tool_names(
+            list(user_permissions),
+            self.config.phase.value if hasattr(self.config.phase, 'value') else "A"
+        )
+        
         # Build prompt for LLM
         prompt = INTENT_TO_TOOL_PROMPT.format(
-            available_tools=self._get_available_tools_description(),
+            available_tools=self._get_available_tools_description(allowed_tool_names),
             intent_type=intent.intent_type.value,
             entities=json.dumps(intent.entities, ensure_ascii=False),
             reasoning=intent.reasoning or "No reasoning provided",
@@ -566,10 +590,10 @@ class ActionPlanner:
                     )
                 
                 # Create step
-                tool = self.tool_registry.get_tool("patient_create")
+                tool = self.tool_registry.get_tool("createParty")
                 step = ActionStep(
                     step_number=1,
-                    tool_name="patient_create",
+                    tool_name="createParty",
                     tool_schema_version=tool.schema_version,
                     parameters=parameters,
                     description=f"{parameters['first_name']} {parameters['last_name']} için hasta kaydı oluştur",
@@ -587,7 +611,7 @@ class ActionPlanner:
                     overall_risk_level=RiskLevel.MEDIUM,
                     requires_approval=False,
                     plan_hash=self._compute_plan_hash([step]),
-                    tool_schema_versions={"patient_create": tool.schema_version},
+                    tool_schema_versions={"createParty": tool.schema_version},
                 )
                 
                 return ActionPlannerResult(

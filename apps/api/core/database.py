@@ -5,7 +5,7 @@ No Flask dependency - works with FastAPI
 import os
 from pathlib import Path
 from sqlalchemy import create_engine, event, literal, bindparam
-from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
+from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base, Session
 from sqlalchemy.pool import QueuePool
 from contextvars import ContextVar
 from datetime import datetime, timezone
@@ -43,6 +43,20 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Scoped session for thread safety
 ScopedSession = scoped_session(SessionLocal)
+
+
+class RollbackSession(SessionLocal.class_):
+    """
+    Session that never commits, only flushes.
+    Used for simulation mode to ensure no side effects.
+    """
+    def commit(self):
+        # Only flush to ensure integrity checks run, but never commit to DB
+        self.flush()
+        
+    def rollback(self):
+        super().rollback()
+
 
 # Base class for models
 Base = declarative_base()
@@ -170,6 +184,78 @@ class unbound_session:
             logger.warning(f"🔒 Exiting unbound session with error: {self.reason} - {exc_type.__name__}")
         else:
             logger.info(f"🔒 Exiting unbound session: {self.reason}")
+
+
+class simulate_rollback:
+    """
+    Context manager for simulation mode.
+    
+    Wraps execution in a transaction that is ALWAYS rolled back.
+    Patches SessionLocal to use RollbackSession.
+    
+    Usage:
+        with simulate_rollback():
+             # Do work...
+             # All SessionLocal() calls return a session bound to the transaction
+             # commit() calls are intercepted (flush only)
+    """
+    
+    def __init__(self):
+        self.connection = None
+        self.transaction = None
+        self.session = None
+        self.original_session_factory = None
+        
+    def __enter__(self):
+        # 1. Acquire connection
+        self.connection = engine.connect()
+        
+        # 2. Begin transaction
+        self.transaction = self.connection.begin()
+        
+        # 3. Create session bound to this connection
+        # Use RollbackSession to prevent explicit commits
+        self.session = RollbackSession(bind=self.connection)
+        
+        # 4. Patch SessionLocal to return our session
+        self.original_session_factory = SessionLocal
+        
+        # We need to make sure SessionLocal() returns our session
+        # or a new session bound to our connection.
+        # Since SessionLocal is a class/factory, we need to be careful.
+        # Ideally, we want all code using SessionLocal() to get a session 
+        # that participates in this transaction.
+        
+        # Strategy: Use sessionmaker.configure to update the factory in-place
+        # But configure() treats 'class_' as a keyword arg for __init__, so we must set it directly.
+        
+        # 1. Update bind
+        SessionLocal.configure(bind=self.connection)
+        
+        # 2. Update class directly (hack support)
+        self.original_class = SessionLocal.class_
+        SessionLocal.class_ = RollbackSession
+        
+        logger.info("🎬 Entering simulation rollback mode")
+        return self.session
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # 1. Rollback transaction
+        if self.transaction:
+            self.transaction.rollback()
+            
+        # 2. Close connection
+        if self.connection:
+            self.connection.close()
+            
+        # 3. Restore SessionLocal
+        # Restore to default configuration
+        SessionLocal.configure(bind=engine)
+        if self.original_class:
+            SessionLocal.class_ = self.original_class
+        
+        logger.info("🎬 Exiting simulation rollback mode (Rolled back)")
+
 
 
 def should_skip_tenant_filter() -> bool:

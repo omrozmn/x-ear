@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/bounce_handler_service.py
+# hypothesis_version: 6.150.2
+
+[0.0, 421, 450, 451, 452, 521, 541, 550, 551, 552, 553, 554, 'block', 'bounce', 'bounce_count', 'bounce_type', 'bounced', 'email_log_id', 'hard', 'is_blacklisted', 'recipient', 'smtp_code', 'soft', 'tenant_id']

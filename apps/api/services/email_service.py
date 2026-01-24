@@ -64,7 +64,62 @@ class EmailService:
         
         If idempotency_key is provided, checks for duplicate requests within 24 hours.
         Returns existing email_log_id if duplicate found.
+        
+        Checks:
+        - Bounce blacklist
+        - Unsubscribe preferences
+        - Rate limits
         """
+        # Import services here to avoid circular imports
+        from services.bounce_handler_service import get_bounce_handler_service
+        from services.unsubscribe_service import get_unsubscribe_service
+        from services.rate_limit_service import get_rate_limit_service
+        
+        # Check bounce blacklist
+        bounce_service = get_bounce_handler_service(self.db)
+        if bounce_service.is_blacklisted(recipient, tenant_id):
+            logger.warning(
+                "Email rejected: recipient is blacklisted",
+                extra={
+                    "tenant_id": tenant_id,
+                    "recipient": mask_email(recipient),
+                    "scenario": scenario,
+                    **({"request_id": request_id} if request_id else {})
+                }
+            )
+            raise ValueError(f"Recipient {recipient} is blacklisted due to hard bounces")
+        
+        # Check unsubscribe preferences
+        unsubscribe_service = get_unsubscribe_service(self.db)
+        if unsubscribe_service.is_unsubscribed(recipient, tenant_id, scenario):
+            logger.info(
+                "Email skipped: recipient unsubscribed",
+                extra={
+                    "tenant_id": tenant_id,
+                    "recipient": mask_email(recipient),
+                    "scenario": scenario,
+                    **({"request_id": request_id} if request_id else {})
+                }
+            )
+            # Return a special status instead of raising error
+            raise ValueError(f"Recipient {recipient} has unsubscribed from {scenario} emails")
+        
+        # Check rate limits
+        rate_limit_service = get_rate_limit_service(self.db)
+        can_send, reason = rate_limit_service.check_rate_limit(tenant_id)
+        if not can_send:
+            logger.warning(
+                "Email rejected: rate limit exceeded",
+                extra={
+                    "tenant_id": tenant_id,
+                    "recipient": mask_email(recipient),
+                    "scenario": scenario,
+                    "reason": reason,
+                    **({"request_id": request_id} if request_id else {})
+                }
+            )
+            raise ValueError(f"Rate limit exceeded: {reason}")
+        
         # Check for duplicate request if idempotency_key provided
         if idempotency_key:
             existing = self.db.query(SMTPEmailLog).filter(
@@ -256,6 +311,41 @@ class EmailService:
                         scenario, language, variables
                     )
                     
+                    # Spam filter check
+                    from services.spam_filter_service import get_spam_filter_service
+                    spam_service = get_spam_filter_service()
+                    spam_result = spam_service.analyze_content(subject, html_body, text_body)
+                    
+                    # Update email log with spam score
+                    email_log = db.get(SMTPEmailLog, email_log_id)
+                    if email_log and hasattr(email_log, 'spam_score'):
+                        email_log.spam_score = spam_result["spam_score"]
+                        db.commit()
+                    
+                    # Reject if spam score too high
+                    if spam_result["should_reject"]:
+                        self._update_email_log(
+                            db,
+                            email_log_id,
+                            status="rejected",
+                            error_message=f"Spam filter rejected: {', '.join(spam_result['warnings'])}",
+                            retry_count=attempt
+                        )
+                        
+                        logger.warning(
+                            "Email rejected by spam filter",
+                            extra={
+                                "email_log_id": email_log_id,
+                                "tenant_id": tenant_id,
+                                "recipient": mask_email(recipient),
+                                "spam_score": spam_result["spam_score"],
+                                "risk_level": spam_result["risk_level"],
+                                "warnings": spam_result["warnings"],
+                                **({"request_id": request_id} if request_id else {})
+                            }
+                        )
+                        return
+                    
                     # Send email with timing
                     send_start = time.time()
                     await self._send_smtp(
@@ -324,7 +414,23 @@ class EmailService:
                         )
                         await asyncio.sleep(delay)
                     else:
-                        # Max retries exhausted
+                        # Max retries exhausted - treat as soft bounce
+                        from services.bounce_handler_service import get_bounce_handler_service
+                        bounce_service = get_bounce_handler_service(db)
+                        
+                        # Classify as soft bounce (temporary failure)
+                        smtp_code = 421  # Service not available
+                        smtp_message = f"{error_type}: {str(e)}"
+                        
+                        bounce_service.process_bounce(
+                            email_log_id=email_log_id,
+                            recipient=recipient,
+                            tenant_id=tenant_id,
+                            smtp_code=smtp_code,
+                            smtp_message=smtp_message
+                        )
+                        
+                        # Update log as failed
                         self._update_email_log(
                             db,
                             email_log_id,
@@ -358,6 +464,40 @@ class EmailService:
                         
                 except (SMTPAuthenticationError, SMTPRecipientsRefused) as e:
                     error_type = type(e).__name__
+                    
+                    # Process bounce for SMTPRecipientsRefused
+                    if isinstance(e, SMTPRecipientsRefused):
+                        from services.bounce_handler_service import get_bounce_handler_service
+                        bounce_service = get_bounce_handler_service(db)
+                        
+                        # Extract SMTP code from error
+                        smtp_code = 550  # Default hard bounce code
+                        smtp_message = str(e)
+                        
+                        # Try to extract actual SMTP code from error message
+                        import re
+                        code_match = re.search(r'(\d{3})', smtp_message)
+                        if code_match:
+                            smtp_code = int(code_match.group(1))
+                        
+                        bounce_service.process_bounce(
+                            email_log_id=email_log_id,
+                            recipient=recipient,
+                            tenant_id=tenant_id,
+                            smtp_code=smtp_code,
+                            smtp_message=smtp_message
+                        )
+                        
+                        logger.info(
+                            "Bounce processed for recipient refusal",
+                            extra={
+                                "email_log_id": email_log_id,
+                                "tenant_id": tenant_id,
+                                "recipient": mask_email(recipient),
+                                "smtp_code": smtp_code,
+                                **({"request_id": request_id} if request_id else {})
+                            }
+                        )
                     
                     # Non-retryable errors
                     self._update_email_log(

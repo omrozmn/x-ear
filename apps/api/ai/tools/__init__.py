@@ -470,6 +470,9 @@ def register_tool(
 try:
     from ai.tools import allowlist
     from ai.tools import crm_tools
+    from ai.tools import sales_tools
+    from ai.tools import device_tools
+    from ai.tools import appointment_tools
 except ImportError:
     # Handle partial initialization or circular import gracefully during development
     pass
