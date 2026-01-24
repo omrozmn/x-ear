@@ -10,7 +10,6 @@ import {
   createPatientDocuments as createPartyDocuments,
   deletePatientDocument as deletePartyDocument
 } from '@/api/client/documents.client';
-import { deleteSgkDocument } from '@/api/client/sgk.client';
 
 
 interface Document {

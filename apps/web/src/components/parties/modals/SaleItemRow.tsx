@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button, Input, Card, CardContent } from '@x-ear/ui-web';
-import { Search, X, Trash2 } from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 type InventoryItem = any;
 
 interface SaleItem {

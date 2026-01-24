@@ -4,7 +4,6 @@ import './styles/index.css'
 import App from './App.tsx'
 import { storageMigrator } from './utils/storage-migrator'
 import { tokenManager } from './utils/token-manager'
-import { useAuthStore } from './stores/authStore'
 import { MantineProvider } from '@mantine/core';
 
 console.log('main.tsx loaded');

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DatePicker } from '@x-ear/ui-web';
 import { useListInventoryMovements, getListInventoryMovementsQueryKey } from '@/api/client/inventory.client';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
-import { ArrowUpRight, ArrowDownLeft, Calendar, User, Search } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Calendar, User } from 'lucide-react';
 
 interface StockMovement {
     id: string;

@@ -12,17 +12,6 @@ import type {
 } from '@/api/generated/schemas';
 
 // Fallback interfaces for types not exported in schema index
-interface InventoryItemRead {
-  id?: string;
-  name?: string;
-  brand?: string;
-  model?: string;
-  type?: string; // or deviceType
-  serialNumber?: string;
-  availableInventory?: number;
-  [key: string]: any;
-}
-
 interface SaleRead {
   id?: string;
   totalAmount?: number;
@@ -84,11 +73,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
   const loadInventoryItems = useCallback(async () => {
     try {
-      const params: ListInventoryParams = {
-        page: 1,
-        per_page: 20,
-        // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
-      };
+      // const params: ListInventoryParams = {
+      //   page: 1,
+      //   per_page: 20,
+      //   // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
+      // };
 
       // const response = await listInventory(params);
       // setInventoryItems((response?.data || []) as InventoryItemRead[]);

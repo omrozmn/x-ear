@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Button, Input } from '@x-ear/ui-web';
 import { useStartBulkUtsRegistration } from '@/hooks/uts/useUts';
 import { outbox } from '@/utils/outbox';
-import { parseAndMapCsv, UtsPayload, UtsCsvPreview } from '@/utils/uts-csv';
+import { parseAndMapCsv, UtsCsvPreview } from '@/utils/uts-csv';
 
 // Removed redundant local types UtsPayload and UtsCsvPreview
 

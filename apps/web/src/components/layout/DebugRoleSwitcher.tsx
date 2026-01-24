@@ -9,7 +9,6 @@ import {
   getListAdminDebugAvailableRolesQueryKey,
 } from '@/api/client/admin.client';
 import { useAuthStore, AuthStateUser } from '../../stores/authStore';
-import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
 import { partyService } from '../../services/party.service';
 import { indexedDBManager } from '../../utils/indexeddb';
 
@@ -31,7 +30,7 @@ interface DebugRoleSwitcherProps {
 }
 
 export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode = false }) => {
-  const { user, setUser, setAuth } = useAuthStore();
+  const { user, setUser: _setUser, setAuth } = useAuthStore();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 

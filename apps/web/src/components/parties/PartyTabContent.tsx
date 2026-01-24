@@ -29,9 +29,9 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   party,
   activeTab,
   onPartyUpdate,
-  sales,
+  sales: _sales,
   isLoading,
-  tabCounts,
+  tabCounts: _tabCounts,
   showNoteModal,
   onCloseNoteModal
 }) => {

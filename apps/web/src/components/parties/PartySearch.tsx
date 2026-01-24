@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Input, Button, Loading } from '@x-ear/ui-web';
 import { Search, X, Clock, User, Phone, Filter } from 'lucide-react';
 import { PartySearchItem } from '../../types/party/party-search.types';

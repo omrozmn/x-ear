@@ -1,5 +1,4 @@
 import { Input, Select, DatePicker } from '@x-ear/ui-web';
-import { useState } from 'react';
 import { SGKInvoiceData } from '../../types/invoice';
 
 interface SGKInvoiceSectionProps {

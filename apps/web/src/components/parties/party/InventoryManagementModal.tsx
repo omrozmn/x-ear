@@ -5,7 +5,7 @@ import {
   Plus, 
   Edit, 
   Trash2, 
-  X, 
+  
   CheckCircle, 
   Loader2, 
   Filter, 
@@ -82,7 +82,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
   isOpen,
   onClose,
   onInventoryUpdate,
-  isLoading = false
+  isLoading: _isLoading = false
 }) => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');

@@ -46,7 +46,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     tags: []
   });
 
-  const [_tagInput, setTagInput] = useState<string>('');
+  const [tagInput, setTagInput] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal opens/closes or note changes

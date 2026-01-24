@@ -7,10 +7,9 @@ import { invoiceService } from '../../services/invoice.service';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { CheckCircle } from 'lucide-react';
 import { ProductSearchInput } from '../cashflow/ProductSearchInput';
-import { apiClient } from '../../api/orval-mutator';
 import { PartyDevice } from '../../types/party';
 import { unwrapArray } from '../../utils/response-unwrap';
-import { Invoice, InvoiceItem } from '../../types/invoice';
+import { Invoice } from '../../types/invoice';
 
 // Orval Hooks
 // Generated hooks
@@ -32,12 +31,6 @@ interface InventoryItem {
   supplier?: string | null;
   barcode?: string;
   sku?: string;
-}
-
-interface LinkInvoicePayload {
-  invoiceId: string;
-  invoiceNumber: string;
-  supplierInvoiceNumber: string;
 }
 
 // Extended replacement type handling parsed fields

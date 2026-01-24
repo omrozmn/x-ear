@@ -25,6 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AnalyzeRequest,
+  AnalyzeResponse,
   AutocompleteApiAiComposerAutocompleteGetParams,
   AutocompleteResponse,
   ExecuteRequest,
@@ -193,6 +195,74 @@ export const useExecuteToolApiAiComposerExecutePost = <TError = void | HTTPValid
       > => {
 
       const mutationOptions = getExecuteToolApiAiComposerExecutePostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Hybrid Vision Analysis:
+1. Vision Model (Qwen2-VL) -> Detects document type & regions of interest
+2. OCR Engine (PaddleOCR) -> Extracts text from regions (or full page fallback)
+3. Returns suggestions for Composer slots
+ * @summary Analyze Documents
+ */
+export const analyzeDocumentsApiAiComposerAnalyzePost = (
+    analyzeRequest: AnalyzeRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<AnalyzeResponse>(
+      {url: `/api/ai/composer/analyze`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: analyzeRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getAnalyzeDocumentsApiAiComposerAnalyzePostMutationOptions = <TError = void | HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeDocumentsApiAiComposerAnalyzePost>>, TError,{data: AnalyzeRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeDocumentsApiAiComposerAnalyzePost>>, TError,{data: AnalyzeRequest}, TContext> => {
+
+const mutationKey = ['analyzeDocumentsApiAiComposerAnalyzePost'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeDocumentsApiAiComposerAnalyzePost>>, {data: AnalyzeRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  analyzeDocumentsApiAiComposerAnalyzePost(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeDocumentsApiAiComposerAnalyzePostMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeDocumentsApiAiComposerAnalyzePost>>>
+    export type AnalyzeDocumentsApiAiComposerAnalyzePostMutationBody = AnalyzeRequest
+    export type AnalyzeDocumentsApiAiComposerAnalyzePostMutationError = void | HTTPValidationError
+
+    /**
+ * @summary Analyze Documents
+ */
+export const useAnalyzeDocumentsApiAiComposerAnalyzePost = <TError = void | HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeDocumentsApiAiComposerAnalyzePost>>, TError,{data: AnalyzeRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeDocumentsApiAiComposerAnalyzePost>>,
+        TError,
+        {data: AnalyzeRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getAnalyzeDocumentsApiAiComposerAnalyzePostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

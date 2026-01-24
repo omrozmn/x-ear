@@ -10,7 +10,6 @@ import {
   Phone,
   Mail,
   MessageSquare,
-  Eye,
   Edit,
   Trash2,
   Search,

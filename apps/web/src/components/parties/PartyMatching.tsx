@@ -5,7 +5,6 @@ import { Party } from '../../types/party';
 import {
   PartyMatcher,
   PartyMatch,
-  MatchingConfig,
   DEFAULT_MATCHING_CONFIG,
   getMatchColor,
   getRiskColor
@@ -40,7 +39,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
   const [filterConfidence, setFilterConfidence] = useState('all');
   const [filterRisk, setFilterRisk] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [matchingConfig, setMatchingConfig] = useState(DEFAULT_MATCHING_CONFIG);
+  const [matchingConfig] = useState(DEFAULT_MATCHING_CONFIG);
   const [autoMergeEnabled, setAutoMergeEnabled] = useState(false);
 
   const detailModal = useModal();

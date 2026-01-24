@@ -7,8 +7,8 @@ import {
   CardTitle,
   Badge
 } from '@x-ear/ui-web';
-import { Search, Package, Star } from 'lucide-react';
-import { searchProducts, FuzzySearchResult, SearchableItem } from '../../../../utils/fuzzy-search';
+import { Search, Star } from 'lucide-react';
+import { searchProducts, SearchableItem } from '../../../../utils/fuzzy-search';
 
 interface Product extends SearchableItem {
   name: string;

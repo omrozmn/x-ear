@@ -5,14 +5,6 @@ import { Party } from '../../../types/party';
 // import { Sale } from '../../../types/party/party-communication.types';
 import { SaleRead } from '@/api/generated/schemas';
 
-// Local Sale type for API compatibility
-interface APISale {
-  id: string;
-  partyId?: string;
-  totalAmount?: number;
-  partyPayment?: number;
-}
-
 interface PromissoryNote {
   id?: string;
   saleId: string;
@@ -49,7 +41,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
   party,
   sale,
   promissoryNote,
-  onSave,
+  onSave: _onSave,
   loading = false,
   mode = 'create'
 }) => {

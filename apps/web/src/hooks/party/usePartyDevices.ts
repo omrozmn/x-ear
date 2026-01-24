@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PartyDevice, DeviceSide, DeviceType, DeviceStatus } from '../../types/party';
 import {
-  useListPartyDevices,
   listPartyDevices
 } from '@/api/client/parties.client';
 

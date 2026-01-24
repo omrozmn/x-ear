@@ -10,7 +10,7 @@ import {
     useCreateUserMePassword,
     getListUserMeQueryKey
 } from '@/api/client/users.client';
-import { ResponseEnvelopeUserRead, UserRead, UserUpdate } from '@/api/generated/schemas';
+import { ResponseEnvelopeUserRead, UserUpdate } from '@/api/generated/schemas';
 
 
 export const DesktopProfilePage: React.FC = () => {

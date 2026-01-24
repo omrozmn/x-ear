@@ -3,7 +3,6 @@ import {
   Button,
   Input,
   Label,
-  Textarea,
   Card,
   CardContent,
   CardHeader,
@@ -34,7 +33,7 @@ import {
   getListSalePromissoryNotesQueryKey
 } from '@/api/generated/payments/payments';
 import type { RoutersPaymentsPaymentRecordCreate } from '@/api/generated/schemas';
-import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
+import { unwrapArray } from '../../utils/response-unwrap';
 
 // interface ExtendedSaleRead extends SaleRead {
 //   partyPayment?: number;

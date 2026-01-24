@@ -28,7 +28,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
   deviceId,
   mode = 'create',
   title
-  , enableIncomingSelection = false
+  , enableIncomingSelection: _enableIncomingSelection = false
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);

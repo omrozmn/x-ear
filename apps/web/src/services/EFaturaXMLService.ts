@@ -9,7 +9,6 @@ import {
   EFaturaTaxTotal,
   EFaturaLegalMonetaryTotal,
   EFATURA_INVOICE_TYPE_CODES,
-  EFATURA_CURRENCY_CODES,
   EFATURA_UNIT_CODES,
   EFATURA_TAX_SCHEME_CODES
 } from '../types/efatura';

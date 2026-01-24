@@ -79,7 +79,7 @@ export const TestPage: React.FC = () => {
 
         <div className="space-y-3">
           {results.length > 0 ? (
-            results.map((result, index) => (
+            results.map((result) => (
               <div key={result.item.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                 <div className="flex justify-between items-start">
                   <div>

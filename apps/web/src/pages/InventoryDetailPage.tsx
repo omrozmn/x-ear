@@ -16,7 +16,6 @@ import { StockInfoSection } from './inventory/components/StockInfoSection';
 import { PricingInfoSection } from './inventory/components/PricingInfoSection';
 import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection';
 import { InventoryMovementsTable } from '../components/party/InventoryMovementsTable';
-import { unwrapObject } from '../utils/response-unwrap';
 
 interface InventoryDetailPageProps {
   id: string;

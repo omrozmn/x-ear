@@ -505,7 +505,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         <h3 className="text-lg font-medium text-gray-900 mb-4">Senaryo</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(INVOICE_FORM_SCHEMA.scenarios)
-            .filter(([_key, scenario]) => scenario.applicableTypes.includes(formData.invoiceType))
+            .filter(([, scenario]) => scenario.applicableTypes.includes(formData.invoiceType))
             .map(([key, scenario]) => (
               <label key={key} className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <Input

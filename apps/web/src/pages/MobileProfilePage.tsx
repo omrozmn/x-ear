@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shield, Lock, ChevronRight, LogOut, Settings, HelpCircle, Phone, Mail } from 'lucide-react';
+import { User, Lock, ChevronRight, LogOut, Settings, HelpCircle, Phone, Mail } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { useAuthStore } from '@/stores/authStore';

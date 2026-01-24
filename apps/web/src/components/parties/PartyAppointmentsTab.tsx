@@ -89,7 +89,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
     }
   };
 
-  const handleCancelAppointment = async (appointmentId: string, reason?: string) => {
+  const handleCancelAppointment = async (appointmentId: string, _reason?: string) => {
     try {
       // Cancel endpoint might not body or might expect different structure. 
       // Checking generated code: createAppointmentCancel(appointmentId) takes no body?? 
@@ -104,7 +104,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
     }
   };
 
-  const handleConfirmAppointment = async (appointmentId: string, notes?: string) => {
+  const handleConfirmAppointment = async (appointmentId: string, _notes?: string) => {
     try {
       // Complete endpoint takes only appointmentId
       await createAppointmentComplete(appointmentId);

@@ -138,7 +138,7 @@ export class PurchaseService {
     try {
       const purchases = await this.loadPurchases();
       const index = purchases.findIndex(p => p.id === id);
-      
+
       if (index === -1) {
         throw new Error('Purchase not found');
       }
@@ -222,13 +222,13 @@ export class PurchaseService {
       }
 
       if (filters.supplierName) {
-        filteredPurchases = filteredPurchases.filter(p => 
+        filteredPurchases = filteredPurchases.filter(p =>
           p.supplierName.toLowerCase().includes(filters.supplierName!.toLowerCase())
         );
       }
 
       if (filters.hasXmlData !== undefined) {
-        filteredPurchases = filteredPurchases.filter(p => 
+        filteredPurchases = filteredPurchases.filter(p =>
           filters.hasXmlData ? !!p.xmlData : !p.xmlData
         );
       }
@@ -269,7 +269,7 @@ export class PurchaseService {
   async getPurchaseStats(): Promise<PurchaseStats> {
     try {
       const purchases = await this.loadPurchases();
-      
+
       const stats: PurchaseStats = {
         total: purchases.length,
         draft: purchases.filter(p => p.status === 'draft').length,
@@ -294,7 +294,7 @@ export class PurchaseService {
     try {
       // Parse XML and extract purchase data
       const purchaseData = this.parseXMLToPurchaseData(xmlData, fileName);
-      
+
       // Create purchase with XML data
       const purchase = await this.createPurchase({
         ...purchaseData,

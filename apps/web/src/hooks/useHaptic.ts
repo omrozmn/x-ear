@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 interface HapticOptions {
     type?: 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning';

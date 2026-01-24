@@ -2,7 +2,6 @@ import { Button } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { AppointmentList, AppointmentCalendar, AppointmentModal } from '../components/appointments';
 import { useAppointments } from '../hooks/useAppointments';
-import { AppointmentFilters } from '../types/appointment';
 
 
 type ViewMode = 'list' | 'calendar';
