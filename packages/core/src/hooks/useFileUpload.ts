@@ -297,8 +297,8 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
       // Convert data to CSV format
       const csvContent = [
         state.parsedData.headers.join(','),
-        ...state.parsedData.rows.map((row: any[]) => 
-          row.map((cell: any) => 
+        ...state.parsedData.rows.map((row: unknown[]) => 
+          row.map((cell: unknown) => 
             typeof cell === 'string' && cell.includes(',') 
               ? `"${cell.replace(/"/g, '""')}"` 
               : String(cell)
