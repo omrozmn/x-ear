@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 // import { List } from 'react-window'; // Not used - using manual map instead
 // import { debounce } from 'lodash'; // Not used
-import { Search, Filter, ChevronDown, ChevronUp, User, Phone, Trash2, Mail, Eye, MessageEdit } from 'lucide-react';
+import { Search, Filter, ChevronDown, ChevronUp, User, Phone, Trash2, Mail, Eye, Edit, MessageSquare } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
 import { Button, Badge, Checkbox, Loading, Input } from '@x-ear/ui-web';
 import { PartyCommunicationIntegration } from './PartyCommunicationIntegration';

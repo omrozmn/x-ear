@@ -25896,6 +25896,56 @@
           }
         ]
       }
+    },
+    "/api/ai/composer/analyze": {
+      "post": {
+        "tags": [
+          "AI Composer"
+        ],
+        "summary": "Analyze Documents",
+        "description": "Hybrid Vision Analysis:\n1. Vision Model (Qwen2-VL) -> Detects document type & regions of interest\n2. OCR Engine (PaddleOCR) -> Extracts text from regions (or full page fallback)\n3. Returns suggestions for Composer slots",
+        "operationId": "analyze_documents_api_ai_composer_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -27663,6 +27713,52 @@
         "title": "AlertsResponse",
         "description": "Alerts list response."
       },
+      "AnalysisSuggestion": {
+        "properties": {
+          "slot_name": {
+            "type": "string",
+            "title": "Slot Name"
+          },
+          "value": {
+            "title": "Value"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "source_file": {
+            "type": "string",
+            "title": "Source File"
+          },
+          "source_region": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Region"
+          },
+          "verified": {
+            "type": "boolean",
+            "title": "Verified",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot_name",
+          "value",
+          "confidence",
+          "source_file"
+        ],
+        "title": "AnalysisSuggestion"
+      },
       "AnalyticsOverview": {
         "properties": {
           "totalRevenue": {
@@ -27710,6 +27806,62 @@
           "churnGrowth"
         ],
         "title": "AnalyticsOverview"
+      },
+      "AnalyzeRequest": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Files",
+            "description": "List of S3 file keys to analyze"
+          },
+          "context_intent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Intent",
+            "description": "Optional intent hint (e.g. 'assign_device')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "AnalyzeRequest"
+      },
+      "AnalyzeResponse": {
+        "properties": {
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/AnalysisSuggestion"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "audit_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "suggestions"
+        ],
+        "title": "AnalyzeResponse"
       },
       "ApiKeyCreate": {
         "properties": {
@@ -58900,7 +59052,8 @@
               "enum",
               "date",
               "number",
-              "text"
+              "text",
+              "file"
             ],
             "title": "Uitype",
             "description": "UI component to render"

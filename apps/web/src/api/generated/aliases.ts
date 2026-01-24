@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-24T11:19:34.731Z
+ * Generated: 2026-01-24T13:25:18.132Z
  */
 
 // ACTIVITY_LOGS
@@ -288,6 +288,7 @@ export {
 export {
   useAutocompleteApiAiComposerAutocompleteGet as useAutocompleteAiComposerAutocompleteGet,
   useExecuteToolApiAiComposerExecutePost as useExecuteToolAiComposerExecutePost,
+  useAnalyzeDocumentsApiAiComposerAnalyzePost as useAnalyzeDocumentsAiComposerAnalyzePost,
 } from './ai-composer/ai-composer';
 
 // AI_STATUS

@@ -1,6 +1,6 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState } from 'react';
-import { DollarSign, CreditCard, User } from 'lucide-react';
+import { DollarSign, CreditCard, User, Smartphone } from 'lucide-react';
 import { Modal } from '../../../../../packages/ui-web/src/components/ui/Modal';
 
 interface CashRegisterModalProps {
@@ -64,8 +64,8 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
               type="button"
               onClick={() => setFormData({ ...formData, type: 'income' })}
               className={`flex-1 py-2 px-4 rounded-lg border ${formData.type === 'income'
-                  ? 'bg-green-50 border-green-200 text-green-700'
-                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                ? 'bg-green-50 border-green-200 text-green-700'
+                : 'bg-gray-50 border-gray-200 text-gray-700'
                 }`}
               variant='default'>
               Gelir
@@ -74,8 +74,8 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
               type="button"
               onClick={() => setFormData({ ...formData, type: 'expense' })}
               className={`flex-1 py-2 px-4 rounded-lg border ${formData.type === 'expense'
-                  ? 'bg-red-50 border-red-200 text-red-700'
-                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                ? 'bg-red-50 border-red-200 text-red-700'
+                : 'bg-gray-50 border-gray-200 text-gray-700'
                 }`}
               variant='default'>
               Gider
@@ -99,8 +99,8 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
                 type="button"
                 onClick={() => setFormData({ ...formData, recordType: value as 'cash' | 'card' | 'transfer' })}
                 className={`flex flex-col items-center py-3 px-2 rounded-lg border ${formData.recordType === value
-                    ? 'bg-blue-50 border-blue-200 text-blue-700'
-                    : 'bg-gray-50 border-gray-200 text-gray-700'
+                  ? 'bg-blue-50 border-blue-200 text-blue-700'
+                  : 'bg-gray-50 border-gray-200 text-gray-700'
                   }`}
                 variant='default'>
                 <Icon className="w-5 h-5 mb-1" />

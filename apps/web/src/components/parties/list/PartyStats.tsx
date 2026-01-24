@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, UserCheck, UserX } from 'lucide-react';
+import { Users, UserCheck, UserX, TrendingUp } from 'lucide-react';
 
 interface PartyStatsProps {
   stats: {

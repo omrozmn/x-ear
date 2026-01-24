@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, Download, Users, Tag, MessageTrash2, FileText, AlertCircle } from 'lucide-react';
+import { Upload, Download, Users, Tag, Trash2, FileText, AlertCircle, MessageSquare } from 'lucide-react';
 import { Button, Modal, useModal, Input, Select, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Party } from '../../types/party';
 import UniversalImporter from '../../components/importer/UniversalImporter';

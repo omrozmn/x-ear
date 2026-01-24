@@ -19,4 +19,5 @@ export const SlotConfigUiType = {
   date: 'date',
   number: 'number',
   text: 'text',
+  file: 'file',
 } as const;

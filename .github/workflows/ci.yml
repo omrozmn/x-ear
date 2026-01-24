@@ -407,12 +407,12 @@ jobs:
       - name: Generate OpenAPI spec
         run: |
           cd apps/api
-          python scripts/generate_openapi.py || echo "OpenAPI generation skipped"
+          python dump_openapi.py || echo "OpenAPI generation skipped"
 
       - name: Check if API types are in sync
         run: |
           cd apps/web
-          pnpm run gen:api || echo "API generation completed"
+          OPENAPI_SOURCE=../../apps/api/openapi_generated.json pnpm run gen:api || echo "API generation completed"
           if git diff --exit-code src/api/generated/; then
             echo "✅ API types are in sync"
           else

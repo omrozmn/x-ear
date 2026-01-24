@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageLoader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare } from 'lucide-react';
 import {
     useListSmConfig,
     useListSmHeaders,
@@ -12,8 +12,7 @@ import {
     getListSmHeadersQueryKey,
     getListSmCreditQueryKey
 } from '@/api/client/sms-integration.client';
-// @ts-expect-error - Generated schema types may have import issues
-import type { SMSHeaderRequestRead } from '@/api/generated/schemas';
+import type { SmsHeaderRequestRead } from '@/api/generated/schemas';
 import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -235,7 +234,7 @@ export default function IntegrationSettings() {
     };
 
     const headers = Array.isArray(headersData?.data)
-        ? (headersData?.data as SMSHeaderRequestRead[])
+        ? (headersData?.data as SmsHeaderRequestRead[])
         : [];
 
     const credit = creditData?.data /* as SmsCreditRead - inferred automatically if available */;

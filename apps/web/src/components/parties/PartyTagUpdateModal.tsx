@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from '@x-ear/ui-web';
-import { PenSettings } from 'lucide-react';
+import { Settings, PenSquare } from 'lucide-react';
 import type { Party, PartyStatus, PartySegment } from '../../types/party/party-base.types';
 import { useListBranches } from '../../api/generated/branches/branches';
 import { unwrapArray } from '../../utils/response-unwrap';

@@ -132,8 +132,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
               features = parsed.filter((f): f is string => typeof f === 'string');
             }
           } catch {
-            features = typeof item.features === 'string' 
-              ? item.features.split(',').map((f: string) => f.trim()).filter(Boolean)
+            features = typeof item.features === 'string'
+              ? (item.features as string).split(',').map((f: string) => f.trim()).filter(Boolean)
               : [];
           }
         } else if (Array.isArray(item.features)) {
