@@ -76,7 +76,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   onFiltersChange,
   onClearFilters,
   categories,
-  brands,
+  brands: _brands,
   suppliers,
   isExpanded = false,
   onToggleExpanded
@@ -201,7 +201,6 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   };
 
   const categoryOptions = categories.map(cat => ({ value: cat, label: CATEGORY_LABELS[cat] || cat }));
-  const _brandOptions = brands.map(brand => ({ value: brand, label: brand }));
   const supplierOptions = suppliers.map(supplier => ({ value: supplier, label: supplier }));
 
   return (

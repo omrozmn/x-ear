@@ -29,7 +29,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
   onClose,
   sale,
   onCollectNote,
-  onCreateNote
+  onCreateNote: _onCreateNote
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notes, setNotes] = useState<PromissoryNote[]>([]);

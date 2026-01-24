@@ -284,8 +284,8 @@ export const useAppointmentListKeyboardNavigation = <T = unknown>(options: Appoi
     selectedIndex,
     onSelectionChange,
     onAppointmentSelect,
-    onAppointmentEdit,
-    onAppointmentDelete,
+    onAppointmentEdit: _onAppointmentEdit,
+    onAppointmentDelete: _onAppointmentDelete,
     onEscape,
     enabled = true,
   } = options;

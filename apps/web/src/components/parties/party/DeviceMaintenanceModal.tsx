@@ -3,7 +3,6 @@ import { Modal } from '../../ui/Modal';
 import { Button } from '../../ui/Button';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { PartyDevice } from '../../../types/party';
-import { timelineService } from '../../../services/timeline.service';
 import { Wrench, Calendar, Clock, DollarSign, User, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 
 interface DeviceMaintenanceModalProps {

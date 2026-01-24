@@ -120,10 +120,17 @@ class AIConfig:
         self._enabled = os.getenv("AI_ENABLED", "true").lower() == "true"
         
         # Model configuration
+        # Support separated Text/Vision endpoints
+        text_endpoint = os.getenv("TEXT_MODEL_ENDPOINT")
+        vision_endpoint = os.getenv("VISION_MODEL_ENDPOINT")
+        
+        # Default base URL if specific ones aren't set
+        default_base_url = os.getenv("AI_MODEL_BASE_URL", "http://localhost:11434")
+
         self._model = ModelConfig(
             provider=os.getenv("AI_MODEL_PROVIDER", "local"),
             model_id=os.getenv("AI_MODEL_ID", "qwen2.5:7b-instruct"), # Default Smart
-            base_url=os.getenv("AI_MODEL_BASE_URL", "http://localhost:11434"),
+            base_url=vision_endpoint or default_base_url, # Vision/Smart model uses Vision Endpoint
             timeout_seconds=int(os.getenv("AI_MODEL_TIMEOUT_SECONDS", "180")),
             max_tokens=int(os.getenv("AI_MODEL_MAX_TOKENS", "2048")),
             temperature=float(os.getenv("AI_MODEL_TEMPERATURE", "0.1")),
@@ -132,7 +139,7 @@ class AIConfig:
         self._fast_model = ModelConfig(
             provider=os.getenv("AI_MODEL_PROVIDER", "local"),
             model_id=os.getenv("AI_FAST_MODEL_ID", "qwen2.5:3b"), # Default Fast
-            base_url=os.getenv("AI_MODEL_BASE_URL", "http://localhost:11434"),
+            base_url=text_endpoint or default_base_url, # Fast/Text model uses Text Endpoint
             timeout_seconds=int(os.getenv("AI_FAST_MODEL_TIMEOUT_SECONDS", "3")),  # 3 second timeout for fast model
             max_tokens=1024,
             temperature=0.1,

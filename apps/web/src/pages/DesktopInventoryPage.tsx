@@ -11,7 +11,6 @@ import { AdvancedFilters, InventoryFilters } from '../components/inventory/Advan
 import { InventoryItem } from '../types/inventory';
 
 import { listInventory, deleteInventory } from '@/api/client/inventory.client';
-import { apiClient } from '../api/orval-mutator';
 import { unwrapArray } from '../utils/response-unwrap';
 
 
@@ -101,7 +100,7 @@ export const DesktopInventoryPage: React.FC = () => {
     setFilters({});
   };
 
-  const handleItemSave = (item: InventoryItem) => {
+  const handleItemSave = (_item: InventoryItem) => {
     setIsAddModalOpen(false);
     setIsEditModalOpen(false);
     setSelectedItem(null);

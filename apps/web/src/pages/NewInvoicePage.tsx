@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button, Input, DatePicker } from '@x-ear/ui-web';
-import { ArrowLeft, FileText, CheckCircle, Pill, Info } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
 import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
 import { SGKInvoiceSection } from '../components/invoices/SGKInvoiceSection';

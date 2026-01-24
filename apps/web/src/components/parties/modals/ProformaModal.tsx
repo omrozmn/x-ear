@@ -26,7 +26,6 @@ const proformasCreateProforma = async (data: any) => {
 };
 import { Party } from '../../../types/party';
 import ProductSearchComponent from './components/ProductSearchComponent';
-import PricingPreviewComponent from './components/PricingPreviewComponent';
 
 interface ProformaProduct {
   id: string;

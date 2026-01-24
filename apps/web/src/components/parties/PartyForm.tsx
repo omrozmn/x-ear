@@ -1,8 +1,7 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
-import { Party, PartyStatus, PartySegment, PartyLabel, PartyAcquisitionType, PartyGender, PartyConversionStep } from '../../types/party/party-base.types';
+import { PartyStatus, PartySegment, PartyLabel, PartyAcquisitionType, PartyGender, PartyConversionStep } from '../../types/party/party-base.types';
 import { Party as ExtendedParty } from '../../types/party';
-import { PartySgkInfo } from '../../generated/orval-types';
 
 interface PartyFormProps {
   party?: ExtendedParty | null;
@@ -11,7 +10,7 @@ interface PartyFormProps {
   isModal?: boolean;
 }
 
-export function PartyForm({ party, onSave, onCancel, isModal = false }: PartyFormProps) {
+export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }: PartyFormProps) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

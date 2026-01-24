@@ -33,4 +33,4 @@ export {
   useCreatePartyDeviceAssignments as useAssignDevice
 } from '@/api/generated/index';
 
-export type { DeviceCreate, DeviceUpdate } from '@/api/generated/schemas';
+export type { DeviceCreate, DeviceRead, DeviceUpdate } from '@/api/generated/schemas';

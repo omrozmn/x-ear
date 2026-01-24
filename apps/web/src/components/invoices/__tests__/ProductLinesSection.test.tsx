@@ -1,34 +1,38 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import { ProductLinesSection } from '../ProductLinesSection';
 
-// Mock API client that the component imports
-// Mock API client that the component imports
-vi.mock('@/api/generated/inventory/inventory', () => ({
+// Mock the adapter module actually imported by ProductLinesSection
+vi.mock('@/api/client/inventory.client', () => ({
   listInventory: vi.fn(async () => ({
-    status: 200,
-    data: {
-      data: [
-        {
-          id: 'prod-1',
-          name: 'Test Product',
-          brand: 'ACME',
-          model: 'M1',
-          price: 100,
-          vatRate: 10,
-          kdv: 10,
-        }
-      ],
-      pagination: { page: 1, per_page: 20 }
-    }
+    data: [
+      {
+        id: 'prod-1',
+        name: 'Test Product',
+        brand: 'ACME',
+        model: 'M1',
+        price: 100,
+        vatRate: 10,
+        kdv: 10,
+        availableInventory: 5,
+      },
+    ],
   })),
   getInventory: vi.fn(async () => ({
-    status: 200,
-    data: { id: 'prod-1', name: 'Test Product' }
+    data: {
+      id: 'prod-1',
+      name: 'Test Product',
+      brand: 'ACME',
+      model: 'M1',
+      price: 100,
+      vatRate: 10,
+      kdv: 10,
+      availableInventory: 5,
+    },
   })),
-  createInventory: vi.fn()
+  createInventory: vi.fn(),
 }));
 
 describe('ProductLinesSection', () => {

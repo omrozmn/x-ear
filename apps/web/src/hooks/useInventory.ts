@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { listInventory } from '@/api/client/inventory.client';
-import type { InventoryItemCreate, InventoryItemRead } from '@/api/generated/schemas';
+import type { InventoryItemRead } from '@/api/generated/schemas';
 import { unwrapArray } from '../utils/response-unwrap';
 
 // Use InventoryItemCreate as base type since InventoryItemRead doesn't exist

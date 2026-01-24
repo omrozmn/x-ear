@@ -147,7 +147,7 @@ export class PartyOfflineSync {
     const party = await this.db.get('parties', id);
     if (!party) return null;
 
-    const { syncStatus, ...partyData } = party;
+    const { syncStatus: _syncStatus, ...partyData } = party;
     return partyData;
   }
 
@@ -156,7 +156,7 @@ export class PartyOfflineSync {
 
     const parties = await this.db.getAll('parties');
     return parties.map(p => {
-      const { syncStatus, ...party } = p;
+      const { syncStatus: _syncStatus, ...party } = p;
       return party;
     });
   }

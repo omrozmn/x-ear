@@ -263,7 +263,6 @@ class AppointmentService {
     }
 
     // Remove from local storage immediately (optimistic UI)
-    const deletedAppointment = this.appointments[index];
     this.appointments.splice(index, 1);
     this.saveAppointments();
     this.notify();

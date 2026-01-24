@@ -12,6 +12,7 @@
 
 import React from 'react';
 import type { ChatMessage as ChatMessageType } from '../../types/ai.types';
+import { AIActionPreview } from '../AIActionPreview';
 
 // =============================================================================
 // Types
@@ -25,7 +26,7 @@ export interface ChatMessageProps {
    * The chat message to render
    */
   message: ChatMessageType;
-  
+
   /**
    * Additional CSS classes
    */
@@ -61,16 +62,16 @@ const ROLE_STYLES = {
  * Warning icon SVG
  */
 const WarningIcon = () => (
-  <svg 
-    className="w-4 h-4 flex-shrink-0" 
-    fill="currentColor" 
+  <svg
+    className="w-4 h-4 flex-shrink-0"
+    fill="currentColor"
     viewBox="0 0 20 20"
     aria-hidden="true"
   >
-    <path 
-      fillRule="evenodd" 
-      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" 
-      clipRule="evenodd" 
+    <path
+      fillRule="evenodd"
+      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+      clipRule="evenodd"
     />
   </svg>
 );
@@ -142,7 +143,7 @@ function PrivacyWarning({ piiDetected, phiDetected }: PrivacyWarningProps): Reac
   if (phiDetected) warnings.push('Sağlık Bilgisi');
 
   return (
-    <div 
+    <div
       className="flex items-center gap-1 mt-1 text-xs text-amber-600"
       role="alert"
       aria-label={`Uyarı: ${warnings.join(' ve ')} tespit edildi`}
@@ -163,10 +164,10 @@ interface IntentIndicatorProps {
 
 function IntentIndicator({ intentType, confidence }: IntentIndicatorProps): React.ReactElement {
   const confidencePercent = Math.round(confidence * 100);
-  const confidenceColor = confidence >= 0.8 
-    ? 'text-green-600' 
-    : confidence >= 0.5 
-      ? 'text-yellow-600' 
+  const confidenceColor = confidence >= 0.8
+    ? 'text-green-600'
+    : confidence >= 0.5
+      ? 'text-yellow-600'
       : 'text-red-600';
 
   return (
@@ -208,7 +209,7 @@ export function ChatMessage({ message, className = '' }: ChatMessageProps): Reac
   const styles = ROLE_STYLES[role];
 
   return (
-    <div 
+    <div
       className={`flex ${styles.container} ${className}`}
       role="listitem"
     >
@@ -225,7 +226,7 @@ export function ChatMessage({ message, className = '' }: ChatMessageProps): Reac
         </div>
 
         {/* Message bubble */}
-        <div 
+        <div
           className={`px-4 py-2 rounded-2xl ${styles.bubble}`}
         >
           {/* Message content */}
@@ -233,11 +234,22 @@ export function ChatMessage({ message, className = '' }: ChatMessageProps): Reac
             {content}
           </p>
 
+          {/* Action Preview */}
+          {message.actionPlan && (
+            <div className="mt-2 mb-1 bg-white rounded-lg overflow-hidden border border-gray-200">
+              <AIActionPreview
+                plan={message.actionPlan}
+                className="text-left border-0 shadow-none"
+                showModeSelector={false}
+              />
+            </div>
+          )}
+
           {/* Intent indicator for assistant messages */}
           {role === 'assistant' && intent && (
-            <IntentIndicator 
-              intentType={intent.intentType} 
-              confidence={intent.confidence} 
+            <IntentIndicator
+              intentType={intent.intentType}
+              confidence={intent.confidence}
             />
           )}
         </div>

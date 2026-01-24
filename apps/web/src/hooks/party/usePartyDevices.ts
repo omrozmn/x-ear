@@ -1,15 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PartyDevice, DeviceSide, DeviceType, DeviceStatus } from '../../types/party';
 import {
-  useListPartyDevices,
   listPartyDevices
 } from '@/api/client/parties.client';
-
-interface ApiResponse {
-  success?: boolean;
-  data?: unknown[];
-  meta?: Record<string, unknown>;
-}
 
 /**
  * Hook for managing party devices

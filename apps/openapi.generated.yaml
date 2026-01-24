@@ -6405,7 +6405,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope_dict_'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
         '422':
           description: Validation Error
           content:
@@ -6854,6 +6854,708 @@ paths:
           content:
             application/json:
               schema: {}
+  /api/unsubscribe:
+    get:
+      tags:
+      - public
+      summary: Process email unsubscribe request
+      description: Public endpoint for processing email unsubscribe requests via token
+      operationId: processUnsubscribe
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          description: Unsubscribe token from email link
+          title: Token
+        description: Unsubscribe token from email link
+      responses:
+        '200':
+          description: Unsubscribe processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_UnsubscribeResponse_'
+        '400':
+          description: Invalid or expired token
+        '500':
+          description: Server error
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/deliverability/metrics:
+    get:
+      tags:
+      - admin
+      summary: Get deliverability metrics
+      description: Get email deliverability metrics for time window
+      operationId: getDeliverabilityMetrics
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: time_window_hours
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 168
+          minimum: 1
+          description: Time window in hours
+          default: 24
+          title: Time Window Hours
+        description: Time window in hours
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_DeliverabilityMetricsResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/deliverability/alerts/check:
+    get:
+      tags:
+      - admin
+      summary: Check deliverability alerts
+      description: Check if metrics exceed alert thresholds
+      operationId: checkDeliverabilityAlerts
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: time_window_hours
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 24
+          minimum: 1
+          description: Time window in hours
+          default: 1
+          title: Time Window Hours
+        description: Time window in hours
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_AlertCheckResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/deliverability/trend:
+    get:
+      tags:
+      - admin
+      summary: Get deliverability trend
+      description: Get deliverability metrics trend over time
+      operationId: getDeliverabilityTrend
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 30
+          minimum: 1
+          description: Number of days
+          default: 7
+          title: Days
+        description: Number of days
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_TrendResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/deliverability/snapshot:
+    post:
+      tags:
+      - admin
+      summary: Create daily metrics snapshot
+      description: Store daily deliverability metrics snapshot
+      operationId: createDeliverabilitySnapshot
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/bounces:
+    get:
+      tags:
+      - admin
+      summary: List email bounces
+      description: Get paginated list of email bounces with filters
+      operationId: listBounces
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 20
+          title: Per Page
+        description: Items per page
+      - name: bounce_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by bounce type
+          title: Bounce Type
+        description: Filter by bounce type
+      - name: is_blacklisted
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: Filter by blacklist status
+          title: Is Blacklisted
+        description: Filter by blacklist status
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Search by recipient email
+          title: Search
+        description: Search by recipient email
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_BounceListResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/bounces/stats:
+    get:
+      tags:
+      - admin
+      summary: Get bounce statistics
+      description: Get overall bounce statistics for tenant
+      operationId: getBounceStats
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_BounceStatsResponse_'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/bounces/{bounce_id}/unblacklist:
+    post:
+      tags:
+      - admin
+      summary: Remove recipient from blacklist
+      description: Manually unblacklist a recipient
+      operationId: unblacklistRecipient
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: bounce_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bounce Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/spam-preview:
+    post:
+      tags:
+      - admin
+      summary: Preview spam score
+      description: Analyze email content and preview spam score before sending
+      operationId: previewSpamScore
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpamPreviewRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_SpamPreviewResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/unsubscribes:
+    get:
+      tags:
+      - admin
+      summary: List email unsubscribes
+      description: Get paginated list of email unsubscribes with filters
+      operationId: listUnsubscribes
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 20
+          title: Per Page
+        description: Items per page
+      - name: scenario
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by scenario
+          title: Scenario
+        description: Filter by scenario
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Search by recipient email
+          title: Search
+        description: Search by recipient email
+      - name: days
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 365
+            minimum: 1
+          - type: 'null'
+          description: Filter by days ago
+          title: Days
+        description: Filter by days ago
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_UnsubscribeListResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/unsubscribes/stats:
+    get:
+      tags:
+      - admin
+      summary: Get unsubscribe statistics
+      description: Get overall unsubscribe statistics for tenant
+      operationId: getUnsubscribeStats
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_UnsubscribeStatsResponse_'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/unsubscribes/{unsubscribe_id}:
+    delete:
+      tags:
+      - admin
+      summary: Delete unsubscribe record
+      description: Remove unsubscribe preference (allows sending emails again)
+      operationId: deleteUnsubscribe
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: unsubscribe_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Unsubscribe Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/email-approvals:
+    get:
+      tags:
+      - admin
+      summary: List email approval requests
+      description: Get paginated list of email approval requests with filters
+      operationId: listEmailApprovals
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 20
+          title: Per Page
+        description: Items per page
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by status (pending/approved/rejected)
+          title: Status
+        description: Filter by status (pending/approved/rejected)
+      - name: risk_level
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by risk level
+          title: Risk Level
+        description: Filter by risk level
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Search by recipient or subject
+          title: Search
+        description: Search by recipient or subject
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ApprovalListResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/email-approvals/stats:
+    get:
+      tags:
+      - admin
+      summary: Get email approval statistics
+      description: Get overall email approval statistics for tenant
+      operationId: getEmailApprovalStats
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ApprovalStatsResponse_'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/email-approvals/{approval_id}/approve:
+    post:
+      tags:
+      - admin
+      summary: Approve email for sending
+      description: Approve HIGH/CRITICAL risk email for sending
+      operationId: approveEmail
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: approval_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Approval Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalActionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/email-approvals/{approval_id}/reject:
+    post:
+      tags:
+      - admin
+      summary: Reject email
+      description: Reject HIGH/CRITICAL risk email (will not be sent)
+      operationId: rejectEmail
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: approval_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Approval Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalActionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/complaints:
+    get:
+      tags:
+      - admin
+      summary: List email complaints
+      description: Get paginated list of email complaints with filters
+      operationId: listComplaints
+      security:
+      - OAuth2PasswordBearer: []
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 20
+          title: Per Page
+        description: Items per page
+      - name: complaint_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by complaint type
+          title: Complaint Type
+        description: Filter by complaint type
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Search by recipient email
+          title: Search
+        description: Search by recipient email
+      - name: days
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 365
+            minimum: 1
+          - type: 'null'
+          description: Filter by days ago
+          title: Days
+        description: Filter by days ago
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ComplaintListResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/complaints/stats:
+    get:
+      tags:
+      - admin
+      summary: Get complaint statistics
+      description: Get overall complaint statistics for tenant
+      operationId: getComplaintStats
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ComplaintStatsResponse_'
+      security:
+      - OAuth2PasswordBearer: []
+      - OAuth2PasswordBearer: []
+  /api/admin/complaints/process-fbl:
+    post:
+      tags:
+      - admin
+      summary: Process FBL report
+      description: Process Feedback Loop report from email provider
+      operationId: processFBLReport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessFBLRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__response__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+      - OAuth2PasswordBearer: []
   /api/activity-logs:
     get:
       tags:
@@ -14013,6 +14715,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /admin/integrations/smtp/metrics:
+    get:
+      tags:
+      - SMTP Configuration
+      summary: Get Email Metrics
+      description: "Get email system metrics for monitoring and observability.\n\n\
+        Returns statistics about email sending operations including:\n- Total emails\
+        \ sent and failed\n- Retry count\n- Average send duration\n- Failure rate\
+        \ percentage\n- Failure breakdown by error type\n\n**Permissions Required:**\
+        \ `integrations.smtp.view`\n\n**Response:**\n- Returns current metrics snapshot\n\
+        \n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n\
+        \    \"emailsSent\": 150,\n    \"emailsFailed\": 5,\n    \"emailsRetried\"\
+        : 8,\n    \"averageSendDurationMs\": 234.56,\n    \"failureRatePercent\":\
+        \ 3.23,\n    \"failureByType\": {\n      \"SMTPConnectError\": 3,\n      \"\
+        SMTPAuthenticationError\": 2\n    },\n    \"lastReset\": \"2025-01-23T10:00:00Z\"\
+        \n  }\n}\n```"
+      operationId: getEmailMetrics
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_Dict_str__Any__'
+      security:
+      - OAuth2PasswordBearer: []
   /admin/integrations/smtp/logs:
     get:
       tags:
@@ -14158,6 +14886,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /tool-api/email/notify:
+    post:
+      tags:
+      - tool-api
+      summary: Send email notification from AI Layer
+      description: Allows AI Layer to request email notifications through a secure,
+        validated interface. Enforces permission allowlist and quota limits.
+      operationId: sendAIEmailNotification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolAPIEmailRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ToolAPIEmailResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/commissions/create:
     post:
       tags:
@@ -14954,6 +15711,120 @@ paths:
                 $ref: '#/components/schemas/AISettingsResponse'
         '403':
           description: Admin permissions required
+  /api/ai/composer/autocomplete:
+    get:
+      tags:
+      - AI Composer
+      summary: Autocomplete
+      description: Search for entities and suggest actions based on context.
+      operationId: autocomplete_api_ai_composer_autocomplete_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          title: Q
+      - name: context_entity_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context Entity Type
+      - name: context_entity_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context Entity Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutocompleteResponse'
+        '404':
+          description: Not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/composer/execute:
+    post:
+      tags:
+      - AI Composer
+      summary: Execute Tool
+      description: Execute a tool securely via ToolRegistry.
+      operationId: execute_tool_api_ai_composer_execute_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteResponse'
+        '404':
+          description: Not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/ai/composer/analyze:
+    post:
+      tags:
+      - AI Composer
+      summary: Analyze Documents
+      description: 'Hybrid Vision Analysis:
+
+        1. Vision Model (Qwen2-VL) -> Detects document type & regions of interest
+
+        2. OCR Engine (PaddleOCR) -> Extracts text from regions (or full page fallback)
+
+        3. Returns suggestions for Composer slots'
+      operationId: analyze_documents_api_ai_composer_analyze_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeResponse'
+        '404':
+          description: Not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
 components:
   schemas:
     AISettingsResponse:
@@ -15951,6 +16822,28 @@ components:
       - requires_approval
       title: AiActionStepResponse
       description: Response for a single action step.
+    AlertCheckResponse:
+      properties:
+        should_alert:
+          type: boolean
+          title: Should Alert
+          description: Whether alerts should be triggered
+        alerts:
+          items: {}
+          type: array
+          title: Alerts
+          description: List of active alerts
+        metrics:
+          type: object
+          title: Metrics
+          description: Current metrics
+      type: object
+      required:
+      - should_alert
+      - alerts
+      - metrics
+      title: AlertCheckResponse
+      description: Response for alert check.
     AlertResponse:
       properties:
         alert_id:
@@ -16038,6 +16931,37 @@ components:
       - active_count
       title: AlertsResponse
       description: Alerts list response.
+    AnalysisSuggestion:
+      properties:
+        slot_name:
+          type: string
+          title: Slot Name
+        value:
+          title: Value
+        confidence:
+          type: number
+          title: Confidence
+        source_file:
+          type: string
+          title: Source File
+        source_region:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+          title: Source Region
+        verified:
+          type: boolean
+          title: Verified
+          default: false
+      type: object
+      required:
+      - slot_name
+      - value
+      - confidence
+      - source_file
+      title: AnalysisSuggestion
     AnalyticsOverview:
       properties:
         totalRevenue:
@@ -16075,6 +16999,40 @@ components:
       - churnRate
       - churnGrowth
       title: AnalyticsOverview
+    AnalyzeRequest:
+      properties:
+        files:
+          items:
+            type: string
+          type: array
+          title: Files
+          description: List of S3 file keys to analyze
+        context_intent:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context Intent
+          description: Optional intent hint (e.g. 'assign_device')
+      type: object
+      required:
+      - files
+      title: AnalyzeRequest
+    AnalyzeResponse:
+      properties:
+        suggestions:
+          items:
+            $ref: '#/components/schemas/AnalysisSuggestion'
+          type: array
+          title: Suggestions
+        audit_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Audit Id
+      type: object
+      required:
+      - suggestions
+      title: AnalyzeResponse
     ApiKeyCreate:
       properties:
         tenantId:
@@ -16443,6 +17401,45 @@ components:
           title: Branchid
       type: object
       title: AppointmentUpdate
+    ApprovalActionRequest:
+      properties:
+        review_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Review Notes
+          description: Review notes
+      type: object
+      title: ApprovalActionRequest
+      description: Request for approval action.
+    ApprovalListResponse:
+      properties:
+        approvals:
+          items:
+            $ref: '#/components/schemas/ApprovalResponse'
+          type: array
+          title: Approvals
+          description: List of approvals
+        total:
+          type: integer
+          title: Total
+          description: Total count
+        page:
+          type: integer
+          title: Page
+          description: Current page
+        per_page:
+          type: integer
+          title: Per Page
+          description: Items per page
+      type: object
+      required:
+      - approvals
+      - total
+      - page
+      - per_page
+      title: ApprovalListResponse
+      description: Response for approval list.
     ApprovalMetricsResponse:
       properties:
         total_approvals_requested:
@@ -16499,6 +17496,121 @@ components:
       - p95_approval_latency_ms
       title: ApprovalMetricsResponse
       description: Approval metrics.
+    ApprovalResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Approval ID
+        recipient:
+          type: string
+          title: Recipient
+          description: Email recipient
+        subject:
+          type: string
+          title: Subject
+          description: Email subject
+        body_text:
+          type: string
+          title: Body Text
+          description: Email body (plain text)
+        body_html:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Body Html
+          description: Email body (HTML)
+        scenario:
+          type: string
+          title: Scenario
+          description: Email scenario
+        risk_level:
+          type: string
+          title: Risk Level
+          description: Risk level (LOW/MEDIUM/HIGH/CRITICAL)
+        risk_reasons:
+          items:
+            type: string
+          type: array
+          title: Risk Reasons
+          description: Risk reasons
+        spam_score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Spam Score
+          description: Spam score
+        status:
+          type: string
+          title: Status
+          description: Status (pending/approved/rejected)
+        action_plan_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Action Plan Hash
+          description: Action plan hash
+        requested_at:
+          type: string
+          title: Requested At
+          description: Request timestamp
+        reviewed_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reviewed At
+          description: Review timestamp
+        reviewed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reviewed By
+          description: Reviewer user ID
+        review_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Review Notes
+          description: Review notes
+      type: object
+      required:
+      - id
+      - recipient
+      - subject
+      - body_text
+      - scenario
+      - risk_level
+      - risk_reasons
+      - status
+      - requested_at
+      title: ApprovalResponse
+      description: Response for approval record.
+    ApprovalStatsResponse:
+      properties:
+        pending:
+          type: integer
+          title: Pending
+          description: Pending approval count
+        approved:
+          type: integer
+          title: Approved
+          description: Approved count
+        rejected:
+          type: integer
+          title: Rejected
+          description: Rejected count
+        by_risk_level:
+          type: object
+          title: By Risk Level
+          description: Counts by risk level
+      type: object
+      required:
+      - pending
+      - approved
+      - rejected
+      - by_risk_level
+      title: ApprovalStatsResponse
+      description: Response for approval statistics.
     ApproveActionRequest:
       properties:
         approval_token:
@@ -17014,6 +18126,23 @@ components:
         This is a subset of UserRead specifically for auth responses.
 
         Does NOT include sensitive fields like password_hash.'
+    AutocompleteResponse:
+      properties:
+        entities:
+          items:
+            $ref: '#/components/schemas/EntityItem'
+          type: array
+          title: Entities
+          description: Matching entities
+        actions:
+          items:
+            $ref: '#/components/schemas/Capability'
+          type: array
+          title: Actions
+          description: Available actions based on context
+      type: object
+      title: AutocompleteResponse
+      description: Response containing entities and context-aware actions.
     AutomationJobResponse:
       properties:
         success:
@@ -17388,6 +18517,116 @@ components:
       required:
       - file
       title: Body_createSmDocumentUpload
+    BounceListResponse:
+      properties:
+        bounces:
+          items:
+            $ref: '#/components/schemas/BounceResponse'
+          type: array
+          title: Bounces
+          description: List of bounces
+        total:
+          type: integer
+          title: Total
+          description: Total count
+        page:
+          type: integer
+          title: Page
+          description: Current page
+        per_page:
+          type: integer
+          title: Per Page
+          description: Items per page
+      type: object
+      required:
+      - bounces
+      - total
+      - page
+      - per_page
+      title: BounceListResponse
+      description: Response for bounce list.
+    BounceResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Bounce ID
+        recipient:
+          type: string
+          title: Recipient
+          description: Email address
+        bounce_type:
+          type: string
+          title: Bounce Type
+          description: Bounce type (hard/soft/block)
+        bounce_reason:
+          type: string
+          title: Bounce Reason
+          description: Bounce reason
+        smtp_code:
+          type: integer
+          title: Smtp Code
+          description: SMTP error code
+        bounce_count:
+          type: integer
+          title: Bounce Count
+          description: Number of bounces
+        is_blacklisted:
+          type: boolean
+          title: Is Blacklisted
+          description: Whether recipient is blacklisted
+        first_bounce_at:
+          type: string
+          title: First Bounce At
+          description: First bounce timestamp
+        last_bounce_at:
+          type: string
+          title: Last Bounce At
+          description: Last bounce timestamp
+      type: object
+      required:
+      - id
+      - recipient
+      - bounce_type
+      - bounce_reason
+      - smtp_code
+      - bounce_count
+      - is_blacklisted
+      - first_bounce_at
+      - last_bounce_at
+      title: BounceResponse
+      description: Response for bounce record.
+    BounceStatsResponse:
+      properties:
+        total_bounces:
+          type: integer
+          title: Total Bounces
+          description: Total bounce count
+        hard_bounces:
+          type: integer
+          title: Hard Bounces
+          description: Hard bounce count
+        soft_bounces:
+          type: integer
+          title: Soft Bounces
+          description: Soft bounce count
+        blacklisted_count:
+          type: integer
+          title: Blacklisted Count
+          description: Blacklisted recipient count
+        bounce_rate:
+          type: number
+          title: Bounce Rate
+          description: Overall bounce rate percentage
+      type: object
+      required:
+      - total_bounces
+      - hard_bounces
+      - soft_bounces
+      - blacklisted_count
+      - bounce_rate
+      title: BounceStatsResponse
+      description: Response for bounce statistics.
     BranchBreakdown:
       properties:
         status:
@@ -17929,6 +19168,61 @@ components:
           - type: 'null'
       type: object
       title: CampaignUpdate
+    Capability:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Human-readable capability name
+        description:
+          type: string
+          title: Description
+          description: What this capability does
+        category:
+          type: string
+          title: Category
+          description: Category grouping (e.g., 'Party Management')
+        examplePhrases:
+          items:
+            type: string
+          type: array
+          title: Examplephrases
+          description: Example user phrases that trigger this capability
+        requiredPermissions:
+          items:
+            type: string
+          type: array
+          title: Requiredpermissions
+          description: Permissions needed to use this capability
+        toolOperations:
+          items:
+            type: string
+          type: array
+          title: Tooloperations
+          description: Tool API operations used by this capability
+        slots:
+          items:
+            $ref: '#/components/schemas/SlotConfig'
+          type: array
+          title: Slots
+          description: Required slots for this capability
+        limitations:
+          items:
+            type: string
+          type: array
+          title: Limitations
+          description: Known limitations or unsupported scenarios
+      type: object
+      required:
+      - name
+      - description
+      - category
+      - examplePhrases
+      - requiredPermissions
+      - toolOperations
+      - limitations
+      title: Capability
+      description: AI capability definition.
     CashRecordCreate:
       properties:
         transactionType:
@@ -18333,6 +19627,108 @@ components:
           title: Accountholder
       type: object
       title: CompanyInfoUpdate
+    ComplaintListResponse:
+      properties:
+        complaints:
+          items:
+            $ref: '#/components/schemas/ComplaintResponse'
+          type: array
+          title: Complaints
+          description: List of complaints
+        total:
+          type: integer
+          title: Total
+          description: Total count
+        page:
+          type: integer
+          title: Page
+          description: Current page
+        per_page:
+          type: integer
+          title: Per Page
+          description: Items per page
+      type: object
+      required:
+      - complaints
+      - total
+      - page
+      - per_page
+      title: ComplaintListResponse
+      description: Response for complaint list.
+    ComplaintResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Complaint ID
+        recipient:
+          type: string
+          title: Recipient
+          description: Email address
+        complaint_type:
+          type: string
+          title: Complaint Type
+          description: Complaint type (spam/abuse/fraud/virus/other)
+        feedback_loop_provider:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Feedback Loop Provider
+          description: FBL provider
+        complained_at:
+          type: string
+          title: Complained At
+          description: Complaint timestamp
+        email_log_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email Log Id
+          description: Email log ID
+      type: object
+      required:
+      - id
+      - recipient
+      - complaint_type
+      - complained_at
+      title: ComplaintResponse
+      description: Response for complaint record.
+    ComplaintStatsResponse:
+      properties:
+        total_complaints:
+          type: integer
+          title: Total Complaints
+          description: Total complaint count
+        complaints_last_24h:
+          type: integer
+          title: Complaints Last 24H
+          description: Complaints in last 24 hours
+        complaint_rate_24h:
+          type: number
+          title: Complaint Rate 24H
+          description: Complaint rate in last 24 hours (%)
+        complaint_rate_1h:
+          type: number
+          title: Complaint Rate 1H
+          description: Complaint rate in last hour (%)
+        by_type:
+          type: object
+          title: By Type
+          description: Counts by complaint type
+        by_provider:
+          type: object
+          title: By Provider
+          description: Counts by FBL provider
+      type: object
+      required:
+      - total_complaints
+      - complaints_last_24h
+      - complaint_rate_24h
+      - complaint_rate_1h
+      - by_type
+      - by_provider
+      title: ComplaintStatsResponse
+      description: Response for complaint statistics.
     CompleteSignupRequest:
       properties:
         email:
@@ -18705,6 +20101,52 @@ components:
       - requiredPermissions
       - found
       title: DebugPagePermissionResponse
+    DeliverabilityMetricsResponse:
+      properties:
+        sent_count:
+          type: integer
+          title: Sent Count
+          description: Number of emails sent
+        bounce_count:
+          type: integer
+          title: Bounce Count
+          description: Number of bounces
+        spam_count:
+          type: integer
+          title: Spam Count
+          description: Number of spam complaints
+        bounce_rate:
+          type: number
+          title: Bounce Rate
+          description: Bounce rate percentage
+        spam_rate:
+          type: number
+          title: Spam Rate
+          description: Spam complaint rate percentage
+        deliverability_rate:
+          type: number
+          title: Deliverability Rate
+          description: Deliverability rate percentage
+        time_window_hours:
+          type: integer
+          title: Time Window Hours
+          description: Time window in hours
+        calculated_at:
+          type: string
+          title: Calculated At
+          description: Calculation timestamp
+      type: object
+      required:
+      - sent_count
+      - bounce_count
+      - spam_count
+      - bounce_rate
+      - spam_rate
+      - deliverability_rate
+      - time_window_hours
+      - calculated_at
+      title: DeliverabilityMetricsResponse
+      description: Response for deliverability metrics.
     DetailedPlanRead:
       properties:
         createdAt:
@@ -20324,6 +21766,45 @@ components:
           default: false
       type: object
       title: EntityExtractionRequest
+    EntityItem:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Unique identifier of the entity
+        type:
+          type: string
+          enum:
+          - patient
+          - device
+          - invoice
+          - user
+          - supplier
+          title: Type
+          description: Type of the entity
+        label:
+          type: string
+          title: Label
+          description: Primary display text (e.g. Name)
+        subLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sublabel
+          description: Secondary text (e.g. Phone, ID, Code)
+        metadata:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Metadata
+          description: Additional context data
+      type: object
+      required:
+      - id
+      - type
+      - label
+      title: EntityItem
+      description: Represents a searchable entity in the system.
     ExecuteActionRequest:
       properties:
         mode:
@@ -20391,6 +21872,71 @@ components:
       - total_execution_time_ms
       title: ExecuteActionResponse
       description: Response from action execution.
+    ExecuteRequest:
+      properties:
+        tool_id:
+          type: string
+          title: Tool Id
+          description: ID of the tool to execute
+        args:
+          type: object
+          title: Args
+          description: Arguments for the tool
+        dry_run:
+          type: boolean
+          title: Dry Run
+          description: If true, only calculates impact without executing
+          default: false
+        confirmed:
+          type: boolean
+          title: Confirmed
+          description: Must be true for final execution (unless dry_run)
+          default: false
+      type: object
+      required:
+      - tool_id
+      - args
+      title: ExecuteRequest
+      description: Request to execute a tool/capability.
+    ExecuteResponse:
+      properties:
+        status:
+          type: string
+          enum:
+          - success
+          - error
+          - dry_run
+          title: Status
+          description: Execution status
+        result:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Result
+          description: Tool execution result data
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Error message if failed
+        auditId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Auditid
+          description: Trace ID for the operation
+        impactDelta:
+          items:
+            $ref: '#/components/schemas/ImpactMetric'
+          type: array
+          title: Impactdelta
+          description: Projected or actual impact metrics
+      type: object
+      required:
+      - status
+      title: ExecuteResponse
+      description: Result of an execution request.
     FileListResponse:
       properties:
         files:
@@ -20642,6 +22188,37 @@ components:
       - communicationType
       - direction
       title: HistoryCreate
+    ImpactMetric:
+      properties:
+        label:
+          type: string
+          title: Label
+          description: Metric name (e.g. 'Stock Level')
+        value:
+          type: string
+          title: Value
+          description: Current or new value
+        delta:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Delta
+          description: Change amount (e.g. '+1', '-500 TL')
+        sentiment:
+          type: string
+          enum:
+          - positive
+          - negative
+          - neutral
+          title: Sentiment
+          description: Visual sentiment
+          default: neutral
+      type: object
+      required:
+      - label
+      - value
+      title: ImpactMetric
+      description: Represents a change in a system metric.
     InstallmentPayment:
       properties:
         amount:
@@ -24135,6 +25712,22 @@ components:
       - accessories
       - services
       title: PricingSettingsResponse
+    ProcessFBLRequest:
+      properties:
+        fbl_content:
+          type: string
+          title: Fbl Content
+          description: Raw FBL report content
+        provider:
+          type: string
+          title: Provider
+          description: FBL provider
+          default: unknown
+      type: object
+      required:
+      - fbl_content
+      title: ProcessFBLRequest
+      description: Request for processing FBL report.
     ProductCode:
       type: string
       enum:
@@ -25524,6 +27117,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[AffiliateRead]
+    ResponseEnvelope_AlertCheckResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/AlertCheckResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[AlertCheckResponse]
     ResponseEnvelope_Any_:
       properties:
         success:
@@ -25630,6 +27258,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[AppointmentRead]
+    ResponseEnvelope_ApprovalListResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ApprovalListResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[ApprovalListResponse]
+    ResponseEnvelope_ApprovalStatsResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ApprovalStatsResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[ApprovalStatsResponse]
     ResponseEnvelope_AutomationJobResponse_:
       properties:
         success:
@@ -25875,6 +27573,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[BirFaturaStats]
+    ResponseEnvelope_BounceListResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/BounceListResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[BounceListResponse]
+    ResponseEnvelope_BounceStatsResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/BounceStatsResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[BounceStatsResponse]
     ResponseEnvelope_BranchRead_:
       properties:
         success:
@@ -26015,6 +27783,70 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[CheckoutSessionResponse]
+    ResponseEnvelope_ComplaintListResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintListResponse'
+          - type: 'null'
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[ComplaintListResponse]
+    ResponseEnvelope_ComplaintStatsResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintStatsResponse'
+          - type: 'null'
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[ComplaintStatsResponse]
     ResponseEnvelope_CurrentSubscriptionResponse_:
       properties:
         success:
@@ -26155,6 +27987,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[DebugPagePermissionResponse]
+    ResponseEnvelope_DeliverabilityMetricsResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/DeliverabilityMetricsResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[DeliverabilityMetricsResponse]
     ResponseEnvelope_DetailedPlanRead_:
       properties:
         success:
@@ -26365,6 +28232,42 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[DeviceRead]
+    ResponseEnvelope_Dict_str__Any__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[Dict[str, Any]]
     ResponseEnvelope_Dict_str__List_str___:
       properties:
         success:
@@ -30272,6 +32175,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[SmsHeaderRequestRead]
+    ResponseEnvelope_SpamPreviewResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SpamPreviewResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[SpamPreviewResponse]
     ResponseEnvelope_SubscriptionResponse_:
       properties:
         success:
@@ -30657,6 +32595,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[TimelineListResponse]
+    ResponseEnvelope_ToolAPIEmailResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ToolAPIEmailResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[ToolAPIEmailResponse]
+    ResponseEnvelope_TrendResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/TrendResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[TrendResponse]
     ResponseEnvelope_TurnstileConfigResponse_:
       properties:
         success:
@@ -30834,6 +32842,108 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[Union[TenantSmsCreditRead, NoneType]]
+    ResponseEnvelope_UnsubscribeListResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/UnsubscribeListResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[UnsubscribeListResponse]
+    ResponseEnvelope_UnsubscribeResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/routers__unsubscribe__UnsubscribeResponse'
+          - type: 'null'
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[UnsubscribeResponse]
+    ResponseEnvelope_UnsubscribeStatsResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/UnsubscribeStatsResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[UnsubscribeStatsResponse]
     ResponseEnvelope_UserAnalytics_:
       properties:
         success:
@@ -31219,42 +33329,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[VerifyOtpResponse]
-    ResponseEnvelope_dict_:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - type: object
-          - type: 'null'
-          title: Data
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[dict]
     ResponseEnvelope_list_ReplacementRead__:
       properties:
         success:
@@ -32502,6 +34576,54 @@ components:
           title: Textb
       type: object
       title: SimilarityRequest
+    SlotConfig:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Parameter name matching the tool argument
+        prompt:
+          type: string
+          title: Prompt
+          description: Question to ask the user
+        uiType:
+          type: string
+          enum:
+          - entity_search
+          - enum
+          - date
+          - number
+          - text
+          - file
+          title: Uitype
+          description: UI component to render
+        sourceEndpoint:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sourceendpoint
+          description: API endpoint for search/options
+        enumOptions:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Enumoptions
+          description: Static options for enum type
+        validationRules:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Validationrules
+          description: Validation rules (min, max, required, etc.)
+      type: object
+      required:
+      - name
+      - prompt
+      - uiType
+      title: SlotConfig
+      description: Configuration for a required parameter slot.
     SmsHeaderRequestCreate:
       properties:
         headerText:
@@ -32839,6 +34961,84 @@ components:
       - excel
       - filter
       title: SmsSourceType
+    SpamPreviewRequest:
+      properties:
+        subject:
+          type: string
+          title: Subject
+          description: Email subject
+        body_text:
+          type: string
+          title: Body Text
+          description: Email body (plain text)
+        body_html:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Body Html
+          description: Email body (HTML)
+      type: object
+      required:
+      - subject
+      - body_text
+      title: SpamPreviewRequest
+      description: Request for spam score preview.
+    SpamPreviewResponse:
+      properties:
+        spam_score:
+          type: number
+          title: Spam Score
+          description: Spam score (0-20+)
+        risk_level:
+          type: string
+          title: Risk Level
+          description: Risk level (LOW/MEDIUM/HIGH/CRITICAL)
+        will_be_rejected:
+          type: boolean
+          title: Will Be Rejected
+          description: Whether email will be rejected
+        warnings:
+          items:
+            $ref: '#/components/schemas/SpamWarning'
+          type: array
+          title: Warnings
+          description: List of warnings
+        recommendations:
+          items:
+            type: string
+          type: array
+          title: Recommendations
+          description: Recommendations to improve score
+      type: object
+      required:
+      - spam_score
+      - risk_level
+      - will_be_rejected
+      - warnings
+      - recommendations
+      title: SpamPreviewResponse
+      description: Response for spam score preview.
+    SpamWarning:
+      properties:
+        category:
+          type: string
+          title: Category
+          description: Warning category
+        message:
+          type: string
+          title: Message
+          description: Warning message
+        severity:
+          type: string
+          title: Severity
+          description: Severity level (low/medium/high)
+      type: object
+      required:
+      - category
+      - message
+      - severity
+      title: SpamWarning
+      description: Spam warning detail.
     StepExecutionResponse:
       properties:
         step_number:
@@ -34482,6 +36682,64 @@ components:
       required:
       - events
       title: TimelineListResponse
+    ToolAPIEmailRequest:
+      properties:
+        scenario:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: Scenario
+          description: Email scenario (must be in allowlist)
+        recipient:
+          type: string
+          format: email
+          title: Recipient
+          description: Email recipient
+        variables:
+          additionalProperties:
+            type: string
+          type: object
+          title: Variables
+          description: Template variables
+        language:
+          type: string
+          title: Language
+          description: Email language (tr/en)
+          default: tr
+        actionPlanHash:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Actionplanhash
+          description: Hash of AI action plan for audit trail
+      type: object
+      required:
+      - scenario
+      - recipient
+      - actionPlanHash
+      title: ToolAPIEmailRequest
+      description: Request schema for AI Layer email notifications.
+    ToolAPIEmailResponse:
+      properties:
+        emailLogId:
+          type: string
+          title: Emaillogid
+          description: Email log ID for tracking
+        queued:
+          type: boolean
+          title: Queued
+          description: Whether email was queued successfully
+        message:
+          type: string
+          title: Message
+          description: Status message
+      type: object
+      required:
+      - emailLogId
+      - queued
+      - message
+      title: ToolAPIEmailResponse
+      description: Response schema for AI Layer email notifications.
     TopTenantItem:
       properties:
         id:
@@ -34507,6 +36765,28 @@ components:
       - growth
       - users
       title: TopTenantItem
+    TrendResponse:
+      properties:
+        tenant_id:
+          type: string
+          title: Tenant Id
+          description: Tenant ID
+        days:
+          type: integer
+          title: Days
+          description: Number of days
+        data:
+          items: {}
+          type: array
+          title: Data
+          description: Daily metrics data
+      type: object
+      required:
+      - tenant_id
+      - days
+      - data
+      title: TrendResponse
+      description: Response for deliverability trend.
     TrialPeriod:
       properties:
         startDate:
@@ -34535,6 +36815,67 @@ components:
       required:
       - siteKey
       title: TurnstileConfigResponse
+    UnsubscribeListResponse:
+      properties:
+        unsubscribes:
+          items:
+            $ref: '#/components/schemas/routers__unsubscribe_management__UnsubscribeResponse'
+          type: array
+          title: Unsubscribes
+          description: List of unsubscribes
+        total:
+          type: integer
+          title: Total
+          description: Total count
+        page:
+          type: integer
+          title: Page
+          description: Current page
+        per_page:
+          type: integer
+          title: Per Page
+          description: Items per page
+      type: object
+      required:
+      - unsubscribes
+      - total
+      - page
+      - per_page
+      title: UnsubscribeListResponse
+      description: Response for unsubscribe list.
+    UnsubscribeStatsResponse:
+      properties:
+        total_unsubscribes:
+          type: integer
+          title: Total Unsubscribes
+          description: Total unsubscribe count
+        unsubscribes_last_7_days:
+          type: integer
+          title: Unsubscribes Last 7 Days
+          description: Unsubscribes in last 7 days
+        unsubscribes_last_30_days:
+          type: integer
+          title: Unsubscribes Last 30 Days
+          description: Unsubscribes in last 30 days
+        unsubscribe_rate:
+          type: number
+          title: Unsubscribe Rate
+          description: Unsubscribe rate percentage
+        top_scenarios:
+          items:
+            type: object
+          type: array
+          title: Top Scenarios
+          description: Top scenarios by unsubscribe count
+      type: object
+      required:
+      - total_unsubscribes
+      - unsubscribes_last_7_days
+      - unsubscribes_last_30_days
+      - unsubscribe_rate
+      - top_scenarios
+      title: UnsubscribeStatsResponse
+      description: Response for unsubscribe statistics.
     UpdateStatusRequest:
       properties:
         status:
@@ -35663,6 +38004,72 @@ components:
           title: Description
       type: object
       title: RoleUpdate
+    routers__unsubscribe__UnsubscribeResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          description: Whether unsubscribe was successful
+        message:
+          type: string
+          title: Message
+          description: User-friendly message
+        recipient:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Recipient
+          description: Email address (masked)
+        scenario:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Scenario
+          description: Email scenario
+      type: object
+      required:
+      - success
+      - message
+      title: UnsubscribeResponse
+      description: Response for unsubscribe operation.
+    routers__unsubscribe_management__UnsubscribeResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Unsubscribe ID
+        recipient:
+          type: string
+          title: Recipient
+          description: Email address
+        scenario:
+          type: string
+          title: Scenario
+          description: Email scenario
+        unsubscribed_at:
+          type: string
+          title: Unsubscribed At
+          description: Unsubscribe timestamp
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+          description: IP address
+        user_agent:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Agent
+          description: User agent
+      type: object
+      required:
+      - id
+      - recipient
+      - scenario
+      - unsubscribed_at
+      title: UnsubscribeResponse
+      description: Response for unsubscribe record.
     schemas__base__ResponseEnvelope_BulkUploadResponse___1:
       properties:
         success:
@@ -35733,6 +38140,42 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[BulkUploadResponse]
+    schemas__base__ResponseEnvelope_dict_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[dict]
     schemas__invoices__BulkUploadResponse:
       properties:
         success:
@@ -35790,6 +38233,39 @@ components:
       - updated
       - errors
       title: BulkUploadResponse
+    schemas__response__ResponseEnvelope_dict_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Data
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[dict]
     schemas__roles__RoleCreate:
       properties:
         name:

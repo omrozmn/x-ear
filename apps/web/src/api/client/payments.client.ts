@@ -9,9 +9,18 @@
  */
 
 export {
-  useCreatePaymentPoPaytrInitiate,
-  useCreatePoCommissionInstallmentOptions,
   createPaymentRecords,
-} from '@/api/generated/index';
+  getListPartyPaymentRecordsQueryKey,
+  getListSalePromissoryNotesQueryKey,
+  useCreatePaymentRecords,
+  useListPartyPaymentRecords,
+  useListSalePromissoryNotes,
+} from '../generated/payments/payments';
 
-export type { } from '@/api/generated/schemas';
+export {
+  useCreatePaymentPoPaytrInitiate,
+} from '../generated/payment-integrations/payment-integrations';
+
+export {
+  useCreatePoCommissionInstallmentOptions,
+} from '../generated/pos-commission/pos-commission';

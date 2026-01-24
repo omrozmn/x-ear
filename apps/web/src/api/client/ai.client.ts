@@ -9,9 +9,9 @@
 import { apiClient } from '../orval-mutator';
 import type { AiActionPlanResponse } from '@/api/generated/schemas';
 
-export * from '@/api/generated/ai-actions/ai-actions';
-export * from '@/api/generated/ai-chat/ai-chat';
-export * from '@/api/generated/ai-status/ai-status';
+export * from '../generated/ai-actions/ai-actions';
+export * from '../generated/ai-chat/ai-chat';
+export * from '../generated/ai-status/ai-status';
 
 /**
  * Get pending actions manually (since generated client misses list endpoint)

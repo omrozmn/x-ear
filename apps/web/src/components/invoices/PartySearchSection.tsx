@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useParties } from '../../hooks/useParties';
 import { Party } from '../../types/party';
-import { InvoiceAddress } from '../../types/invoice';
 
 interface PartySearchSectionProps {
   onPartySelect: (party: Party) => void;
@@ -15,7 +14,7 @@ interface PartySearchSectionProps {
   };
 }
 
-export function PartySearchSection({ onPartySelect, selectedParty }: PartySearchSectionProps) {
+export function PartySearchSection({ onPartySelect, selectedParty: _selectedParty }: PartySearchSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedPartyData, setSelectedPartyData] = useState<Party | null>(null);

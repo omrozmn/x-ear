@@ -29,4 +29,4 @@ export {
   useCreatePricingPreview,
 } from '@/api/generated/index';
 
-export type { SaleCreate, SaleUpdate } from '@/api/generated/schemas';
+export type { SaleCreate, SaleRead, SaleUpdate } from '@/api/generated/schemas';

@@ -308,7 +308,6 @@ export const useAuthStore = create<AuthStore>()(
           } else {
             console.error('Invalid response structure:', { response: responseEnvelope });
             throw new Error('Sunucudan geçersiz yanıt alındı');
-            throw new Error('Sunucudan geçersiz yanıt alındı');
           }
         } catch (err: unknown) {
           const error = asApiError(err);

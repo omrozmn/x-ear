@@ -140,7 +140,7 @@ export const useConditionalFields = (
   };
 
   // Validate all dependencies and return missing ones
-  const validateDependencies = (data: InvoiceFormData): Record<string, string[]> => {
+  const validateDependencies = (_data: InvoiceFormData): Record<string, string[]> => {
     const missingDependencies: Record<string, string[]> = {};
 
     visibleSections.forEach(section => {

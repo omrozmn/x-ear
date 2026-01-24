@@ -9,15 +9,6 @@ import { createHearingTest } from '@/api/client/parties.client';
 import { X, FileText, Plus, AlertCircle, CheckCircle, Calendar, User } from 'lucide-react';
 import { Party } from '../../../types/party';
 
-interface Report {
-  id: string;
-  type: 'audiogram' | 'battery' | 'device' | 'sgk' | 'medical';
-  title: string;
-  createdAt: string;
-  createdBy: string;
-  updatedAt?: string;
-}
-
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,7 +22,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   onClose,
   party,
   onReportCreate,
-  loading = false
+  loading: _loading = false
 }) => {
   const [formData, setFormData] = useState({
     type: 'audiogram' as 'audiogram' | 'battery' | 'device' | 'sgk' | 'medical',

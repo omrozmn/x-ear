@@ -2,8 +2,6 @@ import React from 'react';
 import { Party } from '../../../types/party/party-base.types';
 import {
   User,
-  Phone,
-  Mail,
   MapPin,
   Tag,
   AlertCircle,

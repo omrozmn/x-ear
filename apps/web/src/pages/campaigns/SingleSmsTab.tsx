@@ -37,7 +37,7 @@ interface SingleSmsTabProps {
     creditLoading: boolean;
 }
 
-export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, creditLoading }) => {
+export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, creditLoading: _creditLoading }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [recipientName, setRecipientName] = useState('');
     const [message, setMessage] = useState('');

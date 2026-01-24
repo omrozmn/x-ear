@@ -128,7 +128,12 @@ export interface Invoice {
   customerId?: string;
   customerName?: string;
   customerTaxNumber?: string;
-  customerAddress?: any;
+  /**
+   * Legacy customer address field.
+   * Using InvoiceAddress type for proper structure.
+   * Some legacy services may pass unstructured address data.
+   */
+  customerAddress?: InvoiceAddress;
 
   // Items
   items?: InvoiceItem[];
@@ -350,7 +355,12 @@ export interface CreateInvoiceData {
   customerId?: string;
   customerName?: string;
   customerTaxNumber?: string;
-  customerAddress?: any;
+  /**
+   * Legacy customer address field.
+   * Using InvoiceAddress type for proper structure.
+   * Some legacy services may pass unstructured address data.
+   */
+  customerAddress?: InvoiceAddress;
 
   partyId?: string;
   partyName?: string;

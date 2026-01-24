@@ -21,7 +21,7 @@ export function InvoiceList({
   onFiltersChange,
   onSelectionChange,
   showActions = true,
-  compact = false
+  compact: _compact = false
 }: InvoiceListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -246,7 +246,7 @@ export function InvoiceList({
         <div className="p-3">
           <InvoiceBulkOperations
             selectedInvoices={Array.from(selectedIds).map(id => invoices.find(i => i.id === id)).filter((i): i is Invoice => i !== undefined)}
-            onBulkActionComplete={(action) => { setSelectedIds(new Set()); loadInvoices(); }}
+            onBulkActionComplete={() => { setSelectedIds(new Set()); loadInvoices(); }}
             onSelectionClear={() => setSelectedIds(new Set())}
           />
         </div>

@@ -21,7 +21,7 @@ interface PartyNotesTabProps {
   onPartyUpdate?: (party: Party) => void;
 }
 
-export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpdate }) => {
+export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpdate: _onPartyUpdate }) => {
   const [notes, setNotes] = useState<PartyNote[]>(party.notes || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingNote, setEditingNote] = useState<PartyNote | null>(null);

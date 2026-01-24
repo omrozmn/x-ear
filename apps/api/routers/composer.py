@@ -7,15 +7,6 @@ from core.dependencies import get_current_user
 from models.user import User
 from models.inventory import InventoryItem
 from services.party_service import PartyService
-
-# Tool Registry & Schemas
-from ai.capability_registry import (
-    get_all_capabilities, 
-    filter_capabilities_by_permissions, 
-    filter_capabilities_by_phase,
-    Capability
-)
-from ai.tools import get_tool_registry, ToolExecutionMode
 from middleware.unified_access import UnifiedAccess, require_access
 
 from schemas.ai_composer import (
@@ -160,6 +151,8 @@ def execute_tool(
     execution_params = request.args.copy()
     execution_params["tenant_id"] = access.tenant_id
     execution_params["user_id"] = access.principal_id
+    
+    
     
     try:
         result = registry.execute_tool(

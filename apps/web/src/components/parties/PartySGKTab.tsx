@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
-import { SGKDocument, SGKDocumentType } from '../../types/sgk';
+import { SGKDocument } from '../../types/sgk';
 
 // import sgkService from '../../services/sgk/sgk.service'; // Unused in this file
 

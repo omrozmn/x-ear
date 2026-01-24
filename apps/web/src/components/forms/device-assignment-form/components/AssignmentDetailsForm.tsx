@@ -163,34 +163,33 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Atama Sebebi *
           </label>
-          <select
+          <Select
             value={formData.reason || ''}
             onChange={(e) => updateFormData('reason', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${errors.reason ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-slate-700'}`}
-          >
-            <option value="">Sebep seçiniz</option>
-            {!isManualMode && <option value="sale">Satış</option>}
-            <option value="service">Servis</option>
-            <option value="repair">Tamir</option>
-            <option value="trial">Deneme</option>
-            <option value="replacement">Değişim</option>
-            <option value="proposal">Teklif</option>
-            <option value="other">Diğer</option>
-          </select>
-          {errors.reason && (
-            <p className="mt-1 text-sm text-red-600">{errors.reason}</p>
-          )}
+            options={[
+              { value: '', label: 'Sebep seçiniz' },
+              ...(!isManualMode ? [{ value: 'sale', label: 'Satış' }] : []),
+              { value: 'service', label: 'Servis' },
+              { value: 'repair', label: 'Tamir' },
+              { value: 'trial', label: 'Deneme' },
+              { value: 'replacement', label: 'Değişim' },
+              { value: 'proposal', label: 'Teklif' },
+              { value: 'other', label: 'Diğer' }
+            ]}
+            error={errors.reason}
+            fullWidth
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Atama Tarihi *
           </label>
-          <input
+          <Input
             type="date"
             value={formData.assignedDate || ''}
             onChange={(e) => updateFormData('assignedDate', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${errors.assignedDate ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-slate-700'}`}
+            className={`dark:bg-slate-800 dark:text-white ${errors.assignedDate ? 'border-red-300 dark:border-red-700' : ''}`}
           />
           {errors.assignedDate && (
             <p className="mt-1 text-sm text-red-600">{errors.assignedDate}</p>
@@ -201,12 +200,12 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Atayan Kişi
           </label>
-          <input
+          <Input
             type="text"
             value={formData.assignedBy || ''}
             onChange={(e) => updateFormData('assignedBy', e.target.value)}
             placeholder="Atayan kişi adı"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+            className="dark:bg-slate-800 dark:text-white"
           />
         </div>
       </div>
@@ -237,7 +236,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
             return (
               <label key={ear.value} className="relative">
-                <input
+                <Input
                   type="radio"
                   name="ear"
                   value={ear.value}
@@ -328,25 +327,17 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Teslimat Durumu
           </label>
-          <div className="relative">
-            <select
-              value={formData.deliveryStatus || 'pending'}
-              onChange={(e) => {
-                // Debug logging disabled to reduce console noise
-                // console.log('📦 [AssignmentDetailsForm] Teslimat durumu değişiyor:', {...});
-                updateFormData('deliveryStatus', e.target.value);
-              }}
-              className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-            >
-              <option value="pending" className="dark:bg-slate-800">Teslim Edilmedi</option>
-              <option value="delivered" className="dark:bg-slate-800">Teslim Edildi</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-              <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-              </svg>
-            </div>
-          </div>
+          <Select
+            value={formData.deliveryStatus || 'pending'}
+            onChange={(e) => {
+              updateFormData('deliveryStatus', e.target.value);
+            }}
+            options={[
+              { value: 'pending', label: 'Teslim Edilmedi' },
+              { value: 'delivered', label: 'Teslim Edildi' }
+            ]}
+            fullWidth
+          />
         </div>
 
         {formData.reason === 'sale' && (
@@ -354,23 +345,17 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Rapor Durumu
             </label>
-            <div className="relative">
-              <select
-                value={formData.reportStatus || ''}
-                onChange={(e) => updateFormData('reportStatus', e.target.value)}
-                className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-              >
-                <option value="" className="dark:bg-slate-800">Seçiniz...</option>
-                <option value="received" className="dark:bg-slate-800">Rapor Teslim Alındı</option>
-                <option value="pending" className="dark:bg-slate-800">Rapor Bekleniyor</option>
-                <option value="none" className="dark:bg-slate-800">Raporsuz Özel Satış</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                </svg>
-              </div>
-            </div>
+            <Select
+              value={formData.reportStatus || ''}
+              onChange={(e) => updateFormData('reportStatus', e.target.value)}
+              options={[
+                { value: '', label: 'Seçiniz...' },
+                { value: 'received', label: 'Rapor Teslim Alındı' },
+                { value: 'pending', label: 'Rapor Bekleniyor' },
+                { value: 'none', label: 'Raporsuz Özel Satış' }
+              ]}
+              fullWidth
+            />
           </div>
         )}
       </div>
@@ -393,12 +378,12 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
             {/* Search Input */}
             <div className="relative">
-              <input
+              <Input
                 type="text"
                 value={loanerSearch}
                 onChange={(e) => setLoanerSearch(e.target.value)}
-                className="w-full px-3 py-2 border border-purple-300 dark:border-purple-700 rounded-lg focus:ring-purple-500 focus:border-purple-500 placeholder-purple-300 dark:bg-slate-800 dark:text-white"
                 placeholder="Envanterde emanet cihaz ara (Marka, Model...)"
+                className="border-purple-300 dark:border-purple-700 focus:ring-purple-500 focus:border-purple-500 placeholder-purple-300 dark:bg-slate-800 dark:text-white"
               />
 
               {/* Results Dropdown */}
@@ -429,22 +414,22 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             <div className="grid grid-cols-2 gap-3 mt-2">
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Marka</label>
-                <input
+                <Input
                   type="text"
                   value={formData.loanerBrand || ''}
                   onChange={(e) => updateFormData('loanerBrand', e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 dark:text-white"
                   placeholder="Marka"
+                  className="text-sm dark:bg-slate-800 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Model</label>
-                <input
+                <Input
                   type="text"
                   value={formData.loanerModel || ''}
                   onChange={(e) => updateFormData('loanerModel', e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 dark:text-white"
                   placeholder="Model"
+                  className="text-sm dark:bg-slate-800 dark:text-white"
                 />
               </div>
               <div className="col-span-2">
@@ -453,14 +438,14 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                   <div className="grid grid-cols-2 gap-2">
                     {/* Left Side (Visual) -> Right Ear (Red) */}
                     <div className="relative">
-                      <input
+                      <Input
                         type="text"
                         value={formData.loanerSerialNumberRight || ''}
                         onChange={(e) => updateFormData('loanerSerialNumberRight', e.target.value)}
                         onFocus={() => setActiveSerialInput('right')}
                         onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                        className="w-full px-2 py-1.5 text-sm border-2 border-red-400 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-200"
                         placeholder="Sağ (R)"
+                        className="text-sm border-2 border-red-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-red-200 pr-8"
                       />
                       {activeSerialInput === 'right' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
@@ -480,14 +465,14 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
                     {/* Right Side (Visual) -> Left Ear (Blue) */}
                     <div className="relative">
-                      <input
+                      <Input
                         type="text"
                         value={formData.loanerSerialNumberLeft || ''}
                         onChange={(e) => updateFormData('loanerSerialNumberLeft', e.target.value)}
                         onFocus={() => setActiveSerialInput('left')}
                         onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                        className="w-full px-2 py-1.5 text-sm border-2 border-blue-400 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                         placeholder="Sol (L)"
+                        className="text-sm border-2 border-blue-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-blue-200 pr-8"
                       />
                       {activeSerialInput === 'left' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
@@ -507,17 +492,17 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                   </div>
                 ) : (
                   <div className="relative">
-                    <input
+                    <Input
                       type="text"
                       value={formData.loanerSerialNumber || ''}
                       onChange={(e) => updateFormData('loanerSerialNumber', e.target.value)}
                       onFocus={() => setActiveSerialInput('single')}
                       onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                      className={`w-full px-2 py-1.5 text-sm border-2 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
+                      placeholder="Seri No"
+                      className={`text-sm border-2 dark:bg-slate-800 dark:text-white ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
                         formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
                           'border-gray-300 dark:border-slate-600 focus:ring-gray-200'
                         }`}
-                      placeholder="Seri No"
                     />
                     {activeSerialInput === 'single' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input, Badge } from '@x-ear/ui-web';
+import { Button, Input } from '@x-ear/ui-web';
 import { Search, Filter, Download, Printer, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface SalesFiltersProps {

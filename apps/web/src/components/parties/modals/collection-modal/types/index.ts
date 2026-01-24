@@ -1,6 +1,5 @@
 import { Party } from '../../../../../types/party/party-base.types';
 import { Sale, PaymentRecord } from '../../../../../types/party/party-communication.types';
-import { SaleRead } from '@/api/generated/schemas/saleRead';
 
 // Locally defined PaymentRecordRead since schema is missing or mapped to generic
 export interface PaymentRecordRead {

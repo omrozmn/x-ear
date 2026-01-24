@@ -1,49 +1,45 @@
-import {
-  Invoice,
-  InvoiceFilters,
-  InvoiceSearchResult,
-  InvoiceStats,
-  InvoiceItem,
-  InvoiceTemplate,
+import type {
   CreateInvoiceData,
-  UpdateInvoiceData,
+  EFaturaBulkSubmission,
+  EFaturaSubmission,
+  Invoice,
+  InvoiceAddress,
   InvoiceCalculation,
-  InvoiceValidation,
+  InvoiceExportOptions,
+  InvoiceFilters,
+  InvoiceItem,
   InvoicePayment,
   InvoicePaymentPlan,
-  EFaturaSubmission,
-  EFaturaBulkSubmission,
-  InvoiceExportOptions,
+  InvoiceSearchResult,
+  InvoiceStats,
   InvoiceStatus,
+  InvoiceTemplate,
   InvoiceType,
+  InvoiceValidation,
   PaymentMethod,
-  InvoiceAddress
+  UpdateInvoiceData,
 } from '../types/invoice';
 import { INVOICES_DATA } from '../constants/storage-keys';
 import { outbox } from '../utils/outbox';
 import { unwrapObject, unwrapArray } from '../utils/response-unwrap';
 import {
   createInvoice,
-  getInvoice,
-  // listInvoices, // Using listAdminInvoices instead
-  listAdminInvoices,
-  updateInvoice,
-  // deleteInvoice, // Soft delete via update preferred
-  createInvoiceSendToGib,
   createInvoiceBulkUpload,
   createInvoiceIssue,
-  listInvoicePdf
+  createInvoiceSendToGib,
+  getInvoice,
+  listAdminInvoices,
+  listInvoicePdf,
+  updateInvoice,
 } from '@/api/client/invoices.client';
-import {
+import type {
   InvoiceCreate,
-  InvoiceUpdate,
   InvoiceRead,
+  InvoiceUpdate,
   ResponseEnvelopeInvoiceRead,
   ResponseEnvelopeListInvoiceRead,
-  // ResponseEnvelope, // Type only, using specific wrappers
-
   SchemasBaseResponseEnvelopeBulkUploadResponse2,
-  SchemasInvoicesBulkUploadResponse as BulkUploadResponse
+  SchemasInvoicesBulkUploadResponse as BulkUploadResponse,
 } from '@/api/generated/schemas';
 // import { apiClient } from '../api/orval-mutator'; // Not used - using orval hooks directly
 
@@ -83,6 +79,46 @@ interface LocalInvoice extends Invoice {
 
 
 export class InvoiceService {
+  private formatAddressForApi(addr: unknown): string | null {
+    if (!addr) return null;
+    if (typeof addr === 'string') return addr;
+    if (typeof addr === 'object') {
+      const a = addr as Partial<InvoiceAddress>;
+      const parts = [a.address, a.district, a.city, a.postalCode, a.country].filter(
+        (v): v is string => typeof v === 'string' && v.trim().length > 0
+      );
+      return parts.length > 0 ? parts.join(' / ') : null;
+    }
+    return null;
+  }
+
+  private parseAddressFromApi(addr: unknown, fallbackName?: string): InvoiceAddress | undefined {
+    if (!addr) return undefined;
+    if (typeof addr === 'string') {
+      return {
+        name: fallbackName || '',
+        address: addr,
+        city: '',
+      };
+    }
+    if (typeof addr === 'object') {
+      const a = addr as Partial<InvoiceAddress> & { street?: string };
+      const addressLine = a.address || a.street;
+      if (!addressLine) return undefined;
+      return {
+        name: a.name || fallbackName || '',
+        address: addressLine,
+        city: a.city || '',
+        district: a.district,
+        postalCode: a.postalCode,
+        country: a.country,
+        taxNumber: a.taxNumber,
+        taxOffice: a.taxOffice,
+      };
+    }
+    return undefined;
+  }
+
   /**
    * Resolve a server numeric id for an invoice identifier.
    * - If caller passes a numeric id string, returns that number.
@@ -133,10 +169,10 @@ export class InvoiceService {
       customerId: inv.customerId, // Legacy alias support
       customerName: inv.customerName,
       customerTaxNumber: inv.customerTaxNumber,
-      customerAddress: inv.customerAddress,
+      customerAddress: this.parseAddressFromApi(inv.customerAddress, inv.customerName || serverInv.partyName || ''),
       items: inv.items || [],
-      billingAddress: inv.billingAddress,
-      shippingAddress: inv.shippingAddress,
+      billingAddress: this.parseAddressFromApi(inv.billingAddress, inv.customerName || serverInv.partyName || ''),
+      shippingAddress: this.parseAddressFromApi(inv.shippingAddress, inv.customerName || serverInv.partyName || ''),
       issueDate: inv.issueDate,
       dueDate: inv.dueDate ? String(inv.dueDate) : undefined,
       paymentDate: inv.paymentDate ? String(inv.paymentDate) : undefined,
@@ -190,7 +226,7 @@ export class InvoiceService {
       partyId: (local.partyId || local.customerId) ? String(local.partyId || local.customerId) : null,
       customerName: (local.partyName || local.customerName) as string,
       customerTaxNumber: local.customerTaxNumber as string,
-      customerAddress: local.customerAddress as string,
+      customerAddress: this.formatAddressForApi(local.customerAddress),
       items: (local.items || []) as unknown as InvoiceCreate['items'],
       subtotal: local.subtotal,
       totalAmount: local.totalAmount || local.grandTotal,
@@ -251,7 +287,8 @@ export class InvoiceService {
         partyName: `Hasta ${i}`,
         customerTaxNumber: `${Math.floor(Math.random() * 9000000000) + 1000000000}`,
         customerAddress: {
-          street: `Test Sokak No: ${i}`,
+          name: `Müşteri ${i}`,
+          address: `Test Sokak No: ${i}`,
           city: 'İstanbul',
           postalCode: '34000',
           country: 'Türkiye'
@@ -338,7 +375,7 @@ export class InvoiceService {
       status: (invoiceData.status || 'draft') as InvoiceCreate['status'],
       items: (invoiceData.items || []) as unknown as InvoiceCreate['items'],
       customerName: invoiceData.customerName as string,
-      customerAddress: invoiceData.customerAddress as string,
+      customerAddress: this.formatAddressForApi(invoiceData.customerAddress),
       invoiceType: 'sale' as InvoiceCreate['invoiceType']
     };
 

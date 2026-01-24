@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Alert } from '@x-ear/ui-web';
 import { CreditCard, AlertCircle } from 'lucide-react';
 import { listSalePromissoryNotes } from '@/api/client/sales.client';
-
-import { SaleRead } from '@/api/generated/schemas/saleRead';
+import type { SaleRead } from '@/api/client/sales.client';
 import PaymentTrackingModal from '../../payments/PaymentTrackingModal';
 
 // Extended interface to handle runtime properties missing from schema
