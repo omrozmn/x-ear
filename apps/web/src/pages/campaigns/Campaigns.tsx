@@ -126,7 +126,7 @@ const CampaignsPage: React.FC = () => {
     }, [branchesData]);
 
     // Fetch first party for preview
-    const { data: partiesData, isLoading: partiesLoading, isError: partiesError } = useListParties(
+    const { data: partiesData, isLoading: _partiesLoading, isError: _partiesError } = useListParties(
         { page: 1, per_page: 1 },
         { query: { queryKey: getListPartiesQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters', refetchOnWindowFocus: false } }
     );

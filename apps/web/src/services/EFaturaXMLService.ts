@@ -490,7 +490,7 @@ export class EFaturaXMLService {
     return mapping[type] || EFATURA_INVOICE_TYPE_CODES.SATIS;
   }
 
-  private mapUnitToEFatura(unitPrice: number): string {
+  private mapUnitToEFatura(_unitPrice: number): string {
     // Default to piece (C62) - this could be enhanced based on product type
     return EFATURA_UNIT_CODES.C62;
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select, Textarea, DatePicker, Card, CardHeader, CardContent } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea, Card, CardHeader, CardContent } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { Calendar, FileText, User, Stethoscope, Building2, Hash, Save, X } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';

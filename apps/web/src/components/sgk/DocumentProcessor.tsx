@@ -164,7 +164,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({
   }, []);
 
   // Enhanced text extraction with better OCR simulation
-  const extractTextFromImage = useCallback(async (imageData: string): Promise<{
+  const extractTextFromImage = useCallback(async (_imageData: string): Promise<{
     text: string;
     confidence: number;
     partyInfo?: {

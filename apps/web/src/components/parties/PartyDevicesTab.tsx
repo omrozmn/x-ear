@@ -8,7 +8,6 @@ import { createPartyDeviceAssignments } from '@/api/client/sales.client';
 import { useCreateReplacement } from '@/api/client/replacements.client';
 import { apiClient } from '@/api/orval-mutator';
 import type {
-  ListInventoryParams,
 } from '@/api/generated/schemas';
 
 // Fallback interfaces for types not exported in schema index

@@ -28,7 +28,7 @@ const CATEGORIES: { value: InventoryCategory; label: string; icon: string }[] = 
   { value: 'amplifiers', label: 'Amplifikatör', icon: '📢' }
 ];
 
-const TYPES: { value: InventoryType; label: string }[] = [
+const _TYPES: { value: InventoryType; label: string }[] = [
   { value: 'digital_programmable', label: 'Dijital Programlanabilir' },
   { value: 'rechargeable_digital', label: 'Şarjlı Dijital' },
   { value: 'zinc_air', label: 'Çinko Hava' },

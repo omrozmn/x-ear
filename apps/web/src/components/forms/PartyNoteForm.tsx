@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/Button';
+import { Button, Input, Textarea, Select } from '@x-ear/ui-web';
 import { Modal } from '../ui/Modal';
 import { FileText, User } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
@@ -46,7 +46,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     tags: []
   });
 
-  const [tagInput, setTagInput] = useState<string>('');
+  const [_tagInput, setTagInput] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal opens/closes or note changes
@@ -200,13 +200,13 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FileText className="w-4 h-4 text-gray-400" />
             </div>
-            <input
+            <Input
               type="text"
               value={formData.title || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Not başlığı..."
               maxLength={100}
-              className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.title ? 'border-red-300' : ''}`}
+              className={`pl-10 pr-20 ${errors.title ? 'border-red-300' : ''}`}
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <span className="text-xs text-gray-400">
@@ -224,13 +224,13 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             İçerik *
           </label>
-          <textarea
+          <Textarea
             value={formData.content || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
             placeholder="Not içeriği..."
             rows={6}
             maxLength={2000}
-            className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.content ? 'border-red-300' : ''}`}
+            className={errors.content ? 'border-red-300' : ''}
           />
           <div className="flex justify-between items-center mt-1">
             {errors.content && (
@@ -300,13 +300,14 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Kategori
           </label>
-          <select
+          <Select
             value={formData.category || 'general'}
             onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as PartyNote['category'] }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="general">Genel</option>
-          </select>
+            options={[
+              { value: 'general', label: 'Genel' }
+            ]}
+            fullWidth
+          />
         </div>
 
         {/* Gizlilik */}

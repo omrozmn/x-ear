@@ -23,7 +23,7 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import { SaleRead } from '@/api/generated/schemas/saleRead';
+import type { SaleRead } from '@/api/client/sales.client';
 
 import {
   useListPartyPaymentRecords,
@@ -31,7 +31,7 @@ import {
   useListSalePromissoryNotes,
   getListPartyPaymentRecordsQueryKey,
   getListSalePromissoryNotesQueryKey
-} from '@/api/generated/payments/payments';
+} from '@/api/client/payments.client';
 import type { RoutersPaymentsPaymentRecordCreate } from '@/api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
 
@@ -243,7 +243,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   };
 
   // Pay installment (mock implementation until API is available)
-  const handlePayInstallment = async (installmentId: string, amount: number) => {
+  const handlePayInstallment = async (installmentId: string, _amount: number) => {
     if (!sale.id) return;
 
     setIsLoading(true);

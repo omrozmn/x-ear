@@ -92,6 +92,7 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   intent?: IntentResponse;
+  actionPlan?: ActionPlan;
   piiDetected?: boolean;
   phiDetected?: boolean;
 }
@@ -153,7 +154,7 @@ export interface ActionPlan {
   expiresAt?: string;
 }
 
-export type ActionPlanStatus = 
+export type ActionPlanStatus =
   | 'pending'
   | 'approved'
   | 'rejected'
@@ -228,7 +229,7 @@ export interface StepProgressStatus {
   message?: string;
 }
 
-export type ExecutionProgressStatus = 
+export type ExecutionProgressStatus =
   | 'initializing'
   | 'running'
   | 'paused'

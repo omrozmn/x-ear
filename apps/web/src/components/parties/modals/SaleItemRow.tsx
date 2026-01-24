@@ -23,7 +23,7 @@ interface SaleItemRowProps {
   searchProducts: (term: string) => InventoryItem[];
 }
 
-export function SaleItemRow({ item, index, products, onUpdate, onRemove, canRemove, searchProducts }: SaleItemRowProps) {
+export function SaleItemRow({ item, index, products: _products, onUpdate, onRemove, canRemove, searchProducts }: SaleItemRowProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showProductSearch, setShowProductSearch] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState<InventoryItem[]>([]);

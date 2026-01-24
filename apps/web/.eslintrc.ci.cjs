@@ -42,6 +42,8 @@ module.exports = {
     EventListener: 'readonly',
     NotificationPermission: 'readonly',
     NotificationOptions: 'readonly',
+    MediaTrackCapabilities: 'readonly',
+    MediaTrackConstraintSet: 'readonly',
     // Test globals
     describe: 'readonly',
     it: 'readonly',

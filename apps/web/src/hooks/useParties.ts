@@ -7,8 +7,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Party, PartyDevice, PartyFilters, PartyStatus, PartySegment } from '../types/party';
 import { partyService } from '../services/party.service';
-import { partySearchService, PartySearchResult } from '../services/party/party-search.service';
-import { partyCacheService, SimpleCacheFilters, PartySearchResult as CacheSearchResult } from '../services/party/party-cache.service';
+import { partySearchService } from '../services/party/party-search.service';
+import { partyCacheService, SimpleCacheFilters } from '../services/party/party-cache.service';
 import { partyValidationService } from '../services/party/party-validation.service';
 import { partySyncService } from '../services/party/party-sync.service';
 import { listPartyDevices } from '@/api/client/parties.client';

@@ -104,17 +104,3 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
-// Hook version for functional components
-export const useErrorHandler = () => {
-  const handleError = React.useCallback((error: Error, errorInfo?: React.ErrorInfo) => {
-    console.error('Error caught by error handler:', error, errorInfo);
-
-    // You can add error reporting service here
-    // Example: Sentry.captureException(error);
-  }, []);
-
-  return handleError;
-};
-
-export default ErrorBoundary;

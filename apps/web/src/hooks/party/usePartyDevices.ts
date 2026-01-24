@@ -4,12 +4,6 @@ import {
   listPartyDevices
 } from '@/api/client/parties.client';
 
-interface ApiResponse {
-  success?: boolean;
-  data?: unknown[];
-  meta?: Record<string, unknown>;
-}
-
 /**
  * Hook for managing party devices
  * Fetches devices from API and provides refetch capability

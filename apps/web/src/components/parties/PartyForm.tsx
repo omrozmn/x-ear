@@ -10,7 +10,7 @@ interface PartyFormProps {
   isModal?: boolean;
 }
 
-export function PartyForm({ party, onSave, onCancel, isModal = false }: PartyFormProps) {
+export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }: PartyFormProps) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

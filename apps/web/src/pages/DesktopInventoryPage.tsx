@@ -100,7 +100,7 @@ export const DesktopInventoryPage: React.FC = () => {
     setFilters({});
   };
 
-  const handleItemSave = (item: InventoryItem) => {
+  const handleItemSave = (_item: InventoryItem) => {
     setIsAddModalOpen(false);
     setIsEditModalOpen(false);
     setSelectedItem(null);

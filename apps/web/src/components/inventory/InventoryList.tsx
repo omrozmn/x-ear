@@ -12,7 +12,7 @@ import {
   useUpdateInventory,
   getListInventoryQueryKey
 } from '@/api/client/inventory.client';
-import type { ListInventoryParams, InventoryItemRead } from '../../api/generated/schemas';
+import type { InventoryItemRead, ListInventoryParams } from '@/api/generated/schemas';
 
 // Alias for backward compatibility
 type InventoryItemSchema = Record<string, unknown>;

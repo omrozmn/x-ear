@@ -7,6 +7,7 @@ from core.dependencies import get_current_user
 from models.user import User
 from models.inventory import InventoryItem
 from services.party_service import PartyService
+from middleware.unified_access import UnifiedAccess, require_access
 
 from schemas.ai_composer import (
     AutocompleteResponse, 

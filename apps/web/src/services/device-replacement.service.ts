@@ -1,7 +1,6 @@
 import {
   listReplacements as listPartyReplacements,
   createReplacement as createPartyReplacements,
-  getReplacement,
   updateReplacementStatus as updateReplacementStatusApi,
   createReplacementInvoice as createReplacementInvoiceApi
 } from '@/api/client/replacements.client';

@@ -27,8 +27,8 @@ export interface UseFuzzySearchReturn<T> {
   removeItems: (predicate: (item: T) => boolean) => void;
   stats: {
     totalItems: number;
-    searchKeys: any;
-    threshold: any;
+    searchKeys: string[] | ((item: T) => string)[];
+    threshold: number;
   };
 }
 

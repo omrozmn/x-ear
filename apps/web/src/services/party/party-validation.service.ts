@@ -164,7 +164,7 @@ export class PartyValidationService {
     }
   }
 
-  private validateFormats(party: Partial<OrvalParty>, errors: ValidationError[], warnings: ValidationWarning[]): void {
+  private validateFormats(party: Partial<OrvalParty>, errors: ValidationError[], _warnings: ValidationWarning[]): void {
     // Phone format validation
     if (party.phone && !this.validatePhone(party.phone)) {
       errors.push({

@@ -1,6 +1,5 @@
 import React from 'react';
 import { PermissionGate } from '../components/PermissionGate';
-import { PermissionCategory } from '../hooks/usePermissions';
 
 // Re-defining props interface to avoid circular dependency or import issues
 // Ideally we should export this from PermissionGate.tsx but HMR might complain if we export interface alongside component

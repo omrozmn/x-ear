@@ -22,7 +22,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   onClose,
   party,
   onReportCreate,
-  loading = false
+  loading: _loading = false
 }) => {
   const [formData, setFormData] = useState({
     type: 'audiogram' as 'audiogram' | 'battery' | 'device' | 'sgk' | 'medical',

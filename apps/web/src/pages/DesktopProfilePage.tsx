@@ -81,7 +81,7 @@ export const DesktopProfilePage: React.FC = () => {
         });
     }, [isLoading, isError, userDataResponse, error]);
 
-    interface UserData {
+    interface _UserData {
         id?: string;
         email?: string;
         fullName?: string;

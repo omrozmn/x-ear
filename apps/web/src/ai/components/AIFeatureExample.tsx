@@ -16,7 +16,6 @@ import React from 'react';
 import { AIFeatureWrapper, useAIFeatureAvailability } from './AIFeatureWrapper';
 import { AIChatWidget } from './AIChatWidget';
 import { PendingActionBadge } from './PendingActionBadge';
-import type { AICapability } from '../types/ai.types';
 
 // =============================================================================
 // Example 1: Basic AI Feature Wrapper Usage
@@ -185,47 +184,3 @@ export function AIPartyContextExample(): React.ReactElement {
     </AIFeatureWrapper>
   );
 }
-
-// =============================================================================
-// Utility: Create AI-Wrapped Component
-// =============================================================================
-
-/**
- * Higher-order component to wrap any component with AI feature checking
- * 
- * @param Component - The component to wrap
- * @param capability - The AI capability required
- * @param options - Additional options for AIFeatureWrapper
- * @returns Wrapped component with AI feature checking
- * 
- * @example
- * ```tsx
- * const AIEnabledButton = withAIFeature(MyButton, 'actions', { hideWhenUnavailable: true });
- * ```
- */
-export function withAIFeature<P extends object>(
-  Component: React.ComponentType<P>,
-  capability: AICapability,
-  options: {
-    hideWhenUnavailable?: boolean;
-    requirePartyContext?: boolean;
-    fallback?: React.ReactNode;
-  } = {}
-): React.FC<P> {
-  const WrappedComponent: React.FC<P> = (props) => (
-    <AIFeatureWrapper
-      capability={capability}
-      hideWhenUnavailable={options.hideWhenUnavailable}
-      requirePartyContext={options.requirePartyContext}
-      fallback={options.fallback}
-    >
-      <Component {...props} />
-    </AIFeatureWrapper>
-  );
-
-  WrappedComponent.displayName = `withAIFeature(${Component.displayName || Component.name || 'Component'})`;
-
-  return WrappedComponent;
-}
-
-

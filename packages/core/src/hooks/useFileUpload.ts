@@ -10,7 +10,7 @@ export interface FileUploadState {
   error: string | null;
   parsedData: ParsedData | null;
   columnTypes: ColumnTypeInfo[] | null;
-  previewData: any[][] | null;
+  previewData: unknown[][] | null;
 }
 
 export interface FileUploadOptions {
@@ -31,7 +31,7 @@ export interface FileUploadActions {
   removeFile: () => void;
   updateParseOptions: (options: Partial<ParseOptions>) => void;
   updateConversionOptions: (options: Partial<ConversionOptions>) => void;
-  getPreviewData: (rows?: number) => any[][];
+  getPreviewData: (rows?: number) => unknown[][];
   downloadProcessedData: (filename?: string) => void;
 }
 
@@ -154,7 +154,7 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
       let columnTypes: ColumnTypeInfo[] | null = null;
       if (opts.autoDetectTypes && parsedData.rows.length > 0) {
         columnTypes = parsedData.headers.map((header, index) => {
-          const columnValues = parsedData.rows.map((row: any[]) => row[index]);
+          const columnValues = parsedData.rows.map((row: unknown[]) => row[index]);
           return TypeConverter.analyzeColumn(
             columnValues,
             header,
@@ -194,7 +194,7 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
     }
 
     try {
-      const columnValues = state.parsedData.rows.map((row: any[]) => row[columnIndex]);
+      const columnValues = state.parsedData.rows.map((row: unknown[]) => row[columnIndex]);
       const { converted, errors } = TypeConverter.convertColumn(
         columnValues,
         targetType as any,
@@ -202,7 +202,7 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
       );
 
       // Update parsed data with converted values
-      const newData = state.parsedData.rows.map((row: any[], rowIndex: number) => {
+      const newData = state.parsedData.rows.map((row: unknown[], rowIndex: number) => {
         const newRow = [...row];
         newRow[columnIndex] = converted[rowIndex];
         return newRow;
@@ -281,7 +281,7 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
     conversionOptionsRef.current = { ...conversionOptionsRef.current, ...newOptions };
   }, []);
 
-  const getPreviewData = useCallback((rows?: number): any[][] => {
+  const getPreviewData = useCallback((rows?: number): unknown[][] => {
     if (!state.parsedData) return [];
     const numRows = rows || opts.previewRows || 10;
     return state.parsedData.rows.slice(0, numRows);

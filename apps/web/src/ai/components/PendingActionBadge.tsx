@@ -21,12 +21,39 @@ import React, { useMemo, useCallback } from 'react';
 import { usePendingActions, usePendingActionsCount } from '../hooks/usePendingActions';
 import type { ActionPlan } from '../types/ai.types';
 import {
-  shouldBlockActionSubmission,
-  getPendingActionByType,
-} from '../utils/aiActionHelpers';
+  DEFAULT_PENDING_ACTION_LABEL,
+  PENDING_BADGE_SIZE_CLASSES,
+  PENDING_BADGE_VARIANT_CLASSES,
+  PENDING_BADGE_POSITION_CLASSES,
+} from './constants';
+import { PendingIcon } from './helpers';
 
-// Re-export helper functions for convenience
-export { shouldBlockActionSubmission, getPendingActionByType };
+// =============================================================================
+// Helper Functions (exports)
+// =============================================================================
+
+export function getPendingActionByType(
+  actionType: string,
+  pendingActions: ActionPlan[]
+): ActionPlan | undefined {
+  const normalized = actionType.trim().toLowerCase();
+  if (!normalized) return undefined;
+
+  return pendingActions.find((action) =>
+    action.steps.some((step) =>
+      step.toolName === actionType ||
+      step.toolName.toLowerCase() === normalized ||
+      step.description.toLowerCase().includes(normalized)
+    )
+  );
+}
+
+export function shouldBlockActionSubmission(
+  actionType: string,
+  pendingActions: ActionPlan[]
+): boolean {
+  return !!getPendingActionByType(actionType, pendingActions);
+}
 
 // =============================================================================
 // Types
@@ -112,62 +139,6 @@ export interface PendingActionBadgeProps {
 }
 
 // =============================================================================
-// Constants
-// =============================================================================
-
-/**
- * Default badge label in Turkish
- */
-const DEFAULT_LABEL = 'Onay Bekliyor';
-
-/**
- * Size classes for the badge
- */
-const SIZE_CLASSES: Record<PendingActionBadgeSize, string> = {
-  sm: 'px-1.5 py-0.5 text-xs',
-  md: 'px-2 py-1 text-xs',
-  lg: 'px-2.5 py-1 text-sm',
-};
-
-/**
- * Variant color classes
- */
-const VARIANT_CLASSES: Record<PendingActionBadgeVariant, string> = {
-  default: 'bg-gray-100 text-gray-800 border-gray-200',
-  warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  info: 'bg-blue-100 text-blue-800 border-blue-200',
-};
-
-/**
- * Position classes for badge when used with children
- */
-const POSITION_CLASSES: Record<NonNullable<PendingActionBadgeProps['position']>, string> = {
-  'top-right': 'absolute -top-1 -right-1',
-  'top-left': 'absolute -top-1 -left-1',
-  'bottom-right': 'absolute -bottom-1 -right-1',
-  'bottom-left': 'absolute -bottom-1 -left-1',
-  'inline': 'ml-2',
-};
-
-/**
- * Clock/pending icon SVG
- */
-const PENDING_ICON = (
-  <svg
-    className="w-3 h-3 flex-shrink-0"
-    fill="currentColor"
-    viewBox="0 0 20 20"
-    aria-hidden="true"
-  >
-    <path
-      fillRule="evenodd"
-      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-// =============================================================================
 // Component
 // =============================================================================
 
@@ -211,7 +182,7 @@ export function PendingActionBadge({
   actionType,
   size = 'md',
   variant = 'warning',
-  label = DEFAULT_LABEL,
+  label = DEFAULT_PENDING_ACTION_LABEL,
   showCount = false,
   onClick,
   className = '',
@@ -260,8 +231,8 @@ export function PendingActionBadge({
   const badgeClasses = `
     inline-flex items-center gap-1 
     font-medium rounded-full border
-    ${SIZE_CLASSES[size]}
-    ${VARIANT_CLASSES[variant]}
+    ${PENDING_BADGE_SIZE_CLASSES[size]}
+    ${PENDING_BADGE_VARIANT_CLASSES[variant]}
     ${animate ? 'animate-pulse' : ''}
     ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}
     ${className}
@@ -270,7 +241,7 @@ export function PendingActionBadge({
   // Badge content
   const badgeContent = (
     <>
-      {PENDING_ICON}
+      <PendingIcon />
       <span>{label}</span>
       {showCount && filteredActions.length > 1 && (
         <span className="font-bold">({filteredActions.length})</span>
@@ -303,7 +274,7 @@ export function PendingActionBadge({
     return (
       <div className="relative inline-flex">
         {children}
-        <span className={POSITION_CLASSES[position]}>
+        <span className={PENDING_BADGE_POSITION_CLASSES[position]}>
           {badgeElement}
         </span>
       </div>

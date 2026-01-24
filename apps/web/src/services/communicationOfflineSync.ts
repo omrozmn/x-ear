@@ -529,7 +529,7 @@ class CommunicationOfflineSync {
     if (!this.db) return;
 
     const metadata = await this.db.get('syncMetadata', 'templates');
-    const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
+    const _since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
     const { listCommunicationTemplates } = await import('@/api/generated/communications/communications');
     const response = await listCommunicationTemplates({

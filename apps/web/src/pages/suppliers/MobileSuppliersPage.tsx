@@ -5,7 +5,6 @@ import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { useSuppliers } from '@/hooks/useSuppliers';
 import { unwrapArray } from '@/utils/response-unwrap';
-import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 
 export const MobileSuppliersPage: React.FC = () => {

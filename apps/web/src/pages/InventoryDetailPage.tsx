@@ -252,7 +252,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: serials.length
       });
 
-      const response = await createInventorySerials(id, { serials });
+      const _response = await createInventorySerials(id, { serials });
 
       // If inventoryAddSerialNumbers returns void, remove the success check and just reload
       await loadItem();

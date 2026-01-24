@@ -310,7 +310,7 @@ export class PurchaseService {
     }
   }
 
-  private parseXMLToPurchaseData(xmlData: string, fileName: string): CreatePurchaseData {
+  private parseXMLToPurchaseData(_xmlData: string, _fileName: string): CreatePurchaseData {
     // Basic XML parsing - in real implementation, use proper XML parser
     return {
       type: 'standard',

@@ -13,7 +13,7 @@ export default function DocumentUploadModal({ partyId, isOpen, onClose, onUpload
   const [submitting, setSubmitting] = useState(false);
   const upload = useUploadSgkDocument(partyId);
 
-  const { register, handleSubmit, setValue } = useForm({ resolver: zodResolver(schema) });
+  const { register: _register, handleSubmit, setValue } = useForm({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
