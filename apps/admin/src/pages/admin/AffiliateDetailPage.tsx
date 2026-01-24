@@ -87,7 +87,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {commissions?.map((c) => (
+            {commissions?.map((c: any) => (
               <tr key={c.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{c.event}</td>

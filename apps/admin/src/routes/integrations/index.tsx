@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import IntegrationsIndexPage from '@/pages/admin/integrations/IntegrationsIndexPage'
 
-export const Route = createFileRoute('/integrations/')({
+export const Route = createFileRoute('/integrations/' as any)({
     component: IntegrationsIndexPage,
 })

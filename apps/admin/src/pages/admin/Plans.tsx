@@ -10,8 +10,8 @@ import {
   useCreateAdminPlan,
   useUpdateAdminPlan,
   useDeleteAdminPlan,
-  PlanRead
 } from '@/lib/api-client';
+import type { DetailedPlanRead as PlanRead } from '@/api/generated/schemas';
 
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/ui/Pagination';
@@ -229,7 +229,7 @@ const Plans: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {plans.map((plan) => (
+                {plans.map((plan: PlanRead) => (
                   <tr key={plan.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{plan.name}</div>
@@ -239,7 +239,7 @@ const Plans: React.FC = () => {
                       {plan.planType} / {plan.billingInterval}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {plan.price?.toLocaleString('tr-TR')} {plan.currency || 'TRY'}
+                      {plan.price?.toLocaleString('tr-TR')} {'TRY'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {plan.maxUsers} Kullanıcı

@@ -67,7 +67,7 @@ const Users: React.FC = () => {
     search: searchTerm || undefined
   });
 
-  const users = (usersData as any)?.data?.users || (usersData as any)?.users || [];
+  const users = ((usersData as any)?.data?.users || (usersData as any)?.users || []) as AdminUser[];
   const pagination = (usersData as any)?.data?.pagination || (usersData as any)?.pagination;
 
   // Mutations

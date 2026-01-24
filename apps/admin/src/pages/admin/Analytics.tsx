@@ -433,7 +433,7 @@ const Analytics: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data?.top_tenants?.map((tenant) => (
+                {data?.top_tenants?.map((tenant: any) => (
                   <tr key={tenant.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {tenant.name}

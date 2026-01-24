@@ -63,7 +63,7 @@ const Support: React.FC = () => {
     priority: priorityFilter !== 'all' ? priorityFilter : undefined
   } as any);
 
-  const tickets = (ticketsData as any)?.data?.tickets || (ticketsData as any)?.tickets || [];
+  const tickets = ((ticketsData as any)?.data?.tickets || (ticketsData as any)?.tickets || []) as SupportTicket[];
   const pagination = (ticketsData as any)?.data?.pagination || (ticketsData as any)?.pagination;
 
   // Fetch admin users for assignment

@@ -171,7 +171,7 @@ const AdminCampaignsPage: React.FC = () => {
                                         </td>
                                     </tr>
                                 ) : (
-                                    campaigns.map((campaign) => (
+                                    campaigns.map((campaign: any) => (
                                         <tr key={campaign.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-gray-900">{campaign.name}</div>

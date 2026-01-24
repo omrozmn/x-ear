@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGetEmailLogs } from '@/api/generated/email-logs/email-logs';
+import type { EmailLogResponse as EmailLog } from '@/api/generated/schemas';
 import {
   Card,
   CardHeader,
@@ -16,21 +17,7 @@ import { EnvelopeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/2
 import type { Column } from '@x-ear/ui-web';
 import { EmailIntegrationNav } from '@/components/integrations/EmailIntegrationNav';
 
-interface EmailLog {
-  id: string;
-  tenantId: string;
-  recipient: string;
-  subject: string;
-  bodyPreview: string | null;
-  status: 'pending' | 'sent' | 'failed' | 'bounced';
-  sentAt: string | null;
-  errorMessage: string | null;
-  retryCount: number;
-  templateName: string | null;
-  scenario: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+
 
 const EmailLogs: React.FC = () => {
   // Pagination state
@@ -105,7 +92,7 @@ const EmailLogs: React.FC = () => {
   };
 
   // Format date
-  const formatDate = (dateString: string | null): string => {
+  const formatDate = (dateString: string | null | undefined): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('tr-TR', {
@@ -203,7 +190,7 @@ const EmailLogs: React.FC = () => {
             {log.bodyPreview && (
               <div>
                 <h4 className="text-sm font-medium text-gray-700 mb-1">İçerik Önizleme:</h4>
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">{log.bodyPreview}</p>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{typeof log.bodyPreview === 'string' ? log.bodyPreview : JSON.stringify(log.bodyPreview)}</p>
               </div>
             )}
 
@@ -245,13 +232,13 @@ const EmailLogs: React.FC = () => {
     setPage(1); // Reset to first page
   };
 
-  const handleDateFromChange = (date: Date | undefined) => {
-    setDateFrom(date);
+  const handleDateFromChange = (date: Date | null) => {
+    setDateFrom(date || undefined);
     setPage(1); // Reset to first page
   };
 
-  const handleDateToChange = (date: Date | undefined) => {
-    setDateTo(date);
+  const handleDateToChange = (date: Date | null) => {
+    setDateTo(date || undefined);
     setPage(1); // Reset to first page
   };
 
@@ -330,9 +317,9 @@ const EmailLogs: React.FC = () => {
                 Başlangıç Tarihi
               </label>
               <DatePicker
-                selected={dateFrom}
+                value={dateFrom}
                 onChange={handleDateFromChange}
-                placeholderText="Tarih seçin"
+                placeholder="Tarih seçin"
               />
             </div>
 
@@ -342,9 +329,9 @@ const EmailLogs: React.FC = () => {
                 Bitiş Tarihi
               </label>
               <DatePicker
-                selected={dateTo}
+                value={dateTo}
                 onChange={handleDateToChange}
-                placeholderText="Tarih seçin"
+                placeholder="Tarih seçin"
               />
             </div>
           </div>
@@ -396,7 +383,7 @@ const EmailLogs: React.FC = () => {
                         <tr className="hover:bg-gray-50">
                           {columns.map((column) => (
                             <td key={column.key} className="px-6 py-4 whitespace-nowrap">
-                              {column.render(log)}
+                              {column.render ? column.render(null, log, 0) : (log as any)[column.key]}
                             </td>
                           ))}
                         </tr>

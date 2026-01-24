@@ -269,7 +269,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                             className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="">Özellik Seç...</option>
-                            {addons.map(addon => (
+                            {addons.map((addon: any) => (
                                 <option key={addon.id} value={addon.id || ''}>
                                     {addon.name} ({addon.limit_amount} {addon.unit_name}) - {addon.price} TL
                                 </option>
@@ -422,7 +422,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="">Plan Seçin...</option>
-                            {plans.map(plan => (
+                            {plans.map((plan: any) => (
                                 <option key={plan.id} value={plan.id}>{plan.name} ({plan.price} TL)</option>
                             ))}
                         </select>

@@ -26,7 +26,7 @@ import {
     getListAdminRolesQueryKey
 } from '@/api/generated/admin-roles/admin-roles';
 import { RoleRead } from '@/api/generated/schemas/roleRead';
-import { SchemasRolesPermissionRead as AdminPermission } from '@/api/generated/schemas/schemasRolesPermissionRead';
+import { PermissionRead as AdminPermission } from '@/api/generated/schemas/permissionRead';
 import { useHasPermission, useIsSuperAdmin, PermissionGate } from '@/hooks/useAdminPermission';
 import { AdminPermissions } from '@/types';
 

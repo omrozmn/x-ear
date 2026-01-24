@@ -218,7 +218,7 @@ const Dashboard = () => {
               <div className="card-body">
                 {data?.top_tenants?.length ? (
                   <ul className="divide-y divide-gray-200">
-                    {data.top_tenants.map((tenant) => (
+                    {data.top_tenants.map((tenant: any) => (
                       <li key={tenant.id} className="py-4 flex justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-900">{tenant.name}</p>
@@ -246,7 +246,7 @@ const Dashboard = () => {
               <div className="card-body">
                 {data?.revenue_trend?.length ? (
                   <div className="space-y-4">
-                    {data.revenue_trend.map((item, idx) => (
+                    {data.revenue_trend.map((item: any, idx: number) => (
                       <div key={idx} className="flex items-center">
                         <span className="w-12 text-sm text-gray-500">{item.month}</span>
                         <div className="flex-1 mx-4 bg-gray-100 rounded-full h-2">

@@ -22,10 +22,8 @@ import {
   useUpdateAdminPlan,
   useDeleteAdminPlan,
   useListAdminTenants,
-  InvoiceRead,
-  PlanRead,
-  PlanCreate
 } from '@/lib/api-client';
+import type { InvoiceRead, DetailedPlanRead as PlanRead, PlanCreate } from '@/api/generated/schemas';
 import { adminApi } from '@/lib/apiMutator';
 
 const getAdminInvoicePdf = (id: string) => {
@@ -82,12 +80,12 @@ const Billing: React.FC = () => {
     status: statusFilter !== 'all' ? (statusFilter as InvoiceRead['status']) : undefined
   });
 
-  const invoices = (invoicesData as any)?.data?.invoices || [];
+  const invoices = ((invoicesData as any)?.data?.invoices || []) as InvoiceRead[];
   const pagination = (invoicesData as any)?.data?.pagination;
 
   // Fetch plans
   const { data: plansData } = useListAdminPlans();
-  const plans = (plansData as any)?.data?.plans || [];
+  const plans = ((plansData as any)?.data?.plans || []) as PlanRead[];
 
   // Fetch tenants for invoice creation
   const { data: tenantsData } = useListAdminTenants({ limit: 100 }, { query: { enabled: showCreateModal } });
@@ -468,7 +466,7 @@ const Billing: React.FC = () => {
                           Toplam Tutar
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {formatCurrency(invoices.reduce((sum, inv) => sum + (inv.devicePrice || 0), 0) || 0)}
+                          {formatCurrency(invoices.reduce((sum: number, inv: InvoiceRead) => sum + Number((inv.devicePrice as unknown as number) || 0), 0) || 0)}
                         </dd>
                       </dl>
                     </div>
@@ -578,15 +576,15 @@ const Billing: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              {invoice.tenantName}
+                              {(invoice as any).tenantName}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {getStatusBadge(invoice.status)}
+                            {getStatusBadge(invoice.status || undefined)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              {formatCurrency(invoice.devicePrice || 0)}
+                              {formatCurrency(Number(invoice.devicePrice || 0))}
                             </div>
                             {invoice.status === 'paid' && (
                               <div className="text-sm text-green-600">
@@ -615,7 +613,7 @@ const Billing: React.FC = () => {
                               </button>
                               {invoice.status === 'active' && (
                                 <button
-                                  onClick={() => handlePaymentRecordClick(invoice.id!.toString(), invoice.devicePrice || 0)}
+                                  onClick={() => handlePaymentRecordClick(invoice.id!.toString(), Number(invoice.devicePrice || 0))}
                                   className="text-green-600 hover:text-green-900 text-xs px-2 py-1 border border-green-300 rounded"
                                 >
                                   Ödeme Kaydet
@@ -667,7 +665,7 @@ const Billing: React.FC = () => {
                   <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
                   <div className="mb-4">
                     <span className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(plan.price || 0, plan.currency)}
+                      {formatCurrency(plan.price || 0, 'TRY')}
                     </span>
                     <span className="text-gray-500 text-sm">
                       /{plan.billingInterval === 'MONTHLY' ? 'ay' : 'yıl'}
@@ -690,7 +688,7 @@ const Billing: React.FC = () => {
                     </div>
                   )}
                   <div className="text-xs text-gray-500">
-                    Oluşturulma: {plan.created_at ? formatDate(plan.created_at) : '-'}
+                    Oluşturulma: {plan.createdAt ? formatDate(plan.createdAt) : '-'}
                   </div>
                 </div>
               ))}
@@ -867,11 +865,11 @@ const Billing: React.FC = () => {
                         {plans.map((plan) => (
                           <tr key={plan.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{plan.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(plan.price || 0, plan.currency)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{plan.billing_interval === 'MONTHLY' ? 'Aylık' : 'Yıllık'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(plan.price || 0, 'TRY')}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{plan.billingInterval === 'MONTHLY' ? 'Aylık' : 'Yıllık'}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                {plan.is_active ? 'Aktif' : 'Pasif'}
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                {plan.isActive ? 'Aktif' : 'Pasif'}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
