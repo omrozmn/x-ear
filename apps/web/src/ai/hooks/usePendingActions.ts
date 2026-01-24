@@ -127,13 +127,18 @@ function parseErrorResponse(error: unknown): AIError {
   if (err?.response?.data) {
     const data = err.response.data;
 
+    const details =
+      data.details && typeof data.details === 'object'
+        ? (data.details as Record<string, unknown>)
+        : undefined;
+
     if (data.code && typeof data.code === 'string') {
       return {
         code: data.code as AIErrorCode,
         message: data.message || 'An error occurred',
         requestId: data.request_id || data.requestId,
         retryAfter: data.retry_after || data.retryAfter,
-        details: data.details,
+        details,
       };
     }
 
