@@ -71,7 +71,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   }, [value]);
 
   // Merge API categories with defaults and local additions
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   const allCategories = useMemo(() => {
     let apiCategories: string[] = [];
 

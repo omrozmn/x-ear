@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink } from 'lucide-react';
+import { MessageLoader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink } from 'lucide-react';
 import {
     useListSmConfig,
     useListSmHeaders,
@@ -12,8 +12,8 @@ import {
     getListSmHeadersQueryKey,
     getListSmCreditQueryKey
 } from '@/api/client/sms-integration.client';
-// @ts-ignore
-import type { SMSProviderConfigRead, SMSHeaderRequestRead } from '@/api/generated/schemas';
+// @ts-expect-error - Generated schema types may have import issues
+import type { SMSHeaderRequestRead } from '@/api/generated/schemas';
 import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -66,7 +66,7 @@ export default function IntegrationSettings() {
 
     const [isUploading, setIsUploading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [uploadedDocs, setUploadedDocs] = useState<any[]>([]);
+    const [uploadedDocs, setUploadedDocs] = useState<Array<{ type: string; status?: string; id?: string }>>([]);
     const [documentsSubmitted, setDocumentsSubmitted] = useState(false);
     const [allDocumentsApproved, setAllDocumentsApproved] = useState(false);
     const [newHeader, setNewHeader] = useState('');
@@ -102,9 +102,16 @@ export default function IntegrationSettings() {
             await uploadDocument({ data: { file }, params: { document_type: docType } });
             showSuccessToast('Belge yüklendi');
             refetchConfig();
-        } catch (error: any) {
-            const msg = error?.response?.data?.error?.message || error?.response?.data?.error || 'Yükleme başarısız';
-            showErrorToast(typeof msg === 'string' ? msg : 'Yükleme başarısız');
+        } catch (error: unknown) {
+            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
+            const errorData = errorObj?.response?.data?.error;
+            let msg = 'Yükleme başarısız';
+            if (typeof errorData === 'string') {
+                msg = errorData;
+            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
+                msg = errorData.message;
+            }
+            showErrorToast(msg);
         } finally {
             setIsUploading(false);
         }
@@ -117,9 +124,16 @@ export default function IntegrationSettings() {
             await deleteDocument({ documentType: docType });
             showSuccessToast('Belge silindi');
             refetchConfig();
-        } catch (error: any) {
-            const msg = error?.response?.data?.error?.message || error?.response?.data?.error || 'Silme başarısız';
-            showErrorToast(typeof msg === 'string' ? msg : 'Silme başarısız');
+        } catch (error: unknown) {
+            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
+            const errorData = errorObj?.response?.data?.error;
+            let msg = 'Silme başarısız';
+            if (typeof errorData === 'string') {
+                msg = errorData;
+            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
+                msg = errorData.message;
+            }
+            showErrorToast(msg);
         } finally {
             setIsDeleting(false);
         }
@@ -136,8 +150,9 @@ export default function IntegrationSettings() {
             });
 
             const previewUrl = response?.data?.url || response?.url;
+            const docFilename = (doc as { filename?: string }).filename || 'document';
             if (previewUrl) {
-                setPreviewDoc({ type: docType, url: previewUrl, filename: doc.filename });
+                setPreviewDoc({ type: docType, url: previewUrl, filename: docFilename });
             } else {
                 showErrorToast('Önizleme URL\'i alınamadı');
             }
@@ -155,9 +170,16 @@ export default function IntegrationSettings() {
             showSuccessToast('Belgeler gönderildi');
             setDocumentsSubmitted(true);
             refetchConfig();
-        } catch (error: any) {
-            const msg = error?.response?.data?.error?.message || error?.response?.data?.error || 'Gönderim başarısız';
-            showErrorToast(typeof msg === 'string' ? msg : 'Gönderim başarısız');
+        } catch (error: unknown) {
+            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
+            const errorData = errorObj?.response?.data?.error;
+            let msg = 'Gönderim başarısız';
+            if (typeof errorData === 'string') {
+                msg = errorData;
+            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
+                msg = errorData.message;
+            }
+            showErrorToast(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -185,14 +207,21 @@ export default function IntegrationSettings() {
             setHeaderDocument(null);
             if (headerDocInputRef.current) headerDocInputRef.current.value = '';
             refetchHeaders();
-        } catch (error: any) {
-            const msg = error?.response?.data?.error?.message || error?.response?.data?.error || 'Talep oluşturulamadı';
-            showErrorToast(typeof msg === 'string' ? msg : 'Talep oluşturulamadı');
+        } catch (error: unknown) {
+            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
+            const errorData = errorObj?.response?.data?.error;
+            let msg = 'Talep oluşturulamadı';
+            if (typeof errorData === 'string') {
+                msg = errorData;
+            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
+                msg = errorData.message;
+            }
+            showErrorToast(msg);
         }
     };
 
     const getUploadedDoc = (docType: string) => uploadedDocs.find(d => d.type === docType);
-    const getDocStatusBadge = (doc: any) => {
+    const getDocStatusBadge = (doc: { type: string; status?: string; id?: string } | undefined) => {
         if (!doc) return null;
         const status = doc.status || 'uploaded';
         const badges: Record<string, { bg: string; text: string; label: string }> = {
@@ -289,7 +318,7 @@ export default function IntegrationSettings() {
                                                                 <div className="font-medium text-gray-900 dark:text-white">{doc.label}</div>
                                                                 {uploaded && (
                                                                     <div className="flex items-center gap-2 mt-1">
-                                                                        <span className="text-xs text-gray-500">{uploaded.filename}</span>
+                                                                        <span className="text-xs text-gray-500">{(uploaded as { filename?: string }).filename || 'document'}</span>
                                                                         {getDocStatusBadge(uploaded)}
                                                                     </div>
                                                                 )}
@@ -421,7 +450,7 @@ export default function IntegrationSettings() {
                                             {headers.length === 0 ? (
                                                 <p className="text-gray-500 dark:text-gray-400 text-center py-8">Henüz SMS başlığı bulunmuyor.</p>
                                             ) : (
-                                                headers.map((h: any) => (
+                                                headers.map((h) => (
                                                     <div key={h.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                                                         <div>
                                                             <div className="font-medium text-gray-900 dark:text-white">{h.headerText}</div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Button, Card, Textarea, Input } from '@x-ear/ui-web';
+import { Button, Card, Textarea } from '@x-ear/ui-web';
 import Papa from 'papaparse';
 
 interface BulkSerialUploadProps {

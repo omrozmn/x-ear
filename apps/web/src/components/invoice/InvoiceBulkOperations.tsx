@@ -3,11 +3,10 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Send, XCircle, Download, Trash2, File } from 'lucide-react';
 import { Invoice, InvoiceBulkAction, InvoiceExportOptions } from '../../types/invoice';
 import { invoiceService } from '../../services/invoice.service';
-import { EFaturaSubmissionData, EFaturaIntegratorResponse } from '../../types/efatura';
 
 interface InvoiceBulkOperationsProps {
   selectedInvoices: Invoice[];
-  onBulkActionComplete?: (action: string, results: any) => void;
+  onBulkActionComplete?: (action: string, results: BulkOperationResult[]) => void;
   onSelectionClear?: () => void;
   className?: string;
 }
@@ -219,7 +218,13 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
       const ids = selectedInvoices.map(i => i.id);
       const resp = await invoiceService.submitBulkEFatura({ invoiceIds: ids, submissionDate: new Date().toISOString() });
       if (resp && resp.results && Array.isArray(resp.results)) {
-        (resp as any).results.forEach((r: any) => {
+        (resp.results as Array<{
+          invoiceId: string;
+          success?: boolean;
+          ettn?: string;
+          message?: string;
+          error?: string;
+        }>).forEach((r) => {
           results.push({
             invoiceId: r.invoiceId,
             invoiceNumber: selectedInvoices.find(si => si.id === r.invoiceId)?.invoiceNumber || r.invoiceId,
@@ -281,7 +286,16 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
       const resp = await invoiceService.exportInvoices({ format: exportOptions.format, filters: undefined });
       if (resp.success && resp.data) {
         // For now, export as CSV as before
-        const exportData = (resp as any).data.invoices.map((invoice: any) => ({
+        const invoicesData = (resp.data as { invoices?: Array<{
+          invoiceNumber?: string;
+          partyName?: string;
+          issueDate?: string;
+          grandTotal?: number;
+          status?: string;
+          paymentMethod?: string;
+        }> }).invoices || [];
+        
+        const exportData = invoicesData.map((invoice) => ({
           'Fatura No': invoice.invoiceNumber,
           'Hasta': invoice.partyName,
           'Tarih': invoice.issueDate,

@@ -103,35 +103,7 @@ function PermissionLoadingSkeleton() {
   );
 }
 
-/**
- * HOC version of PermissionGate for wrapping components
- */
-export function withPermission<P extends object>(
-  WrappedComponent: React.ComponentType<P>,
-  permissionConfig: Omit<PermissionGateProps, 'children'>
-) {
-  return function PermissionWrappedComponent(props: P) {
-    return (
-      <PermissionGate {...permissionConfig}>
-        <WrappedComponent {...props} />
-      </PermissionGate>
-    );
-  };
-}
-
-/**
- * Hook-based permission check for more complex scenarios
- * Returns a function that can be used inline
- */
-export function usePermissionCheck() {
-  const { hasPermission, hasAnyPermission, hasAllPermissions, canAccessCategory, isSuperAdmin } = usePermissions();
-
-  return {
-    can: (permission: string) => isSuperAdmin || hasPermission(permission),
-    canAny: (permissions: string[]) => isSuperAdmin || hasAnyPermission(permissions),
-    canAll: (permissions: string[]) => isSuperAdmin || hasAllPermissions(permissions),
-    canAccess: (category: PermissionCategory) => isSuperAdmin || canAccessCategory(category),
-  };
-}
+// HOC and Hook extracted to separate files for HMR compliance
+// See src/hocs/withPermission.tsx and src/hooks/usePermissionCheck.ts
 
 export default PermissionGate;

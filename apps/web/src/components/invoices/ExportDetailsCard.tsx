@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Input, Select, Button, DatePicker } from '@x-ear/ui-web';
+import { Input, Select, DatePicker } from '@x-ear/ui-web';
 import { Info } from 'lucide-react';
 import type { ExportDetailsData } from './ExportDetailsModal';
 

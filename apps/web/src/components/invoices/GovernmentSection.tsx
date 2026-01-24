@@ -1,4 +1,4 @@
-import { Select, Input } from '@x-ear/ui-web';
+import { Select } from '@x-ear/ui-web';
 import { AlertTriangle } from 'lucide-react';
 import { InvoiceFormData } from '../../types/invoice';
 

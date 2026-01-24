@@ -4,7 +4,6 @@ import { Save, X, AlertCircle, Package } from 'lucide-react';
 import {
   InventoryFormData,
   InventoryCategory,
-  InventoryType,
   EarDirection,
   InventoryItem,
   CreateInventoryData,
@@ -130,9 +129,9 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     const priceExcludingKdv = isPriceKdvIncluded
       ? formData.price / (1 + kdvRate / 100)
       : formData.price;
-    const calculatedPriceWithKdv = isPriceKdvIncluded
-      ? formData.price
-      : formData.price * (1 + kdvRate / 100);
+    // const calculatedPriceWithKdv = isPriceKdvIncluded
+    //   ? formData.price
+    //   : formData.price * (1 + kdvRate / 100);
     // const calculatedKdvAmount = calculatedPriceWithKdv - priceExcludingKdv;
 
     // Update state with calculated values - commented out as not displayed
@@ -243,7 +242,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof InventoryFormData, value: any) => {
+  const handleInputChange = (field: keyof InventoryFormData, value: string | number | boolean | string[] | null | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {

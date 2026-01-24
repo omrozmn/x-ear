@@ -11,7 +11,7 @@ import { unwrapArray } from '../../utils/response-unwrap';
 interface CustomerSectionProps {
   isSGK?: boolean;
   formData: InvoiceFormData;
-  onChange: (field: keyof InvoiceFormData, value: any) => void;
+  onChange: (field: keyof InvoiceFormData, value: unknown) => void;
   errors?: Record<string, string>;
   onCustomerEdit?: () => void;
 }

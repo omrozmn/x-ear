@@ -26,6 +26,7 @@ import type {
 
 import type {
   HTTPValidationError,
+  ResponseEnvelopeDictStrAny,
   ResponseEnvelopeSMTPConfigResponse,
   ResponseEnvelopeSendTestEmailResponse,
   ResponseEnvelopeUnionSMTPConfigResponseNoneType,
@@ -358,4 +359,127 @@ export const useSendTestEmail = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * Get email system metrics for monitoring and observability.
+
+Returns statistics about email sending operations including:
+- Total emails sent and failed
+- Retry count
+- Average send duration
+- Failure rate percentage
+- Failure breakdown by error type
+
+**Permissions Required:** `integrations.smtp.view`
+
+**Response:**
+- Returns current metrics snapshot
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "emailsSent": 150,
+    "emailsFailed": 5,
+    "emailsRetried": 8,
+    "averageSendDurationMs": 234.56,
+    "failureRatePercent": 3.23,
+    "failureByType": {
+      "SMTPConnectError": 3,
+      "SMTPAuthenticationError": 2
+    },
+    "lastReset": "2025-01-23T10:00:00Z"
+  }
+}
+```
+ * @summary Get Email Metrics
+ */
+export const getEmailMetrics = (
     
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeDictStrAny>(
+      {url: `/admin/integrations/smtp/metrics`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetEmailMetricsQueryKey = () => {
+    return [
+    `/admin/integrations/smtp/metrics`
+    ] as const;
+    }
+
+    
+export const getGetEmailMetricsQueryOptions = <TData = Awaited<ReturnType<typeof getEmailMetrics>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailMetrics>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEmailMetricsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEmailMetrics>>> = ({ signal }) => getEmailMetrics(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEmailMetrics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetEmailMetricsQueryResult = NonNullable<Awaited<ReturnType<typeof getEmailMetrics>>>
+export type GetEmailMetricsQueryError = unknown
+
+
+export function useGetEmailMetrics<TData = Awaited<ReturnType<typeof getEmailMetrics>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailMetrics>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailMetrics>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetEmailMetrics<TData = Awaited<ReturnType<typeof getEmailMetrics>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailMetrics>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailMetrics>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetEmailMetrics<TData = Awaited<ReturnType<typeof getEmailMetrics>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailMetrics>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Email Metrics
+ */
+
+export function useGetEmailMetrics<TData = Awaited<ReturnType<typeof getEmailMetrics>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailMetrics>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetEmailMetricsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

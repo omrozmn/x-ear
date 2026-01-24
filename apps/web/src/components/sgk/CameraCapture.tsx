@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Modal, Button } from '@x-ear/ui-web';
-import { Camera, X, RotateCcw, Check, Square, Zap, ZapOff } from 'lucide-react';
+import { Camera, X, RotateCcw, Check, Zap, ZapOff } from 'lucide-react';
 
 interface CameraCaptureProps {
   isOpen: boolean;

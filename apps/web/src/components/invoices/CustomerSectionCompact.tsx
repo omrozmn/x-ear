@@ -1,4 +1,4 @@
-import { Input, Button, Select } from '@x-ear/ui-web';
+import { Input, Button } from '@x-ear/ui-web';
 import { useState, useEffect, useCallback } from 'react';
 import { User, CheckCircle } from 'lucide-react';
 import { partyService } from '../../services/party.service';
@@ -16,7 +16,7 @@ interface CustomerSectionCompactProps {
   customerAddress?: string;
   customerCity?: string;
   customerDistrict?: string;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: unknown) => void;
 }
 
 // SGK sabit bilgisi
@@ -42,7 +42,7 @@ export function CustomerSectionCompact({
   const [searchResults, setSearchResults] = useState<Party[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [selectedParty, setSelectedParty] = useState<Party | null>(null);
+  const [_selectedParty, setSelectedParty] = useState<Party | null>(null);
   const [districts, setDistricts] = useState<string[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 

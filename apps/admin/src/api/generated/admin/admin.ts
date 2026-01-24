@@ -26,20 +26,44 @@ import type {
 
 import type {
   AdminLoginRequest,
+  ApprovalActionRequest,
+  CheckDeliverabilityAlertsParams,
   CreateAdminUserRequest,
   CreateTicketRequest,
+  GetDeliverabilityMetricsParams,
+  GetDeliverabilityTrendParams,
   HTTPValidationError,
   ListAdminTicketsParams,
   ListAdminUserAllParams,
   ListAdminUsersParams,
+  ListBouncesParams,
+  ListComplaintsParams,
+  ListEmailApprovalsParams,
+  ListUnsubscribesParams,
+  ProcessFBLRequest,
   ResponseEnvelope,
   ResponseEnvelopeAdminLoginResponse,
+  ResponseEnvelopeAlertCheckResponse,
+  ResponseEnvelopeApprovalListResponse,
+  ResponseEnvelopeApprovalStatsResponse,
   ResponseEnvelopeAvailableRolesResponse,
+  ResponseEnvelopeBounceListResponse,
+  ResponseEnvelopeBounceStatsResponse,
+  ResponseEnvelopeComplaintListResponse,
+  ResponseEnvelopeComplaintStatsResponse,
   ResponseEnvelopeDebugPagePermissionResponse,
+  ResponseEnvelopeDeliverabilityMetricsResponse,
   ResponseEnvelopeListAdminUserRead,
   ResponseEnvelopeListTicketRead,
+  ResponseEnvelopeSpamPreviewResponse,
+  ResponseEnvelopeTrendResponse,
+  ResponseEnvelopeUnsubscribeListResponse,
+  ResponseEnvelopeUnsubscribeStatsResponse,
   ResponseEnvelopeUserRead,
   RoutersAdminUpdateTenantUserRequest,
+  SchemasBaseResponseEnvelopeDict,
+  SchemasResponseResponseEnvelopeDict,
+  SpamPreviewRequest,
   SwitchRoleRequest,
   SwitchTenantRequest,
   TicketResponseRequest,
@@ -1103,3 +1127,1484 @@ export function useGetAdminDebugPagePermission<TData = Awaited<ReturnType<typeof
 
 
 
+/**
+ * Get email deliverability metrics for time window
+ * @summary Get deliverability metrics
+ */
+export const getDeliverabilityMetrics = (
+    params?: GetDeliverabilityMetricsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeDeliverabilityMetricsResponse>(
+      {url: `/api/deliverability/metrics`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetDeliverabilityMetricsQueryKey = (params?: GetDeliverabilityMetricsParams,) => {
+    return [
+    `/api/deliverability/metrics`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetDeliverabilityMetricsQueryOptions = <TData = Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError = HTTPValidationError>(params?: GetDeliverabilityMetricsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDeliverabilityMetricsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeliverabilityMetrics>>> = ({ signal }) => getDeliverabilityMetrics(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetDeliverabilityMetricsQueryResult = NonNullable<Awaited<ReturnType<typeof getDeliverabilityMetrics>>>
+export type GetDeliverabilityMetricsQueryError = HTTPValidationError
+
+
+export function useGetDeliverabilityMetrics<TData = Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError = HTTPValidationError>(
+ params: undefined |  GetDeliverabilityMetricsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDeliverabilityMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof getDeliverabilityMetrics>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetDeliverabilityMetrics<TData = Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError = HTTPValidationError>(
+ params?: GetDeliverabilityMetricsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDeliverabilityMetrics>>,
+          TError,
+          Awaited<ReturnType<typeof getDeliverabilityMetrics>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetDeliverabilityMetrics<TData = Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError = HTTPValidationError>(
+ params?: GetDeliverabilityMetricsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get deliverability metrics
+ */
+
+export function useGetDeliverabilityMetrics<TData = Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError = HTTPValidationError>(
+ params?: GetDeliverabilityMetricsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityMetrics>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetDeliverabilityMetricsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Check if metrics exceed alert thresholds
+ * @summary Check deliverability alerts
+ */
+export const checkDeliverabilityAlerts = (
+    params?: CheckDeliverabilityAlertsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeAlertCheckResponse>(
+      {url: `/api/deliverability/alerts/check`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getCheckDeliverabilityAlertsQueryKey = (params?: CheckDeliverabilityAlertsParams,) => {
+    return [
+    `/api/deliverability/alerts/check`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getCheckDeliverabilityAlertsQueryOptions = <TData = Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError = HTTPValidationError>(params?: CheckDeliverabilityAlertsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCheckDeliverabilityAlertsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>> = ({ signal }) => checkDeliverabilityAlerts(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type CheckDeliverabilityAlertsQueryResult = NonNullable<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>>
+export type CheckDeliverabilityAlertsQueryError = HTTPValidationError
+
+
+export function useCheckDeliverabilityAlerts<TData = Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError = HTTPValidationError>(
+ params: undefined |  CheckDeliverabilityAlertsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof checkDeliverabilityAlerts>>,
+          TError,
+          Awaited<ReturnType<typeof checkDeliverabilityAlerts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useCheckDeliverabilityAlerts<TData = Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError = HTTPValidationError>(
+ params?: CheckDeliverabilityAlertsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof checkDeliverabilityAlerts>>,
+          TError,
+          Awaited<ReturnType<typeof checkDeliverabilityAlerts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useCheckDeliverabilityAlerts<TData = Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError = HTTPValidationError>(
+ params?: CheckDeliverabilityAlertsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Check deliverability alerts
+ */
+
+export function useCheckDeliverabilityAlerts<TData = Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError = HTTPValidationError>(
+ params?: CheckDeliverabilityAlertsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof checkDeliverabilityAlerts>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getCheckDeliverabilityAlertsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get deliverability metrics trend over time
+ * @summary Get deliverability trend
+ */
+export const getDeliverabilityTrend = (
+    params?: GetDeliverabilityTrendParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeTrendResponse>(
+      {url: `/api/deliverability/trend`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetDeliverabilityTrendQueryKey = (params?: GetDeliverabilityTrendParams,) => {
+    return [
+    `/api/deliverability/trend`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetDeliverabilityTrendQueryOptions = <TData = Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError = HTTPValidationError>(params?: GetDeliverabilityTrendParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDeliverabilityTrendQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeliverabilityTrend>>> = ({ signal }) => getDeliverabilityTrend(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetDeliverabilityTrendQueryResult = NonNullable<Awaited<ReturnType<typeof getDeliverabilityTrend>>>
+export type GetDeliverabilityTrendQueryError = HTTPValidationError
+
+
+export function useGetDeliverabilityTrend<TData = Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError = HTTPValidationError>(
+ params: undefined |  GetDeliverabilityTrendParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDeliverabilityTrend>>,
+          TError,
+          Awaited<ReturnType<typeof getDeliverabilityTrend>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetDeliverabilityTrend<TData = Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError = HTTPValidationError>(
+ params?: GetDeliverabilityTrendParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDeliverabilityTrend>>,
+          TError,
+          Awaited<ReturnType<typeof getDeliverabilityTrend>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetDeliverabilityTrend<TData = Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError = HTTPValidationError>(
+ params?: GetDeliverabilityTrendParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get deliverability trend
+ */
+
+export function useGetDeliverabilityTrend<TData = Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError = HTTPValidationError>(
+ params?: GetDeliverabilityTrendParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeliverabilityTrend>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetDeliverabilityTrendQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Store daily deliverability metrics snapshot
+ * @summary Create daily metrics snapshot
+ */
+export const createDeliverabilitySnapshot = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<SchemasBaseResponseEnvelopeDict>(
+      {url: `/api/deliverability/snapshot`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getCreateDeliverabilitySnapshotMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeliverabilitySnapshot>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createDeliverabilitySnapshot>>, TError,void, TContext> => {
+
+const mutationKey = ['createDeliverabilitySnapshot'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDeliverabilitySnapshot>>, void> = () => {
+          
+
+          return  createDeliverabilitySnapshot()
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDeliverabilitySnapshotMutationResult = NonNullable<Awaited<ReturnType<typeof createDeliverabilitySnapshot>>>
+    
+    export type CreateDeliverabilitySnapshotMutationError = unknown
+
+    /**
+ * @summary Create daily metrics snapshot
+ */
+export const useCreateDeliverabilitySnapshot = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeliverabilitySnapshot>>, TError,void, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createDeliverabilitySnapshot>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getCreateDeliverabilitySnapshotMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get paginated list of email bounces with filters
+ * @summary List email bounces
+ */
+export const listBounces = (
+    params?: ListBouncesParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeBounceListResponse>(
+      {url: `/api/admin/bounces`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListBouncesQueryKey = (params?: ListBouncesParams,) => {
+    return [
+    `/api/admin/bounces`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListBouncesQueryOptions = <TData = Awaited<ReturnType<typeof listBounces>>, TError = HTTPValidationError>(params?: ListBouncesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBounces>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBouncesQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBounces>>> = ({ signal }) => listBounces(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBounces>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListBouncesQueryResult = NonNullable<Awaited<ReturnType<typeof listBounces>>>
+export type ListBouncesQueryError = HTTPValidationError
+
+
+export function useListBounces<TData = Awaited<ReturnType<typeof listBounces>>, TError = HTTPValidationError>(
+ params: undefined |  ListBouncesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBounces>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBounces>>,
+          TError,
+          Awaited<ReturnType<typeof listBounces>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListBounces<TData = Awaited<ReturnType<typeof listBounces>>, TError = HTTPValidationError>(
+ params?: ListBouncesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBounces>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBounces>>,
+          TError,
+          Awaited<ReturnType<typeof listBounces>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListBounces<TData = Awaited<ReturnType<typeof listBounces>>, TError = HTTPValidationError>(
+ params?: ListBouncesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBounces>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary List email bounces
+ */
+
+export function useListBounces<TData = Awaited<ReturnType<typeof listBounces>>, TError = HTTPValidationError>(
+ params?: ListBouncesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBounces>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListBouncesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get overall bounce statistics for tenant
+ * @summary Get bounce statistics
+ */
+export const getBounceStats = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeBounceStatsResponse>(
+      {url: `/api/admin/bounces/stats`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetBounceStatsQueryKey = () => {
+    return [
+    `/api/admin/bounces/stats`
+    ] as const;
+    }
+
+    
+export const getGetBounceStatsQueryOptions = <TData = Awaited<ReturnType<typeof getBounceStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBounceStats>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBounceStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBounceStats>>> = ({ signal }) => getBounceStats(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBounceStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetBounceStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getBounceStats>>>
+export type GetBounceStatsQueryError = unknown
+
+
+export function useGetBounceStats<TData = Awaited<ReturnType<typeof getBounceStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBounceStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBounceStats>>,
+          TError,
+          Awaited<ReturnType<typeof getBounceStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetBounceStats<TData = Awaited<ReturnType<typeof getBounceStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBounceStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBounceStats>>,
+          TError,
+          Awaited<ReturnType<typeof getBounceStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetBounceStats<TData = Awaited<ReturnType<typeof getBounceStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBounceStats>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get bounce statistics
+ */
+
+export function useGetBounceStats<TData = Awaited<ReturnType<typeof getBounceStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBounceStats>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetBounceStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Manually unblacklist a recipient
+ * @summary Remove recipient from blacklist
+ */
+export const unblacklistRecipient = (
+    bounceId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<SchemasBaseResponseEnvelopeDict>(
+      {url: `/api/admin/bounces/${bounceId}/unblacklist`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getUnblacklistRecipientMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unblacklistRecipient>>, TError,{bounceId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof unblacklistRecipient>>, TError,{bounceId: string}, TContext> => {
+
+const mutationKey = ['unblacklistRecipient'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unblacklistRecipient>>, {bounceId: string}> = (props) => {
+          const {bounceId} = props ?? {};
+
+          return  unblacklistRecipient(bounceId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnblacklistRecipientMutationResult = NonNullable<Awaited<ReturnType<typeof unblacklistRecipient>>>
+    
+    export type UnblacklistRecipientMutationError = HTTPValidationError
+
+    /**
+ * @summary Remove recipient from blacklist
+ */
+export const useUnblacklistRecipient = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unblacklistRecipient>>, TError,{bounceId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof unblacklistRecipient>>,
+        TError,
+        {bounceId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getUnblacklistRecipientMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Analyze email content and preview spam score before sending
+ * @summary Preview spam score
+ */
+export const previewSpamScore = (
+    spamPreviewRequest: SpamPreviewRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeSpamPreviewResponse>(
+      {url: `/api/admin/spam-preview`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: spamPreviewRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getPreviewSpamScoreMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewSpamScore>>, TError,{data: SpamPreviewRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof previewSpamScore>>, TError,{data: SpamPreviewRequest}, TContext> => {
+
+const mutationKey = ['previewSpamScore'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof previewSpamScore>>, {data: SpamPreviewRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  previewSpamScore(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PreviewSpamScoreMutationResult = NonNullable<Awaited<ReturnType<typeof previewSpamScore>>>
+    export type PreviewSpamScoreMutationBody = SpamPreviewRequest
+    export type PreviewSpamScoreMutationError = HTTPValidationError
+
+    /**
+ * @summary Preview spam score
+ */
+export const usePreviewSpamScore = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewSpamScore>>, TError,{data: SpamPreviewRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof previewSpamScore>>,
+        TError,
+        {data: SpamPreviewRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getPreviewSpamScoreMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get paginated list of email unsubscribes with filters
+ * @summary List email unsubscribes
+ */
+export const listUnsubscribes = (
+    params?: ListUnsubscribesParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeUnsubscribeListResponse>(
+      {url: `/api/admin/unsubscribes`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListUnsubscribesQueryKey = (params?: ListUnsubscribesParams,) => {
+    return [
+    `/api/admin/unsubscribes`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListUnsubscribesQueryOptions = <TData = Awaited<ReturnType<typeof listUnsubscribes>>, TError = HTTPValidationError>(params?: ListUnsubscribesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnsubscribes>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListUnsubscribesQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUnsubscribes>>> = ({ signal }) => listUnsubscribes(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUnsubscribes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListUnsubscribesQueryResult = NonNullable<Awaited<ReturnType<typeof listUnsubscribes>>>
+export type ListUnsubscribesQueryError = HTTPValidationError
+
+
+export function useListUnsubscribes<TData = Awaited<ReturnType<typeof listUnsubscribes>>, TError = HTTPValidationError>(
+ params: undefined |  ListUnsubscribesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnsubscribes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listUnsubscribes>>,
+          TError,
+          Awaited<ReturnType<typeof listUnsubscribes>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListUnsubscribes<TData = Awaited<ReturnType<typeof listUnsubscribes>>, TError = HTTPValidationError>(
+ params?: ListUnsubscribesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnsubscribes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listUnsubscribes>>,
+          TError,
+          Awaited<ReturnType<typeof listUnsubscribes>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListUnsubscribes<TData = Awaited<ReturnType<typeof listUnsubscribes>>, TError = HTTPValidationError>(
+ params?: ListUnsubscribesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnsubscribes>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary List email unsubscribes
+ */
+
+export function useListUnsubscribes<TData = Awaited<ReturnType<typeof listUnsubscribes>>, TError = HTTPValidationError>(
+ params?: ListUnsubscribesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUnsubscribes>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListUnsubscribesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get overall unsubscribe statistics for tenant
+ * @summary Get unsubscribe statistics
+ */
+export const getUnsubscribeStats = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeUnsubscribeStatsResponse>(
+      {url: `/api/admin/unsubscribes/stats`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUnsubscribeStatsQueryKey = () => {
+    return [
+    `/api/admin/unsubscribes/stats`
+    ] as const;
+    }
+
+    
+export const getGetUnsubscribeStatsQueryOptions = <TData = Awaited<ReturnType<typeof getUnsubscribeStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnsubscribeStats>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUnsubscribeStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUnsubscribeStats>>> = ({ signal }) => getUnsubscribeStats(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUnsubscribeStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetUnsubscribeStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getUnsubscribeStats>>>
+export type GetUnsubscribeStatsQueryError = unknown
+
+
+export function useGetUnsubscribeStats<TData = Awaited<ReturnType<typeof getUnsubscribeStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnsubscribeStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUnsubscribeStats>>,
+          TError,
+          Awaited<ReturnType<typeof getUnsubscribeStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetUnsubscribeStats<TData = Awaited<ReturnType<typeof getUnsubscribeStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnsubscribeStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUnsubscribeStats>>,
+          TError,
+          Awaited<ReturnType<typeof getUnsubscribeStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetUnsubscribeStats<TData = Awaited<ReturnType<typeof getUnsubscribeStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnsubscribeStats>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get unsubscribe statistics
+ */
+
+export function useGetUnsubscribeStats<TData = Awaited<ReturnType<typeof getUnsubscribeStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnsubscribeStats>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetUnsubscribeStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Remove unsubscribe preference (allows sending emails again)
+ * @summary Delete unsubscribe record
+ */
+export const deleteUnsubscribe = (
+    unsubscribeId: string,
+ ) => {
+      
+      
+      return adminApi<SchemasBaseResponseEnvelopeDict>(
+      {url: `/api/admin/unsubscribes/${unsubscribeId}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteUnsubscribeMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUnsubscribe>>, TError,{unsubscribeId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteUnsubscribe>>, TError,{unsubscribeId: string}, TContext> => {
+
+const mutationKey = ['deleteUnsubscribe'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUnsubscribe>>, {unsubscribeId: string}> = (props) => {
+          const {unsubscribeId} = props ?? {};
+
+          return  deleteUnsubscribe(unsubscribeId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteUnsubscribeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUnsubscribe>>>
+    
+    export type DeleteUnsubscribeMutationError = HTTPValidationError
+
+    /**
+ * @summary Delete unsubscribe record
+ */
+export const useDeleteUnsubscribe = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUnsubscribe>>, TError,{unsubscribeId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteUnsubscribe>>,
+        TError,
+        {unsubscribeId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteUnsubscribeMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get paginated list of email approval requests with filters
+ * @summary List email approval requests
+ */
+export const listEmailApprovals = (
+    params?: ListEmailApprovalsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeApprovalListResponse>(
+      {url: `/api/admin/email-approvals`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListEmailApprovalsQueryKey = (params?: ListEmailApprovalsParams,) => {
+    return [
+    `/api/admin/email-approvals`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListEmailApprovalsQueryOptions = <TData = Awaited<ReturnType<typeof listEmailApprovals>>, TError = HTTPValidationError>(params?: ListEmailApprovalsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEmailApprovals>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEmailApprovalsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEmailApprovals>>> = ({ signal }) => listEmailApprovals(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEmailApprovals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListEmailApprovalsQueryResult = NonNullable<Awaited<ReturnType<typeof listEmailApprovals>>>
+export type ListEmailApprovalsQueryError = HTTPValidationError
+
+
+export function useListEmailApprovals<TData = Awaited<ReturnType<typeof listEmailApprovals>>, TError = HTTPValidationError>(
+ params: undefined |  ListEmailApprovalsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEmailApprovals>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEmailApprovals>>,
+          TError,
+          Awaited<ReturnType<typeof listEmailApprovals>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListEmailApprovals<TData = Awaited<ReturnType<typeof listEmailApprovals>>, TError = HTTPValidationError>(
+ params?: ListEmailApprovalsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEmailApprovals>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEmailApprovals>>,
+          TError,
+          Awaited<ReturnType<typeof listEmailApprovals>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListEmailApprovals<TData = Awaited<ReturnType<typeof listEmailApprovals>>, TError = HTTPValidationError>(
+ params?: ListEmailApprovalsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEmailApprovals>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary List email approval requests
+ */
+
+export function useListEmailApprovals<TData = Awaited<ReturnType<typeof listEmailApprovals>>, TError = HTTPValidationError>(
+ params?: ListEmailApprovalsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEmailApprovals>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListEmailApprovalsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get overall email approval statistics for tenant
+ * @summary Get email approval statistics
+ */
+export const getEmailApprovalStats = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeApprovalStatsResponse>(
+      {url: `/api/admin/email-approvals/stats`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetEmailApprovalStatsQueryKey = () => {
+    return [
+    `/api/admin/email-approvals/stats`
+    ] as const;
+    }
+
+    
+export const getGetEmailApprovalStatsQueryOptions = <TData = Awaited<ReturnType<typeof getEmailApprovalStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailApprovalStats>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEmailApprovalStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEmailApprovalStats>>> = ({ signal }) => getEmailApprovalStats(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEmailApprovalStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetEmailApprovalStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getEmailApprovalStats>>>
+export type GetEmailApprovalStatsQueryError = unknown
+
+
+export function useGetEmailApprovalStats<TData = Awaited<ReturnType<typeof getEmailApprovalStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailApprovalStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailApprovalStats>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailApprovalStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetEmailApprovalStats<TData = Awaited<ReturnType<typeof getEmailApprovalStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailApprovalStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailApprovalStats>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailApprovalStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetEmailApprovalStats<TData = Awaited<ReturnType<typeof getEmailApprovalStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailApprovalStats>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get email approval statistics
+ */
+
+export function useGetEmailApprovalStats<TData = Awaited<ReturnType<typeof getEmailApprovalStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailApprovalStats>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetEmailApprovalStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Approve HIGH/CRITICAL risk email for sending
+ * @summary Approve email for sending
+ */
+export const approveEmail = (
+    approvalId: string,
+    approvalActionRequest: ApprovalActionRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<SchemasBaseResponseEnvelopeDict>(
+      {url: `/api/admin/email-approvals/${approvalId}/approve`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: approvalActionRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getApproveEmailMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEmail>>, TError,{approvalId: string;data: ApprovalActionRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof approveEmail>>, TError,{approvalId: string;data: ApprovalActionRequest}, TContext> => {
+
+const mutationKey = ['approveEmail'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveEmail>>, {approvalId: string;data: ApprovalActionRequest}> = (props) => {
+          const {approvalId,data} = props ?? {};
+
+          return  approveEmail(approvalId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveEmailMutationResult = NonNullable<Awaited<ReturnType<typeof approveEmail>>>
+    export type ApproveEmailMutationBody = ApprovalActionRequest
+    export type ApproveEmailMutationError = HTTPValidationError
+
+    /**
+ * @summary Approve email for sending
+ */
+export const useApproveEmail = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEmail>>, TError,{approvalId: string;data: ApprovalActionRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof approveEmail>>,
+        TError,
+        {approvalId: string;data: ApprovalActionRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getApproveEmailMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Reject HIGH/CRITICAL risk email (will not be sent)
+ * @summary Reject email
+ */
+export const rejectEmail = (
+    approvalId: string,
+    approvalActionRequest: ApprovalActionRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<SchemasBaseResponseEnvelopeDict>(
+      {url: `/api/admin/email-approvals/${approvalId}/reject`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: approvalActionRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getRejectEmailMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectEmail>>, TError,{approvalId: string;data: ApprovalActionRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof rejectEmail>>, TError,{approvalId: string;data: ApprovalActionRequest}, TContext> => {
+
+const mutationKey = ['rejectEmail'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rejectEmail>>, {approvalId: string;data: ApprovalActionRequest}> = (props) => {
+          const {approvalId,data} = props ?? {};
+
+          return  rejectEmail(approvalId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RejectEmailMutationResult = NonNullable<Awaited<ReturnType<typeof rejectEmail>>>
+    export type RejectEmailMutationBody = ApprovalActionRequest
+    export type RejectEmailMutationError = HTTPValidationError
+
+    /**
+ * @summary Reject email
+ */
+export const useRejectEmail = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectEmail>>, TError,{approvalId: string;data: ApprovalActionRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof rejectEmail>>,
+        TError,
+        {approvalId: string;data: ApprovalActionRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getRejectEmailMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get paginated list of email complaints with filters
+ * @summary List email complaints
+ */
+export const listComplaints = (
+    params?: ListComplaintsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeComplaintListResponse>(
+      {url: `/api/admin/complaints`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListComplaintsQueryKey = (params?: ListComplaintsParams,) => {
+    return [
+    `/api/admin/complaints`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListComplaintsQueryOptions = <TData = Awaited<ReturnType<typeof listComplaints>>, TError = HTTPValidationError>(params?: ListComplaintsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listComplaints>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListComplaintsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listComplaints>>> = ({ signal }) => listComplaints(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listComplaints>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListComplaintsQueryResult = NonNullable<Awaited<ReturnType<typeof listComplaints>>>
+export type ListComplaintsQueryError = HTTPValidationError
+
+
+export function useListComplaints<TData = Awaited<ReturnType<typeof listComplaints>>, TError = HTTPValidationError>(
+ params: undefined |  ListComplaintsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listComplaints>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listComplaints>>,
+          TError,
+          Awaited<ReturnType<typeof listComplaints>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListComplaints<TData = Awaited<ReturnType<typeof listComplaints>>, TError = HTTPValidationError>(
+ params?: ListComplaintsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listComplaints>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listComplaints>>,
+          TError,
+          Awaited<ReturnType<typeof listComplaints>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListComplaints<TData = Awaited<ReturnType<typeof listComplaints>>, TError = HTTPValidationError>(
+ params?: ListComplaintsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listComplaints>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary List email complaints
+ */
+
+export function useListComplaints<TData = Awaited<ReturnType<typeof listComplaints>>, TError = HTTPValidationError>(
+ params?: ListComplaintsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listComplaints>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListComplaintsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get overall complaint statistics for tenant
+ * @summary Get complaint statistics
+ */
+export const getComplaintStats = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeComplaintStatsResponse>(
+      {url: `/api/admin/complaints/stats`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetComplaintStatsQueryKey = () => {
+    return [
+    `/api/admin/complaints/stats`
+    ] as const;
+    }
+
+    
+export const getGetComplaintStatsQueryOptions = <TData = Awaited<ReturnType<typeof getComplaintStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getComplaintStats>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetComplaintStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getComplaintStats>>> = ({ signal }) => getComplaintStats(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getComplaintStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetComplaintStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getComplaintStats>>>
+export type GetComplaintStatsQueryError = unknown
+
+
+export function useGetComplaintStats<TData = Awaited<ReturnType<typeof getComplaintStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getComplaintStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getComplaintStats>>,
+          TError,
+          Awaited<ReturnType<typeof getComplaintStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetComplaintStats<TData = Awaited<ReturnType<typeof getComplaintStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getComplaintStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getComplaintStats>>,
+          TError,
+          Awaited<ReturnType<typeof getComplaintStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetComplaintStats<TData = Awaited<ReturnType<typeof getComplaintStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getComplaintStats>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get complaint statistics
+ */
+
+export function useGetComplaintStats<TData = Awaited<ReturnType<typeof getComplaintStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getComplaintStats>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetComplaintStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Process Feedback Loop report from email provider
+ * @summary Process FBL report
+ */
+export const processFBLReport = (
+    processFBLRequest: ProcessFBLRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<SchemasResponseResponseEnvelopeDict>(
+      {url: `/api/admin/complaints/process-fbl`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: processFBLRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getProcessFBLReportMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processFBLReport>>, TError,{data: ProcessFBLRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof processFBLReport>>, TError,{data: ProcessFBLRequest}, TContext> => {
+
+const mutationKey = ['processFBLReport'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof processFBLReport>>, {data: ProcessFBLRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  processFBLReport(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProcessFBLReportMutationResult = NonNullable<Awaited<ReturnType<typeof processFBLReport>>>
+    export type ProcessFBLReportMutationBody = ProcessFBLRequest
+    export type ProcessFBLReportMutationError = HTTPValidationError
+
+    /**
+ * @summary Process FBL report
+ */
+export const useProcessFBLReport = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processFBLReport>>, TError,{data: ProcessFBLRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof processFBLReport>>,
+        TError,
+        {data: ProcessFBLRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getProcessFBLReportMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

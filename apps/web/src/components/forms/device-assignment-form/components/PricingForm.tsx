@@ -34,7 +34,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
   errors = {},
   showTrialPricing = false
 }) => {
-  const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
+  const updateFormData = useCallback((field: keyof DeviceAssignment, value: string | number | boolean | null) => {
     onFormDataChange({ [field]: value });
   }, [onFormDataChange]);
 

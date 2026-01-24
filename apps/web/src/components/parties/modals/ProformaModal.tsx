@@ -160,7 +160,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
     }).format(amount);
   };
 
-  const generateProformaNumber = () => {
+  const _generateProformaNumber = () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');

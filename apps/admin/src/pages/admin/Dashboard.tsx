@@ -1,9 +1,8 @@
 import React from 'react';
-import { AxiosError } from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   useGetAdminAnalytics,
-
+  AxiosError
 } from '@/lib/api-client';
 
 const Dashboard = () => {

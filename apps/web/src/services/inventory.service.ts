@@ -18,8 +18,9 @@ import {
   BulkOperationResult
 } from '../types/inventory';
 import { INVENTORY_DATA } from '../constants/storage-keys';
+import type { SearchableItem } from '../utils/fuzzy-search';
 import { outbox } from '../utils/outbox';
-import { searchProducts, FuzzySearchResult } from '../utils/fuzzy-search';
+import { searchProducts } from '../utils/fuzzy-search';
 import { searchAnalytics } from '../utils/search-analytics';
 import { getCurrentUserId } from '../utils/auth-utils';
 
@@ -243,7 +244,8 @@ export class InventoryService {
     if (filters.search) {
       if (filters.enableFuzzySearch) {
         // Use fuzzy search for better matching
-        const fuzzyResults = searchProducts(filters.search, allItems as any, {
+        // Cast InventoryItem[] to SearchableItem[] since InventoryItem has all required fields
+        const fuzzyResults = searchProducts(filters.search, allItems as unknown as SearchableItem[], {
           maxResults: filters.maxResults || 50,
           threshold: 0.3,
           enablePhonetic: true,

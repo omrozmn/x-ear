@@ -36,6 +36,24 @@ from utils.email_monitoring import (
 logger = logging.getLogger(__name__)
 
 
+# Scenario classification for unsubscribe management
+PROMOTIONAL_SCENARIOS = {
+    "invoice_created",
+    "system_notification",
+    "marketing_campaign",
+    "newsletter",
+    "product_update"
+}
+
+TRANSACTIONAL_SCENARIOS = {
+    "password_reset",
+    "user_invite",
+    "email_verification",
+    "smtp_test",
+    "system_error"
+}
+
+
 class EmailService:
     """Service for sending emails via SMTP with retry logic and audit logging."""
     
@@ -141,6 +159,19 @@ class EmailService:
                 )
                 return existing.id
         
+        # Determine if email is promotional
+        is_promotional = scenario in PROMOTIONAL_SCENARIOS
+        
+        # Generate unsubscribe token for promotional emails
+        unsubscribe_token = None
+        if is_promotional:
+            unsubscribe_service = get_unsubscribe_service(self.db)
+            _, unsubscribe_token = unsubscribe_service.generate_unsubscribe_link(
+                recipient=recipient,
+                tenant_id=tenant_id,
+                scenario=scenario
+            )
+        
         email_log = SMTPEmailLog(
             tenant_id=tenant_id,
             recipient=recipient,
@@ -150,7 +181,9 @@ class EmailService:
             scenario=scenario,
             template_name=scenario,
             retry_count=0,
-            idempotency_key=idempotency_key
+            idempotency_key=idempotency_key,
+            is_promotional=is_promotional,
+            unsubscribe_token=unsubscribe_token
         )
         
         self.db.add(email_log)
@@ -311,13 +344,54 @@ class EmailService:
                         scenario, language, variables
                     )
                     
+                    # Get email log to check if promotional
+                    email_log = db.get(SMTPEmailLog, email_log_id)
+                    
+                    # Inject unsubscribe link for promotional emails
+                    if email_log and email_log.is_promotional and email_log.unsubscribe_token:
+                        from services.unsubscribe_service import get_unsubscribe_service
+                        unsubscribe_service = get_unsubscribe_service(db)
+                        
+                        # Generate unsubscribe URL
+                        unsubscribe_url, _ = unsubscribe_service.generate_unsubscribe_link(
+                            recipient=recipient,
+                            tenant_id=tenant_id,
+                            scenario=scenario
+                        )
+                        
+                        # Inject unsubscribe link into email footer
+                        unsubscribe_footer_html = f'''
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #666;">
+                            <p>Bu e-postayı almak istemiyorsanız, <a href="{unsubscribe_url}" style="color: #0066cc;">buraya tıklayarak</a> abonelikten çıkabilirsiniz.</p>
+                            <p>If you no longer wish to receive these emails, you can <a href="{unsubscribe_url}" style="color: #0066cc;">unsubscribe here</a>.</p>
+                        </div>
+                        '''
+                        
+                        unsubscribe_footer_text = f'''
+                        
+---
+Bu e-postayı almak istemiyorsanız, aşağıdaki bağlantıyı kullanarak abonelikten çıkabilirsiniz:
+{unsubscribe_url}
+
+If you no longer wish to receive these emails, you can unsubscribe here:
+{unsubscribe_url}
+                        '''
+                        
+                        # Inject into HTML (before closing </body> tag if exists, otherwise append)
+                        if '</body>' in html_body:
+                            html_body = html_body.replace('</body>', f'{unsubscribe_footer_html}</body>')
+                        else:
+                            html_body += unsubscribe_footer_html
+                        
+                        # Inject into text
+                        text_body += unsubscribe_footer_text
+                    
                     # Spam filter check
                     from services.spam_filter_service import get_spam_filter_service
                     spam_service = get_spam_filter_service()
                     spam_result = spam_service.analyze_content(subject, html_body, text_body)
                     
                     # Update email log with spam score
-                    email_log = db.get(SMTPEmailLog, email_log_id)
                     if email_log and hasattr(email_log, 'spam_score'):
                         email_log.spam_score = spam_result["spam_score"]
                         db.commit()
@@ -354,6 +428,8 @@ class EmailService:
                         subject=subject,
                         html_body=html_body,
                         text_body=text_body,
+                        email_log_id=email_log_id,
+                        db=db,
                         request_id=request_id
                     )
                     send_duration_ms = (time.time() - send_start) * 1000
@@ -579,9 +655,11 @@ class EmailService:
         subject: str,
         html_body: str,
         text_body: str,
+        email_log_id: str = None,
+        db: Session = None,
         request_id: Optional[str] = None
     ):
-        """Send email via SMTP using aiosmtplib."""
+        """Send email via SMTP using aiosmtplib with DKIM signing."""
         connection_start = time.time()
         
         message = MIMEMultipart("alternative")
@@ -593,6 +671,47 @@ class EmailService:
         
         message.attach(MIMEText(text_body, "plain", "utf-8"))
         message.attach(MIMEText(html_body, "html", "utf-8"))
+        
+        # DKIM signing
+        dkim_signed = False
+        try:
+            from services.dkim_signing_service import get_dkim_signing_service
+            dkim_service = get_dkim_signing_service()
+            
+            # Sign the message
+            signed_message = dkim_service.sign_email(message)
+            dkim_signed = True
+            
+            logger.debug(
+                "Email DKIM signed successfully",
+                extra={
+                    "recipient": recipient,
+                    **({"email_log_id": email_log_id} if email_log_id else {}),
+                    **({"request_id": request_id} if request_id else {})
+                }
+            )
+            
+            # Use signed message
+            message = signed_message
+            
+        except Exception as e:
+            # DKIM signing is optional - log warning but continue
+            logger.warning(
+                "DKIM signing failed, sending without signature",
+                extra={
+                    "recipient": recipient,
+                    "error": str(e),
+                    **({"email_log_id": email_log_id} if email_log_id else {}),
+                    **({"request_id": request_id} if request_id else {})
+                }
+            )
+        
+        # Update email log with DKIM status
+        if email_log_id and db:
+            email_log = db.get(SMTPEmailLog, email_log_id)
+            if email_log and hasattr(email_log, 'dkim_signed'):
+                email_log.dkim_signed = dkim_signed
+                db.commit()
         
         async with SMTP(
             hostname=smtp_config["host"],

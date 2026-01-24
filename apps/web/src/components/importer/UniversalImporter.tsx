@@ -34,7 +34,7 @@ interface UniversalImporterProps {
   uploadEndpoint?: string; // endpoint to POST the file to
   modalTitle?: string;
   sampleDownloadUrl?: string;
-  onComplete?: (result: { created: number; updated: number; errors: any[] }) => void;
+  onComplete?: (result: { created: number; updated: number; errors: ImportError[] }) => void;
   previewRows?: number;
 }
 
@@ -72,7 +72,7 @@ const readFile = async (file: File): Promise<{ headers: string[]; rows: RowData[
   return { headers, rows };
 };
 
-const sanitizeCell = (val: any) => {
+const sanitizeCell = (val: unknown) => {
   if (typeof val !== 'string') return val;
   // Prevent CSV injection
   if (/^[=+\-@]/.test(val)) return `'${val}`;
@@ -99,7 +99,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
   const [errors, setErrors] = useState<ImportError[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<number>(1);
-  const [importResult, setImportResult] = useState<{ created: number; updated: number; errors: any[] } | null>(null);
+  const [importResult, setImportResult] = useState<{ created: number; updated: number; errors: ImportError[] } | null>(null);
   const schema = zodSchema || defaultSchema;
 
   useEffect(() => {
@@ -376,7 +376,9 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
                 {importResult.errors && importResult.errors.length > 0 && (
                   <div className="mt-2 max-h-48 overflow-auto text-sm border rounded p-2">
                     {importResult.errors.map((err, i) => (
-                      <div key={i} className="mb-2">Satır {err.row || i + 1}: {err.error || JSON.stringify(err)}</div>
+                      <div key={i} className="mb-2">
+                        Satır {err.row || i + 1}: {err.issues.join(', ')}
+                      </div>
                     ))}
                   </div>
                 )}

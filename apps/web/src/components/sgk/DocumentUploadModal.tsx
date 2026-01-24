@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Button, Input, FileUpload } from '@x-ear/ui-web';
+import { Modal, Button, FileUpload } from '@x-ear/ui-web';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';

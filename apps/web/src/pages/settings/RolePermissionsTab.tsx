@@ -17,7 +17,7 @@ import { RoleRead, ResponseEnvelopeListRoleRead } from '@/api/generated/schemas'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
 import { Button, Input, Checkbox } from '@x-ear/ui-web';
-import { AxiosError } from 'axios';
+import { AxiosError } from '@/api/orval-mutator';
 
 // Permission categories with icons
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {

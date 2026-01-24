@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig, AxiosInstance } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig, AxiosInstance, AxiosError } from 'axios';
 import humps from 'humps';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { tokenManager } from '../utils/token-manager';
@@ -462,7 +462,7 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
 export { retryRequest, calculateBackoffDelay, isRetryableError };
 
 // Export the configured axios instance for direct usage
-export { apiClient };
+export { apiClient, AxiosError };
 
 // Default export for Orval
 export default customInstance;

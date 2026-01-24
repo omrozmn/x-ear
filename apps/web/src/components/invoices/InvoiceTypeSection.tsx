@@ -1,4 +1,4 @@
-// import { Select, Input, Checkbox, DatePicker } from '@x-ear/ui-web'; // UI components not used
+// import { Input, Checkbox, DatePicker } from '@x-ear/ui-web'; // UI components not used
 import { useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { getCurrencyRestrictions } from '../../utils/currencyManager';
@@ -39,8 +39,8 @@ export function InvoiceTypeSection({
   ];
 
   // Representative groups (single representative per category)
-  const withholdingTypes = ['11'];
-  const specialBaseTypes = ['12'];
+  const _withholdingTypes = ['11'];
+  const _specialBaseTypes = ['12'];
   const returnTypes = ['50', '15'];
   // SGK tipi
   const isSGKType = invoiceType === '14';

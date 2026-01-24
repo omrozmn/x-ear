@@ -37,6 +37,12 @@ from core.models.appointment import Appointment
             default="default",
         ),
         ToolParameter(
+            name="user_id",
+            type="string",
+            description="User ID (automatically injected)",
+            required=False,
+        ),
+        ToolParameter(
             name="party_id",
             type="string",
             description="Filter by patient ID",

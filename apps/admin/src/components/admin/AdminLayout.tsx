@@ -1,7 +1,9 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { useRouterState } from '@tanstack/react-router'
 import { AdminSidebar } from './AdminSidebar'
 import { NotificationCenter } from './NotificationCenter'
+import { ComposerOverlay } from '../ai/ComposerOverlay'
+import { useComposerStore } from '../../stores/composerStore'
 
 interface AdminLayoutProps {
     children: ReactNode
@@ -11,6 +13,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const router = useRouterState()
     const isLoginPage = router.location.pathname === '/login'
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const { toggleOpen } = useComposerStore()
+
+    // Keyboard shortcut (Cmd+K)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault()
+                toggleOpen()
+            }
+        }
+        document.addEventListener('keydown', handleKeyDown)
+        return () => document.removeEventListener('keydown', handleKeyDown)
+    }, [toggleOpen])
 
     if (isLoginPage) {
         return (
@@ -60,6 +75,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     {children}
                 </main>
             </div>
+
+            {/* AI Composer Overlay (Cmd+K) */}
+            <ComposerOverlay />
         </div>
     )
 }
+

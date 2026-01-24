@@ -6,7 +6,6 @@
  */
 
 import { InvoiceFormData } from '../types/invoice';
-import { apiClient } from '../api/orval-mutator';
 import {
   createEfaturaRetry,
   createEfaturaCancel
@@ -18,6 +17,31 @@ import {
   SendDocumentAnswerRequestData,
   SendBasicInvoiceFromModelRequestData
 } from '../generated/birfatura/outEBelgeV2API';
+
+// Type for DecompressionStream (not yet in TypeScript lib)
+interface DecompressionStream {
+  readable: ReadableStream;
+  writable: WritableStream;
+}
+
+interface WindowWithDecompression extends Window {
+  DecompressionStream: new (format: string) => DecompressionStream;
+}
+
+// BirFatura API response types
+interface BirFaturaAPIResponse {
+  Success?: boolean;
+  Message?: string;
+  Result?: {
+    Description?: string;
+    invoiceNo?: string;
+    content?: string;
+    [key: string]: unknown;
+  };
+  status?: string;
+  message?: string;
+  [key: string]: unknown;
+}
 import { unwrapObject } from '../utils/response-unwrap';
 
 export interface BirFaturaResponse {
@@ -164,7 +188,7 @@ class BirFaturaService {
 
       // Try to decompress (gzip)
       try {
-        const ds = new (window as any).DecompressionStream('gzip');
+        const ds = new (window as WindowWithDecompression).DecompressionStream('gzip');
         const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
         return await decompressed.blob();
       } catch {
@@ -202,7 +226,7 @@ class BirFaturaService {
 
       // Try to decompress (gzip)
       try {
-        const ds = new (window as any).DecompressionStream('gzip');
+        const ds = new (window as WindowWithDecompression).DecompressionStream('gzip');
         const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
         return await decompressed.text();
       } catch {
@@ -251,10 +275,10 @@ class BirFaturaService {
         systemTypeCodes: 'EFATURA'
       } as unknown as SendDocumentAnswerRequestData);
 
-      const data = resp?.data || {};
+      const data = (resp?.data || {}) as BirFaturaAPIResponse;
       return {
-        success: !!(data as any)?.Success,
-        message: (data as any)?.Message || (data as any)?.Result?.Description,
+        success: !!data.Success,
+        message: data.Message || data.Result?.Description,
       };
     } catch (error) {
       console.error('BirFatura sendInBoxInvoiceAnswer error:', error);
@@ -277,11 +301,11 @@ class BirFaturaService {
       const api = getOutEBelgeV2API();
       const body = { invoice: invoiceData } as unknown as SendBasicInvoiceFromModelRequestData;
       const resp = await api.postApiOutEBelgeV2SendBasicInvoiceFromModel(body);
-      const data = resp?.data || {};
+      const data = (resp?.data || {}) as BirFaturaAPIResponse;
       return {
-        success: !!(data as any)?.Success,
-        birfaturaId: (data as any)?.Result?.invoiceNo || undefined,
-        message: (data as any)?.Message,
+        success: !!data.Success,
+        birfaturaId: data.Result?.invoiceNo || undefined,
+        message: data.Message,
       };
     } catch (error) {
       console.error('BirFatura createAndSend error:', error);
@@ -306,10 +330,10 @@ class BirFaturaService {
     try {
       const api = getOutEBelgeV2API();
       const resp = await api.postApiOutEBelgeV2ReEnvelopeAndSend({ uuid: invoiceId });
-      const data = resp?.data || {};
+      const data = (resp?.data || {}) as BirFaturaAPIResponse;
       return {
-        success: !!(data as any)?.Success,
-        message: (data as any)?.Message,
+        success: !!data.Success,
+        message: data.Message,
       };
     } catch (error) {
       console.error('BirFatura send error:', error);
@@ -328,10 +352,10 @@ class BirFaturaService {
     try {
       const api = getOutEBelgeV2API();
       const resp = await api.postApiOutEBelgeV2GetEnvelopeStatusFromGIB({ envelopeID: invoiceId });
-      const data = resp?.data;
+      const data = resp?.data as BirFaturaAPIResponse | undefined;
       return {
-        status: ((data as any)?.Result as InvoiceStatus['status']) || ((data as any)?.status as InvoiceStatus['status']) || 'pending',
-        message: ((data as any)?.Message as string) || ((data as any)?.message as string),
+        status: ((data?.Result || data?.status) as unknown as InvoiceStatus['status']) || 'pending',
+        message: (data?.Message as string) || (data?.message as string),
       };
     } catch (error) {
       console.error('BirFatura getStatus error:', error);
@@ -354,9 +378,9 @@ class BirFaturaService {
         systemTypeCodes: 'EFATURA',
         fileExtension: 'XML'
       } as unknown as Record<string, unknown>);
-      const data = resp?.data as Record<string, unknown> | undefined;
+      const data = resp?.data as BirFaturaAPIResponse | undefined;
       return {
-        xml: (data?.Result as any)?.content || '',
+        xml: (data?.Result as { content?: string })?.content || '',
         format: 'UBL-TR',
         encoding: 'UTF-8',
       };

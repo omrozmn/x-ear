@@ -9,3 +9,4 @@
 
 // Re-export everything from auto-generated API
 export * from '../api/generated';
+export { AxiosError } from 'axios';

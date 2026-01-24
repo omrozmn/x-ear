@@ -1,4 +1,3 @@
-import { Button } from '@x-ear/ui-web';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { InvoiceModalContent } from './InvoiceModalContent';

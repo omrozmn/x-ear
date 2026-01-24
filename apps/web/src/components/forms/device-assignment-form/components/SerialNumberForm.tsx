@@ -111,7 +111,7 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
   formData,
   onFormDataChange,
   selectedDevice,
-  errors = {},
+  errors: _errors = {},
   isManualMode = false
 }) => {
   const updateField = (field: keyof DeviceAssignment, value: string) => {

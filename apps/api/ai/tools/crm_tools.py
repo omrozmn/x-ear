@@ -79,7 +79,26 @@ def createParty(
     email = params.get("email")
     tc_number = params.get("tc_number")
 
-    # Execute mode (or Simulate via Rollback, which passes EXECUTE)
+    # SIMULATE mode check
+    if mode == ToolExecutionMode.SIMULATE:
+        return ToolExecutionResult(
+            tool_id="createParty",
+            success=True,
+            mode=mode,
+            simulated_changes={
+                "action": "create",
+                "entity": "Party",
+                "data": {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "phone": phone,
+                    "email": email,
+                    "tc_number": tc_number
+                }
+            }
+        )
+
+    # Execute mode
     try:
         db = SessionLocal()
         service = PartyService(db)
@@ -378,6 +397,20 @@ def updateParty(
     party_id = params["party_id"]
     updates = params["updates"]
     tenant_id = params.get("tenant_id", "default")
+
+    # SIMULATE mode check
+    if mode == ToolExecutionMode.SIMULATE:
+        return ToolExecutionResult(
+            tool_id="updateParty",
+            success=True,
+            mode=mode,
+            simulated_changes={
+                "action": "update",
+                "entity": "Party",
+                "party_id": party_id,
+                "updates": updates
+            }
+        )
 
     try:
         db = SessionLocal()

@@ -1,7 +1,6 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  InvoiceFormSchema,
   InvoiceFormData,
   InvoiceFieldDefinition,
   InvoiceFieldSection,
@@ -106,7 +105,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   }, [formData.invoiceType, formData.scenario, formData]);
 
   // Check if a field should be visible based on conditions
-  const shouldShowField = (field: InvoiceFieldDefinition, sectionData: any): boolean => {
+  const shouldShowField = (field: InvoiceFieldDefinition, sectionData: Record<string, unknown>): boolean => {
     if (!field.conditional) return true;
 
     const { dependsOn, condition, value } = field.conditional;
@@ -129,7 +128,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   };
 
   // Validate a single field
-  const validateField = (field: InvoiceFieldDefinition, value: any): string | null => {
+  const validateField = (field: InvoiceFieldDefinition, value: unknown): string | null => {
     if (field.required && (!value || value === '')) {
       return `${field.label} alanı zorunludur`;
     }
@@ -194,7 +193,8 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     visibleSections.forEach(section => {
-      const sectionData = formData[section.name] || {};
+      const rawSectionData = formData[section.name];
+      const sectionData: Record<string, unknown> = (rawSectionData && typeof rawSectionData === 'object' ? rawSectionData : {}) as Record<string, unknown>;
 
       Object.values(section.fields).forEach(field => {
         if (shouldShowField(field, sectionData)) {
@@ -242,11 +242,11 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   };
 
   // Handle field change
-  const handleFieldChange = (sectionName: string, fieldId: string, value: any) => {
+  const handleFieldChange = (sectionName: string, fieldId: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [sectionName]: {
-        ...(prev[sectionName] as Record<string, any> || {}),
+        ...(prev[sectionName] as Record<string, unknown> || {}),
         [fieldId]: value
       }
     }));
@@ -275,7 +275,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   };
 
   // Handle item changes
-  const handleItemChange = (index: number, field: keyof InvoiceItem, value: any) => {
+  const handleItemChange = (index: number, field: keyof InvoiceItem, value: string | number) => {
     setItems(prev => {
       const newItems = [...prev];
       newItems[index] = {
@@ -348,8 +348,9 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
 
   // Render field based on type
   const renderField = (section: InvoiceFieldSection, field: InvoiceFieldDefinition) => {
-    const sectionData = formData[section.name] || {};
-    const fieldValue = (sectionData as any)[field.id] || field.defaultValue || '';
+    const rawSectionData = formData[section.name];
+    const sectionData: Record<string, unknown> = (rawSectionData && typeof rawSectionData === 'object' ? rawSectionData : {}) as Record<string, unknown>;
+    const fieldValue = String((sectionData as Record<string, unknown>)[field.id] || field.defaultValue || '');
     const fieldKey = `${section.name}.${field.id}`;
     const hasError = errors[fieldKey] && touched[fieldKey];
 
@@ -504,7 +505,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
         <h3 className="text-lg font-medium text-gray-900 mb-4">Senaryo</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(INVOICE_FORM_SCHEMA.scenarios)
-            .filter(([_, scenario]) => scenario.applicableTypes.includes(formData.invoiceType))
+            .filter(([_key, scenario]) => scenario.applicableTypes.includes(formData.invoiceType))
             .map(([key, scenario]) => (
               <label key={key} className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <Input

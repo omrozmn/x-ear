@@ -1,4 +1,4 @@
-import { Input, Select } from '@x-ear/ui-web';
+import { Input } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { FileText } from 'lucide-react';
 

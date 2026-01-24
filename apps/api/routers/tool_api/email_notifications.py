@@ -28,6 +28,9 @@ from services.email_service import EmailService
 from services.email_template_service import EmailTemplateService
 from services.smtp_config_service import SMTPConfigService
 from services.encryption_service import EncryptionService
+from services.ai_email_safety_service import get_ai_email_safety_service
+from services.email_approval_service import get_email_approval_service
+from services.rate_limit_service import get_rate_limit_service
 
 logger = logging.getLogger(__name__)
 
@@ -76,15 +79,18 @@ AI_EMAIL_SCENARIO_ALLOWLIST = {
 }
 
 
-def _check_quota(tenant_id: str, db: Session) -> bool:
-    """Check if tenant has exceeded AI email quota (100 per hour).
+def _check_quota(tenant_id: str, db: Session) -> tuple[bool, str]:
+    """Check if tenant has exceeded AI email quota.
+    
+    During warm-up (first 14 days), AI emails are limited to 10 per hour.
+    After warm-up, limit is 100 per hour.
     
     Args:
         tenant_id: Tenant ID to check quota for
         db: Database session
         
     Returns:
-        True if within quota, False if exceeded
+        Tuple of (within_quota, error_message)
     """
     one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     
@@ -95,7 +101,21 @@ def _check_quota(tenant_id: str, db: Session) -> bool:
         SMTPEmailLog.created_at >= one_hour_ago
     ).scalar()
     
-    return count < 100
+    # Check warm-up status
+    rate_limit_service = get_rate_limit_service(db)
+    warmup_phase = rate_limit_service.get_current_warmup_phase()
+    
+    # Stricter limits during warm-up
+    if warmup_phase != "COMPLETE":
+        ai_limit = 10  # 10 per hour during warm-up
+        if count >= ai_limit:
+            return False, f"AI email quota exceeded during warm-up ({ai_limit} per hour)"
+    else:
+        ai_limit = 100  # 100 per hour after warm-up
+        if count >= ai_limit:
+            return False, f"AI email quota exceeded ({ai_limit} per hour)"
+    
+    return True, ""
 
 
 def _log_ai_email_request(
@@ -201,8 +221,8 @@ async def send_ai_email_notification(
             )
         
         # Check quota
-        if not _check_quota(tenant_id, db):
-            error_msg = "AI email quota exceeded (100 per hour per tenant)"
+        within_quota, quota_error = _check_quota(tenant_id, db)
+        if not within_quota:
             logger.warning(
                 f"AI email quota exceeded",
                 extra={
@@ -216,8 +236,8 @@ async def send_ai_email_notification(
             response.status_code = 429
             return ResponseEnvelope(
                 success=False,
-                error={"message": error_msg, "code": "QUOTA_EXCEEDED"},
-                message=error_msg
+                error={"message": quota_error, "code": "QUOTA_EXCEEDED"},
+                message=quota_error
             )
         
         # Initialize services
@@ -225,6 +245,69 @@ async def send_ai_email_notification(
         smtp_config_service = SMTPConfigService(db, encryption_service)
         template_service = EmailTemplateService()
         email_service = EmailService(db, smtp_config_service, template_service)
+        ai_safety_service = get_ai_email_safety_service()
+        approval_service = get_email_approval_service(db)
+        
+        # Render template to get email content for AI safety check
+        template = template_service.get_template(request.scenario, request.language)
+        if not template:
+            error_msg = f"Email template not found for scenario: {request.scenario}"
+            logger.error(error_msg, extra={"tenant_id": tenant_id, "scenario": request.scenario})
+            response.status_code = 404
+            return ResponseEnvelope(
+                success=False,
+                error={"message": error_msg, "code": "TEMPLATE_NOT_FOUND"},
+                message=error_msg
+            )
+        
+        # Render subject and body
+        subject = template_service.render_template(template.subject, request.variables)
+        body_text = template_service.render_template(template.body_text, request.variables)
+        body_html = template_service.render_template(template.body_html, request.variables) if template.body_html else None
+        
+        # AI safety check
+        requires_approval, risk_level, risk_reasons = approval_service.requires_approval(
+            subject=subject,
+            body_text=body_text,
+            body_html=body_html,
+            scenario=request.scenario
+        )
+        
+        # If HIGH or CRITICAL risk, create approval request and block sending
+        if requires_approval:
+            approval = approval_service.create_approval_request(
+                tenant_id=tenant_id,
+                recipient=request.recipient,
+                subject=subject,
+                body_text=body_text,
+                body_html=body_html,
+                scenario=request.scenario,
+                action_plan_hash=request.action_plan_hash
+            )
+            
+            logger.warning(
+                f"AI email requires approval due to {risk_level} risk",
+                extra={
+                    "tenant_id": tenant_id,
+                    "scenario": request.scenario,
+                    "action_plan_hash": request.action_plan_hash,
+                    "approval_id": approval.id,
+                    "risk_level": risk_level,
+                    "risk_reasons": risk_reasons
+                }
+            )
+            
+            # Return success but indicate approval required
+            response.status_code = 202  # Accepted but not processed
+            return ResponseEnvelope(
+                success=True,
+                data=ToolAPIEmailResponse(
+                    email_log_id=approval.id,  # Use approval ID as tracking ID
+                    queued=False,
+                    message=f"Email requires manual approval due to {risk_level} risk. Approval ID: {approval.id}"
+                ),
+                message="Email requires manual approval"
+            )
         
         # Queue email
         email_log_id = email_service.queue_email(

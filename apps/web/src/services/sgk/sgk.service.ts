@@ -1,10 +1,32 @@
 
 import { sgkService as fullSgkService } from '../sgk.service';
+import type { SGKDocumentFormData, OCRProcessingRequest, SGKWorkflowStatus, CreateSGKDocumentData } from '../../types/sgk';
+
+// Type definitions for SGK service
+interface SGKDocumentBody {
+  partyId?: string;
+  documentType?: string;
+  file?: File | Blob;
+  [key: string]: unknown;
+}
+
+interface SGKProcessRequest {
+  documentId?: string;
+  partyId?: string;
+  [key: string]: unknown;
+}
+
+interface SGKDocumentData {
+  partyId: string;
+  documentType?: string;
+  content?: string;
+  [key: string]: unknown;
+}
 
 // SGK Service - handles SGK document operations
 export const sgkService = {
   // Upload SGK document
-  uploadDocument: (body?: any) => fullSgkService.createDocument(body),
+  uploadDocument: (body?: SGKDocumentBody) => fullSgkService.createDocument(body as unknown as CreateSGKDocumentData),
 
   // Delete SGK document
   deleteDocument: (documentId: string) => fullSgkService.deleteDocument(documentId),
@@ -13,21 +35,21 @@ export const sgkService = {
   listDocuments: (partyId: string) => fullSgkService.getDocuments({ partyId }),
 
   // Process OCR
-  processOcr: (body?: any) => fullSgkService.processDocument(body),
+  processOcr: (body?: SGKProcessRequest) => fullSgkService.processDocument(body as unknown as OCRProcessingRequest),
 
   // Trigger SGK processing
-  triggerProcessing: (body?: any) => fullSgkService.createWorkflow(body?.partyId),
+  triggerProcessing: (body?: SGKProcessRequest) => fullSgkService.createWorkflow(body?.partyId || ''),
 
   // Workflow methods from the full SGK service
   getWorkflow: (workflowId: string) => fullSgkService.getWorkflow(workflowId),
-  updateWorkflowStatus: (workflowId: string, status: any, notes?: string) => fullSgkService.updateWorkflowStatus(workflowId, status, notes),
+  updateWorkflowStatus: (workflowId: string, status: SGKWorkflowStatus, notes?: string) => fullSgkService.updateWorkflowStatus(workflowId, status, notes),
   createWorkflow: (partyId: string, documentId?: string, workflowType?: string) => fullSgkService.createWorkflow(partyId, documentId, workflowType),
 
   // Document management methods from the full SGK service
-  validateDocument: (data: any) => fullSgkService.validateDocument(data),
-  createDocument: (data: any) => fullSgkService.createDocument(data),
-  processDocument: (request: any) => fullSgkService.processDocument(request),
-  updateDocumentStatus: (id: string, status: any) => fullSgkService.updateWorkflowStatus(id, status),
+  validateDocument: (data: SGKDocumentFormData) => fullSgkService.validateDocument(data),
+  createDocument: (data: SGKDocumentBody) => fullSgkService.createDocument(data as unknown as CreateSGKDocumentData),
+  processDocument: (request: SGKProcessRequest) => fullSgkService.processDocument(request as unknown as OCRProcessingRequest),
+  updateDocumentStatus: (id: string, status: SGKWorkflowStatus) => fullSgkService.updateWorkflowStatus(id, status),
 };
 
 export default sgkService;

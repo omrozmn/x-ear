@@ -128,9 +128,9 @@ app.add_middleware(IdempotencyMiddleware)
 # JWT authentication for AI endpoints (/ai/*)
 # Validates JWT tokens and sets tenant context for AI requests
 # Requirements: 2.1, 2.7 (AI Security Fixes)
-from ai.middleware.auth import ai_auth_middleware
+from ai.middleware.auth import AIAuthMiddleware
 
-app.middleware("http")(ai_auth_middleware)
+app.add_middleware(AIAuthMiddleware)
 
 # Permission middleware should run early (after request-id) to ensure consistent errors/logs.
 app.add_middleware(FastAPIPermissionMiddleware)
@@ -251,6 +251,22 @@ from routers import invoices, sgk
 from routers import activity_logs, permissions, ocr
 from routers import upload, documents
 from routers import cash_records, unified_cash, payment_integrations
+# Public routers (no auth required)
+from routers import unsubscribe
+# Deliverability monitoring
+from routers import deliverability
+# Bounce management
+from routers import bounce_management
+# Spam preview
+from routers import spam_preview
+# Unsubscribe management
+from routers import unsubscribe_management
+# Email approval
+from routers import email_approval
+# Complaint management
+from routers import complaint_management
+# Prometheus metrics
+from routers import metrics as metrics_router
 
 # Include all FastAPI Routers
 # All routers use /api prefix to match existing Flask structure
@@ -288,6 +304,30 @@ app.include_router(admin_analytics.router, prefix="/api")
 # Additional routers
 app.include_router(invoices.router, prefix="/api")
 app.include_router(sgk.router, prefix="/api")
+
+# Public routers (no auth required)
+app.include_router(unsubscribe.router, prefix="/api")
+
+# Deliverability monitoring
+app.include_router(deliverability.router, prefix="/api")
+
+# Bounce management
+app.include_router(bounce_management.router, prefix="/api")
+
+# Spam preview
+app.include_router(spam_preview.router, prefix="/api")
+
+# Unsubscribe management
+app.include_router(unsubscribe_management.router, prefix="/api")
+
+# Email approval
+app.include_router(email_approval.router, prefix="/api")
+
+# Complaint management
+app.include_router(complaint_management.router, prefix="/api")
+
+# Prometheus metrics (no /api prefix - standard /metrics endpoint)
+app.include_router(metrics_router.router)
 
 # Newly migrated routers (Phase 2)
 app.include_router(activity_logs.router, prefix="/api")
@@ -393,7 +433,13 @@ app.include_router(ai_chat_router, prefix="/api")
 app.include_router(ai_actions_router, prefix="/api")
 app.include_router(ai_audit_router, prefix="/api")
 app.include_router(ai_status_router, prefix="/api")
+app.include_router(ai_audit_router, prefix="/api")
+app.include_router(ai_status_router, prefix="/api")
 app.include_router(ai_admin_router, prefix="/api")
+
+# AI Composer Router (Unified Intent/Entity/Action)
+from routers import composer
+app.include_router(composer.router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn

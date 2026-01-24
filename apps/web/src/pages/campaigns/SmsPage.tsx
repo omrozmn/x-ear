@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card } from '@x-ear/ui-web';
-import { MessageSquare, Users, Zap } from 'lucide-react';
+import { MessageUsers, Zap } from 'lucide-react';
 import { useListSmCredit } from '@/api/client/sms.client';
 import SingleSmsTab from './SingleSmsTab';
 import BulkSmsTab from './BulkSmsTab';

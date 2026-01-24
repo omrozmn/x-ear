@@ -37,7 +37,10 @@ import { twMerge } from 'tailwind-merge';
 import { GlobalOfflineAlert } from '../common/GlobalOfflineAlert';
 // AI Components - conditionally rendered based on AI availability
 import { AIChatWidget, AIFeatureWrapper, AIStatusIndicator, PhaseABanner } from '../../ai/components';
+import { ComposerOverlay } from '../../components/ai/ComposerOverlay';
+import { useComposerStore } from '../../stores/composerStore';
 import { useAIStatus, useAIContextSync } from '../../ai/hooks';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -94,8 +97,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // AI Status for header indicator
   const { data: aiStatus } = useAIStatus({ enabled: !!user });
 
-  // AI Context Sync - monitors tenant/party changes and clears AI stores
+  // AI Context Sync - monitors tenant/party changes and cleared AI stores
   useAIContextSync();
+
+  // AI Composer Shortcut (Cmd+K)
+  const { toggleOpen } = useComposerStore();
+  useHotkeys('meta+k', (e) => {
+    e.preventDefault();
+    toggleOpen();
+  });
 
   useEffect(() => {
     if (subscription?.isExpired) {
@@ -472,6 +482,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         showLoading={false}
       >
         <AIChatWidget />
+      </AIFeatureWrapper>
+
+      {/* AI Composer Overlay (Cmd+K) */}
+      <AIFeatureWrapper capability="actions" hideWhenUnavailable showLoading={false}>
+        <ComposerOverlay />
       </AIFeatureWrapper>
     </div>
   );

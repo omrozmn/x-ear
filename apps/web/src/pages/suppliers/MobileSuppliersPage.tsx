@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Truck, Search, Phone, MapPin, Mail } from 'lucide-react';
+import { Truck, Search, Phone, MapPin } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';

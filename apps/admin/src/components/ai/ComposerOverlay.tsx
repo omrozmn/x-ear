@@ -1,0 +1,457 @@
+import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import { useComposerStore } from '../../stores/composerStore';
+import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle } from 'lucide-react';
+import {
+    useAutocompleteApiAiComposerAutocompleteGet,
+    useExecuteToolApiAiComposerExecutePost
+} from '../../api/generated/ai-composer/ai-composer';
+import type { ExecuteResponse, EntityItem, Capability, SlotConfig } from '../../api/generated/schemas';
+import { usePermissionCheck } from '../../hooks/usePermissionCheck';
+import toast from 'react-hot-toast';
+
+export function ComposerOverlay() {
+    const {
+        isOpen, setOpen,
+        mode, query, context, selectedAction, currentSlot, slots, executionResult,
+        setQuery, setContext, selectAction, updateSlot, nextSlot, reset, setExecutionResult
+    } = useComposerStore();
+
+    const { canAll } = usePermissionCheck();
+    const onClose = useCallback(() => setOpen(false), [setOpen]);
+
+    // Entity search state for slot filling
+    const [slotSearchQuery, setSlotSearchQuery] = useState('');
+
+    // Autocomplete query hook
+    const { data: autocompleteData, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(
+        { q: query, context_entity_type: context?.type, context_entity_id: context?.id },
+        { query: { enabled: query.length > 1 && isOpen } }
+    );
+
+    // Entity search for slot filling (when uiType is entity_search)
+    const slotEntityType = currentSlot?.sourceEndpoint?.includes('inventory') ? 'device' : 'patient';
+    const { data: slotEntityData, isLoading: isSlotSearchLoading } = useAutocompleteApiAiComposerAutocompleteGet(
+        { q: slotSearchQuery, context_entity_type: slotEntityType },
+        { query: { enabled: slotSearchQuery.length > 1 && currentSlot?.uiType === 'entity_search' } }
+    );
+
+    // Execute mutation hook
+    const { mutate: executeTool, isPending: isExecuting } = useExecuteToolApiAiComposerExecutePost();
+
+    // Filter actions by user permissions (CRITICAL: B2.1 FE RBAC)
+    const permittedActions = useMemo(() => {
+        if (!autocompleteData?.actions) return [];
+        return autocompleteData.actions.filter((action: Capability) => {
+            // If no permissions required, allow
+            if (!action.requiredPermissions || action.requiredPermissions.length === 0) {
+                return true;
+            }
+            // User must have ALL required permissions
+            return canAll(action.requiredPermissions);
+        });
+    }, [autocompleteData?.actions, canAll]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            reset();
+            setSlotSearchQuery('');
+        }
+    }, [isOpen, reset]);
+
+    // Handle keyboard shortcut (Cmd+K or Ctrl+K)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setOpen(!isOpen);
+            }
+            // ESC to close
+            if (e.key === 'Escape' && isOpen) {
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, setOpen, onClose]);
+
+    const handleSelectEntity = (entity: EntityItem) => {
+        setContext(entity);
+        setQuery('');
+    };
+
+    const handleSelectAction = (action: Capability) => {
+        selectAction(action);
+    };
+
+    const handleSlotEntitySelect = (entity: EntityItem) => {
+        if (currentSlot) {
+            updateSlot(currentSlot.name, entity.id);
+            // Store label for display
+            updateSlot(`_${currentSlot.name}_label`, entity.label);
+            setSlotSearchQuery('');
+            nextSlot();
+        }
+    };
+
+    const handleConfirm = () => {
+        if (!selectedAction) return;
+        executeTool({
+            data: {
+                tool_id: selectedAction.toolOperations?.[0] || selectedAction.name,
+                args: slots,
+                confirmed: true
+            }
+        }, {
+            onSuccess: (res: ExecuteResponse) => {
+                setExecutionResult(res);
+                if (res.status === 'success') {
+                    toast.success('İşlem başarıyla tamamlandı');
+                } else if (res.status === 'error') {
+                    toast.error(res.error || 'İşlem sırasında bir hata oluştu');
+                }
+            },
+            onError: () => {
+                toast.error('Bağlantı hatası');
+            }
+        });
+    };
+
+    const handleSimulate = () => {
+        if (!selectedAction) return;
+        executeTool({
+            data: {
+                tool_id: selectedAction.toolOperations?.[0] || selectedAction.name,
+                args: slots,
+                dry_run: true,
+                confirmed: false
+            }
+        }, {
+            onSuccess: (res: ExecuteResponse) => {
+                if (res.status === 'dry_run') {
+                    toast.success('Simülasyon tamamlandı - değişiklik yapılmadı');
+                }
+                setExecutionResult(res);
+            }
+        });
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div
+            className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-[10vh]"
+            onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+            <div className="w-[600px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col min-h-[100px] max-h-[80vh]">
+
+                {/* Header / Input Area */}
+                <div className="p-4 border-b border-gray-100 flex items-center gap-2">
+                    <Search className="text-gray-400 w-5 h-5" />
+
+                    {/* Context Chip */}
+                    {context && (
+                        <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm font-medium">
+                            {context.type === 'patient' && <User size={14} />}
+                            {context.type === 'device' && <Box size={14} />}
+                            {context.label}
+                            <button onClick={reset} className="hover:text-blue-900 ml-1"><X size={14} /></button>
+                        </span>
+                    )}
+
+                    <input
+                        className="flex-1 outline-none text-lg placeholder:text-gray-400"
+                        placeholder={context ? "Bir işlem yazın..." : "Hasta, cihaz veya fatura ara..."}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        autoFocus
+                    />
+
+                    <kbd className="hidden sm:inline-block px-2 py-1 text-xs text-gray-400 bg-gray-100 rounded">
+                        ESC
+                    </kbd>
+                </div>
+
+                {/* Content Area */}
+                <div className="overflow-y-auto p-2 flex-1">
+
+                    {/* Suggestion Mode */}
+                    {(mode === 'idle' || mode === 'context_locked') && (
+                        <div>
+                            {isLoading && (
+                                <div className="p-4 text-gray-400 text-sm flex items-center justify-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Aranıyor...
+                                </div>
+                            )}
+
+                            {/* Entities */}
+                            {autocompleteData?.entities && autocompleteData.entities.length > 0 && (
+                                <div className="mb-3">
+                                    <div className="text-xs font-semibold text-gray-500 mb-1 px-2 uppercase tracking-wider">Varlıklar</div>
+                                    {autocompleteData.entities.map((e: EntityItem) => (
+                                        <div
+                                            key={e.id}
+                                            onClick={() => handleSelectEntity(e)}
+                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                                        >
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600">
+                                                {e.type === 'patient' ? <User size={18} /> : <Box size={18} />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-gray-900 truncate">{e.label}</div>
+                                                <div className="text-xs text-gray-500 truncate">{e.subLabel}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Actions (Filtered by permissions) */}
+                            {permittedActions.length > 0 && (
+                                <div>
+                                    <div className="text-xs font-semibold text-gray-500 mb-1 px-2 uppercase tracking-wider">İşlemler</div>
+                                    {permittedActions.map((a: Capability) => (
+                                        <div
+                                            key={a.name}
+                                            onClick={() => handleSelectAction(a)}
+                                            className="flex items-center gap-3 p-2 hover:bg-purple-50 rounded-lg cursor-pointer group transition-colors"
+                                        >
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 flex items-center justify-center group-hover:from-purple-100 group-hover:to-purple-200 transition-colors">
+                                                <Zap size={18} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-purple-900">{a.name}</div>
+                                                <div className="text-xs text-purple-500 truncate">{a.description}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Empty State */}
+                            {!isLoading && query.length > 1 &&
+                                (!autocompleteData?.entities?.length) &&
+                                (!permittedActions.length) && (
+                                    <div className="p-4 text-center text-gray-500">
+                                        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                                        Sonuç bulunamadı
+                                    </div>
+                                )}
+                        </div>
+                    )}
+
+                    {/* Slot Filling Mode */}
+                    {mode === 'slot_filling' && currentSlot && (
+                        <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                            <h3 className="text-lg font-medium mb-3 text-gray-900">{currentSlot.prompt}</h3>
+
+                            {/* Entity Search Slot */}
+                            {currentSlot.uiType === 'entity_search' && (
+                                <div className="relative">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
+                                        <input
+                                            className="w-full border p-2 pl-10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Ara..."
+                                            value={slotSearchQuery}
+                                            onChange={(e) => setSlotSearchQuery(e.target.value)}
+                                            autoFocus
+                                        />
+                                    </div>
+                                    {isSlotSearchLoading && (
+                                        <div className="mt-2 text-sm text-gray-400 flex items-center gap-1">
+                                            <Loader2 className="w-3 h-3 animate-spin" /> Aranıyor...
+                                        </div>
+                                    )}
+                                    {slotEntityData?.entities && slotEntityData.entities.length > 0 && (
+                                        <div className="mt-2 bg-white border rounded-lg shadow-sm max-h-48 overflow-y-auto">
+                                            {slotEntityData.entities.map((e: EntityItem) => (
+                                                <div
+                                                    key={e.id}
+                                                    onClick={() => handleSlotEntitySelect(e)}
+                                                    className="flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer"
+                                                >
+                                                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                                        {e.type === 'patient' ? <User size={12} /> : <Box size={12} />}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-medium">{e.label}</div>
+                                                        <div className="text-xs text-gray-500">{e.subLabel}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Text Slot */}
+                            {currentSlot.uiType === 'text' && (
+                                <input
+                                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            updateSlot(currentSlot.name, (e.target as HTMLInputElement).value);
+                                            nextSlot();
+                                        }
+                                    }}
+                                />
+                            )}
+
+                            {/* Number Slot */}
+                            {currentSlot.uiType === 'number' && (
+                                <input
+                                    type="number"
+                                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            updateSlot(currentSlot.name, Number((e.target as HTMLInputElement).value));
+                                            nextSlot();
+                                        }
+                                    }}
+                                />
+                            )}
+
+                            {/* Date Slot */}
+                            {currentSlot.uiType === 'date' && (
+                                <input
+                                    type="date"
+                                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    autoFocus
+                                    onChange={(e) => {
+                                        updateSlot(currentSlot.name, e.target.value);
+                                        nextSlot();
+                                    }}
+                                />
+                            )}
+
+                            {/* Enum Slot */}
+                            {currentSlot.uiType === 'enum' && (
+                                <div className="flex gap-2 flex-wrap">
+                                    {(currentSlot.enumOptions || []).map((opt: string) => (
+                                        <button
+                                            key={opt}
+                                            onClick={() => {
+                                                updateSlot(currentSlot.name, opt);
+                                                nextSlot();
+                                            }}
+                                            className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors font-medium"
+                                        >
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="mt-4 text-xs text-gray-400">
+                                {currentSlot.uiType === 'entity_search' ? 'Listeden seçin' : 'Enter ile onaylayın'}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Confirmation Mode */}
+                    {mode === 'confirmation' && selectedAction && (
+                        <div className="p-4">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">İşlemi Onaylayın</h3>
+
+                            <div className="bg-gradient-to-br from-white to-gray-50 border rounded-lg p-4 mb-4 shadow-sm">
+                                <div className="flex justify-between items-center mb-3 pb-3 border-b">
+                                    <span className="text-gray-500 text-sm">İşlem</span>
+                                    <span className="font-semibold text-purple-700">{selectedAction.name}</span>
+                                </div>
+                                <div className="flex justify-between items-center mb-3 pb-3 border-b">
+                                    <span className="text-gray-500 text-sm">Hedef</span>
+                                    <span className="font-medium">{context?.label || '-'}</span>
+                                </div>
+                                {Object.entries(slots)
+                                    .filter(([k]) => !k.startsWith('_')) // Hide internal fields
+                                    .map(([k, v]) => (
+                                        <div key={k} className="flex justify-between items-center mb-2 text-sm">
+                                            <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>
+                                            <span className="font-medium">{slots[`_${k}_label`] || String(v)}</span>
+                                        </div>
+                                    ))}
+                            </div>
+
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={handleSimulate}
+                                    disabled={isExecuting}
+                                    className="px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                >
+                                    Simüle Et
+                                </button>
+                                <button
+                                    onClick={reset}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={handleConfirm}
+                                    disabled={isExecuting}
+                                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 font-medium transition-colors"
+                                >
+                                    {isExecuting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Çalışıyor...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Onayla
+                                            <Check size={16} />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Execution Result */}
+                    {executionResult && (
+                        <div className="p-4 text-center">
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${executionResult.status === 'success' ? 'bg-green-100 text-green-600' :
+                                executionResult.status === 'dry_run' ? 'bg-blue-100 text-blue-600' :
+                                    'bg-red-100 text-red-600'
+                                }`}>
+                                {executionResult.status === 'error' ? (
+                                    <AlertCircle size={28} />
+                                ) : (
+                                    <Check size={28} />
+                                )}
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                {executionResult.status === 'success' ? 'Başarılı!' :
+                                    executionResult.status === 'dry_run' ? 'Simülasyon Tamamlandı' :
+                                        'Hata'}
+                            </h3>
+                            <p className="text-gray-600 mb-4">
+                                {executionResult.status === 'success' ? 'İşlem başarıyla tamamlandı.' :
+                                    executionResult.status === 'dry_run' ? 'Değişiklik yapılmadı.' :
+                                        executionResult.error}
+                            </p>
+
+                            {executionResult.auditId && (
+                                <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded inline-block mb-4">
+                                    Kayıt ID: {executionResult.auditId}
+                                </div>
+                            )}
+
+                            <div className="mt-6">
+                                <button
+                                    onClick={() => { onClose(); reset(); }}
+                                    className="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-colors"
+                                >
+                                    Kapat
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

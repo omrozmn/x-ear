@@ -37,7 +37,7 @@ const formatCurrency = (amount: number): string => {
 
 export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentUpdate }) => {
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Calculate payment totals

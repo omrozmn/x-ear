@@ -24,8 +24,11 @@ const OPERATION_MESSAGES: Record<OfflineForbiddenOperation, string> = {
 
 /**
  * Check if an operation type is allowed when offline
+ * @param _operationType - The operation type (currently all operations are forbidden)
+ * @returns false - all operations in the enum are forbidden offline
  */
-export function isOperationAllowedOffline(operationType: OfflineForbiddenOperation): boolean {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function isOperationAllowedOffline(_operationType: OfflineForbiddenOperation): boolean {
     // All operations in the enum are forbidden offline
     return false;
 }

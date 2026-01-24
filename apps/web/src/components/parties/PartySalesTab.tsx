@@ -261,7 +261,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
 
 
 
-  const calculateSGKCoverage = (sgkInfo: any) => {
+  const _calculateSGKCoverage = (sgkInfo: any) => {
     const deviceCoverage = sgkInfo.deviceEntitlement?.hasEntitlement
       ? {
         maxCoverage: 15000,

@@ -97,7 +97,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         }
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     const columns: any = React.useMemo(
         () => {
             const safeAcceptMutation = acceptMutation || { isPending: false };
@@ -217,7 +217,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                 },
             ];
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
         [acceptMutation, rejectMutation, setSelectedSupplier, handleAccept, handleReject]
     );
 

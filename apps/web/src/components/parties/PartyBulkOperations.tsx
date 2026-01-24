@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, Download, Users, Tag, MessageSquare, Trash2, FileText, AlertCircle } from 'lucide-react';
+import { Upload, Download, Users, Tag, MessageTrash2, FileText, AlertCircle } from 'lucide-react';
 import { Button, Modal, useModal, Input, Select, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Party } from '../../types/party';
 import UniversalImporter from '../../components/importer/UniversalImporter';
@@ -81,7 +81,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
   onRefresh
 }) => {
   const { success, error, warning } = useToastHelpers();
-  const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [_activeAction, setActiveAction] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // CSV Import State
@@ -200,7 +200,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
 
   // New importer integration will be provided via UniversalImporter component
 
-  const handleCSVImportSubmit = useCallback(async () => {
+  const _handleCSVImportSubmit = useCallback(async () => {
     if (!csvImport.file) return;
 
     try {

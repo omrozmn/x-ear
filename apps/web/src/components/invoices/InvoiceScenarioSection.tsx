@@ -1,5 +1,4 @@
 import { Select } from '@x-ear/ui-web';
-import { Info, AlertTriangle } from 'lucide-react';
 import { InvoiceScenario, InvoiceScenarioData } from '../../types/invoice';
 import { useState } from 'react';
 

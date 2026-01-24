@@ -5,11 +5,9 @@ import {
   User,
   Headphones,
   CreditCard,
-  Shield,
   FileText,
   Clock,
   StickyNote,
-  Calendar,
   Stethoscope
 } from 'lucide-react';
 

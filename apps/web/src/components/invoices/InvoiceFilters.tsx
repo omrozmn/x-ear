@@ -1,6 +1,6 @@
 import { Button, Input, Select } from '@x-ear/ui-web';
 import { useState } from 'react';
-import { InvoiceFilters as IInvoiceFilters, InvoiceStatus, InvoiceType } from '../../types/invoice';
+import { InvoiceFilters as IInvoiceFilters, InvoiceStatus } from '../../types/invoice';
 
 interface InvoiceFiltersProps {
   filters: IInvoiceFilters;

@@ -157,7 +157,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({
 
     // Find the highest scoring document type
     const maxScore = Math.max(...Object.values(scores));
-    const detectedType = Object.entries(scores).find(([_, score]) => score === maxScore)?.[0];
+    const detectedType = Object.entries(scores).find(([_key, score]) => score === maxScore)?.[0];
     
     // Return detected type if confidence is high enough, otherwise 'diger'
     return maxScore >= 3 ? detectedType! : 'diger';

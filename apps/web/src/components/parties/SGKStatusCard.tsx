@@ -38,7 +38,7 @@ export const SGKStatusCard: React.FC<SGKStatusCardProps> = ({
     }
   };
 
-  const statusInfo = getStatusInfo(sgkStatus);
+  const _statusInfo = getStatusInfo(sgkStatus);
   const reportDate = sgkData.reportDate ? new Date(sgkData.reportDate as string).toLocaleDateString('tr-TR') : 'Belirtilmemiş';
   const reportNo = sgkData.reportNo || 'Belirtilmemiş';
   const validityPeriod = sgkData.validityPeriod || 'Belirtilmemiş';

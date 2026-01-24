@@ -4,7 +4,7 @@ import { InvoiceValidationUtils } from '../utils/invoice-validation';
 export interface ValidationRule {
   field: string;
   message: string;
-  validator: (value: any, formData: InvoiceFormData) => boolean;
+  validator: (value: unknown, formData: InvoiceFormData) => boolean;
 }
 
 export interface ValidationContext {
@@ -35,71 +35,71 @@ export class InvoiceValidationService {
       {
         field: 'partyName',
         message: 'Hasta adı gereklidir',
-        validator: (value: string) => !!value && value.trim().length >= 2
+        validator: (value: unknown) => !!value && typeof value === 'string' && value.trim().length >= 2
       },
       {
         field: 'partyTcNumber',
         message: 'Geçerli bir T.C. kimlik numarası giriniz',
-        validator: (value: string) => !value || InvoiceValidationUtils.validateTCKN(value)
+        validator: (value: unknown) => !value || (typeof value === 'string' && InvoiceValidationUtils.validateTCKN(value))
       },
       {
         field: 'partyPhone',
         message: 'Geçerli bir telefon numarası giriniz',
-        validator: (value: string) => !value || InvoiceValidationUtils.validateTurkishPhone(value)
+        validator: (value: unknown) => !value || (typeof value === 'string' && InvoiceValidationUtils.validateTurkishPhone(value))
       },
 
       // Billing Address Validation
       {
         field: 'billingAddress.name',
         message: 'Fatura adresi adı gereklidir',
-        validator: (value: string) => !!value && value.trim().length >= 2
+        validator: (value: unknown) => !!value && typeof value === 'string' && value.trim().length >= 2
       },
       {
         field: 'billingAddress.address',
         message: 'Fatura adresi gereklidir',
-        validator: (value: string) => !!value && value.trim().length >= 10
+        validator: (value: unknown) => !!value && typeof value === 'string' && value.trim().length >= 10
       },
       {
         field: 'billingAddress.city',
         message: 'Şehir bilgisi gereklidir',
-        validator: (value: string) => !!value && value.trim().length >= 2
+        validator: (value: unknown) => !!value && typeof value === 'string' && value.trim().length >= 2
       },
       {
         field: 'billingAddress.taxNumber',
         message: 'Geçerli bir vergi numarası giriniz',
-        validator: (value: string) => !value || InvoiceValidationUtils.validateTurkishTaxNumber(value)
+        validator: (value: unknown) => !value || (typeof value === 'string' && InvoiceValidationUtils.validateTurkishTaxNumber(value))
       },
       {
         field: 'billingAddress.postalCode',
         message: 'Geçerli bir posta kodu giriniz',
-        validator: (value: string) => !value || InvoiceValidationUtils.validateTurkishPostalCode(value)
+        validator: (value: unknown) => !value || (typeof value === 'string' && InvoiceValidationUtils.validateTurkishPostalCode(value))
       },
 
       // Date Validation
       {
         field: 'issueDate',
         message: 'Fatura tarihi gereklidir',
-        validator: (value: string) => !!value && InvoiceValidationUtils.validateInvoiceDate(value)
+        validator: (value: unknown) => !!value && typeof value === 'string' && InvoiceValidationUtils.validateInvoiceDate(value)
       },
       {
         field: 'dueDate',
         message: 'Vade tarihi fatura tarihinden sonra olmalıdır',
-        validator: (value: string, formData: InvoiceFormData) =>
-          !value || InvoiceValidationUtils.validateDueDate(value, formData.issueDate)
+        validator: (value: unknown, formData: InvoiceFormData) =>
+          !value || (typeof value === 'string' && InvoiceValidationUtils.validateDueDate(value, formData.issueDate))
       },
 
       // Items Validation
       {
         field: 'items',
         message: 'En az bir fatura kalemi gereklidir',
-        validator: (value: InvoiceItem[]) => Array.isArray(value) && value.length > 0
+        validator: (value: unknown) => Array.isArray(value) && value.length > 0
       },
 
       // Amount Validation
       {
         field: 'grandTotal',
         message: 'Toplam tutar 0\'dan büyük olmalıdır',
-        validator: (value: number) => typeof value === 'number' && value > 0
+        validator: (value: unknown) => typeof value === 'number' && value > 0
       }
     ];
   }
@@ -116,7 +116,7 @@ export class InvoiceValidationService {
 
     // Apply validation rules
     for (const rule of this.validationRules) {
-      const fieldValue = this.getNestedValue(formData, rule.field);
+      const fieldValue = this.getNestedValue(formData as unknown as Record<string, unknown>, rule.field);
 
       // Skip optional field validation if requested
       if (skipOptionalFields && this.isOptionalField(rule.field)) {
@@ -369,15 +369,20 @@ export class InvoiceValidationService {
     return errors[`items[${itemIndex}].${fieldName}`] || null;
   }
 
-  private getNestedValue(obj: any, path: string): unknown {
-    return path.split('.').reduce((current: any, key) => {
+  private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+    return path.split('.').reduce((current: unknown, key) => {
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
         const property = key.substring(key.indexOf('].') + 2);
-        return current?.[arrayKey]?.[index]?.[property];
+        const currentObj = current as Record<string, unknown>;
+        const arrayValue = currentObj?.[arrayKey];
+        if (Array.isArray(arrayValue) && arrayValue[index]) {
+          return (arrayValue[index] as Record<string, unknown>)?.[property];
+        }
+        return undefined;
       }
-      return current?.[key];
+      return (current as Record<string, unknown>)?.[key];
     }, obj);
   }
 

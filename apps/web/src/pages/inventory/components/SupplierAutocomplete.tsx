@@ -114,7 +114,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     const suppliers: string[] = [];
 
     // 1. Add API Results
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     if (suppliersData) {
       let supplierArray: any[] = [];
       // Handle response wrapping (using unwrapPaginated logic concepts)

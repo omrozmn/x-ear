@@ -1,4 +1,4 @@
-import { DollarSign, MoreVertical, Eye, Edit, FileText, File, Ban } from 'lucide-react';
+import { DollarSign, MoreVertical, Eye, Edit, FileText, File } from 'lucide-react';
 import { Button, Dropdown } from '@x-ear/ui-web';
 
 interface SalesListProps {

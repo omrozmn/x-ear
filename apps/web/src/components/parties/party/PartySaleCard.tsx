@@ -36,7 +36,7 @@ export const PartySaleCard: React.FC<PartySaleCardProps> = ({
   onCollectPayment,
   onManageInstallments
 }) => {
-  const [showActions, setShowActions] = useState(false);
+  const [_showActions, setShowActions] = useState(false);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';

@@ -88,7 +88,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
     }
   ];
 
-  const validateForm = () => {
+  const _validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {

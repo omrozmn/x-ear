@@ -182,6 +182,7 @@ class LocalModelClient:
         stop_sequences: Optional[List[str]] = None,
         timeout_override: Optional[float] = None,
         num_predict: Optional[int] = None,
+        **kwargs
     ) -> ModelResponse:
         """
         Generate a completion from the model.
@@ -228,11 +229,19 @@ class LocalModelClient:
             },
         }
         
+        # Add vision support
+        if kwargs.get('images'):
+            payload['images'] = [kwargs['images']] if isinstance(kwargs['images'], str) else kwargs['images']
+        
         if system_prompt:
             payload["system"] = system_prompt
         
         if stop_sequences:
             payload["options"]["stop"] = stop_sequences
+        
+        # JSON Mode support (Ollama native)
+        if kwargs.get('json_mode'):
+            payload["format"] = "json"
         
         try:
             # Use timeout_override if provided, otherwise use config timeout
@@ -408,9 +417,9 @@ class SyncModelClient:
         system_prompt: Optional[str] = None,
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
-        stop_sequences: Optional[List[str]] = None,
         timeout_override: Optional[float] = None,
         num_predict: Optional[int] = None,
+        **kwargs
     ) -> ModelResponse:
         """Generate completion synchronously."""
         return asyncio.run(
@@ -422,6 +431,7 @@ class SyncModelClient:
                 stop_sequences=stop_sequences,
                 timeout_override=timeout_override,
                 num_predict=num_predict,
+                **kwargs
             )
         )
     

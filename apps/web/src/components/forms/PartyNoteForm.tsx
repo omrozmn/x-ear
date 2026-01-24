@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
-import { FileText, AlertTriangle, Info, User } from 'lucide-react';
+import { FileText, User } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface PartyNote {
@@ -46,7 +46,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     tags: []
   });
 
-  const [tagInput, setTagInput] = useState<string>('');
+  const [_tagInput, setTagInput] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal opens/closes or note changes
@@ -122,7 +122,9 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     }
   };
 
-  const addTag = () => {
+  // Helper functions for commented-out priority/tags UI sections
+  /*
+  const _addTag = () => {
     if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
       setFormData(prev => ({
         ...prev,
@@ -132,8 +134,6 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     }
   };
 
-  // Helper functions for commented-out priority/tags UI sections
-  /*
   const removeTag = (tagToRemove: string) => {
     setFormData(prev => ({
       ...prev,

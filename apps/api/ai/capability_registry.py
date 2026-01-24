@@ -9,9 +9,24 @@ Requirements:
 - 5.8: Map capabilities to Tool API operations
 """
 
-from typing import List, Dict
+from typing import List, Dict, Optional, Literal, Any, Literal, Any, Optional
 from pydantic import BaseModel, Field, ConfigDict
 from schemas.base import to_camel
+
+
+class SlotConfig(BaseModel):
+    """Configuration for a required parameter slot."""
+    name: str = Field(description="Parameter name matching the tool argument")
+    prompt: str = Field(description="Question to ask the user")
+    ui_type: Literal["entity_search", "enum", "date", "number", "text", "file"] = Field(description="UI component to render")
+    source_endpoint: Optional[str] = Field(default=None, description="API endpoint for search/options")
+    enum_options: Optional[List[str]] = Field(default=None, description="Static options for enum type")
+    validation_rules: Optional[Dict[str, Any]] = Field(default=None, description="Validation rules (min, max, required, etc.)")
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
 
 
 class Capability(BaseModel):
@@ -23,6 +38,7 @@ class Capability(BaseModel):
     example_phrases: List[str] = Field(description="Example user phrases that trigger this capability")
     required_permissions: List[str] = Field(description="Permissions needed to use this capability")
     tool_operations: List[str] = Field(description="Tool API operations used by this capability")
+    slots: List[SlotConfig] = Field(default_factory=list, description="Required slots for this capability")
     limitations: List[str] = Field(description="Known limitations or unsupported scenarios")
     
     model_config = ConfigDict(
@@ -143,6 +159,13 @@ DEVICE_MANAGEMENT_CAPABILITIES = [
         ],
         required_permissions=["devices.view"],
         tool_operations=["listDevices", "getDeviceById", "checkDeviceStock"],
+        slots=[
+            SlotConfig(
+                name="search_query",
+                prompt="Hangi cihazı arıyorsunuz?",
+                ui_type="text"
+            )
+        ],
         limitations=[
             "Cannot access devices from other tenants",
             "Stock levels may be cached (up to 5 minutes delay)",
@@ -160,6 +183,29 @@ DEVICE_MANAGEMENT_CAPABILITIES = [
         ],
         required_permissions=["devices.assign"],
         tool_operations=["assignDevice", "updateDeviceAssignment"],
+        slots=[
+            SlotConfig(
+                name="party_id",
+                prompt="Hangi hasta için cihaz ataması yapılacak?",
+                ui_type="entity_search",
+                source_endpoint="/parties/search",
+                validation_rules={"required": True}
+            ),
+            SlotConfig(
+                name="device_id",
+                prompt="Hangi cihaz atanacak?",
+                ui_type="entity_search",
+                source_endpoint="/inventory/search",
+                validation_rules={"required": True}
+            ),
+            SlotConfig(
+                name="ear_side",
+                prompt="Hangi kulak?",
+                ui_type="enum",
+                enum_options=["Left", "Right", "Binaural"],
+                validation_rules={"required": True}
+            )
+        ],
         limitations=[
             "Requires valid party ID and device ID",
             "Device must be in stock and available",
@@ -186,6 +232,21 @@ APPOINTMENT_CAPABILITIES = [
             "Cannot access appointments from other tenants",
             "Limited to future appointments by default",
             "Cannot view cancelled appointments"
+        ],
+        slots=[
+            SlotConfig(
+                name="date_from",
+                prompt="Hangi tarihten itibaren?",
+                ui_type="date",
+                validation_rules={"required": False}
+            ),
+            SlotConfig(
+                name="party_id",
+                prompt="Belirli bir hasta için mi?",
+                ui_type="entity_search",
+                source_endpoint="/parties/search",
+                validation_rules={"required": False}
+            )
         ]
     ),
     Capability(
@@ -199,6 +260,27 @@ APPOINTMENT_CAPABILITIES = [
         ],
         required_permissions=["appointments.create"],
         tool_operations=["createAppointment"],
+        slots=[
+             SlotConfig(
+                name="party_id",
+                prompt="Randevu kimin için?",
+                ui_type="entity_search",
+                source_endpoint="/parties/search",
+                validation_rules={"required": True}
+            ),
+            SlotConfig(
+                name="appointment_date",
+                prompt="Ne zaman?",
+                ui_type="date",
+                validation_rules={"required": True, "future_only": True}
+            ),
+             SlotConfig(
+                name="notes",
+                prompt="Not eklemek ister misiniz?",
+                ui_type="text",
+                validation_rules={"required": False}
+            )
+        ],
         limitations=[
             "Requires valid party ID and time slot",
             "Cannot schedule in the past",
@@ -229,6 +311,107 @@ REPORTING_CAPABILITIES = [
     ),
 ]
 
+CONFIG_AND_ADMIN_CAPABILITIES = [
+    Capability(
+        name="Manage Feature Flags",
+        description="Enable or disable features for a tenant",
+        category="Configuration",
+        example_phrases=[
+            "Enable AI chat for tenant",
+            "List feature flags",
+            "Özellik bayraklarını göster",
+            "Yeni özelliği aktifleştir"
+        ],
+        required_permissions=["feature_flags:write", "feature_flags:read"],
+        tool_operations=["feature_flag_toggle", "feature_flags_list"],
+        limitations=["Requires admin permissions", "Tenant specific settings"]
+    ),
+    Capability(
+        name="Update Tenant Settings",
+        description="Modify tenant-level configuration",
+        category="Configuration",
+        example_phrases=[
+            "Change the company name in settings",
+            "Update tenant config",
+            "Ayarları güncelle"
+        ],
+        required_permissions=["tenant_config:write"],
+        tool_operations=["tenant_config_update", "tenant_info_get"],
+        limitations=["Affects all users in the tenant"]
+    ),
+    Capability(
+        name="Manage Subscriptions",
+        description="View or upgrade subscription plans",
+        category="Administration",
+        example_phrases=[
+            "Upgrade our plan to enterprise",
+            "Show subscription details",
+            "Paketi yükselt"
+        ],
+        required_permissions=["tenant:admin", "tenant:read"],
+        tool_operations=["tenant_plan_upgrade", "tenant_info_get"],
+        limitations=["Requires explicit approval", "Financial impact"]
+    ),
+    Capability(
+        name="Send Internal Notifications",
+        description="Send notifications to team members",
+        category="Communication",
+        example_phrases=[
+            "Notify the team about the update",
+            "Send a message to user ID 123",
+            "Bildirim gönder"
+        ],
+        required_permissions=["notifications:write"],
+        tool_operations=["notification_send"],
+        slots=[
+             SlotConfig(
+                name="user_id",
+                prompt="Kime gönderilecek? (User ID)",
+                ui_type="text", # Ideally entity_search for users
+                validation_rules={"required": True}
+            ),
+             SlotConfig(
+                name="message",
+                prompt="Mesajınız nedir?",
+                ui_type="text",
+                validation_rules={"required": True}
+            )
+        ],
+        limitations=["Limited to internal recipients", "Rate limited"]
+    ),
+]
+
+DOCUMENT_MANAGEMENT_CAPABILITIES = [
+    Capability(
+        name="Upload Document",
+        description="Upload a file to the system",
+        category="Document Management",
+        example_phrases=[
+            "Upload a new document",
+            "Add a file",
+            "Dosya yükle",
+            "Belge ekle"
+        ],
+        required_permissions=["documents.create"],
+        tool_operations=["createUploadPresigned"], # Using existing router op
+        slots=[
+            SlotConfig(
+                name="filename",
+                prompt="Dosya adı ne olsun?",
+                ui_type="text",
+                validation_rules={"required": True}
+            ),
+             SlotConfig(
+                name="file_content",
+                prompt="Dosyayı seçin",
+                ui_type="file",
+                validation_rules={"required": True, "accept": ".pdf,.jpg,.png"}
+            )
+        ],
+        limitations=["Max 10MB", "Allowed types: PDF, JPG, PNG"]
+    ),
+]
+
 
 # =============================================================================
 # Registry Functions
@@ -246,7 +429,9 @@ def get_all_capabilities() -> List[Capability]:
         SALES_OPERATIONS_CAPABILITIES +
         DEVICE_MANAGEMENT_CAPABILITIES +
         APPOINTMENT_CAPABILITIES +
-        REPORTING_CAPABILITIES
+        REPORTING_CAPABILITIES +
+        CONFIG_AND_ADMIN_CAPABILITIES +
+        DOCUMENT_MANAGEMENT_CAPABILITIES
     )
 
 

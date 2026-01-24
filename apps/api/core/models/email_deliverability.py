@@ -130,3 +130,36 @@ class DeliverabilityMetrics(BaseModel, JSONMixin):
     __table_args__ = (
         db.Index('ix_deliverability_metrics_tenant_date', 'tenant_id', 'date', unique=True),
     )
+
+
+class EmailApproval(BaseModel, JSONMixin):
+    """Email approval workflow model for AI-generated emails."""
+    __tablename__ = 'email_approval'
+
+    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("approval"))
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    email_log_id = db.Column(db.String(50), db.ForeignKey('email_logs.id'), nullable=True)
+    recipient = db.Column(db.String(255), nullable=False)
+    subject = db.Column(db.String(500), nullable=False)
+    body_text = db.Column(db.Text, nullable=False)
+    body_html = db.Column(db.Text, nullable=True)
+    scenario = db.Column(db.String(100), nullable=False)
+    risk_level = db.Column(db.String(20), nullable=False)  # LOW, MEDIUM, HIGH, CRITICAL
+    risk_reasons = db.Column(db.Text, nullable=True)  # JSON array
+    spam_score = db.Column(db.Float, nullable=True)
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending, approved, rejected
+    action_plan_hash = db.Column(db.String(64), nullable=True)  # For AI-generated emails
+    requested_at = db.Column(db.DateTime, nullable=False)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    reviewed_by = db.Column(db.String(36), nullable=True)  # User ID
+    review_notes = db.Column(db.Text, nullable=True)
+
+    # Relationships
+    email_log = db.relationship('EmailLog', backref='approvals', lazy=True)
+
+    __table_args__ = (
+        db.Index('ix_email_approval_tenant_status', 'tenant_id', 'status'),
+        db.Index('ix_email_approval_risk_level', 'risk_level'),
+        db.Index('ix_email_approval_action_plan_hash', 'action_plan_hash'),
+        db.Index('ix_email_approval_requested_at', 'requested_at'),
+    )

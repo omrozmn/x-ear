@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-23T22:54:20.011Z
+ * Generated: 2026-01-24T11:19:34.731Z
  */
 
 // ACTIVITY_LOGS
@@ -221,6 +221,24 @@ export {
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
   useGetAdminDebugPagePermission,
+  useGetDeliverabilityMetrics,
+  useCheckDeliverabilityAlerts,
+  useGetDeliverabilityTrend,
+  useCreateDeliverabilitySnapshot,
+  useListBounces,
+  useGetBounceStats,
+  useUnblacklistRecipient,
+  usePreviewSpamScore,
+  useListUnsubscribes,
+  useGetUnsubscribeStats,
+  useDeleteUnsubscribe,
+  useListEmailApprovals,
+  useGetEmailApprovalStats,
+  useApproveEmail,
+  useRejectEmail,
+  useListComplaints,
+  useGetComplaintStats,
+  useProcessFBLReport,
 } from './admin/admin';
 
 // AFFILIATES
@@ -265,6 +283,12 @@ export {
 export {
   useChatApiAiChatPost as useChatAiChatPost,
 } from './ai-chat/ai-chat';
+
+// AI_COMPOSER
+export {
+  useAutocompleteApiAiComposerAutocompleteGet as useAutocompleteAiComposerAutocompleteGet,
+  useExecuteToolApiAiComposerExecutePost as useExecuteToolAiComposerExecutePost,
+} from './ai-composer/ai-composer';
 
 // AI_STATUS
 export {
@@ -616,6 +640,11 @@ export {
   useUpdatePoCommissionRateSystem,
 } from './pos-commission/pos-commission';
 
+// PUBLIC
+export {
+  useProcessUnsubscribe,
+} from './public/public';
+
 // REGISTRATION
 export {
   useListConfigTurnstile,
@@ -739,6 +768,7 @@ export {
   useGetSMTPConfig,
   useCreateOrUpdateSMTPConfig,
   useSendTestEmail,
+  useGetEmailMetrics,
 } from './smtp-configuration/smtp-configuration';
 
 // SUBSCRIPTIONS
@@ -778,6 +808,11 @@ export {
   useCreatePartyActivities,
   useDeletePartyTimeline,
 } from './timeline/timeline';
+
+// TOOL_API
+export {
+  useSendAIEmailNotification,
+} from './tool-api/tool-api';
 
 // UNIFIED_CASH
 export {

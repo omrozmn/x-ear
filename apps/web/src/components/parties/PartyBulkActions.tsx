@@ -359,7 +359,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
     if (currentAction) {
       executeAction(currentAction, inputValue)
     }
-  }, [currentAction, inputValue, executeAction]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentAction, inputValue, executeAction])  
 
   if (selectedCount === 0) {
     return (

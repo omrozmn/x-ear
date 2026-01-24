@@ -40,7 +40,7 @@ interface UseDeviceAssignmentReturn {
   // Form state
   formData: Partial<DeviceAssignment>;
   setFormData: (data: Partial<DeviceAssignment>) => void;
-  updateFormData: (field: keyof DeviceAssignment, value: any) => void;
+  updateFormData: (field: keyof DeviceAssignment, value: unknown) => void;
 
   // Device management
   availableDevices: DeviceInventoryItem[];
@@ -107,7 +107,7 @@ export const useDeviceAssignment = ({
   };
 
   // Update form data helper - memoized to prevent unnecessary re-renders
-  const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
+  const updateFormData = useCallback((field: keyof DeviceAssignment, value: unknown) => {
     setFormData(prev => {
       // Only update if value actually changed
       if (prev[field] === value) {
@@ -206,7 +206,7 @@ export const useDeviceAssignment = ({
         });
 
         // Extract data array from response
-        let itemsArray: any[] = [];
+        let itemsArray: unknown[] = [];
         if (response && typeof response === 'object') {
           // Case 1: { data: { data: [...] } }
           if ('data' in response && response.data && typeof response.data === 'object' && 'data' in response.data && Array.isArray(response.data.data)) {
@@ -227,18 +227,28 @@ export const useDeviceAssignment = ({
         }
 
         // Transform backend data to frontend format
-        const devices: DeviceInventoryItem[] = itemsArray.map((item: any) => ({
-          id: item.id.toString(),
-          brand: item.brand || '',
-          model: item.model || '',
-          price: item.price || 0,
-          ear: item.ear || 'bilateral',
-          availableInventory: item.availableInventory || 0,
-          availableSerials: item.availableSerials || [],
-          barcode: item.barcode || '',
-          category: item.category || 'hearing_aid',
-          status: (item.availableInventory || 0) > 0 ? 'available' : 'out_of_stock'
-        }));
+        const devices: DeviceInventoryItem[] = itemsArray.map((item: unknown) => {
+          const inventoryItem = item as Record<string, unknown>;
+          const earValue = String(inventoryItem.ear || 'bilateral');
+          // Ensure ear value is one of the valid types
+          const validEar: 'left' | 'right' | 'both' | 'bilateral' = 
+            ['left', 'right', 'both', 'bilateral'].includes(earValue) 
+              ? earValue as 'left' | 'right' | 'both' | 'bilateral'
+              : 'bilateral';
+          
+          return {
+            id: String(inventoryItem.id || ''),
+            brand: String(inventoryItem.brand || ''),
+            model: String(inventoryItem.model || ''),
+            price: Number(inventoryItem.price || 0),
+            ear: validEar,
+            availableInventory: Number(inventoryItem.availableInventory || 0),
+            availableSerials: Array.isArray(inventoryItem.availableSerials) ? inventoryItem.availableSerials as string[] : [],
+            barcode: String(inventoryItem.barcode || ''),
+            category: String(inventoryItem.category || 'hearing_aid'),
+            status: (Number(inventoryItem.availableInventory || 0)) > 0 ? 'available' : 'out_of_stock'
+          };
+        });
 
         // Debug logging disabled to reduce console noise
         // console.log('✓ Loaded inventory:', devices);
@@ -424,7 +434,7 @@ export const useDeviceAssignment = ({
 
       return { ...prev, ...updates };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [calculatedPricing.salePrice, calculatedPricing.sgkReduction, calculatedPricing.partyPayment, calculatedPricing.remainingAmount, calculatedPricing.monthlyInstallment]);
 
   // Handle device selection

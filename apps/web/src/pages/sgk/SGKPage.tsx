@@ -6,17 +6,30 @@ import ProcessingResults from '../../components/sgk/ProcessingResults';
 import CameraCapture from '../../components/sgk/CameraCapture';
 import DocumentProcessor from '../../components/sgk/DocumentProcessor';
 
+interface ProcessingResult {
+  fileName: string;
+  status: 'processed' | 'error';
+  result?: {
+    matched_party?: any;
+    pdf_generated?: boolean;
+    pdf_filename?: string;
+    document_type?: string;
+    entities?: any[];
+  };
+  error?: string;
+}
+
 export const SGKPage: React.FC = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isCameraCaptureOpen, setIsCameraCaptureOpen] = useState(false);
   const [isDocumentProcessorOpen, setIsDocumentProcessorOpen] = useState(false);
-  const [processingResults, setProcessingResults] = useState<any[]>([]);
+  const [processingResults, setProcessingResults] = useState<ProcessingResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [capturedImages, setCapturedImages] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  const handleUploadComplete = (results: any[]) => {
-    setProcessingResults(results);
+  const handleUploadComplete = (results: unknown) => {
+    setProcessingResults(results as ProcessingResult[]);
     setIsProcessing(false);
   };
 
@@ -30,13 +43,13 @@ export const SGKPage: React.FC = () => {
     setIsDocumentProcessorOpen(true);
   };
 
-  const handleFileUpload = (files: File[]) => {
+  const _handleFileUpload = (files: File[]) => {
     setUploadedFiles(files);
     setIsDocumentProcessorOpen(true);
   };
 
-  const handleDocumentProcessingComplete = (results: any[]) => {
-    setProcessingResults(results);
+  const handleDocumentProcessingComplete = (results: unknown) => {
+    setProcessingResults(results as ProcessingResult[]);
     setIsDocumentProcessorOpen(false);
     setCapturedImages([]);
     setUploadedFiles([]);

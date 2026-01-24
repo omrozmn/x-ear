@@ -184,7 +184,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
         extractedInfo: ocrData?.extractedInfo
       };
 
-      const document = await sgkService.createDocument(documentData);
+      const document = await sgkService.createDocument(documentData as unknown as Record<string, unknown>);
       
       // Create workflow
       await sgkService.createWorkflow(document.id, document.partyId);

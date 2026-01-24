@@ -239,7 +239,7 @@ export function InvoiceFormExtended({
     }
   }, [onDataChange]);
 
-  const handleOpenWithholdingModal = useCallback((itemIndex?: number) => {
+  const _handleOpenWithholdingModal = useCallback((itemIndex?: number) => {
     setCurrentItemIndex(itemIndex);
     setWithholdingModalOpen(true);
   }, []);

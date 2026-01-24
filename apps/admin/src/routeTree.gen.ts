@@ -38,10 +38,13 @@ import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AddonsRouteImport } from './routes/addons'
 import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IntegrationsIndexRouteImport } from './routes/integrations/index'
 import { Route as SmsPackagesRouteImport } from './routes/sms/packages'
 import { Route as SmsHeadersRouteImport } from './routes/sms/headers'
 import { Route as IntegrationsVatanSmsRouteImport } from './routes/integrations/vatan-sms'
 import { Route as AffiliatesAffiliateIdRouteImport } from './routes/affiliates.$affiliateId'
+import { Route as IntegrationsEmailLogsRouteImport } from './routes/integrations/email/logs'
+import { Route as IntegrationsEmailConfigRouteImport } from './routes/integrations/email/config'
 import { Route as AuthenticatedAdminIntegrationsVatanSmsRouteImport } from './routes/_authenticated/admin/integrations/vatan-sms'
 
 const UsersRoute = UsersRouteImport.update({
@@ -189,6 +192,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
+  id: '/integrations/',
+  path: '/integrations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SmsPackagesRoute = SmsPackagesRouteImport.update({
   id: '/sms/packages',
   path: '/sms/packages',
@@ -208,6 +216,16 @@ const AffiliatesAffiliateIdRoute = AffiliatesAffiliateIdRouteImport.update({
   id: '/$affiliateId',
   path: '/$affiliateId',
   getParentRoute: () => AffiliatesRoute,
+} as any)
+const IntegrationsEmailLogsRoute = IntegrationsEmailLogsRouteImport.update({
+  id: '/integrations/email/logs',
+  path: '/integrations/email/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsEmailConfigRoute = IntegrationsEmailConfigRouteImport.update({
+  id: '/integrations/email/config',
+  path: '/integrations/email/config',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIntegrationsVatanSmsRoute =
   AuthenticatedAdminIntegrationsVatanSmsRouteImport.update({
@@ -250,6 +268,9 @@ export interface FileRoutesByFullPath {
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
+  '/integrations': typeof IntegrationsIndexRoute
+  '/integrations/email/config': typeof IntegrationsEmailConfigRoute
+  '/integrations/email/logs': typeof IntegrationsEmailLogsRoute
   '/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 export interface FileRoutesByTo {
@@ -286,6 +307,9 @@ export interface FileRoutesByTo {
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
+  '/integrations': typeof IntegrationsIndexRoute
+  '/integrations/email/config': typeof IntegrationsEmailConfigRoute
+  '/integrations/email/logs': typeof IntegrationsEmailLogsRoute
   '/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 export interface FileRoutesById {
@@ -323,6 +347,9 @@ export interface FileRoutesById {
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
+  '/integrations/': typeof IntegrationsIndexRoute
+  '/integrations/email/config': typeof IntegrationsEmailConfigRoute
+  '/integrations/email/logs': typeof IntegrationsEmailLogsRoute
   '/_authenticated/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 export interface FileRouteTypes {
@@ -361,6 +388,9 @@ export interface FileRouteTypes {
     | '/integrations/vatan-sms'
     | '/sms/headers'
     | '/sms/packages'
+    | '/integrations'
+    | '/integrations/email/config'
+    | '/integrations/email/logs'
     | '/admin/integrations/vatan-sms'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -397,6 +427,9 @@ export interface FileRouteTypes {
     | '/integrations/vatan-sms'
     | '/sms/headers'
     | '/sms/packages'
+    | '/integrations'
+    | '/integrations/email/config'
+    | '/integrations/email/logs'
     | '/admin/integrations/vatan-sms'
   id:
     | '__root__'
@@ -433,6 +466,9 @@ export interface FileRouteTypes {
     | '/integrations/vatan-sms'
     | '/sms/headers'
     | '/sms/packages'
+    | '/integrations/'
+    | '/integrations/email/config'
+    | '/integrations/email/logs'
     | '/_authenticated/admin/integrations/vatan-sms'
   fileRoutesById: FileRoutesById
 }
@@ -469,6 +505,9 @@ export interface RootRouteChildren {
   IntegrationsVatanSmsRoute: typeof IntegrationsVatanSmsRoute
   SmsHeadersRoute: typeof SmsHeadersRoute
   SmsPackagesRoute: typeof SmsPackagesRoute
+  IntegrationsIndexRoute: typeof IntegrationsIndexRoute
+  IntegrationsEmailConfigRoute: typeof IntegrationsEmailConfigRoute
+  IntegrationsEmailLogsRoute: typeof IntegrationsEmailLogsRoute
   AuthenticatedAdminIntegrationsVatanSmsRoute: typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 
@@ -677,6 +716,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/integrations/': {
+      id: '/integrations/'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sms/packages': {
       id: '/sms/packages'
       path: '/sms/packages'
@@ -704,6 +750,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/affiliates/$affiliateId'
       preLoaderRoute: typeof AffiliatesAffiliateIdRouteImport
       parentRoute: typeof AffiliatesRoute
+    }
+    '/integrations/email/logs': {
+      id: '/integrations/email/logs'
+      path: '/integrations/email/logs'
+      fullPath: '/integrations/email/logs'
+      preLoaderRoute: typeof IntegrationsEmailLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations/email/config': {
+      id: '/integrations/email/config'
+      path: '/integrations/email/config'
+      fullPath: '/integrations/email/config'
+      preLoaderRoute: typeof IntegrationsEmailConfigRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/integrations/vatan-sms': {
       id: '/_authenticated/admin/integrations/vatan-sms'
@@ -760,6 +820,9 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsVatanSmsRoute: IntegrationsVatanSmsRoute,
   SmsHeadersRoute: SmsHeadersRoute,
   SmsPackagesRoute: SmsPackagesRoute,
+  IntegrationsIndexRoute: IntegrationsIndexRoute,
+  IntegrationsEmailConfigRoute: IntegrationsEmailConfigRoute,
+  IntegrationsEmailLogsRoute: IntegrationsEmailLogsRoute,
   AuthenticatedAdminIntegrationsVatanSmsRoute:
     AuthenticatedAdminIntegrationsVatanSmsRoute,
 }

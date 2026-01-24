@@ -41,7 +41,7 @@ interface PartyUpdateRequest extends Partial<PartyCreateRequest> {
 export function usePartyMutations() {
   // Services
   const syncService = useMemo(() => new PartySyncService(), []);
-  const storageService = useMemo(() => new PartyStorageService(), []);
+  const _storageService = useMemo(() => new PartyStorageService(), []);
 
   // State
   const [loading, setLoading] = useState(false);

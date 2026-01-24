@@ -82,7 +82,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
     );
   }
 
-  const formatStatus = (status?: string) => {
+  const _formatStatus = (status?: string) => {
     if (!status) return { label: 'Belirtilmemiş', variant: 'secondary' as const };
     const statusMap: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' | 'secondary' }> = {
       ACTIVE: { label: 'Aktif', variant: 'success' },

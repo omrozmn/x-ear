@@ -2,7 +2,8 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { listInventory } from '@/api/client/inventory.client';
 import { unwrapObject } from '@/utils/response-unwrap';
 import { Input, Select } from '@x-ear/ui-web';
-import { Calendar, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
+import { Calendar, CheckCircle } from 'lucide-react';
+import type { InventoryItemRead } from '@/api/generated';
 
 export interface DeviceAssignment {
   id?: string;
@@ -75,13 +76,13 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   errors = {},
   isManualMode = false
 }) => {
-  const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
+  const updateFormData = useCallback((field: keyof DeviceAssignment, value: string | number | boolean | null) => {
     onFormDataChange({ [field]: value });
   }, [onFormDataChange]);
 
   // Loaner Search State
   const [loanerSearch, setLoanerSearch] = useState('');
-  const [loanerResults, setLoanerResults] = useState<any[]>([]);
+  const [loanerResults, setLoanerResults] = useState<InventoryItemRead[]>([]);
   const [showLoanerResults, setShowLoanerResults] = useState(false);
   const [activeSerialInput, setActiveSerialInput] = useState<string | null>(null);
 
@@ -101,18 +102,18 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             items?: Array<{ id: string; brand?: string; model?: string; barcode?: string }>;
           }
           const unwrapped = unwrapObject(response) as unknown as InventoryResponseEnvelope | Array<{ id: string; brand?: string; model?: string; barcode?: string }>;
-          let items: Array<{ id: string; brand?: string; model?: string; barcode?: string }> = [];
+          let items: InventoryItemRead[] = [];
           if (unwrapped) {
             if (Array.isArray(unwrapped)) {
-              items = unwrapped;
+              items = unwrapped as InventoryItemRead[];
             } else if (Array.isArray(unwrapped.data)) {
-              items = unwrapped.data;
+              items = unwrapped.data as InventoryItemRead[];
             } else if (unwrapped.items && Array.isArray(unwrapped.items)) {
-              items = unwrapped.items;
+              items = unwrapped.items as InventoryItemRead[];
             }
           }
           // Filter only items with available stock
-          items = items.filter((item: any) => (item.availableInventory || item.available_inventory || 0) > 0);
+          items = items.filter((item) => (item.availableInventory || 0) > 0);
           setLoanerResults(items);
           setShowLoanerResults(items.length > 0);
         } catch (error) {
@@ -129,17 +130,17 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   }, [loanerSearch]);
 
   // Store selected loaner device to access its available serials
-  const [selectedLoanerInventoryItem, setSelectedLoanerInventoryItem] = useState<any>(null);
+  const [selectedLoanerInventoryItem, setSelectedLoanerInventoryItem] = useState<InventoryItemRead | null>(null);
 
-  const selectLoaner = (device: any) => {
+  const selectLoaner = (device: InventoryItemRead) => {
     setSelectedLoanerInventoryItem(device);
     onFormDataChange({
       loanerInventoryId: device.id,
       loanerBrand: device.brand,
-      loanerModel: device.model,
-      loanerSerialNumber: device.serialNumber
+      loanerModel: typeof device.model === 'string' ? device.model : undefined,
+      loanerSerialNumber: undefined // Serial will be selected separately
     });
-    setLoanerSearch(`${device.brand} ${device.model}`);
+    setLoanerSearch(`${device.brand} ${typeof device.model === 'string' ? device.model : ''}`);
     setShowLoanerResults(false);
   };
 
@@ -404,8 +405,8 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
               {showLoanerResults && loanerResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-md shadow-lg border border-gray-200 dark:border-slate-700 max-h-60 overflow-y-auto">
                   {loanerResults.map(device => {
-                    const serials = device.availableSerials || device.available_serials || [];
-                    const stock = device.availableInventory ?? device.available_inventory ?? 0;
+                    const serials = device.availableSerials || [];
+                    const stock = device.availableInventory ?? 0;
                     return (
                       <div
                         key={device.id}
@@ -461,7 +462,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                         className="w-full px-2 py-1.5 text-sm border-2 border-red-400 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-200"
                         placeholder="Sağ (R)"
                       />
-                      {activeSerialInput === 'right' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
+                      {activeSerialInput === 'right' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
                           {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                             <div
@@ -488,7 +489,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                         className="w-full px-2 py-1.5 text-sm border-2 border-blue-400 rounded bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                         placeholder="Sol (L)"
                       />
-                      {activeSerialInput === 'left' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
+                      {activeSerialInput === 'left' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
                           {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                             <div
@@ -518,7 +519,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                         }`}
                       placeholder="Seri No"
                     />
-                    {activeSerialInput === 'single' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
+                    {activeSerialInput === 'single' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
                         {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                           <div

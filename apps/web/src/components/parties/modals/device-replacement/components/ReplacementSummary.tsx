@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Badge, Select, Textarea } from '@x-ear/ui-web';
+import { Card, CardContent, CardHeader, CardTitle, Badge, Textarea } from '@x-ear/ui-web';
 import { ArrowLeftRight, AlertCircle } from 'lucide-react';
 import type { InventoryItem } from '@/types/inventory';
 import type { Device } from '../types';

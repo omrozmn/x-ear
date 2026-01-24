@@ -88,20 +88,20 @@ TİPLER:
 - greeting: Selam, merhaba
 - unknown: Belirsiz
 
-GEREKLİ BİLGİLER (action için):
-- Hasta oluştur: ad, soyad, telefon
-- Randevu oluştur: hasta adı, tarih, saat
-- Stok ekle: ürün adı, marka, fiyat
+ÖNEMLİ KURALLAR:
+1. Bir işlem (action) için zorunlu alanlar eksikse (ad, soyad, telefon veya ürün bilgisi), "clarification_needed" MUTLAKA true olmalıdır.
+2. "ekle", "oluştur" gibi tek başına belirsiz komutlar için mutlaka detay sor (clarification_question).
+3. Kullanıcı iptal etmek istiyorsa intent_type "cancel" olmalıdır.
 
 JSON DÖNDÜR:
 {{
-  "intent_type": "action|query|greeting|unknown",
+  "intent_type": "action|query|greeting|unknown|cancel",
   "confidence": 0.0-1.0,
   "entities": {{}},
   "clarification_needed": true/false,
-  "clarification_question": "eksik bilgi varsa sor",
+  "clarification_question": "eksik bilgi varsa mutlaka burada sor",
   "conversational_response": "kısa yanıt",
-  "reasoning": "neden"
+  "reasoning": "mantık"
 }}
 
 KISA VE NET!"""

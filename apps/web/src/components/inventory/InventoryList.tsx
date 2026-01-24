@@ -12,13 +12,13 @@ import {
   useUpdateInventory,
   getListInventoryQueryKey
 } from '@/api/client/inventory.client';
-import type { ListInventoryParams } from '../../api/generated/schemas';
+import type { ListInventoryParams, InventoryItemRead } from '../../api/generated/schemas';
 
 // Alias for backward compatibility
 type InventoryItemSchema = Record<string, unknown>;
-import { AlertTriangle, Eye, Edit, Trash2 } from 'lucide-react';
+import { AlertTriangle, Edit, Trash2 } from 'lucide-react';
 import { InventoryItem as FrontendInventoryItem, InventoryFilters, InventoryStatus, InventoryCategory } from '../../types/inventory';
-import type { AxiosError } from 'axios';
+import { AxiosError } from '@/api/orval-mutator';
 
 // Human-friendly category labels (keep in sync with ProductForm CATEGORIES)
 const CATEGORY_LABELS: Record<string, string> = {
@@ -59,7 +59,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [failureModalOpen, setFailureModalOpen] = useState(false);
-  const [failureDetails, setFailureDetails] = useState<Array<{ id: string; message: string; status?: number; data?: any }>>([]);
+  const [failureDetails, setFailureDetails] = useState<Array<{ id: string; message: string; status?: number; data?: unknown }>>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -116,23 +116,28 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 
   // Transform Data
   const { items, totalItems } = useMemo(() => {
-    const { data: rawItems, total } = unwrapPaginated<any>(fetchResponse);
+    const { data: rawItems, total } = unwrapPaginated<InventoryItemRead>(fetchResponse);
 
     if (!rawItems || rawItems.length === 0) {
       return { items: [], totalItems: 0 };
     }
-    const mappedItems: FrontendInventoryItem[] = rawItems.map((item: any) => {
+    const mappedItems: FrontendInventoryItem[] = rawItems.map((item: InventoryItemRead) => {
       // Handle features
       let features: string[] = [];
       if (item.features) {
         if (typeof item.features === 'string') {
           try {
-            features = JSON.parse(item.features);
+            const parsed = JSON.parse(item.features);
+            if (Array.isArray(parsed)) {
+              features = parsed.filter((f): f is string => typeof f === 'string');
+            }
           } catch {
-            features = item.features.split(',').map((f: string) => f.trim()).filter(Boolean);
+            features = typeof item.features === 'string' 
+              ? item.features.split(',').map((f: string) => f.trim()).filter(Boolean)
+              : [];
           }
         } else if (Array.isArray(item.features)) {
-          features = item.features;
+          features = item.features.filter((f): f is string => typeof f === 'string');
         }
       }
 
@@ -159,7 +164,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       const parsedKdv = typeof rawKdv !== 'undefined' ? Number(rawKdv) : undefined;
       const kdvVal = typeof parsedKdv === 'number' && !isNaN(parsedKdv) ? parsedKdv : 18;
 
-      const priceNum = parseFloat(item.price) || 0;
+      const priceNum = parseFloat(String(item.price || 0)) || 0;
       const vatIncluded = priceNum * (1 + (kdvVal / 100.0));
 
       // Map to FrontendInventoryItem interface
@@ -170,16 +175,16 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         model: item.model || '',
         category: rawCategory,
 
-        availableInventory: item.availableInventory ?? item.stock ?? item.available_inventory ?? 0,
-        totalInventory: item.totalInventory ?? item.total_inventory ?? 0,
-        usedInventory: item.usedInventory ?? item.used_inventory ?? 0,
-        reorderLevel: item.reorderLevel ?? item.minInventory ?? item.min_inventory ?? 5,
+        availableInventory: item.availableInventory ?? 0,
+        totalInventory: item.totalInventory ?? 0,
+        usedInventory: item.usedInventory ?? 0,
+        reorderLevel: item.reorderLevel ?? 5,
 
         price: priceNum, // Mandatory
-        cost: parseFloat(item.cost) || 0,
+        cost: parseFloat(String(item.cost || 0)) || 0,
 
         vatIncludedPrice: vatIncluded || 0,
-        totalValue: (item.availableInventory || item.available_inventory || 0) * priceNum || 0,
+        totalValue: (item.availableInventory || 0) * priceNum || 0,
 
         barcode: item.barcode || '',
         supplier: item.supplier || '',
@@ -189,8 +194,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         features,
         availableSerials,
 
-        createdAt: item.createdAt || item.created_at || new Date().toISOString(),
-        lastUpdated: item.updatedAt || item.updated_at || new Date().toISOString()
+        createdAt: item.createdAt || new Date().toISOString(),
+        lastUpdated: item.updatedAt || new Date().toISOString()
       };
     });
 
@@ -218,7 +223,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 
     const csvContent = [
       headers.join(','),
-      ...selectedItems.map((item: any) => [
+      ...selectedItems.map((item: FrontendInventoryItem) => [
         item.id,
         `"${item.name || ''}"`,
         `"${item.brand || ''}"`,
@@ -260,7 +265,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       const selectedItems = items.filter(i => selectedIds.includes(i.id));
 
       // Perform API-backed bulk operation for each selected item
-      const failures: Array<{ id: string; message: string; status?: number; data?: any }> = [];
+      const failures: Array<{ id: string; message: string; status?: number; data?: unknown }> = [];
 
       // Execute sequentially
       for (const it of selectedItems) {
@@ -323,11 +328,12 @@ export const InventoryList: React.FC<InventoryListProps> = ({
             default:
               console.warn('Unsupported bulk operation:', operation.type);
           }
-        } catch (err: any) {
-          const status = err?.response?.status;
-          const data = err?.response?.data;
-          const message = err?.message || String(err);
-          const failureData = { ...(data || {}), operation: operation.type, payload: operation.data };
+        } catch (err: unknown) {
+          const axiosErr = err as { response?: { status?: number; data?: unknown }; message?: string };
+          const status = axiosErr?.response?.status;
+          const data = axiosErr?.response?.data;
+          const message = axiosErr?.message || String(err);
+          const failureData = { ...(data && typeof data === 'object' ? data as Record<string, unknown> : {}), operation: operation.type, payload: operation.data };
           failures.push({ id: it.id, message, status, data: failureData });
         }
       }
@@ -341,10 +347,12 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
       setSelectedIds([]);
       setIsBulkModalOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Bulk operation failed:', err);
-      const message = err?.message || String(err);
-      setFailureDetails([{ id: 'bulk', message, data: err?.response?.data }]);
+      const errorObj = err as { message?: string; response?: { data?: unknown } };
+      const message = errorObj?.message || String(err);
+      const responseData = errorObj?.response?.data;
+      setFailureDetails([{ id: 'bulk', message, data: responseData && typeof responseData === 'object' ? responseData as Record<string, unknown> : undefined }]);
       setFailureModalOpen(true);
     }
   };
@@ -357,7 +365,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         <Checkbox
           checked={items.length > 0 && selectedIds.length === items.length}
           indeterminate={selectedIds.length > 0 && selectedIds.length < items.length}
-          onChange={(e: any) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const checked = e.target.checked;
             if (checked) {
               setSelectedIds(items.map(i => i.id));
@@ -367,7 +375,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           }}
         />
       ),
-      render: (value: any, record: FrontendInventoryItem) => (
+      render: (_value: unknown, record: FrontendInventoryItem) => (
         <Checkbox
           checked={selectedIds.includes(record.id)}
           onChange={() => {

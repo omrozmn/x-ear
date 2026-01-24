@@ -8,7 +8,7 @@ interface InboxFile { filename: string; size: number; mtime: number }
 export const InboxModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [files, setFiles] = useState<InboxFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<InboxFile | null>(null);
+  const [_selected, setSelected] = useState<InboxFile | null>(null);
 
   useEffect(() => {
     if (isOpen) fetchList();

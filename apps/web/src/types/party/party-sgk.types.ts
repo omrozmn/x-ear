@@ -5,8 +5,6 @@
  */
 
 import type { 
-  SGKStatus, 
-  InsuranceType, 
   EReceiptStatus 
 } from './party-base.types';
 

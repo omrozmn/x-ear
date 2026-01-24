@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Button, Select } from '@x-ear/ui-web';
-import { Download, Eye, FileText, Calendar, Filter } from 'lucide-react';
+import { Download, Eye, FileText, Filter } from 'lucide-react';
 
 interface DeliveredEReceipt {
   id: string;

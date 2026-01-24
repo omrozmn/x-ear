@@ -44,6 +44,16 @@ def create_superadmin():
             print(f"   Email: admin@x-ear.com")
             print(f"   Password: admin123")
             
+            # Verify immediately
+            from core.database import engine
+            print(f"DEBUG: Database URL used: {engine.url}")
+            
+            db.refresh(admin)
+            is_valid = admin.check_password("admin123")
+            print(f"DEBUG: Immediate password check result: {is_valid}")
+            if not is_valid:
+                print(f"DEBUG: Hash stored: {admin.password_hash}")
+            
         else:
             print("❌ Admin user not found. Creating new superadmin...")
             
@@ -63,6 +73,16 @@ def create_superadmin():
             
             db.add(admin)
             db.commit()
+            
+            # Verify immediately
+            from core.database import engine
+            print(f"DEBUG: Database URL used: {engine.url}")
+            
+            db.refresh(admin)
+            is_valid = admin.check_password("admin123")
+            print(f"DEBUG: Immediate password check result: {is_valid}")
+            if not is_valid:
+                print(f"DEBUG: Hash stored: {admin.password_hash}")
             
             print(f"\n✅ Created superadmin user!")
             print(f"   ID: {admin.id}")

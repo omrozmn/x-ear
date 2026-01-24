@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Card, Button, Badge, Input } from '@x-ear/ui-web';
+import { Card, Button, Badge } from '@x-ear/ui-web';
 import { Upload, Download, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { InventoryItem } from '../../../types/inventory';
 

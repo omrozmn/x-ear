@@ -238,7 +238,15 @@ export function usePendingActions(
             planHash: apiPlan.plan_hash,
             approvalToken: apiPlan.approval_token || undefined,
             createdAt: apiPlan.created_at,
-            steps: (apiPlan.steps || []).map((s: any) => ({
+            steps: (apiPlan.steps || []).map((s: {
+              step_number: number;
+              tool_name: string;
+              tool_schema_version: string;
+              parameters?: Record<string, unknown>;
+              description: string;
+              risk_level: string;
+              requires_approval: boolean;
+            }) => ({
               stepNumber: s.step_number,
               toolName: s.tool_name,
               toolSchemaVersion: s.tool_schema_version,

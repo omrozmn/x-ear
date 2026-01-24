@@ -33,14 +33,14 @@ import type {
   InvoiceTemplate,
   InvoiceUpdate,
   ListInvoicesParams,
-  ResponseEnvelopeDict,
   ResponseEnvelopeInvoicePrintQueueResponse,
   ResponseEnvelopeInvoiceRead,
   ResponseEnvelopeInvoiceTemplate,
   ResponseEnvelopeListInvoiceRead,
   ResponseEnvelopeListInvoiceTemplate,
   ResponseEnvelopeNoneType,
-  SchemasBaseResponseEnvelopeBulkUploadResponse2
+  SchemasBaseResponseEnvelopeBulkUploadResponse2,
+  SchemasBaseResponseEnvelopeDict
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -911,7 +911,7 @@ export const createInvoiceSendToGib = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeDict>(
+      return adminApi<SchemasBaseResponseEnvelopeDict>(
       {url: `/api/invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
     },
       );

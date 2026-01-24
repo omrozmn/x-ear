@@ -33,17 +33,14 @@ export function useUploadSgkDocument(partyId: string) {
       }
 
       try {
-        // Upload document - sgkService.uploadDocument takes BodySgkCreateSgkDocuments which is { file: Blob }
-        const bodyInput: { file: Blob } = { file: file || new Blob() }; // Ensure strict type matching
-
-        // Actually sgkService.uploadDocument likely takes the generated body type.
-        // We pass the object wrapper as expected by generated clients usually.
-        return await sgkService.uploadDocument(bodyInput);
+        // Upload document - sgkService.uploadDocument takes FormData or object with file
+        // Cast to unknown first to avoid type conflicts
+        return await sgkService.uploadDocument(documentData as unknown as Record<string, unknown>);
       } catch (err) {
         // On network/offline failure, serialize file blob to IndexedDB and enqueue outbox operation
         try {
           if (file instanceof Blob) { // File is a subclass of Blob, so this covers both
-            const fileObj = file; // No cast needed for basic Blob ops
+            const _fileObj = file; // No cast needed for basic Blob ops
             const filename = (file instanceof File ? file.name : 'unknown_file');
             const mime = file.type || 'application/octet-stream';
 
@@ -72,7 +69,7 @@ export function useUploadSgkDocument(partyId: string) {
 export function useUploadSgkDocuments() {
   return useMutation({
     mutationFn: async (formData: FormData) => {
-      return await sgkService.uploadDocument(formData);
+      return await sgkService.uploadDocument(formData as unknown as Record<string, unknown>);
     },
   });
 }

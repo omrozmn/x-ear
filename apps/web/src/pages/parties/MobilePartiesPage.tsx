@@ -7,6 +7,7 @@ import { PartyCard } from '@/components/mobile/PartyCard';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
 import { useParties } from '@/hooks/useParties';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
+import type { PartyRead } from '@/api/generated';
 
 export const MobilePartiesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ export const MobilePartiesPage: React.FC = () => {
         window.location.reload();
     };
 
-    const filteredParties = parties.filter((party: any) => {
+    const filteredParties = parties.filter((party: PartyRead) => {
         if (!searchValue) return true;
         const searchLower = searchValue.toLowerCase();
         return (
@@ -72,7 +73,7 @@ export const MobilePartiesPage: React.FC = () => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
                         </div>
                     ) : filteredParties.length > 0 ? (
-                        filteredParties.map((party: any) => (
+                        filteredParties.map((party: PartyRead) => (
                             <PartyCard
                                 key={party.id}
                                 party={party}

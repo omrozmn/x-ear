@@ -8,9 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
-  DollarSign,
-  Package,
-  AlertTriangle
+  DollarSign
 } from 'lucide-react';
 import { InventoryCategory, InventoryStatus } from '@/types/inventory';
 
@@ -99,7 +97,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     setSelectedFeatures(filters.features || []);
   }, [filters]);
 
-  const handleFilterChange = (key: keyof InventoryFilters, value: any) => {
+  const handleFilterChange = (key: keyof InventoryFilters, value: string | number | boolean | string[] | { min?: number; max?: number } | { start?: string; end?: string } | InventoryCategory | InventoryStatus | undefined) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
@@ -203,7 +201,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   };
 
   const categoryOptions = categories.map(cat => ({ value: cat, label: CATEGORY_LABELS[cat] || cat }));
-  const brandOptions = brands.map(brand => ({ value: brand, label: brand }));
+  const _brandOptions = brands.map(brand => ({ value: brand, label: brand }));
   const supplierOptions = suppliers.map(supplier => ({ value: supplier, label: supplier }));
 
   return (
@@ -377,7 +375,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               </label>
               <Select
                 value={localFilters.supplier || ''}
-                onChange={(value) => handleFilterChange('supplier', value || undefined)}
+                onChange={(e) => handleFilterChange('supplier', e.target.value || undefined)}
                 options={[{ value: '', label: 'Tüm Tedarikçiler' }, ...supplierOptions]}
                 placeholder="Tedarikçi seçin"
               />
@@ -389,7 +387,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               </label>
               <Select
                 value={localFilters.warrantyPeriod || ''}
-                onChange={(value) => handleFilterChange('warrantyPeriod', value || undefined)}
+                onChange={(e) => handleFilterChange('warrantyPeriod', e.target.value || undefined)}
                 options={warrantyOptions}
                 placeholder="Garanti süresi seçin"
               />

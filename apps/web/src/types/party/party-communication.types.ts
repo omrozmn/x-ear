@@ -13,8 +13,7 @@ import type {
   PaymentMethod,
   PaymentStatus,
   SaleStatus,
-  EReceiptStatus,
-  InsuranceType
+  EReceiptStatus
 } from './party-base.types';
 
 export interface Communication {

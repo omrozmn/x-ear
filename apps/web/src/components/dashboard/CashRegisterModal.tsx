@@ -1,6 +1,6 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState } from 'react';
-import { DollarSign, CreditCard, Smartphone, User } from 'lucide-react';
+import { DollarSign, CreditCard, User } from 'lucide-react';
 import { Modal } from '../../../../../packages/ui-web/src/components/ui/Modal';
 
 interface CashRegisterModalProps {

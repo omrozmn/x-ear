@@ -105,7 +105,7 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
       setLoading(true);
       const updatedWorkflow = await sgkService.updateWorkflowStatus(
         workflow.id,
-        selectedStatus,
+        selectedStatus as SGKWorkflowStatus,
         statusNotes || undefined
       );
       setWorkflow(updatedWorkflow);

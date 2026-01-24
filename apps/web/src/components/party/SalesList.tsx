@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DollarSign, MoreVertical, Eye, Edit, FileText, File, Ban } from 'lucide-react';
+import { DollarSign, MoreVertical, Eye, Edit, FileText, File } from 'lucide-react';
 
 interface SalesListProps {
   sales: any[];

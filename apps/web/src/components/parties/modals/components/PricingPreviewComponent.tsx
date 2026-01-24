@@ -7,7 +7,7 @@ import {
   Input,
   Badge
 } from '@x-ear/ui-web';
-import { Calculator, Percent, TrendingUp } from 'lucide-react';
+import { Calculator, Percent } from 'lucide-react';
 
 interface PricingDetails {
   basePrice: number;

@@ -23,7 +23,7 @@ export const PERMISSION_CATEGORIES = {
 export type PermissionCategory = keyof typeof PERMISSION_CATEGORIES;
 
 // API Base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
+const _API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
 
 // Helper function to make authenticated requests
 async function authFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

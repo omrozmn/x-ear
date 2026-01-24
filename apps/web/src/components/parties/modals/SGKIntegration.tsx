@@ -38,7 +38,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
   const [selectedScheme, setSelectedScheme] = useState<SGKScheme | null>(null);
   const [sgkDocumentUploaded, setSgkDocumentUploaded] = useState(false);
   const [loadingSchemes, setLoadingSchemes] = useState(false);
-  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [_uploadingDocument, setUploadingDocument] = useState(false);
 
   // Mock SGK schemes based on party criteria
   const loadSGKSchemes = () => {

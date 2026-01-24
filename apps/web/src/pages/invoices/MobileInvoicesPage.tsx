@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Filter, FileText, Search } from 'lucide-react';
+import { Filter, FileText, Search } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
@@ -58,7 +58,7 @@ export const MobileInvoicesPage: React.FC = () => {
     };
 
     const getStatusLabel = (status: string) => {
-        const map: any = {
+        const map: Record<string, string> = {
             paid: 'Ödendi',
             overdue: 'Gecikmiş',
             sent: 'Gönderildi',

@@ -75,7 +75,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   ];
 
   // Merge API brands with defaults and local additions
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   const allBrands = useMemo(() => {
     let apiBrands: string[] = [];
 

@@ -54,7 +54,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
     return methods[method || ''] || method || '-';
   };
 
-  const getSgkSupportText = (sgkType?: string) => {
+  const _getSgkSupportText = (sgkType?: string) => {
     const sgkTypes: Record<string, string> = {
       'no_coverage': 'SGK Desteği Yok',
       'under4_parent_working': '4 Yaş Altı (Veli Çalışan)',

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
-import { Banknote, Calendar, DollarSign, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react';
+import { Banknote, DollarSign, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react';
 import { listSalePromissoryNotes } from '@/api/client/sales.client';
 import type { Sale } from '../../types/party/party-communication.types';
 
@@ -34,7 +34,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [notes, setNotes] = useState<PromissoryNote[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [_showCreateForm, setShowCreateForm] = useState(false);
   const [collectingNoteId, setCollectingNoteId] = useState<string | null>(null);
   const [collectionData, setCollectionData] = useState({
     amount: 0,

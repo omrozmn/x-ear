@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
-import { RefreshCw, Calendar, DollarSign, CheckCircle, Clock, AlertCircle, CreditCard } from 'lucide-react';
+import { RefreshCw, DollarSign, CheckCircle, Clock, AlertCircle, CreditCard } from 'lucide-react';
 
 interface Installment {
   id: string;
@@ -151,7 +151,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
   const totalInstallments = installments.length;
   const paidInstallments = installments.filter(i => i.status === 'paid').length;
   const overdueInstallments = installments.filter(i => isOverdue(i.dueDate, i.status)).length;
-  const totalPaid = installments.reduce((sum, i) => sum + i.paidAmount, 0);
+  const _totalPaid = installments.reduce((sum, i) => sum + i.paidAmount, 0);
   const totalRemaining = installments.reduce((sum, i) => sum + (i.amount - i.paidAmount), 0);
 
   return (

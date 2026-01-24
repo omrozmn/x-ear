@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Party } from '../../types/party/party-base.types';
-import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Textarea } from '@x-ear/ui-web';
 
 interface SGKEReceiptFormProps {
   party: Party;

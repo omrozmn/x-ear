@@ -39,7 +39,7 @@ const units: { value: ExtendedUnitType; label: string; category: string }[] = [
 
 export function UnitSelector({ value, onChange, className }: UnitSelectorProps) {
   // Kategorilere göre grupla
-  const categories = Array.from(new Set(units.map(u => u.category)));
+  const _categories = Array.from(new Set(units.map(u => u.category)));
 
   const options = [
     { value: '', label: 'Birim Seçiniz' },

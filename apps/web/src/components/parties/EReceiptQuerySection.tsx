@@ -124,7 +124,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
     }
 
     const selectedMaterials = Object.entries(materialSelections)
-      .filter(([_, selection]) => selection.selected)
+      .filter(([_key, selection]) => selection.selected)
       .map(([code, selection]) => ({
         code,
         date: selection.date

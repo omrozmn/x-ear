@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, Trash2, Upload } from 'lucide-react';
+import { X, Search, Trash2 } from 'lucide-react';
 import { Button, Input, Modal } from '@x-ear/ui-web';
 
 interface SerialNumberModalProps {

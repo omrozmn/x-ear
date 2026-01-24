@@ -54,7 +54,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
     </div>
   );
 
-  const formatDate = (date: string | Date) => {
+  const _formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('tr-TR');
   };
 

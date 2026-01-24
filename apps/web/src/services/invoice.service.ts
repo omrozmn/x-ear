@@ -490,7 +490,7 @@ export class InvoiceService {
     let totalAmount = existing.totalAmount;
 
     if (updates.items) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const calc = this.calculateInvoice(updates.items as InvoiceItem[]);
       items = calc.items as InvoiceItem[];
       subtotal = calc.subtotal;

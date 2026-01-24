@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Modal, Select } from '@x-ear/ui-web';
+import { Button, Modal } from '@x-ear/ui-web';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useDeviceReplacement } from './hooks/useDeviceReplacement';
 import { InventorySelector } from './components/InventorySelector';

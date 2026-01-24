@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Input, Select, Textarea } from '@x-ear/ui-web';
+import { Modal, Button, Input, Textarea } from '@x-ear/ui-web';
 import type { Party } from '../../../types/party/party-base.types';
 
 interface SGKEReceiptModalProps {
