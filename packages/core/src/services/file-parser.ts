@@ -52,7 +52,7 @@ export class FileParserService {
     options: ParseOptions = {}
   ): Promise<ParsedData> {
     const startTime = Date.now();
-    
+
     return new Promise((resolve, reject) => {
       const {
         preview = false,
@@ -64,17 +64,17 @@ export class FileParserService {
         transformHeader,
       } = options;
 
-      Papa.parse(file, {
+      Papa.parse(file as any, {
         header: false, // We'll handle headers manually for better control
         delimiter: delimiter || undefined,
         skipEmptyLines,
         preview: preview ? previewRows + (hasHeaders ? 1 : 0) : 0,
         encoding: options.encoding || 'UTF-8',
-        complete: (results) => {
+        complete: (results: Papa.ParseResult<string[]>) => {
           try {
             const parseTime = Date.now() - startTime;
             const allRows = results.data as string[][];
-            
+
             if (allRows.length === 0) {
               reject({
                 type: 'INVALID_DATA',
@@ -130,14 +130,14 @@ export class FileParserService {
             } as FileParseError);
           }
         },
-        error: (error) => {
+        error: (error: Papa.ParseError) => {
           reject({
             type: 'PARSE_ERROR',
             message: `CSV parsing failed: ${error.message}`,
             details: error,
           } as FileParseError);
         },
-      });
+      } as any);
     });
   }
 
@@ -149,10 +149,10 @@ export class FileParserService {
     options: ParseOptions = {}
   ): Promise<ParsedData> {
     const startTime = Date.now();
-    
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         try {
           const {
@@ -165,11 +165,11 @@ export class FileParserService {
 
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
-          
+
           // Get first worksheet
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
-          
+
           if (!worksheet) {
             reject({
               type: 'INVALID_DATA',
@@ -298,7 +298,7 @@ export class FileParserService {
    */
   private static getFileTypeFromExtension(fileName: string): string {
     const extension = fileName.toLowerCase().split('.').pop();
-    
+
     switch (extension) {
       case 'csv':
         return 'text/csv';
@@ -335,7 +335,7 @@ export class FileParserService {
     const columnStats = data.headers.map((header, index) => {
       const columnData = data.rows.map(row => row[index]);
       const nonEmptyValues = columnData.filter(val => val !== null && val !== undefined && val !== '');
-      
+
       return {
         name: header,
         index,
