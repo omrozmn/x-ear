@@ -15,7 +15,7 @@
  *   import { listParties, createParty } from '@/api/client/parties.client';
  *   
  *   // ❌ WRONG
- *   import { listParties } from '@/api/generated/parties/parties';
+ *   import { listParties } from '@/api/generated/...';
  */
 
 export * from './parties.client';

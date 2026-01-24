@@ -2,7 +2,7 @@
  * Supplier Invoices Hook - Uses real API endpoints
  * Supplier invoices are filtered from the main invoices endpoint
  */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCreateBirfaturaSyncInvoices } from '@/api/client/bir-fatura.client';
 import { getListSuppliersQueryKey, useListSuppliers } from '@/api/client/suppliers.client';
 import { useListInvoices } from '@/api/client/invoices.client';

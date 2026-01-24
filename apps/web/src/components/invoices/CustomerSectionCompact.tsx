@@ -29,7 +29,7 @@ const SGK_CUSTOMER = {
 
 export function CustomerSectionCompact({
   isSGK = false,
-  customerId,
+  customerId: _customerId,
   customerFirstName,
   customerLastName,
   customerTcNumber,

@@ -590,7 +590,7 @@ function PartiesTab({ filters }: { filters: FilterState }) {
 }
 
 // Promissory Notes Tab Content
-function PromissoryNotesTab({ filters }: { filters: FilterState }) {
+function PromissoryNotesTab({ filters: _filters }: { filters: FilterState }) {
   const [showListModal, setShowListModal] = useState(false);
   const [listFilter, setListFilter] = useState<'active' | 'overdue' | 'paid' | 'all'>('active');
   const [listPage, setListPage] = useState(1);

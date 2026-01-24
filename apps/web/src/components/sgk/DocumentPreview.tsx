@@ -3,7 +3,7 @@ import { Modal, Button, Input } from '@x-ear/ui-web';
 import { 
   FileText, 
   Download, 
-  Eye, 
+  
   ZoomIn, 
   ZoomOut, 
   RotateCw, 

@@ -16,13 +16,6 @@ interface SGKProcessRequest {
   [key: string]: unknown;
 }
 
-interface SGKDocumentData {
-  partyId: string;
-  documentType?: string;
-  content?: string;
-  [key: string]: unknown;
-}
-
 // SGK Service - handles SGK document operations
 export const sgkService = {
   // Upload SGK document

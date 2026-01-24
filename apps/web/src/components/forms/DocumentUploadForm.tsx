@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Button, Input, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Textarea, Select } from '@x-ear/ui-web';
 import { Modal } from '../ui/Modal';
 import { Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
@@ -225,23 +225,21 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Doküman Türü *
           </label>
-          <select
+          <Select
             value={documentType}
             onChange={(e) => setDocumentType(e.target.value)}
-            className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.documentType ? 'border-red-300' : ''}`}
-            data-allow-raw="true"
-          >
-            <option value="">Doküman türü seçin...</option>
-            <option value="sgk_report">SGK Raporu</option>
-            <option value="prescription">Reçete</option>
-            <option value="medical_report">Tıbbi Rapor</option>
-            <option value="invoice">Fatura</option>
-            <option value="receipt">Makbuz</option>
-            <option value="other">Diğer</option>
-          </select>
-          {errors.documentType && (
-            <p className="mt-1 text-sm text-red-600">{errors.documentType}</p>
-          )}
+            options={[
+              { value: '', label: 'Doküman türü seçin...' },
+              { value: 'sgk_report', label: 'SGK Raporu' },
+              { value: 'prescription', label: 'Reçete' },
+              { value: 'medical_report', label: 'Tıbbi Rapor' },
+              { value: 'invoice', label: 'Fatura' },
+              { value: 'receipt', label: 'Makbuz' },
+              { value: 'other', label: 'Diğer' }
+            ]}
+            error={errors.documentType}
+            fullWidth
+          />
         </div>
 
         {/* Açıklama */}

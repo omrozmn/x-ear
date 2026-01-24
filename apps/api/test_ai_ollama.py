@@ -7,6 +7,7 @@ Tests both direct Ollama API and the AI chat endpoint.
 import requests
 import json
 import sys
+import os
 
 def test_ollama_direct():
     """Test direct connection to Ollama."""
@@ -16,7 +17,8 @@ def test_ollama_direct():
     
     try:
         # Test if Ollama is running
-        response = requests.get("http://localhost:11434/api/tags", timeout=5)
+        base_url = os.environ.get("TEXT_MODEL_ENDPOINT", "http://localhost:11434")
+        response = requests.get(f"{base_url}/api/tags", timeout=5)
         if response.status_code == 200:
             models = response.json().get("models", [])
             print(f"✅ Ollama is running")
@@ -42,7 +44,7 @@ def test_ollama_generate():
     
     try:
         payload = {
-            "model": "qwen2.5:7b-instruct",
+            "model": "qwen2.5:3b",
             "prompt": "Merhaba! Kısa bir şekilde kendini tanıt.",
             "stream": False,
             "options": {
@@ -52,8 +54,9 @@ def test_ollama_generate():
         }
         
         print(f"📤 Sending prompt: {payload['prompt']}")
+        base_url = os.environ.get("TEXT_MODEL_ENDPOINT", "http://localhost:11434")
         response = requests.post(
-            "http://localhost:11434/api/generate",
+            f"{base_url}/api/generate",
             json=payload,
             timeout=60
         )

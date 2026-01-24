@@ -252,7 +252,7 @@ interface SmsAutomationTabProps {
     creditLoading: boolean;
 }
 
-export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ /* creditBalance, creditLoading - not used */ }) => {
+export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = (_props) => {
     const [rules, setRules] = useState<AutomationRule[]>(SAMPLE_RULES);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);

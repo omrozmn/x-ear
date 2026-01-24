@@ -69,8 +69,9 @@ export {
   AIActionButtonExample,
   AIDynamicFallbackExample,
   AIPartyContextExample,
-  withAIFeature,
 } from './AIFeatureExample';
+
+export { withAIFeature } from './hocs';
 
 // AI Action Buttons (pre-built components with pending action prevention)
 export {

@@ -27,7 +27,7 @@ export function useFuzzySearch<T>(
     threshold = 0.6,
     maxDistance = 3,
     caseSensitive = false,
-    includeScore = true,
+    includeScore: _includeScore = true,
     minLength = 1,
     keys = []
   } = options;

@@ -4,10 +4,9 @@ import {
   CardContent, 
   CardHeader, 
   CardTitle,
-  Input,
-  Badge
+  Input
 } from '@x-ear/ui-web';
-import { Calculator, Percent } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 
 interface PricingDetails {
   basePrice: number;

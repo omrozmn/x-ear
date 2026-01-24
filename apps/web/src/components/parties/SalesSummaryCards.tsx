@@ -17,7 +17,7 @@ interface SalesSummaryCardsProps {
 
 export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
   sales: rawSales,
-  sgkCoverageCalculation
+  sgkCoverageCalculation: _sgkCoverageCalculation
 }) => {
   const sales = rawSales as unknown as ExtendedSaleRead[];
   const totalSales = sales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0);

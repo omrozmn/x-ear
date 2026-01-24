@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button, Input, Card, CardContent } from '@x-ear/ui-web';
-import { Search, X, Trash2 } from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 type InventoryItem = any;
 
 interface SaleItem {
@@ -23,7 +23,7 @@ interface SaleItemRowProps {
   searchProducts: (term: string) => InventoryItem[];
 }
 
-export function SaleItemRow({ item, index, products, onUpdate, onRemove, canRemove, searchProducts }: SaleItemRowProps) {
+export function SaleItemRow({ item, index, products: _products, onUpdate, onRemove, canRemove, searchProducts }: SaleItemRowProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showProductSearch, setShowProductSearch] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState<InventoryItem[]>([]);

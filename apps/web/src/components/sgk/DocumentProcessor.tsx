@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Modal, Button } from '@x-ear/ui-web';
-import { FileText, Eye, Download, RotateCcw, Scissors, Zap } from 'lucide-react';
+import { FileText, Eye, Download, Scissors, Zap } from 'lucide-react';
 import PartySearch from './PartySearch';
 import DocumentTypeSelector from './DocumentTypeSelector';
 import { type Party } from '../../types/party';
@@ -164,7 +164,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({
   }, []);
 
   // Enhanced text extraction with better OCR simulation
-  const extractTextFromImage = useCallback(async (imageData: string): Promise<{
+  const extractTextFromImage = useCallback(async (_imageData: string): Promise<{
     text: string;
     confidence: number;
     partyInfo?: {

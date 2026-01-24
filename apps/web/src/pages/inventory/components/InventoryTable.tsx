@@ -114,7 +114,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   };
 
   const allSelected = selectedItems.length === paginatedItems.length && paginatedItems.length > 0;
-  const someSelected = selectedItems.length > 0 && selectedItems.length < paginatedItems.length;
+  const _someSelected = selectedItems.length > 0 && selectedItems.length < paginatedItems.length;
 
   const itemsPerPageOptions = [
     { value: '10', label: '10 / sayfa' },

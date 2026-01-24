@@ -18,8 +18,12 @@ import React from 'react';
 import type { AIStatus } from '../types/ai.types';
 import { getStatusType, getDetailedStatusLabel } from '../utils/aiStatusHelpers';
 import type { AIStatusType } from '../utils/aiStatusHelpers';
+import {
+  STATUS_INDICATOR_SIZE_CLASSES,
+  STATUS_INDICATOR_LABEL_SIZE_CLASSES,
+  STATUS_INDICATOR_COLORS,
+} from './constants';
 
-// Re-export helper functions and types for convenience
 export { getStatusType, getDetailedStatusLabel };
 export type { AIStatusType };
 
@@ -63,40 +67,6 @@ export interface AIStatusIndicatorProps {
 }
 
 // =============================================================================
-// Constants
-// =============================================================================
-
-/**
- * Size classes for the indicator dot
- */
-const SIZE_CLASSES: Record<AIStatusIndicatorSize, string> = {
-  sm: 'w-2 h-2',
-  md: 'w-3 h-3',
-  lg: 'w-4 h-4',
-};
-
-/**
- * Label text size classes
- */
-const LABEL_SIZE_CLASSES: Record<AIStatusIndicatorSize, string> = {
-  sm: 'text-xs',
-  md: 'text-sm',
-  lg: 'text-base',
-};
-
-/**
- * Status color classes (Tailwind CSS)
- */
-const STATUS_COLORS: Record<AIStatusType, string> = {
-  available: 'bg-green-500',
-  degraded: 'bg-yellow-500',
-  unavailable: 'bg-red-500',
-  unknown: 'bg-gray-400',
-};
-
-
-
-// =============================================================================
 // Component
 // =============================================================================
 
@@ -129,9 +99,9 @@ export function AIStatusIndicator({
   className = '',
 }: AIStatusIndicatorProps): React.ReactElement {
   const statusType = getStatusType(status);
-  const colorClass = STATUS_COLORS[statusType];
-  const sizeClass = SIZE_CLASSES[size];
-  const labelSizeClass = LABEL_SIZE_CLASSES[size];
+  const colorClass = STATUS_INDICATOR_COLORS[statusType];
+  const sizeClass = STATUS_INDICATOR_SIZE_CLASSES[size];
+  const labelSizeClass = STATUS_INDICATOR_LABEL_SIZE_CLASSES[size];
   const label = getDetailedStatusLabel(status);
 
   return (

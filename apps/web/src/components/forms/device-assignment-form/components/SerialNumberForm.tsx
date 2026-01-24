@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Hash, CheckCircle } from 'lucide-react';
 import { DeviceInventoryItem } from './DeviceSearchForm';
+import { Input } from '@x-ear/ui-web';
 
 export interface DeviceAssignment {
   serialNumber?: string;
@@ -74,7 +75,7 @@ const SerialAutocomplete: React.FC<{
       <label className={`block text-sm font-medium mb-1 ${colorClasses[color]}`}>
         {label} (Opsiyonel)
       </label>
-      <input
+      <Input
         ref={inputRef}
         type="text"
         value={value}
@@ -84,7 +85,7 @@ const SerialAutocomplete: React.FC<{
         }}
         onFocus={() => setIsOpen(true)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+        className="dark:bg-slate-800 dark:text-white"
       />
 
       {isOpen && filteredSerials.length > 0 && (

@@ -10,7 +10,7 @@ import {
     useCreateUserMePassword,
     getListUserMeQueryKey
 } from '@/api/client/users.client';
-import { ResponseEnvelopeUserRead, UserRead, UserUpdate } from '@/api/generated/schemas';
+import { ResponseEnvelopeUserRead, UserUpdate } from '@/api/generated/schemas';
 
 
 export const DesktopProfilePage: React.FC = () => {
@@ -81,7 +81,7 @@ export const DesktopProfilePage: React.FC = () => {
         });
     }, [isLoading, isError, userDataResponse, error]);
 
-    interface UserData {
+    interface _UserData {
         id?: string;
         email?: string;
         fullName?: string;

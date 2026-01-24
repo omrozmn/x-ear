@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, Grid, List, Download, Trash2, Eye, Filter, RotateCcw, Clock, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
 import DocumentViewer from './DocumentViewer';

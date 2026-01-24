@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input, Textarea, Button, Spinner, Badge } from '@x-ear/ui-web';
-import { FileText, Calendar, DollarSign, Trash2 } from 'lucide-react';
+import { FileText, Calendar, DollarSign } from 'lucide-react';
 import type { CollectionState, PromissoryNote } from '../types';
 
 interface PromissoryNoteFormProps {

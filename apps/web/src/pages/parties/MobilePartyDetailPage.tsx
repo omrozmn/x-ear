@@ -11,7 +11,7 @@ type Tab = 'general' | 'appointments' | 'devices' | 'sales';
 
 export const MobilePartyDetailPage: React.FC = () => {
     const { partyId } = useParams({ strict: false }) as { partyId?: string };
-    const navigate = useNavigate();
+    const _navigate = useNavigate();
     const { party, isLoading } = useParty(partyId);
     const [activeTab, setActiveTab] = useState<Tab>('general');
     const { triggerSelection } = useHaptic();

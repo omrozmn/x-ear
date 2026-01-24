@@ -490,3 +490,49 @@ def get_fast_model_client() -> LocalModelClient:
         )
         _fast_client = LocalModelClient(model_config)
     return _fast_client
+
+
+def route_model(request: Any) -> LocalModelClient:
+    """
+    Route request to appropriate model client based on vision needs and complexity.
+    Task 1: Explicit Routing Guard (3B ↔ 7B-VL)
+    
+    - Routes to SMART client (Qwen 7B-VL) if:
+        - Images are present in request
+        - Context intent suggests high complexity
+        - Explicit model preference is 'smart'
+    - Routes to FAST client (Qwen 3B) otherwise.
+    """
+    # 1. Vision Detection (Qwen 7B-VL required for images)
+    has_images = False
+    if hasattr(request, 'images') and request.images:
+        has_images = True
+    elif isinstance(request, dict) and (request.get('images') or request.get('files')):
+        # Check files for vision-compatible extensions if needed, but here simple presence suffices
+        has_images = True
+    
+    if has_images:
+        return get_model_client() # Smart/7B-VL
+    
+    # 2. Complexity & Preference Heuristics
+    preference = None
+    if hasattr(request, 'model_preference'):
+        preference = str(request.model_preference).lower()
+    elif isinstance(request, dict):
+        preference = str(request.get('model_preference', '')).lower()
+        
+    if preference in ('smart', 'high', 'complex'):
+        return get_model_client() # Smart/7B-VL
+        
+    # 3. Task Intent Analysis (Optional placeholder for intent-based routing)
+    intent = None
+    if hasattr(request, 'context_intent'):
+        intent = request.context_intent
+    elif isinstance(request, dict):
+        intent = request.get('context_intent')
+        
+    if intent in ('vision_analysis', 'complex_planning'):
+        return get_model_client()
+
+    # 4. Default to Fast (Qwen 3B)
+    return get_fast_model_client()

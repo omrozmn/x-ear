@@ -4,7 +4,6 @@ import { Building2, User, MapPin } from 'lucide-react';
 import type { SupplierExtended } from './supplier-search.types';
 import citiesDataRaw from '../../data/cities.json';
 import countriesData from '../../data/countries.json';
-import currenciesData from '../../data/currencies.json';
 
 // Extract cities array from the JSON structure
 interface CityData {
@@ -12,7 +11,6 @@ interface CityData {
   districts?: string[];
 }
 const citiesData = (citiesDataRaw as unknown as { cities: CityData[] }).cities || [];
-// const allCurrencies = [...currenciesData.top, ...currenciesData.others]; // Reserved for future payment settings
 
 // Convert to Autocomplete options
 const countryOptions: AutocompleteOption[] = countriesData.map(c => ({
@@ -143,7 +141,7 @@ export function SupplierFormModal({
     try {
       // Remove district field (not supported by backend)
       // Add name field (required by SupplierExtended) as companyName
-      const { district, ...rest } = formData;
+      const { district: _district, ...rest } = formData;
       const dataToSend = {
         ...rest,
         name: formData.companyName, // Map companyName to name for API compatibility

@@ -5,7 +5,7 @@
  */
 
 import type { PartyRead, PartyReadStatus, SaleRead } from '@/api/generated/schemas';
-import type { DeviceRead } from '@/api/generated/schemas/deviceRead';
+import type { DeviceRead } from '@/api/client/devices.client';
 
 export interface AnalyticsTimeRange {
   start: string;
@@ -86,7 +86,7 @@ export interface PartyStats {
 
 export class PartyAnalyticsService {
 
-  calculatePartyStats(parties: PartyRead[], devices: DeviceRead[] = [], sales: SaleRead[] = []): PartyStats {
+  calculatePartyStats(parties: PartyRead[], devices: DeviceRead[] = [], _sales: SaleRead[] = []): PartyStats {
     const totalParties = parties.length;
     const activeParties = parties.filter(p => p.status === 'ACTIVE').length;
 

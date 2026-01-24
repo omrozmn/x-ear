@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Button, Modal } from '@x-ear/ui-web';
+import { Button, Modal, Input, Textarea } from '@x-ear/ui-web';
 import { Save } from 'lucide-react';
 import { DeviceSearchForm } from './components/DeviceSearchForm';
 import { AssignmentDetailsForm } from './components/AssignmentDetailsForm';
@@ -190,22 +190,22 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marka</label>
-                    <input
+                    <Input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:text-white"
                       value={manualDevice.brand}
                       onChange={e => setManualDevice({ ...manualDevice, brand: e.target.value })}
                       placeholder="Örn: Phonak"
+                      className="dark:bg-slate-800 dark:text-white"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
-                    <input
+                    <Input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:text-white"
                       value={manualDevice.model}
                       onChange={e => setManualDevice({ ...manualDevice, model: e.target.value })}
                       placeholder="Örn: Paradise P90"
+                      className="dark:bg-slate-800 dark:text-white"
                     />
                   </div>
                 </div>
@@ -313,12 +313,12 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
           <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Notlar</h3>
             <div className="relative">
-              <textarea
+              <Textarea
                 value={formData.notes || ''}
                 onChange={(e) => updateFormData('notes', e.target.value)}
                 placeholder="Cihaz ataması ile ilgili notlar..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:bg-slate-800 dark:text-white"
+                className="resize-none dark:bg-slate-800 dark:text-white"
               />
             </div>
           </div>

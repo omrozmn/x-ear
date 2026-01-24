@@ -5,11 +5,13 @@
  */
 
 // Import Orval PartyRead type
-import type { PartyRead as OrvalParty } from '@/api/generated/schemas/partyRead';
+import type {
+  PartyRead as OrvalParty,
+  PartyReadStatus as PartyStatus,
+  PartyReadGender as PartyGender,
+} from '@/api/generated/schemas';
 
-// Re-export Orval Party types as Party types aliases
-export type { PartyReadStatus as PartyStatus } from '@/api/generated/schemas/partyReadStatus';
-export type { PartyReadGender as PartyGender } from '@/api/generated/schemas/partyReadGender';
+export type { PartyStatus, PartyGender };
 export type SaleStatus = 'draft' | 'confirmed' | 'cancelled' | 'paid' | 'completed' | 'pending'; // Manual fallback
 
 // Keep only essential types that are still needed
@@ -206,6 +208,27 @@ export interface HearingProfile {
 
 // Extended Party type with additional fields needed by the application
 export interface Party extends OrvalParty {
+  // NOTE: Many parts of the web app still use camelCase fields.
+  // Orval's PartyRead is primarily snake_case. We allow both here.
+  firstName?: string;
+  lastName?: string;
+  tcNumber?: string;
+  identityNumber?: string;
+  phone?: string;
+  email?: string;
+  birthDate?: string;
+  addressCity?: string;
+  addressDistrict?: string;
+  addressFull?: string;
+  status?: PartyStatus | string;
+  segment?: PartySegment | string;
+  acquisitionType?: PartyAcquisitionType | string;
+  conversionStep?: PartyConversionStep | string;
+  referredBy?: string;
+  priorityScore?: number;
+  createdAt?: string;
+  updatedAt?: string;
+
   // Computed properties
   age?: number; // Computed from birthDate
   devices?: PartyDevice[];

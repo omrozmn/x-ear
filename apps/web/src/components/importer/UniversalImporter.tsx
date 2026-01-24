@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { Modal, Button, Input, Select, Alert } from '@x-ear/ui-web';
+import { Modal, Button, Select, Alert } from '@x-ear/ui-web';
 import { z } from 'zod';
 
 import { apiClient } from '../../api/orval-mutator';

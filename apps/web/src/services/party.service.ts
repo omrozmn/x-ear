@@ -11,7 +11,6 @@ import {
   DateRange
 } from '../types/party';
 import {
-  PartyRead as OrvalParty,
   PartyCreate,
   PartyUpdate,
   ListPartiesParams

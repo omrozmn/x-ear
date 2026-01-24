@@ -73,4 +73,4 @@ export {
   useListPartyDevices,
 } from '@/api/generated/index';
 
-export type { PartyCreate } from '@/api/generated/schemas';
+export type { PartyCreate, PartyRead, PartyReadGender, PartyReadStatus } from '@/api/generated/schemas';

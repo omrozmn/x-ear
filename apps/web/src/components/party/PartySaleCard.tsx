@@ -35,7 +35,7 @@ export const PartySaleCard: React.FC<PartySaleCardProps> = ({
   onCollectPayment,
   onManageInstallments
 }) => {
-  const [_showActions, setShowActions] = useState(false);
+  const [_showActions, _setShowActions] = useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('tr-TR', {

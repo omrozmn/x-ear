@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { partyApiService } from '@/services/party/party-api.service'
-import { Party } from '@/types/party'
 
 export const useParty = (partyId?: string) => {
   const query = useQuery({

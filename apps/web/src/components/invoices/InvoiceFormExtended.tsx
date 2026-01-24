@@ -641,7 +641,7 @@ export function InvoiceFormExtended({
                 customerId: extendedData.customerId?.toString(),
                 customerName: typeof extendedData.customerName === 'string' ? extendedData.customerName : undefined,
                 customerTaxNumber: typeof extendedData.customerTaxNumber === 'string' ? extendedData.customerTaxNumber : undefined,
-                customerAddress: extendedData.customerAddress,
+                customerAddress: resolveAddress(extendedData.customerAddress),
                 billingAddress: resolveAddress(extendedData.billingAddress) || resolveAddress(extendedData.customerAddress),
                 shippingAddress: resolveAddress(extendedData.shippingAddress),
                 partyId: typeof extendedData.partyId === 'string' ? extendedData.partyId : undefined,

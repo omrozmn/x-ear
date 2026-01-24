@@ -9,8 +9,7 @@ import {
     FileText
 } from 'lucide-react';
 import {
-    useListActivityLogs,
-    useListActivityLogStats
+    useListActivityLogs
 } from '@/api/client/activity-logs.client';
 import type { ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
 import { Button, Input, Select } from '@x-ear/ui-web';

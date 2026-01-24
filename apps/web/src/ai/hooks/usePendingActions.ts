@@ -108,8 +108,21 @@ interface PendingActionsResponse {
  * Parse error response to AIError
  */
 function parseErrorResponse(error: unknown): AIError {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const err = error as any;
+  // Type guard for axios-like error structure
+  const err = error as {
+    response?: {
+      status?: number;
+      data?: {
+        code?: string;
+        message?: string;
+        request_id?: string;
+        requestId?: string;
+        retry_after?: number;
+        retryAfter?: number;
+        details?: unknown;
+      };
+    };
+  };
 
   if (err?.response?.data) {
     const data = err.response.data;
@@ -261,8 +274,7 @@ export function usePendingActions(
       } catch (error) {
         // If the endpoint doesn't exist or returns 404, return empty array
         // (axios error checking logic might differ slightly with orval/client wrapper but client throws axios error)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const err = error as any;
+        const err = error as { response?: { status?: number } };
         if (err.response?.status === 404) {
           return { actions: [], total: 0 };
         }

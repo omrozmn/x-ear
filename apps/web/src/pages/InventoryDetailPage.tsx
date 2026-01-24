@@ -16,7 +16,6 @@ import { StockInfoSection } from './inventory/components/StockInfoSection';
 import { PricingInfoSection } from './inventory/components/PricingInfoSection';
 import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection';
 import { InventoryMovementsTable } from '../components/party/InventoryMovementsTable';
-import { unwrapObject } from '../utils/response-unwrap';
 
 interface InventoryDetailPageProps {
   id: string;
@@ -253,7 +252,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: serials.length
       });
 
-      const response = await createInventorySerials(id, { serials });
+      const _response = await createInventorySerials(id, { serials });
 
       // If inventoryAddSerialNumbers returns void, remove the success check and just reload
       await loadItem();

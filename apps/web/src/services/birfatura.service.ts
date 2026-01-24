@@ -319,7 +319,7 @@ class BirFaturaService {
   /**
    * Sadece fatura oluştur (göndermeden)
    */
-  async create(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
+  async create(_invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     throw new Error('createEfaturaCreate fonksiyonu API\'de mevcut değil. createEfaturaRetry kullanın.');
   }
 

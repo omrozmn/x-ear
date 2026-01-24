@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@x-ear/ui-web';
 // import { getBirFaturaAPI } from '../../services/birfatura.service';
-import { unwrapObject } from '../../utils/response-unwrap';
 
 interface InboxFile { filename: string; size: number; mtime: number }
 
 export const InboxModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [files, setFiles] = useState<InboxFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [_selected, setSelected] = useState<InboxFile | null>(null);
 
   useEffect(() => {
     if (isOpen) fetchList();

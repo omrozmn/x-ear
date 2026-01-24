@@ -5,11 +5,9 @@ import {
   Eye,
   Edit,
   FileText,
-  Receipt,
   Banknote,
   FolderOpen,
-  Ban,
-  Smartphone
+  Ban
 } from 'lucide-react';
 import { Button } from '../../ui/Button';
 
@@ -41,7 +39,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   onCreateInvoice,
   onViewInvoice,
   onManagePromissoryNotes,
-  onCollectPayment,
+  onCollectPayment: _onCollectPayment,
   onOpenDocuments,
   onCancelSale
 }) => {

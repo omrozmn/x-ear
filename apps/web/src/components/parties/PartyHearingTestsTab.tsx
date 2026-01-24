@@ -7,7 +7,7 @@ interface PartyHearingTestsTabProps {
 }
 
 export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({
-  partyId,
+  partyId: _partyId,
 }) => {
   // Mock data for now - will be replaced with actual hook
   const hearingTests: Record<string, unknown>[] = [];

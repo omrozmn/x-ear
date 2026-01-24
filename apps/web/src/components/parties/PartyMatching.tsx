@@ -5,7 +5,6 @@ import { Party } from '../../types/party';
 import {
   PartyMatcher,
   PartyMatch,
-  MatchingConfig,
   DEFAULT_MATCHING_CONFIG,
   getMatchColor,
   getRiskColor
@@ -40,7 +39,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
   const [filterConfidence, setFilterConfidence] = useState('all');
   const [filterRisk, setFilterRisk] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [matchingConfig, setMatchingConfig] = useState(DEFAULT_MATCHING_CONFIG);
+  const [matchingConfig] = useState(DEFAULT_MATCHING_CONFIG);
   const [autoMergeEnabled, setAutoMergeEnabled] = useState(false);
 
   const detailModal = useModal();
@@ -391,7 +390,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                      {match.parties.map((party, index) => (
+                      {match.parties.map((party) => (
                         <div key={party.id} className="border dark:border-gray-700 rounded-lg p-3 dark:bg-gray-700/30">
                           <div className="flex items-center space-x-2 mb-2">
                             <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
