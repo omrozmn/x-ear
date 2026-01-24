@@ -14,7 +14,7 @@ interface ProductFormProps {
   mode: 'create' | 'edit';
 }
 
-const BRANDS = [
+const _BRANDS = [
   'Phonak', 'Oticon', 'Widex', 'Signia', 'ReSound',
   'Starkey', 'Unitron', 'Bernafon', 'Hansaton', 'Sonic'
 ];
