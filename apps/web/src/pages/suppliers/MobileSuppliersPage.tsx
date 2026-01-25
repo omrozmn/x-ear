@@ -6,6 +6,7 @@ import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { useSuppliers } from '@/hooks/useSuppliers';
 import { unwrapArray } from '@/utils/response-unwrap';
 import { useHaptic } from '@/hooks/useHaptic';
+import { Input, Button } from '@x-ear/ui-web';
 
 export const MobileSuppliersPage: React.FC = () => {
     const [searchValue, setSearchValue] = useState('');
@@ -38,7 +39,7 @@ export const MobileSuppliersPage: React.FC = () => {
             <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 z-20">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
+                    <Input
                         type="text"
                         placeholder="Şirket ara..."
                         value={searchValue}
@@ -93,12 +94,14 @@ export const MobileSuppliersPage: React.FC = () => {
                                     </div>
 
                                     {supplier.phone && (
-                                        <button
+                                        <Button
                                             onClick={(e) => handleCall(e, supplier.phone)}
+                                            variant="ghost"
+                                            size="sm"
                                             className="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 self-center active:bg-green-100 dark:active:bg-green-900/40"
                                         >
                                             <Phone className="h-5 w-5" />
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             </div>

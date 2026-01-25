@@ -1,4 +1,4 @@
-import { Input, Textarea, DatePicker } from '@x-ear/ui-web';
+import { Input, Textarea, DatePicker, Button } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { ShoppingCart, Package, Truck, Building2, CreditCard } from 'lucide-react';
 
@@ -31,65 +31,50 @@ export function AdditionalInfoSection({
       
       {/* Toggle Buttons */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-        <button
+        <Button
           type="button"
           onClick={() => toggleSection('order')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
-            activeSection === 'order'
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}>
+          variant={activeSection === 'order' ? 'primary' : 'outline'}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2`}>
           <ShoppingCart size={16} />
           Sipariş Bilgisi
-        </button>
+        </Button>
         
-        <button
+        <Button
           type="button"
           onClick={() => toggleSection('delivery')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
-            activeSection === 'delivery'
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}>
+          variant={activeSection === 'delivery' ? 'primary' : 'outline'}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2`}>
           <Package size={16} />
           İrsaliye Bilgisi
-        </button>
+        </Button>
         
-        <button
+        <Button
           type="button"
           onClick={() => toggleSection('shipment')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
-            activeSection === 'shipment'
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}>
+          variant={activeSection === 'shipment' ? 'primary' : 'outline'}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2`}>
           <Truck size={16} />
           Sevk Bilgisi
-        </button>
+        </Button>
         
-        <button
+        <Button
           type="button"
           onClick={() => toggleSection('bank')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
-            activeSection === 'bank'
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}>
+          variant={activeSection === 'bank' ? 'primary' : 'outline'}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2`}>
           <Building2 size={16} />
           Banka Bilgisi
-        </button>
+        </Button>
         
-        <button
+        <Button
           type="button"
           onClick={() => toggleSection('payment')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
-            activeSection === 'payment'
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-          }`}>
+          variant={activeSection === 'payment' ? 'primary' : 'outline'}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2`}>
           <CreditCard size={16} />
           Ödeme Koşulları
-        </button>
+        </Button>
       </div>
 
       {/* Sipariş Bilgisi */}

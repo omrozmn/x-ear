@@ -310,6 +310,7 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={bulkOptions.reports}
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, reports: e.target.checked }))}
@@ -322,6 +323,7 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={bulkOptions.prescriptions}
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, prescriptions: e.target.checked }))}
@@ -334,6 +336,7 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={bulkOptions.processForms}
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, processForms: e.target.checked }))}
@@ -408,6 +411,7 @@ export const SGKDownloadsPage: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <label className="flex items-center text-sm">
                   <input
+                    data-allow-raw="true"
                     type="checkbox"
                     checked={selectedParties.size === filteredParties.length && filteredParties.length > 0}
                     onChange={toggleSelectAll}
@@ -427,6 +431,7 @@ export const SGKDownloadsPage: React.FC = () => {
                     <div className="flex items-center space-x-4">
                       <label className="flex items-center">
                         <input
+                          data-allow-raw="true"
                           type="checkbox"
                           checked={selectedParties.has(party.id)}
                           onChange={() => togglePartySelection(party.id)}

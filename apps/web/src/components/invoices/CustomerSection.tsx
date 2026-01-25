@@ -220,10 +220,11 @@ export function CustomerSection({
               {searchResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((customer) => (
-                    <button
+                    <Button
                       key={customer.id}
                       type="button"
                       onClick={() => handleCustomerSelect(customer)}
+                      variant="ghost"
                       className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                     >
                       <div className="font-medium text-gray-900">{customer.name}</div>
@@ -238,7 +239,7 @@ export function CustomerSection({
                           E-Fatura Mükellefi
                         </span>
                       )}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}

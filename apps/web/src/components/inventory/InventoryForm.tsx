@@ -445,6 +445,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               </label>
               <label className="flex items-center cursor-pointer">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={isPriceKdvIncluded}
                   onChange={(e) => setIsPriceKdvIncluded(e.target.checked)}
@@ -486,6 +487,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               </label>
               <label className="flex items-center cursor-pointer">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={isCostKdvIncluded}
                   onChange={(e) => setIsCostKdvIncluded(e.target.checked)}
@@ -674,13 +676,15 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
               >
                 {feature}
-                <button
+                <Button
                   type="button"
                   onClick={() => removeFeature(feature)}
+                  variant="ghost"
+                  size="sm"
                   className="ml-2 text-blue-600 hover:text-blue-800"
                 >
                   <X className="h-3 w-3" />
-                </button>
+                </Button>
               </span>
             ))}
           </div>
@@ -726,13 +730,14 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <button
+          <Button
             type="button"
             onClick={onCancel}
+            variant="outline"
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
           >
             İptal
-          </button>
+          </Button>
           <Button
             type="submit"
             disabled={loading}

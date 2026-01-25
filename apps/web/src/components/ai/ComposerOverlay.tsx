@@ -6,7 +6,7 @@ import {
     useExecuteToolApiAiComposerExecutePost
 } from '../../api/generated/ai-composer/ai-composer';
 import { useCreateUploadPresigned } from '../../api/generated/upload/upload';
-import type { ExecuteResponse, EntityItem, Capability } from '../../api/generated/schemas';
+import type { ExecuteResponse, EntityItem, Capability, AnalysisSuggestion } from '../../api/generated/schemas';
 import { usePermissionCheck } from '../../hooks/usePermissionCheck';
 import toast from 'react-hot-toast';
 
@@ -95,7 +95,7 @@ export function ComposerOverlay() {
     };
 
     // Vision Analysis Logic
-    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [suggestions, setSuggestions] = useState<AnalysisSuggestion[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const analyzeDocument = async (fileKey: string) => {
@@ -128,7 +128,7 @@ export function ComposerOverlay() {
         }
     };
 
-    const applySuggestion = (s: any) => {
+    const applySuggestion = (s: AnalysisSuggestion) => {
         // Find if this suggestion matches any slot
         // Ideally matches s.slot_name to slot key
         updateSlot(s.slot_name, s.value);

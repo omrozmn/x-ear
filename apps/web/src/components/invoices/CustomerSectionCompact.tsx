@@ -1,4 +1,4 @@
-import { Input, Button } from '@x-ear/ui-web';
+import { Input, Button, Textarea } from '@x-ear/ui-web';
 import { useState, useEffect, useCallback } from 'react';
 import { User, CheckCircle } from 'lucide-react';
 import { partyService } from '../../services/party.service';
@@ -336,10 +336,11 @@ export function CustomerSectionCompact({
             {showResults && searchResults.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((party) => (
-                  <button
+                  <Button
                     key={party.id}
                     type="button"
                     onClick={() => handlePartySelect(party)}
+                    variant="ghost"
                     className="w-full px-3 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                   >
                     <div className="text-sm font-medium text-gray-900">
@@ -404,10 +405,11 @@ export function CustomerSectionCompact({
             <div className="relative">
               <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((party) => (
-                  <button
+                  <Button
                     key={party.id}
                     type="button"
                     onClick={() => handlePartySelect(party)}
+                    variant="ghost"
                     className="w-full px-3 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                   >
                     <div className="text-sm font-medium text-gray-900">
@@ -461,7 +463,7 @@ export function CustomerSectionCompact({
             <label className="block text-xs font-medium text-gray-700 mb-1">
               Adres
             </label>
-            <textarea
+            <Textarea
               value={customerAddress || ''}
               onChange={(e) => handleManualEdit('customerAddress', e.target.value)}
               placeholder="Fatura adresi"

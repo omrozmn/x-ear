@@ -230,6 +230,7 @@ export const PosSettings = () => {
 
                         <div className="flex items-center gap-2 pt-2">
                             <input
+                                data-allow-raw="true"
                                 type="checkbox"
                                 {...register('test_mode')}
                                 id="test_mode"

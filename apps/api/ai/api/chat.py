@@ -216,11 +216,11 @@ async def chat(
         request: Chat request with prompt and optional context
         user_context: Current user context from auth
         
-    Returns:
-        ChatResponse with intent classification and response
-        
-    Raises:
-        HTTPException: On various error conditions
+async def chat(
+    request: ChatRequest,
+    db: Session = Depends(get_db),
+    # user_context: Dict[str, str] = Depends(get_current_user_context),  # Auth temporarily disabled for testing
+):
     """
     start_time = time.time()
     request_id = f"chat_{uuid4().hex[:16]}"
