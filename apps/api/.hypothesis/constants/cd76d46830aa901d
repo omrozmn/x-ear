@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py
+# hypothesis_version: 6.150.1
+
+[422, 500, 1024, 5003, '*', '/api', '/docs', '/health', '/openapi.json', '/readiness', '0.0.0.0', '1.0.0', '2.0.0', 'HTTP_ERROR', 'Health', 'INTERNAL_ERROR', 'Idempotency-Key', 'Request failed', 'SELECT 1', 'VALIDATION_ERROR', 'Validation error', 'X-Ear CRM API', 'X-Request-Id', 'X-Response-Time', '__main__', 'checks', 'code', 'connected', 'database', 'detail', 'details', 'exception', 'healthy', 'http', 'level', 'logger', 'main:app', 'message', 'not_ready', 'ready', 'requestId', 'request_id', 'server.log', 'state', 'status', 'tenantId', 'tenant_id', 'timestamp', 'utf-8', 'version', 'x-ear']

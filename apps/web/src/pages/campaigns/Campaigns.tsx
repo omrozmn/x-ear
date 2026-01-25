@@ -110,19 +110,23 @@ const CampaignsPage: React.FC = () => {
     );
 
     const branchOptions = useMemo(() => {
-        const items: any[] = [];
+        const items: Array<{ id: string; name?: string }> = [];
 
         if (branchesData && typeof branchesData === 'object' && 'data' in branchesData) {
             // Canonical access: branchesData.data which is array
-            const data = (branchesData as { data?: any[] }).data;
+            const data = (branchesData as { data?: unknown }).data;
             if (Array.isArray(data)) {
-                items.push(...data);
+                items.push(...data.map((item: unknown) => {
+                    const branch = item as Record<string, unknown>;
+                    return {
+                        id: String(branch.id || ''),
+                        name: branch.name ? String(branch.name) : undefined
+                    };
+                }).filter((branch) => Boolean(branch.id)));
             }
         }
 
-        return items
-            .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
-            .map((branch) => ({ value: branch.id, label: branch.name ?? '\u015eube' }));
+        return items.map((branch) => ({ value: branch.id, label: branch.name ?? 'Şube' }));
     }, [branchesData]);
 
     // Fetch first party for preview
@@ -132,11 +136,16 @@ const CampaignsPage: React.FC = () => {
     );
 
     // Handle different response structures for first party
-    let firstParty: any = null;
+    let firstParty: { firstName?: string; lastName?: string; phone?: string } | null = null;
     if (partiesData && typeof partiesData === 'object' && 'data' in partiesData) {
-        const data = (partiesData as { data?: any[] }).data;
+        const data = (partiesData as { data?: unknown }).data;
         if (Array.isArray(data) && data.length > 0) {
-            firstParty = data[0];
+            const party = data[0] as Record<string, unknown>;
+            firstParty = {
+                firstName: party.firstName ? String(party.firstName) : undefined,
+                lastName: party.lastName ? String(party.lastName) : undefined,
+                phone: party.phone ? String(party.phone) : undefined
+            };
         }
     }
 

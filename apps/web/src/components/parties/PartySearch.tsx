@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Input, Button, Loading } from '@x-ear/ui-web';
 import { Search, X, Clock, User, Phone, Filter } from 'lucide-react';
 import { PartySearchItem } from '../../types/party/party-search.types';
+import { PARTY_RECENT_SEARCHES } from '../../constants/storage-keys';
 
 export interface PartySearchFilters {
   query?: string;
@@ -72,11 +73,16 @@ export function PartySearch({
   // Load recent searches from localStorage
   useEffect(() => {
     if (showRecentSearches) {
-      const saved = localStorage.getItem('party-recent-searches');
+      const saved = localStorage.getItem(PARTY_RECENT_SEARCHES);
       if (saved) {
         try {
-          const parsed = JSON.parse(saved);
-          setRecentSearches(parsed.map((item: any) => ({
+          const parsed = JSON.parse(saved) as Array<{
+            id: string;
+            query: string;
+            timestamp: string;
+            resultCount: number;
+          }>;
+          setRecentSearches(parsed.map((item) => ({
             ...item,
             timestamp: new Date(item.timestamp)
           })));
@@ -126,7 +132,7 @@ export function PartySearch({
     ].slice(0, 10);
 
     setRecentSearches(updated);
-    localStorage.setItem('party-recent-searches', JSON.stringify(updated));
+    localStorage.setItem(PARTY_RECENT_SEARCHES, JSON.stringify(updated));
   }, [recentSearches, showRecentSearches]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,7 +152,7 @@ export function PartySearch({
     }
   }, [showRecentSearches, recentSearches.length, filters, onFiltersChange]);
 
-  const handleFilterChange = useCallback((key: keyof PartySearchFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof PartySearchFilters, value: string | string[] | boolean | undefined) => {
     const updatedFilters = { ...filters, [key]: value };
     setFilters(updatedFilters);
     onFiltersChange?.(updatedFilters);
@@ -210,7 +216,7 @@ export function PartySearch({
 
   const clearRecentSearches = useCallback(() => {
     setRecentSearches([]);
-    localStorage.removeItem('party-recent-searches');
+    localStorage.removeItem(PARTY_RECENT_SEARCHES);
   }, []);
 
   // Click outside handler

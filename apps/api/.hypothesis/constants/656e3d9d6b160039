@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/chat.py
+# hypothesis_version: 6.150.1
+
+[0.0, 1.0, 128, 200, 400, 429, 503, 1000, 4096, '/ai', '/chat', 'AI Chat', 'Classified intent', 'Confidence score', 'Extracted entities', 'Invalid request', 'Operation cancelled', 'Processing status', 'Rate limit exceeded', 'Response message', 'ai_phase', 'appointments.create', 'appointments.view', 'awaiting_slot_fill', 'conversation_history', 'conversation_id', 'description', 'devices.assign', 'devices.view', 'hazırlan', 'missing_parameter', 'parties.create', 'parties.edit', 'parties.view', 'pending_plan_id', 'permissions', 'plan', 'plan_id', 'prompt_length', 'reason', 'reports.view', 'request_id', 'sales.create', 'sales.view', 'slot_name', 'tenant_id', 'timeout', 'total_capabilities', 'unknown', 'user_cancelled', 'user_id']

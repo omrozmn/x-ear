@@ -164,13 +164,12 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <input
+            <Input
               ref={fileInputRef}
               type="file"
               onChange={handleFileInputChange}
               accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.txt"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              data-allow-raw="true"
             />
 
             {selectedFile ? (

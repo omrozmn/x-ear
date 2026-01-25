@@ -278,28 +278,37 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     notes: Optional[str] = None
     
-    @model_validator(mode='after')
-    def compute_fields(self):
-        # Calculate remaining amount
-        final = self.final_amount or 0.0
-        paid = self.paid_amount or 0.0
-        self.remaining_amount = max(0.0, final - paid)
-        return self
-    
-    # Financials - all optional to match to_dict() which may return None
-    # Financials - all optional to match to_dict() which may return None
-    list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
-    total_amount: Optional[float] = Field(None, alias="totalAmount")
-    discount_amount: Optional[float] = Field(0.0, alias="discountAmount")
-    sgk_coverage: Optional[float] = Field(0.0, alias="sgkCoverage")
-    final_amount: Optional[float] = Field(None, alias="finalAmount")
-    paid_amount: Optional[float] = Field(0.0, alias="paidAmount")
-    
-    # Golden Path: Alias patient_payment (DB) to patientPayment (API)
-    patient_payment: Optional[float] = Field(None, alias="patientPayment")
-    
-    # Golden Path: Computed field for Frontend convenience
     remaining_amount: Optional[float] = Field(0.0, alias="remainingAmount")
+
+    @model_validator(mode='before')
+    @classmethod
+    def map_orm_fields(cls, data: Any) -> Any:
+        """Map ORM field names to schema field names"""
+        if isinstance(data, dict):
+            return data
+        elif hasattr(data, '_sa_instance_state') or hasattr(data, '__dict__'):
+            # Convert to structured dict to handle complex fields and relations
+            res = {}
+            for field_name, schema_field in cls.model_fields.items():
+                # Skip computed fields or those handled specially
+                if field_name == 'remaining_amount':
+                    continue
+                
+                # Fetch attribute
+                val = getattr(data, field_name, None)
+                
+                # Handle relationships or complex types by preserving them
+                # Pydantic will validate them against their own schemas (e.g., DeviceAssignmentRead)
+                # IF those schemas also have from_attributes=True.
+                res[field_name] = val
+            
+            # Explicitly compute remaining_amount for dict output
+            final = getattr(data, 'final_amount', 0.0) or 0.0
+            paid = getattr(data, 'paid_amount', 0.0) or 0.0
+            res['remaining_amount'] = max(0.0, float(final) - float(paid))
+            
+            return res
+        return data
 
     # Assignments
     right_ear_assignment_id: Optional[str] = Field(None, alias="rightEarAssignmentId")

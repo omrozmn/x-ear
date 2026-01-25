@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/admin_permissions.py
+# hypothesis_version: 6.150.1
+
+[401, 403, '*', 'ADMIN_TOKEN_REQUIRED', 'ADMIN_USER_INACTIVE', 'ADMIN_USER_REQUIRED', 'AUTH_ERROR', 'PERMISSION_DENIED', 'SUPER_ADMIN_REQUIRED', 'Yetkilendirme hatası', 'admin', 'admin_permissions', 'admin_user', 'code', 'error', 'is_impersonating', 'platform.addons.read', 'platform.audit.read', 'platform.debug.use', 'platform.plans.read', 'platform.roles.read', 'platform.sms.manage', 'platform.system.read', 'platform.users.read', 'real_admin_id', 'required_permissions', 'token_type', 'type', 'your_permissions']

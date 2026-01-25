@@ -106,13 +106,14 @@ export function ExportDetailsModal({
             <h3 className="text-lg font-semibold">
               İhracat Detay Bilgileri
             </h3>
-            <button
+            <Button
               type="button"
               onClick={handleCancel}
-              className="text-white hover:text-gray-200"
+              variant="ghost"
+              className="text-white hover:text-gray-200 hover:bg-green-700"
             >
               <X size={24} />
-            </button>
+            </Button>
           </div>
 
           {/* Body */}

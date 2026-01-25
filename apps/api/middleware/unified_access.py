@@ -89,7 +89,8 @@ class UnifiedAccess:
         """Check if user has specific permission"""
         if self.is_super_admin:
             return True
-        if self.is_tenant_admin and not permission.startswith("admin."):
+        # Platform admins and Tenant admins bypass non-platform permissions
+        if (self.is_admin or self.is_tenant_admin) and not permission.startswith("admin."):
             return True
         return permission in self.permissions
     

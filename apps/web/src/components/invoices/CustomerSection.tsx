@@ -6,6 +6,7 @@ import {
   useCreateFirmaFirmapkbilgisigetir,
   useCreateFirmaFirmaadresbilgisigetir
 } from '../../api/generated/bir-fatura/bir-fatura';
+import type { MockDetailRequest } from '../../api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
 
 interface CustomerSectionProps {
@@ -107,8 +108,10 @@ export function CustomerSection({
 
     setIsSearching(true);
     try {
+      // Note: This endpoint might need to be updated to support search by query
+      // For now, using customer_id field as the API expects MockDetailRequest
       const response = await searchMutation.mutateAsync({
-        data: { search: query } as unknown as any // Generated hook expects specific BodyType, casting to any via unknown for now if type unavailable
+        data: { customer_id: query } as MockDetailRequest
       });
 
       const results = unwrapArray<CustomerSearchResult>(response) || [];
@@ -281,7 +284,7 @@ export function CustomerSection({
             <Select
               label="Alıcı Etiketi"
               value={formData.customerLabel || ''}
-              onChange={(e) => onChange('customerLabel', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange('customerLabel', e.target.value)}
               options={[
                 { value: '', label: 'Seçiniz' },
                 ...customerLabels.map(l => ({ value: l.value, label: l.label }))
@@ -300,7 +303,7 @@ export function CustomerSection({
             <Select
               label="Adres Bilgileri"
               value={formData.customerAddressId || ''}
-              onChange={(e) => onChange('customerAddressId', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange('customerAddressId', e.target.value)}
               options={[
                 { value: '', label: 'Seçiniz' },
                 ...customerAddresses.map(a => ({

@@ -1,7 +1,8 @@
 from .base import db, BaseModel, gen_id, now_utc
+from .mixins import TenantScopedMixin
 import sqlalchemy as sa
 
-class PartyRole(BaseModel):
+class PartyRole(BaseModel, TenantScopedMixin):
     __tablename__ = 'party_roles'
 
     id = db.Column(db.String(50), primary_key=True)
@@ -10,7 +11,7 @@ class PartyRole(BaseModel):
     role_code = db.Column(db.String(20), nullable=False)
     assigned_at = db.Column(db.DateTime, default=now_utc)
     
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=True, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

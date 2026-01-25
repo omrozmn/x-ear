@@ -46,8 +46,8 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
     tags: []
   });
 
-  const [_tagInput, setTagInput] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [tagInput, setTagInput] = useState<string>('');
 
   // Reset form when modal opens/closes or note changes
   useEffect(() => {
@@ -313,7 +313,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
         {/* Gizlilik */}
         <div>
           <label className="flex items-center">
-            <input
+            <Input
               type="checkbox"
               checked={formData.isPrivate || false}
               onChange={(e) => setFormData(prev => ({ ...prev, isPrivate: e.target.checked }))}

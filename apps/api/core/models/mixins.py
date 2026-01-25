@@ -37,9 +37,6 @@ class TenantScopedMixin:
     def tenant_id(cls):
         """
         Tenant ID column with ForeignKey and index.
-        
-        - nullable=False: Every tenant-scoped record MUST have a tenant
-        - index=True: Optimizes tenant-filtered queries
         """
         return Column(
             String(36), 
@@ -47,32 +44,6 @@ class TenantScopedMixin:
             nullable=False, 
             index=True
         )
-    
-    @declared_attr
-    def __table_args__(cls):
-        """
-        Add composite index for tenant_id + id for common query patterns.
-        
-        Note: This is a declared_attr to allow subclasses to extend it.
-        Subclasses can override and call super().__table_args__ to add more.
-        """
-        # Get existing table args if any
-        existing_args = getattr(super(), '__table_args__', None)
-        
-        # Create tenant index
-        tenant_index = Index(
-            f'ix_{cls.__tablename__}_tenant_id',
-            'tenant_id'
-        )
-        
-        if existing_args is None:
-            return (tenant_index,)
-        elif isinstance(existing_args, tuple):
-            return existing_args + (tenant_index,)
-        elif isinstance(existing_args, dict):
-            return (tenant_index, existing_args)
-        else:
-            return (tenant_index,)
 
 
 def is_tenant_scoped(model_class) -> bool:

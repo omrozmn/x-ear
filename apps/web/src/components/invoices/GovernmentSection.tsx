@@ -1,10 +1,10 @@
-import { Select } from '@x-ear/ui-web';
+import { Select, Checkbox } from '@x-ear/ui-web';
 import { AlertTriangle } from 'lucide-react';
-import { InvoiceFormData } from '../../types/invoice';
+import type { InvoiceFormData } from '../../types/invoice';
 
 interface GovernmentSectionProps {
   formData: InvoiceFormData;
-  onChange: (field: keyof InvoiceFormData, value: any) => void;
+  onChange: <K extends keyof InvoiceFormData>(field: K, value: InvoiceFormData[K]) => void;
   errors?: Record<string, string>;
 }
 
@@ -98,17 +98,13 @@ export function GovernmentSection({
       
       <div className="space-y-4">
         {/* Kamu Ödeme Yapacak Alıcı */}
-        <div className="flex items-center">
-          <input
-            type="checkbox"
+        <div>
+          <Checkbox
             id="governmentPayingCustomer"
+            label="Kamu Ödeme Yapacak Alıcı"
             checked={formData.governmentPayingCustomer || false}
             onChange={(e) => onChange('governmentPayingCustomer', e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
-          <label htmlFor="governmentPayingCustomer" className="ml-2 block text-sm text-gray-900">
-            Kamu Ödeme Yapacak Alıcı
-          </label>
         </div>
 
         {/* Kamu İstisna Sebebi */}

@@ -8,7 +8,7 @@ Pytest yerine doğrudan HTTP istekleri yapar.
 Kullanım:
     python scripts/run_permission_tests.py
     python scripts/run_permission_tests.py --role secretary
-    python scripts/run_permission_tests.py --endpoint patients
+    python scripts/run_permission_tests.py --endpoint parties
 """
 
 import requests
@@ -26,39 +26,41 @@ BASE_URL = os.getenv('API_URL', 'http://localhost:5003')
 # =============================================================================
 
 ROLES = {
-    'tenant_admin': {
+    'admin': {
         'description': 'Tam yetkili yönetici',
-        'all_access': True,  # Tüm izinlere sahip
+        'all_access': True,
     },
-    'odyolog': {
-        'description': 'Odyolog - Hasta ve satış işlemleri',
+    'manager': {
+        'description': 'Yönetici - Çoğu işlem yetkili, silme sınırlı',
         'permissions': [
-            'patients.view', 'patients.create', 'patients.edit', 'patients.notes', 'patients.history',
-            'sales.view', 'sales.create', 'sales.edit',
-            'finance.view',
-            'invoices.view', 'invoices.create',
-            'devices.view', 'devices.assign',
-            'inventory.view',
-            'sgk.view', 'sgk.create',
-            'reports.view',
-            'dashboard.view',
+            'patient:read', 'patient:write', 'patient:delete', 'patient:export',
+            'inventory:read', 'inventory:write',
+            'sale:read', 'sale:write',
+            'appointment:read', 'appointment:write',
+            'supplier:read', 'supplier:write',
+            'invoice:read', 'invoice:write', 'invoice:export',
+            'dashboard:read',
+            'branches:read',
+            'payments:read', 'payments:write',
+            'cash_records:read', 'cash_records:write',
+            'campaign:read', 'campaign:write',
+            'ocr:read', 'ocr:write',
         ],
     },
-    'odyometrist': {
-        'description': 'Odyometrist - Hasta işlemleri',
+    'user': {
+        'description': 'Standart kullanıcı - Okuma ağırlıklı',
         'permissions': [
-            'patients.view', 'patients.create', 'patients.edit', 'patients.notes', 'patients.history',
-            'devices.view',
-            'dashboard.view',
-        ],
-    },
-    'secretary': {
-        'description': 'Sekreter - Temel işlemler',
-        'permissions': [
-            'patients.view', 'patients.create', 'patients.edit',
-            'sales.view',
-            'devices.view',
-            'dashboard.view',
+            'patient:read', 'patient:write',
+            'inventory:read',
+            'sale:read', 'sale:write',
+            'appointment:read', 'appointment:write',
+            'supplier:read',
+            'invoice:read',
+            'dashboard:read',
+            'branches:read',
+            'payments:read',
+            'cash_records:read',
+            'ocr:read', 'ocr:write',
         ],
     },
 }
@@ -69,104 +71,29 @@ ROLES = {
 
 # Her endpoint için: (method, path, permission, sample_body, description)
 ENDPOINTS = [
-    # PATIENTS
-    ('GET', '/api/patients', 'patients.view', None, 'Hasta listesi'),
-    ('GET', '/api/patients/test_id', 'patients.view', None, 'Hasta detayı'),
-    ('POST', '/api/patients', 'patients.create', {'first_name': 'Test', 'last_name': 'User', 'phone': '5551234567'}, 'Hasta oluştur'),
-    ('PUT', '/api/patients/test_id', 'patients.edit', {'first_name': 'Updated'}, 'Hasta güncelle'),
-    ('PATCH', '/api/patients/test_id', 'patients.edit', {'first_name': 'Updated'}, 'Hasta kısmi güncelle'),
-    ('DELETE', '/api/patients/test_id', 'patients.delete', None, 'Hasta sil'),
-    
-    # PATIENT NOTES
-    ('GET', '/api/patients/test_id/notes', 'patients.notes', None, 'Hasta notları'),
-    ('POST', '/api/patients/test_id/notes', 'patients.notes', {'content': 'Test note'}, 'Hasta notu ekle'),
-    
-    # PATIENT HISTORY
-    ('GET', '/api/patients/test_id/history', 'patients.history', None, 'Hasta geçmişi'),
-    ('GET', '/api/patients/test_id/timeline', 'patients.history', None, 'Hasta zaman çizelgesi'),
+    # PATIENTS (Parties)
+    ('GET', '/api/parties', 'patient:read', None, 'Hasta listesi'),
+    ('GET', '/api/parties/test_id', 'patient:read', None, 'Hasta detayı'),
+    ('POST', '/api/parties', 'patient:write', {'firstName': 'Test', 'lastName': 'User', 'phone': '5551234567'}, 'Hasta oluştur'),
+    ('PUT', '/api/parties/test_id', 'patient:write', {'firstName': 'Updated'}, 'Hasta güncelle'),
+    ('DELETE', '/api/parties/test_id', 'patient:delete', None, 'Hasta sil'),
     
     # SALES
-    ('GET', '/api/sales', 'sales.view', None, 'Satış listesi'),
-    ('POST', '/api/sales', 'sales.create', {'patient_id': 'test', 'items': []}, 'Satış oluştur'),
-    ('PATCH', '/api/sales/test_id', 'sales.edit', {'status': 'completed'}, 'Satış güncelle'),
-    ('DELETE', '/api/sales/test_id', 'sales.delete', None, 'Satış sil'),
-    
-    # PATIENT SALES
-    ('GET', '/api/patients/test_id/sales', 'sales.view', None, 'Hasta satışları'),
-    ('POST', '/api/patients/test_id/product-sales', 'sales.create', {'items': []}, 'Hasta ürün satışı'),
-    
-    # FINANCE
-    ('GET', '/api/finance/summary', 'finance.view', None, 'Finans özeti'),
-    ('GET', '/api/finance/cash-register', 'finance.cash_register', None, 'Kasa listesi'),
-    ('POST', '/api/finance/cash-register', 'finance.cash_register', {'type': 'income', 'amount': 100}, 'Kasa kaydı'),
-    ('GET', '/api/finance/reports', 'finance.reports', None, 'Finans raporları'),
-    ('POST', '/api/finance/refunds', 'finance.refunds', {'sale_id': 'test', 'amount': 50}, 'İade işlemi'),
-    
-    # INVOICES
-    ('GET', '/api/invoices', 'invoices.view', None, 'Fatura listesi'),
-    ('GET', '/api/invoices/test_id', 'invoices.view', None, 'Fatura detayı'),
-    ('POST', '/api/invoices', 'invoices.create', {'sale_id': 'test'}, 'Fatura oluştur'),
-    ('POST', '/api/invoices/test_id/send', 'invoices.send', {}, 'Fatura gönder'),
-    ('POST', '/api/invoices/test_id/cancel', 'invoices.cancel', {}, 'Fatura iptal'),
-    
-    # DEVICES
-    ('GET', '/api/devices', 'devices.view', None, 'Cihaz listesi'),
-    ('GET', '/api/devices/test_id', 'devices.view', None, 'Cihaz detayı'),
-    ('POST', '/api/devices', 'devices.create', {'serial_number': 'SN123', 'brand': 'Test'}, 'Cihaz ekle'),
-    ('PUT', '/api/devices/test_id', 'devices.edit', {'status': 'active'}, 'Cihaz güncelle'),
-    ('DELETE', '/api/devices/test_id', 'devices.delete', None, 'Cihaz sil'),
-    ('POST', '/api/devices/test_id/assign', 'devices.assign', {'patient_id': 'test'}, 'Cihaz ata'),
+    ('GET', '/api/sales', 'sale:read', None, 'Satış listesi'),
+    ('POST', '/api/sales', 'sale:write', {'partyId': 'test', 'items': []}, 'Satış oluştur'),
+    ('PATCH', '/api/sales/test_id', 'sale:write', {'status': 'completed'}, 'Satış güncelle'),
     
     # INVENTORY
-    ('GET', '/api/inventory', 'inventory.view', None, 'Stok listesi'),
-    ('POST', '/api/inventory', 'inventory.manage', {'product_id': 'test', 'quantity': 10}, 'Stok ekle'),
-    ('PUT', '/api/inventory/test_id', 'inventory.manage', {'quantity': 20}, 'Stok güncelle'),
+    ('GET', '/api/inventory', 'inventory:read', None, 'Stok listesi'),
+    ('POST', '/api/inventory', 'inventory:write', {'product_id': 'test', 'quantity': 10}, 'Stok ekle'),
     
-    # CAMPAIGNS
-    ('GET', '/api/campaigns', 'campaigns.view', None, 'Kampanya listesi'),
-    ('POST', '/api/campaigns', 'campaigns.create', {'name': 'Test', 'type': 'sms'}, 'Kampanya oluştur'),
-    ('PUT', '/api/campaigns/test_id', 'campaigns.edit', {'status': 'active'}, 'Kampanya güncelle'),
-    ('DELETE', '/api/campaigns/test_id', 'campaigns.delete', None, 'Kampanya sil'),
-    ('POST', '/api/campaigns/test_id/send-sms', 'campaigns.send_sms', {}, 'SMS gönder'),
-    
-    # SGK
-    ('GET', '/api/sgk/provisions', 'sgk.view', None, 'SGK listesi'),
-    ('POST', '/api/sgk/provisions', 'sgk.create', {'patient_id': 'test'}, 'SGK oluştur'),
-    ('POST', '/api/sgk/upload', 'sgk.upload', {}, 'SGK yükle'),
-    
-    # SETTINGS
-    ('GET', '/api/settings', 'settings.view', None, 'Ayarlar'),
-    ('PUT', '/api/settings', 'settings.edit', {'company': {'name': 'Test'}}, 'Ayarlar güncelle'),
-    ('GET', '/api/branches', 'settings.view', None, 'Şubeler'),
-    ('POST', '/api/branches', 'settings.branches', {'name': 'New Branch'}, 'Şube ekle'),
-    ('PUT', '/api/branches/test_id', 'settings.branches', {'name': 'Updated'}, 'Şube güncelle'),
-    ('DELETE', '/api/branches/test_id', 'settings.branches', None, 'Şube sil'),
-    ('GET', '/api/integrations', 'settings.integrations', None, 'Entegrasyonlar'),
-    
-    # TEAM
-    ('GET', '/api/users', 'team.view', None, 'Kullanıcı listesi'),
-    ('POST', '/api/users', 'team.create', {'email': 'test@test.com', 'role': 'user'}, 'Kullanıcı ekle'),
-    ('PUT', '/api/users/test_id', 'team.edit', {'first_name': 'Updated'}, 'Kullanıcı güncelle'),
-    ('DELETE', '/api/users/test_id', 'team.delete', None, 'Kullanıcı sil'),
-    ('GET', '/api/permissions', 'team.permissions', None, 'İzinler'),
-    ('GET', '/api/permissions/role/odyolog', 'team.permissions', None, 'Rol izinleri'),
-    ('PUT', '/api/permissions/role/odyolog', 'team.permissions', {'permissions': []}, 'Rol izinleri güncelle'),
-    
-    # REPORTS
-    ('GET', '/api/reports', 'reports.view', None, 'Raporlar'),
-    ('POST', '/api/reports/export', 'reports.export', {'type': 'sales', 'format': 'excel'}, 'Rapor dışa aktar'),
+    # BRANCHES
+    ('GET', '/api/branches', 'branches:read', None, 'Şubeler'),
+    ('POST', '/api/branches', 'branches:write', {'name': 'New Branch'}, 'Şube ekle'),
+    ('DELETE', '/api/branches/test_id', 'branches:delete', None, 'Şube sil'),
     
     # DASHBOARD
-    ('GET', '/api/dashboard', 'dashboard.view', None, 'Dashboard'),
-    ('GET', '/api/dashboard/stats', 'dashboard.view', None, 'Dashboard istatistikleri'),
-    ('GET', '/api/dashboard/analytics', 'dashboard.analytics', None, 'Analitik'),
-    
-    # APPOINTMENTS
-    ('GET', '/api/appointments', 'patients.view', None, 'Randevular'),
-    ('GET', '/api/appointments/list', 'patients.view', None, 'Randevu listesi'),
-    ('POST', '/api/appointments', 'patients.edit', {'patient_id': 'test', 'date': '2025-01-01'}, 'Randevu oluştur'),
-    ('PUT', '/api/appointments/test_id', 'patients.edit', {'status': 'completed'}, 'Randevu güncelle'),
-    ('DELETE', '/api/appointments/test_id', 'patients.edit', None, 'Randevu sil'),
+    ('GET', '/api/dashboard', 'dashboard:read', None, 'Dashboard'),
 ]
 
 # =============================================================================
@@ -195,10 +122,15 @@ class PermissionTestRunner:
         )
         
         if response.status_code == 200:
-            data = response.json()
-            self.admin_token = data.get('access_token')
-            print(f"   ✅ Admin token alındı")
-            return True
+            resp_json = response.json()
+            # Standard ResponseEnvelope structure: {"data": {"accessToken": "..."}}
+            self.admin_token = resp_json.get('data', {}).get('accessToken')
+            if self.admin_token:
+                print(f"   ✅ Admin token alındı")
+                return True
+            else:
+                print(f"   ❌ Token bulunamadı: {resp_json}")
+                return False
         else:
             print(f"   ❌ Login başarısız: {response.status_code}")
             return False

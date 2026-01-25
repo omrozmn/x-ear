@@ -59,8 +59,8 @@ export function ForgotPasswordPage() {
           throw new Error('Telefon numarası bulunamadı');
         }
       }
-    } catch (error: any) {
-      setError(error.message || 'Kullanıcı bulunamadı');
+    } catch (error: unknown) {
+      setError((error as Error).message || 'Kullanıcı bulunamadı');
     } finally {
       setIsLoading(false);
     }
@@ -92,8 +92,8 @@ export function ForgotPasswordPage() {
       setWorkingPhone(fullPhone);
       await forgotPassword(fullPhone);
       setStep('otp');
-    } catch (error: any) {
-      setError(error.message || 'Doğrulama hatası');
+    } catch (error: unknown) {
+      setError((error as Error).message || 'Doğrulama hatası');
     } finally {
       setIsLoading(false);
     }

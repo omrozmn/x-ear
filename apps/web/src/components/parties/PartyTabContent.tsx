@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Party } from '../../types/party/party-base.types';
+import type { SaleRead } from '@/api/generated';
 import { PartyTab } from './PartyTabs';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -18,9 +19,14 @@ interface PartyTabContentProps {
   party: Party;
   activeTab: PartyTab;
   onPartyUpdate?: (p: Party) => void;
-  sales?: any[];
+  sales?: SaleRead[];
   isLoading?: boolean;
-  tabCounts?: any;
+  tabCounts?: {
+    devices: number;
+    sales: number;
+    timeline: number;
+    documents: number;
+  };
   showNoteModal?: boolean;
   onCloseNoteModal?: () => void;
 }

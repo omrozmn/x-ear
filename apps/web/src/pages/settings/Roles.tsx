@@ -58,8 +58,8 @@ export default function RolesSettings() {
                 setIsCreateModalOpen(false);
                 setCreateSuccess('');
             }, 2000);
-        } catch (err: any) {
-            setCreateError(err.response?.data?.error || 'Rol oluşturulamadı.');
+        } catch (err: unknown) {
+            setCreateError((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Rol oluşturulamadı.');
         }
     };
 
@@ -87,8 +87,8 @@ export default function RolesSettings() {
             setIsEditModalOpen(false);
             setSelectedRole(null);
             setRoleData({ name: '', description: '' });
-        } catch (err: any) {
-            setCreateError(err.response?.data?.error || 'Rol güncellenemedi.');
+        } catch (err: unknown) {
+            setCreateError((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Rol güncellenemedi.');
         }
     };
 
@@ -98,8 +98,8 @@ export default function RolesSettings() {
         try {
             await deleteRoleMutation.mutateAsync({ roleId });
             await refetch();
-        } catch (err: any) {
-            alert(err.response?.data?.error || 'Rol silinemedi.');
+        } catch (err: unknown) {
+            alert((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Rol silinemedi.');
         }
     };
 

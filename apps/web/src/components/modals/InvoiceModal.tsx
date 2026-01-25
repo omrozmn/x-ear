@@ -1,14 +1,15 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { InvoiceModalContent } from './InvoiceModalContent';
-import { InvoiceFormData } from '../../types/invoice-schema';
+import type { Invoice } from '../../types/invoice';
+import type { InvoiceFormData } from '../../types/invoice-schema';
 
 interface InvoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: (invoice: any) => void;
+  onSuccess?: (invoice: Invoice) => void;
   onError?: (error: string) => void;
-  initialData?: any;
+  initialData?: Invoice | null;
   partyId?: string;
   deviceId?: string;
   mode?: 'create' | 'quick' | 'template' | 'edit';
@@ -127,7 +128,7 @@ export const DeviceInvoiceModal: React.FC<DeviceInvoiceModalProps> = ({
       {...props}
       mode="create"
       title="Cihaz Satış Faturası"
-      initialData={initialData}
+      initialData={initialData as unknown as Invoice | null}
     />
   );
 };

@@ -14,6 +14,7 @@ import { DEV_CONFIG } from '../config/dev-config';
 import { subscriptionService } from '../services/subscription.service';
 import { tokenManager } from '../utils/token-manager';
 import { unwrapObject } from '../utils/response-unwrap';
+import { CURRENT_TENANT_ID, AUTH_STORAGE_PERSIST } from '../constants/storage-keys';
 
 // Helper for safe error handling
 interface ApiError {
@@ -150,7 +151,7 @@ export const useAuthStore = create<AuthStore>()(
 
         // Clear tenant ID separately (not managed by TokenManager)
         try {
-          localStorage.removeItem('current_tenant_id');
+          localStorage.removeItem(CURRENT_TENANT_ID);
         } catch (e) {
           // ignore storage errors
         }
@@ -230,7 +231,7 @@ export const useAuthStore = create<AuthStore>()(
               } as AuthStateUser;
 
               // Check if tenant has changed (extract from JWT token)
-              const previousTenantId = localStorage.getItem('current_tenant_id');
+              const previousTenantId = localStorage.getItem(CURRENT_TENANT_ID);
               const newToken = accessToken;
               let newTenantId: string | null = null;
 
@@ -252,7 +253,7 @@ export const useAuthStore = create<AuthStore>()(
 
                 // Store new tenant ID
                 if (newTenantId) {
-                  localStorage.setItem('current_tenant_id', newTenantId);
+                  localStorage.setItem(CURRENT_TENANT_ID, newTenantId);
                 }
               } catch (error) {
                 console.error('Failed to decode JWT or clear IndexedDB:', error);
@@ -754,7 +755,7 @@ export const useAuthStore = create<AuthStore>()(
             console.warn('Failed to fetch current user during restore (token likely expired):', err);
             // Token is invalid/expired, clear via TokenManager
             tokenManager.clearTokens();
-            localStorage.removeItem('auth-storage'); // Clear Zustand persist storage
+            localStorage.removeItem(AUTH_STORAGE_PERSIST); // Clear Zustand persist storage
             clearAuth();
           }
         } else if (storedToken && tokenManager.isAccessTokenExpired() && storedRefreshToken) {
@@ -794,7 +795,7 @@ export const useAuthStore = create<AuthStore>()(
       },
     }),
     {
-      name: 'auth-storage',
+      name: AUTH_STORAGE_PERSIST,
       partialize: (state) => ({
         user: state.user,
         token: state.token,

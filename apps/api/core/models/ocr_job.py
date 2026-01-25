@@ -1,4 +1,5 @@
 from models.base import db, BaseModel
+from models.mixins import TenantScopedMixin
 import enum
 import sqlalchemy as sa
 
@@ -8,11 +9,11 @@ class OCRJobStatus(enum.Enum):
     COMPLETED = 'completed'
     FAILED = 'failed'
 
-class OCRJob(BaseModel):
+class OCRJob(BaseModel, TenantScopedMixin):
     __tablename__ = 'ocr_jobs'
 
     id = db.Column(db.String(36), primary_key=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False)
+    # tenant_id is now inherited from TenantScopedMixin
     status = db.Column(sa.Enum(OCRJobStatus), default=OCRJobStatus.PENDING)
     file_path = db.Column(db.String(512), nullable=False)
     result = db.Column(db.JSON) # Store OCR result
@@ -25,7 +26,6 @@ class OCRJob(BaseModel):
     def to_dict(self):
         return {
             'id': self.id,
-            'tenant_id': self.tenant_id,
             'status': self.status.value,
             'file_path': self.file_path,
             'result': self.result,

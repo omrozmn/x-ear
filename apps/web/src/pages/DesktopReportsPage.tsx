@@ -45,6 +45,15 @@ import {
   getListReportPatientsQueryKey as getListReportPartiesQueryKey,
   useListActivityLogFilterOptions,
 } from '@/api/client/reports.client';
+import type { 
+  PromissoryNoteListItem, 
+  PromissoryNotePatientItem, 
+  PosMovementItem, 
+  ReportPromissoryNotesResponse,
+  ResponseMeta,
+  RemainingPaymentItem,
+  ActivityLogRead
+} from '@/api/generated/schemas';
 
 type TabId = 'overview' | 'sales' | 'parties' | 'promissory' | 'remaining' | 'activity' | 'pos_movements';
 
@@ -83,58 +92,13 @@ interface ReportParties {
   status_distribution?: Record<string, number>;
 }
 
-interface ActivityLogDetail {
-  id: string;
-  createdAt: string;
-  action: string;
-  userId: string;
-  userName?: string;
-  userEmail?: string;
-  branchId?: string;
-  branchName?: string;
-  role?: string;
-  entityType?: string;
-  entityId?: string;
-  ipAddress?: string;
-  isCritical?: boolean;
-  message?: string;
-  data?: Record<string, unknown>;
-  details?: Record<string, unknown>;
-}
-
-interface ReportPromissoryNotes {
-  summary?: {
-    totalNotes: number;
-    totalCollected: number;
-    activeNotes: number;
-    overdueNotes: number;
-  };
-  monthlyCounts?: { month: number; count: number }[];
-  monthlyRevenue?: { month: number; revenue: number }[];
-}
-
-interface ReportPromissoryNoteByParty {
-  partyId: string;
-  partyName: string;
-  phone?: string;
-  activeNotes: number;
-  overdueNotes: number;
-  totalAmount: number;
-  remainingAmount: number;
-}
-
-interface ReportPromissoryNoteListItem {
-  id: string;
-  partyName: string;
-  amount: number;
-  paidAmount: number;
-  dueDate: string;
-  status: string;
-  referenceNumber?: string;
-}
+// Use generated types instead of custom interfaces
+type ReportPromissoryNotes = ReportPromissoryNotesResponse;
+type ReportPromissoryNoteByParty = PromissoryNotePatientItem;
+type ReportPromissoryNoteListItem = PromissoryNoteListItem;
 
 // Activity Log Detail Modal
-function ActivityLogDetailModal({ log, onClose }: { log: ActivityLogDetail; onClose: () => void }) {
+function ActivityLogDetailModal({ log, onClose }: { log: ActivityLogRead; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
@@ -153,7 +117,9 @@ function ActivityLogDetailModal({ log, onClose }: { log: ActivityLogDetail; onCl
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-gray-500 dark:text-gray-400">Tarih</label>
-                <p className="font-medium text-gray-900 dark:text-white">{new Date(log.createdAt).toLocaleString('tr-TR')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {log.createdAt ? new Date(log.createdAt).toLocaleString('tr-TR') : '-'}
+                </p>
               </div>
               <div>
                 <label className="text-xs text-gray-500 dark:text-gray-400">Aksiyon</label>
@@ -161,24 +127,14 @@ function ActivityLogDetailModal({ log, onClose }: { log: ActivityLogDetail; onCl
               </div>
               <div>
                 <label className="text-xs text-gray-500 dark:text-gray-400">Kullanıcı</label>
-                <p className="font-medium text-gray-900 dark:text-white">{log.userName || log.userId}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{log.userName || log.userId || '-'}</p>
                 {log.userEmail && <p className="text-xs text-gray-500 dark:text-gray-400">{log.userEmail}</p>}
               </div>
               <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400">Şube</label>
-                <p className="font-medium text-gray-900 dark:text-white">{log.branchName || log.branchId || '-'}</p>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400">Rol</label>
-                <p className="font-medium text-gray-900 dark:text-white">{log.role || '-'}</p>
-              </div>
-              <div>
                 <label className="text-xs text-gray-500 dark:text-gray-400">Varlık</label>
-                <p className="font-medium text-gray-900 dark:text-white">{log.entityType} - {log.entityId}</p>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400">IP Adresi</label>
-                <p className="font-mono text-sm text-gray-900 dark:text-white">{log.ipAddress}</p>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {log.entityType || '-'} {log.entityId ? `- ${log.entityId}` : ''}
+                </p>
               </div>
               <div>
                 <label className="text-xs text-gray-500 dark:text-gray-400">Kritik</label>
@@ -193,16 +149,7 @@ function ActivityLogDetailModal({ log, onClose }: { log: ActivityLogDetail; onCl
               </div>
             )}
 
-            {log.data && Object.keys(log.data).length > 0 && (
-              <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400">Veri</label>
-                <pre className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-lg text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
-                  {JSON.stringify(log.data, null, 2)}
-                </pre>
-              </div>
-            )}
-
-            {log.details && Object.keys(log.details).length > 0 && (
+            {log.details && (
               <div>
                 <label className="text-xs text-gray-500 dark:text-gray-400">Detaylar</label>
                 <pre className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-lg text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
@@ -590,7 +537,7 @@ function PartiesTab({ filters }: { filters: FilterState }) {
 }
 
 // Promissory Notes Tab Content
-function PromissoryNotesTab({ filters: _filters }: { filters: FilterState }) {
+function PromissoryNotesTab() {
   const [showListModal, setShowListModal] = useState(false);
   const [listFilter, setListFilter] = useState<'active' | 'overdue' | 'paid' | 'all'>('active');
   const [listPage, setListPage] = useState(1);
@@ -646,7 +593,8 @@ function PromissoryNotesTab({ filters: _filters }: { filters: FilterState }) {
 
   const notes = unwrapObject<ReportPromissoryNotes>(notesData);
   const byParty = unwrapArray<ReportPromissoryNoteByParty>(byPartyData);
-  const { data: list, meta: listMeta } = unwrapPaginated<ReportPromissoryNoteListItem>(listData);
+  const { data: list, meta: listMeta } = unwrapPaginated<PromissoryNoteListItem>(listData);
+  const typedListMeta = listMeta as ResponseMeta | undefined;
 
   return (
     <div className="space-y-6">
@@ -893,19 +841,17 @@ function PromissoryNotesTab({ filters: _filters }: { filters: FilterState }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {list.map((note: any) => (
+                    {list.map((note: ReportPromissoryNoteListItem) => (
                       <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
                         <td className="px-3 py-2 font-mono text-xs">
-                          {note.noteNumber}/{note.totalNotes}
+                          {note.noteNumber || '-'}
                         </td>
                         <td className="px-3 py-2">
-                          <p className="font-medium">{note.partyName}</p>
-                          <p className="text-xs text-gray-500">{note.debtorName}</p>
+                          <p className="font-medium">{note.party?.name || '-'}</p>
                         </td>
                         <td className="px-3 py-2 text-right">{formatCurrency(note.amount)}</td>
                         <td className="px-3 py-2 text-right font-medium text-red-600 dark:text-red-400">
-                          {formatCurrency(note.remainingAmount)}
-                        </td>
+                          {formatCurrency(note.remainingAmount)}</td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           {note.dueDate ? new Date(note.dueDate).toLocaleDateString('tr-TR') : '-'}
                         </td>
@@ -933,29 +879,31 @@ function PromissoryNotesTab({ filters: _filters }: { filters: FilterState }) {
             </div>
 
             {/* Pagination */}
-            {(listMeta as any) && (listMeta as any).totalPages > 1 && (
+            {typedListMeta && typedListMeta.totalPages && typedListMeta.totalPages > 1 && (
               <div className="px-4 py-3 border-t flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                  Toplam {(listMeta as any).total} senet
+                  Toplam {typedListMeta.total || 0} senet
                 </span>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => setListPage(p => Math.max(1, p - 1))}
                     disabled={listPage === 1}
-                    className="p-1.5 border rounded disabled:opacity-50 hover:bg-gray-100"
+                    variant="outline"
+                    className="p-1.5 border rounded disabled:opacity-50 hover:bg-gray-100 !w-auto !h-auto"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                  </button>
+                  </Button>
                   <span className="text-sm">
-                    {listPage} / {(listMeta as any).totalPages}
+                    {listPage} / {typedListMeta.totalPages}
                   </span>
-                  <button
-                    onClick={() => setListPage(p => Math.min((listMeta as any).totalPages, p + 1))}
-                    disabled={listPage >= (listMeta as any).totalPages}
-                    className="p-1.5 border rounded disabled:opacity-50 hover:bg-gray-100"
+                  <Button
+                    onClick={() => setListPage(p => Math.min(typedListMeta.totalPages || 1, p + 1))}
+                    disabled={listPage >= (typedListMeta.totalPages || 1)}
+                    variant="outline"
+                    className="p-1.5 border rounded disabled:opacity-50 hover:bg-gray-100 !w-auto !h-auto"
                   >
                     <ChevronRight className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1014,9 +962,12 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
     );
   }
 
-  const { data: payments, meta } = unwrapPaginated<any>(paymentsData);
-  const summary = unwrapObject<any>(paymentsData)?.summary;
-  const cashflow = unwrapObject<any>(cashflowData);
+  const { data: payments, meta } = unwrapPaginated<RemainingPaymentItem>(paymentsData);
+  const typedMeta = meta as ResponseMeta | undefined;
+  const paymentsSummary = unwrapObject<{ summary?: { totalRemaining?: number; totalPaid?: number; totalParties?: number } }>(paymentsData);
+  const summary = paymentsSummary?.summary;
+  const cashflowData_unwrapped = unwrapObject<{ totalIncome?: number; totalExpense?: number; netCashflow?: number }>(cashflowData);
+  const cashflow = cashflowData_unwrapped;
 
   return (
     <div className="space-y-6">
@@ -1032,7 +983,7 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
             <div>
               <p className="text-sm text-green-600 dark:text-green-400">Toplam Gelir</p>
               <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                {formatCurrency(cashflow?.summary?.totalIncome || 0)}
+                {formatCurrency(cashflow?.totalIncome || 0)}
               </p>
               <p className="text-xs text-green-600 dark:text-green-400">Son {filters.days} gün</p>
             </div>
@@ -1047,7 +998,7 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
             <div>
               <p className="text-sm text-red-600 dark:text-red-400">Toplam Gider</p>
               <p className="text-2xl font-bold text-red-900 dark:text-red-100">
-                {formatCurrency(cashflow?.summary?.totalExpense || 0)}
+                {formatCurrency(cashflow?.totalExpense || 0)}
               </p>
               <p className="text-xs text-red-600 dark:text-red-400">Son {filters.days} gün</p>
             </div>
@@ -1061,8 +1012,8 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
             </div>
             <div>
               <p className="text-sm text-blue-600 dark:text-blue-400">Net Nakit</p>
-              <p className={`text-2xl font-bold ${(cashflow?.summary?.netCashflow || 0) >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
-                {formatCurrency(cashflow?.summary?.netCashflow || 0)}
+              <p className={`text-2xl font-bold ${(cashflow?.netCashflow || 0) >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
+                {formatCurrency(cashflow?.netCashflow || 0)}
               </p>
               <p className="text-xs text-blue-600 dark:text-blue-400">Son {filters.days} gün</p>
             </div>
@@ -1134,7 +1085,7 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {payments.map((party: any) => (
+                  {payments.map((party) => (
                     <tr key={party.partyId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
                       <td className="px-4 py-3">
                         <p className="font-medium">{party.partyName}</p>
@@ -1163,10 +1114,10 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
             </div>
 
             {/* Pagination */}
-            {(meta as any) && (meta as any).totalPages > 1 && (
+            {typedMeta && typedMeta.totalPages && typedMeta.totalPages > 1 && (
               <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                  Toplam {(meta as any).total} hasta
+                  Toplam {typedMeta.total || 0} hasta
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1177,10 +1128,10 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
                   >
                     Önceki
                   </Button>
-                  <span className="text-sm">{page} / {(meta as any).totalPages}</span>
+                  <span className="text-sm">{page} / {typedMeta.totalPages}</span>
                   <Button
-                    onClick={() => setPage(p => Math.min((meta as any).totalPages, p + 1))}
-                    disabled={page >= (meta as any).totalPages}
+                    onClick={() => setPage(p => Math.min(typedMeta.totalPages || 1, p + 1))}
+                    disabled={page >= (typedMeta.totalPages || 1)}
                     variant="outline"
                     className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
@@ -1205,7 +1156,7 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
 function ActivityTab() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  const [selectedLog, setSelectedLog] = useState<ActivityLogRead | null>(null);
   const [activityFilters, setActivityFilters] = useState({
     action: '',
     user_id: '',
@@ -1223,8 +1174,9 @@ function ActivityTab() {
   // Replace stub with generated hook
   const { data: filterOptions } = useListActivityLogFilterOptions();
 
-  const { data: logs, pagination } = unwrapPaginated<any>(logsResponse);
-  const options = unwrapObject<any>(filterOptions);
+  const { data: logs, pagination } = unwrapPaginated<ActivityLogRead>(logsResponse);
+  const typedPagination = pagination as ResponseMeta | undefined;
+  const options = unwrapObject<{ actions?: string[]; users?: Array<{ id: string; name: string }> }>(filterOptions);
 
   return (
     <div className="space-y-6">
@@ -1236,10 +1188,10 @@ function ActivityTab() {
             <Select
               className="w-full text-sm"
               value={activityFilters.user_id}
-              onChange={(e: any) => setActivityFilters({ ...activityFilters, user_id: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setActivityFilters({ ...activityFilters, user_id: e.target.value })}
               options={[
                 { value: "", label: "Tüm Kullanıcılar" },
-                ...(options?.users?.map((u: any) => ({ value: u.id, label: u.name })) || [])
+                ...(options?.users?.map((u: { id: string; name: string }) => ({ value: u.id, label: u.name })) || [])
               ]}
             />
           </div>
@@ -1248,7 +1200,7 @@ function ActivityTab() {
             <Select
               className="w-full text-sm"
               value={activityFilters.action}
-              onChange={(e: any) => setActivityFilters({ ...activityFilters, action: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setActivityFilters({ ...activityFilters, action: e.target.value })}
               options={[
                 { value: "", label: "Tüm Aksiyonlar" },
                 ...(options?.actions?.map((action: string) => ({ value: action, label: action })) || [])
@@ -1285,12 +1237,11 @@ function ActivityTab() {
                     <th className="px-4 py-3 font-medium">Kullanıcı</th>
                     <th className="px-4 py-3 font-medium">Aksiyon</th>
                     <th className="px-4 py-3 font-medium">Mesaj</th>
-                    <th className="px-4 py-3 font-medium">IP</th>
                     <th className="px-4 py-3 font-medium w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {logs.map((log: any) => (
+                  {logs.map((log) => (
                     <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <td className="px-4 py-3">
                         {log.isCritical && (
@@ -1302,7 +1253,7 @@ function ActivityTab() {
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(log.createdAt).toLocaleString('tr-TR')}
+                          {log.createdAt && new Date(log.createdAt).toLocaleString('tr-TR')}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -1318,11 +1269,8 @@ function ActivityTab() {
                           {log.action}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-[250px] truncate" title={log.message}>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-[250px] truncate" title={log.message || undefined}>
                         {log.message || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500 font-mono">
-                        {log.ipAddress}
                       </td>
                       <td className="px-4 py-3">
                         <Button
@@ -1338,7 +1286,7 @@ function ActivityTab() {
                   ))}
                   {logs.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                         <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                         <p>Kayit bulunamadi.</p>
                       </td>
@@ -1349,10 +1297,10 @@ function ActivityTab() {
             </div>
 
             {/* Pagination */}
-            {(pagination as any) && (pagination as any).total > 0 && (
+            {typedPagination && typedPagination.total && typedPagination.total > 0 && (
               <div className="px-4 py-3 border-t bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Toplam {(pagination as any).total} kayit, Sayfa {page}/{(pagination as any).totalPages}
+                  Toplam {typedPagination.total} kayit, Sayfa {page}/{typedPagination.totalPages || 1}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1365,7 +1313,7 @@ function ActivityTab() {
                   </Button>
                   <Select
                     value={String(perPage)}
-                    onChange={(e: any) => {
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                       setPerPage(Number(e.target.value));
                       setPage(1);
                     }}
@@ -1377,8 +1325,8 @@ function ActivityTab() {
                     ]}
                   />
                   <Button
-                    onClick={() => setPage(p => Math.min(Number((pagination as any).totalPages), p + 1))}
-                    disabled={page >= Number((pagination as any).totalPages)}
+                    onClick={() => setPage(p => Math.min(Number(typedPagination.totalPages || 1), p + 1))}
+                    disabled={page >= Number(typedPagination.totalPages || 1)}
                     variant="outline"
                     className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
@@ -1439,8 +1387,10 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
     );
   }
 
-  const { data, meta } = unwrapPaginated<any>(reportData);
-  const summary = unwrapObject<any>(reportData)?.summary;
+  const { data, meta } = unwrapPaginated<PosMovementItem>(reportData);
+  const typedPosMeta = meta as ResponseMeta | undefined;
+  const posData_unwrapped = unwrapObject<{ summary?: { totalAmount?: number; successCount?: number; failCount?: number; transactionCount?: number } }>(reportData);
+  const summary = posData_unwrapped?.summary;
 
   return (
     <div className="space-y-6">
@@ -1456,9 +1406,9 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
             <div>
               <p className="text-sm text-green-600 dark:text-green-400">Toplam Başarılı İşlem</p>
               <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                {formatCurrency(summary?.total_volume || 0)}
+                {formatCurrency(summary?.totalAmount || 0)}
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400">{summary?.success_count || 0} işlem</p>
+              <p className="text-xs text-green-600 dark:text-green-400">{summary?.successCount || 0} işlem</p>
             </div>
           </div>
         </div>
@@ -1471,7 +1421,7 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
             <div>
               <p className="text-sm text-red-600 dark:text-red-400">Başarısız İşlemler</p>
               <p className="text-2xl font-bold text-red-900 dark:text-red-100">
-                {summary?.fail_count || 0}
+                {summary?.failCount || 0}
               </p>
             </div>
           </div>
@@ -1496,36 +1446,36 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {data.map((item: any) => (
+                  {data.map((item: PosMovementItem) => (
                     <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
                       <td className="px-4 py-3 whitespace-nowrap">
                         {new Date(item.date).toLocaleString('tr-TR')}
                       </td>
                       <td className="px-4 py-3 font-mono text-xs">
-                        {item.pos_transaction_id}
+                        {item.posTransactionId || '-'}
                       </td>
                       <td className="px-4 py-3">
-                        {item.party_name}
+                        {item.patientName || '-'}
                       </td>
                       <td className="px-4 py-3 font-medium">
                         {formatCurrency(item.amount)}
                       </td>
                       <td className="px-4 py-3">
-                        {item.installment > 1 ? `${item.installment} Taksit` : 'Tek Çekim'}
+                        {item.installment && item.installment > 1 ? `${item.installment} Taksit` : 'Tek Çekim'}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
                           {item.status === 'paid' ? 'Başarılı' : 'Başarısız'}
                         </span>
-                        {item.error_message && (
-                          <p className="text-xs text-red-500 mt-1 max-w-[200px] truncate" title={item.error_message}>
-                            {item.error_message}
+                        {item.errorMessage && (
+                          <p className="text-xs text-red-500 mt-1 max-w-[200px] truncate" title={item.errorMessage}>
+                            {item.errorMessage}
                           </p>
                         )}
                       </td>
                       <td className="px-4 py-3 font-mono text-xs">
-                        {item.sale_id || '-'}
+                        {item.saleId || '-'}
                       </td>
                     </tr>
                   ))}
@@ -1534,10 +1484,10 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
             </div>
 
             {/* Pagination */}
-            {(meta as any) && (meta as any).total_pages > 1 && (
+            {typedPosMeta && typedPosMeta.totalPages && typedPosMeta.totalPages > 1 && (
               <div className="px-4 py-3 border-t bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Toplam {(meta as any).total} işlem
+                  Toplam {typedPosMeta.total || 0} işlem
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1548,10 +1498,10 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
                   >
                     Önceki
                   </Button>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">{page} / {(meta as any).total_pages}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{page} / {typedPosMeta.totalPages}</span>
                   <Button
-                    onClick={() => setPage(p => Math.min(Number((meta as any).total_pages), p + 1))}
-                    disabled={page >= Number((meta as any).total_pages)}
+                    onClick={() => setPage(p => Math.min(Number(typedPosMeta.totalPages || 1), p + 1))}
+                    disabled={page >= Number(typedPosMeta.totalPages || 1)}
                     variant="outline"
                     className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
@@ -1708,7 +1658,7 @@ export function DesktopReportsPage() {
                 <Select
                   className="px-3 py-2 text-sm"
                   value={String(filters.days)}
-                  onChange={(e: any) => setFilters(prev => ({ ...prev, days: Number(e.target.value) }))}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters(prev => ({ ...prev, days: Number(e.target.value) }))}
                   options={[
                     { value: "7", label: "Son 7 Gun" },
                     { value: "30", label: "Son 30 Gun" },
@@ -1751,7 +1701,7 @@ export function DesktopReportsPage() {
             {activeTab === 'overview' && canViewReports && <OverviewTab filters={filters} />}
             {activeTab === 'sales' && canViewReports && <SalesTab filters={filters} />}
             {activeTab === 'parties' && canViewReports && <PartiesTab filters={filters} />}
-            {activeTab === 'promissory' && canViewReports && <PromissoryNotesTab filters={filters} />}
+            {activeTab === 'promissory' && canViewReports && <PromissoryNotesTab />}
             {activeTab === 'remaining' && canViewReports && <RemainingPaymentsTab filters={filters} />}
             {activeTab === 'pos_movements' && canViewReports && <PosMovementsTab filters={filters} />}
             {activeTab === 'activity' && canViewActivityLogs && <ActivityTab />}

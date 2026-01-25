@@ -49,7 +49,7 @@ def list_parties(
     city: Optional[str] = None,
     district: Optional[str] = None,
     cursor: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("parties.view")),
+    access: UnifiedAccess = Depends(require_access("patient:read")),
     db: Session = Depends(get_db)
 ):
     """List patients with filtering and pagination"""
@@ -102,7 +102,7 @@ def list_parties(
 @router.post("/parties", operation_id="createParties", response_model=ResponseEnvelope[PartyRead], status_code=201)
 def create_party(
     patient_in: PartyCreate,
-    access: UnifiedAccess = Depends(require_access("parties.create")),
+    access: UnifiedAccess = Depends(require_access("patient:write")),
     db: Session = Depends(get_db)
 ):
     """Create a new patient"""
@@ -132,7 +132,7 @@ def export_parties(
     q: Optional[str] = None,
     status: Optional[str] = None,
     segment: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("parties.export")),
+    access: UnifiedAccess = Depends(require_access("patient:export")),
     db: Session = Depends(get_db)
 ):
     """Export patients as CSV"""
@@ -207,7 +207,7 @@ def export_parties(
 
 @router.get("/parties/count", operation_id="listPartyCount")
 def count_parties(
-    access: UnifiedAccess = Depends(require_access("parties.view")),
+    access: UnifiedAccess = Depends(require_access("patient:read")),
     db: Session = Depends(get_db),
     status: Optional[str] = None,
     segment: Optional[str] = None
@@ -224,7 +224,7 @@ def count_parties(
 @router.get("/parties/{party_id}", operation_id="getParty", response_model=ResponseEnvelope[PartyRead])
 def get_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("parties.view")),
+    access: UnifiedAccess = Depends(require_access("patient:read")),
     db: Session = Depends(get_db)
 ):
     """Get single patient"""
@@ -237,7 +237,7 @@ def get_party(
 def update_party(
     party_id: str,
     patient_in: PartyUpdate,
-    access: UnifiedAccess = Depends(require_access("parties.edit")),
+    access: UnifiedAccess = Depends(require_access("patient:write")),
     db: Session = Depends(get_db)
 ):
     """Update patient"""
@@ -256,7 +256,7 @@ def update_party(
 @router.delete("/parties/{party_id}", operation_id="deleteParty")
 def delete_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("parties.delete")),
+    access: UnifiedAccess = Depends(require_access("patient:delete")),
     db: Session = Depends(get_db)
 ):
     """Delete patient"""
@@ -274,7 +274,7 @@ def delete_party(
 @router.post("/parties/bulk-upload", operation_id="createPartyBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_parties(
     file: UploadFile = File(...),
-    access: UnifiedAccess = Depends(require_access("parties.create")),
+    access: UnifiedAccess = Depends(require_access("patient:write")),
     db: Session = Depends(get_db)
 ):
     """Bulk upload patients from CSV or XLSX"""

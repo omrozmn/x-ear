@@ -76,7 +76,6 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   onFiltersChange,
   onClearFilters,
   categories,
-  brands: _brands,
   suppliers,
   isExpanded = false,
   onToggleExpanded

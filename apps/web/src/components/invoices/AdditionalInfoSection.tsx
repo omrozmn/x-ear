@@ -1,14 +1,21 @@
 import { Input, Textarea, DatePicker, Button } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { ShoppingCart, Package, Truck, Building2, CreditCard } from 'lucide-react';
+import type { 
+  OrderInfo, 
+  DeliveryInfo, 
+  ShipmentInfoData, 
+  BankInfoData, 
+  PaymentTermsData 
+} from '../../types/invoice';
 
 interface AdditionalInfoSectionProps {
-  orderInfo?: any;
-  deliveryInfo?: any;
-  shipmentInfo?: any;
-  bankInfo?: any;
-  paymentTerms?: any;
-  onChange: (field: string, value: any) => void;
+  orderInfo?: OrderInfo;
+  deliveryInfo?: DeliveryInfo;
+  shipmentInfo?: ShipmentInfoData;
+  bankInfo?: BankInfoData;
+  paymentTerms?: PaymentTermsData;
+  onChange: (field: string, value: OrderInfo | DeliveryInfo | ShipmentInfoData | BankInfoData | PaymentTermsData) => void;
 }
 
 export function AdditionalInfoSection({
@@ -115,11 +122,11 @@ export function AdditionalInfoSection({
                 Sipariş Notu
               </label>
               <Textarea
-                value={orderInfo?.orderNote || ''}
+                value={(orderInfo as Record<string, unknown>)?.orderNote as string || ''}
                 onChange={(e) => onChange('orderInfo', {
                   ...orderInfo,
                   orderNote: e.target.value
-                })}
+                } as OrderInfo)}
                 rows={2}
                 className="w-full"
                 placeholder="Sipariş ile ilgili notlar..."
@@ -168,11 +175,11 @@ export function AdditionalInfoSection({
               </label>
               <Input
                 type="text"
-                value={deliveryInfo?.receiverName || ''}
+                value={(deliveryInfo as Record<string, unknown>)?.receiverName as string || ''}
                 onChange={(e) => onChange('deliveryInfo', {
                   ...deliveryInfo,
                   receiverName: e.target.value
-                })}
+                } as DeliveryInfo)}
                 className="w-full"
                 placeholder="Teslim alan kişi adı"
               />
@@ -241,7 +248,7 @@ export function AdditionalInfoSection({
                     ...shipmentInfo?.shipmentAddress,
                     address: e.target.value
                   }
-                })}
+                } as unknown as ShipmentInfoData)}
                 rows={2}
                 className="w-full"
                 placeholder="Sevk adresi..."

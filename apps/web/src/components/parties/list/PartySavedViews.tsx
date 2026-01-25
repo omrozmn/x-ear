@@ -4,7 +4,7 @@ import { Bookmark, Plus, Edit2, Trash2, Eye } from 'lucide-react';
 interface SavedView {
   id: string;
   name: string;
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   isDefault?: boolean;
   createdAt: Date;
 }
@@ -13,10 +13,10 @@ interface PartySavedViewsProps {
   savedViews: SavedView[];
   currentView?: string;
   onSelectView: (viewId: string) => void;
-  onSaveView: (name: string, filters: Record<string, any>) => void;
-  onUpdateView: (viewId: string, name: string, filters: Record<string, any>) => void;
+  onSaveView: (name: string, filters: Record<string, unknown>) => void;
+  onUpdateView: (viewId: string, name: string, filters: Record<string, unknown>) => void;
   onDeleteView: (viewId: string) => void;
-  currentFilters: Record<string, any>;
+  currentFilters: Record<string, unknown>;
   className?: string;
 }
 

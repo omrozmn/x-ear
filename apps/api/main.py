@@ -441,6 +441,29 @@ app.include_router(ai_admin_router, prefix="/api")
 from routers import composer
 app.include_router(composer.router, prefix="/api")
 
+# --- Legacy Route Aliases ---
+from fastapi.responses import RedirectResponse
+
+@app.get("/api/patients", tags=["Legacy"], include_in_schema=False)
+async def patients_alias():
+    return RedirectResponse(url="/api/parties", status_code=307)
+
+@app.get("/api/payments", tags=["Legacy"], include_in_schema=False)
+async def payments_alias():
+    return RedirectResponse(url="/api/finance/payments", status_code=307)
+
+@app.get("/api/tasks", tags=["Legacy"], include_in_schema=False)
+async def tasks_alias():
+    return RedirectResponse(url="/api/communications/history", status_code=307)
+
+@app.get("/api/notes", tags=["Legacy"], include_in_schema=False)
+async def notes_alias():
+    return RedirectResponse(url="/api/communications/history", status_code=307)
+
+@app.get("/api/documents", tags=["Legacy"], include_in_schema=False)
+async def documents_alias():
+    return RedirectResponse(url="/api/documents", status_code=307)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=5003, reload=True)

@@ -98,6 +98,16 @@ export const INVENTORY_DATA = 'x-ear.inventory.data@v1' // Legacy: inventoryData
 export const INVOICES_DATA = 'x-ear.invoices.data@v1' // Legacy: invoices, xear_invoices
 export const PURCHASES_DATA = 'x-ear.purchases.data@v1' // Purchase invoices data
 export const PARTY_SALES_DATA = 'x-ear.parties.salesData@v1' // Party sales data cache
+export const INVENTORY_KDV_RATE = 'x-ear.inventory.kdvRate@v1'
+export const INVENTORY_PRICE_KDV_INCLUDED = 'x-ear.inventory.priceKdvIncluded@v1'
+export const INVENTORY_COST_KDV_INCLUDED = 'x-ear.inventory.costKdvIncluded@v1'
+export const CURRENT_TENANT_ID = 'x-ear.auth.currentTenantId@v1'
+export const PARTY_RECENT_SEARCHES = 'x-ear.parties.recentSearches@v1'
+export const MATERIAL_DELIVERIES = 'x-ear.inventory.materialDeliveries@v1'
+export const CUSTOM_RECORD_TYPES = 'x-ear.cashflow.customRecordTypes@v1'
+export const LAST_LOGIN_CREDENTIALS = 'x-ear.auth.lastLogin@v1'
+export const AUTH_TOKEN_TIMESTAMP = 'x-ear.auth.tokenTimestamp@v1'
+export const PHASE_A_BANNER_DISMISSED = 'x-ear.ui.phaseABannerDismissed@v1'
 export const SAVED_VIEWS = 'x-ear.parties.savedViews@v1' // Legacy: xear_saved_views
 export const OCR_DYNAMIC_NAMES = 'x-ear.ocr.dynamicNames@v1' // Legacy: ocrDynamicNames
 export const CURRENT_USER = 'x-ear.auth.currentUser@v1' // Legacy: currentUser, currentUserId
@@ -109,8 +119,23 @@ export const REPORTS_SUBMENU_EXPANDED = 'x-ear.ui.reportsSubmenuExpanded@v1' // 
 export const ACCESS_TOKEN = 'x-ear.auth.accessToken@v1' // Legacy: xear_access_token
 export const JWT_TOKEN = 'x-ear.auth.jwt@v1' // Legacy: jwt, token
 
+// Communication & Offline Sync
+export const COMMUNICATION_MESSAGES = 'x-ear.communication.messages@v1'
+export const COMMUNICATION_TEMPLATES = 'x-ear.communication.templates@v1'
+export const COMMUNICATION_OUTBOX = 'x-ear.communication.outbox@v1'
+export const COMMUNICATION_SYNC_METADATA = 'x-ear.communication.syncMetadata@v1'
+export const SEARCH_ANALYTICS = 'x-ear.search.analytics@v1'
+
 // All storage keys for validation
+export const AUTH_STORAGE_PERSIST = 'x-ear.auth.auth-storage-persist@v1' // Generated: 2026-01-25T20:50:55.853Z
+
 export const ALL_STORAGE_KEYS = [
+  AUTH_STORAGE_PERSIST,
+  COMMUNICATION_MESSAGES,
+  COMMUNICATION_TEMPLATES,
+  COMMUNICATION_OUTBOX,
+  COMMUNICATION_SYNC_METADATA,
+  SEARCH_ANALYTICS,
   AUTH_TOKEN,
   REFRESH_TOKEN,
   USER_PREFERENCES,
@@ -156,6 +181,16 @@ export const ALL_STORAGE_KEYS = [
   INVOICES_DATA,
   PURCHASES_DATA,
   PARTY_SALES_DATA,
+  INVENTORY_KDV_RATE,
+  INVENTORY_PRICE_KDV_INCLUDED,
+  INVENTORY_COST_KDV_INCLUDED,
+  CURRENT_TENANT_ID,
+  PARTY_RECENT_SEARCHES,
+  MATERIAL_DELIVERIES,
+  CUSTOM_RECORD_TYPES,
+  LAST_LOGIN_CREDENTIALS,
+  AUTH_TOKEN_TIMESTAMP,
+  PHASE_A_BANNER_DISMISSED,
   SAVED_VIEWS,
   OCR_DYNAMIC_NAMES,
   CURRENT_USER,

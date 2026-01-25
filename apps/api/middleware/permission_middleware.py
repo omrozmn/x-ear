@@ -49,7 +49,12 @@ class AccessContextFromToken:
         
     @property
     def is_admin(self) -> bool:
-        return self.user_type == "admin" or str(self.user_id).startswith("admin_")
+        # Check explicit is_admin claim OR admin_ prefix in user_id
+        # MUST BE STRICT: exclude tenant-level admins from platform routes
+        return (
+            self.payload.get("is_admin") is True or 
+            str(self.user_id).startswith("admin_")
+        )
     
     @property
     def is_super_admin(self) -> bool:
@@ -141,8 +146,13 @@ class FastAPIPermissionMiddleware:
             await self.app(scope, receive, send)
             return
 
-        # Admin panel endpoints: allow admin tokens
-        if self._skip_admin_jwt and path.startswith("/api/admin/"):
+        # Super admins bypass everything
+        if ctx.is_super_admin:
+            await self.app(scope, receive, send)
+            return
+
+        # Admin panel endpoints: allow ONLY platform admin contexts
+        if path.startswith("/api/admin/"):
             if ctx.is_admin:
                 await self.app(scope, receive, send)
                 return
@@ -151,18 +161,19 @@ class FastAPIPermissionMiddleware:
                 scope, receive, send,
                 401,
                 {
-                    "error": "Bu sayfaya erişim için admin paneli giriş tokenı gereklidir.",
-                    "required": "admin_jwt",
+                    "error": "Bu sayfaya erişim için platform yöneticisi yetkisi gereklidir.",
+                    "code": "ADMIN_AUTH_REQUIRED",
                     "path": path,
                 },
             )
             return
 
-        # Admin roles bypass permission checks
-        if ctx.role in {"tenant_admin", "admin", "super_admin"}:
+        # The tenant_admin/admin bypass:
+        # They can bypass permission checks for TENANT routes (non-/api/admin/)
+        if ctx.role in {"tenant_admin", "admin"} and not path.startswith("/api/admin/"):
             await self.app(scope, receive, send)
             return
-
+        
         # Check specific permission
         if required_permission not in set(ctx.permissions):
             logger.warning(

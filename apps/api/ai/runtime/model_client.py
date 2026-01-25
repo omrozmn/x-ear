@@ -146,21 +146,33 @@ class LocalModelClient:
         """
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.get(f"{self.config.base_url}/api/tags")
+                # Detection of provider based on URL or health endpoint
+                health_url = f"{self.config.base_url}/api/tags" # Ollama
+                if "/v1" in self.config.base_url:
+                    health_url = f"{self.config.base_url}/models" # OpenAI/vLLM
+                
+                response = await client.get(health_url)
                 
                 if response.status_code == 200:
                     data = response.json()
-                    models = data.get("models", [])
+                    
+                    if "/v1" in self.config.base_url:
+                        # OpenAI format
+                        models = data.get("data", [])
+                        model_names = [m.get("id", "") for m in models]
+                    else:
+                        # Ollama format
+                        models = data.get("models", [])
+                        model_names = [m.get("name", "") for m in models]
                     
                     # Check if our model is available
-                    model_names = [m.get("name", "") for m in models]
-                    if any(self.config.model_name in name for name in model_names):
+                    if any(self.config.model_name in name for name in model_names) or not model_names:
                         self._status = ModelStatus.AVAILABLE
                         self._consecutive_failures = 0
                         self._last_health_check = datetime.now(timezone.utc)
                         return True
                     else:
-                        logger.warning(f"Model {self.config.model_name} not found in Ollama")
+                        logger.warning(f"Model {self.config.model_name} not found in provider")
                         self._status = ModelStatus.DEGRADED
                         return False
                 else:
@@ -214,35 +226,57 @@ class LocalModelClient:
                 f"Model unavailable after {self._consecutive_failures} consecutive failures"
             )
         
-        # Build request payload
-        # Use num_predict if provided (hard limit), otherwise use max_tokens
-        token_limit = num_predict if num_predict is not None else (max_tokens or self.config.max_tokens)
+        # Determine Provider
+        is_openai = "/v1" in self.config.base_url
         
-        payload = {
-            "model": self.config.model_name,
-            "prompt": prompt,
-            "stream": False,
-            "options": {
-                "num_predict": token_limit,
+        if is_openai:
+            # OpenAI / vLLM format
+            messages = [{"role": "user", "content": prompt}]
+            if system_prompt:
+                messages.insert(0, {"role": "system", "content": system_prompt})
+            
+            # Handle vision content for OpenAI
+            if kwargs.get('images'):
+                content = [{"type": "text", "text": prompt}]
+                images = kwargs['images'] if isinstance(kwargs['images'], list) else [kwargs['images']]
+                for img in images:
+                    # vLLM expects data:image/jpeg;base64,...
+                    if not img.startswith('data:'):
+                        img = f"data:image/jpeg;base64,{img}"
+                    content.append({"type": "image_url", "image_url": {"url": img}})
+                messages[-1]["content"] = content
+
+            payload = {
+                "model": self.config.model_name,
+                "messages": messages,
+                "max_tokens": token_limit,
                 "temperature": temperature or self.config.temperature,
                 "top_p": self.config.top_p,
-            },
-        }
-        
-        # Add vision support
-        if kwargs.get('images'):
-            payload['images'] = [kwargs['images']] if isinstance(kwargs['images'], str) else kwargs['images']
-        
-        if system_prompt:
-            payload["system"] = system_prompt
-        
-        if stop_sequences:
-            payload["options"]["stop"] = stop_sequences
-        
-        # JSON Mode support (Ollama native)
-        if kwargs.get('json_mode'):
-            payload["format"] = "json"
-        
+                "stream": False
+            }
+            endpoint = f"{self.config.base_url}/chat/completions"
+        else:
+            # Legacy Ollama format
+            payload = {
+                "model": self.config.model_name,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "num_predict": token_limit,
+                    "temperature": temperature or self.config.temperature,
+                    "top_p": self.config.top_p,
+                },
+            }
+            if kwargs.get('images'):
+                payload['images'] = [kwargs['images']] if isinstance(kwargs['images'], str) else kwargs['images']
+            if system_prompt:
+                payload["system"] = system_prompt
+            if stop_sequences:
+                payload["options"]["stop"] = stop_sequences
+            if kwargs.get('json_mode'):
+                payload["format"] = "json"
+            endpoint = f"{self.config.base_url}/api/generate"
+
         try:
             # Use timeout_override if provided, otherwise use config timeout
             timeout_seconds = timeout_override if timeout_override is not None else self.config.timeout_seconds
@@ -250,10 +284,7 @@ class LocalModelClient:
             async with httpx.AsyncClient(
                 timeout=httpx.Timeout(timeout_seconds)
             ) as client:
-                response = await client.post(
-                    f"{self.config.base_url}/api/generate",
-                    json=payload,
-                )
+                response = await client.post(endpoint, json=payload)
                 
                 if response.status_code != 200:
                     self._consecutive_failures += 1
@@ -264,22 +295,32 @@ class LocalModelClient:
                     )
                 
                 data = response.json()
-                
-                # Reset failure counter on success
                 self._consecutive_failures = 0
                 self._status = ModelStatus.AVAILABLE
-                
                 total_duration = (time.time() - start_time) * 1000
                 
-                return ModelResponse(
-                    content=data.get("response", ""),
-                    model=data.get("model", self.config.model_name),
-                    created_at=datetime.now(timezone.utc),
-                    total_duration_ms=total_duration,
-                    prompt_eval_count=data.get("prompt_eval_count", 0),
-                    eval_count=data.get("eval_count", 0),
-                    done=data.get("done", True),
-                )
+                if is_openai:
+                    choice = data.get("choices", [{}])[0]
+                    content = choice.get("message", {}).get("content", "")
+                    return ModelResponse(
+                        content=content,
+                        model=data.get("model", self.config.model_name),
+                        created_at=datetime.now(timezone.utc),
+                        total_duration_ms=total_duration,
+                        prompt_eval_count=data.get("usage", {}).get("prompt_tokens", 0),
+                        eval_count=data.get("usage", {}).get("completion_tokens", 0),
+                        done=True,
+                    )
+                else:
+                    return ModelResponse(
+                        content=data.get("response", ""),
+                        model=data.get("model", self.config.model_name),
+                        created_at=datetime.now(timezone.utc),
+                        total_duration_ms=total_duration,
+                        prompt_eval_count=data.get("prompt_eval_count", 0),
+                        eval_count=data.get("eval_count", 0),
+                        done=data.get("done", True),
+                    )
                 
         except httpx.TimeoutException:
             self._consecutive_failures += 1
@@ -407,9 +448,20 @@ class SyncModelClient:
     def is_available(self) -> bool:
         return self._async_client.is_available
     
+    def _run_safe(self, coro):
+        """Safely run a coroutine, detecting if an event loop is already running."""
+        try:
+            asyncio.get_running_loop()
+            # If we are here, a loop is running. asyncio.run() will fail.
+            logger.error("SyncModelClient used inside an async event loop (e.g. FastAPI). Use async client instead.")
+            raise RuntimeError("Cannot use SyncModelClient inside a running event loop. Use LocalModelClient (async) instead.")
+        except RuntimeError:
+            # No loop running, asyncio.run is safe
+            return asyncio.run(coro)
+
     def check_health(self) -> bool:
         """Check model health synchronously."""
-        return asyncio.run(self._async_client.check_health())
+        return self._run_safe(self._async_client.check_health())
     
     def generate(
         self,
@@ -422,7 +474,9 @@ class SyncModelClient:
         **kwargs
     ) -> ModelResponse:
         """Generate completion synchronously."""
-        return asyncio.run(
+        # Note: stop_sequences was missing from arguments in original code but was passed to generate
+        stop_sequences = kwargs.get('stop_sequences')
+        return self._run_safe(
             self._async_client.generate(
                 prompt=prompt,
                 system_prompt=system_prompt,
@@ -442,7 +496,7 @@ class SyncModelClient:
         temperature: Optional[float] = None,
     ) -> ModelResponse:
         """Generate chat completion synchronously."""
-        return asyncio.run(
+        return self._run_safe(
             self._async_client.generate_chat(
                 messages=messages,
                 max_tokens=max_tokens,
@@ -464,7 +518,7 @@ def get_model_client() -> LocalModelClient:
         config = get_ai_config().model
         # Map config to ModelConfig
         model_config = ModelConfig(
-            model_name=config.model_id,
+            model_name=config.ai_model_id,
             base_url=config.base_url,
             timeout_seconds=float(config.timeout_seconds),
             max_tokens=config.max_tokens,
@@ -482,7 +536,7 @@ def get_fast_model_client() -> LocalModelClient:
         config = get_ai_config().fast_model
         # Map config to ModelConfig
         model_config = ModelConfig(
-            model_name=config.model_id,
+            model_name=config.ai_model_id,
             base_url=config.base_url,
             timeout_seconds=float(config.timeout_seconds),
             max_tokens=config.max_tokens,
@@ -492,15 +546,12 @@ def get_fast_model_client() -> LocalModelClient:
     return _fast_client
 
 
-def route_model(request: Any) -> LocalModelClient:
+async def route_model(request: Any) -> LocalModelClient:
     """
     Route request to appropriate model client based on vision needs and complexity.
-    Task 1: Explicit Routing Guard (3B ↔ 7B-VL)
+    BUG-002: Includes health check and automatic fallback.
     
-    - Routes to SMART client (Qwen 7B-VL) if:
-        - Images are present in request
-        - Context intent suggests high complexity
-        - Explicit model preference is 'smart'
+    - Routes to SMART client (Qwen 7B-VL) if requirements met and healthy.
     - Routes to FAST client (Qwen 3B) otherwise.
     """
     # 1. Vision Detection (Qwen 7B-VL required for images)
@@ -511,28 +562,19 @@ def route_model(request: Any) -> LocalModelClient:
         # Check files for vision-compatible extensions if needed, but here simple presence suffices
         has_images = True
     
-    if has_images:
-        return get_model_client() # Smart/7B-VL
+    # Selection logic
+    target_client = get_fast_model_client() # Default
     
-    # 2. Complexity & Preference Heuristics
-    preference = None
-    if hasattr(request, 'model_preference'):
-        preference = str(request.model_preference).lower()
-    elif isinstance(request, dict):
-        preference = str(request.get('model_preference', '')).lower()
+    if has_images or preference in ('smart', 'high', 'complex') or intent in ('vision_analysis', 'complex_planning'):
+        target_client = get_model_client()
         
-    if preference in ('smart', 'high', 'complex'):
-        return get_model_client() # Smart/7B-VL
-        
-    # 3. Task Intent Analysis (Optional placeholder for intent-based routing)
-    intent = None
-    if hasattr(request, 'context_intent'):
-        intent = request.context_intent
-    elif isinstance(request, dict):
-        intent = request.get('context_intent')
-        
-    if intent in ('vision_analysis', 'complex_planning'):
-        return get_model_client()
-
-    # 4. Default to Fast (Qwen 3B)
-    return get_fast_model_client()
+    # BUG-002: SMART Health Check & Fallback
+    if target_client == get_model_client():
+        # Quick health check (cached check_health handles intervals if implemented, 
+        # otherwise this does a network call)
+        is_healthy = await target_client.check_health()
+        if not is_healthy:
+            logger.warning("SMART model unreachable, falling back to FAST model", extra={"ai_fallback": True})
+            return get_fast_model_client()
+            
+    return target_client

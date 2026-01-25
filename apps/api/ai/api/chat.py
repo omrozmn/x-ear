@@ -63,9 +63,9 @@ from ai.capability_registry import (
     filter_capabilities_by_phase,
 )
 from ai.api.capabilities import _format_capabilities_for_chat
-from ai.services.request_logger import get_request_logger, RequestLogger
 from ai.models.ai_request import RequestStatus
 from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 
@@ -149,33 +149,7 @@ class ChatResponse(BaseModel):
 # Dependencies
 # =============================================================================
 
-async def get_current_user_context(request: Request) -> Dict[str, str]:
-    """
-    Get current user context from request state.
-    
-    The JWT auth middleware sets tenant_id and user_id in request.state.
-    This dependency extracts them for use in the endpoint.
-    
-    Returns:
-        Dict with user_id, tenant_id, and permissions
-    """
-    # Extract from request.state (set by JWT auth middleware)
-    tenant_id = getattr(request.state, "tenant_id", None)
-    user_id = getattr(request.state, "user_id", None)
-    
-    if not tenant_id or not user_id:
-        # This should not happen if JWT middleware is working correctly
-        logger.error("Missing tenant_id or user_id in request.state")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required"
-        )
-    
-    return {
-        "user_id": user_id,
-        "tenant_id": tenant_id,
-        "permissions": [],  # TODO: Extract from JWT claims
-    }
+# Authenticated user context is now handled by require_access dependency
 
 
 # =============================================================================
@@ -206,28 +180,25 @@ async def get_current_user_context(request: Request) -> Dict[str, str]:
 )
 async def chat(
     request: ChatRequest,
-    user_context: Dict[str, str] = Depends(get_current_user_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db),
 ) -> ChatResponse:
     """
     Process a natural language chat message.
-    
     Args:
         request: Chat request with prompt and optional context
         user_context: Current user context from auth
-        
-async def chat(
-    request: ChatRequest,
-    db: Session = Depends(get_db),
-    # user_context: Dict[str, str] = Depends(get_current_user_context),  # Auth temporarily disabled for testing
-):
     """
     start_time = time.time()
     request_id = f"chat_{uuid4().hex[:16]}"
-    
-    tenant_id = user_context.get("tenant_id", "unknown")
-    user_id = user_context.get("user_id", "unknown")
-    
+    tenant_id = access.tenant_id
+    user_id = access.user_id
+    if not tenant_id or not user_id:
+        logger.error("Missing tenant_id or user_id in access context")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
     logger.info(
         f"Chat request received",
         extra={
@@ -463,38 +434,28 @@ async def chat(
     # Handle capability inquiry (Requirement 5.2)
     if result.is_success and result.intent and result.intent.intent_type == IntentType.CAPABILITY_INQUIRY:
         # Reuse capabilities endpoint logic (Single Source of Truth)
-        # Get user permissions from context
-        user_permissions = user_context.get("permissions", [
-            "parties.view",
-            "parties.create",
-            "parties.edit",
-            "sales.view",
-            "devices.view",
-            "appointments.view",
-            "reports.view",
-        ])
-        
-        # Get current AI phase
-        ai_phase = config.phase.name  # "A", "B", or "C"
-        
-        # Load all capabilities
-        all_capabilities = get_all_capabilities()
-        
-        # Filter by user permissions
-        permitted_capabilities = filter_capabilities_by_permissions(
-            all_capabilities,
-            user_permissions
-        )
-        
-        # Filter by AI phase
-        phase_filtered_capabilities = filter_capabilities_by_phase(
-            permitted_capabilities,
-            ai_phase
-        )
-        
+        # Get user permissions from context (no fallback allowed)
+        user_permissions = access.permissions
+        if not user_permissions:
+            # No permissions: do not show any capabilities
+            permitted_capabilities = []
+        else:
+            # Get current AI phase
+            ai_phase = config.phase.name  # "A", "B", or "C"
+            # Load all capabilities
+            all_capabilities = get_all_capabilities()
+            # Filter by user permissions
+            permitted_capabilities = filter_capabilities_by_permissions(
+                all_capabilities,
+                user_permissions
+            )
+            # Filter by AI phase
+            permitted_capabilities = filter_capabilities_by_phase(
+                permitted_capabilities,
+                ai_phase
+            )
         # Format capabilities for chat response
-        capabilities_message = _format_capabilities_for_chat(phase_filtered_capabilities)
-        
+        capabilities_message = _format_capabilities_for_chat(permitted_capabilities)
         # Store conversation turn
         memory.add_turn(
             session_id=session_id,
@@ -503,7 +464,6 @@ async def chat(
             intent_type=result.intent.intent_type.value if result.intent else None,
             entities=result.intent.entities if result.intent else {},
         )
-        
         # Update request status to completed
         request_logger.update_request_status(
             request_id=request_id,
@@ -512,19 +472,15 @@ async def chat(
             intent_confidence=result.intent.confidence,
             latency_ms=int(processing_time_ms),
         )
-        
         logger.info(
             f"Capability inquiry handled",
             extra={
                 "tenant_id": tenant_id,
                 "user_id": user_id,
                 "conversation_id": session_id,
-                "ai_phase": ai_phase,
-                "total_capabilities": len(all_capabilities),
-                "filtered_capabilities": len(phase_filtered_capabilities),
+                "total_capabilities": len(permitted_capabilities),
             }
         )
-        
         return ChatResponse(
             request_id=request_id,
             status=result.status.value,
@@ -585,18 +541,8 @@ async def chat(
     ):
         try:
             planner = get_action_planner()
-            # Extract permissions from user_context
-            # TODO: Production should extract from JWT claims via middleware
-            permissions = set(user_context.get("permissions", []))
-            if not permissions:
-                # Fallback for development/testing - uses correct permission names
-                permissions = {
-                    "parties.view", "parties.create", "parties.edit",
-                    "sales.view", "sales.create",
-                    "devices.view", "devices.assign",
-                    "appointments.view", "appointments.create",
-                    "reports.view",
-                }
+            # Extract permissions from access context
+            permissions = access.permissions
             
             # Check for timeout on pending plan (Requirement 4.5)
             if pending_plan:

@@ -15,7 +15,7 @@ import { useParams } from '@tanstack/react-router';
 
 // Define a mutable return value for useParty to control it across tests
 const mockUsePartyReturn = {
-    party: null as any,
+    party: null as PartyDetailResponseData | null,
     isLoading: false,
     error: null,
     loadParty: vi.fn(),
@@ -48,12 +48,21 @@ vi.mock('../../../components/GlobalErrorHandler', () => ({
 
 // Mock child components that strictly need isolation
 vi.mock('../../parties/PartyHeader', () => ({
-    PartyHeader: ({ party }: any) => (
-        <div data-testid="party-header">
-            <h1>{party.first_name || party.firstName} {party.last_name || party.lastName}</h1>
-            <span>Role: {party.roles?.map((r: any) => r.role_code).join(', ')}</span>
-        </div>
-    ),
+    PartyHeader: ({ party }: { party: PartyDetailResponseData }) => {
+        if (!party) return null;
+        const partyData = party as Record<string, unknown>;
+        const firstName = (partyData.first_name || partyData.firstName || '') as string;
+        const lastName = (partyData.last_name || partyData.lastName || '') as string;
+        const roles = Array.isArray(partyData.roles) 
+            ? (partyData.roles as Array<{ role_code?: string }>).map(r => r.role_code).join(', ')
+            : '';
+        return (
+            <div data-testid="party-header">
+                <h1>{firstName} {lastName}</h1>
+                <span>Role: {roles}</span>
+            </div>
+        );
+    },
 }));
 
 vi.mock('../../parties/PartyTabContent', () => ({
@@ -61,7 +70,7 @@ vi.mock('../../parties/PartyTabContent', () => ({
 }));
 
 vi.mock('../../common/ErrorBoundary', () => ({
-    ErrorBoundary: ({ children }: any) => <>{children}</>
+    ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }));
 
 // Mock Modals

@@ -30,7 +30,7 @@ interface PromissoryNoteModalProps {
   party: Party;
   sale?: SaleRead;
   promissoryNote?: PromissoryNote; // For editing existing notes
-  onSave: (noteData: any) => void;
+  onSave: (noteData: Partial<PromissoryNote>) => void;
   loading?: boolean;
   mode?: 'create' | 'edit' | 'view';
 }

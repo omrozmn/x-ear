@@ -1,3 +1,5 @@
+import { SEARCH_ANALYTICS } from '../constants/storage-keys';
+
 interface SearchAnalytics {
   query: string;
   timestamp: number;
@@ -21,7 +23,7 @@ interface SearchPerformanceMetrics {
 
 class SearchAnalyticsService {
   private analytics: SearchAnalytics[] = [];
-  private readonly STORAGE_KEY = 'search_analytics';
+  private readonly STORAGE_KEY = SEARCH_ANALYTICS;
   private readonly MAX_ENTRIES = 1000;
 
   constructor() {

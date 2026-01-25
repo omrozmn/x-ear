@@ -79,7 +79,7 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
     {
       key: 'fullName',
       title: 'Ad Soyad',
-      render: (value: any, record: Party) => `${record.firstName || ''} ${record.lastName || ''}`
+      render: (value: string | null | undefined, record: Party) => `${record.firstName || ''} ${record.lastName || ''}`
     },
     {
       key: 'tcNumber',

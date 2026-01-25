@@ -11,6 +11,24 @@ import { PartySearch } from '../../components/parties/PartySearch';
 import { PartyFilters } from '../../components/parties/PartyFilters';
 import { PartyFormModal } from '../../components/parties/PartyFormModal';
 import { Button } from '@x-ear/ui-web';
+import type { PartyCreate, PartyRead } from '@/api/generated/schemas';
+
+interface PartyCreateRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  tcNumber?: string;
+  birthDate?: string;
+  email?: string;
+  address?: string;
+  addressFull?: string;
+  status?: string;
+  segment?: string;
+  label?: string;
+  acquisitionType?: string;
+  tags?: string[];
+  customData?: Record<string, unknown>;
+}
 
 interface PartyListPageProps {
   className?: string;
@@ -113,8 +131,8 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     });
   }, []);
 
-  const handleCreateParty = useCallback(async (partyData: any) => {
-    const result = await createParty(partyData, {
+  const handleCreateParty = useCallback(async (partyData: PartyCreate) => {
+    const result = await createParty(partyData as unknown as PartyCreateRequest, {
       onSuccess: () => {
         setShowCreateModal(false);
         refresh();
@@ -126,8 +144,8 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     return result;
   }, [createParty, refresh]);
 
-  const handleUpdateParty = useCallback(async (partyId: string, updates: any) => {
-    const result = await updateParty(partyId, updates, {
+  const handleUpdateParty = useCallback(async (partyId: string, updates: PartyCreate) => {
+    const result = await updateParty(partyId, updates as unknown as Record<string, unknown>, {
       onSuccess: () => {
         setEditingParty(null);
         refresh();

@@ -282,10 +282,9 @@ class IntentRefiner:
             )
         
         # Step 3: Build prompt for LLM (simplified, short prompt)
-        # NOTE: We pass the UNREDACTED message to the local LLM so it can extract entities (like phone numbers).
-        # Since the model runs locally within the secure boundary, this is acceptable.
+        # BUG-003: Always use redacted version for LLM to protect PII/PHI
         prompt = INTENT_CLASSIFICATION_PROMPT.format(
-            user_message=user_message,
+            user_message=redacted_message,
         )
         
         # Step 4: Call LLM with circuit breaker and optimized timeout
@@ -617,7 +616,7 @@ class IntentRefiner:
         # Check for greeting
         if any(word in message_lower for word in ["merhaba", "selam", "hello", "hi", "naber", "nasılsın"]):
             return IntentOutput(
-                intent_type=IntentType.QUERY,
+                intent_type=IntentType.GREETING,
                 confidence=0.7,
                 entities=entities,
                 conversational_response="Merhaba! Size nasıl yardımcı olabilirim?",

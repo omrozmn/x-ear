@@ -69,7 +69,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-  const [invoiceInitialData, setInvoiceInitialData] = useState<Partial<Invoice> | undefined>(undefined);
+  const [invoiceInitialData, setInvoiceInitialData] = useState<Invoice | null>(null);
   const [invoiceModalMode, setInvoiceModalMode] = useState<'create' | 'edit' | 'quick'>('create');
   const [currentReplacementForInvoice, setCurrentReplacementForInvoice] = useState<string | null>(null);
   const [invoiceDeviceId, setInvoiceDeviceId] = useState<string | null>(null);
@@ -166,9 +166,9 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         notes: `Değişim: ${(rep.new_device_info_parsed as Record<string, unknown>)?.brand || JSON.stringify(rep.new_device_info_parsed) || ''}`
       };
 
-      setInvoiceInitialData(initial as unknown as Partial<Invoice>);
+      setInvoiceInitialData(initial as unknown as Invoice);
       setCurrentReplacementForInvoice(replacementId);
-      setInvoiceDeviceId(rep.old_device_id || rep.oldDeviceId || (rep as any).deviceId || device.id || null);
+      setInvoiceDeviceId(rep.old_device_id || rep.oldDeviceId || (rep as { deviceId?: string }).deviceId || device.id || null);
       setInvoiceModalMode('quick');
       setTimeout(() => setShowInvoiceModal(true), 0);
       setActionMessage(`Yeni iade faturası için form açıldı (replacement ${replacementId})`);
@@ -184,10 +184,13 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       // link with provided invoice id to server replacement
       if (!replacementId) throw new Error('Replacement ID missing');
 
+      // Type assertion for extended invoice properties that may exist at runtime
+      const extendedInvoice = createdInvoice as Invoice & { supplierInvoiceNumber?: string };
+
       const body = {
         invoiceId: createdInvoice.id,
         invoiceNumber: createdInvoice.invoiceNumber || createdInvoice.id,
-        supplierInvoiceNumber: (createdInvoice as any).supplierInvoiceNumber || createdInvoice.invoiceNumber
+        supplierInvoiceNumber: extendedInvoice.supplierInvoiceNumber || createdInvoice.invoiceNumber
       };
 
       // Use mutation
@@ -205,7 +208,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       showError(msg);
     } finally {
       setShowInvoiceModal(false);
-      setInvoiceInitialData(undefined);
+      setInvoiceInitialData(null);
     }
   };
 
@@ -282,7 +285,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                 notes: inv.notes || '',
                 id: inv.id
               };
-              setInvoiceInitialData(mapped as any);
+              setInvoiceInitialData(mapped as unknown as Invoice);
               setInvoiceModalMode('edit');
               setTimeout(() => setShowInvoiceModal(true), 0);
               setInvoiceModalMode('edit');
@@ -475,7 +478,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       <InvoicePreviewModal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} invoice={previewInvoice} onError={(err) => setActionMessage(err)} />
       <InvoiceModal
         isOpen={showInvoiceModal}
-        onClose={() => { setShowInvoiceModal(false); setInvoiceInitialData(undefined); setCurrentReplacementForInvoice(null); }}
+        onClose={() => { setShowInvoiceModal(false); setInvoiceInitialData(null); setCurrentReplacementForInvoice(null); }}
         initialData={invoiceInitialData}
         mode={invoiceModalMode}
         enableIncomingSelection={true}
@@ -488,7 +491,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             showSuccess('Fatura güncellendi');
             refetchReplacements();
             setShowInvoiceModal(false);
-            setInvoiceInitialData(undefined);
+            setInvoiceInitialData(null);
             setCurrentReplacementForInvoice(null);
           }
         }}

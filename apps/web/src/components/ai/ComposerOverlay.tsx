@@ -1,14 +1,16 @@
-import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import { useEffect, useCallback, useState, useMemo } from 'react';
 import { useComposerStore } from '../../stores/composerStore';
 import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle } from 'lucide-react';
 import {
     useAutocompleteApiAiComposerAutocompleteGet,
-    useExecuteToolApiAiComposerExecutePost
+    useExecuteToolApiAiComposerExecutePost,
+    useAnalyzeDocumentsApiAiComposerAnalyzePost
 } from '../../api/generated/ai-composer/ai-composer';
 import { useCreateUploadPresigned } from '../../api/generated/upload/upload';
 import type { ExecuteResponse, EntityItem, Capability, AnalysisSuggestion } from '../../api/generated/schemas';
 import { usePermissionCheck } from '../../hooks/usePermissionCheck';
 import toast from 'react-hot-toast';
+import { Button, Input } from '@x-ear/ui-web';
 
 export function ComposerOverlay() {
     const {
@@ -41,6 +43,9 @@ export function ComposerOverlay() {
 
     // Upload mutation hook
     const { mutateAsync: getPresignedUrl } = useCreateUploadPresigned();
+
+    // Analyze documents mutation hook
+    const { mutateAsync: analyzeDocuments } = useAnalyzeDocumentsApiAiComposerAnalyzePost();
 
     // Handle File Upload
     const handleFileUpload = async (file: File) => {
@@ -101,28 +106,20 @@ export function ComposerOverlay() {
     const analyzeDocument = async (fileKey: string) => {
         setIsAnalyzing(true);
         try {
-            // Manual fetch to /api/ai/composer/analyze
-            // Use local token or similar auth if needed, assuming cookie/session works
-            const res = await fetch('/api/ai/composer/analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            const result = await analyzeDocuments({
+                data: {
                     files: [fileKey],
                     context_intent: selectedAction?.name || 'general'
-                })
+                }
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                if (data.suggestions && data.suggestions.length > 0) {
-                    setSuggestions(prev => [...prev, ...data.suggestions]);
-                    toast.success(`${data.suggestions.length} öneri bulundu!`);
-                }
+            if (result.suggestions && result.suggestions.length > 0) {
+                setSuggestions(prev => [...prev, ...result.suggestions]);
+                toast.success(`${result.suggestions.length} öneri bulundu!`);
             }
         } catch (e) {
             console.error("Analysis failed:", e);
+            toast.error('Analiz başarısız oldu');
         } finally {
             setIsAnalyzing(false);
         }
@@ -260,12 +257,19 @@ export function ComposerOverlay() {
                             {context.type === 'patient' && <User size={14} />}
                             {context.type === 'device' && <Box size={14} />}
                             {context.label}
-                            <button onClick={reset} className="hover:text-blue-900 ml-1"><X size={14} /></button>
+                            <Button 
+                                onClick={reset} 
+                                variant="ghost" 
+                                size="sm"
+                                className="hover:text-blue-900 ml-1 p-0 h-auto min-h-0"
+                            >
+                                <X size={14} />
+                            </Button>
                         </span>
                     )}
 
-                    <input
-                        className="flex-1 outline-none text-lg placeholder:text-gray-400"
+                    <Input
+                        className="flex-1 outline-none text-lg placeholder:text-gray-400 border-0 focus:ring-0 shadow-none"
                         placeholder={context ? "Bir işlem yazın..." : "Hasta, cihaz veya fatura ara..."}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
@@ -365,21 +369,23 @@ export function ComposerOverlay() {
                                         {suggestions
                                             .filter(s => s.slot_name === currentSlot.name || s.slot_name === 'general') // simple filtering
                                             .map((s, idx) => (
-                                                <button
+                                                <Button
                                                     key={idx}
                                                     onClick={() => applySuggestion(s)}
+                                                    variant="outline"
+                                                    size="sm"
                                                     className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-200 shadow-sm rounded-md hover:border-blue-400 hover:shadow-md transition-all text-sm text-left group"
                                                 >
                                                     <div className="flex flex-col">
                                                         <span className="font-medium text-gray-900 group-hover:text-blue-700">
-                                                            {typeof s.value === 'object' ? JSON.stringify(s.value) : s.value}
+                                                            {typeof s.value === 'object' && s.value !== null ? JSON.stringify(s.value) : String(s.value ?? '')}
                                                         </span>
                                                         <span className="text-[10px] text-gray-400">
                                                             {(s.confidence * 100).toFixed(0)}% • {s.source_file ? 'Dosyadan' : 'AI'}
                                                         </span>
                                                     </div>
                                                     <Check className="w-3 h-3 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                </button>
+                                                </Button>
                                             ))}
                                         {!isAnalyzing && suggestions.length === 0 && (
                                             <span className="text-xs text-gray-400 italic">Bu alan için öneri bulunamadı.</span>
@@ -394,13 +400,13 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'entity_search' && (
                                 <div className="relative">
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
-                                        <input
+                                        <Input
                                             className="w-full border p-2 pl-10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="Ara..."
                                             value={slotSearchQuery}
                                             onChange={(e) => setSlotSearchQuery(e.target.value)}
                                             autoFocus
+                                            leftIcon={<Search className="w-4 h-4" />}
                                         />
                                     </div>
                                     {isSlotSearchLoading && (
@@ -432,7 +438,7 @@ export function ComposerOverlay() {
 
                             {/* Text Slot */}
                             {currentSlot.uiType === 'text' && (
-                                <input
+                                <Input
                                     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
                                     onKeyDown={(e) => {
@@ -446,7 +452,7 @@ export function ComposerOverlay() {
 
                             {/* Number Slot */}
                             {currentSlot.uiType === 'number' && (
-                                <input
+                                <Input
                                     type="number"
                                     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
@@ -461,7 +467,7 @@ export function ComposerOverlay() {
 
                             {/* Date Slot */}
                             {currentSlot.uiType === 'date' && (
-                                <input
+                                <Input
                                     type="date"
                                     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
@@ -476,16 +482,17 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'enum' && (
                                 <div className="flex gap-2 flex-wrap">
                                     {(currentSlot.enumOptions || []).map((opt: string) => (
-                                        <button
+                                        <Button
                                             key={opt}
                                             onClick={() => {
                                                 updateSlot(currentSlot.name, opt);
                                                 nextSlot();
                                             }}
+                                            variant="outline"
                                             className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors font-medium"
                                         >
                                             {opt}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                             )}
@@ -509,7 +516,7 @@ export function ComposerOverlay() {
                                     <span className="text-sm font-medium text-gray-700">Dosya Seçin veya Sürükleyin</span>
                                     <span className="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max 10MB)</span>
 
-                                    <input
+                                    <Input
                                         type="file"
                                         className="hidden"
                                         onChange={async (e) => {
@@ -519,20 +526,7 @@ export function ComposerOverlay() {
                                             const toastId = toast.loading('Yükleniyor...');
 
                                             try {
-                                                // 1. Get presigned URL
-                                                // Note: We use the hook directly here but in a real app we might move logic out
-                                                // Since we can't call hooks conditionally inside a callback, we assume useCreateUploadPresigned 
-                                                // is available in the component scope or we use a direct fetch if needed.
-                                                // But actually we added useCreateUploadPresigned import, so we need to initialize it in the component body
-                                                // See below for the mutation hook initialization.
-
-                                                // For this inline replacement, we will assume 'uploadMutation' is available (we will add it next)
-                                                // or we can use the mutateAsync method if we bind it.
-
-                                                // Since we are inside the render block, we can't call hooks. 
-                                                // We must rely on the handler function `handleFileUpload` which we will add to the component body.
                                                 handleFileUpload(file);
-
                                             } catch (error) {
                                                 console.error(error);
                                                 toast.error('Dosya yüklenemedi');
@@ -562,31 +556,41 @@ export function ComposerOverlay() {
                                 </div>
                                 {Object.entries(slots)
                                     .filter(([k]) => !k.startsWith('_')) // Hide internal fields
-                                    .map(([k, v]) => (
-                                        <div key={k} className="flex justify-between items-center mb-2 text-sm">
-                                            <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>
-                                            <span className="font-medium">{slots[`_${k}_label`] || String(v)}</span>
-                                        </div>
-                                    ))}
+                                    .map(([k, v]) => {
+                                        const label = slots[`_${k}_label`];
+                                        const displayValue = typeof label === 'string' 
+                                            ? label 
+                                            : (v !== null && v !== undefined ? String(v) : '-');
+                                        
+                                        return (
+                                            <div key={k} className="flex justify-between items-center mb-2 text-sm">
+                                                <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>
+                                                <span className="font-medium">{displayValue}</span>
+                                            </div>
+                                        );
+                                    })}
                             </div>
 
                             <div className="flex gap-3 justify-end">
-                                <button
+                                <Button
                                     onClick={handleSimulate}
                                     disabled={isExecuting}
+                                    variant="outline"
                                     className="px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors disabled:opacity-50"
                                 >
                                     Simüle Et
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={reset}
+                                    variant="ghost"
                                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                                 >
                                     İptal
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={handleConfirm}
                                     disabled={isExecuting}
+                                    variant="success"
                                     className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 font-medium transition-colors"
                                 >
                                     {isExecuting ? (
@@ -600,7 +604,7 @@ export function ComposerOverlay() {
                                             <Check size={16} />
                                         </>
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -636,12 +640,14 @@ export function ComposerOverlay() {
                             )}
 
                             <div className="mt-6">
-                                <button
+                                <Button
                                     onClick={() => { onClose(); reset(); }}
+                                    variant="secondary"
+                                    fullWidth
                                     className="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-colors"
                                 >
                                     Kapat
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}

@@ -43,7 +43,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
 }) => {
   const [previewEReceipt, setPreviewEReceipt] = useState<SavedEReceipt | null>(null);
   const [editingEReceipt, setEditingEReceipt] = useState<SavedEReceipt | null>(null);
-  const [editFormData, setEditFormData] = useState<any>(null);
+  const [editFormData, setEditFormData] = useState<SavedEReceipt | null>(null);
 
   const getStatusText = (status: 'saved' | 'delivered') => {
     switch (status) {
@@ -104,7 +104,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
     }
 
     // Check if all materials have valid dates
-    const invalidMaterials = editFormData.materials.filter((m: any) =>
+    const invalidMaterials = editFormData.materials.filter((m: SavedEReceiptMaterial) =>
       !m.applicationDate || new Date(m.applicationDate) > new Date()
     );
 
@@ -127,29 +127,38 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
     setEditFormData(null);
   };
 
-  const updateEditFormData = (field: string, value: any) => {
-    setEditFormData((prev: any) => ({
-      ...prev,
-      [field]: value
-    }));
+  const updateEditFormData = (field: string, value: string | SavedEReceiptMaterial[]) => {
+    setEditFormData((prev: SavedEReceipt | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
   };
 
   const updateMaterialDate = (materialIndex: number, date: string) => {
-    setEditFormData((prev: any) => ({
-      ...prev,
-      materials: prev.materials.map((m: any, i: number) =>
-        i === materialIndex ? { ...m, applicationDate: date } : m
-      )
-    }));
+    setEditFormData((prev: SavedEReceipt | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        materials: prev.materials.map((m: SavedEReceiptMaterial, i: number) =>
+          i === materialIndex ? { ...m, applicationDate: date } : m
+        )
+      };
+    });
   };
 
   const updateMaterialStatus = (materialIndex: number, status: 'saved' | 'delivered') => {
-    setEditFormData((prev: any) => ({
-      ...prev,
-      materials: prev.materials.map((m: any, i: number) =>
-        i === materialIndex ? { ...m, deliveryStatus: status } : m
-      )
-    }));
+    setEditFormData((prev: SavedEReceipt | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        materials: prev.materials.map((m: SavedEReceiptMaterial, i: number) =>
+          i === materialIndex ? { ...m, deliveryStatus: status } : m
+        )
+      };
+    });
   };
 
   const handlePreviewEReceipt = (eReceipt: SavedEReceipt) => {

@@ -9,11 +9,18 @@ import { createHearingTest } from '@/api/client/parties.client';
 import { X, FileText, Plus, AlertCircle, CheckCircle, Calendar, User } from 'lucide-react';
 import { Party } from '../../../types/party';
 
+interface PartyReportData {
+  type: 'audiogram' | 'battery' | 'device' | 'sgk' | 'medical';
+  title: string;
+  partyId?: string;
+  [key: string]: unknown;
+}
+
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   party: Party;
-  onReportCreate: (reportData: any) => void;
+  onReportCreate: (reportData: PartyReportData) => void;
   loading?: boolean;
 }
 
@@ -140,7 +147,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
       }
 
       setSuccess('Rapor başarıyla oluşturuldu');
-      if (onReportCreate) onReportCreate({});
+      if (onReportCreate) onReportCreate({ type: formData.type, title: formData.title, partyId: party.id });
 
       // Close modal after successful creation
       setTimeout(() => {

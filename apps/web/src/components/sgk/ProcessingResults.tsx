@@ -1,22 +1,10 @@
 import React, { useState } from 'react';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
 import { CheckCircle, XCircle, FileText, User, Search } from 'lucide-react';
-import DocumentPreview from './DocumentPreview';
+import DocumentPreview, { type ProcessingResult } from './DocumentPreview';
 import PartySearch from './PartySearch';
 import DocumentTypeSelector from './DocumentTypeSelector';
-
-interface ProcessingResult {
-  fileName: string;
-  status: 'processed' | 'error';
-  result?: {
-    matched_party?: any;
-    pdf_generated?: boolean;
-    pdf_filename?: string;
-    document_type?: string;
-    entities?: any[];
-  };
-  error?: string;
-}
+import { type Party } from '../../types/party';
 
 interface ProcessingResultsProps {
   results: ProcessingResult[];
@@ -36,7 +24,7 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
   const successfulResults = results.filter(r => r.status === 'processed');
   const errorResults = results.filter(r => r.status === 'error');
 
-  const handlePartySelect = (result: ProcessingResult, party: any) => {
+  const handlePartySelect = (result: ProcessingResult, party: Party) => {
     // TODO: Update result with selected party
     console.log('Party selected:', party, 'for result:', result);
     setShowPartySearch(false);

@@ -8,14 +8,8 @@ import { createPartyDeviceAssignments } from '@/api/client/sales.client';
 import { useCreateReplacement } from '@/api/client/replacements.client';
 import { apiClient } from '@/api/orval-mutator';
 import type {
+  SaleRead
 } from '@/api/generated/schemas';
-
-// Fallback interfaces for types not exported in schema index
-interface SaleRead {
-  id?: string;
-  totalAmount?: number;
-  [key: string]: any;
-}
 
 
 import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
@@ -150,39 +144,42 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
     };
   };
 
-  const handleAssignDevice = async (deviceData: DeviceAssignment & Record<string, any>) => {
+  const handleAssignDevice = async (deviceData: DeviceAssignment) => {
     try {
       setLoading(true);
 
+      // Cast to unknown first to allow accessing additional properties
+      const data = deviceData as unknown as DeviceAssignment & Record<string, unknown>;
+
       // Use the new createPartyDeviceAssignments endpoint
       const assignmentItem = {
-        inventoryId: deviceData.inventoryId as string,
-        ear: deviceData.ear as string || 'both',
-        reason: deviceData.reason as string || 'Assignment',
-        basePrice: deviceData.basePrice as number || deviceData.listPrice as number,
-        discountType: deviceData.discountType as string,
-        discountValue: deviceData.discountValue as number,
-        salePrice: deviceData.salePrice as number,
-        partyPayment: deviceData.partyPayment as number,
-        sgkSupport: deviceData.sgkSupport as number,
-        sgkScheme: deviceData.sgkScheme as string,
-        serialNumber: deviceData.serialNumber as string,
-        serialNumberLeft: deviceData.serialNumberLeft as string,
-        serialNumberRight: deviceData.serialNumberRight as string,
-        deliveryStatus: deviceData.deliveryStatus as string || 'pending',
-        reportStatus: deviceData.reportStatus as string,
-        isLoaner: deviceData.isLoaner as boolean || false,
-        loanerInventoryId: deviceData.loanerInventoryId as string,
-        loanerSerialNumber: deviceData.loanerSerialNumber as string,
-        loanerSerialNumberLeft: deviceData.loanerSerialNumberLeft as string,
-        loanerSerialNumberRight: deviceData.loanerSerialNumberRight as string,
-        loanerBrand: deviceData.loanerBrand as string,
-        loanerModel: deviceData.loanerModel as string,
-        paymentMethod: deviceData.paymentMethod as string || 'cash',
-        notes: deviceData.notes as string,
+        inventoryId: data.inventoryId as string,
+        ear: data.ear as string || 'both',
+        reason: data.reason as string || 'Assignment',
+        basePrice: (data.basePrice as number) || (data.listPrice as number),
+        discountType: data.discountType as string,
+        discountValue: data.discountValue as number,
+        salePrice: data.salePrice as number,
+        partyPayment: data.partyPayment as number,
+        sgkSupport: data.sgkSupport as number,
+        sgkScheme: data.sgkScheme as string,
+        serialNumber: data.serialNumber as string,
+        serialNumberLeft: data.serialNumberLeft as string,
+        serialNumberRight: data.serialNumberRight as string,
+        deliveryStatus: data.deliveryStatus as string || 'pending',
+        reportStatus: data.reportStatus as string,
+        isLoaner: (data.isLoaner as boolean) || false,
+        loanerInventoryId: data.loanerInventoryId as string,
+        loanerSerialNumber: data.loanerSerialNumber as string,
+        loanerSerialNumberLeft: data.loanerSerialNumberLeft as string,
+        loanerSerialNumberRight: data.loanerSerialNumberRight as string,
+        loanerBrand: data.loanerBrand as string,
+        loanerModel: data.loanerModel as string,
+        paymentMethod: data.paymentMethod as string || 'cash',
+        notes: data.notes as string,
         // Manual device info (when not from inventory)
-        manualBrand: deviceData.brand as string,
-        manualModel: deviceData.model as string,
+        manualBrand: data.brand as string,
+        manualModel: data.model as string,
       };
 
       // Remove undefined values
@@ -192,9 +189,9 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       const payload = {
         deviceAssignments: [cleanedItem],
-        sgkScheme: deviceData.sgkScheme as string,
-        paymentPlan: deviceData.paymentPlan as string || 'cash',
-        branchId: deviceData.branchId as string,
+        sgkScheme: data.sgkScheme as string,
+        paymentPlan: (data.paymentPlan as string) || 'cash',
+        branchId: data.branchId as string,
       };
 
       // Debug logging disabled to reduce console noise
@@ -237,7 +234,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
     setShowReplacementModal(true);
   };
 
-  const handleUpdateDevice = async (deviceId: string, updates: any) => {
+  const handleUpdateDevice = async (deviceId: string, updates: Partial<PartyDevice>) => {
     if (!deviceId) return;
 
     // Debug logging disabled to reduce console noise
@@ -247,7 +244,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       setLoading(true);
 
       // Transform field names from frontend (camelCase) to backend (snake_case)
-      const transformedUpdates: Record<string, any> = {};
+      const transformedUpdates: Record<string, unknown> = {};
 
       // Field mapping: frontend -> backend
       const fieldMapping: Record<string, string> = {
@@ -306,9 +303,13 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         setEditingDevice(null);
       }
       showSuccess('Başarılı', 'Cihaz güncellendi');
-    } catch (error: any) {
-      console.error('[handleUpdateDevice] Error:', error.response?.data || error.message);
-      const msg = error.response?.data?.error || error.message || 'Cihaz güncellenirken hata oluştu';
+    } catch (error: unknown) {
+      console.error('[handleUpdateDevice] Error:', error);
+      const errorMessage = error instanceof Error && 'response' in error 
+        ? (error as { response?: { data?: { error?: string } }; message?: string }).response?.data?.error || 
+          (error as { message?: string }).message
+        : undefined;
+      const msg = errorMessage || 'Cihaz güncellenirken hata oluştu';
       showError('Hata', msg);
       setError(msg);
       throw error;
@@ -317,7 +318,13 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
     }
   };
 
-  const handleReplaceDevice = async (oldDeviceId: string, reasonOrData: any, maybeNotes?: string, maybeNewInventoryId?: string, maybeNewDeviceInfo?: any) => {
+  const handleReplaceDevice = async (
+    oldDeviceId: string, 
+    reasonOrData: string | Record<string, unknown>, 
+    maybeNotes?: string, 
+    maybeNewInventoryId?: string, 
+    maybeNewDeviceInfo?: unknown
+  ) => {
     try {
       setLoading(true);
 
@@ -325,12 +332,12 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       let reason = 'other';
       let notes: string | undefined = undefined;
       let newInventoryId: string | undefined = undefined;
-      let newDeviceInfo: any = undefined;
+      let newDeviceInfo: unknown = undefined;
       if (typeof reasonOrData === 'object') {
         // legacy call used single object
         const obj = reasonOrData || {};
-        reason = obj.reason || obj.replacementReason || 'other';
-        notes = obj.notes || undefined;
+        reason = (obj.reason || obj.replacementReason || 'other') as string;
+        notes = obj.notes as string | undefined;
         newInventoryId = obj.inventoryId as string | undefined;
         newDeviceInfo = obj;
       } else {
@@ -343,7 +350,19 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       // Create replacement record on server before mutating devices
       try {
         const oldDevice = (devices || []).find((d) => d.id === oldDeviceId) || ({ id: oldDeviceId } as PartyDevice);
-        const payload: any = {
+        const payload: {
+          oldDeviceId: string;
+          oldDeviceInfo: {
+            id: string;
+            brand?: string;
+            model?: string;
+            serialNumber?: string;
+          };
+          newInventoryId?: string;
+          newDeviceInfo: { [key: string]: unknown } | null | undefined;
+          replacementReason: string;
+          notes?: string;
+        } = {
           oldDeviceId,
           oldDeviceInfo: {
             id: oldDevice.id,
@@ -352,7 +371,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
             serialNumber: oldDevice.serialNumber || oldDevice.serialNumberLeft || oldDevice.serialNumberRight || undefined
           },
           newInventoryId: newInventoryId,
-          newDeviceInfo: newDeviceInfo,
+          newDeviceInfo: newDeviceInfo as { [key: string]: unknown } | null | undefined,
           replacementReason: reason,
           notes: notes
         };
@@ -362,10 +381,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
           partyId: party.id,
           data: payload
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         // Surface backend error to user and abort replace flow
         console.error('Error creating replacement on server:', e);
-        const msg = e.response?.data?.error || e.response?.data?.msg || e.response?.data?.message || e.message || 'Replacement failed';
+        const error = e as { response?: { data?: { error?: string; msg?: string; message?: string } }; message?: string };
+        const msg = error.response?.data?.error || error.response?.data?.msg || error.response?.data?.message || error.message || 'Replacement failed';
         throw new Error(msg);
       }
 
@@ -373,7 +393,20 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       await deleteDevice(oldDeviceId);
 
       // Add new device (from inventory or manual)
-      await handleAssignDevice({ inventoryId: newInventoryId, reason, ...newDeviceInfo });
+      // Create a complete DeviceAssignment object with all required fields
+      const newDeviceData = newDeviceInfo as Record<string, unknown> || {};
+      const assignmentData: DeviceAssignment = {
+        deviceId: newInventoryId || '',
+        partyId: party.id || '',
+        assignedDate: new Date().toISOString().split('T')[0],
+        assignedBy: '',
+        status: 'assigned',
+        ear: (newDeviceData.ear as DeviceAssignment['ear']) || 'both',
+        reason: reason as DeviceAssignment['reason'],
+        inventoryId: newInventoryId,
+        ...newDeviceData
+      };
+      await handleAssignDevice(assignmentData);
 
       setError(null);
     } catch (err) {

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/complaint_management.py
+# hypothesis_version: 6.150.1
+
+[100, 365, '/admin/complaints', '/process-fbl', '/stats', 'Complaint ID', 'Complaint timestamp', 'Current page', 'Email address', 'Email log ID', 'FBL provider', 'FBL_PARSE_FAILED', 'Filter by days ago', 'Items per page', 'List of complaints', 'Page number', 'Process FBL report', 'Total count', 'admin', 'admin.emails.manage', 'admin.emails.view', 'code', 'complaint_id', 'complaint_type', 'count', 'getComplaintStats', 'listComplaints', 'message', 'processFBLReport', 'provider', 'recipient', 'unknown']

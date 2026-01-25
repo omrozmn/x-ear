@@ -1,7 +1,8 @@
 from models.base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 from datetime import datetime
 
-class IntegrationConfig(BaseModel):
+class IntegrationConfig(BaseModel, TenantScopedMixin):
     """Platform-level integration configuration"""
     __tablename__ = 'integration_configs'
     
@@ -15,7 +16,7 @@ class IntegrationConfig(BaseModel):
     integration_type = db.Column(db.String(50), nullable=False)  # 'vatan_sms', 'birfatura', etc.
     config_key = db.Column(db.String(100), nullable=False)
     config_value = db.Column(db.Text)
-    tenant_id = db.Column(db.String(50))  # NULL for platform-level
+    # tenant_id is now inherited from TenantScopedMixin
     is_active = db.Column(db.Boolean, default=True)
     
     # Metadata

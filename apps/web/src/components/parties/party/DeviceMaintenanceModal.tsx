@@ -59,7 +59,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
     setErrors({});
   }, [device, open]);
 
-  const handleInputChange = (field: keyof DeviceMaintenanceData, value: any) => {
+  const handleInputChange = (field: keyof DeviceMaintenanceData, value: DeviceMaintenanceData[typeof field]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,

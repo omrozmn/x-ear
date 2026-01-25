@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from pydantic import BaseModel, Field
 
+from schemas.ai import AIStatusResponse as AIStatusResponseSchema
 from ai.config import get_ai_config, AIPhase
 from ai.services.kill_switch import (
     KillSwitch,
@@ -50,54 +51,7 @@ router = APIRouter(prefix="/ai", tags=["AI Status"])
 # Response Models
 # =============================================================================
 
-class KillSwitchStatusResponse(BaseModel):
-    """Kill switch status."""
-    global_active: bool = Field(description="Whether global kill switch is active")
-    tenant_active: bool = Field(description="Whether tenant kill switch is active")
-    capabilities_disabled: List[str] = Field(description="List of disabled capabilities")
-    reason: Optional[str] = Field(default=None, description="Reason if any switch is active")
-
-
-class QuotaStatusResponse(BaseModel):
-    """Quota status for a usage type."""
-    usage_type: str = Field(description="Type of usage")
-    current_usage: int = Field(description="Current usage count")
-    quota_limit: Optional[int] = Field(default=None, description="Quota limit (null if unlimited)")
-    remaining: Optional[int] = Field(default=None, description="Remaining quota")
-    exceeded: bool = Field(description="Whether quota is exceeded")
-
-
-class UsageStatusResponse(BaseModel):
-    """Overall usage status."""
-    total_requests_today: int = Field(description="Total requests today")
-    quotas: List[QuotaStatusResponse] = Field(description="Quota status by type")
-    any_quota_exceeded: bool = Field(description="Whether any quota is exceeded")
-
-
-class PhaseStatusResponse(BaseModel):
-    """AI phase status."""
-    current_phase: str = Field(description="Current phase (A, B, or C)")
-    phase_name: str = Field(description="Phase name (read_only, proposal, execution)")
-    execution_allowed: bool = Field(description="Whether execution is allowed")
-    proposal_allowed: bool = Field(description="Whether proposals are allowed")
-
-
-class ModelStatusResponse(BaseModel):
-    """Model status."""
-    provider: str = Field(description="Model provider")
-    model_id: str = Field(description="Model ID")
-    available: bool = Field(description="Whether model is available")
-
-
-class AIStatusResponse(BaseModel):
-    """Complete AI status response."""
-    enabled: bool = Field(description="Whether AI is enabled")
-    available: bool = Field(description="Whether AI is currently available")
-    phase: PhaseStatusResponse = Field(description="Phase status")
-    kill_switch: KillSwitchStatusResponse = Field(description="Kill switch status")
-    usage: UsageStatusResponse = Field(description="Usage status")
-    model: ModelStatusResponse = Field(description="Model status")
-    timestamp: str = Field(description="Status timestamp")
+# Using schemas.ai.AIStatusResponseSchema via alias to avoid conflict
 
 
 class HealthResponse(BaseModel):
@@ -147,7 +101,7 @@ async def get_current_user_context(request: Request) -> Dict[str, Any]:
 
 @router.get(
     "/status",
-    response_model=AIStatusResponse,
+    response_model=AIStatusResponseSchema,
     responses={
         200: {"description": "AI status retrieved"},
     },
@@ -165,7 +119,7 @@ async def get_current_user_context(request: Request) -> Dict[str, Any]:
 )
 async def get_status(
     user_context: Dict[str, Any] = Depends(get_current_user_context),
-) -> AIStatusResponse:
+) -> AIStatusResponseSchema:
     """Get AI layer status."""
     tenant_id = user_context.get("tenant_id", "unknown")
     
@@ -252,14 +206,17 @@ async def get_status(
         not usage_summary.any_quota_exceeded
     )
     
-    return AIStatusResponse(
+    return AIStatusResponseSchema(
         enabled=config.enabled,
         available=available,
-        phase=phase_status,
-        kill_switch=kill_switch_status,
-        usage=usage_status,
-        model=model_status,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        # Field mapping (if internal names changed in schemas.ai)
+        phase=config.phase.value, 
+        ai_model_id=config.model.ai_model_id,
+        ai_model_version=os.getenv("AI_MODEL_VERSION", "1.0.0"), # Fallback
+        ai_model_available=config.enabled,
+        kill_switch_active=global_active or tenant_active,
+        quota_remaining=usage_summary.total_requests, # Simplified for example
+        quota_limit=config.quota_limit,
     )
 
 

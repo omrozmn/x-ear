@@ -32,8 +32,8 @@ export const BulkSerialUpload: React.FC<BulkSerialUploadProps> = ({
             complete: (results) => {
               const serials = results.data
                 .flat()
-                .filter((item: any) => item && typeof item === 'string' && item.trim())
-                .map((item: any) => item.toString().trim());
+                .filter((item: unknown): item is string => typeof item === 'string' && item.trim().length > 0)
+                .map((item) => item.trim());
               
               setSerialNumbers([...new Set(serials)]); // Remove duplicates
             },

@@ -1,5 +1,6 @@
 # User and Activity Models
 from .base import db, BaseModel, gen_id, JSONMixin
+from .mixins import TenantScopedMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 
@@ -9,7 +10,7 @@ user_branches = db.Table('user_branches',
     db.Column('branch_id', db.String(50), db.ForeignKey('branches.id'), primary_key=True)
 )
 
-class User(BaseModel):
+class User(BaseModel, TenantScopedMixin):
     __tablename__ = 'users'
 
     # Primary key with auto-generated default
@@ -19,7 +20,7 @@ class User(BaseModel):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)  # Every user MUST belong to a tenant
+    phone = db.Column(db.String(20), unique=True, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     
     # User details
@@ -75,7 +76,7 @@ class User(BaseModel):
         user_dict.update(base_dict)
         return user_dict
 
-class ActivityLog(BaseModel, JSONMixin):
+class ActivityLog(BaseModel, TenantScopedMixin, JSONMixin):
     """
     Activity Log model for tracking user actions across the platform.
     
@@ -90,8 +91,7 @@ class ActivityLog(BaseModel, JSONMixin):
     # Primary key with auto-generated default
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("log"))
     
-    # Multi-tenant support
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=True, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True)
     
     # User tracking

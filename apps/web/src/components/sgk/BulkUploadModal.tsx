@@ -7,7 +7,7 @@ interface BulkUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUploadStart: () => void;
-  onUploadComplete: (results: any[]) => void;
+  onUploadComplete: (results: Array<{ success: boolean; filename: string; error?: string }>) => void;
 }
 
 const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
@@ -62,8 +62,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     setFiles(prev => [...prev, ...uniqueFiles]);
   }, [files]);
 
-  const handleFileUploadChange = useCallback((uploadedFiles: any[]) => {
-    const fileObjects = uploadedFiles.map(f => f.file || f);
+  const handleFileUploadChange = useCallback((uploadedFiles: Array<{ file?: File } | File>) => {
+    const fileObjects = uploadedFiles.map(f => (f as { file?: File }).file || (f as File));
     handleFileSelect(fileObjects);
   }, [handleFileSelect]);
 

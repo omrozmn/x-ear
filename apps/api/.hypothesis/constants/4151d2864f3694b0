@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/authorization.py
+# hypothesis_version: 6.150.3
+
+[401, 403, 'Unauthorized', 'admin', 'app_id', 'effective_role', 'error', 'is_impersonating', 'role', 'role_permissions', 'success', 'super_admin', 'tenant_admin']

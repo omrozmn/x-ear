@@ -24,7 +24,7 @@ interface BulkAction {
 interface CSVImportData {
   file: File | null;
   mapping: Record<string, string>;
-  preview: any[];
+  preview: Record<string, unknown>[];
   errors: string[];
 }
 
@@ -81,7 +81,6 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
   onRefresh
 }) => {
   const { success, error, warning } = useToastHelpers();
-  const [_activeAction, setActiveAction] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // CSV Import State
@@ -114,8 +113,6 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
   const deleteModal = useModal();
 
   const handleActionClick = useCallback((actionId: string) => {
-    setActiveAction(actionId);
-
     switch (actionId) {
       case 'export-csv':
         exportModal.openModal();
@@ -180,7 +177,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
       success(`${selectedParties.length} hasta verisi CSV formatında dışa aktarıldı`);
       exportModal.closeModal();
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('CSV export error:', err);
       error('CSV dışa aktarma sırasında hata oluştu');
     } finally {
@@ -232,7 +229,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
         errors: []
       });
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('CSV import error:', err);
       error('CSV içe aktarma sırasında hata oluştu');
     } finally {

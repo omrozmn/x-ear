@@ -5,7 +5,7 @@ import { usePartyFilters } from '@/hooks/party/usePartyFilters'
 interface SavedView {
   id: string
   name: string
-  filters: any
+  filters: Record<string, unknown>
   isDefault?: boolean
   createdAt: string
 }

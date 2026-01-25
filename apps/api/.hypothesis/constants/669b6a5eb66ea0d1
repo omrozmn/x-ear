@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/spam_filter_service.py
+# hypothesis_version: 6.150.1
+
+[0.1, '!', '<[^>]+>', '<a\\s+href=', 'CRITICAL', 'HIGH', 'High link density', 'LOW', 'MEDIUM', 'Subject is ALL CAPS', 'acele et', 'act now', 'bonus', 'cash', 'casino', 'cialis', 'click here', 'congratulations', 'diet', 'earn cash', 'evden çalış', 'free money', 'gambling', 'gelir', 'ikramiye', 'income', 'jackpot', 'kazanan', 'kumar', 'limited time', 'lose weight', 'lottery', 'make money', 'medication', 'miracle', 'nakit', 'para kazan', 'pharmacy', 'pills', 'piyango', 'prize', 'risk_level', 'should_reject', 'spam_score', 'sınırlı süre', 'tebrikler', 'tıkla', 'urgent', 'viagra', 'warnings', 'weight loss', 'winner', 'work from home', 'ödül', 'ücretsiz para']

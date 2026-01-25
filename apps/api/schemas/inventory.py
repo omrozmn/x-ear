@@ -22,7 +22,7 @@ class InventoryItemBase(AppBaseModel):
     # Pricing
     price: float = 0.0
     cost: float = 0.0
-    kdv_rate: float = Field(18.0, alias="vatRate") # Primary field
+    kdv_rate: float = Field(20.0, alias="vatRate") # Primary field
     price_includes_kdv: bool = Field(False, alias="priceIncludesKdv")
     cost_includes_kdv: bool = Field(False, alias="costIncludesKdv")
     
@@ -62,9 +62,15 @@ class InventoryItemRead(InventoryItemBase, IDMixin, TimestampMixin):
     @field_validator('features', 'available_serials', mode='before')
     @classmethod
     def ensure_list(cls, v):
-        """Convert None to empty list"""
+        """Convert None to empty list or parse JSON string to list"""
         if v is None:
             return []
+        if isinstance(v, str) and v.startswith('['):
+            import json
+            try:
+                return json.loads(v)
+            except:
+                return [v]
         return v
     kdv: Optional[float] = None # Alias for vatRate
     
@@ -87,7 +93,7 @@ class InventoryItemRead(InventoryItemBase, IDMixin, TimestampMixin):
         # Compute vat_included_price
         if not self.vat_included_price or self.vat_included_price == 0.0:
             price = self.price or 0.0
-            rate = self.kdv_rate or 18.0
+            rate = self.kdv_rate or 20.0
             includes = self.price_includes_kdv
             
             if includes:

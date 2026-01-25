@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/inventory.py
+# hypothesis_version: 6.150.3
+
+[0.0, 18.0, 100.0, '[', 'adet', 'after', 'availableInventory', 'availableSerials', 'available_serials', 'before', 'branchId', 'costIncludesKdv', 'direction', 'ear', 'features', 'hearing_aid', 'inventoryId', 'kdv', 'kdv_rate', 'lowStock', 'movementType', 'onTrial', 'outOfStock', 'partyId', 'partyName', 'priceIncludesKdv', 'priceRange', 'reorderLevel', 'serialNumber', 'stockCode', 'tenantId', 'totalInventory', 'totalItems', 'totalPages', 'totalValue', 'transactionId', 'usedInventory', 'userId', 'vatIncludedPrice', 'vatRate']

@@ -14,6 +14,11 @@ import { SupplierAutocomplete } from '../../pages/inventory/components/SupplierA
 import { CategoryAutocomplete } from '../../pages/inventory/components/CategoryAutocomplete';
 import { BrandAutocomplete } from '../../pages/inventory/components/BrandAutocomplete';
 import { SerialNumberModal } from './SerialNumberModal';
+import {
+  INVENTORY_KDV_RATE,
+  INVENTORY_PRICE_KDV_INCLUDED,
+  INVENTORY_COST_KDV_INCLUDED
+} from '../../constants/storage-keys';
 
 interface InventoryFormProps {
   item?: InventoryItem;
@@ -57,7 +62,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
   // KDV and calculated fields - Load from localStorage
   const [kdvRate, setKdvRate] = useState<number>(() => {
-    const saved = localStorage.getItem('inventory_kdv_rate');
+    const saved = localStorage.getItem(INVENTORY_KDV_RATE);
     return saved ? parseFloat(saved) : 20;
   });
   // Computed values exposed for potential future display
@@ -68,11 +73,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
   // KDV Dahil checkboxes - Load from localStorage
   const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('inventory_price_kdv_included');
+    const saved = localStorage.getItem(INVENTORY_PRICE_KDV_INCLUDED);
     return saved === 'true';
   });
   const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('inventory_cost_kdv_included');
+    const saved = localStorage.getItem(INVENTORY_COST_KDV_INCLUDED);
     return saved === 'true';
   });
 
@@ -112,15 +117,15 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
   // Save KDV preferences to localStorage
   useEffect(() => {
-    localStorage.setItem('inventory_kdv_rate', kdvRate.toString());
+    localStorage.setItem(INVENTORY_KDV_RATE, kdvRate.toString());
   }, [kdvRate]);
 
   useEffect(() => {
-    localStorage.setItem('inventory_price_kdv_included', isPriceKdvIncluded.toString());
+    localStorage.setItem(INVENTORY_PRICE_KDV_INCLUDED, isPriceKdvIncluded.toString());
   }, [isPriceKdvIncluded]);
 
   useEffect(() => {
-    localStorage.setItem('inventory_cost_kdv_included', isCostKdvIncluded.toString());
+    localStorage.setItem(INVENTORY_COST_KDV_INCLUDED, isCostKdvIncluded.toString());
   }, [isCostKdvIncluded]);
 
   // Calculate KDV and total inventory value automatically

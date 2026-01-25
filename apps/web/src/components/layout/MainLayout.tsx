@@ -22,7 +22,9 @@ import {
   LogOut,
   ChevronDown,
   MessageSquare,
-  CreditCard
+  CreditCard,
+  Search,
+  Command
 } from 'lucide-react';
 import { useAuthStore, AuthStateUser } from '../../stores/authStore';
 import { DebugRoleSwitcher } from './DebugRoleSwitcher';
@@ -38,6 +40,14 @@ import { ComposerOverlay } from '../../components/ai/ComposerOverlay';
 import { useComposerStore } from '../../stores/composerStore';
 import { useAIStatus, useAIContextSync } from '../../ai/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { 
+  SIDEBAR_COLLAPSED, 
+  JWT_TOKEN, 
+  AUTH_TOKEN, 
+  REFRESH_TOKEN, 
+  PHASE_A_BANNER_DISMISSED,
+  AUTH_STORAGE_PERSIST
+} from '../../constants/storage-keys';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -131,7 +141,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const saved = localStorage.getItem('sidebarCollapsed');
+    const saved = localStorage.getItem(SIDEBAR_COLLAPSED);
     return saved ? JSON.parse(saved) : false;
   });
 
@@ -139,7 +149,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
+    localStorage.setItem(SIDEBAR_COLLAPSED, JSON.stringify(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
   // Removed direct DOM manipulation for dark mode as ThemeProvider handles it.
@@ -319,10 +329,35 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       )}>
         {/* Header */}
         <header className="sticky top-0 z-[999] px-8 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="flex justify-between items-center">
-            <h1 className="m-0 text-2xl font-semibold text-gray-800 dark:text-white">
+          <div className="flex justify-between items-center gap-4">
+            <h1 className="m-0 text-2xl font-semibold text-gray-800 dark:text-white whitespace-nowrap">
               Dashboard
             </h1>
+
+            {/* AI Composer Trigger - Centered Search Bar */}
+            <AIFeatureWrapper hideWhenUnavailable showLoading={false}>
+              <div className="hidden md:flex flex-1 max-w-xl mx-4">
+                <div
+                  onClick={toggleOpen}
+                  className={cn(
+                    "w-full flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer transition-colors border",
+                    "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
+                    "hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
+                  )}
+                >
+                  <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                    <Search size={18} />
+                    <Bot size={18} className="text-blue-500" />
+                    <span className="text-sm">AI ile arama yap veya işlem başlat...</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-white dark:bg-gray-800 px-1.5 font-mono text-[10px] font-medium text-gray-500 dark:text-gray-400 opacity-100">
+                      <span className="text-xs">⌘</span>K
+                    </kbd>
+                  </div>
+                </div>
+              </div>
+            </AIFeatureWrapper>
 
             <div className="flex items-center gap-4">
               {/* Dark Mode Toggle */}
@@ -387,7 +422,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       <span>Profil</span>
                     </Link>
                     <Link
-                      to={"/settings" as any}
+                      to={"/settings" as unknown as "/"}
                       onClick={() => setShowUserDropdown(false)}
                       className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-gray-100 dark:border-gray-700"
                     >
@@ -401,17 +436,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           logout();
                         } catch (e) {
                           try {
-                            localStorage.removeItem('token');
-                            localStorage.removeItem('createAuthRefresh');
-                            localStorage.removeItem('auth_token');
-                            localStorage.removeItem('refresh_token');
-                            localStorage.removeItem('x-ear.auth.token@v1');
+                            localStorage.removeItem(JWT_TOKEN);
+                            localStorage.removeItem(AUTH_STORAGE_PERSIST);
+                            localStorage.removeItem(AUTH_TOKEN);
+                            localStorage.removeItem(REFRESH_TOKEN);
                             delete window.__AUTH_TOKEN__;
                           } catch {
                             // Ignore localStorage errors during logout
                           }
                         }
-                        navigate({ to: '/login' as any });
+                        navigate({ to: '/login' as unknown as '/' });
                       }}
                       className="flex items-center w-full px-4 py-3 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 transition-colors h-auto"
                       variant='ghost'>
@@ -449,7 +483,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           {/* Dismissable per session, reappears on new session */}
           <PhaseABanner
             className="mb-4"
-            storageKey="main-layout-phase-a-dismissed"
+            storageKey={PHASE_A_BANNER_DISMISSED}
           />
 
           {children}

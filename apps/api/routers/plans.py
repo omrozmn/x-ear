@@ -35,7 +35,11 @@ def get_plans(db: Session = Depends(get_db)):
             plan_dict = plan_data.model_dump(by_alias=True)
             # Filter features if they are a list of dicts
             if isinstance(plan_dict.get('features'), list):
-                plan_dict['features'] = [f for f in plan_dict['features'] if f.get('is_visible', True)]
+                # Ensure each element is a dict before calling .get()
+                plan_dict['features'] = [
+                    f for f in plan_dict['features'] 
+                    if not isinstance(f, dict) or f.get('is_visible', True)
+                ]
             results.append(plan_dict)
         
         return ResponseEnvelope(data=results)

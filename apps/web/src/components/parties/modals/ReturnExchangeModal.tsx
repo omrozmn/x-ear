@@ -23,22 +23,12 @@ import {
 } from 'lucide-react';
 import { Party } from '../../../types/party';
 import { updateSale } from '@/api/client/sales.client';
-import type { SaleUpdate, SaleRead } from '@/api/generated/schemas';
+import type { SaleUpdate, SaleRead, InventoryItemRead } from '@/api/generated/schemas';
 import { useInventory } from '../../../hooks/useInventory';
 import { useFuzzySearch } from '../../../hooks/useFuzzySearch';
 
-interface LocalInventoryItem {
-  id?: string;
-  name: string;
-  brand?: any;
-  model?: any;
-  category?: any;
-  barcode?: any;
-  serialNumber?: any;
-  price?: number;
-  stock?: number;
-  [key: string]: any;
-}
+// Use InventoryItemRead directly from generated schemas
+type LocalInventoryItem = InventoryItemRead;
 
 /* 
 // Local types for API compatibility
@@ -279,9 +269,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       // Update replacement status
       // setReplacementStatus('invoice_created');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Return invoice creation error:', error);
-      setGibError(error.response?.data?.error || 'İade faturası oluşturulurken hata oluştu');
+      const errorMessage = error instanceof Error && 'response' in error 
+        ? (error as { response?: { data?: { error?: string } } }).response?.data?.error 
+        : undefined;
+      setGibError(errorMessage || 'İade faturası oluşturulurken hata oluştu');
     } finally {
       setGibLoading(false);
     }
@@ -332,9 +325,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       // Update replacement status
       // setReplacementStatus('completed');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('GIB send error:', error);
-      setGibError(error.response?.data?.error || 'GİB gönderimi sırasında hata oluştu');
+      const errorMessage = error instanceof Error && 'response' in error 
+        ? (error as { response?: { data?: { error?: string } } }).response?.data?.error 
+        : undefined;
+      setGibError(errorMessage || 'GİB gönderimi sırasında hata oluştu');
       setReturnInvoice(prev => prev ? {
         ...prev,
         gibErrorMessage: 'GİB gönderimi başarısız'
@@ -397,9 +393,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
         onClose();
       }, 2000);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Return/Exchange error:', err);
-      setError(err.response?.data?.error || 'İade/değişim işlemi sırasında bir hata oluştu.');
+      const errorMessage = err instanceof Error && 'response' in err 
+        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error 
+        : undefined;
+      setError(errorMessage || 'İade/değişim işlemi sırasında bir hata oluştu.');
     } finally {
       setIsLoading(false);
     }
@@ -581,10 +580,10 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                             <p className="font-medium text-green-900">{selectedNewProduct.name}</p>
                             <p className="text-sm text-green-700">
                               {selectedNewProduct.brand} - {selectedNewProduct.model}
-                              {selectedNewProduct.serialNumber && ` (SN: ${selectedNewProduct.serialNumber})`}
+                              {selectedNewProduct.barcode && ` (Barkod: ${selectedNewProduct.barcode})`}
                             </p>
                             <p className="text-sm text-green-700 font-medium">
-                              Stok: {selectedNewProduct.stock || 0} adet - {formatCurrency(selectedNewProduct.price || 0)}
+                              Stok: {selectedNewProduct.availableInventory || 0} adet - {formatCurrency(selectedNewProduct.price || 0)}
                             </p>
                           </div>
                           <Button

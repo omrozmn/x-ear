@@ -2,12 +2,10 @@ import React from 'react';
 import { Phone, MessageCircle, ChevronRight, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
-
-// Define minimal Party interface if importing fails, or use 'any' temporarily to avoid blockers
-// Ideally import { Party } from '@/types/party';
+import type { PartyRead } from '@/api/generated/schemas';
 
 interface PartyCardProps {
-    party: any; // Using any to be safe for now, will refine
+    party: PartyRead;
     onClick: () => void;
     onCall?: (phone: string) => void;
     onMessage?: (phone: string) => void;
@@ -70,13 +68,13 @@ export const PartyCard: React.FC<PartyCardProps> = ({
                 {party.phone && (
                     <>
                         <button
-                            onClick={(e) => handleAction(e, () => onCall?.(party.phone))}
+                            onClick={(e) => handleAction(e, () => onCall?.(party.phone as string))}
                             className="p-2 bg-green-50 text-green-600 rounded-full active:bg-green-100"
                         >
                             <Phone className="h-5 w-5" />
                         </button>
                         <button
-                            onClick={(e) => handleAction(e, () => onMessage?.(party.phone))}
+                            onClick={(e) => handleAction(e, () => onMessage?.(party.phone as string))}
                             className="p-2 bg-blue-50 text-blue-600 rounded-full active:bg-blue-100"
                         >
                             <MessageCircle className="h-5 w-5" />

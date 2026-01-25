@@ -4,9 +4,10 @@ Handles incoming and outgoing invoices from/to suppliers via BirFatura integrati
 """
 from datetime import datetime
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 
 
-class PurchaseInvoice(BaseModel):
+class PurchaseInvoice(BaseModel, TenantScopedMixin):
     """
     Purchase Invoice model represents invoices from suppliers or return invoices to suppliers.
     Integrated with BirFatura e-Invoice system.
@@ -15,7 +16,7 @@ class PurchaseInvoice(BaseModel):
     __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # BirFatura API information
@@ -60,7 +61,6 @@ class PurchaseInvoice(BaseModel):
         """Convert purchase invoice to dictionary"""
         return {
             'id': self.id,
-            'tenantId': self.tenant_id,
             'branchId': self.branch_id,
             'birfaturaUuid': self.birfatura_uuid,
             'invoiceNumber': self.invoice_number,
@@ -85,7 +85,7 @@ class PurchaseInvoice(BaseModel):
         }
 
 
-class PurchaseInvoiceItem(BaseModel):
+class PurchaseInvoiceItem(BaseModel, TenantScopedMixin):
     """
     Purchase Invoice Item model represents line items in a purchase invoice.
     """
@@ -94,7 +94,7 @@ class PurchaseInvoiceItem(BaseModel):
     
     id = db.Column(db.Integer, primary_key=True)
     purchase_invoice_id = db.Column(db.Integer, db.ForeignKey('purchase_invoices.id'), nullable=False, index=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Product information
@@ -108,7 +108,7 @@ class PurchaseInvoiceItem(BaseModel):
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)  # Tax excluded
     
     # Tax
-    tax_rate = db.Column(db.Integer, default=18)  # Tax rate (%)
+    tax_rate = db.Column(db.Integer, default=20)  # Tax rate (%)
     tax_amount = db.Column(db.Numeric(10, 2))
     
     # Total (Tax included)
@@ -128,7 +128,6 @@ class PurchaseInvoiceItem(BaseModel):
         """Convert item to dictionary"""
         return {
             'id': self.id,
-            'tenantId': self.tenant_id,
             'branchId': self.branch_id,
             'purchaseInvoiceId': self.purchase_invoice_id,
             'productCode': self.product_code,
@@ -144,7 +143,7 @@ class PurchaseInvoiceItem(BaseModel):
         }
 
 
-class SuggestedSupplier(BaseModel):
+class SuggestedSupplier(BaseModel, TenantScopedMixin):
     """
     Suggested Supplier model represents potential suppliers identified from incoming invoices
     that don't match existing suppliers in the system.
@@ -153,7 +152,7 @@ class SuggestedSupplier(BaseModel):
     __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Basic information (extracted from invoices)
@@ -187,7 +186,6 @@ class SuggestedSupplier(BaseModel):
         """Convert suggested supplier to dictionary"""
         return {
             'id': self.id,
-            'tenantId': self.tenant_id,
             'branchId': self.branch_id,
             'companyName': self.company_name,
             'taxNumber': self.tax_number,

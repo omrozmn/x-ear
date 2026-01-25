@@ -21,6 +21,7 @@ import { useParams } from '@tanstack/react-router';
 import { useAuthStore } from '../../stores/authStore';
 import { useAISessionStore } from '../stores/aiSessionStore';
 import { useAIRuntimeStore } from '../stores/aiRuntimeStore';
+import { CURRENT_TENANT_ID } from '../../constants/storage-keys';
 
 // =============================================================================
 // Types
@@ -47,7 +48,7 @@ function extractTenantId(user: { effectiveTenantId?: string } | null): string | 
   }
 
   try {
-    const storedTenantId = localStorage.getItem('current_tenant_id');
+    const storedTenantId = localStorage.getItem(CURRENT_TENANT_ID);
     if (storedTenantId) {
       return storedTenantId;
     }

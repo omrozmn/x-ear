@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/unsubscribe_service.py
+# hypothesis_version: 6.150.1
+
+['ip_address', 'recipient', 'scenario', 'tenant_id', 'unsub']

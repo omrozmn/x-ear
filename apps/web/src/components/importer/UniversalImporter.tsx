@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { Modal, Button, Select, Alert } from '@x-ear/ui-web';
+import { Modal, Button, Select, Alert, Input } from '@x-ear/ui-web';
 import { z } from 'zod';
 
 import { apiClient } from '../../api/orval-mutator';
@@ -44,7 +44,7 @@ const readFile = async (file: File): Promise<{ headers: string[]; rows: RowData[
   const name = file.name.toLowerCase();
   if (name.endsWith('.csv') || name.endsWith('.txt')) {
     const text = await file.text();
-    const parsed = Papa.parse<Record<string, any>>(text, { header: true, skipEmptyLines: true });
+    const parsed = Papa.parse<Record<string, string | number | boolean>>(text, { header: true, skipEmptyLines: true });
     const headers = parsed.meta.fields || [];
     return { headers, rows: parsed.data };
   }
@@ -54,12 +54,12 @@ const readFile = async (file: File): Promise<{ headers: string[]; rows: RowData[
   const wb = XLSX.read(ab, { type: 'array' });
   const sheetName = wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
-  const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false });
+  const aoa = XLSX.utils.sheet_to_json<(string | number | boolean)[]>(ws, { header: 1, raw: false });
   if (!aoa || aoa.length === 0) return { headers: [], rows: [] };
-  const headers = (aoa[0] as unknown[]).map(h => String(h || '').trim());
+  const headers = aoa[0].map(h => String(h || '').trim());
   const rows: RowData[] = [];
   for (let i = 1; i < aoa.length; i++) {
-    const rowArr = aoa[i] as unknown[];
+    const rowArr = aoa[i];
     const obj: RowData = {};
     for (let j = 0; j < headers.length; j++) {
       obj[headers[j]] = rowArr[j];
@@ -276,7 +276,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
             <div className="w-40 text-sm text-gray-700">{f.label}</div>
             <Select
               value={mapping[f.key] || ''}
-              onChange={(e) => setMapping(prev => ({ ...prev, [f.key]: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMapping(prev => ({ ...prev, [f.key]: e.target.value }))}
               options={[{ label: '(eşleştirilmedi)', value: '' }, ...fileHeaders.map(h => ({ label: h, value: h }))]}
             />
           </div>
@@ -313,7 +313,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         {step === 1 && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Dosya Seç (.csv, .xlsx)</label>
-            <input type="file" accept=".csv,.txt,.xlsx,.xls" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+            <Input type="file" accept=".csv,.txt,.xlsx,.xls" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFile(e.target.files?.[0] || null)} />
             <div className="text-sm text-gray-600 mt-2">{file ? `Seçili dosya: ${file.name} — ${fileRows.length} satır bulundu` : 'Lütfen bir CSV veya XLSX dosyası seçin'}</div>
           </div>
         )}

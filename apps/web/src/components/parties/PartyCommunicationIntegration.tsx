@@ -3,7 +3,7 @@
  * Integrates party management with communication center
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   MessageSquare,
   Mail,
@@ -110,14 +110,21 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
 
   const { success, error } = useToastHelpers();
 
-  // Party'a ait mesajları filtrele
-  const partyMessages = useMemo(() => {
-    const allMessages = getMessages();
-    return allMessages.filter(message =>
-      message.partyId === party.id ||
-      message.recipient === party.phone ||
-      message.recipient === party.email
-    );
+  // State for party messages
+  const [partyMessages, setPartyMessages] = useState<CommunicationMessage[]>([]);
+
+  // Load party messages
+  useEffect(() => {
+    const loadPartyMessages = async () => {
+      const allMessages = await getMessages();
+      const filtered = allMessages.filter((message: CommunicationMessage) =>
+        message.partyId === party.id ||
+        message.recipient === party.phone ||
+        message.recipient === party.email
+      );
+      setPartyMessages(filtered);
+    };
+    loadPartyMessages();
   }, [getMessages, party.id, party.phone, party.email]);
 
   // Filtrelenmiş mesajlar

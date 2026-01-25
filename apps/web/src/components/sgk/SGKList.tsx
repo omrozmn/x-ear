@@ -8,7 +8,7 @@ export default function SGKList() {
   return (
     <div>
       <div className="mb-4 flex gap-2 items-center">
-        <Input placeholder="Hasta ID girin" value={partyId} onChange={(e: any) => setPartyId(e.target.value)} />
+        <Input placeholder="Hasta ID girin" value={partyId} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPartyId(e.target.value)} />
         <Button onClick={() => { /* noop for now */ }}>Ara</Button>
       </div>
 

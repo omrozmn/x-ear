@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useCreateAdminAuthLogin } from '@/lib/api-client';
-import { tokenManager } from '@/lib/api';
+import { tokenManager, adminApiInstance } from '@/lib/api';
 import { LoginCredentials, AdminUser as TypeAdminUser } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -66,6 +66,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         initAuth();
     }, [token, clearAuth, _hasHydrated]);
 
+    const silentRefresh = async () => {
+        const refreshToken = tokenManager.getRefreshToken();
+        if (!refreshToken || !isAuthenticated) return;
+
+        try {
+            // BUG-010: Silent refresh using the backend refresh endpoint
+            // We use adminApiInstance directly to provide the custom Authorization header
+            const response = await adminApiInstance.post('/api/auth/refresh', {}, {
+                headers: {
+                    'Authorization': `Bearer ${refreshToken}`
+                }
+            }) as any;
+
+            const newToken = response.data?.access_token || response.data?.data?.access_token;
+            if (newToken) {
+                if (user) setAuth(user, newToken);
+                tokenManager.setToken(newToken);
+                console.log('[Auth] Token silently refreshed');
+            }
+        } catch (error: any) {
+            console.error('[Auth] Silent refresh failed:', error);
+            // If refresh fails with 401/403, our refresh token is likely invalid/expired
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                logout();
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            // Refresh every 30 minutes (access tokens usually last ~8h, but refresh often to be safe)
+            const interval = setInterval(silentRefresh, 30 * 60 * 1000);
+            return () => clearInterval(interval);
+        }
+    }, [isAuthenticated]);
+
     const login = async (credentials: LoginCredentials & { mfa_token?: string }) => {
         try {
             const response = await adminLogin({ data: credentials }) as any;
@@ -77,11 +113,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 return { requires_mfa: true };
             }
 
-            // After envelope unwrapping, response is directly {token, user, requires_mfa}
+            // After envelope unwrapping, response is directly {token, user, refresh_token, requires_mfa}
             if (response.token && response.user) {
-                const { token, user } = response;
+                const { token, user, refreshToken, refresh_token } = response;
+                const rToken = refreshToken || refresh_token;
+
                 setAuth(user as unknown as TypeAdminUser, token);
                 tokenManager.setToken(token);
+                if (rToken) tokenManager.setRefreshToken(rToken);
+
                 toast.success('Giriş başarılı');
                 return { user: user as unknown as TypeAdminUser, token };
             }

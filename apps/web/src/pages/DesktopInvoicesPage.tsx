@@ -6,7 +6,7 @@ import UniversalImporter from '../components/importer/UniversalImporter';
 import { useToastHelpers } from '@x-ear/ui-web';
 import invoicesSchema from '../components/importer/schemas/invoices';
 import { FieldDef } from '../components/importer/UniversalImporter';
-import { Invoice, InvoiceFilters, InvoiceTemplate } from '../types/invoice';
+import { Invoice, InvoiceFilters, InvoiceTemplate, GovernmentInvoiceData } from '../types/invoice';
 
 import { InvoiceModal } from '../components/modals/InvoiceModal';
 // import { InvoiceTemplateManager } from '../components/templates/InvoiceTemplateManager'; // Not used - templates view disabled
@@ -20,6 +20,11 @@ interface InvoiceManagementPageProps {
   className?: string;
 }
 
+interface InvoiceStatsType {
+  total: number;
+  [key: string]: unknown;
+}
+
 interface PageState {
   invoices: Invoice[];
   selectedInvoices: Invoice[];
@@ -27,7 +32,7 @@ interface PageState {
   error: string | null;
   filters: InvoiceFilters;
   currentView: 'list' | 'templates' | 'bulk' | 'xml';
-  stats: any;
+  stats: InvoiceStatsType;
   statsLoading: boolean;
 }
 
@@ -36,6 +41,12 @@ interface ModalState {
   mode: 'create' | 'quick' | 'template';
   invoice: Invoice | null;
   template: InvoiceTemplate | null;
+}
+
+interface ImportResult {
+  created: number;
+  updated: number;
+  errors: Array<{ message: string; line?: number }>;
 }
 
 export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
@@ -51,7 +62,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     error: null,
     filters: {},
     currentView: 'list',
-    stats: {},
+    stats: { total: 0 },
     statsLoading: true
   });
 
@@ -65,7 +76,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const [governmentModalOpen, setGovernmentModalOpen] = useState(false);
   const [currentInvoiceForGov] = useState<Invoice | null>(null);
   const [isImporterOpen, setIsImporterOpen] = useState(false);
-  const [importResult, setImportResult] = useState<null | { created: number; updated: number; errors: any[] }>(null);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
   // Load invoices and stats on component mount
   useEffect(() => {
@@ -102,7 +113,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     setState(prev => ({ ...prev, statsLoading: true }));
     try {
       const stats = await invoiceService.getInvoiceStats();
-      setState(prev => ({ ...prev, stats, statsLoading: false }));
+      const statsWithTotal: InvoiceStatsType = { ...stats as unknown as Record<string, unknown>, total: (stats as unknown as Record<string, unknown>).total as number || 0 };
+      setState(prev => ({ ...prev, stats: statsWithTotal, statsLoading: false }));
     } catch (error) {
       console.error('Error loading stats:', error);
       setState(prev => ({ ...prev, statsLoading: false }));
@@ -247,9 +259,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     setState(prev => ({ ...prev, filters: {} }));
   }, []);
 
-
-
-  const handleSaveGovernmentData = useCallback((data: any) => {
+  const handleSaveGovernmentData = useCallback((data: GovernmentInvoiceData) => {
     console.log('Government invoice data:', data);
     // TODO: Save to invoice
     if (currentInvoiceForGov) {
@@ -267,7 +277,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     });
   }, []);
 
-  const handleModalSubmit = useCallback(async (data: any) => {
+  const handleModalSubmit = useCallback(async (data: Invoice | Record<string, unknown>) => {
     try {
       // Handle form submission based on mode
       switch (modalState.mode) {
@@ -425,24 +435,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           mode={modalState.mode}
           onClose={closeModal}
           onSuccess={handleModalSubmit}
-          initialData={modalState.invoice ? {
-            partyName: modalState.invoice.partyName,
-            invoiceNumber: modalState.invoice.invoiceNumber,
-            type: modalState.invoice.type,
-            issueDate: modalState.invoice.issueDate,
-            dueDate: modalState.invoice.dueDate,
-            items: modalState.invoice.items?.map(item => ({
-              name: item.name,
-              description: item.description,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              discount: item.discount,
-              discountType: item.discountType,
-              taxRate: item.taxRate
-            })) || [],
-            notes: modalState.invoice.notes,
-            billingAddress: modalState.invoice.billingAddress
-          } : undefined}
+          initialData={modalState.invoice || null}
         />
       )}
 
@@ -478,13 +471,18 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         uploadEndpoint={'/api/invoices/bulk_upload'}
         modalTitle={'Toplu Fatura Yükleme'}
         sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
-        onComplete={(res) => {
-          if (res.errors && res.errors.length > 0) {
-            showError(`Fatura import tamamlandı — Hatalı satır: ${res.errors.length}`);
+        onComplete={(res: Record<string, unknown>) => {
+          const result: ImportResult = {
+            created: (res.created as number) || 0,
+            updated: (res.updated as number) || 0,
+            errors: (res.errors as Array<{ message: string; line?: number }>) || []
+          };
+          if (result.errors && result.errors.length > 0) {
+            showError(`Fatura import tamamlandı — Hatalı satır: ${result.errors.length}`);
           } else {
-            showSuccess(`Fatura import tamamlandı — Oluşturulan: ${res.created}`);
+            showSuccess(`Fatura import tamamlandı — Oluşturulan: ${result.created}`);
           }
-          setImportResult(res);
+          setImportResult(result);
           loadInvoices();
           setIsImporterOpen(false);
         }}

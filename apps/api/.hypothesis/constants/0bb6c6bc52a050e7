@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/decorators.py
+# hypothesis_version: 6.150.1
+
+[401, 403, ':', 'Forbidden', 'Unauthorized', 'X-Tenant-ID', 'appointment', 'appointments', 'branches', 'cash_records', 'create', 'dashboard', 'delete', 'device', 'devices', 'edit', 'error', 'es', 'ies', 'inventory', 'invoice', 'invoices', 'message', 'patient', 'patients', 'payments', 'read', 's', 'sale', 'sales', 'supplier', 'suppliers', 'tenant_id', 'users', 'view', 'write', 'y']

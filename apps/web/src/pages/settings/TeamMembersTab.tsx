@@ -98,8 +98,8 @@ export function TeamMembersTab() {
                 refetch();
                 setInviteData({ username: '', password: '', email: '', firstName: '', lastName: '', role: 'user', branchId: '' });
             },
-            onError: (err: any) => {
-                setInviteError(err?.response?.data?.error || 'Davet gonderilemedi.');
+            onError: (err: unknown) => {
+                setInviteError((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Davet gonderilemedi.');
             }
         }
     });
@@ -188,9 +188,9 @@ export function TeamMembersTab() {
             setIsEditModalOpen(false);
             toast.success('Kullanici basariyla guncellendi.');
             refetch();
-        } catch (err: any) {
-            setUpdateError(err.message || 'Guncelleme sirasinda bir hata olustu.');
-            toast.error(err.message || 'Guncelleme sirasinda bir hata olustu.');
+        } catch (err: unknown) {
+            setUpdateError((err as Error).message || 'Guncelleme sirasinda bir hata olustu.');
+            toast.error((err as Error).message || 'Guncelleme sirasinda bir hata olustu.');
         } finally {
             setIsUpdating(false);
         }
@@ -218,9 +218,10 @@ export function TeamMembersTab() {
                     // Invalidate and refetch to ensure UI updates
                     queryClient.invalidateQueries({ queryKey: getListTenantUsersQueryKey() });
                     await refetch();
-                } catch (err: any) {
+                } catch (err: unknown) {
                     console.error('[TeamMembersTab] Toggle status error:', err);
-                    toast.error(err?.response?.data?.error?.message || err?.message || 'Durum guncellenemedi.');
+                    const errorObj = err as { response?: { data?: { error?: { message?: string } } }; message?: string };
+                    toast.error(errorObj?.response?.data?.error?.message || errorObj?.message || 'Durum guncellenemedi.');
                 }
                 setConfirmationModal(prev => ({ ...prev, isOpen: false }));
             }

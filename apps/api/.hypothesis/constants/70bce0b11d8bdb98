@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/deliverability.py
+# hypothesis_version: 6.150.1
+
+[168, '/alerts/check', '/deliverability', '/metrics', '/snapshot', '/trend', 'Current metrics', 'Daily metrics data', 'Number of bounces', 'Number of days', 'Tenant ID', 'Time window in hours', 'admin', 'alerts', 'metrics', 'should_alert', 'snapshot_id', 'tenant_id']

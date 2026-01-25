@@ -1,8 +1,9 @@
 # Promissory Note Model
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 import sqlalchemy as sa
 
-class PromissoryNote(BaseModel):
+class PromissoryNote(BaseModel, TenantScopedMixin):
     """Promissory Note (Senet) model for tracking promissory notes"""
     __tablename__ = "promissory_notes"
     
@@ -12,7 +13,7 @@ class PromissoryNote(BaseModel):
     # Foreign keys
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'))  # Optional: link to sale
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Note details
     note_number = db.Column(db.Integer, nullable=False)  # Note number in series (1, 2, 3...)

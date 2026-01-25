@@ -3,13 +3,15 @@ import { useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { getCurrencyRestrictions } from '../../utils/currencyManager';
 
+import { SpecialTaxBaseData, ReturnInvoiceDetailsData } from '../../types/invoice';
+
 interface InvoiceTypeSectionProps {
   invoiceType: string;
   scenario?: string;
   currency?: string;
-  specialTaxBase?: any;
-  returnInvoiceDetails?: any;
-  onChange: (field: string, value: any) => void;
+  specialTaxBase?: SpecialTaxBaseData;
+  returnInvoiceDetails?: ReturnInvoiceDetailsData;
+  onChange: (field: string, value: unknown) => void;
   onSGKModeChange?: (isSGK: boolean) => void;
 }
 

@@ -8,6 +8,13 @@ from models.user import User
 from models.inventory import InventoryItem
 from services.party_service import PartyService
 from middleware.unified_access import UnifiedAccess, require_access
+from ai.capability_registry import (
+    get_all_capabilities, 
+    filter_capabilities_by_permissions, 
+    filter_capabilities_by_phase,
+    Capability
+)
+from ai.tools import get_tool_registry, ToolExecutionMode
 
 from schemas.ai_composer import (
     AutocompleteResponse, 
@@ -74,8 +81,8 @@ def autocomplete(
                 id=str(item.id),
                 type="device",
                 label=f"{item.brand} {item.model}",
-                sub_label=f"SN: {item.serial_number}",
-                metadata={"quantity": item.quantity}
+                sub_label=f"Code: {item.stock_code or item.barcode}",
+                metadata={"quantity": item.available_inventory}
             ))
 
     # --- 2. Action Suggestions ---

@@ -180,7 +180,14 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   const isImpersonating = user?.isImpersonating === true;
 
   // Response has { success, data: { roles: [...] } }
-  const roles = (rolesResponse as unknown as { data?: { roles?: any[] } })?.data?.roles || [];
+  interface RoleData {
+    id: string;
+    name: string;
+    code: string;
+    displayName?: string;
+    permissionCount?: number;
+  }
+  const roles = (rolesResponse as unknown as { data?: { roles?: RoleData[] } })?.data?.roles || [];
   const currentRole = user?.role || 'unknown';
 
   const handleRoleSwitch = (roleName: string) => {

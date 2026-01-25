@@ -38,7 +38,7 @@ export const UTSPage: React.FC = () => {
           <div>Yükleniyor...</div>
         ) : (
           <ul>
-            {(data || []).map((r: any) => (
+            {((data || []) as Array<{ id: string; status: string }>).map((r) => (
               <li key={r.id}>{r.id} - {r.status}</li>
             ))}
           </ul>

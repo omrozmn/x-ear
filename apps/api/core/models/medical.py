@@ -1,8 +1,9 @@
 # Medical Models (formerly Patient medical models)
 from .base import db, BaseModel, gen_id, JSONMixin
+from .mixins import TenantScopedMixin
 import json
 
-class PatientNote(BaseModel, JSONMixin):
+class PatientNote(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'patient_notes'
 
     # Primary key with auto-generated default
@@ -12,7 +13,6 @@ class PatientNote(BaseModel, JSONMixin):
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     author_id = db.Column(db.String(50), nullable=False)
     appointment_id = db.Column(db.String(50))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Note details
     note_type = db.Column(db.String(20), default='clinical')
@@ -37,7 +37,7 @@ class PatientNote(BaseModel, JSONMixin):
         note_dict.update(base_dict)
         return note_dict
 
-class EReceipt(BaseModel, JSONMixin):
+class EReceipt(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'ereceipts'
 
     # Primary key with auto-generated default
@@ -45,7 +45,7 @@ class EReceipt(BaseModel, JSONMixin):
     
     # Foreign keys
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Receipt details
     receipt_number = db.Column(db.String(50), unique=True, nullable=False)
@@ -96,7 +96,7 @@ class EReceipt(BaseModel, JSONMixin):
         ereceipt_dict.update(base_dict)
         return ereceipt_dict
 
-class HearingTest(BaseModel, JSONMixin):
+class HearingTest(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'hearing_tests'
 
     # Primary key with auto-generated default
@@ -104,7 +104,7 @@ class HearingTest(BaseModel, JSONMixin):
     
     # Foreign keys
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Test details
     test_date = db.Column(db.DateTime, nullable=False)

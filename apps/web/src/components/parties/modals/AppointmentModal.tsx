@@ -23,7 +23,7 @@ interface AppointmentModalProps {
   onClose: () => void;
   party: Party;
   appointment?: Appointment | null;
-  onAppointmentSave: (appointmentData: any) => void;
+  onAppointmentSave: (appointmentData: Record<string, unknown>) => void;
   loading?: boolean;
 }
 
@@ -145,7 +145,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing

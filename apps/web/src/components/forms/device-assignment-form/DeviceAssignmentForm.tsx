@@ -237,7 +237,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Barkod: {selectedDevice.barcode || '-'}</p>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   // Show device search in edit mode
@@ -246,10 +246,11 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                     searchSection.style.display = searchSection.style.display === 'none' ? 'block' : 'none';
                   }
                 }}
+                variant="ghost"
                 className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
               >
                 Farklı Cihaz Seç
-              </button>
+              </Button>
             </div>
           </div>
         )}

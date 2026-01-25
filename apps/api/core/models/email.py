@@ -7,10 +7,11 @@ This module contains the database models for the SMTP Email Integration feature:
 - EmailTemplate: Email templates with Jinja2 syntax (Phase 2 - admin-editable)
 """
 from .base import db, BaseModel, gen_id, now_utc
+from .mixins import TenantScopedMixin
 from sqlalchemy import Index
 
 
-class TenantSMTPConfig(BaseModel):
+class TenantSMTPConfig(BaseModel, TenantScopedMixin):
     """Tenant-specific SMTP configuration with encrypted password.
 
     Stores SMTP server settings for each tenant. Passwords are encrypted
@@ -20,7 +21,7 @@ class TenantSMTPConfig(BaseModel):
     __tablename__ = "tenant_smtp_config"
 
     id = db.Column(db.String(36), primary_key=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey("tenants.id"), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
 
     # SMTP server configuration
     host = db.Column(db.String(255), nullable=False)
@@ -61,7 +62,7 @@ class TenantSMTPConfig(BaseModel):
         return f"<TenantSMTPConfig {self.id} tenant={self.tenant_id} host={self.host}>"
 
 
-class SMTPEmailLog(BaseModel):
+class SMTPEmailLog(BaseModel, TenantScopedMixin):
     """Audit log for SMTP email sending attempts.
 
     Records every SMTP email send attempt with status, error details, and retry count.
@@ -73,7 +74,7 @@ class SMTPEmailLog(BaseModel):
     __tablename__ = "smtp_email_log"
 
     id = db.Column(db.String(36), primary_key=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey("tenants.id"), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
 
     # Email details
     recipient = db.Column(db.String(255), nullable=False, index=True)

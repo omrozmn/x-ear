@@ -5,7 +5,8 @@ import {
     SuggestedSupplier,
     useAcceptSuggestedSupplier,
     useRejectSuggestedSupplier,
-    useSupplierInvoices
+    useSupplierInvoices,
+    PurchaseInvoice
 } from '../../hooks/useSupplierInvoices';
 
 interface SuggestedSuppliersListProps {
@@ -46,14 +47,14 @@ function InvoiceListSection({ supplierId }: { supplierId: number }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {invoices.map((inv: any) => (
+                        {invoices.map((inv: PurchaseInvoice) => (
                             <tr key={inv.id} className="border-t">
                                 <td className="px-4 py-2 text-sm">{inv.invoiceNumber}</td>
-                                <td className="px-4 py-2 text-sm">{new Date(inv.invoiceDate).toLocaleDateString('tr-TR')}</td>
+                                <td className="px-4 py-2 text-sm">{new Date(inv.date).toLocaleDateString('tr-TR')}</td>
                                 <td className="px-4 py-2 text-sm text-right">
                                     {new Intl.NumberFormat('tr-TR', {
                                         style: 'currency',
-                                        currency: inv.currency || 'TRY'
+                                        currency: 'TRY'
                                     }).format(inv.totalAmount)}
                                 </td>
                             </tr>

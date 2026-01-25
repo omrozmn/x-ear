@@ -42,7 +42,7 @@ interface InvoiceFormState {
   totalDiscount: number;
   issueTime: string;
   notes?: string;
-  items: (InvoiceItem | Record<string, any>)[]; // Ideally strict typed but depends on product lines
+  items: (InvoiceItem | Record<string, unknown>)[]; // Ideally strict typed but depends on product lines
 
   // Nested structure objects
   scenarioData?: InvoiceScenarioData;
@@ -154,7 +154,7 @@ export function InvoiceFormExtended({
     customerName: invoice?.customerName || '',
     subtotal: invoice?.subtotal ?? 0,
     totalAmount: invoice?.totalAmount ?? invoice?.grandTotal ?? 0,
-    items: (invoice?.items || (initialData as any)?.items || []) as InvoiceItem[]
+    items: (invoice?.items || (initialData as InvoiceFormState | undefined)?.items || []) as InvoiceItem[]
   });
 
   // Modal states
@@ -264,18 +264,18 @@ export function InvoiceFormExtended({
   }, []);
 
   // Normalize items to ProductLinesSection shape, prefer extendedData.items then initialData then invoice
-  const normalizedItems = (extendedData.items ?? initialData?.items ?? invoice?.items ?? []).map((item: any, idx: number) => ({
-    id: item.id || `line-${idx}`,
-    name: item.name || item.description || item.description || `Ürün ${idx + 1}`,
-    description: item.description || '',
-    quantity: Number(item.quantity ?? 1),
-    unit: item.unit || 'Adet',
-    unitPrice: Number(item.unitPrice ?? item.price ?? 0),
-    discount: item.discount ?? 0,
-    discountType: item.discountType ?? 'percentage',
-    taxRate: Number(item.taxRate ?? item.kdv ?? item.vatRate ?? 18),
-    taxAmount: Number(item.taxAmount ?? 0),
-    total: Number(item.total ?? item.totalPrice ?? ((Number(item.unitPrice ?? 0) * Number(item.quantity ?? 1)) || 0))
+  const normalizedItems = (extendedData.items ?? initialData?.items ?? invoice?.items ?? []).map((item: InvoiceItem | Record<string, unknown>, idx: number) => ({
+    id: typeof item === 'object' && item !== null && 'id' in item ? String(item.id) : `line-${idx}`,
+    name: typeof item === 'object' && item !== null && 'name' in item ? String(item.name || '') : (typeof item === 'object' && item !== null && 'description' in item ? String(item.description || '') : `Ürün ${idx + 1}`),
+    description: typeof item === 'object' && item !== null && 'description' in item ? String(item.description || '') : '',
+    quantity: typeof item === 'object' && item !== null && 'quantity' in item ? Number(item.quantity ?? 1) : 1,
+    unit: typeof item === 'object' && item !== null && 'unit' in item ? String(item.unit || 'Adet') : 'Adet',
+    unitPrice: typeof item === 'object' && item !== null && 'unitPrice' in item ? Number(item.unitPrice ?? (typeof item === 'object' && 'price' in item ? item.price : 0)) : 0,
+    discount: typeof item === 'object' && item !== null && 'discount' in item ? Number(item.discount ?? 0) : 0,
+    discountType: (typeof item === 'object' && item !== null && 'discountType' in item ? (item.discountType ?? 'percentage') : 'percentage') as 'amount' | 'percentage',
+    taxRate: typeof item === 'object' && item !== null && 'taxRate' in item ? Number(item.taxRate ?? (typeof item === 'object' && 'kdv' in item ? item.kdv : (typeof item === 'object' && 'vatRate' in item ? item.vatRate : 18))) : 18,
+    taxAmount: typeof item === 'object' && item !== null && 'taxAmount' in item ? Number(item.taxAmount ?? 0) : 0,
+    total: typeof item === 'object' && item !== null && 'total' in item ? Number(item.total ?? (typeof item === 'object' && 'totalPrice' in item ? item.totalPrice : ((typeof item === 'object' && 'unitPrice' in item ? Number(item.unitPrice ?? 0) : 0) * (typeof item === 'object' && 'quantity' in item ? Number(item.quantity ?? 1) : 1)))) : 0
   }));
 
   return (
@@ -385,7 +385,7 @@ export function InvoiceFormExtended({
                             </div>
                             <div className="p-4">
                               <GovernmentSection
-                                formData={(extendedData.governmentData || {}) as unknown as any}
+                                formData={(extendedData.governmentData || {}) as never}
                                 onChange={(field, value) => {
                                   const currentGov = extendedData.governmentData || {};
                                   handleExtendedFieldChange('governmentData', { ...currentGov, [field]: value });
@@ -423,7 +423,7 @@ export function InvoiceFormExtended({
                             <div>
                               <ExportDetailsCard
                                 value={extendedData.exportDetails}
-                                onChange={(data: any) => handleExtendedFieldChange('exportDetails', data)}
+                                onChange={(data: ExportDetailsData) => handleExtendedFieldChange('exportDetails', data)}
                               />
                             </div>
                           </div>
@@ -654,15 +654,15 @@ export function InvoiceFormExtended({
                 currency: typeof extendedData.currency === 'string' ? extendedData.currency : 'TRY',
                 exchangeRate: typeof extendedData.exchangeRate === 'number' ? extendedData.exchangeRate : 1,
                 notes: resolveNotes(extendedData.notes),
-                items: Array.isArray(extendedData.items) ? extendedData.items.map((item: any) => ({
-                  name: typeof item.name === 'string' ? item.name : '',
-                  description: typeof item.description === 'string' ? item.description : undefined,
-                  quantity: Number(item.quantity || 1),
-                  unitPrice: Number(item.unitPrice || 0),
-                  discount: Number(item.discount || 0),
-                  discountType: (typeof item.discountType === 'string' && (item.discountType === 'percentage' || item.discountType === 'amount')) ? item.discountType : 'percentage',
-                  taxRate: Number(item.taxRate || 0),
-                  unit: typeof item.unit === 'string' ? item.unit : 'ADET'
+                items: Array.isArray(extendedData.items) ? extendedData.items.map((item: InvoiceItem | Record<string, unknown>) => ({
+                  name: typeof item === 'object' && item !== null && 'name' in item && typeof item.name === 'string' ? item.name : '',
+                  description: typeof item === 'object' && item !== null && 'description' in item && typeof item.description === 'string' ? item.description : undefined,
+                  quantity: typeof item === 'object' && item !== null && 'quantity' in item ? Number(item.quantity || 1) : 1,
+                  unitPrice: typeof item === 'object' && item !== null && 'unitPrice' in item ? Number(item.unitPrice || 0) : 0,
+                  discount: typeof item === 'object' && item !== null && 'discount' in item ? Number(item.discount || 0) : 0,
+                  discountType: typeof item === 'object' && item !== null && 'discountType' in item && typeof item.discountType === 'string' && (item.discountType === 'percentage' || item.discountType === 'amount') ? item.discountType : 'percentage',
+                  taxRate: typeof item === 'object' && item !== null && 'taxRate' in item ? Number(item.taxRate || 0) : 0,
+                  unit: typeof item === 'object' && item !== null && 'unit' in item && typeof item.unit === 'string' ? item.unit : 'ADET'
                 })) : [],
                 subtotal: Number(extendedData.subtotal || 0),
                 totalAmount: Number(extendedData.totalAmount || extendedData.grandTotal || 0),
@@ -678,7 +678,7 @@ export function InvoiceFormExtended({
           <WithholdingModal
             isOpen={withholdingModalOpen}
             onClose={() => setWithholdingModalOpen(false)}
-            onSave={handleSaveWithholding as any}
+            onSave={handleSaveWithholding as never}
             itemIndex={currentItemIndex}
           />
 

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/deliverability_metrics_service.py
+# hypothesis_version: 6.150.1
+
+[0.0, 0.1, 5.0, 95.0, 100.0, 100, 'CRITICAL', 'HIGH', 'HIGH_BOUNCE_RATE', 'HIGH_SPAM_RATE', 'LOW_DELIVERABILITY', 'alerts', 'bounce_count', 'bounce_rate', 'calculated_at', 'data', 'date', 'days', 'deliv_metric', 'deliverability_rate', 'message', 'metrics', 'sent', 'sent_count', 'severity', 'should_alert', 'snapshot_id', 'spam_count', 'spam_rate', 'tenant_id', 'threshold', 'time_window_hours', 'type', 'value']

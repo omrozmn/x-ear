@@ -46,7 +46,10 @@ const AdminPatientsPage: React.FC = () => {
                         className="block w-full rounded-md border-gray-300 pl-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         placeholder="Ad, Soyad, TC veya Telefon ile ara..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                        }}
                     />
                 </div>
             </div>

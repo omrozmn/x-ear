@@ -1,12 +1,13 @@
 # Scan Queue Model (formerly Patient scan queue)
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 from datetime import datetime
 
-class ScanQueue(BaseModel):
+class ScanQueue(BaseModel, TenantScopedMixin):
     __tablename__ = 'scan_queue'
     
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('scan'))
-    tenant_id = db.Column(db.String(50), nullable=False)
+    # tenant_id is now inherited from TenantScopedMixin
     party_id = db.Column(db.String(50), nullable=False)
     
     status = db.Column(db.String(20), default='pending') # pending, processing, completed, failed

@@ -81,15 +81,22 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 
     // Handle different response structures
     if (brandsData) {
-      const responseData = brandsData as Record<string, any>;
+      const responseData = brandsData as Record<string, unknown>;
       if (Array.isArray(responseData)) {
-        apiBrands = responseData;
+        apiBrands = responseData.map((b: unknown) => typeof b === 'string' ? b : String(b));
       } else if (responseData?.data) {
         const innerData = responseData.data;
         if (Array.isArray(innerData)) {
-          apiBrands = innerData.map((b: any) => typeof b === 'string' ? b : b.name || b.brandName || String(b));
-        } else if (innerData?.brands && Array.isArray(innerData.brands)) {
-          apiBrands = innerData.brands;
+          apiBrands = innerData.map((b: unknown) => {
+            if (typeof b === 'string') return b;
+            const brandObj = b as Record<string, unknown>;
+            return String(brandObj.name || brandObj.brandName || b);
+          });
+        } else if (typeof innerData === 'object' && innerData !== null) {
+          const innerDataObj = innerData as Record<string, unknown>;
+          if (innerDataObj.brands && Array.isArray(innerDataObj.brands)) {
+            apiBrands = innerDataObj.brands.map((b: unknown) => String(b));
+          }
         }
       }
     }
@@ -226,7 +233,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
       // Try to create via API
       await createBrandMutation.mutateAsync({ data: { name: newBrand } });
       console.log('✅ New brand created via API:', newBrand);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn('Failed to create brand via API, adding locally:', error);
       // Add to local list as fallback
       setLocalBrands(prev => [...new Set([...prev, newBrand])].sort());

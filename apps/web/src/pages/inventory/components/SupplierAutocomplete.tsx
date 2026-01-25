@@ -116,22 +116,28 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     // 1. Add API Results
      
     if (suppliersData) {
-      let supplierArray: any[] = [];
+      let supplierArray: unknown[] = [];
       // Handle response wrapping (using unwrapPaginated logic concepts)
       if (Array.isArray(suppliersData)) {
         supplierArray = suppliersData;
-      } else if ((suppliersData as Record<string, any>)?.data) {
-        const innerData = (suppliersData as Record<string, any>).data;
+      } else if ((suppliersData as Record<string, unknown>)?.data) {
+        const innerData = (suppliersData as Record<string, unknown>).data;
         if (Array.isArray(innerData)) {
           supplierArray = innerData;
-        } else if (innerData?.data && Array.isArray(innerData.data)) {
-          // Double wrapped
-          supplierArray = innerData.data;
+        } else if (typeof innerData === 'object' && innerData !== null) {
+          const innerDataObj = innerData as Record<string, unknown>;
+          if (innerDataObj.data && Array.isArray(innerDataObj.data)) {
+            // Double wrapped
+            supplierArray = innerDataObj.data;
+          }
         }
       }
 
       const apiNames = supplierArray
-        .map((s: any) => s.companyName || s.company_name || s.name)
+        .map((s: unknown) => {
+          const supplier = s as Record<string, unknown>;
+          return String(supplier.companyName || supplier.company_name || supplier.name || '');
+        })
         .filter(Boolean);
       suppliers.push(...apiNames);
     }
@@ -247,8 +253,8 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
 
       // Invalidate React Query cache to refetch suppliers
       queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });
-    } catch (error: any) {
-      if (error.response?.status === 409) {
+    } catch (error: unknown) {
+      if ((error as { response?: { status?: number } }).response?.status === 409) {
         console.log('Supplier already exists, using existing:', newSupplier);
         // Invalidate cache
         queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });

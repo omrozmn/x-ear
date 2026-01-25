@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SaleRead } from '../../../api/generated/schemas/saleRead';
+import type { DeviceAssignmentRead } from '../../../api/generated/schemas/deviceAssignmentRead';
 import {
   MoreVertical,
   Eye,
@@ -26,9 +27,8 @@ interface SalesTableViewProps {
 
 // Extended interface to handle runtime properties missing from schema
 interface ExtendedSaleRead extends SaleRead {
-  devices?: any[];
+  // SaleRead already has devices, just need to add missing properties
   remainingAmount?: number;
-  invoice?: any;
 }
 
 export const SalesTableView: React.FC<SalesTableViewProps> = ({
@@ -72,9 +72,9 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
     return (
       <div className="space-y-1">
-        {devices.slice(0, 2).map((device: any, index: number) => (
+        {devices.slice(0, 2).map((device, index: number) => (
           <div key={index} className="text-sm">
-            <div className="font-medium text-gray-900">{device.name || device.deviceName}</div>
+            <div className="font-medium text-gray-900">{device.deviceName || 'Cihaz'}</div>
             <div className="text-xs text-gray-500">{device.brand} {device.model}</div>
           </div>
         ))}
@@ -91,10 +91,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       return <span className="text-gray-500">-</span>;
     }
 
-    const device: any = devices[0];
+    const device = devices[0];
     return (
       <div className="text-sm">
-        {device.barcode && <div className="font-mono">{device.barcode}</div>}
+        {device.serialNumber && <div className="font-mono">{device.serialNumber}</div>}
         {device.serialNumber && <div className="text-xs text-gray-500">{device.serialNumber}</div>}
       </div>
     );

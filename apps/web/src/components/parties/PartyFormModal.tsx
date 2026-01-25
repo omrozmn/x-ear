@@ -61,9 +61,9 @@ export function PartyFormModal({
   const { data: branchesData } = useListBranches();
   const branches = unwrapArray<BranchRead>(branchesData);
 
-  const getSafeAddressProperty = (address: any, prop: string): unknown => {
+  const getSafeAddressProperty = (address: unknown, prop: string): unknown => {
     if (address && typeof address === 'object' && prop in address) {
-      return address[prop];
+      return (address as Record<string, unknown>)[prop];
     }
     return undefined;
   };
@@ -270,13 +270,16 @@ export function PartyFormModal({
       if (result) {
         onClose();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Form submission error:', error);
 
       // Check error structure comprehensively
-      const status = error?.response?.status || error?.status;
-      const errorData = error?.response?.data || error?.data;
-      const errorMsg = errorData?.error || errorData?.message || error?.message;
+      const errorObj = error as Record<string, unknown>;
+      const response = errorObj?.response as Record<string, unknown> | undefined;
+      const status = response?.status || errorObj?.status;
+      const errorData = response?.data || errorObj?.data;
+      const errorDataObj = errorData as Record<string, unknown> | undefined;
+      const errorMsg = errorDataObj?.error || errorDataObj?.message || errorObj?.message;
 
       console.log('Error status:', status);
       console.log('Error message:', errorMsg);

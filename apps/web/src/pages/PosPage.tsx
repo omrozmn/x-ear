@@ -19,12 +19,24 @@ interface InstallmentPayload {
     amount: number;
 }
 
+interface InstallmentOption {
+    installment_count: number;
+    label: string;
+    total: number;
+    installment_amount: number;
+    net_amount: number;
+    gross_amount: number;
+    commission_amount: number;
+    commission_rate: number;
+    monthly_payment: number;
+}
+
 
 export default function PosPage() {
     const [iframeUrl, setIframeUrl] = useState<string | null>(null);
     const [result, setResult] = useState<'success' | 'fail' | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [installmentOptions, setInstallmentOptions] = useState<any[]>([]);
+    const [installmentOptions, setInstallmentOptions] = useState<InstallmentOption[]>([]);
     const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
     const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null);
     const [, setSelectedPartyName] = useState<string>(''); // Value unused, setter used in reset
@@ -50,11 +62,12 @@ export default function PosPage() {
         if (numAmount && numAmount > 0) {
             const payload: InstallmentPayload = { amount: numAmount };
             getInstallments({ data: payload }, {
-                onSuccess: (response: any) => {
-                    const options = response?.data?.options || [];
+                onSuccess: (response: unknown) => {
+                    const responseData = response as { data?: { options?: InstallmentOption[] } };
+                    const options = responseData?.data?.options || [];
                     setInstallmentOptions(options);
                     if (options.length > 0) {
-                        setSelectedInstallment(options[0].count || 1);
+                        setSelectedInstallment(options[0].installment_count || 1);
                     }
                 },
                 onError: () => {
@@ -101,7 +114,7 @@ export default function PosPage() {
         return () => window.removeEventListener('message', handleMessage);
     }, [success]);
 
-    const onSubmit = (data: any) => {
+    const onSubmit = (data: { amount: string; partyName: string; description: string }) => {
         setErrorMessage(null);
         setResult(null);
 
@@ -116,15 +129,17 @@ export default function PosPage() {
         initiatePayment({
             data: payload
         }, {
-            onSuccess: (response: any) => {
-                if (response.data.success && response.data.iframe_url) {
-                    setIframeUrl(response.data.iframe_url);
+            onSuccess: (response: unknown) => {
+                const responseData = response as { data: { success: boolean; iframe_url?: string; error?: string } };
+                if (responseData.data.success && responseData.data.iframe_url) {
+                    setIframeUrl(responseData.data.iframe_url);
                 } else {
-                    setErrorMessage(response.data.error || 'Ödeme başlatılamadı');
+                    setErrorMessage(responseData.data.error || 'Ödeme başlatılamadı');
                 }
             },
-            onError: (err: any) => {
-                setErrorMessage(err.response?.data?.error || err.message || 'Bir hata oluştu');
+            onError: (err: unknown) => {
+                const error = err as { response?: { data?: { error?: string } }; message?: string };
+                setErrorMessage(error.response?.data?.error || error.message || 'Bir hata oluştu');
             }
         });
     };

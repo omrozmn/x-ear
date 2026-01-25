@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from 'react'
 import { useRouterState } from '@tanstack/react-router'
 import { AdminSidebar } from './AdminSidebar'
 import { NotificationCenter } from './NotificationCenter'
+import { Search, Bot, Command } from 'lucide-react'
 import { ComposerOverlay } from '../ai/ComposerOverlay'
 import { useComposerStore } from '../../stores/composerStore'
 
@@ -39,8 +40,28 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex h-screen bg-gray-100">
             <AdminSidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white shadow-sm z-10 h-16 flex items-center justify-between px-6">
-                    <h1 className="text-lg font-semibold text-gray-900">Super Admin Panel</h1>
+                <header className="bg-white shadow-sm z-10 h-16 flex items-center justify-between px-6 gap-4">
+                    <h1 className="text-lg font-semibold text-gray-900 whitespace-nowrap">Super Admin Panel</h1>
+
+                    {/* AI Composer Trigger - Centered Search Bar */}
+                    <div className="hidden md:flex flex-1 max-w-xl mx-4">
+                        <div
+                            onClick={toggleOpen}
+                            className="w-full flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer transition-colors border bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-blue-400"
+                        >
+                            <div className="flex items-center gap-3 text-gray-500">
+                                <Search size={18} />
+                                <Bot size={18} className="text-blue-500" />
+                                <span className="text-sm">AI ile arama yap veya işlem başlat...</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-white px-1.5 font-mono text-[10px] font-medium text-gray-500 opacity-100">
+                                    <span className="text-xs">⌘</span>K
+                                </kbd>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex items-center space-x-4">
                         {/* Add header items like profile dropdown here if needed */}
                         <NotificationCenter />

@@ -1,62 +1,39 @@
-from backend import app
-from models.base import db
-from models.user import User
-from flask_jwt_extended import create_access_token
+import pytest
+import uuid
+from core.models.user import User
+from core.models.app import App
+from jose import jwt
+from datetime import datetime, timedelta
 
+def test_owner_can_delete_but_not_other(client, db_session, auth_headers):
+    suffix = uuid.uuid4().hex[:8]
+    owner = User(id=f"o_{suffix}", username=f"owner_{suffix}", email=f"owner_{suffix}@x.com", role='user', tenant_id='t1', is_active=True)
+    owner.set_password('pass')
+    other = User(id=f"s_{suffix}", username=f"other_{suffix}", email=f"other_{suffix}@x.com", role='user', tenant_id='t1', is_active=True)
+    other.set_password('pass')
+    db_session.add_all([owner, other])
+    db_session.commit()
 
-def ensure_users(session):
-    owner = User.query.filter_by(email='owner@x.test').one_or_none()
-    if not owner:
-        owner = User()
-        owner.username = 'owner'
-        owner.email = 'owner@x.test'
-        owner.set_password('pass')
-        owner.role = 'user'
-        session.add(owner)
-    other = User.query.filter_by(email='other@x.test').one_or_none()
-    if not other:
-        other = User()
-        other.username = 'other'
-        other.email = 'other@x.test'
-        other.set_password('pass')
-        other.role = 'user'
-        session.add(other)
-    admin = User.query.filter_by(role='admin').first()
-    if not admin:
-        admin = User()
-        admin.username = 'admin3'
-        admin.email = 'admin3@x.test'
-        admin.set_password('admin123')
-        admin.role = 'admin'
-        session.add(admin)
-    session.commit()
-    return owner, other, admin
-
-
-def test_owner_can_delete_but_not_other(client):
-    with client.application.app_context():
-        owner, other, admin = ensure_users(db.session)
-        a = App.query.filter_by(slug='owner-delete-app').one_or_none()
-        if not a:
-            a = App(); a.name = 'Owner Delete'; a.slug = 'owner-delete-app'; db.session.add(a); db.session.commit()
-        a.owner_user_id = owner.id
-        db.session.add(a); db.session.commit()
-        a_id = a.id
-        token_owner = create_access_token(identity=owner.id)
-        token_other = create_access_token(identity=other.id)
-        token_admin = create_access_token(identity=admin.id)
+    a = App(id=f"a_{suffix}", name='Owner Delete', slug=f'slug_{suffix}', owner_user_id=owner.id)
+    db_session.add(a)
+    db_session.commit()
+    
+    a_id = a.id
+    
+    def get_token(u):
+        return jwt.encode({'sub': u.id, 'role': u.role, 'tenant_id': u.tenant_id, 'exp': datetime.utcnow() + timedelta(hours=1)}, 'test-secret', algorithm='HS256')
 
     # other cannot delete
-    res = client.delete(f'/api/apps/{a_id}', headers={'Authorization': f'Bearer {token_other}'})
+    res = client.delete(f'/api/apps/{a_id}', headers={'Authorization': f'Bearer {get_token(other)}'})
     assert res.status_code == 403
 
     # owner can delete
-    res2 = client.delete(f'/api/apps/{a_id}', headers={'Authorization': f'Bearer {token_owner}'})
+    res2 = client.delete(f'/api/apps/{a_id}', headers={'Authorization': f'Bearer {get_token(owner)}'})
     assert res2.status_code == 200
 
-    # recreate app and admin can delete
-    with client.application.app_context():
-        a2 = App(); a2.name='tmp'; a2.slug='tmp-delete'; db.session.add(a2); db.session.commit()
-        aid = a2.id
-    res3 = client.delete(f'/api/apps/{aid}', headers={'Authorization': f'Bearer {token_admin}'})
+    # admin can delete
+    a2 = App(id=f"a2_{suffix}", name='tmp', slug=f'tmp_{suffix}')
+    db_session.add(a2)
+    db_session.commit()
+    res3 = client.delete(f'/api/apps/{a2.id}', headers=auth_headers)
     assert res3.status_code == 200

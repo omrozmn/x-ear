@@ -220,23 +220,34 @@ class RequestLogger:
         
         return ai_request
     
-    def get_request(self, request_id: str, tenant_id: str) -> Optional[AIRequest]:
+        return ai_request
+
+    def cleanup_old_requests(self, days: int = 90) -> int:
         """
-        Get an AI request by ID with tenant isolation.
+        Delete AI requests older than specified days, unless they have a legal hold.
+        BUG-009: Implement retention policy.
         
         Args:
-            request_id: Request ID
-            tenant_id: Tenant ID for isolation
+            days: Retention period in days (default: 90)
             
         Returns:
-            AIRequest record, or None if not found or wrong tenant
+            Number of requests deleted
         """
-        ai_request = self.db.query(AIRequest).filter(
-            AIRequest.id == request_id,
-            AIRequest.tenant_id == tenant_id,
-        ).first()
+        from datetime import timedelta
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
         
-        return ai_request
+        # Count and delete requests older than cutoff without legal hold
+        query = self.db.query(AIRequest).filter(
+            AIRequest.created_at < cutoff,
+            AIRequest.legal_hold == False
+        )
+        count = query.delete(synchronize_session=False)
+        self.db.commit()
+        
+        if count > 0:
+            logger.info(f"Audit cleanup: removed {count} requests older than {days} days")
+            
+        return count
 
 
 class EncryptionService:

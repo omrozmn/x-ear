@@ -1,11 +1,12 @@
 # Party Model (formerly Patient)
 from .base import db, BaseModel, gen_id, JSONMixin, now_utc, LowercaseEnum
+from .mixins import TenantScopedMixin
 from .enums import PatientStatus
 from datetime import datetime
 import json
 import sqlalchemy as sa
 
-class Party(BaseModel, JSONMixin):
+class Party(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'parties'
 
     # Primary key with auto-generated default
@@ -41,7 +42,6 @@ class Party(BaseModel, JSONMixin):
     referred_by = db.Column(db.String(100))
     priority_score = db.Column(db.Integer, default=0)
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # JSON fields (stored as Text, accessed via properties)
     tags = db.Column(db.Text)  # JSON string
@@ -79,7 +79,8 @@ class Party(BaseModel, JSONMixin):
     # JSON properties for safe access
     @property
     def tags_json(self):
-        return self.json_load(self.tags)
+        val = self.json_load(self.tags)
+        return val if isinstance(val, list) else []
     
     @tags_json.setter
     def tags_json(self, value):

@@ -55,7 +55,19 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
   const handlePromissoryNoteSubmit = (formData: FormData) => {
     submitPromissoryNote(formData);
     if (onCreatePromissoryNote) {
-      onCreatePromissoryNote(formData as any);
+      // Convert FormData to PromissoryNoteFormData
+      const noteData: {
+        noteNumber: string;
+        amount: number;
+        dueDate: string;
+        notes: string;
+      } = {
+        noteNumber: formData.get('noteNumber') as string || '',
+        amount: Number(formData.get('amount') || 0),
+        dueDate: formData.get('dueDate') as string || '',
+        notes: formData.get('notes') as string || ''
+      };
+      onCreatePromissoryNote(noteData);
     }
   };
 

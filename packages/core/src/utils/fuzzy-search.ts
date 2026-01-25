@@ -87,8 +87,8 @@ export class FuzzySearch<T> {
   getStats() {
     return {
       totalItems: this.originalData.length,
-      searchKeys: this.options.keys,
-      threshold: this.options.threshold,
+      searchKeys: this.options.keys ?? [],
+      threshold: this.options.threshold ?? 0.3,
     };
   }
 }

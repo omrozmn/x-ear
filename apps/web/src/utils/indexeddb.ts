@@ -5,6 +5,8 @@ const DB_VERSION = 1;
 const PARTIES_STORE = 'parties';
 const CACHE_STORE = 'cache';
 const BLOBS_STORE = 'blobs';
+const MESSAGES_STORE = 'messages';
+const TEMPLATES_STORE = 'templates';
 
 interface CacheEntry {
   key: string;
@@ -21,7 +23,7 @@ interface BlobEntry {
   createdAt: number;
 }
 
-class IndexedDBManager {
+export class IndexedDBManager {
   private db: IDBDatabase | null = null;
   private initPromise: Promise<void> | null = null;
 
@@ -62,6 +64,18 @@ class IndexedDBManager {
           const blobs = db.createObjectStore(BLOBS_STORE, { keyPath: 'id' });
           blobs.createIndex('createdAt', 'createdAt', { unique: false });
         }
+
+        // Create messages store
+        if (!db.objectStoreNames.contains(MESSAGES_STORE)) {
+          const messages = db.createObjectStore(MESSAGES_STORE, { keyPath: 'id' });
+          messages.createIndex('partyId', 'partyId', { unique: false });
+          messages.createIndex('createdAt', 'createdAt', { unique: false });
+        }
+
+        // Create templates store
+        if (!db.objectStoreNames.contains(TEMPLATES_STORE)) {
+          db.createObjectStore(TEMPLATES_STORE, { keyPath: 'id' });
+        }
       };
     });
 
@@ -76,6 +90,69 @@ class IndexedDBManager {
       throw new Error('IndexedDB not initialized');
     }
     return this.db;
+  }
+
+  // Generic methods
+  async getAll<T>(storeName: string): Promise<T[]> {
+    const db = await this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async put<T>(storeName: string, item: T): Promise<void> {
+    const db = await this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.put(item);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async delete(storeName: string, id: string): Promise<void> {
+    const db = await this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async clear(storeName: string): Promise<void> {
+    const db = await this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.clear();
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Export store names for external use
+  static readonly STORES = {
+    PARTIES: PARTIES_STORE,
+    CACHE: CACHE_STORE,
+    BLOBS: BLOBS_STORE,
+    MESSAGES: MESSAGES_STORE,
+    TEMPLATES: TEMPLATES_STORE
+  };
+
+  // Static methods for singleton-like usage
+  private static instance: IndexedDBManager | null = null;
+  static getInstance(): IndexedDBManager {
+    if (!IndexedDBManager.instance) {
+      IndexedDBManager.instance = new IndexedDBManager();
+    }
+    return IndexedDBManager.instance;
   }
 
   // Party-specific methods
@@ -304,4 +381,4 @@ class IndexedDBManager {
   }
 }
 
-export const indexedDBManager = new IndexedDBManager();
+export const indexedDBManager = IndexedDBManager.getInstance();

@@ -1,12 +1,13 @@
 from .base import db, BaseModel, gen_id, JSONMixin
+from .mixins import TenantScopedMixin
 from datetime import datetime, timezone
 
-class SMSProviderConfig(BaseModel, JSONMixin):
+class SMSProviderConfig(BaseModel, JSONMixin, TenantScopedMixin):
     """SMS Provider Configuration for a Tenant (VatanSMS)"""
     __tablename__ = 'sms_provider_configs'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smscfg"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, unique=True, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # VatanSMS Credentials
     api_username = db.Column(db.String(100))
@@ -39,7 +40,6 @@ class SMSProviderConfig(BaseModel, JSONMixin):
         return {
             **base,
             'id': self.id,
-            'tenantId': self.tenant_id,
             'apiUsername': self.api_username,
             'documentsEmail': self.documents_email,
             'documents': self.documents_json,
@@ -52,12 +52,12 @@ class SMSProviderConfig(BaseModel, JSONMixin):
 
 
 
-class SMSHeaderRequest(BaseModel, JSONMixin):
+class SMSHeaderRequest(BaseModel, JSONMixin, TenantScopedMixin):
     """SMS Header (Sender ID) Request"""
     __tablename__ = 'sms_header_requests'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smshdr"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     header_text = db.Column(db.String(11), nullable=False) # Max 11 chars
     header_type = db.Column(db.String(20), nullable=False) # company_title, trademark, domain, other
@@ -85,7 +85,6 @@ class SMSHeaderRequest(BaseModel, JSONMixin):
         return {
             **base,
             'id': self.id,
-            'tenantId': self.tenant_id,
             'headerText': self.header_text,
             'headerType': self.header_type,
             'status': self.status,
@@ -121,12 +120,12 @@ class SMSPackage(BaseModel, JSONMixin):
             'isActive': self.is_active
         }
 
-class TenantSMSCredit(BaseModel, JSONMixin):
+class TenantSMSCredit(BaseModel, JSONMixin, TenantScopedMixin):
     """Tenant's SMS Credit Balance"""
     __tablename__ = 'tenant_sms_credits'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smsbal"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, unique=True, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     balance = db.Column(db.Integer, default=0)
     total_purchased = db.Column(db.Integer, default=0)
@@ -137,18 +136,17 @@ class TenantSMSCredit(BaseModel, JSONMixin):
         return {
             **base,
             'id': self.id,
-            'tenantId': self.tenant_id,
             'balance': self.balance,
             'totalPurchased': self.total_purchased,
             'totalUsed': self.total_used
         }
 
-class TargetAudience(BaseModel, JSONMixin):
+class TargetAudience(BaseModel, JSONMixin, TenantScopedMixin):
     """Saved Target Audience Group (e.g. from Excel)"""
     __tablename__ = 'target_audiences'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("aud"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     name = db.Column(db.String(100), nullable=False)
     source_type = db.Column(db.String(20), default='excel') # excel, filter
@@ -173,7 +171,6 @@ class TargetAudience(BaseModel, JSONMixin):
         return {
             **base,
             'id': self.id,
-            'tenantId': self.tenant_id,
             'name': self.name,
             'sourceType': self.source_type,
             'totalRecords': self.total_records,

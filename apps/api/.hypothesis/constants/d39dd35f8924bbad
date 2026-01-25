@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/composer.py
+# hypothesis_version: 6.150.3
+
+[0.9, 200, 404, 1000, '.jpg', '/ai/composer', '/analyze', '/autocomplete', '/execute', '0', 'AI Composer', 'Appointments', 'C', 'Changed', 'Checked', 'Device Management', 'No ROIs found', 'Not found', 'Party Management', 'Sales Operations', 'Simulation', 'ai_analysis', 'batch', 'bbox', 'confidence', 'description', 'device', 'document', 'dry_run', 'entities', 'error', 'evt_analyze_hybrid', 'field', 'file_count', 'general', 'invoice', 'k', 'model', 'name', 'neutral', 'party_id', 'patient', 'quantity', 'qwen2.5-vl+paddleocr', 'rois', 'status', 'success', 'suggestion_count', 'tenant_id', 'text', 'user_id', 'utf-8']

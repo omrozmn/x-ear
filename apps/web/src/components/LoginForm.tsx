@@ -3,13 +3,14 @@ import { useState } from 'react';
 import { Eye, EyeOff, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useTheme } from './theme-provider';
+import { LAST_LOGIN_CREDENTIALS } from '../constants/storage-keys';
 import '../styles/login-animations.css';
 
 export function LoginForm() {
   const { setTheme, theme } = useTheme();
 
   const getInitialCreds = () => {
-    const savedCreds = localStorage.getItem('xear_last_login');
+    const savedCreds = localStorage.getItem(LAST_LOGIN_CREDENTIALS);
     if (savedCreds) {
       try {
         const { username, password } = JSON.parse(savedCreds);
@@ -50,7 +51,7 @@ export function LoginForm() {
 
     try {
       // Son giriş yapılan credentials'ı localStorage'a kaydet
-      localStorage.setItem('xear_last_login', JSON.stringify({ username, password }));
+      localStorage.setItem(LAST_LOGIN_CREDENTIALS, JSON.stringify({ username, password }));
       await login({ username: username.trim(), password });
       // If login successful and no OTP required, redirect
       // If OTP required, state update will trigger re-render showing OTP form

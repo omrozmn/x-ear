@@ -9,6 +9,7 @@ import {
 } from '@x-ear/ui-web';
 import { Plus, RefreshCw, FileText, Eye, CheckCircle, Send, AlertCircle } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
+import { Sale } from '../../types/party/party-communication.types';
 import { ResponseEnvelopeListSaleRead } from '../../api/generated/schemas/responseEnvelopeListSaleRead';
 import { SaleRead } from '../../api/generated/schemas/saleRead';
 // import { PaymentRecordRead } from '../../api/generated/schemas/paymentRecordRead';
@@ -91,8 +92,16 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [sgkCoverageCalculation, setSgkCoverageCalculation] = useState<{
     totalCoverage: number;
     partyPayment: number;
-    deviceCoverage?: any;
-    batteryCoverage?: any;
+    deviceCoverage?: {
+      maxCoverage: number;
+      coveragePercentage: number;
+      remainingEntitlement: number;
+    } | null;
+    batteryCoverage?: {
+      maxCoverage: number;
+      coveragePercentage: number;
+      remainingEntitlement: number;
+    } | null;
     totalCoveragePercentage?: number;
   } | null>(null);
 
@@ -261,7 +270,11 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
 
 
 
-  const _calculateSGKCoverage = (sgkInfo: any) => {
+  const _calculateSGKCoverage = (sgkInfo: { 
+    deviceEntitlement?: { hasEntitlement?: boolean; remainingQuantity?: number }; 
+    batteryEntitlement?: { hasEntitlement?: boolean; remainingQuantity?: number };
+    coveragePercentage?: number 
+  }) => {
     const deviceCoverage = sgkInfo.deviceEntitlement?.hasEntitlement
       ? {
         maxCoverage: 15000,
@@ -729,7 +742,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             isOpen={showCollectionModal}
             onClose={() => setShowCollectionModal(false)}
             party={party}
-            sale={selectedSale as any}
+            sale={selectedSale as unknown as Sale}
             onPaymentCreate={(paymentData: PaymentRecordRead) => {
               console.log('Payment created:', paymentData);
               setShowCollectionModal(false);

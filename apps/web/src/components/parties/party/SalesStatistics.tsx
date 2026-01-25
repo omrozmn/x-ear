@@ -1,8 +1,9 @@
 import React from 'react';
 import { DollarSign, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import type { SaleRead } from '@/api/generated';
 
 interface SalesStatisticsProps {
-  sales: any[];
+  sales: SaleRead[];
   isVisible: boolean;
 }
 
@@ -11,7 +12,7 @@ export const SalesStatistics: React.FC<SalesStatisticsProps> = ({ sales, isVisib
   const totalRevenue = sales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0);
   const totalPaid = sales.reduce((sum, sale) => sum + (sale.paidAmount || 0), 0);
   const totalPending = totalRevenue - totalPaid;
-  const totalSGKSupport = sales.reduce((sum, sale) => sum + (sale.sgkSupport || 0), 0);
+  const totalSGKSupport = sales.reduce((sum, sale) => sum + (sale.sgkCoverage || 0), 0);
 
   // const completedSales = sales.filter(sale => sale.status === 'completed').length;
   // const pendingSales = sales.filter(sale => sale.status === 'pending').length;

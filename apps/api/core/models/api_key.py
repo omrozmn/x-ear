@@ -1,8 +1,9 @@
 # API Key Model
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 import secrets
 
-class ApiKey(BaseModel):
+class ApiKey(BaseModel, TenantScopedMixin):
     __tablename__ = 'api_keys'
 
     id = db.Column(db.String(50), primary_key=True)
@@ -20,7 +21,7 @@ class ApiKey(BaseModel):
     key_hash = db.Column(db.String(255), nullable=False, index=True)
     
     # Ownership
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     created_by = db.Column(db.String(50), db.ForeignKey('users.id'))
     
     # Permissions (scopes)

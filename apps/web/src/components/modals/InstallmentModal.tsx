@@ -3,6 +3,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { RefreshCw, DollarSign, CheckCircle, Clock, AlertCircle, CreditCard } from 'lucide-react';
+import type { SaleRead } from '@/api/generated/schemas';
 
 interface Installment {
   id: string;
@@ -18,7 +19,7 @@ interface Installment {
 interface InstallmentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  sale: any;
+  sale: SaleRead;
   onPayInstallment?: (installmentId: string, amount: number, paymentMethod: string) => Promise<void>;
 }
 
@@ -54,16 +55,26 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
 
       if (sale?.paymentRecords && Array.isArray(sale.paymentRecords)) {
         // Convert payment records to installments format
-        installmentsArray = sale.paymentRecords.map((record: any, index: number) => ({
-          id: record.id || `installment-${index + 1}`,
-          installmentNumber: index + 1,
-          amount: record.amount || 0,
-          paidAmount: record.status === 'paid' ? record.amount : 0,
-          dueDate: record.dueDate || record.paymentDate || new Date().toISOString(),
-          status: record.status || 'pending',
-          paymentDate: record.paymentDate,
-          paymentMethod: record.paymentMethod
-        }));
+        installmentsArray = sale.paymentRecords.map((record: unknown, index: number) => {
+          const paymentRecord = record as { 
+            id?: string; 
+            amount?: number; 
+            status?: string; 
+            dueDate?: string; 
+            paymentDate?: string; 
+            paymentMethod?: string;
+          };
+          return {
+            id: paymentRecord.id || `installment-${index + 1}`,
+            installmentNumber: index + 1,
+            amount: paymentRecord.amount || 0,
+            paidAmount: paymentRecord.status === 'paid' ? (paymentRecord.amount || 0) : 0,
+            dueDate: paymentRecord.dueDate || paymentRecord.paymentDate || new Date().toISOString(),
+            status: (paymentRecord.status as 'pending' | 'paid' | 'partial' | 'overdue') || 'pending',
+            paymentDate: paymentRecord.paymentDate,
+            paymentMethod: paymentRecord.paymentMethod
+          };
+        });
       } else {
         installmentsArray = [];
       }

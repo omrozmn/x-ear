@@ -17,6 +17,12 @@ import { PricingInfoSection } from './inventory/components/PricingInfoSection';
 import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection';
 import { InventoryMovementsTable } from '../components/party/InventoryMovementsTable';
 
+import {
+  INVENTORY_KDV_RATE,
+  INVENTORY_PRICE_KDV_INCLUDED,
+  INVENTORY_COST_KDV_INCLUDED
+} from '../constants/storage-keys';
+
 interface InventoryDetailPageProps {
   id: string;
 }
@@ -31,15 +37,15 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   // KDV and calculated fields - Load from localStorage
   const [kdvRate, setKdvRate] = useState<number>(() => {
-    const saved = localStorage.getItem('inventory_kdv_rate');
+    const saved = localStorage.getItem(INVENTORY_KDV_RATE);
     return saved ? parseFloat(saved) : 20;
   });
   const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('inventory_price_kdv_included');
+    const saved = localStorage.getItem(INVENTORY_PRICE_KDV_INCLUDED);
     return saved === 'true';
   });
   const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('inventory_cost_kdv_included');
+    const saved = localStorage.getItem(INVENTORY_COST_KDV_INCLUDED);
     return saved === 'true';
   });
 
@@ -51,15 +57,15 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   // Save KDV preferences to localStorage
   useEffect(() => {
-    localStorage.setItem('inventory_kdv_rate', kdvRate.toString());
+    localStorage.setItem(INVENTORY_KDV_RATE, kdvRate.toString());
   }, [kdvRate]);
 
   useEffect(() => {
-    localStorage.setItem('inventory_price_kdv_included', isPriceKdvIncluded.toString());
+    localStorage.setItem(INVENTORY_PRICE_KDV_INCLUDED, isPriceKdvIncluded.toString());
   }, [isPriceKdvIncluded]);
 
   useEffect(() => {
-    localStorage.setItem('inventory_cost_kdv_included', isCostKdvIncluded.toString());
+    localStorage.setItem(INVENTORY_COST_KDV_INCLUDED, isCostKdvIncluded.toString());
   }, [isCostKdvIncluded]);
 
   useEffect(() => {

@@ -232,7 +232,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
 
           <InvoiceFormExtended
             invoice={initialData || undefined}
-            initialData={initialData as any}
+            initialData={initialData as unknown as Partial<Record<string, unknown>> | undefined}
             onSubmit={handleSubmit}
             onCancel={onClose}
             isLoading={isSubmitting}

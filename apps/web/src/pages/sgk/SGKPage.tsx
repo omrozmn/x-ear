@@ -10,11 +10,11 @@ interface ProcessingResult {
   fileName: string;
   status: 'processed' | 'error';
   result?: {
-    matched_party?: any;
+    matched_party?: Record<string, unknown>;
     pdf_generated?: boolean;
     pdf_filename?: string;
     document_type?: string;
-    entities?: any[];
+    entities?: Array<Record<string, unknown>>;
   };
   error?: string;
 }

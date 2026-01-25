@@ -1,6 +1,6 @@
 import { Button, Input, Select } from '@x-ear/ui-web';
 import { useState } from 'react';
-import { InvoiceFilters as IInvoiceFilters, InvoiceStatus } from '../../types/invoice';
+import { InvoiceFilters as IInvoiceFilters, InvoiceStatus, PaymentMethod } from '../../types/invoice';
 
 interface InvoiceFiltersProps {
   filters: IInvoiceFilters;
@@ -13,7 +13,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
   const [activeTab, setActiveTab] = useState<'basic' | 'advanced'>('basic');
   const [showFilters, setShowFilters] = useState(true);
 
-  const handleFilterChange = (key: keyof IInvoiceFilters, value: any) => {
+  const handleFilterChange = (key: keyof IInvoiceFilters, value: IInvoiceFilters[keyof IInvoiceFilters]) => {
     onFiltersChange({ ...filters, [key]: value });
   };
 
@@ -100,7 +100,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
                 <Select
                   label="Durum"
                   value={filters.status?.[0] || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value ? [e.target.value as InvoiceStatus] : [])}
+                  onChange={(e) => handleFilterChange('status', e.target.value ? [e.target.value as InvoiceStatus] : undefined)}
                   options={[
                     { value: '', label: 'Tümü' },
                     { value: 'draft', label: 'Taslak' },
@@ -173,7 +173,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
                 <Select
                   label="Ödeme Yöntemi"
                   value={filters.paymentMethod?.[0] || ''}
-                  onChange={(e) => handleFilterChange('paymentMethod', e.target.value ? [e.target.value] : [])}
+                  onChange={(e) => handleFilterChange('paymentMethod', e.target.value ? [e.target.value as PaymentMethod] : undefined)}
                   options={[
                     { value: '', label: 'Tümü' },
                     { value: 'cash', label: 'Nakit' },

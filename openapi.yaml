@@ -80,6 +80,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Campaigns
       summary: Create Campaign
@@ -144,6 +146,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: campaign_id
         in: path
         required: true
@@ -206,6 +209,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: campaign_id
         in: path
         required: true
@@ -360,6 +364,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Parties
       summary: Create Party
@@ -508,6 +514,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -562,6 +569,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/parties/bulk-upload:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Parties
       summary: Bulk Upload Parties
@@ -672,6 +681,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Inventory
       summary: Create Inventory
@@ -943,6 +954,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: item_id
         in: path
         required: true
@@ -1005,6 +1017,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: item_id
         in: path
         required: true
@@ -1159,6 +1172,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Sales
       summary: Create Sale
@@ -1221,6 +1236,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1282,6 +1298,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1342,6 +1359,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1376,6 +1394,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1408,6 +1427,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sales/recalc:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Sales
       summary: Recalc Sales
@@ -1457,6 +1478,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -1508,6 +1530,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: assignment_id
         in: path
         required: true
@@ -1543,6 +1566,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: assignment_id
         in: path
         required: true
@@ -1564,6 +1588,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/pricing-preview:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Sales
       summary: Pricing Preview
@@ -1591,6 +1617,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/auth/lookup-phone:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Lookup Phone
@@ -1617,6 +1645,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/forgot-password:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Forgot Password
@@ -1649,6 +1679,7 @@ paths:
       description: Verify OTP for phone verification or password reset
       operationId: createAuthVerifyOtp
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: authorization
         in: header
         required: false
@@ -1678,6 +1709,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/reset-password:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Reset Password
@@ -1704,6 +1737,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/login:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Login
@@ -1730,6 +1765,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/refresh:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Refresh Token
@@ -1762,6 +1799,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/auth/send-verification-otp:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Send Verification Otp
@@ -1790,6 +1829,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/auth/set-password:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Set Password
@@ -1889,6 +1930,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Appointments
       summary: Create Appointment
@@ -2063,6 +2106,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2125,6 +2169,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2160,6 +2205,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2189,6 +2235,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2384,6 +2431,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Devices
       summary: Create Device
@@ -2441,6 +2490,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Devices
       summary: Create Device Brand
@@ -2519,6 +2570,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: device_id
         in: path
         required: true
@@ -2580,6 +2632,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: device_id
         in: path
         required: true
@@ -2606,6 +2659,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/notifications:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Notifications
       summary: Create Notification
@@ -2689,6 +2744,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: notification_id
         in: path
         required: true
@@ -2718,6 +2774,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: notification_id
         in: path
         required: true
@@ -2834,6 +2891,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Notifications
       summary: Set User Notification Settings
@@ -2890,6 +2949,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Branches
       summary: Create Branch
@@ -2926,6 +2987,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: branch_id
         in: path
         required: true
@@ -3482,6 +3544,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Roles
       summary: Create Role
@@ -3518,6 +3582,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -3580,6 +3645,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -3614,6 +3680,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -3678,6 +3745,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/payment-records:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Payments
       summary: Create Payment Record
@@ -3760,6 +3829,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: record_id
         in: path
         required: true
@@ -3824,6 +3894,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/promissory-notes:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Payments
       summary: Create Promissory Notes
@@ -3860,6 +3932,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: note_id
         in: path
         required: true
@@ -3895,6 +3968,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: note_id
         in: path
         required: true
@@ -3990,6 +4064,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Users
       summary: Create User
@@ -4033,6 +4109,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Users
       summary: Update Me
@@ -4061,6 +4139,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/users/me/password:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Users
       summary: Change Password
@@ -4096,6 +4176,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -4166,6 +4247,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Tenant Users
       summary: Create Tenant User
@@ -4229,6 +4312,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -4270,6 +4354,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Tenant Users
       summary: Update Tenant Company
@@ -4375,6 +4461,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Suppliers
       summary: Create Supplier
@@ -4495,6 +4583,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: supplier_id
         in: path
         required: true
@@ -4581,6 +4670,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Settings
       summary: Update Settings
@@ -4610,6 +4701,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/auth/login:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Admin Login
@@ -4636,6 +4729,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/users:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Create Admin User
@@ -4766,6 +4861,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -4829,6 +4925,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Create Admin Ticket
@@ -4864,6 +4962,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: ticket_id
         in: path
         required: true
@@ -4898,6 +4997,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: ticket_id
         in: path
         required: true
@@ -4924,6 +5024,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/debug/switch-role:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Debug Switch Role
@@ -4967,6 +5069,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/debug/switch-tenant:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Debug Switch Tenant
@@ -4994,6 +5098,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/debug/exit-impersonation:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Debug Exit Impersonation
@@ -5095,6 +5201,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Tenants
       summary: Create Tenant
@@ -5158,6 +5266,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5248,6 +5357,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5283,6 +5393,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5324,6 +5435,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5358,6 +5470,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5425,6 +5538,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5549,6 +5663,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5589,6 +5704,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5704,6 +5820,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Plans
       summary: Create Plan
@@ -5768,6 +5886,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: plan_id
         in: path
         required: true
@@ -5878,6 +5997,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Addons
       summary: Create Addon
@@ -5942,6 +6063,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: addon_id
         in: path
         required: true
@@ -6129,6 +6251,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Create Invoice
@@ -6172,6 +6296,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Add To Print Queue
@@ -6214,6 +6340,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Create Invoice Template
@@ -6242,6 +6370,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/invoices/batch-generate:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Batch Generate Invoices
@@ -6305,6 +6435,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -6397,6 +6528,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -6418,6 +6550,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/invoices/bulk-upload:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Bulk Upload Invoices
@@ -6460,6 +6594,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Upload Sgk Document
@@ -6542,6 +6678,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/upload:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Upload And Process Files
@@ -6597,6 +6735,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/e-receipt/query:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Query E Receipt
@@ -6662,6 +6802,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/patient-rights/query:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Query Patient Rights
@@ -6689,6 +6831,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/sgk/workflow/create:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Create Sgk Workflow
@@ -6724,6 +6868,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: workflow_id
         in: path
         required: true
@@ -6786,6 +6931,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: workflow_id
         in: path
         required: true
@@ -6840,6 +6986,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/seed-test-patients:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Seed Test Patients
@@ -6995,6 +7143,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/deliverability/snapshot:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - admin
       summary: Create daily metrics snapshot
@@ -7109,6 +7259,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: bounce_id
         in: path
         required: true
@@ -7130,6 +7281,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/spam-preview:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - admin
       summary: Preview spam score
@@ -7377,6 +7530,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: approval_id
         in: path
         required: true
@@ -7412,6 +7566,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: approval_id
         in: path
         required: true
@@ -7533,6 +7688,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/complaints/process-fbl:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - admin
       summary: Process FBL report
@@ -7736,6 +7893,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Permissions
       summary: Create Permission
@@ -7816,6 +7975,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_name
         in: path
         required: true
@@ -7857,6 +8017,8 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_OcrHealthResponse_'
   /api/ocr/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Init Database
@@ -7873,6 +8035,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/initialize:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Initialize Nlp Endpoint
@@ -7889,6 +8053,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/process:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Process Document
@@ -7917,6 +8083,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/similarity:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Calculate Similarity
@@ -7945,6 +8113,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/entities:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Extract Entities
@@ -7973,6 +8143,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/extract_patient:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Extract Patient Name
@@ -8001,6 +8173,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/debug_ner:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Debug Ner
@@ -8059,6 +8233,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Create Job
@@ -8116,6 +8292,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/upload/presigned:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Upload
       summary: Get Presigned Upload Url
@@ -8251,6 +8429,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8410,6 +8589,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8445,6 +8625,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8605,6 +8786,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8639,6 +8821,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8739,6 +8922,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8773,6 +8957,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8900,6 +9085,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - CashRecords
       summary: Create Cash Record
@@ -9103,6 +9290,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - PaymentIntegrations
       summary: Update Paytr Config
@@ -9130,6 +9319,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/payments/pos/paytr/initiate:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - PaymentIntegrations
       summary: Initiate Paytr Payment
@@ -9160,6 +9351,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/payments/pos/paytr/callback:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - PaymentIntegrations
       summary: Paytr Callback
@@ -9322,6 +9515,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -9357,6 +9551,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -9431,6 +9626,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_List_DetailedPlanRead__'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Plans
       summary: Create Plan
@@ -9483,6 +9680,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: plan_id
         in: path
         required: true
@@ -9550,6 +9748,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_List_AddonRead__'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Addons
       summary: Create Addon
@@ -9602,6 +9802,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: addon_id
         in: path
         required: true
@@ -9656,6 +9857,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/subscriptions/subscribe:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Subscriptions
       summary: Subscribe
@@ -9684,6 +9887,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/subscriptions/complete-signup:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Subscriptions
       summary: Complete Signup
@@ -9728,6 +9933,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/subscriptions/register-and-subscribe:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Subscriptions
       summary: Register And Subscribe
@@ -9754,6 +9961,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/settings/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Init Db
@@ -9785,6 +9994,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Update Settings
@@ -9816,6 +10027,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/settings/cache/clear:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Clear Cache
@@ -9832,6 +10045,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/settings/backup:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Trigger Backup
@@ -9877,6 +10092,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminRoles
       summary: Create Admin Role
@@ -9941,6 +10158,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -10031,6 +10249,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -10140,6 +10359,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -10208,6 +10428,8 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_TurnstileConfigResponse_'
   /api/register-phone:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Registration
       summary: Register Phone
@@ -10233,6 +10455,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/verify-registration-otp:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Registration
       summary: Verify Registration Otp
@@ -10259,6 +10483,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/api-keys/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin API Keys
       summary: Init Db
@@ -10322,6 +10548,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin API Keys
       summary: Create Api Key
@@ -10587,6 +10815,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/integrations/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Integrations
       summary: Init Db
@@ -10618,6 +10848,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Integrations
       summary: Update Vatan Sms Config
@@ -10661,6 +10893,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Integrations
       summary: Update Birfatura Config
@@ -10824,6 +11058,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Invoices
       summary: Create Admin Invoice
@@ -10889,6 +11125,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -10939,6 +11176,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/marketplaces/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Marketplaces
       summary: Init Db
@@ -10985,6 +11224,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Marketplaces
       summary: Create Integration
@@ -11021,6 +11262,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: integration_id
         in: path
         required: true
@@ -11042,6 +11284,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/notifications/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Notifications
       summary: Init Db
@@ -11114,6 +11358,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/notifications/send:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Notifications
       summary: Send Notification
@@ -11203,6 +11449,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Notifications
       summary: Create Template
@@ -11239,6 +11487,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: template_id
         in: path
         required: true
@@ -11543,6 +11792,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/production/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Production
       summary: Init Db
@@ -11598,6 +11849,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: order_id
         in: path
         required: true
@@ -11625,6 +11877,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/scan-queue/init-db:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Scan Queue
       summary: Init Db
@@ -11680,6 +11934,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: scan_id
         in: path
         required: true
@@ -11756,6 +12011,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Suppliers
       summary: Create Supplier
@@ -11820,6 +12077,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: supplier_id
         in: path
         required: true
@@ -11891,6 +12149,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/automation/sgk/process:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Automation
       summary: Trigger Sgk Processing
@@ -11907,6 +12167,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/automation/backup:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Automation
       summary: Trigger Backup
@@ -12013,6 +12275,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/affiliates/register:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Affiliates
       summary: Register Affiliate
@@ -12045,6 +12309,7 @@ paths:
       description: Login affiliate
       operationId: createAffiliateLogin
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: email
         in: query
         required: true
@@ -12104,6 +12369,7 @@ paths:
       description: Update affiliate payment info
       operationId: updateAffiliate
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: affiliate_id
         in: path
         required: true
@@ -12191,6 +12457,7 @@ paths:
       description: Toggle affiliate active/inactive status
       operationId: updateAffiliateToggleStatus
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: affiliate_id
         in: path
         required: true
@@ -12283,6 +12550,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/checkout/session:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Checkout
       summary: Create Checkout Session
@@ -12309,6 +12578,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/checkout/confirm:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Checkout
       summary: Confirm Payment
@@ -12371,6 +12642,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -12435,6 +12707,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: replacement_id
         in: path
         required: true
@@ -12470,6 +12743,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: replacement_id
         in: path
         required: true
@@ -12505,6 +12779,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -12525,6 +12800,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /EFatura/sendDocument:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Document
@@ -12540,6 +12817,8 @@ paths:
       - OAuth2PasswordBearer: []
   /EFatura/sendBasicInvoice:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Basic Invoice
@@ -12555,6 +12834,8 @@ paths:
       - OAuth2PasswordBearer: []
   /EFatura/Create:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Create Invoice
@@ -12578,6 +12859,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -12606,6 +12888,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -12626,6 +12909,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /birfatura/sync-invoices:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Sync Invoices
@@ -12653,6 +12938,8 @@ paths:
       - OAuth2PasswordBearer: []
   /OutEBelgeV2/SendDocument:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Document V2
@@ -12668,6 +12955,8 @@ paths:
       - OAuth2PasswordBearer: []
   /OutEBelgeV2/SendBasicInvoiceFromModel:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Basic Invoice From Model
@@ -12683,6 +12972,8 @@ paths:
       - OAuth2PasswordBearer: []
   /Musteri/FirmaMusteriGetir:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Search Firm Customers Mock
@@ -12710,6 +13001,8 @@ paths:
       - OAuth2PasswordBearer: []
   /Firma/FirmaPKBilgisiGetir:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Get Firm Pk Info Mock
@@ -12737,6 +13030,8 @@ paths:
       - OAuth2PasswordBearer: []
   /Firma/FirmaAdresBilgisiGetir:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Get Firm Address Info Mock
@@ -12778,6 +13073,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Apps
       summary: Create App
@@ -12840,6 +13137,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: app_id
         in: path
         required: true
@@ -12901,6 +13199,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: app_id
         in: path
         required: true
@@ -12935,6 +13234,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: app_id
         in: path
         required: true
@@ -12961,6 +13261,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/pos/commission/calculate:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - POS Commission
       summary: Calculate Commission Endpoint
@@ -13003,6 +13305,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/pos/commission/installment-options:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - POS Commission
       summary: Get Installment Options
@@ -13065,6 +13369,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -13105,6 +13410,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - POS Commission
       summary: Update System Rates
@@ -13180,6 +13487,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /registrations/bulk:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - UTS
       summary: Start Bulk Registration
@@ -13245,6 +13554,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: job_id
         in: path
         required: true
@@ -13319,6 +13629,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS
       summary: Create Package
@@ -13355,6 +13667,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: package_id
         in: path
         required: true
@@ -13424,6 +13737,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Update Sms Config
@@ -13467,6 +13782,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Request Sms Header
@@ -13503,6 +13820,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: header_id
         in: path
         required: true
@@ -13569,6 +13887,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Create Target Audience
@@ -13605,6 +13925,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: document_type
         in: query
         required: false
@@ -13688,6 +14009,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sms/documents/submit:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Submit Sms Documents
@@ -13723,6 +14046,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: name
         in: query
         required: false
@@ -13794,6 +14118,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: header_id
         in: path
         required: true
@@ -13861,6 +14186,8 @@ paths:
               schema: {}
   /api/invoices/create-dynamic:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoice Management
       summary: Create Dynamic Invoice
@@ -13924,6 +14251,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -13958,6 +14286,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoice Management
       summary: Update Invoice Settings
@@ -13993,6 +14323,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -14022,6 +14353,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -14051,6 +14383,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -14219,6 +14552,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/communications/messages/send-sms:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Send Sms
@@ -14246,6 +14581,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/communications/messages/send-email:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Send Email
@@ -14343,6 +14680,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Create Template
@@ -14405,6 +14744,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: template_id
         in: path
         required: true
@@ -14552,6 +14892,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Create Communication History
@@ -14636,6 +14978,8 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMTP Configuration
       summary: Create Or Update Smtp Config
@@ -14694,6 +15038,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: Idempotency-Key
         in: header
         required: false
@@ -14865,6 +15210,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: Idempotency-Key
         in: header
         required: false
@@ -14892,6 +15238,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /tool-api/email/notify:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - tool-api
       summary: Send email notification from AI Layer
@@ -14921,6 +15269,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/commissions/create:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Commission Ledger
       summary: Create Commission
@@ -14956,6 +15306,7 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: commission_id
         in: query
         required: true
@@ -15059,6 +15410,8 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_SchemaRegistryResponse_'
   /api/ai/chat:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Chat
       summary: Process natural language chat message
@@ -15096,6 +15449,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/actions:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Actions
       summary: Create an action plan from intent
@@ -15168,6 +15523,7 @@ paths:
       description: Approve an action for execution.
       operationId: approve_action_api_ai_actions__action_id__approve_post
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: action_id
         in: path
         required: true
@@ -15207,6 +15563,7 @@ paths:
       description: Execute an action plan.
       operationId: execute_action_api_ai_actions__action_id__execute_post
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: action_id
         in: path
         required: true
@@ -15561,6 +15918,7 @@ paths:
       description: Acknowledge an alert to mark it as handled.
       operationId: acknowledge_alert_api_ai_alerts__alert_id__acknowledge_post
       parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       - name: alert_id
         in: path
         required: true
@@ -15586,6 +15944,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/alerts/check:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Status
       summary: Check metrics and emit alerts
@@ -15616,6 +15976,8 @@ paths:
         '403':
           description: Admin permissions required
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Admin
       summary: Manage kill switch
@@ -15683,6 +16045,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/admin/cleanup-expired:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Admin
       summary: Cleanup expired approvals
@@ -15765,6 +16129,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/composer/execute:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Composer
       summary: Execute Tool
@@ -15795,6 +16161,8 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ai/composer/analyze:
     post:
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Composer
       summary: Analyze Documents
@@ -15830,6 +16198,16 @@ paths:
       security:
       - OAuth2PasswordBearer: []
 components:
+  parameters:
+    - $ref: '#/components/parameters/IdempotencyKey'
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: Unique key for request idempotency (UUID v4 recommended)
+      required: true
+      schema:
+        type: string
+        format: uuid
   schemas:
     AISettingsResponse:
       properties:
@@ -15949,6 +16327,7 @@ components:
           type: string
           title: Description
         parameters:
+          - $ref: '#/components/parameters/IdempotencyKey'
           type: object
           title: Parameters
         risk_level:
@@ -16800,6 +17179,7 @@ components:
           title: Tool Schema Version
           description: Schema version of the tool
         parameters:
+          - $ref: '#/components/parameters/IdempotencyKey'
           type: object
           title: Parameters
           description: Tool parameters

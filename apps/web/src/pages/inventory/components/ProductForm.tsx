@@ -171,7 +171,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     }
   }, [isOpen, initialData, mode]);
 
-  const handleInputChange = (field: keyof InventoryFormData, value: any) => {
+  const handleInputChange = (field: keyof InventoryFormData, value: string | number | boolean | string[] | EarDirection | InventoryCategory | InventoryType) => {
     setFormData(prev => {
       // Eğer değer değişmemişse state'i güncelleme
       if (prev[field] === value) {
@@ -184,7 +184,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     });
   };
 
-  const handleExtendedChange = (field: string, value: any) => {
+  const handleExtendedChange = (field: string, value: string | number | string[]) => {
     setExtendedData(prev => ({
       ...prev,
       [field]: value

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Loading } from '@x-ear/ui-web';
 import { ArrowLeft, Building2, Mail, Phone, MapPin, Globe, Edit, Trash2 } from 'lucide-react';
-import { useSupplier, useDeleteSupplier, useUpdateSupplier, useSupplierProducts } from '../hooks/useSuppliers';
+import { useSupplier, useDeleteSupplier, useUpdateSupplier, useSupplierProducts, type SupplierFormData } from '../hooks/useSuppliers';
 import { SupplierFormModal } from '../components/suppliers/SupplierFormModal';
 import { SupplierExtended } from '../components/suppliers/supplier-search.types';
 
@@ -38,7 +38,7 @@ export function SupplierDetailPage() {
     }
   };
 
-  const handleSave = async (data: any) => {
+  const handleSave = async (data: SupplierFormData) => {
     try {
       await updateSupplierMutation.mutateAsync({
         supplierId,
@@ -229,13 +229,13 @@ export function SupplierDetailPage() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {(productsData as any).data.products.map((item: any) => (
-                            <tr key={item.id}>
+                          {((productsData as Record<string, unknown>).data as { products: Array<Record<string, unknown>> }).products.map((item: Record<string, unknown>) => (
+                            <tr key={item.id as string}>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {item.supplier_product_name || item.product?.name}
+                                {(item.supplier_product_name as string) || ((item.product as Record<string, unknown>)?.name as string)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {item.supplier_product_code || item.product?.sku || '-'}
+                                {(item.supplier_product_code as string) || ((item.product as Record<string, unknown>)?.sku as string) || '-'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {item.unit_cost ? `${item.unit_cost} ${item.currency}` : '-'}

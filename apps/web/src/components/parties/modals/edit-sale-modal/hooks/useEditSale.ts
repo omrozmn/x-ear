@@ -10,19 +10,7 @@ import type {
   SGKScheme,
   ServiceInfo
 } from '../types';
-
-// Local type for inventory items
-interface InventoryItem {
-  id?: string;
-  name: string;
-  category?: string;
-  brand?: string;
-  model?: string;
-  price: number;
-  availableInventory?: number;
-  inventory?: number;
-  availableSerials?: string[];
-}
+import type { InventoryItem } from '../components/SaleFormFields';
 
 export const useEditSale = (sale: Sale, isOpen: boolean) => {
   // Form data state

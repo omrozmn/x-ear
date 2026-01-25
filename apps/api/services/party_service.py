@@ -279,19 +279,29 @@ class PartyService:
     def update_party(self, party_id: str, data: Dict[str, Any], tenant_id: str) -> Party:
         party = self.get_party(party_id, tenant_id)
         
-        # Helper map for Party fields
+        # Helper map for Party fields - Handle both camelCase (legacy/API) and snake_case (Pydantic model_dump)
         if 'firstName' in data: party.first_name = data['firstName']
+        elif 'first_name' in data: party.first_name = data['first_name']
+        
         if 'lastName' in data: party.last_name = data['lastName']
+        elif 'last_name' in data: party.last_name = data['last_name']
+        
         if 'phone' in data: party.phone = data['phone']
+        
         if 'email' in data: party.email = data['email']
+        
         if 'tcNumber' in data: party.tc_number = data['tcNumber']
-        if 'birthDate' in data:
-            d = data['birthDate']
+        elif 'tc_number' in data: party.tc_number = data['tc_number']
+        
+        if 'birthDate' in data or 'birth_date' in data:
+            d = data.get('birthDate') or data.get('birth_date')
             if isinstance(d, date) and not isinstance(d, datetime):
                  party.birth_date = datetime.combine(d, time.min)
             else:
                 party.birth_date = d
+        
         if 'gender' in data: party.gender = data['gender']
+        
         if 'status' in data:
             status_val = data['status']
             if hasattr(status_val, 'value'): # Enum
@@ -309,26 +319,35 @@ class PartyService:
         if 'branchId' in data: party.branch_id = data['branchId']
         if 'tags' in data:
             party.tags_json = data['tags']
+        elif 'tags_json' in data:
+            party.tags_json = data['tags_json']
             
         if 'sgkInfo' in data:
             party.sgk_info_json = data['sgkInfo']
+        elif 'sgk_info' in data:
+            party.sgk_info_json = data['sgk_info']
             
         if 'address' in data:
             addr = data['address']
             if addr:
                 if isinstance(addr, dict):
-                    party.address_city = addr.get('city')
-                    party.address_district = addr.get('district')
-                    party.address_full = addr.get('fullAddress') or addr.get('address')
+                    party.address_city = addr.get('city') or addr.get('addressCity')
+                    party.address_district = addr.get('district') or addr.get('addressDistrict')
+                    party.address_full = addr.get('fullAddress') or addr.get('address') or addr.get('addressFull')
                 elif hasattr(addr, 'city'):
-                     party.address_city = addr.city
-                     party.address_district = addr.district
-                     party.address_full = getattr(addr, 'fullAddress', None) or getattr(addr, 'address', None)
+                     party.address_city = getattr(addr, 'city', None) or getattr(addr, 'addressCity', None)
+                     party.address_district = getattr(addr, 'district', None) or getattr(addr, 'addressDistrict', None)
+                     party.address_full = getattr(addr, 'fullAddress', None) or getattr(addr, 'address', None) or getattr(addr, 'addressFull', None)
 
         # Update remaining attributes (if any other fields are passed directly)
+        skip_fields = [
+            'firstName', 'lastName', 'phone', 'email', 'tcNumber', 'birthDate', 
+            'gender', 'status', 'segment', 'branchId', 'tags', 'sgkInfo', 'address',
+            'first_name', 'last_name', 'tc_number', 'birth_date', 'sgk_info', 'branch_id'
+        ]
         for k, v in data.items():
             # Skip fields already handled or complex objects
-            if k not in ['firstName', 'lastName', 'phone', 'email', 'tcNumber', 'birthDate', 'gender', 'status', 'segment', 'branchId', 'tags', 'sgkInfo', 'address'] and hasattr(party, k):
+            if k not in skip_fields and hasattr(party, k):
                 setattr(party, k, v)
         
         try:

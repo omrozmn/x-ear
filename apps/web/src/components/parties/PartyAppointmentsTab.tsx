@@ -11,7 +11,8 @@ import {
 } from '@/api/client/appointments.client';
 import type {
   AppointmentRead,
-  AppointmentCreate
+  AppointmentCreate,
+  ResponseEnvelopeListAppointmentRead
 } from '@/api/generated/schemas';
 
 interface PartyAppointmentsTabProps {
@@ -44,10 +45,10 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
       //   per_page: 20
       // };
 
-      const response = await listPartyAppointments(party.id) as Record<string, any>;
+      const response: ResponseEnvelopeListAppointmentRead = await listPartyAppointments(party.id);
 
       // Handle response envelope or direct array
-      const appointmentsData = response?.data || response || [];
+      const appointmentsData = response?.data || [];
       setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
     } catch (err) {
       console.error('Error loading appointments:', err);

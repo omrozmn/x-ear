@@ -3,6 +3,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Send, XCircle, Download, Trash2, File } from 'lucide-react';
 import { Invoice, InvoiceBulkAction, InvoiceExportOptions } from '../../types/invoice';
 import { invoiceService } from '../../services/invoice.service';
+import type { SelectChangeHandler } from '../../types/utils';
 
 interface InvoiceBulkOperationsProps {
   selectedInvoices: Invoice[];
@@ -211,20 +212,26 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
     return results;
   };
 
+  interface BulkEFaturaResult {
+    invoiceId: string;
+    success?: boolean;
+    ettn?: string;
+    message?: string;
+    error?: string;
+  }
+
+  interface BulkEFaturaResponse {
+    results?: BulkEFaturaResult[];
+  }
+
   const processSendToGIB = async (): Promise<BulkOperationResult[]> => {
     const results: BulkOperationResult[] = [];
     // Use invoiceService.submitBulkEFatura if available
     try {
       const ids = selectedInvoices.map(i => i.id);
-      const resp = await invoiceService.submitBulkEFatura({ invoiceIds: ids, submissionDate: new Date().toISOString() });
+      const resp = await invoiceService.submitBulkEFatura({ invoiceIds: ids, submissionDate: new Date().toISOString() }) as BulkEFaturaResponse;
       if (resp && resp.results && Array.isArray(resp.results)) {
-        (resp.results as Array<{
-          invoiceId: string;
-          success?: boolean;
-          ettn?: string;
-          message?: string;
-          error?: string;
-        }>).forEach((r) => {
+        resp.results.forEach((r) => {
           results.push({
             invoiceId: r.invoiceId,
             invoiceNumber: selectedInvoices.find(si => si.id === r.invoiceId)?.invoiceNumber || r.invoiceId,
@@ -280,20 +287,26 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
     return results;
   };
 
+  interface ExportInvoiceData {
+    invoiceNumber?: string;
+    partyName?: string;
+    issueDate?: string;
+    grandTotal?: number;
+    status?: string;
+    paymentMethod?: string;
+  }
+
+  interface ExportResponse {
+    invoices?: ExportInvoiceData[];
+  }
+
   const processExportInvoices = async (): Promise<void> => {
     // Use invoiceService.exportInvoices to obtain export data
     try {
       const resp = await invoiceService.exportInvoices({ format: exportOptions.format, filters: undefined });
       if (resp.success && resp.data) {
         // For now, export as CSV as before
-        const invoicesData = (resp.data as { invoices?: Array<{
-          invoiceNumber?: string;
-          partyName?: string;
-          issueDate?: string;
-          grandTotal?: number;
-          status?: string;
-          paymentMethod?: string;
-        }> }).invoices || [];
+        const invoicesData = (resp.data as ExportResponse).invoices || [];
         
         const exportData = invoicesData.map((invoice) => ({
           'Fatura No': invoice.invoiceNumber,
@@ -427,7 +440,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
             <label className="block text-sm font-medium mb-1">Format</label>
             <Select
               value={exportOptions.format}
-              onChange={(e) => setExportOptions(prev => ({ ...prev, format: e.target.value as InvoiceExportOptions['format'] }))}
+              onChange={(e: SelectChangeHandler) => setExportOptions(prev => ({ ...prev, format: e.target.value as InvoiceExportOptions['format'] }))}
               options={[
                 { value: 'excel', label: 'Excel' },
                 { value: 'csv', label: 'CSV' },

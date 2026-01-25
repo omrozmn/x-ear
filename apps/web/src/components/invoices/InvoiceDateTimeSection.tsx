@@ -6,15 +6,13 @@ interface InvoiceDateTimeSectionProps {
   dueDate?: string;
   discount?: number;
   discountType?: 'percentage' | 'amount';
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: string | number) => void;
 }
 
 export function InvoiceDateTimeSection({
   issueDate,
   issueTime,
   dueDate,
-  discount: _discount,
-  discountType: _discountType,
   onChange
 }: InvoiceDateTimeSectionProps) {
   return (

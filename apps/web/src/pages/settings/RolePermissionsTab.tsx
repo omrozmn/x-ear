@@ -19,6 +19,13 @@ import { Modal } from '@/components/ui/Modal';
 import { Button, Input, Checkbox } from '@x-ear/ui-web';
 import { AxiosError } from '@/api/orval-mutator';
 
+// Type for API error responses
+type ApiErrorResponse = {
+  error?: { message?: string; code?: string } | string;
+  message?: string;
+  detail?: { message?: string } | string;
+};
+
 // Permission categories with icons
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
   parties: { label: 'Hastalar', icon: <Users className="w-5 h-5" /> },
@@ -151,7 +158,7 @@ export function RolePermissionsTab() {
         setCreateModalOpen(false);
         setNewRoleName('');
       },
-      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: { message?: string } | string }>) => {
         let errorMessage = 'Rol oluşturulurken bir hata oluştu';
 
         try {
@@ -192,7 +199,7 @@ export function RolePermissionsTab() {
         setEditingRole(null);
         setEditRoleName('');
       },
-      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: { message?: string } | string }>) => {
         let errorMessage = 'Rol güncellenirken bir hata oluştu';
 
         try {
@@ -256,7 +263,7 @@ export function RolePermissionsTab() {
         queryClient.invalidateQueries({ queryKey: getListPermissionsQueryKey() });
         setHasChanges(false);
       },
-      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: { message?: string } | string }>) => {
         let errorMessage = 'İzinler güncellenirken bir hata oluştu';
 
         try {

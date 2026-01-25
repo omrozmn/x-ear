@@ -27,7 +27,7 @@ interface ComposerState {
     selectedAction: Capability | null;
 
     // Slot State
-    slots: Record<string, any>; // Collected arguments
+    slots: Record<string, unknown>; // Collected arguments
     currentSlot: SlotConfig | null; // The slot currently being asked
 
     // Execution State
@@ -43,7 +43,7 @@ interface ComposerState {
     setAvailableActions: (actions: Capability[]) => void;
     selectAction: (action: Capability) => void;
 
-    updateSlot: (key: string, value: any) => void;
+    updateSlot: (key: string, value: unknown) => void;
     nextSlot: () => void; // Advances to next slot or confirmation
 
     reset: () => void;

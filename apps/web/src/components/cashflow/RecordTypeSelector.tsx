@@ -8,6 +8,8 @@ import { Plus, X } from 'lucide-react';
 import type { RecordType, TransactionType } from '../../types/cashflow';
 import { RECORD_TYPE_LABELS } from '../../types/cashflow';
 
+import { CUSTOM_RECORD_TYPES } from '../../constants/storage-keys';
+
 interface RecordTypeSelectorProps {
   transactionType: TransactionType | '';
   selectedType: RecordType | '';
@@ -23,13 +25,13 @@ export function RecordTypeSelector({
     income: string[];
     expense: string[];
   }>(() => {
-    const stored = localStorage.getItem('customRecordTypes');
+    const stored = localStorage.getItem(CUSTOM_RECORD_TYPES);
     return stored ? JSON.parse(stored) : { income: [], expense: [] };
   });
   const [newType, setNewType] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('customRecordTypes', JSON.stringify(customTypes));
+    localStorage.setItem(CUSTOM_RECORD_TYPES, JSON.stringify(customTypes));
   }, [customTypes]);
 
   const handleAddType = () => {

@@ -168,7 +168,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
 
     // SGK events
     if (party.sgkWorkflow?.statusHistory) {
-      party.sgkWorkflow.statusHistory.forEach((status: any, index: number) => {
+      party.sgkWorkflow.statusHistory.forEach((status: { status: string; notes?: string; timestamp: string }, index: number) => {
         events.push({
           id: `sgk-${index}`,
           type: 'sgk',

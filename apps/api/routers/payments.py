@@ -181,6 +181,32 @@ def create_payment_record(
         logger.error(f"Create payment record error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/payment-records", operation_id="listPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
+def list_payment_records(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """List all payment records for the tenant"""
+    try:
+        query = tenant_scoped_query(access, PaymentRecord, db_session)
+        total = query.count()
+        payment_records = query.order_by(PaymentRecord.payment_date.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        
+        return ResponseEnvelope(
+            data=[PaymentRecordRead.model_validate(record).model_dump(by_alias=True) for record in payment_records],
+            meta={
+                "total": total,
+                "page": page,
+                "perPage": per_page,
+                "totalPages": (total + per_page - 1) // per_page
+            }
+        )
+    except Exception as e:
+        logger.error(f"List payment records error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/parties/{party_id}/payment-records", operation_id="listPartyPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def get_party_payment_records(
     party_id: str,

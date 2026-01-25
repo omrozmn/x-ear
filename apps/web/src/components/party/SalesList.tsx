@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DollarSign, MoreVertical, Eye, Edit, FileText, File } from 'lucide-react';
+import { SaleRead } from '@/api/generated/schemas/saleRead';
 
 interface SalesListProps {
-  sales: any[];
-  filteredSales: any[];
+  sales: SaleRead[];
+  filteredSales: SaleRead[];
   hasActiveFilters?: boolean;
-  onSaleClick: (sale: any) => void;
-  onCreateInvoice: (sale: any) => void;
-  onViewInvoice: (sale: any) => void;
-  onManagePromissoryNotes: (sale: any) => void;
-  onCollectPayment: (sale: any) => void;
-  onManageInstallments: (sale: any) => void;
+  onSaleClick: (sale: SaleRead) => void;
+  onCreateInvoice: (sale: SaleRead) => void;
+  onViewInvoice: (sale: SaleRead) => void;
+  onManagePromissoryNotes: (sale: SaleRead) => void;
+  onCollectPayment: (sale: SaleRead) => void;
+  onManageInstallments: (sale: SaleRead) => void;
 }
 
 export const SalesList: React.FC<SalesListProps> = ({
@@ -263,7 +264,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="font-medium">{sale.id}</div>
                     <div className="text-xs text-gray-600">
-                      {new Date(sale.saleDate || sale.date || sale.createdAt).toLocaleDateString('tr-TR')}
+                      {new Date(sale.saleDate || sale.createdAt || '').toLocaleDateString('tr-TR')}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
@@ -273,13 +274,13 @@ export const SalesList: React.FC<SalesListProps> = ({
                     {renderBarcodeSerialInfo(sale)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                    {formatCurrency(sale.totalAmount || sale.total_amount || 0)}
+                    {formatCurrency(sale.totalAmount || 0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600">
-                    {sale.discountAmount || sale.discount_amount ? `-${formatCurrency(sale.discountAmount || sale.discount_amount)}` : formatCurrency(0)}
+                    {sale.discountAmount ? `-${formatCurrency(sale.discountAmount)}` : formatCurrency(0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600">
-                    {sale.sgkCoverage || sale.sgk_coverage ? `-${formatCurrency(sale.sgkCoverage || sale.sgk_coverage)}` : formatCurrency(0)}
+                    {sale.sgkCoverage ? `-${formatCurrency(sale.sgkCoverage)}` : formatCurrency(0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(calculateTotalWithVat(sale))}
@@ -292,7 +293,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                     {formatCurrency(remaining)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {renderStatusBadge(sale.status, paid, remaining)}
+                    {renderStatusBadge(sale.status || '', paid, remaining)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center relative" onClick={(e) => e.stopPropagation()}>
                     <button

@@ -19,8 +19,21 @@ import {
   User
 } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
+
+// Type for proforma creation data
+interface ProformaCreateData {
+  partyId: string;
+  devicePrice?: number;
+  deviceName?: string;
+  deviceSerial?: string;
+  companyName?: string;
+  notes?: string;
+  createdBy?: string;
+  [key: string]: unknown; // Allow additional properties
+}
+
 // Mock API function since Proforma endpoint is missing in generated client
-const proformasCreateProforma = async (data: any) => {
+const proformasCreateProforma = async (data: ProformaCreateData) => {
   console.log('Mock create proforma', data);
   return { data: { proforma_number: `PF-${Date.now()}`, success: true } };
 };
@@ -280,7 +293,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       };
 
       // Call proforma creation API
-      const response = await proformasCreateProforma(proformaData as Record<string, unknown>);
+      const response = await proformasCreateProforma(proformaData);
 
       // The generated client returns existing data in response.data
       // Adjust handling based on typical generated code

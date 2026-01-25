@@ -1,14 +1,15 @@
 from datetime import datetime, timezone
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 
-class StockMovement(BaseModel):
+class StockMovement(BaseModel, TenantScopedMixin):
     """
     StockMovement model tracks history of all inventory changes.
     """
     __tablename__ = 'stock_movements'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("mvmt"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=False, index=True)
     transaction_id = db.Column(db.String(50), index=True) # ID of Sale, Refund, or other related entity
     

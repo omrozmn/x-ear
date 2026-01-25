@@ -248,9 +248,10 @@ export class PartyOfflineSync {
         }
 
         try {
-          const data: any = await customInstance<Record<string, any>>({ url, method: 'GET' });
-          parties.push(...(data.data || []));
-          cursor = data.meta?.nextCursor;
+          const data = await customInstance<Record<string, unknown>>({ url, method: 'GET' }) as { data?: unknown[]; meta?: { nextCursor?: string } };
+          const partyData = (data.data || []) as Party[];
+          parties.push(...partyData);
+          cursor = data.meta?.nextCursor ?? null;
           hasMore = !!cursor;
           requestCount++;
 
@@ -265,14 +266,15 @@ export class PartyOfflineSync {
       // Update local database with server data (only if we got some data)
       if (parties.length > 0) {
         for (const serverParty of parties) {
-          if (!serverParty.id) continue; // Skip parties without ID
+          const party = serverParty as Party;
+          if (!party.id) continue; // Skip parties without ID
 
-          const localParty = await this.db!.get('parties', serverParty.id);
+          const localParty = await this.db!.get('parties', party.id);
 
           // Only update if server version is newer or local doesn't exist
-          if (!localParty || (serverParty.updatedAt && localParty.updatedAt && new Date(serverParty.updatedAt) > new Date(localParty.updatedAt))) {
+          if (!localParty || (party.updatedAt && localParty.updatedAt && new Date(party.updatedAt) > new Date(localParty.updatedAt))) {
             await this.db!.put('parties', {
-              ...serverParty,
+              ...party,
               syncStatus: 'synced'
             });
           }

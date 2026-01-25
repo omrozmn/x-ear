@@ -210,6 +210,7 @@ export interface HearingProfile {
 export interface Party extends OrvalParty {
   // NOTE: Many parts of the web app still use camelCase fields.
   // Orval's PartyRead is primarily snake_case. We allow both here.
+  id: string; // Explicitly include id from OrvalParty
   firstName?: string;
   lastName?: string;
   tcNumber?: string;

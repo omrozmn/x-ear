@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/email_approval.py
+# hypothesis_version: 6.150.1
+
+[100, '/stats', 'APPROVAL_FAILED', 'Action plan hash', 'Approval ID', 'Approved count', 'Counts by risk level', 'Current page', 'Email body (HTML)', 'Email recipient', 'Email scenario', 'Email subject', 'Filter by risk level', 'Items per page', 'List of approvals', 'Page number', 'REJECTION_FAILED', 'Reject email', 'Rejected count', 'Request timestamp', 'Review notes', 'Review timestamp', 'Reviewer user ID', 'Risk reasons', 'Spam score', 'Total count', 'admin', 'admin.emails.approve', 'approval_id', 'approveEmail', 'approved', 'by_risk_level', 'code', 'listEmailApprovals', 'message', 'pending', 'rejectEmail', 'rejected']

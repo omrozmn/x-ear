@@ -1,10 +1,11 @@
 # Device Model with Enhanced Type Safety
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 from .enums import DeviceSide, DeviceStatus, DeviceCategory
 from decimal import Decimal
 import sqlalchemy as sa
 
-class Device(BaseModel):
+class Device(BaseModel, TenantScopedMixin):
     __tablename__ = 'devices'
 
     # Primary key with auto-generated default
@@ -19,8 +20,6 @@ class Device(BaseModel):
     def name(self):
         return f"{self.brand} {self.model}".strip()
     
-    # Foreign keys
-    tenant_id = db.Column(db.String(50), db.ForeignKey('tenants.id'), nullable=True)
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
     inventory_id = db.Column(db.String(50))
     

@@ -8,6 +8,7 @@ Run with: pytest tests/test_hearing_flows.py -v -m hearing_flow
 """
 
 import pytest
+import json
 from datetime import datetime, timedelta
 
 pytestmark = pytest.mark.hearing_flow
@@ -40,7 +41,9 @@ class TestPatientSGKInfoCRUD:
             headers=auth_headers
         )
         assert resp.status_code == 200, f"Response: {resp.text}"
-        assert resp.json()["data"]["sgkInfo"]["insuranceNumber"] == "SGK123456"
+        body = resp.json()
+        print(f"DEBUG_SGK_UPDATE: {json.dumps(body, indent=2)}")
+        assert body["data"]["sgkInfo"]["insuranceNumber"] == "SGK123456"
 
 
 class TestHearingTestCRUD:
@@ -49,7 +52,7 @@ class TestHearingTestCRUD:
     def test_list_patient_hearing_tests(self, client, auth_headers, test_patient):
         """GET /patients/{id}/hearing-tests returns list"""
         resp = client.get(
-            f"/api/parties/{test_patient.id}/hearing-tests",
+            f"/api/parties/{test_patient.id}/profiles/hearing/tests",
             headers=auth_headers
         )
         assert resp.status_code == 200
@@ -68,7 +71,7 @@ class TestHearingTestCRUD:
             }
         }
         resp = client.post(
-            f"/api/parties/{test_patient.id}/hearing-tests",
+            f"/api/parties/{test_patient.id}/profiles/hearing/tests",
             json=test_data,
             headers=auth_headers
         )
@@ -79,7 +82,7 @@ class TestHearingTestCRUD:
         """PUT /patients/{id}/hearing-tests/{test_id} updates test"""
         patient, hearing_test = test_patient_with_hearing_test
         resp = client.put(
-            f"/api/parties/{patient.id}/hearing-tests/{hearing_test.id}",
+            f"/api/parties/{patient.id}/profiles/hearing/tests/{hearing_test.id}",
             json={"notes": "Updated notes"},
             headers=auth_headers
         )
@@ -89,7 +92,7 @@ class TestHearingTestCRUD:
         """DELETE /patients/{id}/hearing-tests/{test_id} removes test"""
         patient, hearing_test = test_patient_with_hearing_test
         resp = client.delete(
-            f"/api/parties/{patient.id}/hearing-tests/{hearing_test.id}",
+            f"/api/parties/{patient.id}/profiles/hearing/tests/{hearing_test.id}",
             headers=auth_headers
         )
         assert resp.status_code in [200, 204]
@@ -101,7 +104,7 @@ class TestEReceiptWorkflow:
     def test_list_patient_ereceipts(self, client, auth_headers, test_patient):
         """GET /patients/{id}/ereceipts returns list"""
         resp = client.get(
-            f"/api/parties/{test_patient.id}/ereceipts",
+            f"/api/parties/{test_patient.id}/profiles/hearing/ereceipts",
             headers=auth_headers
         )
         assert resp.status_code == 200
@@ -119,7 +122,7 @@ class TestEReceiptWorkflow:
             ]
         }
         resp = client.post(
-            f"/api/parties/{test_patient.id}/ereceipts",
+            f"/api/parties/{test_patient.id}/profiles/hearing/ereceipts",
             json=receipt_data,
             headers=auth_headers
         )
@@ -206,9 +209,11 @@ class TestHearingCenterAggregates:
         )
         assert resp.status_code == 200
         # Timeline should include hearing-related events
-        events = resp.json().get("data", [])
+        data = resp.json().get("data", {})
+        events = data.get("events", [])
         # At minimum, should be queryable
         assert isinstance(events, list)
+        assert len(events) >= 1
 
 
 # Fixtures - to be implemented in conftest.py
@@ -225,10 +230,9 @@ def test_patient(db_session, test_tenant):
         tenant_id=test_tenant.id
     )
     db_session.add(patient)
-    db_session.commit()
+    db_session.flush()
     yield patient
-    db_session.delete(patient)
-    db_session.commit()
+    # No need for manual delete if using transaction rollback in conftest
 
 
 @pytest.fixture
@@ -252,6 +256,9 @@ def test_patient_with_tc(test_patient):
 def test_patient_with_hearing_test(db_session, test_patient):
     """Patient with a hearing test"""
     from core.models.medical import HearingTest
+    from models.user import ActivityLog
+    import json
+    
     hearing_test = HearingTest(
         party_id=test_patient.id,
         tenant_id=test_patient.tenant_id,
@@ -259,10 +266,22 @@ def test_patient_with_hearing_test(db_session, test_patient):
         test_type="audiometry"
     )
     db_session.add(hearing_test)
-    db_session.commit()
+    
+    log = ActivityLog(
+        user_id='system',
+        action='hearing_test_created',
+        entity_type='patient',
+        entity_id=test_patient.id,
+        tenant_id=test_patient.tenant_id,
+        details=json.dumps({
+            'title': 'Hearing Test Added',
+            'description': 'Audiometry record added from fixture.'
+        })
+    )
+    db_session.add(log)
+    
+    db_session.flush()
     yield test_patient, hearing_test
-    db_session.delete(hearing_test)
-    db_session.commit()
 
 
 @pytest.fixture
@@ -280,7 +299,7 @@ def test_patient_with_device(db_session, test_patient):
         serial_number="TEST12345"
     )
     db_session.add(device)
-    db_session.commit()
+    db_session.flush()
     
     # Create assignment
     assignment = DeviceAssignment(
@@ -291,13 +310,9 @@ def test_patient_with_device(db_session, test_patient):
         ear="right"
     )
     db_session.add(assignment)
-    db_session.commit()
+    db_session.flush()
     
     yield test_patient, device
-    
-    db_session.delete(assignment)
-    db_session.delete(device)
-    db_session.commit()
 
 
 @pytest.fixture

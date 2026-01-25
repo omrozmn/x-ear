@@ -44,7 +44,7 @@ export function BranchesTab() {
         try {
             const data = await branchService.getBranches();
             setBranches(data);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to fetch branches:', error);
             setError('Subeler yuklenirken bir hata olustu.');
         } finally {
@@ -73,10 +73,10 @@ export function BranchesTab() {
             setIsModalOpen(false);
             resetForm();
             fetchBranches();
-        } catch (err: any) {
+        } catch (err: unknown) {
             // Handle error object - extract message string
-            const errorData = err.response?.data?.error;
-            const msg = typeof errorData === 'object' && errorData?.message
+            const errorData = (err as { response?: { data?: { error?: unknown } } }).response?.data?.error;
+            const msg = (typeof errorData === 'object' && errorData !== null && 'message' in errorData && typeof errorData.message === 'string')
                 ? errorData.message
                 : (typeof errorData === 'string' ? errorData : 'İşlem gerçekleştirilemedi.');
             setFormError(msg);
@@ -97,9 +97,9 @@ export function BranchesTab() {
                     await branchService.deleteBranch(id);
                     toast.success('Sube silindi');
                     fetchBranches();
-                } catch (err: any) {
-                    const errorData = err.response?.data?.error;
-                    const msg = typeof errorData === 'object' && errorData?.message
+                } catch (err: unknown) {
+                    const errorData = (err as { response?: { data?: { error?: unknown } } }).response?.data?.error;
+                    const msg = (typeof errorData === 'object' && errorData !== null && 'message' in errorData && typeof errorData.message === 'string')
                         ? errorData.message
                         : 'Şube silinemedi';
                     toast.error(msg);

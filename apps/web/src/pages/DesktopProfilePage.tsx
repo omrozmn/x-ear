@@ -212,8 +212,8 @@ export const DesktopProfilePage: React.FC = () => {
             await sendOtp(phone);
             setShowOtpInput(true);
             toast.success('Doğrulama kodu gönderildi');
-        } catch (error: any) {
-            toast.error(error.message || 'Kod gönderilemedi');
+        } catch (error: unknown) {
+            toast.error((error as Error).message || 'Kod gönderilemedi');
         } finally {
             setIsVerifyingPhone(false);
         }
@@ -228,8 +228,8 @@ export const DesktopProfilePage: React.FC = () => {
             setShowOtpInput(false);
             setOtpCode('');
             setIsEditingPhone(false);
-        } catch (error: any) {
-            toast.error(error.message || 'Doğrulama başarısız');
+        } catch (error: unknown) {
+            toast.error((error as Error).message || 'Doğrulama başarısız');
         } finally {
             setIsVerifyingPhone(false);
         }

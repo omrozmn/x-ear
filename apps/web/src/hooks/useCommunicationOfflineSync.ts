@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  createCommunicationTemplates,
-  updateCommunicationTemplate,
-  deleteCommunicationTemplate,
+  COMMUNICATION_SYNC_METADATA
+} from '../constants/storage-keys';
+import {
   listCommunicationTemplates,
-  listCommunicationMessages,
-  createCommunicationMessageSendSms,
-  createCommunicationMessageSendEmail
+  listCommunicationMessages
 } from '@/api/client/communications.client';
+import { indexedDBManager } from '../utils/indexeddb';
+import { outbox } from '../utils/outbox';
+import { IndexedDBManager } from '../utils/indexeddb';
 
 // Simplified types without idb dependency for now
 interface CommunicationMessage {
@@ -63,31 +64,14 @@ interface SyncStatus {
   error?: string;
 }
 
-interface OutboxItem {
-  id: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  data: Record<string, unknown>; // Use Record instead of any for payload
-  createdAt: string;
-  retryCount: number;
-  lastRetryAt?: string;
-  error?: string;
-}
-
-// Simple localStorage-based implementation for now
-class SimpleCommunicationSync {
-  private readonly STORAGE_KEYS = {
-    messages: 'communication_messages',
-    templates: 'communication_templates',
-    outbox: 'communication_outbox',
-    syncMetadata: 'communication_sync_metadata'
-  };
+// IndexedDB-based implementation
+class CommunicationSyncManager {
+  private readonly STORES = IndexedDBManager.STORES;
+  private readonly METADATA_KEY = COMMUNICATION_SYNC_METADATA;
 
   private syncInProgress = false;
   private listeners: Set<() => void> = new Set();
 
-  // Event handling
   addListener(callback: () => void): void {
     this.listeners.add(callback);
   }
@@ -102,57 +86,61 @@ class SimpleCommunicationSync {
 
   // Messages
   async saveMessage(message: Omit<CommunicationMessage, 'syncStatus'>): Promise<void> {
-    const messages = this.getMessages();
     const messageWithSync: CommunicationMessage = {
       ...message,
       syncStatus: 'pending',
       updatedAt: new Date().toISOString()
     };
 
-    messages.push(messageWithSync);
-    localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
+    await indexedDBManager.put(this.STORES.MESSAGES, messageWithSync);
 
-    // Add to outbox
-    this.addToOutbox('create', 'message', message.id, messageWithSync as unknown as Record<string, unknown>);
+    // Add to general outbox
+    const endpoint = message.type === 'sms' 
+      ? '/communications/messages/send-sms' 
+      : '/communications/messages/send-email';
+    
+    const payload = message.type === 'sms'
+      ? { phoneNumber: message.recipient, message: message.content, partyId: message.partyId }
+      : { toEmail: message.recipient, subject: message.subject || 'No Subject', bodyText: message.content, partyId: message.partyId };
+
+    await outbox.addOperation({
+      method: 'POST',
+      endpoint,
+      data: payload,
+      meta: { entityType: 'message', entityId: message.id }
+    });
+
     this.notifyListeners();
-
-    // Attempt sync if online
-    if (navigator.onLine) {
-      this.syncOutbox();
-    }
   }
 
   async updateMessage(id: string, updates: Partial<CommunicationMessage>): Promise<void> {
-    const messages = this.getMessages();
-    const index = messages.findIndex(m => m.id === id);
+    const messages = await this.getMessages();
+    const message = messages.find(m => m.id === id);
 
-    if (index === -1) throw new Error('Message not found');
+    if (!message) throw new Error('Message not found');
 
-    messages[index] = {
-      ...messages[index],
+    const updatedMessage = {
+      ...message,
       ...updates,
       syncStatus: 'pending',
       updatedAt: new Date().toISOString()
     };
 
-    localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
-    this.addToOutbox('update', 'message', id, updates as Record<string, unknown>);
+    await indexedDBManager.put(this.STORES.MESSAGES, updatedMessage);
+    // Note: Most message updates (status change etc) happen server-side, 
+    // but if we had a local update, we'd add to outbox here.
+    
     this.notifyListeners();
-
-    if (navigator.onLine) {
-      this.syncOutbox();
-    }
   }
 
-  getMessages(filters?: {
+  async getMessages(filters?: {
     type?: 'sms' | 'email';
     status?: string;
     partyId?: string;
     limit?: number;
     offset?: number;
-  }): CommunicationMessage[] {
-    const stored = localStorage.getItem(this.STORAGE_KEYS.messages);
-    let messages: CommunicationMessage[] = stored ? JSON.parse(stored) : [];
+  }): Promise<CommunicationMessage[]> {
+    let messages = await indexedDBManager.getAll<CommunicationMessage>(this.STORES.MESSAGES);
 
     // Apply filters
     if (filters?.type) {
@@ -180,65 +168,66 @@ class SimpleCommunicationSync {
 
   // Templates
   async saveTemplate(template: Omit<CommunicationTemplate, 'syncStatus'>): Promise<void> {
-    const templates = this.getTemplates();
     const templateWithSync: CommunicationTemplate = {
       ...template,
       syncStatus: 'pending'
     };
 
-    templates.push(templateWithSync);
-    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
+    await indexedDBManager.put(this.STORES.TEMPLATES, templateWithSync);
 
-    this.addToOutbox('create', 'template', template.id, templateWithSync as unknown as Record<string, unknown>);
+    await outbox.addOperation({
+      method: 'POST',
+      endpoint: '/communications/templates',
+      data: template,
+      meta: { entityType: 'template', entityId: template.id }
+    });
+
     this.notifyListeners();
-
-    if (navigator.onLine) {
-      this.syncOutbox();
-    }
   }
 
   async updateCommunicationTemplate(id: string, updates: Partial<CommunicationTemplate>): Promise<void> {
-    const templates = this.getTemplates();
-    const index = templates.findIndex(t => t.id === id);
+    const templates = await this.getTemplates();
+    const template = templates.find(t => t.id === id);
 
-    if (index === -1) throw new Error('Template not found');
+    if (!template) throw new Error('Template not found');
 
-    templates[index] = {
-      ...templates[index],
+    const updatedTemplate = {
+      ...template,
       ...updates,
       syncStatus: 'pending',
       updatedAt: new Date().toISOString()
     };
 
-    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
-    this.addToOutbox('update', 'template', id, updates as Record<string, unknown>);
-    this.notifyListeners();
+    await indexedDBManager.put(this.STORES.TEMPLATES, updatedTemplate);
+    
+    await outbox.addOperation({
+      method: 'PUT',
+      endpoint: `/communications/templates/${id}`,
+      data: updates,
+      meta: { entityType: 'template', entityId: id }
+    });
 
-    if (navigator.onLine) {
-      this.syncOutbox();
-    }
+    this.notifyListeners();
   }
 
   async deleteCommunicationTemplate(id: string): Promise<void> {
-    const templates = this.getTemplates();
-    const filtered = templates.filter(t => t.id !== id);
+    await indexedDBManager.delete(this.STORES.TEMPLATES, id);
+    
+    await outbox.addOperation({
+      method: 'DELETE',
+      endpoint: `/communications/templates/${id}`,
+      meta: { entityType: 'template', entityId: id }
+    });
 
-    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(filtered));
-    this.addToOutbox('delete', 'template', id, {});
     this.notifyListeners();
-
-    if (navigator.onLine) {
-      this.syncOutbox();
-    }
   }
 
-  getTemplates(filters?: {
+  async getTemplates(filters?: {
     type?: 'sms' | 'email';
     category?: string;
     active?: boolean;
-  }): CommunicationTemplate[] {
-    const stored = localStorage.getItem(this.STORAGE_KEYS.templates);
-    let templates: CommunicationTemplate[] = stored ? JSON.parse(stored) : [];
+  }): Promise<CommunicationTemplate[]> {
+    let templates = await indexedDBManager.getAll<CommunicationTemplate>(this.STORES.TEMPLATES);
 
     // Apply filters
     if (filters?.type) {
@@ -257,167 +246,47 @@ class SimpleCommunicationSync {
     return templates;
   }
 
-  // Outbox management
-  private addToOutbox(action: string, entityType: string, entityId: string, data: Record<string, unknown>): void {
-    const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
-    const outbox: OutboxItem[] = stored ? JSON.parse(stored) : [];
-
-    outbox.push({
-      id: `${entityType}_${action}_${entityId}_${Date.now()}`,
-      action,
-      entityType,
-      entityId,
-      data,
-      createdAt: new Date().toISOString(),
-      retryCount: 0
-    });
-
-    localStorage.setItem(this.STORAGE_KEYS.outbox, JSON.stringify(outbox));
-  }
-
-  async syncOutbox(): Promise<void> {
-    if (this.syncInProgress || !navigator.onLine) return;
+  // Sync from server
+  async syncFromServer(): Promise<void> {
+    if (!navigator.onLine || this.syncInProgress) return;
 
     this.syncInProgress = true;
     this.notifyListeners();
-
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
-      const outbox: OutboxItem[] = stored ? JSON.parse(stored) : [];
-      const remaining: OutboxItem[] = [];
-
-      for (const item of outbox) {
-        try {
-          await this.syncOutboxItem(item);
-          // Successfully synced, don't add to remaining
-        } catch (error) {
-          console.error('Failed to sync outbox item:', item.id, error);
-          item.retryCount++;
-          item.lastRetryAt = new Date().toISOString();
-          item.error = error instanceof Error ? error.message : 'Unknown error';
-          remaining.push(item);
-        }
-      }
-
-      localStorage.setItem(this.STORAGE_KEYS.outbox, JSON.stringify(remaining));
-    } finally {
-      this.syncInProgress = false;
-      this.notifyListeners();
-    }
-  }
-
-  private async syncOutboxItem(item: OutboxItem): Promise<void> {
-    try {
-      if (item.entityType === 'template') {
-        if (item.action === 'create') {
-          await createCommunicationTemplates(item.data as any);
-        } else if (item.action === 'update') {
-          await updateCommunicationTemplate(item.entityId, item.data as any);
-        } else if (item.action === 'delete') {
-          await deleteCommunicationTemplate(item.entityId);
-        }
-      } else if (item.entityType === 'message') {
-        if (item.action === 'create') {
-          const msgData = item.data;
-          if (msgData.type === 'sms') {
-            await createCommunicationMessageSendSms({
-              phoneNumber: msgData.recipient as string,
-              message: msgData.content as string,
-              partyId: msgData.partyId as string
-            });
-          } else if (msgData.type === 'email') {
-            await createCommunicationMessageSendEmail({
-              toEmail: msgData.recipient as string,
-              subject: (msgData.subject as string) || 'No Subject',
-              bodyText: msgData.content as string,
-              partyId: msgData.partyId as string
-            });
-          }
-        }
-      }
-
-    } catch (error) {
-      throw new Error(`Failed to sync ${item.action} ${item.entityType}: ${error}`);
-    }
-
-    // Update local sync status
-    if (item.action !== 'delete') {
-      if (item.entityType === 'message') {
-        const messages = this.getMessages();
-        const index = messages.findIndex(m => m.id === item.entityId);
-        if (index !== -1) {
-          messages[index].syncStatus = 'synced';
-          localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
-        }
-      } else if (item.entityType === 'template') {
-        const templates = this.getTemplates();
-        const index = templates.findIndex(t => t.id === item.entityId);
-        if (index !== -1) {
-          templates[index].syncStatus = 'synced';
-          localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
-        }
-      }
-    }
-  }
-
-  // Sync from server
-  async syncFromServer(): Promise<void> {
-    if (!navigator.onLine) return;
 
     try {
       await Promise.all([
         this.syncMessagesFromServer(),
         this.syncTemplatesFromServer()
       ]);
-      this.notifyListeners();
+      
+      localStorage.setItem(this.METADATA_KEY, JSON.stringify({
+        lastSyncTime: new Date().toISOString()
+      }));
     } catch (error) {
       console.error('Failed to sync from server:', error);
+    } finally {
+      this.syncInProgress = false;
+      this.notifyListeners();
     }
   }
 
   private async syncMessagesFromServer(): Promise<void> {
-    if (!navigator.onLine) return;
-
     try {
       const response = await listCommunicationMessages();
-      const result = (response as unknown as { data: unknown })?.data || response;
+      const result = (response as any)?.data || response;
 
-      if (!(result as Record<string, unknown>).success) return;
+      if (!result.success) return;
 
-      const serverMessages: CommunicationMessage[] = ((result as Record<string, unknown>).data as Record<string, unknown>[])?.map((msg: Record<string, unknown>) => ({
+      const serverMessages = result.data.map((msg: any) => ({
         ...msg,
-        // Ensure properties match CommunicationMessage interface
-        id: msg.id as string,
-        type: msg.type as 'sms' | 'email',
-        recipient: msg.recipient as string,
-        recipientName: msg.recipientName as string,
-        partyId: msg.partyId as string,
-        subject: msg.subject as string,
-        content: msg.content as string,
-        templateId: msg.templateId as string,
-        scheduledAt: msg.scheduledAt as string,
-        sentAt: msg.sentAt as string,
-        deliveredAt: msg.deliveredAt as string,
-        status: msg.status as 'draft' | 'scheduled' | 'sent' | 'delivered' | 'failed',
-        errorMessage: msg.errorMessage as string,
-        campaignId: msg.campaignId as string,
-        messageType: msg.messageType as 'manual' | 'appointment_reminder' | 'campaign' | 'automated',
-        createdAt: msg.createdAt as string,
-        updatedAt: msg.updatedAt as string,
-        syncStatus: 'synced' as const
-      })) || [];
+        syncStatus: 'synced'
+      }));
 
-      // Merge with local messages
-      const localMessages = this.getMessages();
-      const merged = [...serverMessages];
-
-      localMessages.forEach(local => {
-        if (!serverMessages.find(server => server.id === local.id)) {
-          merged.push(local);
-        }
-      });
-
-      localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(merged));
+      // In a real app, we'd do a more sophisticated merge
+      // For now, we update local DB with server truth
+      for (const msg of serverMessages) {
+        await indexedDBManager.put(this.STORES.MESSAGES, msg);
+      }
     } catch (error) {
       console.error('Failed to sync messages from server:', error);
     }
@@ -426,58 +295,33 @@ class SimpleCommunicationSync {
   private async syncTemplatesFromServer(): Promise<void> {
     try {
       const response = await listCommunicationTemplates();
+      const result = (response as any)?.data || response;
 
-      const result = (response as unknown as { data: unknown })?.data || response;
-      if (!(result as Record<string, unknown>).success) return;
+      if (!result.success) return;
 
-      const serverTemplates: CommunicationTemplate[] = ((result as Record<string, unknown>).data as Record<string, unknown>[])?.map((tmpl: Record<string, unknown>) => ({
+      const serverTemplates = result.data.map((tmpl: any) => ({
         ...tmpl,
-        // Ensure properties match CommunicationTemplate interface
-        id: tmpl.id as string,
-        name: tmpl.name as string,
-        description: tmpl.description as string,
-        templateType: tmpl.templateType as 'sms' | 'email',
-        category: tmpl.category as string,
-        subject: tmpl.subject as string,
-        bodyText: tmpl.bodyText as string,
-        bodyHtml: tmpl.bodyHtml as string,
-        variables: tmpl.variables as string[],
-        isActive: tmpl.isActive as boolean,
-        isSystem: tmpl.isSystem as boolean,
-        usageCount: tmpl.usageCount as number,
-        createdAt: tmpl.createdAt as string,
-        updatedAt: tmpl.updatedAt as string,
-        syncStatus: 'synced' as const
-      })) || [];
+        syncStatus: 'synced'
+      }));
 
-      // Merge with local templates
-      const localTemplates = this.getTemplates();
-      const merged = [...serverTemplates];
-
-      // Add local templates that aren't on server
-      localTemplates.forEach(local => {
-        if (!serverTemplates.find(server => server.id === local.id)) {
-          merged.push(local);
-        }
-      });
-
-      localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(merged));
+      for (const tmpl of serverTemplates) {
+        await indexedDBManager.put(this.STORES.TEMPLATES, tmpl);
+      }
     } catch (error) {
       console.error('Failed to sync templates from server:', error);
     }
   }
 
   // Status methods
-  getPendingSyncCount(): { messages: number; templates: number; outbox: number } {
-    const messages = this.getMessages().filter(m => m.syncStatus === 'pending');
-    const templates = this.getTemplates().filter(t => t.syncStatus === 'pending');
-    const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
-    const outbox = stored ? JSON.parse(stored) : [];
+  async getPendingSyncCount(): Promise<{ messages: number; templates: number; outbox: number }> {
+    const messages = await this.getMessages();
+    const templates = await this.getTemplates();
+    const stats = await outbox.getStats();
 
     return {
-      messages: messages.length,
-      templates: templates.length,
-      outbox: outbox.length
+      messages: messages.filter(m => m.syncStatus === 'pending').length,
+      templates: templates.filter(t => t.syncStatus === 'pending').length,
+      outbox: stats.pending
     };
   }
 
@@ -491,7 +335,7 @@ class SimpleCommunicationSync {
 }
 
 // Singleton instance
-const communicationSync = new SimpleCommunicationSync();
+const communicationSync = new CommunicationSyncManager();
 
 // React hook
 export const useCommunicationOfflineSync = () => {
@@ -501,22 +345,21 @@ export const useCommunicationOfflineSync = () => {
     pendingCount: { messages: 0, templates: 0, outbox: 0 }
   });
 
-  const updateSyncStatus = useCallback(() => {
+  const updateSyncStatus = useCallback(async () => {
+    const pendingCount = await communicationSync.getPendingSyncCount();
     setSyncStatus({
       isOnline: communicationSync.isOnline(),
       isSyncing: communicationSync.isSyncInProgress(),
-      pendingCount: communicationSync.getPendingSyncCount()
+      pendingCount
     });
   }, []);
 
   useEffect(() => {
-    // Initial status
     updateSyncStatus();
 
-    // Listen for online/offline events
     const handleOnline = () => {
       updateSyncStatus();
-      communicationSync.syncOutbox();
+      outbox.syncPendingOperations();
       communicationSync.syncFromServer();
     };
 
@@ -526,38 +369,32 @@ export const useCommunicationOfflineSync = () => {
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
-    // Listen for sync changes
     communicationSync.addListener(updateSyncStatus);
 
-    // Periodic sync - reduced from 30s to 5 minutes to prevent excessive requests
-    const interval = setInterval(() => {
-      if (navigator.onLine) {
-        communicationSync.syncOutbox();
-        communicationSync.syncFromServer();
-      }
-    }, 300000); // Changed from 30000 (30s) to 300000 (5 minutes)
+    // Initial sync
+    if (navigator.onLine) {
+      communicationSync.syncFromServer();
+    }
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       communicationSync.removeListener(updateSyncStatus);
-      clearInterval(interval);
     };
   }, [updateSyncStatus]);
 
   // API methods
   const saveMessage = useCallback(async (message: Omit<CommunicationMessage, 'syncStatus'>) => {
     await communicationSync.saveMessage(message);
-    updateSyncStatus();
+    await updateSyncStatus();
   }, [updateSyncStatus]);
 
   const updateMessage = useCallback(async (id: string, updates: Partial<CommunicationMessage>) => {
     await communicationSync.updateMessage(id, updates);
-    updateSyncStatus();
+    await updateSyncStatus();
   }, [updateSyncStatus]);
 
-  const getMessages = useCallback((filters?: {
+  const getMessages = useCallback(async (filters?: {
     type?: 'sms' | 'email';
     status?: string;
     partyId?: string;
@@ -569,20 +406,20 @@ export const useCommunicationOfflineSync = () => {
 
   const saveTemplate = useCallback(async (template: Omit<CommunicationTemplate, 'syncStatus'>) => {
     await communicationSync.saveTemplate(template);
-    updateSyncStatus();
+    await updateSyncStatus();
   }, [updateSyncStatus]);
 
   const updateCommunicationTemplate = useCallback(async (id: string, updates: Partial<CommunicationTemplate>) => {
     await communicationSync.updateCommunicationTemplate(id, updates);
-    updateSyncStatus();
+    await updateSyncStatus();
   }, [updateSyncStatus]);
 
   const deleteCommunicationTemplate = useCallback(async (id: string) => {
     await communicationSync.deleteCommunicationTemplate(id);
-    updateSyncStatus();
+    await updateSyncStatus();
   }, [updateSyncStatus]);
 
-  const getTemplates = useCallback((filters?: {
+  const getTemplates = useCallback(async (filters?: {
     type?: 'sms' | 'email';
     category?: string;
     active?: boolean;
@@ -591,9 +428,9 @@ export const useCommunicationOfflineSync = () => {
   }, []);
 
   const forcSync = useCallback(async () => {
-    await communicationSync.syncOutbox();
+    await outbox.syncPendingOperations();
     await communicationSync.syncFromServer();
-    updateSyncStatus();
+    await updateSyncStatus();
   }, [updateSyncStatus]);
 
   return {

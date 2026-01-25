@@ -1,9 +1,10 @@
 # Appointment Models (formerly Patient appointment models)
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 from .enums import AppointmentStatus
 import sqlalchemy as sa
 
-class Appointment(BaseModel):
+class Appointment(BaseModel, TenantScopedMixin):
     __tablename__ = 'appointments'
 
     # Primary key with auto-generated default
@@ -18,7 +19,7 @@ class Appointment(BaseModel):
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     clinician_id = db.Column(db.String(50))
     branch_id = db.Column(db.String(50))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
 
     __table_args__ = (
         sa.UniqueConstraint('tenant_id', 'clinician_id', 'date', 'time', name='uq_appointment_slot'),

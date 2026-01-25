@@ -1,12 +1,13 @@
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 import sqlalchemy as sa
 
 
-class Order(BaseModel):
+class Order(BaseModel, TenantScopedMixin):
     __tablename__ = 'orders'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('ord'))
-    tenant_id = db.Column(db.String(36), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     customer_id = db.Column(db.String(50), nullable=True)
     order_number = db.Column(db.String(50), unique=True, nullable=False)
     total_amount = db.Column(db.Numeric(12, 2), default=0)

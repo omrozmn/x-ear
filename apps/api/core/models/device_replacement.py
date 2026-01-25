@@ -1,15 +1,16 @@
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 from datetime import datetime
 import json
 
-class DeviceReplacement(BaseModel):
+class DeviceReplacement(BaseModel, TenantScopedMixin):
     __tablename__ = 'device_replacements'
     
     id = db.Column(db.String(50), primary_key=True)
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     old_device_id = db.Column(db.String(50), db.ForeignKey('devices.id'), nullable=False)
     new_inventory_id = db.Column(db.String(50), nullable=False)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     old_device_info = db.Column(db.Text)
     new_device_info = db.Column(db.Text)
     status = db.Column(db.String(50), default='pending_invoice')  # pending_invoice, invoice_created, completed
@@ -46,12 +47,12 @@ class DeviceReplacement(BaseModel):
         return result
 
 
-class ReturnInvoice(BaseModel):
+class ReturnInvoice(BaseModel, TenantScopedMixin):
     __tablename__ = 'return_invoices'
     
     id = db.Column(db.String(50), primary_key=True)
     replacement_id = db.Column(db.String(50), db.ForeignKey('device_replacements.id'), nullable=False)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     invoice_number = db.Column(db.String(100), nullable=False)
     supplier_name = db.Column(db.String(255))
     supplier_invoice_id = db.Column(db.String(50))

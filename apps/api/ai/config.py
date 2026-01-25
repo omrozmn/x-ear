@@ -13,6 +13,8 @@ Environment Variables:
 - AI_ENABLED: true/false - default: true
 - AI_RATE_LIMIT_PER_MINUTE: 60 (default)
 - AI_QUOTA_DEFAULT: 1000 (default requests per billing period)
+- REDIS_URL: redis://localhost:6379 (optional, for conversation memory)
+- AI_MEMORY_BACKEND: in_memory (default) or redis
 """
 
 import os
@@ -78,7 +80,7 @@ class AIRateLimitError(Exception):
 class ModelConfig:
     """Configuration for the AI model."""
     provider: str
-    model_id: str
+    ai_model_id: str
     base_url: str
     timeout_seconds: int
     max_tokens: int
@@ -125,12 +127,21 @@ class AIConfig:
         vision_endpoint = os.getenv("VISION_MODEL_ENDPOINT")
         
         # Default base URL if specific ones aren't set
-        default_base_url = os.getenv("AI_MODEL_BASE_URL", "http://localhost:11434")
+        # BUG-001: No default localhost in production
+        is_prod = os.getenv("ENVIRONMENT", "development").lower() in ("production", "prod", "staging")
+        default_base_url = os.getenv("AI_MODEL_BASE_URL")
+        
+        if not default_base_url and not is_prod:
+            default_base_url = "http://localhost:11434"
+            
+        if self._enabled and is_prod and not (text_endpoint or vision_endpoint or default_base_url):
+            logger.error("CRITICAL: AI_MODEL_BASE_URL or individual endpoints (TEXT/VISION) MUST be set in production!")
+            raise ValueError("AI configuration error: Missing model endpoints in production")
 
         self._model = ModelConfig(
             provider=os.getenv("AI_MODEL_PROVIDER", "local"),
-            model_id=os.getenv("AI_MODEL_ID", "qwen2.5:7b-instruct"), # Default Smart
-            base_url=vision_endpoint or default_base_url, # Vision/Smart model uses Vision Endpoint
+            ai_model_id=os.getenv("AI_MODEL_ID", "qwen2.5:7b-instruct"), # Default Smart
+            base_url=vision_endpoint or default_base_url or "http://localhost:11434", 
             timeout_seconds=int(os.getenv("AI_MODEL_TIMEOUT_SECONDS", "180")),
             max_tokens=int(os.getenv("AI_MODEL_MAX_TOKENS", "2048")),
             temperature=float(os.getenv("AI_MODEL_TEMPERATURE", "0.1")),
@@ -138,8 +149,8 @@ class AIConfig:
         
         self._fast_model = ModelConfig(
             provider=os.getenv("AI_MODEL_PROVIDER", "local"),
-            model_id=os.getenv("AI_FAST_MODEL_ID", "qwen2.5:3b"), # Default Fast
-            base_url=text_endpoint or default_base_url, # Fast/Text model uses Text Endpoint
+            ai_model_id=os.getenv("AI_FAST_MODEL_ID", "qwen2.5:3b"), # Default Fast
+            base_url=text_endpoint or default_base_url or "http://localhost:11434",
             timeout_seconds=int(os.getenv("AI_FAST_MODEL_TIMEOUT_SECONDS", "3")),  # 3 second timeout for fast model
             max_tokens=1024,
             temperature=0.1,
@@ -161,6 +172,11 @@ class AIConfig:
             rate_limit_per_minute=int(os.getenv("AI_RATE_LIMIT_PER_MINUTE", "60")),
             rate_limit_per_user_per_minute=int(os.getenv("AI_RATE_LIMIT_PER_USER_PER_MINUTE", "20")),
         )
+        
+        # Memory configuration
+        # BUG-005: support persistence
+        self._memory_backend = os.getenv("AI_MEMORY_BACKEND", "in_memory").lower()
+        self._redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     
     @classmethod
     def get(cls) -> "AIConfig":
@@ -215,6 +231,16 @@ class AIConfig:
     def is_read_only(self) -> bool:
         """Check if AI is in read-only mode."""
         return self._phase == AIPhase.A
+
+    @property
+    def memory_backend(self) -> str:
+        """Memory backend type (in_memory, redis)."""
+        return self._memory_backend
+
+    @property
+    def redis_url(self) -> str:
+        """Redis connection URL."""
+        return self._redis_url
 
 
 def require_phase(minimum_phase: AIPhase) -> Callable:

@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { storageMigrator } from './utils/storage-migrator'
 import { tokenManager } from './utils/token-manager'
 import { MantineProvider } from '@mantine/core';
+import { AUTH_STORAGE_PERSIST } from './constants/storage-keys';
 
 console.log('main.tsx loaded');
 
@@ -13,7 +14,7 @@ console.log('main.tsx loaded');
 function syncTokensFromZustand() {
   try {
     // Read directly from localStorage to avoid Zustand state timing issues
-    const authStorage = localStorage.getItem('auth-storage');
+    const authStorage = localStorage.getItem(AUTH_STORAGE_PERSIST);
     if (authStorage) {
       const parsed = JSON.parse(authStorage);
       const zustandToken = parsed?.state?.token;

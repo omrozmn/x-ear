@@ -82,11 +82,12 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
         resetForm();
       }, 1500);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Replacement error:', error);
+      const err = error as { response?: { data?: { detail?: string } }; message?: string };
       updateState({
         isLoading: false,
-        error: error?.response?.data?.detail || error?.message || 'Değişim işlemi sırasında hata oluştu. Lütfen tekrar deneyin.'
+        error: err?.response?.data?.detail || err?.message || 'Değişim işlemi sırasında hata oluştu. Lütfen tekrar deneyin.'
       });
     }
   };

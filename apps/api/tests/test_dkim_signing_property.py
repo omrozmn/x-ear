@@ -28,6 +28,8 @@ from hypothesis import given, strategies as st, settings, assume, HealthCheck
 from email.message import EmailMessage
 from datetime import datetime, timezone
 
+import pytest
+dkim = pytest.importorskip("dkim")
 from services.dkim_signing_service import DKIMSigningService
 
 

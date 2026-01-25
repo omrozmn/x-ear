@@ -10,6 +10,10 @@ import {
   createPatientDocuments as createPartyDocuments,
   deletePatientDocument as deletePartyDocument
 } from '@/api/client/documents.client';
+import type {
+  ResponseEnvelopeListDocumentRead,
+  DocumentRead
+} from '@/api/generated/schemas';
 
 
 interface Document {
@@ -55,18 +59,17 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
     try {
       setIsLoading(true);
       // Load documents from API using ORVAL-generated client
-      // const { documentsGetPartyDocuments } = await import('@/api/generated');
-      const response = await listPartyDocuments(partyId) as Record<string, any>;
+      const response: ResponseEnvelopeListDocumentRead = await listPartyDocuments(partyId);
 
       // Transform API response to component format
-      const apiDocuments: Document[] = (response?.data || response || []).map((doc: Record<string, any>) => ({
+      const apiDocuments: Document[] = (response?.data || []).map((doc: DocumentRead) => ({
         id: doc.id || '',
         name: doc.fileName || doc.originalName || 'Untitled',
         type: (doc.type || 'other') as Document['type'],
         uploadDate: doc.uploadedAt || doc.createdAt || new Date().toISOString(),
         size: doc.size ? `${(doc.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown',
         status: (doc.status || 'completed') as Document['status'],
-        url: doc.url
+        url: doc.filePath || undefined
       }));
 
       setDocuments(apiDocuments);
@@ -156,7 +159,14 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         });
 
         // Prepare document data for API
-        const documentData: Record<string, any> = {
+        const documentData: {
+          fileName: string;
+          originalName?: string;
+          type: string;
+          content: string;
+          mimeType?: string;
+          metadata?: Record<string, unknown>;
+        } = {
           fileName: file.name,
           originalName: file.name,
           type: selectedDocumentType === 'all' ? 'other' : selectedDocumentType,
@@ -169,7 +179,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         };
 
         // Upload using ORVAL-generated client
-        await createPartyDocuments(partyId, documentData as any);
+        await createPartyDocuments(partyId, documentData);
 
         // Complete progress
         clearInterval(progressInterval);

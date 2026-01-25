@@ -69,7 +69,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
     if (!operationType) return;
 
     // Build operation payload only with relevant fields for the selected operation
-    const data: any = {};
+    const data: Record<string, unknown> = {};
     switch (operationType) {
       case 'delete':
         break;

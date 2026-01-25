@@ -30,7 +30,7 @@ const Tabs: React.FC<{
     <div className={className}>
       {React.Children.map(children, child =>
         React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<any>, { activeValue: value, onValueChange })
+          ? React.cloneElement(child as React.ReactElement<{ activeValue?: string; onValueChange?: (value: string) => void }>, { activeValue: value, onValueChange })
           : child
       )}
     </div>
@@ -48,7 +48,7 @@ const TabsList: React.FC<{
       <nav className="-mb-px flex space-x-8" aria-label="Tabs">
         {React.Children.map(children, child =>
           React.isValidElement(child)
-            ? React.cloneElement(child as React.ReactElement<any>, { activeValue, onValueChange })
+            ? React.cloneElement(child as React.ReactElement<{ activeValue?: string; onValueChange?: (value: string) => void }>, { activeValue, onValueChange })
             : child
         )}
       </nav>

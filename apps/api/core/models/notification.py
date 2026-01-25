@@ -1,7 +1,8 @@
 # Notification Model
 from .base import db, BaseModel, gen_id, JSONMixin
+from .mixins import TenantScopedMixin
 
-class Notification(BaseModel, JSONMixin):
+class Notification(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'notifications'
 
     # Primary key with auto-generated default
@@ -14,7 +15,7 @@ class Notification(BaseModel, JSONMixin):
     
     # Target user
     user_id = db.Column(db.String(50), nullable=False)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Notification content
     title = db.Column(db.String(200), nullable=False)

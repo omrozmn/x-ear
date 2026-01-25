@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from models.commission_ledger import CommissionLedger
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 class CommissionService:
     @staticmethod
@@ -12,8 +12,8 @@ class CommissionService:
             event=event,
             amount=amount,
             status=status,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         db.add(commission)
         db.commit()
@@ -25,7 +25,7 @@ class CommissionService:
         commission = db.query(CommissionLedger).filter_by(id=commission_id).first()
         if commission:
             commission.status = status
-            commission.updated_at = datetime.utcnow()
+            commission.updated_at = datetime.now(timezone.utc)
             db.commit()
             db.refresh(commission)
         return commission

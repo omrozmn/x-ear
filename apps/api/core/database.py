@@ -283,10 +283,10 @@ def gen_sale_id(db_session=None) -> str:
     If `db_session` is provided, it is used to find the max sale id for today
     to keep the sequence stable; otherwise it falls back to NN="01".
     """
-    from datetime import datetime
+    from datetime import datetime, timezone
     from sqlalchemy import func
 
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     yy = str(now.year)[-2:]
     mm = f"{now.month:02d}"
     dd = f"{now.day:02d}"
@@ -359,62 +359,25 @@ def json_load(raw) -> dict:
 from sqlalchemy.orm import with_loader_criteria
 from config.tenant_config import get_tenant_strict_mode, TenantBehavior
 
-@event.listens_for(SessionLocal, 'do_orm_execute')
+@event.listens_for(Session, 'do_orm_execute')
 def receive_do_orm_execute(execute_state):
     """
     Automatically apply tenant filter to all SELECT queries on TenantScopedMixin models.
-    
-    CRITICAL RULES:
-    1. Only filters TenantScopedMixin subclasses (NOT all Base subclasses)
-    2. Respects _skip_tenant_filter context variable
-    3. In strict mode, raises error if tenant context is missing
-    4. In non-strict mode, logs warning if tenant context is missing
-    
-    Pass 'skip_filter' context var to bypass (use unbound_session context manager).
     """
-    if should_skip_tenant_filter():
-        logger.debug("Tenant filter skipped (unbound session)")
-        return
-
-    # Only apply to SELECT
-    if not execute_state.is_select:
+    if should_skip_tenant_filter() or not execute_state.is_select:
         return
 
     tenant_id = get_current_tenant_id()
-    
     if not tenant_id:
-        # Check strict mode behavior
-        behavior = TenantBehavior.get_query_behavior()
-        if behavior == "error":
-            from utils.exceptions import TenantContextRequiredError
-            raise TenantContextRequiredError(
-                "Query executed without tenant context in strict mode"
-            )
-        elif behavior == "warning":
-            logger.warning(
-                "⚠️ Query executed without tenant context - "
-                "this may return cross-tenant data"
-            )
         return
+
+    from core.models.mixins import TenantScopedMixin
     
-    # Import TenantScopedMixin here to avoid circular imports
-    # For backward compatibility, also check for hasattr(cls, 'tenant_id')
-    # This allows existing models to work without inheriting TenantScopedMixin
-    from core.models.mixins import TenantScopedMixin, is_tenant_scoped
-    
-    # Create a filter that works with both TenantScopedMixin and legacy models
-    def tenant_filter(cls, t_id=tenant_id):
-        # Check if this class has tenant_id attribute
-        if hasattr(cls, 'tenant_id'):
-            return cls.tenant_id == t_id
-        return None
-    
+    # Apply filter targeting TenantScopedMixin
     execute_state.statement = execute_state.statement.options(
         with_loader_criteria(
-            # Use Base for now to support legacy models
-            # TODO: Migrate all models to TenantScopedMixin and change to TenantScopedMixin
-            Base, 
-            tenant_filter,
+            TenantScopedMixin, 
+            lambda cls: cls.tenant_id == tenant_id,
             include_aliases=True
         )
     )

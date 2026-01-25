@@ -90,7 +90,7 @@ export const MobileDashboard: React.FC = () => {
                         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
                             {recentActivity && recentActivity.length > 0 ? (
                                 <div className="divide-y divide-gray-100">
-                                    {recentActivity.map((activity: any, idx: number) => (
+                                    {recentActivity.map((activity: { description?: string; timestamp?: string; user?: string }, idx: number) => (
                                         <div key={idx} className="p-4 flex gap-3 active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
                                             <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
                                                 <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />

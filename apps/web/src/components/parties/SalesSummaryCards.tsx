@@ -12,7 +12,21 @@ interface ExtendedSaleRead extends SaleRead {
 
 interface SalesSummaryCardsProps {
   sales: SaleRead[];
-  sgkCoverageCalculation?: any;
+  sgkCoverageCalculation?: {
+    totalCoverage: number;
+    partyPayment: number;
+    deviceCoverage?: {
+      maxCoverage: number;
+      coveragePercentage: number;
+      remainingEntitlement: number;
+    } | null;
+    batteryCoverage?: {
+      maxCoverage: number;
+      coveragePercentage: number;
+      remainingEntitlement: number;
+    } | null;
+    totalCoveragePercentage?: number;
+  } | null;
 }
 
 export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({

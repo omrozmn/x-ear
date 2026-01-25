@@ -16,16 +16,36 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
+import { type Party } from '../../types/party';
 
-interface ProcessingResult {
+export interface MatchedParty {
+  id?: string;
+  name?: string;
+  tcNumber?: string;
+  party?: Party;
+  match_details?: {
+    confidence?: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface Entity {
+  type?: string;
+  value?: string;
+  confidence?: number;
+  [key: string]: unknown;
+}
+
+export interface ProcessingResult {
   fileName: string;
   status: 'processed' | 'error';
   result?: {
-    matched_party?: any;
+    matched_party?: MatchedParty;
     pdf_generated?: boolean;
     pdf_filename?: string;
     document_type?: string;
-    entities?: any[];
+    entities?: Entity[];
     confidence_score?: number;
     processing_time?: number;
     file_size?: number;
@@ -160,9 +180,9 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             <div className="text-sm font-semibold text-green-800">
               {data.matched_party?.party?.fullName || 'Hasta seçilmedi'}
             </div>
-            {data.matched_party?.party?.tcNo && (
+            {data.matched_party?.party?.tcNumber && (
               <div className="text-xs text-green-600 mt-1">
-                TC: {data.matched_party.party.tcNo}
+                TC: {data.matched_party.party.tcNumber}
               </div>
             )}
           </div>

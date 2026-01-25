@@ -1,8 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { useCallback, useMemo } from 'react';
-import { customInstance } from '../api/orval-mutator';
-
+import {
+  useListPermissionMy,
+  useListPermissions,
+  useGetPermissionRole,
+  useUpdatePermissionRole,
+  ListPermissionsQueryResult,
+  GetPermissionRoleQueryResult
+} from '../api/generated/permissions/permissions';
 
 // Permission categories
 export const PERMISSION_CATEGORIES = {
@@ -22,86 +28,6 @@ export const PERMISSION_CATEGORIES = {
 
 export type PermissionCategory = keyof typeof PERMISSION_CATEGORIES;
 
-// API Base URL
-const _API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
-
-// Helper function to make authenticated requests
-async function authFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  let token: string | null = null;
-  try {
-    if (typeof window !== 'undefined') {
-      token = (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ ||
-        localStorage.getItem('x-ear.auth.token@v1') ||
-        localStorage.getItem('auth_token');
-    }
-  } catch {
-    token = localStorage.getItem('auth_token');
-  }
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {}),
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  // Use customInstance instead of fetch - maintains auth + retry logic
-  const response = await customInstance<T>({
-    url: endpoint,
-    method: options.method || 'GET',
-    headers,
-    data: options.body ? JSON.parse(options.body as string) : undefined
-  });
-
-  return response;
-}
-
-// Permission response from API
-interface MyPermissionsResponse {
-  success: boolean;
-  data: {
-    permissions: string[];
-    role: string;
-    isSuperAdmin: boolean;
-  };
-}
-
-interface PermissionGroup {
-  category: string;
-  label: string;
-  icon: string;
-  permissions: {
-    id: string;
-    name: string;
-    description: string | null;
-  }[];
-}
-
-interface AllPermissionsResponse {
-  success: boolean;
-  data: PermissionGroup[];
-  all: {
-    id: string;
-    name: string;
-    description: string | null;
-  }[];
-}
-
-interface RolePermissionsResponse {
-  success: boolean;
-  data: {
-    role: {
-      id: string;
-      name: string;
-      description: string | null;
-      isSystem: boolean;
-    };
-    permissions: string[];
-  };
-}
-
 /**
  * Hook to check and manage user permissions
  */
@@ -114,12 +40,12 @@ export function usePermissions() {
     isLoading,
     error,
     refetch
-  } = useQuery<MyPermissionsResponse>({
-    queryKey: ['permissions', 'my'],
-    queryFn: () => authFetch<MyPermissionsResponse>('/api/permissions/my'),
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+  } = useListPermissionMy({
+    query: {
+      enabled: isAuthenticated,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    }
   });
 
   const permissions = useMemo(() =>
@@ -190,30 +116,30 @@ export function usePermissions() {
 /**
  * Hook to fetch all permissions (admin only)
  */
-export function useAllPermissions() {
+export function useAllPermissions(): UseQueryResult<ListPermissionsQueryResult | undefined, unknown> {
   const { isAuthenticated, user } = useAuthStore();
   const isAdmin = user?.role === 'admin' || user?.role === 'tenant_admin';
 
-  return useQuery<AllPermissionsResponse>({
-    queryKey: ['permissions', 'all'],
-    queryFn: () => authFetch<AllPermissionsResponse>('/api/permissions'),
-    enabled: isAuthenticated && isAdmin,
-    staleTime: 5 * 60 * 1000,
+  return useListPermissions({
+    query: {
+      enabled: isAuthenticated && isAdmin,
+      staleTime: 5 * 60 * 1000,
+    }
   });
 }
 
 /**
  * Hook to fetch permissions for a specific role (admin only)
  */
-export function useRolePermissions(roleName: string | null) {
+export function useRolePermissions(roleName: string | null): UseQueryResult<GetPermissionRoleQueryResult | undefined, unknown> {
   const { isAuthenticated, user } = useAuthStore();
   const isAdmin = user?.role === 'admin' || user?.role === 'tenant_admin';
 
-  return useQuery<RolePermissionsResponse>({
-    queryKey: ['permissions', 'role', roleName],
-    queryFn: () => authFetch<RolePermissionsResponse>(`/api/permissions/role/${roleName}`),
-    enabled: isAuthenticated && isAdmin && !!roleName,
-    staleTime: 5 * 60 * 1000,
+  return useGetPermissionRole(roleName || '', {
+    query: {
+      enabled: isAuthenticated && isAdmin && !!roleName,
+      staleTime: 5 * 60 * 1000,
+    }
   });
 }
 
@@ -223,17 +149,13 @@ export function useRolePermissions(roleName: string | null) {
 export function useUpdateRolePermissions() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({ roleName, permissions }: { roleName: string; permissions: string[] }) => {
-      return authFetch(`/api/permissions/role/${roleName}`, {
-        method: 'PUT',
-        body: JSON.stringify({ permissions }),
-      });
-    },
-    onSuccess: (_, variables) => {
-      // Invalidate role permissions cache
-      queryClient.invalidateQueries({ queryKey: ['permissions', 'role', variables.roleName] });
-      queryClient.invalidateQueries({ queryKey: ['permissions', 'my'] });
-    },
+  return useUpdatePermissionRole({
+    mutation: {
+      onSuccess: (_, variables) => {
+        // Invalidate role permissions cache
+        queryClient.invalidateQueries({ queryKey: [`/api/permissions/role/${variables.roleName}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/permissions/my`] });
+      },
+    }
   });
 }

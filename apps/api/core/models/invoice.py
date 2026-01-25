@@ -4,8 +4,9 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 
-class Invoice(BaseModel):
+class Invoice(BaseModel, TenantScopedMixin):
     """Invoice model for device sales"""
     __tablename__ = 'invoices'
     
@@ -14,7 +15,7 @@ class Invoice(BaseModel):
     sale_id = Column(String(50), ForeignKey('sales.id'), nullable=True, index=True)  # Link to sale
     party_id = Column(String(50), ForeignKey('parties.id'), nullable=True, index=True)  # Nullable - iade faturaları, cari hesap faturaları için hasta olmayabilir
     device_id = Column(String(50), ForeignKey('devices.id'), nullable=True)
-    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Invoice details
@@ -88,14 +89,14 @@ class Invoice(BaseModel):
         }
 
 
-class Proforma(BaseModel):
+class Proforma(BaseModel, TenantScopedMixin):
     """Proforma (Price Quote) model"""
     __tablename__ = 'proformas'
     
     id = Column(Integer, primary_key=True)
     proforma_number = Column(String(50), unique=True, nullable=False, index=True)
     party_id = Column(String(50), ForeignKey('parties.id'), nullable=True, index=True)  # Nullable - cari hesap teklifleri için hasta olmayabilir
-    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Proforma details

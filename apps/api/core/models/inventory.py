@@ -4,6 +4,7 @@
 from datetime import datetime, timezone
 import json
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 
 def now_utc():
     """Return current UTC timestamp"""
@@ -69,7 +70,7 @@ UNIT_TYPES = [
 ]
 
 
-class InventoryItem(BaseModel):
+class InventoryItem(BaseModel, TenantScopedMixin):
     """
     Inventory model represents products in stock.
     Supports both serial-numbered items (hearing aids) and bulk items (batteries, accessories).
@@ -79,7 +80,7 @@ class InventoryItem(BaseModel):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(50), primary_key=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     name = db.Column(db.String(200), nullable=False)
     brand = db.Column(db.String(100), nullable=False)
@@ -104,9 +105,9 @@ class InventoryItem(BaseModel):
     # Pricing
     price = db.Column(db.Float, nullable=False, default=0.0)
     cost = db.Column(db.Float, default=0.0)  # Cost/purchase price
-    # VAT/KDV rate stored as percentage (e.g. 18 for 18%)
+    # VAT/KDV rate stored as percentage (e.g. 20 for 20%)
     # Stored as 'kdv_rate' in DB for consistency with previous migrations and schema
-    kdv_rate = db.Column('kdv_rate', db.Float, default=18.0)
+    kdv_rate = db.Column('kdv_rate', db.Float, default=20.0)
     # Whether the stored price and cost include VAT (KDV) already
     price_includes_kdv = db.Column('price_includes_kdv', db.Boolean, default=False)
     cost_includes_kdv = db.Column('cost_includes_kdv', db.Boolean, default=False)
