@@ -8313,3 +8313,63 @@ Traceback (most recent call last):
     from models.mixins import TenantScopedMixin
 ModuleNotFoundError: No module named 'models.mixins'
 {"timestamp": "2026-01-25T22:52:16.668305+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-25T23:11:04.626031+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'core/models/efatura_outbox.py'. Reloading...
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 18, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 124, in <module>
+    from .tenants import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/tenants.py", line 28, in <module>
+    from core.models.enums import ProductCode
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/__init__.py", line 35, in <module>
+    from .subscription import Subscription
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/subscription.py", line 10, in <module>
+    from models.mixins import TenantScopedMixin
+ModuleNotFoundError: No module named 'models.mixins'
+{"timestamp": "2026-01-25T23:11:15.104430+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'core/models/commission_ledger.py'. Reloading...
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 18, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 124, in <module>
+    from .tenants import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/tenants.py", line 28, in <module>
+    from core.models.enums import ProductCode
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/__init__.py", line 35, in <module>
+    from .subscription import Subscription
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/subscription.py", line 10, in <module>
+    from models.mixins import TenantScopedMixin
+ModuleNotFoundError: No module named 'models.mixins'

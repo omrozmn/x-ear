@@ -1,15 +1,16 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 
 
-class EFaturaOutbox(BaseModel):
+class EFaturaOutbox(BaseModel, TenantScopedMixin):
     __tablename__ = 'efatura_outbox'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     invoice_id = Column(String, nullable=True, index=True)
     replacement_id = Column(String, nullable=True, index=True)
-    tenant_id = Column(String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     file_name = Column(String, nullable=True)
     ettn = Column(String, nullable=True)
     uuid = Column(String, nullable=True)
