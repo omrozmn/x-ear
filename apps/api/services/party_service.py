@@ -392,8 +392,8 @@ class PartyService:
         # Map assignments to the structure expected by frontend
         mapped_devices = []
         for assignment in assignments:
-            # Get full dict from model - this includes createdAt, assignedDate, sgkScheme, paymentMethod, etc.
-            d = assignment.to_dict() if hasattr(assignment, 'to_dict') else {}
+            # legacy: Complex hydration logic requires dict manipulation before schema conversion
+            d = assignment.to_dict() if hasattr(assignment, 'to_dict') else {}  # Get full dict from model
             
             # Hydrate with details from linked Device or Inventory
             brand = d.get('brand')

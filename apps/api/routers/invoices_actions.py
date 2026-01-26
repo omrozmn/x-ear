@@ -57,7 +57,9 @@ async def issue_invoice(
         
         # 3. Construct Payload for UBL Generation
         # Convert Invoice model + its relations to a dict suitable for ubl_utils
-        invoice_dict = invoice.to_dict()
+        # legacy: UBL generation requires dict format - TODO: refactor to use Pydantic schema
+        to_dict_method = getattr(invoice, 'to_dict', None)
+        invoice_dict = to_dict_method() if to_dict_method else {}
         invoice_dict['supplier'] = {
             'name': tenant.company_name or tenant.name,
             'tax_id': tenant_settings.get("vkn") or tenant_settings.get("tckn"),
