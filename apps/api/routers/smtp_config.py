@@ -26,8 +26,8 @@ from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.email import (
-    SMTPConfigCreate,
-    SMTPConfigResponse,
+    SmtpConfigCreate,
+    SmtpConfigResponse,
     SendTestEmailRequest,
     SendTestEmailResponse,
 )
@@ -66,17 +66,17 @@ def get_email_service(
 
 @router.post(
     "/config",
-    response_model=ResponseEnvelope[SMTPConfigResponse],
+    response_model=ResponseEnvelope[SmtpConfigResponse],
     operation_id="createOrUpdateSMTPConfig",
     status_code=200
 )
 async def create_or_update_smtp_config(
-    config: SMTPConfigCreate,
+    config: SmtpConfigCreate,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("integrations.smtp.manage")),
     smtp_config_service: SMTPConfigService = Depends(get_smtp_config_service),
     email_service: EmailService = Depends(get_email_service)
-) -> ResponseEnvelope[SMTPConfigResponse]:
+) -> ResponseEnvelope[SmtpConfigResponse]:
     """
     Create or update SMTP configuration for current tenant.
 
@@ -158,7 +158,7 @@ async def create_or_update_smtp_config(
         db.refresh(config_model)
 
         # Serialize response (password excluded by schema)
-        response_data = SMTPConfigResponse.model_validate(config_model)
+        response_data = SmtpConfigResponse.model_validate(config_model)
 
         logger.info(
             f"SMTP configuration saved successfully for tenant {tenant_id}",
@@ -183,7 +183,7 @@ async def create_or_update_smtp_config(
 
 @router.get(
     "/config",
-    response_model=ResponseEnvelope[Optional[SMTPConfigResponse]],
+    response_model=ResponseEnvelope[Optional[SmtpConfigResponse]],
     operation_id="getSMTPConfig",
     status_code=200
 )
@@ -191,7 +191,7 @@ async def get_smtp_config(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("integrations.smtp.view")),
     smtp_config_service: SMTPConfigService = Depends(get_smtp_config_service)
-) -> ResponseEnvelope[Optional[SMTPConfigResponse]]:
+) -> ResponseEnvelope[Optional[SmtpConfigResponse]]:
     """
     Get active SMTP configuration for current tenant.
 
@@ -246,7 +246,7 @@ async def get_smtp_config(
             )
 
         # Serialize response (password excluded by schema)
-        response_data = SMTPConfigResponse.model_validate(config)
+        response_data = SmtpConfigResponse.model_validate(config)
 
         logger.debug(
             f"Retrieved SMTP configuration for tenant {tenant_id}",
