@@ -3315,3 +3315,459 @@ You may be able to resolve this warning by setting `model_config['protected_name
 INFO:     Started server process [10140]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+{"timestamp": "2026-01-26T22:07:46.729127+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'schemas/campaigns.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [10140]
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+python3(24262) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SMSLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SMSLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:07:48.733474+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T22:07:53.684063+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'schemas/campaigns.py'. Reloading...
+python3(24288) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:07:54.307116+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T22:08:00.965613+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'schemas/communications.py'. Reloading...
+python3(24406) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:08:16.486885+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24528) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:08:16.853529+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24636) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:08:23.248524+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24648) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:08:30.430210+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24773) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:08:30.795152+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24775) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:08:36.884614+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24808) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:08:44.678677+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24904) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:08:45.037701+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+python3(24907) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:08:51.740257+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'schemas/__init__.py'. Reloading...
+python3(25026) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:08:52.102894+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "4 changes detected"}
+WARNING:  WatchFiles detected changes in 'schemas/__init__.py'. Reloading...
+python3(25029) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:08:58.566430+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'schemas/__init__.py'. Reloading...
+python3(25148) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:08:58.975034+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 19, in <module>
+    from fastapi_app.middleware import envelope_error, request_id_middleware
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/fastapi_app/middleware.py", line 11, in <module>
+    from schemas.base import ApiError, ResponseEnvelope
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/__init__.py", line 149, in <module>
+    from .campaigns import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 113, in <module>
+    class SmsLogRead(IDMixin, TimestampMixin):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py", line 118, in SmsLogRead
+    status: SMSLogStatus
+            ^^^^^^^^^^^^
+NameError: name 'SMSLogStatus' is not defined. Did you mean: 'SmsLogStatus'?
+{"timestamp": "2026-01-26T22:09:05.734631+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'schemas/campaigns.py'. Reloading...
+python3(25162) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:09:06.517032+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 245, in <module>
+    from routers import parties, auth, users
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/__init__.py", line 13, in <module>
+    from . import devices
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/devices.py", line 23, in <module>
+    from schemas.campaigns import CampaignUpdate, SMSLogRead
+ImportError: cannot import name 'SMSLogRead' from 'schemas.campaigns' (/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py). Did you mean: 'SmsLogRead'?
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+{"timestamp": "2026-01-26T22:09:12.475738+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/devices.py'. Reloading...
+python3(25288) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:09:12.841750+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/devices.py'. Reloading...
+python3(25298) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 245, in <module>
+    from routers import parties, auth, users
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/__init__.py", line 13, in <module>
+    from . import devices
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/devices.py", line 86, in <module>
+    SMSLogRead,
+    ^^^^^^^^^^
+NameError: name 'SMSLogRead' is not defined. Did you mean: 'SmsLogRead'?
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+{"timestamp": "2026-01-26T22:09:14.250601+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T22:09:20.965437+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/devices.py'. Reloading...
+python3(25417) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:09:22.339562+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T22:09:22.952577+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "6 changes detected"}
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 425, in <module>
+    from routers import schema_registry
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/schema_registry.py", line 11, in <module>
+    from schemas.campaigns import SMSLogRead
+ImportError: cannot import name 'SMSLogRead' from 'schemas.campaigns' (/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/campaigns.py). Did you mean: 'SmsLogRead'?
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+{"timestamp": "2026-01-26T22:09:28.570461+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/schema_registry.py'. Reloading...
+python3(25546) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 425, in <module>
+    from routers import schema_registry
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/schema_registry.py", line 17, in <module>
+    class SchemaRegistryResponse(AppBaseModel):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/schema_registry.py", line 26, in SchemaRegistryResponse
+    sms_log_read: Optional[SMSLogRead] = None
+                           ^^^^^^^^^^
+NameError: name 'SMSLogRead' is not defined. Did you mean: 'SmsLogRead'?
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+{"timestamp": "2026-01-26T22:09:31.207081+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T22:09:35.623360+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/schema_registry.py'. Reloading...
+python3(25563) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:09:38.248651+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_id" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_version" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_available" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_provider" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+INFO:     Started server process [25563]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

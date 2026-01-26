@@ -14,10 +14,10 @@ from models.campaign import SMSLog
 from core.models.party import Party
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope, ResponseMeta
-from schemas.campaigns import SMSLogRead
+from schemas.campaigns import SmsLogRead
 from schemas.communications import (
     EmailLogRead, CommunicationTemplateRead, CommunicationHistoryRead,
-    SendSMS, SendEmail, TemplateCreate, HistoryCreate
+    SendSms, SendEmail, TemplateCreate, HistoryCreate
 )
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ async def list_messages(
             
             for sms in sms_query.order_by(desc(SMSLog.created_at)).all():
                 # Use Pydantic schema for type-safe serialization (NO to_dict())
-                msg_dict = SMSLogRead.model_validate(sms).model_dump(by_alias=True)
+                msg_dict = SmsLogRead.model_validate(sms).model_dump(by_alias=True)
                 msg_dict["messageType"] = "sms"
                 messages.append(msg_dict)
         
@@ -114,9 +114,9 @@ async def list_messages(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/messages/send-sms", response_model=ResponseEnvelope[SMSLogRead], operation_id="createCommunicationMessageSendSms")
+@router.post("/messages/send-sms", response_model=ResponseEnvelope[SmsLogRead], operation_id="createCommunicationMessageSendSms")
 async def send_sms(
-    data: SendSMS,
+    data: SendSms,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
@@ -147,7 +147,7 @@ async def send_sms(
             db.commit()
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return {"success": True, "data": SMSLogRead.model_validate(sms_log), "timestamp": now_utc().isoformat()}
+        return {"success": True, "data": SmsLogRead.model_validate(sms_log), "timestamp": now_utc().isoformat()}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))

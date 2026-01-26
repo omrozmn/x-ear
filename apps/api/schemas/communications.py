@@ -142,7 +142,7 @@ class CommunicationHistoryRead(AppBaseModel, IDMixin, TimestampMixin):
         )
 
 
-class SendSMS(AppBaseModel):
+class SendSms(AppBaseModel):
     phone_number: str = Field(..., alias="phoneNumber")
     message: str
     party_id: Optional[str] = Field(None, alias="partyId")

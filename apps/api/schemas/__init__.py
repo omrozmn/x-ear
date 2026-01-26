@@ -157,8 +157,8 @@ from .campaigns import (
     CampaignSendRequest,
     Campaign,
     CampaignInput,
-    SMSLogStatus,
-    SMSLogRead,
+    SmsLogStatus,
+    SmsLogRead,
 )
 from .notification_templates import EmailTemplateRead
 
@@ -381,8 +381,8 @@ __all__ = [
     "CampaignSendRequest",
     "Campaign",
     "CampaignInput",
-    "SMSLogStatus",
-    "SMSLogRead",
+    "SmsLogStatus",
+    "SmsLogRead",
     # Plan
     "PlanBase",
     "PlanCreate",

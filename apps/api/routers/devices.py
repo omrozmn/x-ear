@@ -20,7 +20,7 @@ from schemas.devices import (
 )
 from schemas.auth import PasswordChangeRequest
 from schemas.notifications import NotificationUpdate
-from schemas.campaigns import CampaignUpdate, SMSLogRead
+from schemas.campaigns import CampaignUpdate, SmsLogRead
 from schemas.sales import DeviceAssignmentUpdate, InstallmentPayment, PaymentPlanCreate
 from schemas.inventory import StockMovementRead
 from schemas.sms import SmsHeaderRequestUpdate, SmsProviderConfigCreate
@@ -83,7 +83,7 @@ def ensure_hearing_product(db_session: Session, tenant_id: str):
                 UserPermissionRead,
                 UserRoleRead,
                 SmsHeaderRequestUpdate,
-                SMSLogRead,
+                SmsLogRead,
                 SmsProviderConfigCreate,
                 StockMovementRead,
                 TenantCreate,

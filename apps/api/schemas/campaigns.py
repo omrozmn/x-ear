@@ -104,18 +104,18 @@ Campaign = CampaignRead
 CampaignInput = CampaignCreate
 
 # --- SMS Log (Campaign Result) Schemas ---
-class SMSLogStatus(str, Enum):
+class SmsLogStatus(str, Enum):
     PENDING = 'pending'
     SENT = 'sent'
     DELIVERED = 'delivered'
     FAILED = 'failed'
 
-class SMSLogRead(IDMixin, TimestampMixin):
+class SmsLogRead(IDMixin, TimestampMixin):
     campaign_id: Optional[str] = Field(None, alias="campaignId")
     party_id: Optional[str] = Field(None, alias="partyId")
     phone_number: str = Field(..., alias="phoneNumber")
     message: str
-    status: SMSLogStatus
+    status: SmsLogStatus
     
     sent_at: Optional[datetime] = Field(None, alias="sentAt")
     delivered_at: Optional[datetime] = Field(None, alias="deliveredAt")
