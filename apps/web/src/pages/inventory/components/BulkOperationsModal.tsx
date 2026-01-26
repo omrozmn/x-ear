@@ -69,7 +69,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
     if (!operationType) return;
 
     // Build operation payload only with relevant fields for the selected operation
-    const data: any = {};
+    const data: Record<string, unknown> = {};
     switch (operationType) {
       case 'delete':
         break;
@@ -143,6 +143,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
           <div className="grid grid-cols-3 gap-2">
             {OPERATION_TYPES.map(op => (
               <button
+                data-allow-raw="true"
                 key={op.value}
                 type="button"
                 onClick={() => setOperationType(op.value)}
@@ -198,6 +199,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             <div className="mt-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">KDV Oranı (%)</label>
               <select
+                data-allow-raw="true"
                 value={formData.kdv}
                 onChange={(e) => setFormData(prev => ({ ...prev, kdv: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"

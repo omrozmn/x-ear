@@ -5,21 +5,75 @@ import { ArrowLeft, CheckCircle, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
 import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
 import { SGKInvoiceSection } from '../components/invoices/SGKInvoiceSection';
-import { GovernmentSection, GOVERNMENT_EXEMPTION_REASONS } from '../components/invoices/GovernmentSection';
+import { GovernmentSection } from '../components/invoices/GovernmentSection';
+import { GOVERNMENT_EXEMPTION_REASONS } from '../constants/governmentInvoiceConstants';
 import { Select } from '@x-ear/ui-web';
 import { CustomerSectionCompact } from '../components/invoices/CustomerSectionCompact';
 import WithholdingCard from '../components/invoices/WithholdingCard';
 
+interface InvoiceFormData {
+  invoiceType: string;
+  scenario: string;
+  currency: string;
+  [key: string]: unknown;
+}
+
+interface SpecialTaxBase {
+  amount?: number;
+  taxRate?: number;
+  description?: string;
+  hasSpecialTaxBase?: boolean;
+}
+
+interface ReturnInvoiceDetails {
+  returnInvoiceNumber?: string;
+  returnInvoiceDate?: string;
+  returnReason?: string;
+}
+
+interface ExtendedData {
+  customerId?: string;
+  customerFirstName?: string;
+  customerLastName?: string;
+  customerTcNumber?: string;
+  customerTaxNumber?: string;
+  customerAddress?: string;
+  customerCity?: string;
+  customerDistrict?: string;
+  sgkData?: unknown;
+  governmentExemptionReason?: string;
+  exportDetails?: unknown;
+  specialTaxBase?: SpecialTaxBase;
+  returnInvoiceDetails?: ReturnInvoiceDetails;
+  medicalDeviceData?: unknown;
+  withholdingData?: unknown;
+  items?: unknown[];
+  [key: string]: unknown;
+}
+
+interface InvoiceHandlers {
+  handleExtendedFieldChange: (field: string, value: unknown) => void;
+  setMedicalModalOpen?: (open: boolean) => void;
+  specialOperationsVisible?: boolean;
+  isWithholdingType?: boolean;
+  [key: string]: unknown;
+}
+
+interface ActiveLineEditor {
+  type: 'withholding' | 'special' | 'medical';
+  index: number;
+}
+
 export function NewInvoicePage() {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<InvoiceFormData>({
     invoiceType: '',
     scenario: 'other',
     currency: 'TRY'
   });
 
-  const handleSubmit = async (invoiceData: any) => {
+  const handleSubmit = async (invoiceData: InvoiceFormData) => {
     setIsSaving(true);
     try {
       // TODO: Save invoice via API
@@ -52,15 +106,15 @@ export function NewInvoicePage() {
     navigate({ to: '/invoices' });
   };
 
-  const handleFormDataChange = (field: string, value: any) => {
+  const handleFormDataChange = (field: string, value: unknown) => {
     // Map complex fields from child components into flat formData used by the page
-    setFormData((prev: any) => {
-      const next = { ...prev };
+    setFormData((prev) => {
+      const next: InvoiceFormData = { ...prev };
       if (field === 'scenarioData') {
         next.scenarioData = value;
-        next.scenario = value?.scenario || 'other';
+        next.scenario = (value as { scenario?: string })?.scenario || 'other';
       } else if (field === 'invoiceType') {
-        next.invoiceType = value;
+        next.invoiceType = value as string;
       } else {
         next[field] = value;
       }
@@ -68,7 +122,7 @@ export function NewInvoicePage() {
     });
   };
 
-  const [activeLineEditor, setActiveLineEditor] = useState<{ type: 'withholding' | 'special' | 'medical'; index: number } | null>(null);
+  const [activeLineEditor, setActiveLineEditor] = useState<ActiveLineEditor | null>(null);
 
   const handleRequestLineEditor = (type: 'withholding' | 'special' | 'medical', index: number) => {
     setActiveLineEditor({ type, index });
@@ -126,7 +180,19 @@ function InvoiceSidebar({
   handlers,
   activeLineEditor,
   onCloseLineEditor
-}: any) {
+}: {
+  showSGKSection?: boolean;
+  showExportSection?: boolean;
+  showMedicalSection?: boolean;
+  showGovernmentSection?: boolean;
+  showIstisnaReason?: boolean;
+  showReturnSection?: boolean;
+  showSpecialBaseSection?: boolean;
+  extendedData?: ExtendedData;
+  handlers?: InvoiceHandlers;
+  activeLineEditor?: ActiveLineEditor;
+  onCloseLineEditor?: () => void;
+}) {
   // Defensive local booleans to avoid ReferenceError if props are missing
   const _showSGKSection = !!showSGKSection;
   const _showExportSection = !!showExportSection;
@@ -139,15 +205,15 @@ function InvoiceSidebar({
       {/* Fatura Alıcı - En Üstte */}
       <CustomerSectionCompact
         isSGK={showSGKSection}
-        customerId={extendedData.customerId}
-        customerFirstName={extendedData.customerFirstName}
-        customerLastName={extendedData.customerLastName}
-        customerTcNumber={extendedData.customerTcNumber}
-        customerTaxNumber={extendedData.customerTaxNumber}
-        customerAddress={extendedData.customerAddress}
-        customerCity={extendedData.customerCity}
-        customerDistrict={extendedData.customerDistrict}
-        onChange={handlers.handleExtendedFieldChange}
+        customerId={extendedData?.customerId as string | undefined}
+        customerFirstName={extendedData?.customerFirstName as string | undefined}
+        customerLastName={extendedData?.customerLastName as string | undefined}
+        customerTcNumber={extendedData?.customerTcNumber as string | undefined}
+        customerTaxNumber={extendedData?.customerTaxNumber as string | undefined}
+        customerAddress={extendedData?.customerAddress as string | undefined}
+        customerCity={extendedData?.customerCity as string | undefined}
+        customerDistrict={extendedData?.customerDistrict as string | undefined}
+        onChange={handlers?.handleExtendedFieldChange || (() => {})}
       />
 
       {/* SGK Section */}
@@ -159,8 +225,8 @@ function InvoiceSidebar({
           </div>
           <div className="p-4">
             <SGKInvoiceSection
-              sgkData={extendedData.sgkData}
-              onChange={(data) => handlers.handleExtendedFieldChange('sgkData', data)}
+              sgkData={extendedData?.sgkData as never}
+              onChange={(data) => handlers?.handleExtendedFieldChange?.('sgkData', data)}
             />
           </div>
         </div>
@@ -175,8 +241,8 @@ function InvoiceSidebar({
           </div>
           <div className="p-4">
             <GovernmentSection
-              formData={extendedData}
-              onChange={handlers.handleExtendedFieldChange}
+              formData={extendedData as never}
+              onChange={handlers?.handleExtendedFieldChange || (() => {})}
             />
           </div>
         </div>
@@ -192,8 +258,8 @@ function InvoiceSidebar({
           <div>
             <Select
               label="İstisna Sebebi"
-              value={extendedData.governmentExemptionReason || '0'}
-              onChange={(e) => handlers.handleExtendedFieldChange('governmentExemptionReason', e.target.value)}
+              value={extendedData?.governmentExemptionReason as string || '0'}
+              onChange={(e) => handlers?.handleExtendedFieldChange('governmentExemptionReason', e.target.value)}
               options={GOVERNMENT_EXEMPTION_REASONS}
               fullWidth
             />
@@ -209,8 +275,8 @@ function InvoiceSidebar({
           </div>
           <div>
             <ExportDetailsCard
-              value={extendedData.exportDetails}
-              onChange={(data) => handlers.handleExtendedFieldChange('exportDetails', data)}
+              value={extendedData?.exportDetails as never}
+              onChange={(data) => handlers?.handleExtendedFieldChange?.('exportDetails', data)}
             />
           </div>
         </div>
@@ -226,9 +292,9 @@ function InvoiceSidebar({
               <Input
                 type="number"
                 step="0.01"
-                value={extendedData.specialTaxBase?.amount || ''}
-                onChange={(e) => handlers.handleExtendedFieldChange('specialTaxBase', {
-                  ...extendedData.specialTaxBase,
+                value={extendedData?.specialTaxBase?.amount || ''}
+                onChange={(e) => handlers?.handleExtendedFieldChange('specialTaxBase', {
+                  ...extendedData?.specialTaxBase,
                   hasSpecialTaxBase: true,
                   amount: parseFloat(e.target.value)
                 })}
@@ -240,9 +306,9 @@ function InvoiceSidebar({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">KDV Oranı (%)</label>
               <Input
                 type="number"
-                value={extendedData.specialTaxBase?.taxRate || ''}
-                onChange={(e) => handlers.handleExtendedFieldChange('specialTaxBase', {
-                  ...extendedData.specialTaxBase,
+                value={extendedData?.specialTaxBase?.taxRate || ''}
+                onChange={(e) => handlers?.handleExtendedFieldChange('specialTaxBase', {
+                  ...extendedData?.specialTaxBase,
                   taxRate: parseFloat(e.target.value)
                 })}
                 className="w-full"
@@ -253,9 +319,9 @@ function InvoiceSidebar({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama</label>
               <Input
                 type="text"
-                value={extendedData.specialTaxBase?.description || ''}
-                onChange={(e) => handlers.handleExtendedFieldChange('specialTaxBase', {
-                  ...extendedData.specialTaxBase,
+                value={extendedData?.specialTaxBase?.description || ''}
+                onChange={(e) => handlers?.handleExtendedFieldChange('specialTaxBase', {
+                  ...extendedData?.specialTaxBase,
                   description: e.target.value
                 })}
                 className="w-full"
@@ -276,9 +342,9 @@ function InvoiceSidebar({
               <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
               <Input
                 type="text"
-                value={extendedData.returnInvoiceDetails?.returnInvoiceNumber || ''}
-                onChange={(e) => handlers.handleExtendedFieldChange('returnInvoiceDetails', {
-                  ...extendedData.returnInvoiceDetails,
+                value={extendedData?.returnInvoiceDetails?.returnInvoiceNumber || ''}
+                onChange={(e) => handlers?.handleExtendedFieldChange('returnInvoiceDetails', {
+                  ...extendedData?.returnInvoiceDetails,
                   returnInvoiceNumber: e.target.value
                 })}
                 className="w-full"
@@ -288,9 +354,9 @@ function InvoiceSidebar({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura Tarihi</label>
               <DatePicker
-                value={extendedData.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
-                onChange={(date) => handlers.handleExtendedFieldChange('returnInvoiceDetails', {
-                  ...extendedData.returnInvoiceDetails,
+                value={extendedData?.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
+                onChange={(date) => handlers?.handleExtendedFieldChange('returnInvoiceDetails', {
+                  ...extendedData?.returnInvoiceDetails,
                   returnInvoiceDate: date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : ''
                 })}
                 className="w-full"
@@ -300,9 +366,9 @@ function InvoiceSidebar({
               <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
               <Input
                 type="text"
-                value={extendedData.returnInvoiceDetails?.returnReason || ''}
-                onChange={(e) => handlers.handleExtendedFieldChange('returnInvoiceDetails', {
-                  ...extendedData.returnInvoiceDetails,
+                value={extendedData?.returnInvoiceDetails?.returnReason || ''}
+                onChange={(e) => handlers?.handleExtendedFieldChange('returnInvoiceDetails', {
+                  ...extendedData?.returnInvoiceDetails,
                   returnReason: e.target.value
                 })}
                 className="w-full"
@@ -320,7 +386,7 @@ function InvoiceSidebar({
             <h3 className="text-sm font-bold text-gray-900">İlaç/Tıbbi Cihaz</h3>
             <Button
               type="button"
-              onClick={() => handlers.setMedicalModalOpen(true)}
+              onClick={() => handlers?.setMedicalModalOpen?.(true)}
               variant="default"
               size="sm"
               style={{ backgroundColor: '#9333ea', color: 'white' }}
@@ -329,7 +395,7 @@ function InvoiceSidebar({
               Detaylar
             </Button>
           </div>
-          {extendedData.medicalDeviceData ? (
+          {extendedData?.medicalDeviceData ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="text-green-600" size={16} />
@@ -343,12 +409,12 @@ function InvoiceSidebar({
       )}
 
       {/* Özel İşlemler */}
-      {handlers.specialOperationsVisible && (
+      {handlers?.specialOperationsVisible && (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <h3 className="text-sm font-bold text-gray-900 mb-3">Özel İşlemler</h3>
           <div className="space-y-3">
             {/* Tevkifatlı Fatura Uyarısı */}
-            {handlers.isWithholdingType && (
+            {handlers?.isWithholdingType && (
               <div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
                   <p className="text-xs text-blue-800 leading-relaxed">
@@ -358,8 +424,8 @@ function InvoiceSidebar({
                   </p>
                 </div>
                 <WithholdingCard
-                  value={extendedData.withholdingData}
-                  onChange={(data) => handlers.handleExtendedFieldChange('withholdingData', data)}
+                  value={extendedData?.withholdingData as never}
+                  onChange={(data) => handlers?.handleExtendedFieldChange?.('withholdingData', data)}
                 />
               </div>
             )}
@@ -370,24 +436,24 @@ function InvoiceSidebar({
       {activeLineEditor && (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-gray-900">{activeLineEditor.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{activeLineEditor.index + 1}</h3>
-            <button onClick={onCloseLineEditor} className="text-sm text-gray-500">Kapat</button>
+            <h3 className="text-sm font-bold text-gray-900">{activeLineEditor?.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor?.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{(activeLineEditor?.index ?? 0) + 1}</h3>
+            <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-gray-500">Kapat</button>
           </div>
           <div>
-            {activeLineEditor.type === 'withholding' && (
+            {activeLineEditor?.type === 'withholding' && activeLineEditor.index !== undefined && extendedData && (
               <WithholdingCard
-                value={extendedData.items?.[activeLineEditor.index]?.withholdingData}
+                value={(extendedData.items as never[])?.[activeLineEditor.index] ? (extendedData.items as Record<string, unknown>[])[activeLineEditor.index]?.withholdingData as never : undefined}
                 onChange={(data) => {
                   const items = Array.isArray(extendedData.items) ? [...extendedData.items] : [];
-                  items[activeLineEditor.index] = { ...(items[activeLineEditor.index] || {}), withholdingData: data };
-                  handlers.handleExtendedFieldChange('items', items);
+                  items[activeLineEditor.index] = { ...(items[activeLineEditor.index] as Record<string, unknown> || {}), withholdingData: data };
+                  handlers?.handleExtendedFieldChange?.('items', items);
                 }}
               />
             )}
-            {activeLineEditor.type === 'special' && (
+            {activeLineEditor?.type === 'special' && (
               <div className="text-sm text-gray-600">Özel matrah düzenleyici burada gösterilecek.</div>
             )}
-            {activeLineEditor.type === 'medical' && (
+            {activeLineEditor?.type === 'medical' && (
               <div className="text-sm text-gray-600">Tıbbi cihaz düzenleyici burada gösterilecek.</div>
             )}
           </div>
@@ -416,7 +482,25 @@ function NewInvoicePageContent({
   onRequestLineEditor,
   activeLineEditor,
   onCloseLineEditor
-}: any) {
+}: {
+  isSaving: boolean;
+  handleSubmit: (data: InvoiceFormData) => Promise<void>;
+  handleSaveDraft?: () => void;
+  handleCancel: () => void;
+  formData: InvoiceFormData;
+  onFormDataChange: (field: string, value: unknown) => void;
+  showSGKSection?: boolean;
+  showGovernmentSection?: boolean;
+  showExportSection?: boolean;
+  showMedicalSection?: boolean;
+  showReturnSection?: boolean;
+  showSpecialBaseSection?: boolean;
+  showSpecialOperations?: boolean;
+  isWithholdingType?: boolean;
+  onRequestLineEditor?: (type: 'withholding' | 'special' | 'medical', index: number) => void;
+  activeLineEditor?: ActiveLineEditor | null;
+  onCloseLineEditor?: () => void;
+}) {
 
   return (
     <div className="new-invoice-page min-h-screen bg-gray-50 dark:bg-gray-900 w-full pb-8">
@@ -479,7 +563,7 @@ function NewInvoicePageContent({
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <InvoiceFormExtended
-                onSubmit={handleSubmit}
+                onSubmit={handleSubmit as never}
                 onCancel={handleCancel}
                 isLoading={isSaving}
                 onDataChange={onFormDataChange}
@@ -507,7 +591,7 @@ function NewInvoicePageContent({
                 specialOperationsVisible: showSpecialOperations,
                 isWithholdingType: isWithholdingType
               }}
-              activeLineEditor={activeLineEditor}
+              activeLineEditor={activeLineEditor || undefined}
               onCloseLineEditor={onCloseLineEditor}
             />
           </div>

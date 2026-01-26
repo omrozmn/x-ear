@@ -370,6 +370,7 @@ export default function IntegrationSettings() {
                                                                     <Upload className="w-4 h-4 mr-2" />
                                                                     {uploaded ? 'Değiştir' : 'Yükle'}
                                                                     <input
+                                                                        data-allow-raw="true"
                                                                         type="file"
                                                                         className="absolute inset-0 opacity-0 cursor-pointer"
                                                                         accept=".pdf,.jpg,.jpeg,.png"
@@ -441,7 +442,7 @@ export default function IntegrationSettings() {
                                             {newHeaderType !== 'company_title' && (
                                                 <div className="mt-3">
                                                     <label className="text-sm text-gray-600 dark:text-gray-400">Destekleyici Belge</label>
-                                                    <input type="file" ref={headerDocInputRef} onChange={(e) => setHeaderDocument(e.target.files?.[0] || null)} className="mt-1 block w-full text-sm" />
+                                                    <input data-allow-raw="true" type="file" ref={headerDocInputRef} onChange={(e) => setHeaderDocument(e.target.files?.[0] || null)} className="mt-1 block w-full text-sm" />
                                                 </div>
                                             )}
                                         </div>

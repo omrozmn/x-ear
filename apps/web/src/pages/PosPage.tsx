@@ -19,12 +19,27 @@ interface InstallmentPayload {
     amount: number;
 }
 
+interface InstallmentOption {
+    installment_count: number;
+    label: string;
+    total: number;
+    installment_amount: number;
+    net_amount: number;
+    gross_amount: number;
+    commission_amount: number;
+    commission_rate: number;
+    monthly_payment: number;
+}
+
+
+import { useTranslation } from 'react-i18next';
 
 export default function PosPage() {
+    const { t } = useTranslation(['finance', 'common']);
     const [iframeUrl, setIframeUrl] = useState<string | null>(null);
     const [result, setResult] = useState<'success' | 'fail' | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [installmentOptions, setInstallmentOptions] = useState<any[]>([]);
+    const [installmentOptions, setInstallmentOptions] = useState<InstallmentOption[]>([]);
     const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
     const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null);
     const [, setSelectedPartyName] = useState<string>(''); // Value unused, setter used in reset
@@ -50,11 +65,12 @@ export default function PosPage() {
         if (numAmount && numAmount > 0) {
             const payload: InstallmentPayload = { amount: numAmount };
             getInstallments({ data: payload }, {
-                onSuccess: (response: any) => {
-                    const options = response?.data?.options || [];
+                onSuccess: (response: unknown) => {
+                    const responseData = response as { data?: { options?: InstallmentOption[] } };
+                    const options = responseData?.data?.options || [];
                     setInstallmentOptions(options);
                     if (options.length > 0) {
-                        setSelectedInstallment(options[0].count || 1);
+                        setSelectedInstallment(options[0].installment_count || 1);
                     }
                 },
                 onError: () => {
@@ -62,7 +78,7 @@ export default function PosPage() {
                     setInstallmentOptions([
                         {
                             installment_count: 1,
-                            label: 'Tek Çekim',
+                            label: t('pos.single_installment'),
                             total: numAmount,
                             installment_amount: numAmount,
                             net_amount: numAmount,
@@ -78,7 +94,8 @@ export default function PosPage() {
         } else {
             setInstallmentOptions([]);
         }
-    }, [amount, getInstallments]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [amount, getInstallments]); // t is stable and doesn't need to be in deps
 
     // Iframe Message Listener
     useEffect(() => {
@@ -87,10 +104,10 @@ export default function PosPage() {
                 if (event.data?.type === 'POS_PAYMENT_SUCCESS') {
                     setResult('success');
                     setIframeUrl(null);
-                    success('Ödeme başarıyla alındı');
+                    success(t('pos.payment_success'));
                 } else if (event.data?.type === 'POS_PAYMENT_FAILED') {
                     setResult('fail');
-                    setErrorMessage(event.data?.message || 'Ödeme başarısız');
+                    setErrorMessage(event.data?.message || t('pos.payment_failed'));
                     setIframeUrl(null);
                 }
             } catch (e) {
@@ -99,9 +116,10 @@ export default function PosPage() {
         };
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
-    }, [success]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [success]); // t is stable and doesn't need to be in deps
 
-    const onSubmit = (data: any) => {
+    const onSubmit = (data: { amount: string; partyName: string; description: string }) => {
         setErrorMessage(null);
         setResult(null);
 
@@ -116,15 +134,17 @@ export default function PosPage() {
         initiatePayment({
             data: payload
         }, {
-            onSuccess: (response: any) => {
-                if (response.data.success && response.data.iframe_url) {
-                    setIframeUrl(response.data.iframe_url);
+            onSuccess: (response: unknown) => {
+                const responseData = response as { data: { success: boolean; iframe_url?: string; error?: string } };
+                if (responseData.data.success && responseData.data.iframe_url) {
+                    setIframeUrl(responseData.data.iframe_url);
                 } else {
-                    setErrorMessage(response.data.error || 'Ödeme başlatılamadı');
+                    setErrorMessage(responseData.data.error || t('pos.payment_init_failed'));
                 }
             },
-            onError: (err: any) => {
-                setErrorMessage(err.response?.data?.error || err.message || 'Bir hata oluştu');
+            onError: (err: unknown) => {
+                const error = err as { response?: { data?: { error?: string } }; message?: string };
+                setErrorMessage(error.response?.data?.error || error.message || t('common.error_occurred'));
             }
         });
     };
@@ -133,8 +153,8 @@ export default function PosPage() {
         return (
             <div className="max-w-4xl mx-auto py-8 px-4 h-screen flex flex-col">
                 <div className="mb-4 flex justify-between items-center">
-                    <h2 className="text-xl font-bold">Güvenli Ödeme</h2>
-                    <Button variant="ghost" onClick={() => setIframeUrl(null)}>İptal / Geri Dön</Button>
+                    <h2 className="text-xl font-bold">{t('pos.secure_payment_title')}</h2>
+                    <Button variant="ghost" onClick={() => setIframeUrl(null)}>{t('pos.cancel_return')}</Button>
                 </div>
                 <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden relative">
                     <iframe
@@ -156,10 +176,10 @@ export default function PosPage() {
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <CreditCard className="w-8 h-8 text-blue-600 dark:text-blue-500" />
-                    Hızlı Tahsilat
+                    {t('pos.title')}
                 </h1>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">
-                    Hasta kartına gitmeden hızlı ödeme alma ekranı.
+                    {t('pos.description')}
                 </p>
             </div>
 
@@ -167,8 +187,8 @@ export default function PosPage() {
                 <div className="mb-6 bg-green-50 border border-green-200 dark:bg-green-900/30 dark:border-green-800 p-4 rounded-lg flex items-center gap-3 text-green-800 dark:text-green-300">
                     <ShieldCheck className="w-6 h-6" />
                     <div>
-                        <p className="font-bold">Ödeme Başarılı!</p>
-                        <p className="text-sm">İşlem başarıyla tamamlandı ve kayıtlara eklendi.</p>
+                        <p className="font-bold">{t('pos.payment_success_title')}</p>
+                        <p className="text-sm">{t('pos.payment_success_desc')}</p>
                     </div>
                     <Button variant="outline" size="sm" className="ml-auto dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900/50" onClick={() => {
                         setResult(null);
@@ -179,7 +199,7 @@ export default function PosPage() {
                         setSelectedPartyName('');
                         setInstallmentOptions([]);
                     }}>
-                        Yeni İşlem
+                        {t('pos.new_transaction')}
                     </Button>
                 </div>
             )}
@@ -188,7 +208,7 @@ export default function PosPage() {
                 <div className="mb-6 bg-red-50 border border-red-200 dark:bg-red-900/30 dark:border-red-800 p-4 rounded-lg flex items-center gap-3 text-red-800 dark:text-red-300">
                     <AlertTriangle className="w-6 h-6" />
                     <div>
-                        <p className="font-bold">Hata</p>
+                        <p className="font-bold">{t('pos.error_title')}</p>
                         <p className="text-sm">{errorMessage}</p>
                     </div>
                 </div>
@@ -202,24 +222,24 @@ export default function PosPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Müşteri Adı (Opsiyonel)
+                                        {t('pos.customer_name_optional')}
                                     </label>
                                     <Input
                                         {...register('partyName')}
-                                        placeholder="Müşteri adı"
+                                        placeholder={t('pos.customer_name_placeholder')}
                                         className="h-11 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                                     />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        İsterseniz hasta kartından seçebilirsiniz
+                                        {t('pos.customer_name_help')}
                                     </p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Not / Açıklama
+                                        {t('pos.note_desc')}
                                     </label>
                                     <Input
                                         {...register('description')}
-                                        placeholder="Örn: Cihaz ön ödemesi"
+                                        placeholder={t('pos.note_placeholder')}
                                         className="h-11 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                                     />
                                 </div>
@@ -227,16 +247,17 @@ export default function PosPage() {
 
                             <div className="p-6 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 flex flex-col items-center justify-center">
                                 <label className="text-blue-800 dark:text-blue-300 text-sm font-medium mb-2">
-                                    Tahsil Edilecek Tutar
+                                    {t('pos.amount_label')}
                                 </label>
                                 <div className="relative w-full max-w-xs">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-blue-900 dark:text-blue-200">₺</span>
                                     <input
+                                        data-allow-raw="true"
                                         type="number"
                                         step="0.01"
                                         {...register('amount', {
-                                            required: 'Tutar gereklidir',
-                                            min: { value: 1, message: 'En az 1 TL olmalıdır' }
+                                            required: t('pos.amount_required'),
+                                            min: { value: 1, message: t('pos.amount_min') }
                                         })}
                                         className="w-full bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 rounded-lg py-3 pl-10 pr-4 text-2xl font-bold text-blue-900 dark:text-blue-100 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 focus:border-blue-400 dark:focus:border-blue-500 outline-none text-center transition-all"
                                         placeholder="0.00"
@@ -249,12 +270,13 @@ export default function PosPage() {
                             {installmentOptions.length > 0 && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                        Taksit Seçenekleri
+                                        {t('pos.installment_options')}
                                     </label>
 
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                         {installmentOptions.map((option) => (
                                             <button
+                                                data-allow-raw="true"
                                                 key={option.installment_count}
                                                 type="button"
                                                 onClick={() => setSelectedInstallment(option.installment_count)}
@@ -281,7 +303,7 @@ export default function PosPage() {
 
                                                 <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-1">
                                                     <TrendingDown className="w-3 h-3" />
-                                                    Komisyon: %{option.commission_rate}
+                                                    {t('pos.commission')}: %{option.commission_rate}
                                                 </div>
 
                                                 <div className="text-sm font-bold text-green-600 dark:text-green-400">
@@ -293,7 +315,7 @@ export default function PosPage() {
 
                                     {loadingInstallments && (
                                         <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                            Hesaplanıyor...
+                                            {t('pos.calculating')}
                                         </div>
                                     )}
                                 </div>
@@ -302,16 +324,16 @@ export default function PosPage() {
                             {/* Summary Box */}
                             {selectedOption && (
                                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-xl border-2 border-green-200 dark:border-green-800">
-                                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tahsilat Özeti</div>
+                                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t('pos.summary_title')}</div>
                                     <div className="grid grid-cols-2 gap-4 mt-3">
                                         <div>
-                                            <div className="text-xs text-gray-600 dark:text-gray-400">Müşteriden Tahsil:</div>
+                                            <div className="text-xs text-gray-600 dark:text-gray-400">{t('pos.collected_from_customer')}:</div>
                                             <div className="text-lg font-bold text-gray-900 dark:text-white">
                                                 {selectedOption.gross_amount?.toFixed(2) ?? '0.00'} ₺
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-xs text-gray-600 dark:text-gray-400">Komisyon:</div>
+                                            <div className="text-xs text-gray-600 dark:text-gray-400">{t('pos.commission')}:</div>
                                             <div className="text-lg font-bold text-red-600 dark:text-red-400">
                                                 -{selectedOption.commission_amount?.toFixed(2) ?? '0.00'} ₺
                                             </div>
@@ -319,7 +341,7 @@ export default function PosPage() {
                                     </div>
                                     <div className="border-t border-green-300 dark:border-green-700 my-3"></div>
                                     <div>
-                                        <div className="text-xs text-gray-600 dark:text-gray-400">Hesabınıza Geçecek:</div>
+                                        <div className="text-xs text-gray-600 dark:text-gray-400">{t('pos.net_to_account')}:</div>
                                         <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                                             {selectedOption.net_amount?.toFixed(2) ?? '0.00'} ₺
                                         </div>
@@ -332,12 +354,12 @@ export default function PosPage() {
                                 className="w-full h-12 text-lg font-medium shadow-lg shadow-blue-200 dark:shadow-none"
                                 disabled={isPending || !amount || !installmentOptions.length}
                             >
-                                {isPending ? 'Başlatılıyor...' : 'Ödemeyi Başlat'}
+                                {isPending ? t('pos.starting') : t('pos.start_payment_btn')}
                             </Button>
 
                             <div className="flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                                 <ShieldCheck className="w-4 h-4 text-green-500 dark:text-green-400" />
-                                <span>256-bit SSL Güvenli Ödeme Altyapısı</span>
+                                <span>{t('pos.ssl_secure')}</span>
                             </div>
                         </form>
                     </Card>
@@ -346,26 +368,26 @@ export default function PosPage() {
                 {/* Info Sidebar */}
                 <div className="space-y-6">
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4">
-                        <h3 className="text-sm font-bold text-blue-900 dark:text-blue-100 mb-2">Bilgi</h3>
+                        <h3 className="text-sm font-bold text-blue-900 dark:text-blue-100 mb-2">{t('pos.info_title')}</h3>
                         <p className="text-sm text-blue-800 dark:text-blue-200">
-                            Buradan yapılan tahsilatlar "Satışsız Tahsilat" olarak kaydedilir. İsterseniz müşteri adı girebilir veya boş bırakabilirsiniz.
+                            {t('pos.info_desc')}
                         </p>
                     </div>
 
                     {selectedOption && (
                         <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-xl p-4">
-                            <h3 className="text-sm font-bold text-purple-900 dark:text-purple-100 mb-2">Komisyon Detayı</h3>
+                            <h3 className="text-sm font-bold text-purple-900 dark:text-purple-100 mb-2">{t('pos.commission_detail_title')}</h3>
                             <div className="space-y-2 text-sm text-purple-800 dark:text-purple-200">
                                 <div className="flex justify-between">
-                                    <span>Oran:</span>
+                                    <span>{t('pos.rate')}:</span>
                                     <span className="font-semibold">%{selectedOption.commission_rate}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>Tutar:</span>
+                                    <span>{t('pos.amount')}:</span>
                                     <span className="font-semibold">{selectedOption.commission_amount?.toFixed(2) ?? '0.00'} ₺</span>
                                 </div>
                                 <div className="text-xs text-purple-600 dark:text-purple-300 mt-2">
-                                    Komisyon otomatik hesaplanır ve hesabınıza net tutar geçer.
+                                    {t('pos.commission_note')}
                                 </div>
                             </div>
                         </div>

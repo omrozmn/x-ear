@@ -6,7 +6,8 @@ interface PartyGeneralTabProps {
   onPartyUpdate?: (party: Party) => void;
 }
 
-export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party, onPartyUpdate: _onPartyUpdate }) => {
+export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
+  // onPartyUpdate parameter removed - not used in component
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Name */}

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/unsubscribe_management.py
+# hypothesis_version: 6.150.1
+
+[0.0, 100, 365, '/admin/unsubscribes', '/stats', '/{unsubscribe_id}', 'Current page', 'Email address', 'Email scenario', 'Filter by days ago', 'Filter by scenario', 'IP address', 'Items per page', 'List of unsubscribes', 'Page number', 'Total count', 'Unsubscribe ID', 'User agent', 'admin', 'admin.emails.manage', 'admin.emails.view', 'admin_user_id', 'code', 'count', 'deleteUnsubscribe', 'getUnsubscribeStats', 'listUnsubscribes', 'message', 'recipient', 'scenario', 'sent', 'tenant_id']

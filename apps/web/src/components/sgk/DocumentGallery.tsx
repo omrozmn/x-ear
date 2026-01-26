@@ -375,6 +375,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     <div>
                       <label className="text-xs text-gray-500">Min: {fileSizeRange.min} MB</label>
                       <input
+                        data-allow-raw="true"
                         type="range"
                         min={0}
                         max={100}
@@ -386,6 +387,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     <div>
                       <label className="text-xs text-gray-500">Max: {fileSizeRange.max} MB</label>
                       <input
+                        data-allow-raw="true"
                         type="range"
                         min={0}
                         max={100}

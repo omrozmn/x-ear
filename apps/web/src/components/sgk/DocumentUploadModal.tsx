@@ -5,7 +5,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUploadSgkDocument } from '@/hooks/sgk/useSgkDocuments';
 
-const schema = z.object({ file: z.any() });
+const schema = z.object({ file: z.unknown() });
+type DocumentFormData = z.infer<typeof schema>;
 
 type Props = { partyId: string; isOpen: boolean; onClose: () => void; onUploaded?: () => void };
 
@@ -13,17 +14,17 @@ export default function DocumentUploadModal({ partyId, isOpen, onClose, onUpload
   const [submitting, setSubmitting] = useState(false);
   const upload = useUploadSgkDocument(partyId);
 
-  const { register: _register, handleSubmit, setValue } = useForm({ resolver: zodResolver(schema) });
+  const { handleSubmit, setValue } = useForm({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: DocumentFormData) => {
     setSubmitting(true);
     try {
       const form = new FormData();
-      const file = (data.file && data.file[0]) || data.file;
-      form.append('file', file);
+      const file = (data.file && (data.file as File[])[0]) || data.file;
+      form.append('file', file as Blob);
       // add idempotency key
       // form.append('idempotencyKey', ...); // If backend expects it in body
-      upload.mutate(form as unknown as any, { // Cast to unknown to bypass strict type check if hook expects non-FormData object but actual fetch handles FormData
+      upload.mutate(form as unknown as FormData, { // Cast to unknown to bypass strict type check if hook expects non-FormData object but actual fetch handles FormData
         onSuccess: () => {
           onUploaded?.();
         },

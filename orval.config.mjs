@@ -18,6 +18,12 @@ export default defineConfig({
         mutator: {
           path: './apps/web/src/api/orval-mutator.ts',
           name: 'customInstance'
+        },
+        // Keep PascalCase for schema file names (prevent smsLogRead.ts)
+        components: {
+          schemas: {
+            suffix: ''
+          }
         }
       }
     },

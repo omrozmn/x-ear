@@ -14,12 +14,12 @@ const AffiliatesPage: React.FC = () => {
   // Backend returns array directly, but response envelope might wrap it
   const affiliates = Array.isArray(affiliatesData)
     ? affiliatesData
-    : (affiliatesData as any)?.data && Array.isArray((affiliatesData as any).data)
-      ? (affiliatesData as any).data
+    : (affiliatesData as { data?: unknown })?.data && Array.isArray((affiliatesData as { data: unknown }).data)
+      ? (affiliatesData as { data: AffiliateRead[] }).data
       : [];
 
   if (isLoading) return <div className="p-4">Yükleniyor...</div>;
-  if (error) return <div className="p-4 text-red-600">Hata oluştu: {(error as any).message}</div>;
+  if (error) return <div className="p-4 text-red-600">Hata oluştu: {(error as Error).message}</div>;
 
   return (
     <>
@@ -49,14 +49,16 @@ const AffiliatesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {affiliates.map((a: AffiliateRead) => (
+              {affiliates.map((a: AffiliateRead) => {
+                const affiliateId = String(a.id);
+                return (
                 <tr
-                  key={a.id}
+                  key={affiliateId}
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => setSelectedAffiliateId(a.id)}
+                  onClick={() => setSelectedAffiliateId(affiliateId)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600">
-                    {a.id}
+                    {affiliateId}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.email}</td>
@@ -72,7 +74,7 @@ const AffiliatesPage: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedAffiliateId(a.id);
+                        setSelectedAffiliateId(affiliateId);
                       }}
                       className="text-indigo-600 hover:text-indigo-900"
                     >
@@ -80,7 +82,7 @@ const AffiliatesPage: React.FC = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )})}
               {(!affiliates || affiliates.length === 0) && (
                 <tr>
                   <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">Kayıt bulunamadı.</td>

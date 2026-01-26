@@ -6,8 +6,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button, Input, Modal, Tabs, TabsList, TabsTrigger, TabsContent, Badge } from '@x-ear/ui-web';
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier } from '../hooks/useSuppliers';
+import { useNavigate } from '@tanstack/react-router';
+import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier, type SupplierFormData } from '../hooks/useSuppliers';
 import { useSuggestedSuppliers } from '../hooks/useSupplierInvoices';
 import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { unwrapPaginated, unwrapArray } from '../utils/response-unwrap';
@@ -22,7 +22,6 @@ export function DesktopSuppliersPage() {
 
 
   const navigate = useNavigate();
-  const { supplierId: _supplierId } = useParams({ strict: false }) as { supplierId?: string };
 
   // State
   const [searchValue, setSearchValue] = useState('');
@@ -143,8 +142,8 @@ export function DesktopSuppliersPage() {
     try {
       if (editingSupplier && editingSupplier.id) {
         // Map SupplierExtended to SupplierFormData
-        const formData: any = {
-          companyName: supplierData.companyName,
+        const formData: SupplierFormData = {
+          companyName: supplierData.companyName || '',
           companyCode: supplierData.companyCode,
           taxNumber: supplierData.taxNumber,
           taxOffice: supplierData.taxOffice,

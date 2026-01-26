@@ -78,7 +78,7 @@ export const MobileProfilePage: React.FC = () => {
                 {/* Menu */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     {menuItems.map((item, idx) => (
-                        <button
+                        <button data-allow-raw="true"
                             key={item.id}
                             onClick={() => {
                                 triggerSelection();
@@ -104,7 +104,7 @@ export const MobileProfilePage: React.FC = () => {
                 </div>
 
                 {/* Logout Button */}
-                <button
+                <button data-allow-raw="true"
                     onClick={handleLogout}
                     className="w-full bg-white p-4 rounded-2xl shadow-sm border border-red-100 flex items-center justify-center gap-2 text-red-600 font-medium active:bg-red-50 transition-colors"
                 >
@@ -144,7 +144,7 @@ export const MobileProfilePage: React.FC = () => {
                     </div>
 
                     <div className="pt-2">
-                        <button
+                        <button data-allow-raw="true"
                             onClick={() => toast.success('Bu özellik yakında eklenecek')}
                             className="w-full py-2.5 bg-primary-600 text-white rounded-lg font-medium text-sm active:bg-primary-700"
                         >
@@ -164,15 +164,15 @@ export const MobileProfilePage: React.FC = () => {
                     <h3 className="font-medium text-gray-900 border-b border-gray-100 pb-2">Şifre Değiştir</h3>
                     {/* Simple inputs just for visual placeholder */}
                     <div>
-                        <input type="password" placeholder="Mevcut Şifre" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
+                        <input data-allow-raw="true" type="password" placeholder="Mevcut Şifre" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
                     </div>
                     <div>
-                        <input type="password" placeholder="Yeni Şifre" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
+                        <input data-allow-raw="true" type="password" placeholder="Yeni Şifre" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
                     </div>
                     <div>
-                        <input type="password" placeholder="Yeni Şifre (Tekrar)" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
+                        <input data-allow-raw="true" type="password" placeholder="Yeni Şifre (Tekrar)" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
                     </div>
-                    <button className="w-full py-2.5 bg-primary-600 text-white rounded-lg font-medium text-sm active:bg-primary-700 mt-2">
+                    <button data-allow-raw="true" className="w-full py-2.5 bg-primary-600 text-white rounded-lg font-medium text-sm active:bg-primary-700 mt-2">
                         Şifreyi Güncelle
                     </button>
                 </div>

@@ -1,4 +1,4 @@
-import { Button, Select } from '@x-ear/ui-web';
+import { Button, Select, Checkbox } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { GovernmentInvoiceData, ExemptionReason, ExportReason } from '../../types/invoice';
@@ -70,15 +70,11 @@ export function GovernmentInvoiceModal({
                   <div className="space-y-4">
                     {/* İstisna Checkbox */}
                     <div>
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.isExempt || false}
-                          onChange={(e) => setFormData({ ...formData, isExempt: e.target.checked })}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm font-medium text-gray-700">İstisna Faturası</span>
-                      </label>
+                      <Checkbox
+                        label="İstisna Faturası"
+                        checked={formData.isExempt || false}
+                        onChange={(e) => setFormData({ ...formData, isExempt: e.target.checked })}
+                      />
                     </div>
 
                     {/* İstisna Sebepleri */}
@@ -111,15 +107,11 @@ export function GovernmentInvoiceModal({
 
                     {/* İhraç Kayıtlı Checkbox */}
                     <div>
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.isExportRegistered || false}
-                          onChange={(e) => setFormData({ ...formData, isExportRegistered: e.target.checked })}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm font-medium text-gray-700">İhraç Kayıtlı Satış</span>
-                      </label>
+                      <Checkbox
+                        label="İhraç Kayıtlı Satış"
+                        checked={formData.isExportRegistered || false}
+                        onChange={(e) => setFormData({ ...formData, isExportRegistered: e.target.checked })}
+                      />
                     </div>
 
                     {/* İhraç Sebepleri */}

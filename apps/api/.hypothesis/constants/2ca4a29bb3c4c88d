@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/rate_limit_service.py
+# hypothesis_version: 6.150.1
+
+[100, 200, 250, 500, 999, 1000, 2000, 2500, 3600, 5000, 10000, 86400, '100', '1000', '10000', 'Rate limit OK', 'WARMUP_START_DATE', 'count', 'daily_limit', 'global_daily', 'global_hourly', 'hourly_limit', 'limit', 'phase', 'scenario', 'tenant_hourly', 'tenant_id']

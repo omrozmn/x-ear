@@ -43,6 +43,7 @@ export default function SmsPage() {
                 <nav className="flex space-x-1" aria-label="Tabs">
                     {TABS.map((tab) => (
                         <button
+                            data-allow-raw="true"
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`

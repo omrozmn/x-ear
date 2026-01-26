@@ -13,15 +13,16 @@ import {
 import type { Party } from '../../types/party/index';
 import { PartyCommunicationIntegration } from './PartyCommunicationIntegration';
 import {
-  getStatusBadge,
+  StatusBadge,
+  SegmentBadge,
+  AcquisitionStatusBadge,
   formatDate,
   formatPhone,
-  getSegmentBadge,
-  getAcquisitionStatusBadge
 } from './PartyListHelpers';
 import { useListBranches } from '../../api/generated/branches/branches';
 import { unwrapArray } from '../../utils/response-unwrap';
 import { BranchRead } from '../../api/generated/schemas';
+import { useTranslation } from 'react-i18next';
 
 interface PartyListProps {
   parties: Party[];
@@ -55,7 +56,7 @@ function SortableHeader({ field, label, sortBy, sortOrder, onSort }: SortableHea
   const isActive = sortBy === field;
 
   return (
-    <button
+    <button data-allow-raw="true"
       onClick={() => onSort?.(field)}
       className={`flex items-center space-x-1 text-left font-medium text-gray-700 hover:text-gray-900 ${isActive ? 'text-blue-600' : ''
         }`}
@@ -93,6 +94,7 @@ export function PartyList({
   onSort,
   className = ''
 }: PartyListProps) {
+  const { t } = useTranslation(['patients', 'common']);
   const [hoveredParty, setHoveredParty] = useState<string | null>(null);
   const [communicationParty, setCommunicationParty] = useState<Party | null>(null);
 
@@ -139,7 +141,7 @@ export function PartyList({
     return (
       <div className="flex items-center justify-center py-12">
         <Loading size="lg" />
-        <span className="ml-2 text-gray-600">Hastalar yükleniyor...</span>
+        <span className="ml-2 text-gray-600">{t('list.loading')}</span>
       </div>
     );
   }
@@ -148,9 +150,9 @@ export function PartyList({
     return (
       <div className="text-center py-12">
         <User className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Hasta bulunamadı</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">{t('list.empty_title')}</h3>
         <p className="mt-1 text-sm text-gray-500">
-          Arama kriterlerinizi değiştirmeyi deneyin.
+          {t('list.empty_desc')}
         </p>
       </div>
     );
@@ -207,7 +209,7 @@ export function PartyList({
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
-                  {getStatusBadge(party.status || undefined)}
+                  <StatusBadge status={party.status || undefined} />
                   {party.createdAt && (
                     <span className="text-xs text-gray-400">
                       <span className="mx-2 text-gray-300">|</span>
@@ -268,34 +270,34 @@ export function PartyList({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[200px]">
                   <SortableHeader
                     field="name"
-                    label="Ad Soyad"
+                    label={t('list.columns.name')}
                     sortBy={sortBy}
                     sortOrder={sortOrder}
                     onSort={onSort}
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  TC Kimlik
+                  {t('list.columns.tc')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[140px]">
-                  Telefon
+                  {t('list.columns.phone')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
-                  Segment
+                  {t('list.columns.segment')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  Kazanım
+                  {t('list.columns.acquisition')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  Şube
+                  {t('list.columns.branch')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
-                  Durum
+                  {t('list.columns.status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
                   <SortableHeader
                     field="createdAt"
-                    label="Kayıt Tarihi"
+                    label={t('list.columns.created_at')}
                     sortBy={sortBy}
                     sortOrder={sortOrder}
                     onSort={onSort}
@@ -303,7 +305,7 @@ export function PartyList({
                 </th>
                 {showActions && (
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[160px]">
-                    İşlemler
+                    {t('list.columns.actions')}
                   </th>
                 )}
               </tr>
@@ -372,9 +374,9 @@ export function PartyList({
                       e.stopPropagation();
                       onTagClick?.(party);
                     }}
-                    title="Etiket güncellemek için tıklayın"
+                    title={t('list.update_tag_tooltip')}
                   >
-                    {getSegmentBadge(party.segment || undefined)}
+                    <SegmentBadge segment={party.segment || undefined} />
                   </td>
                   <td
                     className="px-6 py-4 whitespace-nowrap cursor-pointer"
@@ -382,9 +384,9 @@ export function PartyList({
                       e.stopPropagation();
                       onTagClick?.(party);
                     }}
-                    title="Etiket güncellemek için tıklayın"
+                    title={t('list.update_tag_tooltip')}
                   >
-                    {getAcquisitionStatusBadge(party.acquisitionType || undefined)}
+                    <AcquisitionStatusBadge acquisitionType={party.acquisitionType || undefined} />
                   </td>
                   <td
                     className="px-6 py-4 whitespace-nowrap cursor-pointer"
@@ -392,7 +394,7 @@ export function PartyList({
                       e.stopPropagation();
                       onTagClick?.(party);
                     }}
-                    title="Etiket güncellemek için tıklayın"
+                    title={t('list.update_tag_tooltip')}
                   >
                     <Badge variant="default" size="sm">{getBranchName(party)}</Badge>
                   </td>
@@ -402,9 +404,9 @@ export function PartyList({
                       e.stopPropagation();
                       onTagClick?.(party);
                     }}
-                    title="Etiket güncellemek için tıklayın"
+                    title={t('list.update_tag_tooltip')}
                   >
-                    {getStatusBadge(party.status || undefined)}
+                    <StatusBadge status={party.status || undefined} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(party.createdAt || undefined)}
@@ -420,7 +422,7 @@ export function PartyList({
                             onEdit?.(party);
                           }}
                           className="h-9 w-9 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 text-gray-400 dark:text-gray-500"
-                          title="Düzenle"
+                          title={t('edit', { ns: 'common' })}
                         >
                           <Edit className="h-5 w-5" />
                         </Button>
@@ -432,7 +434,7 @@ export function PartyList({
                             setCommunicationParty(party);
                           }}
                           className="h-9 w-9 p-0 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500"
-                          title="İletişim"
+                          title={t('nav.communication', { ns: 'layout' })}
                         >
                           <MessageSquare className="h-5 w-5" />
                         </Button>
@@ -444,7 +446,7 @@ export function PartyList({
                             onDelete?.(party);
                           }}
                           className="h-9 w-9 p-0 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500"
-                          title="Sil"
+                          title={t('delete', { ns: 'common' })}
                         >
                           <Trash2 className="h-5 w-5" />
                         </Button>
@@ -463,7 +465,7 @@ export function PartyList({
         <Modal
           isOpen={true}
           onClose={() => setCommunicationParty(null)}
-          title={`İletişim - ${communicationParty.firstName} ${communicationParty.lastName}`}
+          title={t('modal.contact_title', { name: `${communicationParty.firstName} ${communicationParty.lastName}` })}
           size="xl"
         >
           <PartyCommunicationIntegration

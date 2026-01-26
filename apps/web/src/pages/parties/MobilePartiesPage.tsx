@@ -8,11 +8,12 @@ import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
 import { useParties } from '@/hooks/useParties';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import type { PartyRead } from '@/api/generated';
+import { Input, Button } from '@x-ear/ui-web';
 
 export const MobilePartiesPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchValue, setSearchValue] = useState('');
-    const { data, isLoading, error: _error } = useParties();
+    const { data, isLoading } = useParties();
     const parties = data?.parties || [];
 
     const handleRefresh = async () => {
@@ -45,9 +46,9 @@ export const MobilePartiesPage: React.FC = () => {
                     showBack={false}
                     className="border-none"
                     actions={
-                        <button className="p-2 text-gray-600">
+                        <Button variant="ghost" size="sm" className="p-2 text-gray-600">
                             <Filter className="h-5 w-5" />
-                        </button>
+                        </Button>
                     }
                 />
 
@@ -55,7 +56,7 @@ export const MobilePartiesPage: React.FC = () => {
                 <div className="px-4 pb-4 bg-white border-b border-gray-100">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
+                        <Input
                             type="text"
                             placeholder="Hasta ara..."
                             value={searchValue}

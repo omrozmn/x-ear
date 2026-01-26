@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/config.py
+# hypothesis_version: 6.150.1
+
+[0.1, 1024, '0.1', '10', '1000', '10000', '180', '20', '2000', '2048', '3', '4096', '5000', '60', 'A', 'AIConfig', 'AIConfig | None', 'AIPhase', 'AI_ENABLED', 'AI_FAST_MODEL_ID', 'AI_INTENT_LATENCY_MS', 'AI_MAX_INPUT_TOKENS', 'AI_MAX_OUTPUT_TOKENS', 'AI_MODEL_BASE_URL', 'AI_MODEL_ID', 'AI_MODEL_MAX_TOKENS', 'AI_MODEL_PROVIDER', 'AI_MODEL_TEMPERATURE', 'AI_PHASE', 'AI_QUOTA_DEFAULT', 'B', 'C', 'EXECUTION', 'PROPOSAL', 'READ_ONLY', 'TEXT_MODEL_ENDPOINT', 'execution', 'local', 'proposal', 'qwen2.5:3b', 'qwen2.5:7b-instruct', 'read_only', 'true']

@@ -3,12 +3,11 @@ import { Button, Badge } from '@x-ear/ui-web';
 import { Activity, AlertCircle, Calendar, User } from 'lucide-react';
 
 interface PartyHearingTestsTabProps {
-  partyId: string;
+  // partyId removed - not used in component (mock data only)
 }
 
-export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({
-  partyId: _partyId,
-}) => {
+export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = () => {
+  // partyId parameter removed - not used in mock implementation
   // Mock data for now - will be replaced with actual hook
   const hearingTests: Record<string, unknown>[] = [];
   const isLoading = false;

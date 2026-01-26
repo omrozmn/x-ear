@@ -6,6 +6,8 @@ import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { useSuppliers } from '@/hooks/useSuppliers';
 import { unwrapArray } from '@/utils/response-unwrap';
 import { useHaptic } from '@/hooks/useHaptic';
+import { Input, Button } from '@x-ear/ui-web';
+import type { SupplierRead } from '@/api/generated/schemas';
 
 export const MobileSuppliersPage: React.FC = () => {
     const [searchValue, setSearchValue] = useState('');
@@ -19,7 +21,7 @@ export const MobileSuppliersPage: React.FC = () => {
         await refetch();
     };
 
-    const suppliers = unwrapArray<any>(data) || [];
+    const suppliers = unwrapArray<SupplierRead>(data) || [];
 
     const handleCall = (e: React.MouseEvent, phone: string) => {
         e.stopPropagation();
@@ -38,7 +40,7 @@ export const MobileSuppliersPage: React.FC = () => {
             <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 z-20">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
+                    <Input
                         type="text"
                         placeholder="Şirket ara..."
                         value={searchValue}
@@ -55,7 +57,7 @@ export const MobileSuppliersPage: React.FC = () => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400" />
                         </div>
                     ) : suppliers.length > 0 ? (
-                        suppliers.map((supplier: any) => (
+                        suppliers.map((supplier: SupplierRead) => (
                             <div
                                 key={supplier.id}
                                 onClick={() => triggerSelection()}
@@ -72,9 +74,9 @@ export const MobileSuppliersPage: React.FC = () => {
                                         </h3>
 
                                         <div className="text-xs text-gray-500 mt-1 space-y-1">
-                                            {supplier.contactName && (
+                                            {supplier.contactPerson && (
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{supplier.contactName}</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{supplier.contactPerson}</span>
                                                 </div>
                                             )}
                                             {supplier.city && (
@@ -93,12 +95,14 @@ export const MobileSuppliersPage: React.FC = () => {
                                     </div>
 
                                     {supplier.phone && (
-                                        <button
-                                            onClick={(e) => handleCall(e, supplier.phone)}
+                                        <Button
+                                            onClick={(e) => handleCall(e, supplier.phone as string)}
+                                            variant="ghost"
+                                            size="sm"
                                             className="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 self-center active:bg-green-100 dark:active:bg-green-900/40"
                                         >
                                             <Phone className="h-5 w-5" />
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Button } from '@x-ear/ui-web';
+import { Button, Select } from '@x-ear/ui-web';
 import { Download, Eye, FileText, Filter, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { useListSgkEReceiptDelivered } from '../../api/generated/sgk/sgk.ts';
@@ -276,18 +276,18 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
                 <Filter className="w-4 h-4 text-gray-500" />
-                <select
+                <Select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
+                  options={[
+                    { value: '', label: 'Tüm Aylar' },
+                    ...availableMonths.map(month => ({
+                      value: month,
+                      label: formatMonthName(month)
+                    }))
+                  ]}
                   className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">Tüm Aylar</option>
-                  {availableMonths.map(month => (
-                    <option key={month} value={month}>
-                      {formatMonthName(month)}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <Button
                 onClick={() => setShowBulkDownload(!showBulkDownload)}
@@ -310,6 +310,7 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={bulkOptions.reports}
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, reports: e.target.checked }))}
@@ -322,6 +323,7 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={bulkOptions.prescriptions}
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, prescriptions: e.target.checked }))}
@@ -334,6 +336,7 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={bulkOptions.processForms}
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, processForms: e.target.checked }))}
@@ -408,6 +411,7 @@ export const SGKDownloadsPage: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <label className="flex items-center text-sm">
                   <input
+                    data-allow-raw="true"
                     type="checkbox"
                     checked={selectedParties.size === filteredParties.length && filteredParties.length > 0}
                     onChange={toggleSelectAll}
@@ -427,6 +431,7 @@ export const SGKDownloadsPage: React.FC = () => {
                     <div className="flex items-center space-x-4">
                       <label className="flex items-center">
                         <input
+                          data-allow-raw="true"
                           type="checkbox"
                           checked={selectedParties.has(party.id)}
                           onChange={() => togglePartySelection(party.id)}
@@ -529,12 +534,14 @@ export const SGKDownloadsPage: React.FC = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold dark:text-white">E-Reçete Detayları - {selectedEReceipt.number}</h3>
-                <button
+                <Button
                   onClick={() => setSelectedEReceipt(null)}
+                  variant="ghost"
+                  size="sm"
                   className="text-gray-400 hover:text-gray-600"
                 >
                   ✕
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-6">

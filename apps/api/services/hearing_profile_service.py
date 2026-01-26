@@ -56,6 +56,26 @@ class HearingProfileService:
             results=results_json
         )
         self.db.add(new_test)
+        
+        # Log activity
+        try:
+            from models.user import ActivityLog
+            log = ActivityLog(
+                user_id='system',
+                action='hearing_test_created',
+                entity_type='patient',
+                entity_id=party_id,
+                tenant_id=tenant_id,
+                details=json.dumps({
+                    'title': 'Hearing Test Added',
+                    'description': f"New {new_test.test_type} record.",
+                    'conductedBy': new_test.conducted_by
+                })
+            )
+            self.db.add(log)
+        except Exception:
+            pass # Non-critical failure
+
         try:
             self.db.commit()
             self.db.refresh(new_test)

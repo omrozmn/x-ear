@@ -318,8 +318,11 @@ class BirFaturaService {
 
   /**
    * Sadece fatura oluştur (göndermeden)
+   * @param invoiceData - Invoice form data (not yet implemented)
    */
-  async create(_invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async create(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
+    // TODO: Implement when createEfaturaCreate is available in API
     throw new Error('createEfaturaCreate fonksiyonu API\'de mevcut değil. createEfaturaRetry kullanın.');
   }
 

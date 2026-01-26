@@ -1,15 +1,17 @@
-// import { Input, Checkbox, DatePicker } from '@x-ear/ui-web'; // UI components not used
+import { Select } from '@x-ear/ui-web';
 import { useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { getCurrencyRestrictions } from '../../utils/currencyManager';
+
+import { SpecialTaxBaseData, ReturnInvoiceDetailsData } from '../../types/invoice';
 
 interface InvoiceTypeSectionProps {
   invoiceType: string;
   scenario?: string;
   currency?: string;
-  specialTaxBase?: any;
-  returnInvoiceDetails?: any;
-  onChange: (field: string, value: any) => void;
+  specialTaxBase?: SpecialTaxBaseData;
+  returnInvoiceDetails?: ReturnInvoiceDetailsData;
+  onChange: (field: string, value: unknown) => void;
   onSGKModeChange?: (isSGK: boolean) => void;
 }
 
@@ -39,8 +41,7 @@ export function InvoiceTypeSection({
   ];
 
   // Representative groups (single representative per category)
-  const _withholdingTypes = ['11'];
-  const _specialBaseTypes = ['12'];
+  // Removed unused: _withholdingTypes, _specialBaseTypes (handled via scenario/invoice type)
   const returnTypes = ['50', '15'];
   // SGK tipi
   const isSGKType = invoiceType === '14';
@@ -104,20 +105,18 @@ export function InvoiceTypeSection({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Fatura Tipi <span className="text-red-500">*</span>
         </label>
-        <select
+        <Select
           value={invoiceType}
           onChange={(e) => onChange('invoiceType', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          required
-        >
-          {invoiceTypes
+          options={invoiceTypes
             .filter((type) => allowedTypes.includes(type.value))
-            .map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-        </select>
+            .map((type) => ({
+              value: type.value,
+              label: type.label
+            }))}
+          required
+          fullWidth
+        />
       </div>
 
       {/* SGK Bilgilendirme */}

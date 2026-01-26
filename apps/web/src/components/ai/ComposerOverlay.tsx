@@ -1,27 +1,41 @@
-import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import { useEffect, useCallback, useState, useMemo } from 'react';
 import { useComposerStore } from '../../stores/composerStore';
+import { useSpotlightStore } from '../../stores/spotlightStore';
+import { useChatStore } from '../../ai/stores/chatStore';
 import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle } from 'lucide-react';
 import {
     useAutocompleteApiAiComposerAutocompleteGet,
-    useExecuteToolApiAiComposerExecutePost
-} from '../../api/generated/ai-composer/ai-composer';
-import { useCreateUploadPresigned } from '../../api/generated/upload/upload';
-import type { ExecuteResponse, EntityItem, Capability } from '../../api/generated/schemas';
+    useExecuteToolApiAiComposerExecutePost,
+    useAnalyzeDocumentsApiAiComposerAnalyzePost,
+    useCreateUploadPresigned
+} from '../../api/generated';
+import type { ExecuteResponse, EntityItem, Capability, AnalysisSuggestion } from '../../api/generated/schemas';
 import { usePermissionCheck } from '../../hooks/usePermissionCheck';
 import toast from 'react-hot-toast';
+import { Button, Input } from '@x-ear/ui-web';
+import { EntityPreviewModal } from './EntityPreviewModal';
 
 export function ComposerOverlay() {
     const {
         isOpen, setOpen,
         mode, query, context, selectedAction, currentSlot, slots, executionResult,
-        setQuery, setContext, selectAction, updateSlot, nextSlot, reset, setExecutionResult
+        setQuery, selectAction, updateSlot, nextSlot, reset, setExecutionResult
     } = useComposerStore();
+
+    const {
+        stagedEntities, addStagedEntity, removeStagedEntity
+    } = useSpotlightStore();
+
+    const { setVisible: setChatVisible } = useChatStore();
 
     const { canAll } = usePermissionCheck();
     const onClose = useCallback(() => setOpen(false), [setOpen]);
 
     // Entity search state for slot filling
     const [slotSearchQuery, setSlotSearchQuery] = useState('');
+
+    // Preview state
+    const [previewEntity, setPreviewEntity] = useState<EntityItem | null>(null);
 
     // Autocomplete query hook
     const { data: autocompleteData, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(
@@ -41,6 +55,9 @@ export function ComposerOverlay() {
 
     // Upload mutation hook
     const { mutateAsync: getPresignedUrl } = useCreateUploadPresigned();
+
+    // Analyze documents mutation hook
+    const { mutateAsync: analyzeDocuments } = useAnalyzeDocumentsApiAiComposerAnalyzePost();
 
     // Handle File Upload
     const handleFileUpload = async (file: File) => {
@@ -95,40 +112,32 @@ export function ComposerOverlay() {
     };
 
     // Vision Analysis Logic
-    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [suggestions, setSuggestions] = useState<AnalysisSuggestion[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const analyzeDocument = async (fileKey: string) => {
         setIsAnalyzing(true);
         try {
-            // Manual fetch to /api/ai/composer/analyze
-            // Use local token or similar auth if needed, assuming cookie/session works
-            const res = await fetch('/api/ai/composer/analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            const result = await analyzeDocuments({
+                data: {
                     files: [fileKey],
                     context_intent: selectedAction?.name || 'general'
-                })
+                }
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                if (data.suggestions && data.suggestions.length > 0) {
-                    setSuggestions(prev => [...prev, ...data.suggestions]);
-                    toast.success(`${data.suggestions.length} öneri bulundu!`);
-                }
+            if (result.suggestions && result.suggestions.length > 0) {
+                setSuggestions(prev => [...prev, ...result.suggestions]);
+                toast.success(`${result.suggestions.length} öneri bulundu!`);
             }
         } catch (e) {
             console.error("Analysis failed:", e);
+            toast.error('Analiz başarısız oldu');
         } finally {
             setIsAnalyzing(false);
         }
     };
 
-    const applySuggestion = (s: any) => {
+    const applySuggestion = (s: AnalysisSuggestion) => {
         // Find if this suggestion matches any slot
         // Ideally matches s.slot_name to slot key
         updateSlot(s.slot_name, s.value);
@@ -181,12 +190,14 @@ export function ComposerOverlay() {
     }, [isOpen, setOpen, onClose]);
 
     const handleSelectEntity = (entity: EntityItem) => {
-        setContext(entity);
-        setQuery('');
+        setPreviewEntity(entity);
     };
 
     const handleSelectAction = (action: Capability) => {
-        selectAction(action);
+        // Spotlight Handoff Logic
+        selectAction(action, stagedEntities);
+        setOpen(false);
+        setChatVisible(true);
     };
 
     const handleSlotEntitySelect = (entity: EntityItem) => {
@@ -254,21 +265,38 @@ export function ComposerOverlay() {
                 <div className="p-4 border-b border-gray-100 flex items-center gap-2">
                     <Search className="text-gray-400 w-5 h-5" />
 
-                    {/* Context Chip */}
-                    {context && (
-                        <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm font-medium">
-                            {context.type === 'patient' && <User size={14} />}
-                            {context.type === 'device' && <Box size={14} />}
-                            {context.label}
-                            <button onClick={reset} className="hover:text-blue-900 ml-1"><X size={14} /></button>
-                        </span>
-                    )}
+                    {/* Staged Entity Chips */}
+                    <div className="flex gap-1 flex-wrap">
+                        {stagedEntities.map(e => (
+                            <span key={e.id} className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm font-medium">
+                                {e.type === 'patient' && <User size={14} />}
+                                {e.type === 'device' && <Box size={14} />}
+                                {e.label}
+                                <Button
+                                    onClick={() => removeStagedEntity(e.id)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="hover:text-blue-900 ml-1 p-0 h-auto min-h-0"
+                                >
+                                    <X size={14} />
+                                </Button>
+                            </span>
+                        ))}
+                    </div>
 
-                    <input
-                        className="flex-1 outline-none text-lg placeholder:text-gray-400"
-                        placeholder={context ? "Bir işlem yazın..." : "Hasta, cihaz veya fatura ara..."}
+                    <Input
+                        className="flex-1 outline-none text-lg placeholder:text-gray-400 border-0 focus:ring-0 shadow-none"
+                        placeholder={stagedEntities.length > 0 ? "Bir işlem yazın..." : "Hasta, cihaz veya fatura ara..."}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && query.length > 0) {
+                                // If there is a clear action in autocomplete, handoff
+                                if (autocompleteData?.intentType === 'action' && permittedActions.length > 0) {
+                                    handleSelectAction(permittedActions[0]);
+                                }
+                            }
+                        }}
                         autoFocus
                     />
 
@@ -300,12 +328,25 @@ export function ComposerOverlay() {
                                             onClick={() => handleSelectEntity(e)}
                                             className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
                                         >
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600 relative">
                                                 {e.type === 'patient' ? <User size={18} /> : <Box size={18} />}
+                                                <span className="absolute -bottom-1 -right-1 px-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded border border-white">
+                                                    {e.type === 'patient' ? 'HASTA' : 'CİHAZ'}
+                                                </span>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-medium text-gray-900 truncate">{e.label}</div>
-                                                <div className="text-xs text-gray-500 truncate">{e.subLabel}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="font-medium text-gray-900 truncate">{e.label}</div>
+                                                    {e.metadata?.tags && Array.isArray(e.metadata.tags) ?
+                                                        (e.metadata.tags.filter((t): t is string => typeof t === 'string')).map((tag, i) => (
+                                                            <span key={i} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full border border-gray-200 truncate max-w-[80px]">
+                                                                {tag}
+                                                            </span>
+                                                        ))
+                                                        : null
+                                                    }
+                                                </div>
+                                                <div className="text-xs text-gray-500 truncate">{e.subLabel || ''}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -322,8 +363,11 @@ export function ComposerOverlay() {
                                             onClick={() => handleSelectAction(a)}
                                             className="flex items-center gap-3 p-2 hover:bg-purple-50 rounded-lg cursor-pointer group transition-colors"
                                         >
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 flex items-center justify-center group-hover:from-purple-100 group-hover:to-purple-200 transition-colors">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 flex items-center justify-center group-hover:from-purple-100 group-hover:to-purple-200 transition-colors relative">
                                                 <Zap size={18} />
+                                                <span className="absolute -bottom-1 -right-1 px-1 bg-purple-100 text-purple-700 text-[10px] font-bold rounded border border-white">
+                                                    AKSİYON
+                                                </span>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-medium text-purple-900">{a.name}</div>
@@ -340,7 +384,8 @@ export function ComposerOverlay() {
                                 (!permittedActions.length) && (
                                     <div className="p-4 text-center text-gray-500">
                                         <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                                        Sonuç bulunamadı
+                                        <p>İlgili kayıt bulunamadı.</p>
+                                        <p className="text-xs mt-1 text-gray-400">Yazdıklarınız AI işlem promptu olarak kullanılacaktır.</p>
                                     </div>
                                 )}
                         </div>
@@ -365,21 +410,23 @@ export function ComposerOverlay() {
                                         {suggestions
                                             .filter(s => s.slot_name === currentSlot.name || s.slot_name === 'general') // simple filtering
                                             .map((s, idx) => (
-                                                <button
+                                                <Button
                                                     key={idx}
                                                     onClick={() => applySuggestion(s)}
+                                                    variant="outline"
+                                                    size="sm"
                                                     className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-200 shadow-sm rounded-md hover:border-blue-400 hover:shadow-md transition-all text-sm text-left group"
                                                 >
                                                     <div className="flex flex-col">
                                                         <span className="font-medium text-gray-900 group-hover:text-blue-700">
-                                                            {typeof s.value === 'object' ? JSON.stringify(s.value) : s.value}
+                                                            {typeof s.value === 'object' && s.value !== null ? JSON.stringify(s.value) : String(s.value ?? '')}
                                                         </span>
                                                         <span className="text-[10px] text-gray-400">
                                                             {(s.confidence * 100).toFixed(0)}% • {s.source_file ? 'Dosyadan' : 'AI'}
                                                         </span>
                                                     </div>
                                                     <Check className="w-3 h-3 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                </button>
+                                                </Button>
                                             ))}
                                         {!isAnalyzing && suggestions.length === 0 && (
                                             <span className="text-xs text-gray-400 italic">Bu alan için öneri bulunamadı.</span>
@@ -394,13 +441,13 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'entity_search' && (
                                 <div className="relative">
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
-                                        <input
+                                        <Input
                                             className="w-full border p-2 pl-10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="Ara..."
                                             value={slotSearchQuery}
                                             onChange={(e) => setSlotSearchQuery(e.target.value)}
                                             autoFocus
+                                            leftIcon={<Search className="w-4 h-4" />}
                                         />
                                     </div>
                                     {isSlotSearchLoading && (
@@ -432,7 +479,7 @@ export function ComposerOverlay() {
 
                             {/* Text Slot */}
                             {currentSlot.uiType === 'text' && (
-                                <input
+                                <Input
                                     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
                                     onKeyDown={(e) => {
@@ -446,7 +493,7 @@ export function ComposerOverlay() {
 
                             {/* Number Slot */}
                             {currentSlot.uiType === 'number' && (
-                                <input
+                                <Input
                                     type="number"
                                     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
@@ -461,7 +508,7 @@ export function ComposerOverlay() {
 
                             {/* Date Slot */}
                             {currentSlot.uiType === 'date' && (
-                                <input
+                                <Input
                                     type="date"
                                     className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
@@ -476,16 +523,17 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'enum' && (
                                 <div className="flex gap-2 flex-wrap">
                                     {(currentSlot.enumOptions || []).map((opt: string) => (
-                                        <button
+                                        <Button
                                             key={opt}
                                             onClick={() => {
                                                 updateSlot(currentSlot.name, opt);
                                                 nextSlot();
                                             }}
+                                            variant="outline"
                                             className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors font-medium"
                                         >
                                             {opt}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                             )}
@@ -494,6 +542,19 @@ export function ComposerOverlay() {
                                 {currentSlot.uiType === 'entity_search' ? 'Listeden seçin' : 'Enter ile onaylayın'}
                             </div>
                         </div>
+                    )}
+
+                    {/* Entity Preview Modal */}
+                    {previewEntity && (
+                        <EntityPreviewModal
+                            entity={previewEntity}
+                            onClose={() => setPreviewEntity(null)}
+                            onAdd={(e) => {
+                                addStagedEntity(e);
+                                setQuery('');
+                                setPreviewEntity(null);
+                            }}
+                        />
                     )}
 
                     {/* File Upload Mode */}
@@ -509,7 +570,7 @@ export function ComposerOverlay() {
                                     <span className="text-sm font-medium text-gray-700">Dosya Seçin veya Sürükleyin</span>
                                     <span className="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max 10MB)</span>
 
-                                    <input
+                                    <Input
                                         type="file"
                                         className="hidden"
                                         onChange={async (e) => {
@@ -519,20 +580,7 @@ export function ComposerOverlay() {
                                             const toastId = toast.loading('Yükleniyor...');
 
                                             try {
-                                                // 1. Get presigned URL
-                                                // Note: We use the hook directly here but in a real app we might move logic out
-                                                // Since we can't call hooks conditionally inside a callback, we assume useCreateUploadPresigned 
-                                                // is available in the component scope or we use a direct fetch if needed.
-                                                // But actually we added useCreateUploadPresigned import, so we need to initialize it in the component body
-                                                // See below for the mutation hook initialization.
-
-                                                // For this inline replacement, we will assume 'uploadMutation' is available (we will add it next)
-                                                // or we can use the mutateAsync method if we bind it.
-
-                                                // Since we are inside the render block, we can't call hooks. 
-                                                // We must rely on the handler function `handleFileUpload` which we will add to the component body.
                                                 handleFileUpload(file);
-
                                             } catch (error) {
                                                 console.error(error);
                                                 toast.error('Dosya yüklenemedi');
@@ -562,31 +610,41 @@ export function ComposerOverlay() {
                                 </div>
                                 {Object.entries(slots)
                                     .filter(([k]) => !k.startsWith('_')) // Hide internal fields
-                                    .map(([k, v]) => (
-                                        <div key={k} className="flex justify-between items-center mb-2 text-sm">
-                                            <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>
-                                            <span className="font-medium">{slots[`_${k}_label`] || String(v)}</span>
-                                        </div>
-                                    ))}
+                                    .map(([k, v]) => {
+                                        const label = slots[`_${k}_label`];
+                                        const displayValue = typeof label === 'string'
+                                            ? label
+                                            : (v !== null && v !== undefined ? String(v) : '-');
+
+                                        return (
+                                            <div key={k} className="flex justify-between items-center mb-2 text-sm">
+                                                <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>
+                                                <span className="font-medium">{displayValue}</span>
+                                            </div>
+                                        );
+                                    })}
                             </div>
 
                             <div className="flex gap-3 justify-end">
-                                <button
+                                <Button
                                     onClick={handleSimulate}
                                     disabled={isExecuting}
+                                    variant="outline"
                                     className="px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors disabled:opacity-50"
                                 >
                                     Simüle Et
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={reset}
+                                    variant="ghost"
                                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                                 >
                                     İptal
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={handleConfirm}
                                     disabled={isExecuting}
+                                    variant="success"
                                     className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 font-medium transition-colors"
                                 >
                                     {isExecuting ? (
@@ -600,7 +658,7 @@ export function ComposerOverlay() {
                                             <Check size={16} />
                                         </>
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -636,12 +694,14 @@ export function ComposerOverlay() {
                             )}
 
                             <div className="mt-6">
-                                <button
+                                <Button
                                     onClick={() => { onClose(); reset(); }}
+                                    variant="secondary"
+                                    fullWidth
                                     className="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-colors"
                                 >
                                     Kapat
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}

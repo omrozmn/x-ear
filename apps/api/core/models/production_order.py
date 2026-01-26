@@ -1,12 +1,13 @@
 # Production Order Model
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 from datetime import datetime
 
-class ProductionOrder(BaseModel):
+class ProductionOrder(BaseModel, TenantScopedMixin):
     __tablename__ = 'production_orders'
     
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('prod'))
-    tenant_id = db.Column(db.String(50), nullable=False)
+    # tenant_id is now inherited from TenantScopedMixin
     party_id = db.Column(db.String(50), nullable=False)
     
     order_number = db.Column(db.String(50), unique=True, nullable=False)

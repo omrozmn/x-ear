@@ -31,6 +31,7 @@ type Story = StoryObj<typeof meta>;
 const mockDevices = [
   {
     id: '1',
+    name: 'Phonak Audéo Paradise P90',
     brand: 'Phonak',
     model: 'Audéo Paradise P90',
     price: 15000,
@@ -38,6 +39,7 @@ const mockDevices = [
   },
   {
     id: '2',
+    name: 'Oticon More 1',
     brand: 'Oticon',
     model: 'More 1',
     price: 18000,
@@ -45,6 +47,7 @@ const mockDevices = [
   },
   {
     id: '3',
+    name: 'Widex Moment 440',
     brand: 'Widex',
     model: 'Moment 440',
     price: 16500,
@@ -52,6 +55,7 @@ const mockDevices = [
   },
   {
     id: '4',
+    name: 'Signia Pure Charge&Go 7X',
     brand: 'Signia',
     model: 'Pure Charge&Go 7X',
     price: 14000,
@@ -59,13 +63,33 @@ const mockDevices = [
   },
 ];
 
-const DeviceSelectorWrapper = (args: any) => {
+interface DeviceSelectorWrapperProps {
+  value?: string;
+  label?: string;
+  devices?: Array<{
+    id: string;
+    name: string;
+    brand: string;
+    model: string;
+    price: number;
+    stock: number;
+  }>;
+  placeholder?: string;
+  disabled?: boolean;
+  required?: boolean;
+  error?: string;
+  showStock?: boolean;
+  showPrice?: boolean;
+}
+
+const DeviceSelectorWrapper = (args: DeviceSelectorWrapperProps) => {
   const [value, setValue] = useState(args.value || '');
   
   return (
     <div className="w-80">
       <DeviceSelector
         {...args}
+        devices={args.devices || []}
         value={value}
         onChange={(value: string) => setValue(value)}
       />

@@ -30,9 +30,16 @@ if db_url and db_url.startswith('sqlite'):
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-from models import db
+
+# Ensure project root is in sys.path for imports
+import sys
+from pathlib import Path
+api_dir = Path(__file__).resolve().parent.parent
+if str(api_dir) not in sys.path:
+    sys.path.insert(0, str(api_dir))
+
+# Import db and models from correct modules
+from core.models import db
 # Import AI models to include them in metadata
 from ai.models import AIRequest, AIAction, AIAuditLog, AIUsage  # noqa
 target_metadata = db.metadata

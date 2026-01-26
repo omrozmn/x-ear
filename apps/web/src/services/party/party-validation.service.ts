@@ -36,7 +36,7 @@ export class PartyValidationService {
     this.validateRequiredFields(party, errors);
 
     // Format validations
-    this.validateFormats(party, errors, warnings);
+    this.validateFormats(party, errors);
 
     // Business rule validations
     this.validateBusinessRules(party, errors, warnings);
@@ -164,7 +164,7 @@ export class PartyValidationService {
     }
   }
 
-  private validateFormats(party: Partial<OrvalParty>, errors: ValidationError[], _warnings: ValidationWarning[]): void {
+  private validateFormats(party: Partial<OrvalParty>, errors: ValidationError[]): void {
     // Phone format validation
     if (party.phone && !this.validatePhone(party.phone)) {
       errors.push({
@@ -196,7 +196,7 @@ export class PartyValidationService {
     }
 
     // Birth date validation
-    if (party.birthDate && !this.validateBirthDate(party.birthDate)) {
+    if (party.birthDate && !this.validateBirthDate(party.birthDate as string)) {
       errors.push({
         field: 'birthDate',
         code: 'INVALID_DATE',
@@ -209,7 +209,7 @@ export class PartyValidationService {
   private validateBusinessRules(party: Partial<OrvalParty>, errors: ValidationError[], warnings: ValidationWarning[]): void {
     // Age-related warnings
     if (party.birthDate) {
-      const age = this.calculateAge(party.birthDate);
+      const age = this.calculateAge(party.birthDate as string);
 
       if (age < 18) {
         warnings.push({

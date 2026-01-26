@@ -4,9 +4,10 @@ Suppliers and Product-Supplier Relationship Models
 from datetime import datetime, timezone
 import json
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 
 
-class Supplier(BaseModel):
+class Supplier(BaseModel, TenantScopedMixin):
     """
     Supplier model represents companies that supply products to the business.
     """
@@ -14,7 +15,7 @@ class Supplier(BaseModel):
     __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Company Information
     company_name = db.Column(db.String(200), nullable=False, unique=True, index=True)
@@ -90,7 +91,7 @@ class Supplier(BaseModel):
         }
 
 
-class ProductSupplier(BaseModel):
+class ProductSupplier(BaseModel, TenantScopedMixin):
     """
     Product-Supplier Relationship Model
     Many-to-many relationship with additional fields
@@ -98,11 +99,11 @@ class ProductSupplier(BaseModel):
     __tablename__ = 'product_suppliers'
     
     id = db.Column(db.Integer, primary_key=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Foreign Keys
     product_id = db.Column(db.String(100), db.ForeignKey('inventory.id'), nullable=False, index=True)
     supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=False, index=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Supplier-specific product info
     supplier_product_code = db.Column(db.String(100))  # Supplier's code for this product

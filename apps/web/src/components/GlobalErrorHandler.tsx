@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useCallback, useState } from 'react';
+import React, { createContext, useCallback, useState } from 'react';
 import { Toast } from './ErrorMessage';
 import { getErrorMessage, isNetworkError, isUnauthorizedError } from '../hooks/useErrorHandler';
 
@@ -27,14 +27,6 @@ interface ErrorNotification extends ErrorOptions {
 }
 
 const GlobalErrorContext = createContext<GlobalErrorContextType | undefined>(undefined);
-
-export const useGlobalError = () => {
-  const context = useContext(GlobalErrorContext);
-  if (!context) {
-    throw new Error('useGlobalError must be used within a GlobalErrorProvider');
-  }
-  return context;
-};
 
 export const GlobalErrorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<ErrorNotification[]>([]);

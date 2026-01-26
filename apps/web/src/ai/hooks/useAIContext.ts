@@ -17,6 +17,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { useParams } from '@tanstack/react-router';
+import { CURRENT_TENANT_ID } from '../../constants/storage-keys';
 import { useAuthStore } from '../../stores/authStore';
 import { useAISessionStore } from '../stores/aiSessionStore';
 import type { AIContext, AIRole, AIProfile, AICapability } from '../types/ai.types';
@@ -115,7 +116,7 @@ function extractTenantId(user: { effectiveTenantId?: string } | null): string | 
 
   // 2. Check localStorage (set during login)
   try {
-    const storedTenantId = localStorage.getItem('current_tenant_id');
+    const storedTenantId = localStorage.getItem(CURRENT_TENANT_ID);
     if (storedTenantId) {
       return storedTenantId;
     }

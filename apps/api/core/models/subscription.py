@@ -7,6 +7,7 @@ from enum import Enum
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer, Numeric, JSON
 from sqlalchemy.orm import relationship
 from models.base import db, BaseModel
+from models.mixins import TenantScopedMixin
 
 class SubscriptionStatus(str, Enum):
     ACTIVE = "active"
@@ -24,14 +25,14 @@ class PaymentStatus(str, Enum):
     CANCELED = "canceled"
     REFUNDED = "refunded"
 
-class Subscription(BaseModel):
+class Subscription(BaseModel, TenantScopedMixin):
     """
     Represents a tenant's subscription to a plan.
     """
     __tablename__ = 'subscriptions'
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     plan_id = Column(String(36), ForeignKey('plans.id'), nullable=False)
     
     # Stripe/Iyzico Subscription ID
@@ -75,14 +76,14 @@ class Subscription(BaseModel):
             'plan': self.plan.to_dict() if self.plan else None
         }
 
-class PaymentHistory(BaseModel):
+class PaymentHistory(BaseModel, TenantScopedMixin):
     """
     Tracks payments made by tenants for subscriptions.
     """
     __tablename__ = 'payment_history'
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     subscription_id = Column(String(36), ForeignKey('subscriptions.id'), nullable=True)
     
     amount = Column(Numeric(10, 2), nullable=False)

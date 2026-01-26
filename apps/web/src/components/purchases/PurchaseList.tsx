@@ -13,8 +13,7 @@ interface PurchaseListProps {
 export function PurchaseList({ 
   onPurchaseSelect, 
   filters = {}, 
-  showActions = false, 
-  compact: _compact = false 
+  showActions = false
 }: PurchaseListProps) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);

@@ -30,7 +30,7 @@ interface DebugRoleSwitcherProps {
 }
 
 export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode = false }) => {
-  const { user, setUser: _setUser, setAuth } = useAuthStore();
+  const { user, setAuth } = useAuthStore(); // Removed unused _setUser
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -180,7 +180,14 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   const isImpersonating = user?.isImpersonating === true;
 
   // Response has { success, data: { roles: [...] } }
-  const roles = (rolesResponse as unknown as { data?: { roles?: any[] } })?.data?.roles || [];
+  interface RoleData {
+    id: string;
+    name: string;
+    code: string;
+    displayName?: string;
+    permissionCount?: number;
+  }
+  const roles = (rolesResponse as unknown as { data?: { roles?: RoleData[] } })?.data?.roles || [];
   const currentRole = user?.role || 'unknown';
 
   const handleRoleSwitch = (roleName: string) => {
@@ -201,6 +208,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
     <div style={{ position: 'relative' }}>
       {/* Debug Badge & Button */}
       <button
+        data-allow-raw="true"
         onClick={() => setIsOpen(!isOpen)}
         disabled={isSwitching || rolesLoading}
         style={{
@@ -306,6 +314,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
                 const isCurrentRole = roleName === currentRole;
                 return (
                   <button
+                    data-allow-raw="true"
                     key={roleName}
                     onClick={() => roleName && handleRoleSwitch(roleName)}
                     disabled={isSwitching || !roleName}
@@ -370,6 +379,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               borderTop: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
             }}>
               <button
+                data-allow-raw="true"
                 onClick={() => exitImpersonation()}
                 disabled={isExiting}
                 style={{

@@ -1,5 +1,6 @@
 import { Button } from '@x-ear/ui-web';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Appointment, CalendarView } from '../../types/appointment';
 import { partyApiService } from '../../services/party/party-api.service';
 import { useAppointments } from '../../hooks/useAppointments';
@@ -26,6 +27,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   selectedDate = new Date(),
   showCreateButton = true
 }) => {
+  const { t } = useTranslation(['appointments']);
   const { appointments, loading } = useAppointments();
   const [currentDate, setCurrentDate] = useState(selectedDate);
   const [currentView, setCurrentView] = useState<CalendarView>(view);
@@ -138,7 +140,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
-              Gün
+              {t('views.day')}
             </Button>
             <Button
               onClick={() => setCurrentView('week')}
@@ -147,7 +149,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
-              Hafta
+              {t('views.week')}
             </Button>
             <Button
               onClick={() => setCurrentView('month')}
@@ -156,7 +158,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
-              Ay
+              {t('views.month')}
             </Button>
             <Button
               onClick={() => setCurrentView('list')}
@@ -165,7 +167,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
-              Liste
+              {t('views.list')}
             </Button>
           </div>
         </div>
@@ -181,7 +183,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Yeni Randevu
+            {t('new_appointment')}
           </Button>
         )}
       </div>

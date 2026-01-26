@@ -363,7 +363,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Loaner Device Section */}
       <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
         <label className="flex items-center space-x-2 cursor-pointer mb-3">
-          <input
+          <Input
             type="checkbox"
             checked={formData.isLoaner || false}
             onChange={(e) => updateFormData('isLoaner', e.target.checked)}

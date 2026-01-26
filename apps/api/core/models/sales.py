@@ -1,11 +1,12 @@
 # Sales Models (formerly Patient sales models)
 from .base import db, BaseModel, gen_id, gen_sale_id, JSONMixin
+from .mixins import TenantScopedMixin
 from .enums import DeviceSide
 from .device import Device
 from decimal import Decimal
 import sqlalchemy as sa
 
-class PaymentRecord(BaseModel):
+class PaymentRecord(BaseModel, TenantScopedMixin):
     """Payment tracking for sales, promissory notes, and partial payments"""
     __tablename__ = "payment_records"
     
@@ -16,7 +17,7 @@ class PaymentRecord(BaseModel):
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'))  # Optional: link to sale
     promissory_note_id = db.Column(db.String(50))  # Link to promissory note if applicable
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Payment details
@@ -68,7 +69,7 @@ class PaymentRecord(BaseModel):
         payment_dict.update(base_dict)
         return payment_dict
 
-class DeviceAssignment(BaseModel):
+class DeviceAssignment(BaseModel, TenantScopedMixin):
     __tablename__ = "device_assignments"
     
     # Primary key with auto-generated default
@@ -82,7 +83,7 @@ class DeviceAssignment(BaseModel):
     device_id = db.Column(db.String(50), nullable=True)  # Can be inventory_id or actual device_id
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=True)  # Link to sale
     inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory item
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Assignment details
@@ -202,7 +203,7 @@ class DeviceAssignment(BaseModel):
         assignment_dict.update(base_dict)
         return assignment_dict
 
-class Sale(BaseModel):
+class Sale(BaseModel, TenantScopedMixin):
     __tablename__ = "sales"
     
     # Primary key with auto-generated default
@@ -211,7 +212,7 @@ class Sale(BaseModel):
     # Foreign keys
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     product_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory product
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Sale details
@@ -266,7 +267,7 @@ class Sale(BaseModel):
         sale_dict.update(base_dict)
         return sale_dict
 
-class PaymentPlan(BaseModel):
+class PaymentPlan(BaseModel, TenantScopedMixin):
     __tablename__ = "payment_plans"
     
     # Primary key with auto-generated default
@@ -274,7 +275,7 @@ class PaymentPlan(BaseModel):
     
     # Foreign keys
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=False)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Plan details
@@ -324,7 +325,7 @@ class PaymentPlan(BaseModel):
         plan_dict.update(base_dict)
         return plan_dict
 
-class PaymentInstallment(BaseModel):
+class PaymentInstallment(BaseModel, TenantScopedMixin):
     __tablename__ = "payment_installments"
     
     # Primary key with auto-generated default
@@ -332,6 +333,7 @@ class PaymentInstallment(BaseModel):
     
     # Foreign keys
     payment_plan_id = db.Column(db.String(50), db.ForeignKey('payment_plans.id'), nullable=False)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Installment details
     installment_number = db.Column(db.Integer, nullable=False)

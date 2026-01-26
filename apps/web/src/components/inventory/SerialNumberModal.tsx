@@ -111,13 +111,15 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
                       placeholder={`Seri ${index + 1}`}
                     />
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="mt-5 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                     onClick={() => clearSerial(index)}
                     title="Temizle"
                   >
                     <X className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               )
             ))}

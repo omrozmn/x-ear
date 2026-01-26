@@ -7,6 +7,7 @@ import { PartyAutocomplete } from './PartyAutocomplete';
 import { getCurrentUserId } from '@/utils/auth-utils';
 import { Gender } from '../../api/generated/schemas/gender';
 import { PartyStatus } from '../../api/generated/schemas/partyStatus';
+import { useTranslation } from 'react-i18next';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -58,6 +59,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const { data: partiesData, createParty } = useParties();
   const { parties = [] } = partiesData || {};
   const { success: showSuccess, error: showError } = useToastHelpers();
+  const { t } = useTranslation(['appointments', 'common']);
 
   const [formData, setFormData] = useState<FormData>({
     partyId: partyId || appointment?.partyId || '',
@@ -101,53 +103,42 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   }, [formData.type]);
 
   const getTypeLabel = (type: AppointmentType): string => {
-    const labels = {
-      consultation: 'Konsültasyon',
-      follow_up: 'Kontrol Muayenesi',
-      trial: 'Deneme Başlangıç',
-      delivery: 'Cihaz Teslimi',
-      control_visit: 'Kontrol Ziyareti',
-      battery_renewal: 'Pil Yenileme',
-      repair: 'Tamir',
-      fitting: 'Cihaz Ayarı',
-      assessment: 'Değerlendirme'
-    };
-    return labels[type as keyof typeof labels] || type;
+    return t(`types.${type}`);
   };
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
     if (!formData.partyId) {
-      newErrors.partyId = 'Hasta seçimi zorunludur';
+      newErrors.partyId = t('form.errors.patient_required');
     }
 
     if (!formData.date) {
-      newErrors.date = 'Tarih zorunludur';
+      newErrors.date = t('form.errors.date_required');
     } else {
       const appointmentDate = new Date(formData.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       if (appointmentDate < today) {
-        newErrors.date = 'Geçmiş tarih seçilemez';
+        newErrors.date = t('form.errors.date_past');
       }
     }
 
     if (!formData.time) {
-      newErrors.time = 'Saat zorunludur';
+      newErrors.time = t('form.errors.time_required');
     } else if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(formData.time)) {
-      newErrors.time = 'Geçerli bir saat formatı giriniz (HH:MM)';
+      newErrors.time = t('form.errors.time_invalid');
     }
 
     if (!formData.duration || formData.duration <= 0) {
-      newErrors.duration = 'Süre 0\'dan büyük olmalıdır';
+      newErrors.duration = t('form.errors.duration_min');
     } else if (formData.duration > 480) {
-      newErrors.duration = 'Süre 8 saatten fazla olamaz';
+      newErrors.duration = t('form.errors.duration_max');
     }
 
     if (!formData.type) {
-      newErrors.type = 'Randevu türü zorunludur';
+      newErrors.type = t('form.errors.type_required');
     }
 
     // Title is no longer required - auto-generated from type
@@ -189,10 +180,10 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         partyName: `${(newParty.firstName as string)} ${(newParty.lastName as string)}`.trim()
       }));
 
-      showSuccess('Yeni hasta oluşturuldu');
+      showSuccess(t('form.success.party_create'));
     } catch (error) {
       console.error('Failed to create party:', error);
-      showError('Hasta oluşturulamadı');
+      showError(t('form.errors.party_create_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -227,7 +218,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         };
 
         const newAppointment = await createAppointment(appointmentData);
-        showSuccess('Randevu başarıyla oluşturuldu');
+        showSuccess(t('form.success.create'));
         onSave?.(newAppointment);
       } else if (appointment) {
         const updateData: Partial<UpdateAppointmentData> = {
@@ -247,12 +238,12 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         };
 
         const updatedAppointment = await updateAppointment(appointment.id, updateData);
-        showSuccess('Randevu başarıyla güncellendi');
+        showSuccess(t('form.success.update'));
         onSave?.(updatedAppointment);
       }
     } catch (error) {
       console.error('Failed to save appointment:', error);
-      showError('Randevu kaydedilemedi');
+      showError(t('form.errors.create_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -274,7 +265,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">Hata</h3>
+                    <h3 className="text-sm font-medium text-red-800">{t('error_title')}</h3>
                     <div className="mt-2 text-sm text-red-700">{error}</div>
                   </div>
                 </div>
@@ -285,7 +276,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               {/* Party Selection */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hasta *
+                  {t('form.patient')}
                 </label>
                 <PartyAutocomplete
                   value={formData.partyName}
@@ -295,7 +286,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                     handleInputChange('partyName', `${(party.firstName as string)} ${(party.lastName as string)}`);
                   }}
                   onAddNew={handleAddNewParty}
-                  placeholder="Hasta adı veya TC ile arayın..."
+                  placeholder={t('form.patient_placeholder')}
                   error={errors.partyId}
                 />
               </div>
@@ -303,10 +294,10 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               {/* Date */}
               <div>
                 <DatePicker
-                  label="Tarih *"
+                  label={t('form.date')}
                   value={formData.date ? new Date(formData.date) : undefined}
                   onChange={(date) => handleInputChange('date', date ? date.toISOString().split('T')[0] : '')}
-                  placeholder="GG/AA/YYYY"
+                  placeholder={t('form.date_placeholder')}
                   className={`w-full ${errors.date ? 'border-red-300' : ''}`}
                   error={errors.date}
                 />
@@ -315,7 +306,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               {/* Time */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Saat *
+                  {t('form.time')}
                 </label>
                 <Input
                   type="time"
@@ -332,7 +323,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               {/* Duration */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Süre (dakika) *
+                  {t('form.duration')}
                 </label>
                 <Input
                   type="number"
@@ -352,21 +343,21 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               {/* Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Randevu Türü *
+                  {t('form.type')}
                 </label>
                 <Select
                   value={formData.type}
                   onChange={(e) => handleInputChange('type', e.target.value as AppointmentType)}
                   options={[
-                    { value: 'consultation', label: 'Konsültasyon' },
-                    { value: 'follow_up', label: 'Kontrol Muayenesi' },
-                    { value: 'trial', label: 'Deneme Başlangıç' },
-                    { value: 'delivery', label: 'Cihaz Teslimi' },
-                    { value: 'control_visit', label: 'Kontrol Ziyareti' },
-                    { value: 'battery_renewal', label: 'Pil Yenileme' },
-                    { value: 'repair', label: 'Tamir' },
-                    { value: 'fitting', label: 'Cihaz Ayarı' },
-                    { value: 'assessment', label: 'Değerlendirme' }
+                    { value: 'consultation', label: t('types.consultation') },
+                    { value: 'follow_up', label: t('types.follow_up') },
+                    { value: 'trial', label: t('types.trial') },
+                    { value: 'delivery', label: t('types.delivery') },
+                    { value: 'control_visit', label: t('types.control_visit') },
+                    { value: 'battery_renewal', label: t('types.battery_renewal') },
+                    { value: 'repair', label: t('types.repair') },
+                    { value: 'fitting', label: t('types.fitting') },
+                    { value: 'assessment', label: t('types.assessment') }
                   ]}
                   className={`w-full ${errors.type ? 'border-red-300' : ''}`}
                 />
@@ -444,12 +435,12 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               {/* Notes */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notlar
+                  {t('form.notes')}
                 </label>
                 <Textarea
                   value={formData.notes}
                   onChange={(e) => handleInputChange('notes', e.target.value)}
-                  placeholder="Randevu ile ilgili notlar..."
+                  placeholder={t('form.notes_placeholder')}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -467,7 +458,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               variant='default'>
-              İptal
+              {t('form.cancel_btn')}
             </Button>
           )}
           <Button
@@ -477,7 +468,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             {isLoading && (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
             )}
-            {mode === 'create' ? 'Randevu Oluştur' : 'Randevuyu Güncelle'}
+            {mode === 'create' ? t('form.create_btn') : t('form.update_btn')}
           </Button>
         </div>
       </form>

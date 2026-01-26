@@ -392,7 +392,7 @@ export class PartySyncService {
     return party;
   }
 
-  async updateParty(party: LocalParty, _idempotencyKey?: string): Promise<LocalParty> {
+  async updateParty(party: LocalParty): Promise<LocalParty> {
     // 1. Update local IndexedDB
     await indexedDBManager.updateParty(party);
 

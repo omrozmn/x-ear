@@ -259,7 +259,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                 <h5 className="font-medium text-gray-900 mb-3">Hızlı Notlar</h5>
                 <div className="grid grid-cols-2 gap-2">
                   {quickNotes.map((quickNote) => (
-                    <button
+                    <button data-allow-raw="true"
                       key={quickNote}
                       type="button"
                       onClick={() => {

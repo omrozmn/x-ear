@@ -17,6 +17,8 @@ from models.inventory import InventoryItem
 from models.invoice import Invoice
 from services.stock_service import create_stock_movement
 from services.device_assignment_service import DeviceAssignmentService
+from services.event_service import event_service
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks
 
 from schemas.sales import (
     SaleRead, SaleCreate, SaleUpdate, 
@@ -533,7 +535,7 @@ def create_sale_payment_plan(
     access: UnifiedAccess = Depends(require_access())
 ):
     """Create payment plan for a sale - Flask parity"""
-    access.require_permission("sales:write")
+    access.require_permission("sale:write")
     
     sale = get_sale_or_404(db, sale_id, access)
     
@@ -609,7 +611,7 @@ def pay_installment(
     access: UnifiedAccess = Depends(require_access())
 ):
     """Pay a specific installment - Flask parity"""
-    access.require_permission("sales:write")
+    access.require_permission("sale:write")
     
     from datetime import timezone
     from uuid import uuid4
@@ -705,11 +707,12 @@ def _update_inventory_stock(db: Session, product: InventoryItem, qty: int, trans
 @router.post("/sales", operation_id="createSales")
 def create_sale(
     sale_in: SaleCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
     """Create a new sale."""
-    access.require_permission("sales:create")
+    access.require_permission("sale:write")
     
     # 1. Validate Patient
     patient = db.get(Party, sale_in.party_id)
@@ -826,7 +829,7 @@ def create_sale(
 
     return ResponseEnvelope(
         data={
-            "sale": sale,
+            "sale": SaleRead.model_validate(sale),
             "warnings": warnings,
             "saleId": sale.id,
         },
@@ -840,7 +843,7 @@ def update_sale(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    access.require_permission("sales:write")
+    access.require_permission("sale:write")
     
     sale = get_sale_or_404(db, sale_id, access)
     
@@ -1206,7 +1209,7 @@ def create_device_assignments(
     """
     from services.pricing import calculate_device_pricing, create_payment_plan
     
-    access.require_permission("sales:create")
+    access.require_permission("sale:write")
     
     # Validate party
     party = db.get(Party, party_id)
@@ -1373,7 +1376,7 @@ def update_device_assignment(
         sync_sale_totals
     )
     
-    access.require_permission("sales:write")
+    access.require_permission("sale:write")
     
     assignment = db.get(DeviceAssignment, assignment_id)
     if not assignment:
@@ -1835,7 +1838,7 @@ def return_loaner_to_stock(
     """Return a loaner device to stock."""
     from services.stock_service import create_stock_movement
     
-    access.require_permission("sales:write")
+    access.require_permission("sale:write")
     
     assignment = db.get(DeviceAssignment, assignment_id)
     if not assignment:

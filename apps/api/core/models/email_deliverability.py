@@ -3,15 +3,16 @@
 Models for tracking bounces, unsubscribes, DMARC reports, complaints, and metrics.
 """
 from .base import db, BaseModel, gen_id, JSONMixin
+from .mixins import TenantScopedMixin
 from datetime import datetime, timezone
 
 
-class EmailBounce(BaseModel, JSONMixin):
+class EmailBounce(BaseModel, JSONMixin, TenantScopedMixin):
     """Email bounce tracking model."""
     __tablename__ = 'email_bounce'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("bounce"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     email_log_id = db.Column(db.String(50), db.ForeignKey('email_logs.id'), nullable=True)
     recipient = db.Column(db.String(255), nullable=False)
     bounce_type = db.Column(db.String(20), nullable=False)  # hard, soft, block
@@ -32,12 +33,12 @@ class EmailBounce(BaseModel, JSONMixin):
     )
 
 
-class EmailUnsubscribe(BaseModel, JSONMixin):
+class EmailUnsubscribe(BaseModel, JSONMixin, TenantScopedMixin):
     """Email unsubscribe preferences model."""
     __tablename__ = 'email_unsubscribe'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("unsub"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     recipient = db.Column(db.String(255), nullable=False)
     scenario = db.Column(db.String(100), nullable=False)
     unsubscribed_at = db.Column(db.DateTime, nullable=False)
@@ -51,12 +52,12 @@ class EmailUnsubscribe(BaseModel, JSONMixin):
     )
 
 
-class DMARCReport(BaseModel, JSONMixin):
+class DMARCReport(BaseModel, JSONMixin, TenantScopedMixin):
     """DMARC aggregate report model."""
     __tablename__ = 'dmarc_report'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("dmarc"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     report_id = db.Column(db.String(255), nullable=False)
     org_name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=True)
@@ -91,12 +92,12 @@ class DMARCReport(BaseModel, JSONMixin):
     )
 
 
-class EmailComplaint(BaseModel, JSONMixin):
+class EmailComplaint(BaseModel, JSONMixin, TenantScopedMixin):
     """Email spam complaint model."""
     __tablename__ = 'email_complaint'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("complaint"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     email_log_id = db.Column(db.String(50), db.ForeignKey('email_logs.id'), nullable=True)
     recipient = db.Column(db.String(255), nullable=False)
     complaint_type = db.Column(db.String(50), nullable=False)
@@ -112,12 +113,12 @@ class EmailComplaint(BaseModel, JSONMixin):
     )
 
 
-class DeliverabilityMetrics(BaseModel, JSONMixin):
+class DeliverabilityMetrics(BaseModel, TenantScopedMixin, JSONMixin):
     """Daily deliverability metrics snapshot."""
     __tablename__ = 'deliverability_metrics'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("metrics"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     date = db.Column(db.Date, nullable=False)
     emails_sent = db.Column(db.Integer, default=0)
     emails_delivered = db.Column(db.Integer, default=0)
@@ -132,12 +133,12 @@ class DeliverabilityMetrics(BaseModel, JSONMixin):
     )
 
 
-class EmailApproval(BaseModel, JSONMixin):
+class EmailApproval(BaseModel, TenantScopedMixin, JSONMixin):
     """Email approval workflow model for AI-generated emails."""
     __tablename__ = 'email_approval'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("approval"))
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     email_log_id = db.Column(db.String(50), db.ForeignKey('email_logs.id'), nullable=True)
     recipient = db.Column(db.String(255), nullable=False)
     subject = db.Column(db.String(500), nullable=False)

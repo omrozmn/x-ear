@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/response.py
+# hypothesis_version: 6.150.1
+
+[200, 400, 401, 403, 404, 'FORBIDDEN', 'NOT_FOUND', 'Resource not found', 'UNAUTHORIZED', 'Unauthorized', 'code', 'data', 'details', 'error', 'message', 'meta', 'success']

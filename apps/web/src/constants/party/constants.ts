@@ -1,6 +1,8 @@
 // Party-related constants and configuration
 // Following the storage keys registry pattern from user rules
 
+import type { PartyFilters } from '@/types/party/party-search.types';
+
 export const PARTY_CONSTANTS = {
   // API endpoints
   API_BASE: '/api/parties',
@@ -99,7 +101,7 @@ export const PARTY_STORAGE_KEYS = {
 export const PARTY_QUERY_KEYS = {
   all: ['parties'] as const,
   lists: () => [...PARTY_QUERY_KEYS.all, 'list'] as const,
-  list: (filters: any) => [...PARTY_QUERY_KEYS.lists(), filters] as const,
+  list: (filters: PartyFilters) => [...PARTY_QUERY_KEYS.lists(), filters] as const,
   details: () => [...PARTY_QUERY_KEYS.all, 'detail'] as const,
   detail: (id: string) => [...PARTY_QUERY_KEYS.details(), id] as const,
   notes: (partyId: string) => [...PARTY_QUERY_KEYS.all, 'notes', partyId] as const,

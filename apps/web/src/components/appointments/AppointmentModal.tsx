@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Appointment, AppointmentStatus } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
 import { AppointmentForm } from './AppointmentForm';
+import { useTranslation } from 'react-i18next';
 
 interface AppointmentModalProps {
   appointment?: Appointment;
@@ -27,6 +28,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const { updateAppointment, deleteAppointment, updating, deleting } = useAppointments();
   const [currentMode, setCurrentMode] = useState(mode);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { t } = useTranslation(['appointments', 'common']);
 
   // Keep internal currentMode in sync when parent changes the `mode` prop
   React.useEffect(() => {
@@ -48,30 +50,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   };
 
   const getStatusLabel = (status: AppointmentStatus): string => {
-    const labels = {
-      scheduled: 'Planlandı',
-      confirmed: 'Onaylandı',
-      completed: 'Tamamlandı',
-      cancelled: 'İptal Edildi',
-      no_show: 'Gelmedi',
-      rescheduled: 'Ertelendi'
-    };
-    return labels[status] || status;
+    return t(`status.${status}`);
   };
 
   const getTypeLabel = (type: string): string => {
-    const labels = {
-      consultation: 'Konsültasyon',
-      follow_up: 'Kontrol Muayenesi',
-      trial: 'Deneme Başlangıç',
-      delivery: 'Cihaz Teslimi',
-      control_visit: 'Kontrol Ziyareti',
-      battery_renewal: 'Pil Yenileme',
-      repair: 'Tamir',
-      fitting: 'Cihaz Ayarı',
-      assessment: 'Değerlendirme'
-    };
-    return labels[type as keyof typeof labels] || type;
+    return t(`types.${type}`);
   };
 
   const formatDate = (date: string): string => {
@@ -141,9 +124,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <div className="bg-white dark:bg-slate-800 px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-              {currentMode === 'create' && 'Yeni Randevu'}
-              {currentMode === 'edit' && 'Randevuyu Düzenle'}
-              {currentMode === 'view' && 'Randevu Detayları'}
+              {currentMode === 'create' && t('modal.title_create')}
+              {currentMode === 'edit' && t('modal.title_edit')}
+              {currentMode === 'view' && t('modal.title_view')}
             </h3>
             <Button
               onClick={onClose}
@@ -162,7 +145,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <div className="space-y-6">
               {/* Party Info */}
               <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Hasta Bilgileri</h4>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">{t('modal.patient_info')}</h4>
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">{appointment.partyName}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">ID: {appointment.partyId}</p>
               </div>
@@ -170,36 +153,36 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               {/* Appointment Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tarih</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.date')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">{formatDate(appointment.date)}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Saat</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.time')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">{formatTime(appointment.time)}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Süre</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.duration')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">{appointment.duration} dakika</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tür</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.type')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">{getTypeLabel(appointment.type)}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Durum</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.status')}</label>
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
                     {getStatusLabel(appointment.status)}
                   </span>
                 </div>
                 {appointment.clinician && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Doktor</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.doctor')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-white">{appointment.clinician}</p>
                   </div>
                 )}
                 {appointment.location && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Lokasyon</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.location')}</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-white">{appointment.location}</p>
                   </div>
                 )}
@@ -207,30 +190,30 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Başlık</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.title')}</label>
                 <p className="mt-1 text-sm text-gray-900 dark:text-white">{appointment.title}</p>
               </div>
 
               {/* Notes */}
               {appointment.notes && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notlar</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('modal.notes')}</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{appointment.notes}</p>
                 </div>
               )}
 
               {/* Timestamps */}
               <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                <p>Oluşturulma: {new Date(appointment.createdAt).toLocaleString('tr-TR')}</p>
+                <p>{t('modal.created_at')}: {new Date(appointment.createdAt).toLocaleString('tr-TR')}</p>
                 {appointment.updatedAt !== appointment.createdAt && (
-                  <p>Güncelleme: {new Date(appointment.updatedAt).toLocaleString('tr-TR')}</p>
+                  <p>{t('modal.updated_at')}: {new Date(appointment.updatedAt).toLocaleString('tr-TR')}</p>
                 )}
               </div>
 
               {/* Quick Status Actions */}
               {!['completed', 'cancelled'].includes(appointment.status) && (
                 <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Hızlı İşlemler</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">{t('modal.quick_actions')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {appointment.status !== 'confirmed' && (
                       <Button
@@ -238,7 +221,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         disabled={updating}
                         className="px-3 py-1 text-xs font-medium text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-300 rounded-full hover:bg-green-200 dark:hover:bg-green-900/50 disabled:opacity-50"
                         variant='default'>
-                        Onayla
+                        {t('modal.actions.confirm')}
                       </Button>
                     )}
                     <Button
@@ -246,21 +229,21 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                       disabled={updating}
                       className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
                       variant='default'>
-                      Tamamla
+                      {t('modal.actions.complete')}
                     </Button>
                     <Button
                       onClick={() => handleStatusChange('no_show')}
                       disabled={updating}
                       className="px-3 py-1 text-xs font-medium text-orange-700 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300 rounded-full hover:bg-orange-200 dark:hover:bg-orange-900/50 disabled:opacity-50"
                       variant='default'>
-                      Gelmedi
+                      {t('modal.actions.no_show')}
                     </Button>
                     <Button
                       onClick={() => handleStatusChange('rescheduled')}
                       disabled={updating}
                       className="px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-900/50 disabled:opacity-50"
                       variant='default'>
-                      Ertele
+                      {t('modal.actions.reschedule')}
                     </Button>
                   </div>
                 </div>
@@ -286,19 +269,19 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <Button
               onClick={() => setCurrentMode('edit')}
               variant='primary'>
-              Düzenle
+              {t('list.actions.edit')}
             </Button>
             <Button
               onClick={() => setShowDeleteConfirm(true)}
               className="mt-3 sm:mt-0 sm:mr-3 text-red-700 hover:bg-red-50"
               variant='outline'>
-              Sil
+              {t('list.actions.delete')}
             </Button>
             <Button
               onClick={onClose}
               className="mt-3 sm:mt-0 sm:mr-3"
               variant='outline'>
-              Kapat
+              {t('modal.actions.close')}
             </Button>
           </div>
         )}
@@ -320,11 +303,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Randevuyu Sil
+                      {t('modal.delete_title')}
                     </h3>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Bu randevuyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+                        {t('modal.delete_confirm')}
                       </p>
                       {appointment && (
                         <div className="mt-3 p-3 bg-gray-50 rounded-md">
@@ -343,14 +326,14 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   disabled={deleting}
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                   variant='default'>
-                  {deleting ? 'Siliniyor...' : 'Sil'}
+                  {deleting ? t('modal.actions.deleting') : t('modal.actions.delete')}
                 </Button>
                 <Button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deleting}
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
                   variant='default'>
-                  İptal
+                  {t('cancel', { ns: 'common' })}
                 </Button>
               </div>
             </div>

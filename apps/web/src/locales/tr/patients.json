@@ -1,0 +1,53 @@
+{
+    "list": {
+        "loading": "Hastalar yükleniyor...",
+        "empty_title": "Hasta bulunamadı",
+        "empty_desc": "Arama kriterlerinizi değiştirmeyi deneyin.",
+        "columns": {
+            "name": "Ad Soyad",
+            "tc": "TC Kimlik",
+            "phone": "Telefon",
+            "segment": "Segment",
+            "acquisition": "Kazanım",
+            "branch": "Şube",
+            "status": "Durum",
+            "created_at": "Kayıt Tarihi",
+            "actions": "İşlemler"
+        },
+        "update_tag_tooltip": "Etiket güncellemek için tıklayın"
+    },
+    "modal": {
+        "contact_title": "İletişim - {{name}}"
+    },
+    "form": {
+        "first_name": "Ad",
+        "last_name": "Soyad",
+        "phone": "Telefon",
+        "tc_number": "TC Kimlik No",
+        "birth_date": "Doğum Tarihi",
+        "email": "Email",
+        "gender": "Cinsiyet",
+        "branch": "Şube",
+        "status": "Durum",
+        "segment": "Segment",
+        "conversion_step": "Dönüşüm Aşaması",
+        "address": "Adres",
+        "notes": "Notlar",
+        "device_trial": "Cihaz denemesi yapıldı",
+        "gender_options": {
+            "select": "Seçiniz",
+            "male": "Erkek",
+            "female": "Kadın"
+        },
+        "errors": {
+            "first_name_required": "Ad gerekli",
+            "last_name_required": "Soyad gerekli",
+            "phone_required": "Telefon gerekli",
+            "phone_invalid": "Geçerli telefon numarası girin",
+            "tc_length": "TC Kimlik No 11 haneli olmalı",
+            "tc_start_zero": "TC Kimlik No 0 ile başlayamaz",
+            "tc_invalid": "Geçersiz TC Kimlik No",
+            "email_invalid": "Geçerli email adresi girin"
+        }
+    }
+}

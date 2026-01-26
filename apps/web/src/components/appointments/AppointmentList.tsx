@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Appointment, AppointmentFilters, AppointmentStatus, AppointmentType } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
 import { useAppointmentListKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useTranslation } from 'react-i18next';
 
 interface AppointmentListProps {
   partyId?: string;
@@ -22,7 +23,8 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   onEditAppointment,
   onDeleteAppointment,
   className = ''
-}) => {
+}: AppointmentListProps) => {
+  const { t } = useTranslation(['appointments', 'common']);
   const [filters, setFilters] = useState<AppointmentFilters>({
     partyId,
     status: undefined,
@@ -60,30 +62,11 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
   };
 
   const getStatusLabel = (status: AppointmentStatus): string => {
-    const labels = {
-      scheduled: 'Planlandı',
-      confirmed: 'Onaylandı',
-      completed: 'Tamamlandı',
-      cancelled: 'İptal Edildi',
-      no_show: 'Gelmedi',
-      rescheduled: 'Ertelendi'
-    };
-    return labels[status] || status;
+    return t(`status.${status}`);
   };
 
   const getTypeLabel = (type: AppointmentType): string => {
-    const labels = {
-      consultation: 'Konsültasyon',
-      follow_up: 'Kontrol',
-      trial: 'Deneme',
-      delivery: 'Teslim',
-      control_visit: 'Kontrol Ziyareti',
-      battery_renewal: 'Pil Yenileme',
-      repair: 'Tamir',
-      fitting: 'Ayar',
-      assessment: 'Değerlendirme'
-    };
-    return labels[type as keyof typeof labels] || type;
+    return t(`types.${type}`);
   };
 
   const formatDate = (date: string): string => {
@@ -138,7 +121,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Randevular yükleniyor...</span>
+        <span className="ml-2 text-gray-600">{t('loading')}</span>
       </div>
     );
   }
@@ -153,7 +136,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Hata</h3>
+            <h3 className="text-sm font-medium text-red-800">{t('error_title')}</h3>
             <div className="mt-2 text-sm text-red-700">{_error}</div>
           </div>
         </div>
@@ -169,16 +152,16 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <Select
-                label="Durum"
+                label={t('filters.status')}
                 value={filters.status || ''}
                 onChange={(e) => handleFilterChange('status', (e.target.value || undefined) as AppointmentStatus | undefined)}
                 options={[
-                  { value: "", label: "Tümü" },
-                  { value: "scheduled", label: "Planlandı" },
-                  { value: "confirmed", label: "Onaylandı" },
-                  { value: "completed", label: "Tamamlandı" },
-                  { value: "cancelled", label: "İptal Edildi" },
-                  { value: "no_show", label: "Gelmedi" }
+                  { value: "", label: t('filters.all') },
+                  { value: "scheduled", label: t('status.scheduled') },
+                  { value: "confirmed", label: t('status.confirmed') },
+                  { value: "completed", label: t('status.completed') },
+                  { value: "cancelled", label: t('status.cancelled') },
+                  { value: "no_show", label: t('status.no_show') }
                 ]}
                 fullWidth
               />
@@ -186,20 +169,20 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
 
             <div>
               <Select
-                label="Tür"
+                label={t('filters.type')}
                 value={filters.type || ''}
                 onChange={(e) => handleFilterChange('type', (e.target.value || undefined) as AppointmentType | undefined)}
                 options={[
-                  { value: "", label: "Tümü" },
-                  { value: "consultation", label: "Konsültasyon" },
-                  { value: "follow_up", label: "Kontrol" },
-                  { value: "trial", label: "Deneme" },
-                  { value: "delivery", label: "Teslim" },
-                  { value: "control_visit", label: "Kontrol Ziyareti" },
-                  { value: "battery_renewal", label: "Pil Yenileme" },
-                  { value: "repair", label: "Tamir" },
-                  { value: "fitting", label: "Ayar" },
-                  { value: "assessment", label: "Değerlendirme" }
+                  { value: "", label: t('filters.all') },
+                  { value: "consultation", label: t('types.consultation') },
+                  { value: "follow_up", label: t('types.follow_up') },
+                  { value: "trial", label: t('types.trial') },
+                  { value: "delivery", label: t('types.delivery') },
+                  { value: "control_visit", label: t('types.control_visit') },
+                  { value: "battery_renewal", label: t('types.battery_renewal') },
+                  { value: "repair", label: t('types.repair') },
+                  { value: "fitting", label: t('types.fitting') },
+                  { value: "assessment", label: t('types.assessment') }
                 ]}
                 fullWidth
               />
@@ -207,7 +190,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Başlangıç Tarihi
+                {t('filters.start_date')}
               </label>
               <Input
                 type="date"
@@ -219,7 +202,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Bitiş Tarihi
+                {t('filters.end_date')}
               </label>
               <Input
                 type="date"
@@ -232,11 +215,11 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Arama
+              {t('filters.search')}
             </label>
             <Input
               type="text"
-              placeholder="Hasta adı, doktor, notlar..."
+              placeholder={t('filters.search_placeholder')}
               value={filters.search || ''}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -250,9 +233,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Randevu bulunamadı</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">{t('list.empty_title')}</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Belirtilen kriterlere uygun randevu bulunmuyor.
+            {t('list.empty_desc')}
           </p>
         </div>
       ) : (
@@ -262,26 +245,26 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Hasta
+                    {t('list.columns.patient')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Tarih & Saat
+                    {t('list.columns.date_time')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Tür
+                    {t('list.columns.type')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Durum
+                    {t('list.columns.status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Doktor
+                    {t('list.columns.doctor')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Süre
+                    {t('list.columns.duration')}
                   </th>
                   {showActions && (
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      İşlemler
+                      {t('list.columns.actions')}
                     </th>
                   )}
                 </tr>
@@ -356,9 +339,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                   handleStatusChange(appointment, 'completed');
                                 }}
                                 className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-xs"
-                                title="Tamamla"
+                                title={t('list.actions.complete')}
                                 variant='default'>
-                                Tamamla
+                                {t('list.actions.complete')}
                               </Button>
                               <Button
                                 onClick={(e) => {
@@ -366,9 +349,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                   handleStatusChange(appointment, 'no_show');
                                 }}
                                 className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 text-xs"
-                                title="Gelmedi"
+                                title={t('list.actions.no_show')}
                                 variant='default'>
-                                Gelmedi
+                                {t('list.actions.no_show')}
                               </Button>
                               <Button
                                 onClick={(e) => {
@@ -376,9 +359,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                   handleStatusChange(appointment, 'cancelled');
                                 }}
                                 className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs"
-                                title="İptal Et"
+                                title={t('list.actions.cancel')}
                                 variant='default'>
-                                İptal
+                                {t('list.actions.cancel')}
                               </Button>
                             </>
                           )}
@@ -389,9 +372,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                 onEditAppointment(appointment);
                               }}
                               className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-xs"
-                              title="Düzenle"
+                              title={t('list.actions.edit')}
                               variant='default'>
-                              Düzenle
+                              {t('list.actions.edit')}
                             </Button>
                           )}
                           {onDeleteAppointment && (
@@ -401,9 +384,9 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                 onDeleteAppointment(appointment);
                               }}
                               className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs"
-                              title="Sil"
+                              title={t('list.actions.delete')}
                               variant='default'>
-                              Sil
+                              {t('list.actions.delete')}
                             </Button>
                           )}
                         </div>
@@ -418,7 +401,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
       )}
       {/* Summary */}
       <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-        Toplam {sortedAppointments.length} randevu gösteriliyor
+        {t('list.summary', { count: sortedAppointments.length })}
       </div>
     </div>
   );

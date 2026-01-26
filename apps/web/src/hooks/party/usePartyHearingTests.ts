@@ -7,7 +7,7 @@ export interface PartyHearingTest {
   testDate: string;
   testType: string;
   conductedBy?: string;
-  results?: Record<string, any>;
+  results?: Record<string, unknown>;
   notes?: string;
   createdAt: string;
   updatedAt: string;

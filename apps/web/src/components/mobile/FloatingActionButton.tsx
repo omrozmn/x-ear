@@ -67,6 +67,7 @@ export const FloatingActionButton: React.FC<FABProps> = ({
                     <div className="flex flex-col items-end gap-3 mb-4">
                         {actions.map((action, index) => (
                             <button
+                                data-allow-raw="true"
                                 key={index}
                                 onClick={() => handleActionClick(action)}
                                 className="flex items-center gap-3 group animate-in slide-in-from-bottom-4 fade-in duration-200"
@@ -89,6 +90,7 @@ export const FloatingActionButton: React.FC<FABProps> = ({
 
                 {/* Main FAB Button */}
                 <button
+                    data-allow-raw="true"
                     onClick={handleMainClick}
                     className={cn(
                         "h-14 w-14 rounded-full bg-primary-600 text-white shadow-lg flex items-center justify-center",

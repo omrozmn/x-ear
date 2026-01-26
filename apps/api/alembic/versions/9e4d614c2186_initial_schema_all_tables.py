@@ -1124,6 +1124,48 @@ def upgrade() -> None:
     op.create_index('ix_email_status', 'email_logs', ['status'], unique=False)
     op.create_index('ix_email_template', 'email_logs', ['template_id'], unique=False)
     op.create_index('ix_email_to_email', 'email_logs', ['to_email'], unique=False)
+    op.create_table('smtp_email_log',
+    sa.Column('id', sa.String(length=36), nullable=False),
+    sa.Column('tenant_id', sa.String(length=36), nullable=False),
+    sa.Column('recipient', sa.String(length=255), nullable=False),
+    sa.Column('subject', sa.String(length=500), nullable=False),
+    sa.Column('body_preview', sa.Text(), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False),
+    sa.Column('sent_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('error_message', sa.Text(), nullable=True),
+    sa.Column('retry_count', sa.Integer(), nullable=True),
+    sa.Column('template_name', sa.String(length=100), nullable=True),
+    sa.Column('scenario', sa.String(length=100), nullable=True),
+    sa.Column('idempotency_key', sa.String(length=128), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_smtp_email_log_idempotency_key'), 'smtp_email_log', ['idempotency_key'], unique=False)
+    op.create_index(op.f('ix_smtp_email_log_recipient'), 'smtp_email_log', ['recipient'], unique=False)
+    op.create_index(op.f('ix_smtp_email_log_sent_at'), 'smtp_email_log', ['sent_at'], unique=False)
+    op.create_table('tenant_smtp_config',
+    sa.Column('id', sa.String(length=36), nullable=False),
+    sa.Column('tenant_id', sa.String(length=36), nullable=False),
+    sa.Column('host', sa.String(length=255), nullable=False),
+    sa.Column('port', sa.Integer(), nullable=False),
+    sa.Column('username', sa.String(length=255), nullable=False),
+    sa.Column('encrypted_password', sa.Text(), nullable=False),
+    sa.Column('from_email', sa.String(length=255), nullable=False),
+    sa.Column('from_name', sa.String(length=255), nullable=False),
+    sa.Column('use_tls', sa.Boolean(), nullable=True),
+    sa.Column('use_ssl', sa.Boolean(), nullable=True),
+    sa.Column('timeout', sa.Integer(), nullable=True),
+    sa.Column('is_active', sa.Boolean(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_tenant_smtp_config_is_active'), 'tenant_smtp_config', ['is_active'], unique=False)
+    op.create_index('ix_tenant_smtp_config_tenant_active', 'tenant_smtp_config', ['tenant_id', 'is_active'], unique=False)
+    op.create_index(op.f('ix_tenant_smtp_config_tenant_id'), 'tenant_smtp_config', ['tenant_id'], unique=False)
     op.create_table('ereceipts',
     sa.Column('id', sa.String(length=50), nullable=False),
     sa.Column('party_id', sa.String(length=50), nullable=False),

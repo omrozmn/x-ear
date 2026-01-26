@@ -5,12 +5,30 @@ import { usePartyMutations } from '../../hooks/party/usePartyMutations';
 import { Party } from '../../types/party';
 import { PartySegment, PartyLabel } from '../../types/party/party-base.types';
 import { PartyStatus } from '../../generated/orval-types';
-import { PartySearchItem } from '../../types/party/party-search.types';
+import { PartySearchItem, PartyFilters as PartyFiltersType } from '../../types/party/party-search.types';
 import { PartyCard } from '../../components/parties/PartyCard';
 import { PartySearch } from '../../components/parties/PartySearch';
 import { PartyFilters } from '../../components/parties/PartyFilters';
 import { PartyFormModal } from '../../components/parties/PartyFormModal';
 import { Button } from '@x-ear/ui-web';
+import type { PartyCreate } from '@/api/generated/schemas';
+
+interface PartyCreateRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  tcNumber?: string;
+  birthDate?: string;
+  email?: string;
+  address?: string;
+  addressFull?: string;
+  status?: string;
+  segment?: string;
+  label?: string;
+  acquisitionType?: string;
+  tags?: string[];
+  customData?: Record<string, unknown>;
+}
 
 interface PartyListPageProps {
   className?: string;
@@ -49,7 +67,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
 
   // Local state for search and filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<any>({});
+  const [filters, setFilters] = useState<PartyFiltersType>({});
   const [currentPage, setCurrentPage] = useState(1);
 
   // Computed pagination
@@ -113,8 +131,8 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     });
   }, []);
 
-  const handleCreateParty = useCallback(async (partyData: any) => {
-    const result = await createParty(partyData, {
+  const handleCreateParty = useCallback(async (partyData: PartyCreate) => {
+    const result = await createParty(partyData as unknown as PartyCreateRequest, {
       onSuccess: () => {
         setShowCreateModal(false);
         refresh();
@@ -126,8 +144,8 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     return result;
   }, [createParty, refresh]);
 
-  const handleUpdateParty = useCallback(async (partyId: string, updates: any) => {
-    const result = await updateParty(partyId, updates, {
+  const handleUpdateParty = useCallback(async (partyId: string, updates: PartyCreate) => {
+    const result = await updateParty(partyId, updates as unknown as Record<string, unknown>, {
       onSuccess: () => {
         setEditingParty(null);
         refresh();

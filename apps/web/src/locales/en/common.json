@@ -1,0 +1,47 @@
+{
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "search": "Search",
+    "success": "Success",
+    "error_label": "Error",
+    "retry": "Retry",
+    "add": "Add",
+    "search_placeholder_product": "Search products (brand, model, category)...",
+    "no_results": "No results found",
+    "type_to_search": "Type to search",
+    "error": {
+        "title": "An Error Occurred",
+        "unexpected": "An unexpected error occurred while loading the page. Please try refreshing.",
+        "details": "Error Details"
+    },
+    "status": {
+        "online": "Online",
+        "offline": "Offline",
+        "offline_title": "No Internet Connection",
+        "offline_desc": "Your changes are queued to be saved later.",
+        "online_title": "Connection Restored",
+        "online_desc": "Synchronizing data..."
+    },
+    "categories": {
+        "hearing_aid": "Hearing Aid",
+        "accessory": "Accessory",
+        "battery": "Battery",
+        "maintenance": "Maintenance",
+        "ear_mold": "Ear Mold",
+        "device": "Device",
+        "undefined": "Category not specified"
+    },
+    "product": {
+        "out_of_stock": "Out of stock",
+        "stock_left": "{{count}} left",
+        "stock": "{{count}} units"
+    },
+    "language": {
+        "select": "Select Language",
+        "tr": "Turkish",
+        "en": "English"
+    }
+}

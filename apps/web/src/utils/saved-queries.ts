@@ -3,6 +3,8 @@
  * Manages saved search queries for party search functionality
  */
 
+import { SAVED_VIEWS } from '../constants/storage-keys';
+
 export interface SavedQuery {
   id: string;
   name: string;
@@ -24,7 +26,7 @@ export interface SavedQueryOptions {
 
 const DEFAULT_OPTIONS: Required<SavedQueryOptions> = {
   maxQueries: 50,
-  storageKey: 'party-saved-queries'
+  storageKey: SAVED_VIEWS
 };
 
 /**

@@ -9,14 +9,14 @@ import type { SimilarityRequestImagePath1 } from './similarityRequestImagePath1'
 import type { SimilarityRequestImagePath2 } from './similarityRequestImagePath2';
 import type { SimilarityRequestText1 } from './similarityRequestText1';
 import type { SimilarityRequestText2 } from './similarityRequestText2';
-import type { SimilarityRequestTexta } from './similarityRequestTexta';
-import type { SimilarityRequestTextb } from './similarityRequestTextb';
+import type { SimilarityRequestTextA } from './similarityRequestTextA';
+import type { SimilarityRequestTextB } from './similarityRequestTextB';
 
 export interface SimilarityRequest {
   imagePath1?: SimilarityRequestImagePath1;
   imagePath2?: SimilarityRequestImagePath2;
   text1?: SimilarityRequestText1;
   text2?: SimilarityRequestText2;
-  texta?: SimilarityRequestTexta;
-  textb?: SimilarityRequestTextb;
+  textA?: SimilarityRequestTextA;
+  textB?: SimilarityRequestTextB;
 }

@@ -94,6 +94,33 @@ def get_all_inventory(
         }
     )
 
+@router.get("/inventory/stats", operation_id="listInventoryStats", response_model=ResponseEnvelope[InventoryStats])
+def get_inventory_stats(
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get inventory stats"""
+    query = db.query(InventoryItem)
+    if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
+    
+    total = query.count()
+    low = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).count()
+    out = query.filter(InventoryItem.available_inventory == 0).count()
+    
+    # Value
+    # Note: query already filtered by tenant
+    val_query = db.query(func.sum(InventoryItem.price * InventoryItem.available_inventory))
+    if access.tenant_id: val_query = val_query.filter(InventoryItem.tenant_id == access.tenant_id)
+    
+    total_value = val_query.scalar() or 0
+    
+    return ResponseEnvelope(data={
+        "total_items": total, 
+        "low_stock": low, 
+        "out_of_stock": out, 
+        "total_value": float(total_value)
+    })
+
 @router.get("/inventory/search", operation_id="listInventorySearch", response_model=ResponseEnvelope[InventorySearchResponse])
 def advanced_search(
     q: Optional[str] = None,
@@ -319,6 +346,30 @@ def create_inventory(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/inventory/categories", operation_id="listInventoryCategories", response_model=ResponseEnvelope[List[str]])
+def get_inventory_categories(
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get unique inventory categories"""
+    query = db.query(InventoryItem.category).filter(InventoryItem.category.isnot(None))
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
+    categories = [c[0] for c in query.distinct().all() if c[0]]
+    return ResponseEnvelope(data=categories)
+
+@router.get("/inventory/brands", operation_id="listInventoryBrands", response_model=ResponseEnvelope[List[str]])
+def get_inventory_brands(
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get unique inventory brands"""
+    query = db.query(InventoryItem.brand).filter(InventoryItem.brand.isnot(None))
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
+    brands = [b[0] for b in query.distinct().all() if b[0]]
+    return ResponseEnvelope(data=brands)
 
 @router.get("/inventory/{item_id}", operation_id="getInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def get_inventory_item(

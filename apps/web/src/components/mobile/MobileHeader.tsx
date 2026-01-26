@@ -43,6 +43,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                     {showBack && (
                         <button
+                            data-allow-raw="true"
                             onClick={handleBack}
                             className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
                         >

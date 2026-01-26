@@ -124,7 +124,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
     }
 
     const selectedMaterials = Object.entries(materialSelections)
-      .filter(([_key, selection]) => selection.selected)
+      .filter(([, selection]) => selection.selected)
       .map(([code, selection]) => ({
         code,
         date: selection.date
@@ -201,6 +201,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                         Tüm malzemeler için başvuru tarihi:
                       </label>
                       <input
+                        data-allow-raw="true"
                         type="date"
                         id="globalDate"
                         value={globalDate}
@@ -227,6 +228,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                       <div key={material.code} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                         <div className="flex items-center">
                           <input
+                            data-allow-raw="true"
                             type="checkbox"
                             id={`material_${index}`}
                             checked={selection.selected}
@@ -246,6 +248,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                               Başvuru Tarihi:
                             </label>
                             <input
+                              data-allow-raw="true"
                               type="date"
                               id={`date_${index}`}
                               value={selection.date}

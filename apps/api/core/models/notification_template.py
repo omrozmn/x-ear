@@ -1,10 +1,12 @@
 from models.base import db, BaseModel, gen_id
+from models.mixins import TenantScopedMixin
 import sqlalchemy as sa
 
-class NotificationTemplate(BaseModel):
+class NotificationTemplate(BaseModel, TenantScopedMixin):
     __tablename__ = 'notification_templates'
 
     id = db.Column(db.String(50), primary_key=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

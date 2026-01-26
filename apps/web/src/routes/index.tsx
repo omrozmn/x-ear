@@ -16,6 +16,28 @@ import { usePartyDistribution } from '../api/dashboard';
 import { formatActivitySentence } from '../utils/activity';
 import { NoPermissionPlaceholder } from '../components/ui/NoPermissionPlaceholder';
 
+interface Slice {
+  label: string;
+  value: number;
+}
+
+interface CashRegisterData {
+  type: 'income' | 'expense';
+  recordType: 'cash' | 'card' | 'transfer';
+  amount: number;
+  description?: string;
+  category?: string;
+}
+
+interface PricingCalculation {
+  devicePrice: number;
+  discountPercent: number;
+  discountAmount: number;
+  finalPrice: number;
+  installments?: number;
+  installmentAmount?: number;
+}
+
 
 export const Route = createFileRoute('/')({
   component: Dashboard,
@@ -80,12 +102,12 @@ function DesktopDashboard() {
     setIsPricingCalculatorModalOpen(true);
   };
 
-  const handleCashRegisterSubmit = (data: any) => {
+  const handleCashRegisterSubmit = (data: CashRegisterData) => {
     console.log('Cash register data:', data);
     // TODO: Save to backend
   };
 
-  const handlePricingCalculatorSubmit = (data: any) => {
+  const handlePricingCalculatorSubmit = (data: PricingCalculation) => {
     console.log('Pricing calculation data:', data);
     // TODO: Save to backend
   };
@@ -200,7 +222,7 @@ function DesktopDashboard() {
                 <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">No recent activity</div>
               ) : (
                 <ul className="p-4 space-y-3">
-                  {recentActivity.map((act: any, idx: number) => (
+                  {recentActivity.map((act: Record<string, unknown>, idx: number) => (
                     <li key={idx} className="text-sm text-gray-700 dark:text-gray-300">
                       <div className="text-sm text-gray-800 dark:text-gray-200">{formatActivitySentence(act)}</div>
                     </li>
@@ -231,24 +253,32 @@ function DesktopDashboard() {
   );
 }
 
+interface BranchDistribution {
+  branch?: string;
+  branchId?: string;
+  breakdown?: {
+    status?: Record<string, number>;
+  };
+}
+
 function PartyDistribution() {
   const { data, isLoading, isError } = usePartyDistribution();
-  const raw = (data as Record<string, any>)?.data || [];
+  const raw = (data as unknown as Record<string, unknown>)?.data;
   const list = Array.isArray(raw) ? raw : [];
 
   // Convert to pie slices by summing breakdowns per branch (use status counts as primary)
-  const partyTrends = list.map((b: any) => {
+  const partyTrends = list.map((b: BranchDistribution) => {
     const status = b?.breakdown?.status || {};
     // sum status counts as branch total
-    const total = Object.values(status).reduce((s: number, v: any) => s + Number(v || 0), 0);
-    return { label: b.branch || b.branchId, value: total };
+    const total = Object.values(status).reduce((s: number, v: number) => s + Number(v || 0), 0);
+    return { label: b.branch || b.branchId || 'Unknown', value: total };
   });
 
   if (isLoading) return <div className="text-gray-500">Yükleniyor...</div>;
   if (isError) return <div className="text-red-500">Hata yüklenirken</div>;
 
-  const slices = partyTrends.filter(p => Number(p.value) > 0).slice(0, 6);
+  const slices: Slice[] = partyTrends.filter(p => Number(p.value) > 0).slice(0, 6);
   return (
-    <PieChartSimple data={slices.length ? slices : partyTrends.slice(0, 6).map(d => ({ label: d.label, value: d.value }))} />
+    <PieChartSimple data={slices.length ? slices : partyTrends.slice(0, 6)} />
   );
 }

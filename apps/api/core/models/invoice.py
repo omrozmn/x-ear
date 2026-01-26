@@ -1,11 +1,12 @@
 # Invoice and Proforma Models (formerly Patient related)
-from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, ForeignKey, Numeric
+from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, ForeignKey, Numeric, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 
-class Invoice(BaseModel):
+class Invoice(BaseModel, TenantScopedMixin):
     """Invoice model for device sales"""
     __tablename__ = 'invoices'
     
@@ -14,7 +15,7 @@ class Invoice(BaseModel):
     sale_id = Column(String(50), ForeignKey('sales.id'), nullable=True, index=True)  # Link to sale
     party_id = Column(String(50), ForeignKey('parties.id'), nullable=True, index=True)  # Nullable - iade faturaları, cari hesap faturaları için hasta olmayabilir
     device_id = Column(String(50), ForeignKey('devices.id'), nullable=True)
-    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Invoice details
@@ -50,6 +51,13 @@ class Invoice(BaseModel):
     birfatura_sent_at = Column(DateTime)  # Birfatura'ya gönderilme tarihi
     birfatura_approved_at = Column(DateTime)  # GİB onay tarihi
     
+    # Extended Metadata for Birfatura/GİB
+    tax_office = Column(String(100))
+    return_reference_number = Column(String(100))
+    return_reference_date = Column(DateTime)
+    remote_message = Column(Text)  # Detailed message from Birfatura
+    metadata_json = Column(JSON)  # Flexible storage for SGK, Medical, and other specialized data
+    
     # Relationships
     party = relationship('Party')
     device = relationship('Device')
@@ -84,18 +92,23 @@ class Invoice(BaseModel):
             'hasGibXml': self.gib_xml_data is not None,
             'gibPdfLink': self.gib_pdf_link,
             'birfaturaSentAt': self.birfatura_sent_at.isoformat() if self.birfatura_sent_at else None,
-            'birfaturaApprovedAt': self.birfatura_approved_at.isoformat() if self.birfatura_approved_at else None
+            'birfaturaApprovedAt': self.birfatura_approved_at.isoformat() if self.birfatura_approved_at else None,
+            'taxOffice': self.tax_office,
+            'returnReferenceNumber': self.return_reference_number,
+            'returnReferenceDate': self.return_reference_date.isoformat() if self.return_reference_date else None,
+            'remoteMessage': self.remote_message,
+            'metadata': self.metadata_json
         }
 
 
-class Proforma(BaseModel):
+class Proforma(BaseModel, TenantScopedMixin):
     """Proforma (Price Quote) model"""
     __tablename__ = 'proformas'
     
     id = Column(Integer, primary_key=True)
     proforma_number = Column(String(50), unique=True, nullable=False, index=True)
     party_id = Column(String(50), ForeignKey('parties.id'), nullable=True, index=True)  # Nullable - cari hesap teklifleri için hasta olmayabilir
-    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Proforma details

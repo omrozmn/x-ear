@@ -27,11 +27,11 @@ import type {
 import type {
   HTTPValidationError,
   ResponseEnvelopeDictStrAny,
-  ResponseEnvelopeSMTPConfigResponse,
   ResponseEnvelopeSendTestEmailResponse,
-  ResponseEnvelopeUnionSMTPConfigResponseNoneType,
-  SMTPConfigCreate,
-  SendTestEmailRequest
+  ResponseEnvelopeSmtpConfigResponse,
+  ResponseEnvelopeUnionSmtpConfigResponseNoneType,
+  SendTestEmailRequest,
+  SmtpConfigCreate
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -80,7 +80,7 @@ export const getSMTPConfig = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeUnionSMTPConfigResponseNoneType>(
+      return adminApi<ResponseEnvelopeUnionSmtpConfigResponseNoneType>(
       {url: `/admin/integrations/smtp/config`, method: 'GET', signal
     },
       );
@@ -203,15 +203,15 @@ Configuration is validated by attempting a test connection.
  * @summary Create Or Update Smtp Config
  */
 export const createOrUpdateSMTPConfig = (
-    sMTPConfigCreate: SMTPConfigCreate,
+    smtpConfigCreate: SmtpConfigCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return adminApi<ResponseEnvelopeSMTPConfigResponse>(
+      return adminApi<ResponseEnvelopeSmtpConfigResponse>(
       {url: `/admin/integrations/smtp/config`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: sMTPConfigCreate, signal
+      data: smtpConfigCreate, signal
     },
       );
     }
@@ -219,8 +219,8 @@ export const createOrUpdateSMTPConfig = (
 
 
 export const getCreateOrUpdateSMTPConfigMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, TError,{data: SMTPConfigCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, TError,{data: SMTPConfigCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, TError,{data: SmtpConfigCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, TError,{data: SmtpConfigCreate}, TContext> => {
 
 const mutationKey = ['createOrUpdateSMTPConfig'];
 const {mutation: mutationOptions} = options ?
@@ -232,7 +232,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, {data: SMTPConfigCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, {data: SmtpConfigCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createOrUpdateSMTPConfig(data,)
@@ -244,18 +244,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateOrUpdateSMTPConfigMutationResult = NonNullable<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>>
-    export type CreateOrUpdateSMTPConfigMutationBody = SMTPConfigCreate
+    export type CreateOrUpdateSMTPConfigMutationBody = SmtpConfigCreate
     export type CreateOrUpdateSMTPConfigMutationError = HTTPValidationError
 
     /**
  * @summary Create Or Update Smtp Config
  */
 export const useCreateOrUpdateSMTPConfig = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, TError,{data: SMTPConfigCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>, TError,{data: SmtpConfigCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createOrUpdateSMTPConfig>>,
         TError,
-        {data: SMTPConfigCreate},
+        {data: SmtpConfigCreate},
         TContext
       > => {
 

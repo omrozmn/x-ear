@@ -15,13 +15,17 @@
  * Requirements: 2 (AI Chat Widget), 8 (Graceful Degradation), 17 (Phase A Banner)
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useAIChat } from '../../hooks/useAIChat';
+import { useComposerStore } from '../../../stores/composerStore';
 import { useAIStatus } from '../../hooks/useAIStatus';
 import { AIStatusIndicator } from '../AIStatusIndicator';
 import { PhaseABanner } from '../PhaseABanner';
-import { ChatMessage } from './ChatMessage';
+import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { ChatInput } from './ChatInput';
+import { useChatStore } from '../../stores/chatStore';
+import { useMobile } from '../../../hooks/useMobile';
+import { QuickActions } from './QuickActions';
 
 // =============================================================================
 // Types
@@ -147,14 +151,21 @@ function TypingIndicator(): React.ReactElement {
 /**
  * Empty state when no messages
  */
-function EmptyState(): React.ReactElement {
+/**
+ * Empty state when no messages
+ */
+function EmptyState({ onAction }: { onAction: (msg: string) => void }): React.ReactElement {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-4">
-      <RobotIcon />
-      <h3 className="mt-2 text-sm font-medium text-gray-900">AI Asistan</h3>
-      <p className="mt-1 text-sm text-gray-500">
-        Merhaba! Size nasıl yardımcı olabilirim?
-      </p>
+    <div className="flex flex-col items-center justify-center min-h-full py-6 px-4">
+      <div className="mb-4 text-center">
+        <RobotIcon />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">AI Asistan</h3>
+        <p className="mt-1 text-sm text-gray-500 max-w-[200px] mx-auto">
+          Merhaba. Hasta, satış, cihaz, randevu ve fatura işlemlerini buradan yapabilirsin.
+        </p>
+      </div>
+
+      <QuickActions onAction={onAction} />
     </div>
   );
 }
@@ -214,14 +225,14 @@ function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
  * ```
  */
 export function AIChatWidget({
-  defaultOpen = false,
+  // defaultOpen parameter removed - not used
   position = 'bottom-right',
   className = '',
   onOpen,
   onClose,
 }: AIChatWidgetProps): React.ReactElement | null {
   // State
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const { isVisible: isOpen, setVisible: setIsOpen } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -233,6 +244,11 @@ export function AIChatWidget({
     isTyping,
     isLoading: isSending,
   } = useAIChat();
+
+  const {
+    mode, selectedAction: currentAction, currentSlot, slots,
+    updateSlot, nextSlot, reset, executionResult
+  } = useComposerStore();
 
   // Derived state
   const isAvailable = status?.available ?? false;
@@ -251,6 +267,22 @@ export function AIChatWidget({
     return undefined;
   }, [status]);
 
+  // Mobile Detection
+  const isMobile = useMobile();
+
+  // Auto-Open on Mobile (on mount)
+  useEffect(() => {
+    if (isMobile && !isOpen) {
+      // Small timeout to allow hydration/transition
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]); // Intentionally omitting isOpen and setIsOpen to prevent toggle loop
+
+
   // ==========================================================================
   // Auto-scroll to bottom on new messages (12.5)
   // ==========================================================================
@@ -268,16 +300,14 @@ export function AIChatWidget({
    * Toggle chat window open/closed
    */
   const handleToggle = useCallback(() => {
-    setIsOpen((prev) => {
-      const newState = !prev;
-      if (newState) {
-        onOpen?.();
-      } else {
-        onClose?.();
-      }
-      return newState;
-    });
-  }, [onOpen, onClose]);
+    const newState = !isOpen;
+    setIsOpen(newState);
+    if (newState) {
+      onOpen?.();
+    } else {
+      onClose?.();
+    }
+  }, [isOpen, onOpen, onClose, setIsOpen]);
 
   /**
    * Close chat window
@@ -285,7 +315,8 @@ export function AIChatWidget({
   const handleClose = useCallback(() => {
     setIsOpen(false);
     onClose?.();
-  }, [onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onClose]); // setIsOpen is stable and doesn't need to be in deps
 
   /**
    * Handle sending a message
@@ -315,12 +346,17 @@ export function AIChatWidget({
     return null;
   }
 
+  // Mobile-specific classes override default positioning
+  const containerClasses = isMobile
+    ? 'fixed inset-0 z-[2000] flex flex-col bg-white'
+    : `fixed ${positionClasses.window} w-96 h-[500px] max-h-[80vh] bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200`;
+
   return (
     <div
       className={`fixed z-50 ${className}`}
       onKeyDown={handleKeyDown}
     >
-      {/* Floating Button */}
+      {/* Floating Button (Hidden on Mobile when open) */}
       <button data-allow-raw="true"
         onClick={handleToggle}
         className={`
@@ -332,6 +368,7 @@ export function AIChatWidget({
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
           flex items-center justify-center
           ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}
+          ${isMobile && isOpen ? 'hidden' : ''}
         `}
         aria-label={isOpen ? 'Chat\'i kapat' : 'AI Asistan\'ı aç'}
         aria-expanded={isOpen}
@@ -351,11 +388,7 @@ export function AIChatWidget({
       {isOpen && (
         <div
           className={`
-            fixed ${positionClasses.window}
-            w-96 h-[500px] max-h-[80vh]
-            bg-white rounded-lg shadow-2xl
-            flex flex-col
-            border border-gray-200
+            ${containerClasses}
             transform transition-all duration-200
             animate-in slide-in-from-bottom-4 fade-in
           `}
@@ -404,16 +437,135 @@ export function AIChatWidget({
 
             {/* Empty State */}
             {isAvailable && messages.length === 0 && !isTyping && (
-              <EmptyState />
+              <EmptyState onAction={handleSend} />
             )}
 
             {/* Messages */}
             {isAvailable && messages.map((message) => (
-              <ChatMessage
+              <ChatMessageComponent
                 key={message.id}
                 message={message}
               />
             ))}
+
+            {/* Conversational Slot Filling */}
+            {isOpen && mode === 'slot_filling' && currentAction && currentSlot && (
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 animate-in fade-in slide-in-from-left-2">
+                <p className="text-sm font-medium text-blue-900 mb-2">{currentSlot.prompt}</p>
+
+                {/* Simplified Slot UI for Chat - reusing logic from Overlay */}
+                {currentSlot.uiType === 'enum' && (
+                  <div className="flex gap-2 flex-wrap">
+                    {currentSlot.enumOptions?.map((opt: string) => (
+                      <button data-allow-raw="true"
+                        key={opt}
+                        onClick={() => {
+                          updateSlot(currentSlot.name, opt);
+                          nextSlot();
+                        }}
+                        className="px-3 py-1.5 bg-white border border-blue-200 rounded text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {currentSlot.uiType === 'date' && (
+                  <input data-allow-raw="true"
+                    type="date"
+                    className="w-full border rounded p-1.5 text-sm"
+                    onChange={(e) => {
+                      updateSlot(currentSlot.name, e.target.value);
+                      nextSlot();
+                    }}
+                  />
+                )}
+
+                {/* Generic input for others for now */}
+                {(['text', 'number'].includes(currentSlot.uiType)) && (
+                  <input data-allow-raw="true"
+                    className="w-full border rounded p-1.5 text-sm"
+                    placeholder="Değer yazın..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = currentSlot.uiType === 'number' ? Number(e.currentTarget.value) : e.currentTarget.value;
+                        updateSlot(currentSlot.name, val);
+                        nextSlot();
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Confirmation in Chat */}
+            {isOpen && mode === 'confirmation' && currentAction && (
+              <div className="bg-purple-50 border border-purple-100 rounded-lg p-3 animate-in fade-in slide-in-from-left-2">
+                <p className="text-sm font-bold text-purple-900 mb-1">İşlemi Onaylıyor musunuz?</p>
+                <p className="text-xs text-purple-700 mb-2">{currentAction.name} - {Object.keys(slots).length} parametre hazır.</p>
+                <div className="flex gap-2">
+                  <button data-allow-raw="true"
+                    onClick={() => {
+                      // Execute handoff or direct execution
+                      console.log('Confirmed in Chat');
+                      // For now just reset or execute if possible
+                      reset();
+                    }}
+                    className="bg-purple-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-purple-700"
+                  >
+                    Onayla
+                  </button>
+                  <button data-allow-raw="true"
+                    onClick={reset}
+                    className="bg-white border border-purple-200 text-purple-700 px-3 py-1.5 rounded text-xs font-bold"
+                  >
+                    İptal
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Execution/Dry-run Result in Chat */}
+            {isOpen && executionResult && (
+              <div className={`mt-2 p-3 rounded-lg border animate-in slide-in-from-bottom-2 ${executionResult.status === 'success' ? 'bg-green-50 border-green-100 text-green-900' :
+                executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
+                  'bg-red-50 border-red-100 text-red-900'
+                }`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-bold capitalize">
+                    {executionResult.status === 'success' ? '✅ Başarılı!' :
+                      executionResult.status === 'dry_run' ? '🔍 Simülasyon Özeti' :
+                        '❌ Hata'}
+                  </span>
+                </div>
+                <p className="text-xs mb-3">
+                  {executionResult.status === 'success' ? 'İşlem başarıyla tamamlandı.' :
+                    executionResult.status === 'dry_run' ? 'Bu işlem yapıldığında yukarıdaki parametreler sisteme işlenecektir.' :
+                      executionResult.error}
+                </p>
+                {executionResult.status === 'dry_run' && (
+                  <button data-allow-raw="true"
+                    onClick={() => {
+                      // Direct confirmation from simulation
+                      // Note: In a real app we'd call the handleConfirm analog
+                      reset();
+                    }}
+                    className="w-full bg-blue-600 text-white py-2 rounded text-xs font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    Şimdi Onayla ve Tamamla
+                  </button>
+                )}
+                {executionResult.status === 'success' && (
+                  <button data-allow-raw="true"
+                    onClick={reset}
+                    className="w-full bg-gray-900 text-white py-2 rounded text-xs font-bold hover:bg-black transition-colors"
+                  >
+                    Kapat
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Typing Indicator */}
             {isTyping && <TypingIndicator />}

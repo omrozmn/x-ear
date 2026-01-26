@@ -49,7 +49,6 @@ interface ExtendedInventoryParams extends ListInventoryParams {
 
 export const InventoryList: React.FC<InventoryListProps> = ({
   filters = {},
-  onItemSelect: _onItemSelect,
   onItemEdit,
   onItemDelete,
   className = '',

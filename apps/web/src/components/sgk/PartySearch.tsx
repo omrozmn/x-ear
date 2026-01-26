@@ -3,12 +3,13 @@ import { Modal, Button, Input } from '@x-ear/ui-web';
 import { Search, User, Check } from 'lucide-react';
 import { useParties } from '../../hooks/useParties';
 import { type Party } from '../../types/party';
+import { type ProcessingResult } from './DocumentPreview';
 
 interface PartySearchProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (party: Party) => void;
-  ocrResult?: any;
+  ocrResult?: ProcessingResult['result'];
 }
 
 const PartySearch: React.FC<PartySearchProps> = ({

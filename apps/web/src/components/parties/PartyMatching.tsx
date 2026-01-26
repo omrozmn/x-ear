@@ -22,7 +22,7 @@ interface MergePreview {
   mergedData: Partial<Party>;
   conflicts: Array<{
     field: string;
-    values: Array<{ partyId: string; value: any; partyName: string }>;
+    values: Array<{ partyId: string; value: unknown; partyName: string }>;
   }>;
 }
 
@@ -599,7 +599,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
                       <div className="space-y-1 mt-1">
                         {conflict.values.map((value, valueIndex) => (
                           <div key={valueIndex} className="text-sm dark:text-gray-300">
-                            <strong className="dark:text-white">{value.partyName}:</strong> {value.value}
+                            <strong className="dark:text-white">{value.partyName}:</strong> {String(value.value)}
                           </div>
                         ))}
                       </div>

@@ -8,7 +8,7 @@ import {
 } from '@x-ear/ui-web';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import { useEditSale } from './edit-sale-modal/hooks/useEditSale';
-import { SaleFormFields } from './edit-sale-modal/components/SaleFormFields';
+import { SaleFormFields, type InventoryItem } from './edit-sale-modal/components/SaleFormFields';
 import { PaymentSummary } from './PaymentSummary';
 import type { EditSaleModalProps } from './edit-sale-modal/types';
 
@@ -31,7 +31,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleDeviceSelect = (device: any) => {
+  const handleDeviceSelect = (device: InventoryItem) => {
     updateFormData({
       deviceId: device.id || '',
       productName: device.name,
@@ -132,7 +132,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             <span className="text-sm text-gray-500">Durum:</span>
             <Select
               value={state.saleStatus}
-              onChange={(e: any) => updateState({ saleStatus: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateState({ saleStatus: e.target.value })}
               options={[
                 { value: 'draft', label: 'Taslak' },
                 { value: 'confirmed', label: 'Onaylandı' },

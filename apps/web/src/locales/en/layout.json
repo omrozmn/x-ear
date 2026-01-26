@@ -1,0 +1,39 @@
+{
+    "nav": {
+        "dashboard": "Dashboard",
+        "patients": "Patients",
+        "appointments": "Appointments",
+        "invoices": {
+            "main": "Invoices",
+            "sales": "Sales",
+            "purchases": "Purchases",
+            "new": "New Invoice",
+            "payments": "Payment Tracking"
+        },
+        "inventory": "Inventory",
+        "suppliers": "Suppliers",
+        "pos": "POS",
+        "cashflow": "Cashflow",
+        "campaigns": "SMS Campaign",
+        "reports": "Reports",
+        "automation": "Automation",
+        "communication": "Communication",
+        "settings": {
+            "main": "Settings",
+            "general": "General",
+            "integration": "Integration",
+            "team": "Team Management",
+            "subscription": "Subscription"
+        }
+    },
+    "app": {
+        "title_desc": "Patient Management System"
+    },
+    "header": {
+        "search_placeholder": "Search or start action with AI...",
+        "profile": "Profile",
+        "logout": "Logout",
+        "ai_status": "AI Status",
+        "notifications": "Notifications"
+    }
+}

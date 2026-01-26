@@ -54,21 +54,6 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
     return methods[method || ''] || method || '-';
   };
 
-  const _getSgkSupportText = (sgkType?: string) => {
-    const sgkTypes: Record<string, string> = {
-      'no_coverage': 'SGK Desteği Yok',
-      'under4_parent_working': '4 Yaş Altı (Veli Çalışan)',
-      'under4_parent_retired': '4 Yaş Altı (Veli Emekli)',
-      'age5_12_parent_working': '5-12 Yaş (Veli Çalışan)',
-      'age5_12_parent_retired': '5-12 Yaş (Veli Emekli)',
-      'age13_18_parent_working': '13-18 Yaş (Veli Çalışan)',
-      'age13_18_parent_retired': '13-18 Yaş (Veli Emekli)',
-      'over18_working': '18+ Yaş (Çalışan)',
-      'over18_retired': '18+ Yaş (Emekli)'
-    };
-    return sgkTypes[sgkType || ''] || sgkType || '-';
-  };
-
   // Audiological view: Right=Red, Left=Blue
   const getEarStyle = (ear: string) => {
     const earLower = ear?.toLowerCase();
@@ -342,6 +327,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
                   {/* Return to Stock Button - Inside the purple box as requested */}
                   {(device.status !== 'returned') && !isCancelled && (
                     <button
+                      data-allow-raw="true"
                       onClick={(e) => {
                         e.stopPropagation();
                         onReturnLoaner?.(device);
@@ -363,7 +349,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
       {/* Actions */}
       <div className="px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border-t dark:border-slate-700 flex items-center justify-end gap-2">
 
-        <button
+        <button data-allow-raw="true"
           onClick={() => onEdit?.(device)}
           className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center gap-1"
           title="Düzenle"
@@ -371,7 +357,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
           <Edit className="w-4 h-4" />
           Düzenle
         </button>
-        <button
+        <button data-allow-raw="true"
           onClick={() => onReplace?.(device)}
           className="px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors flex items-center gap-1"
           title="Değiştir"
@@ -379,7 +365,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
           <RefreshCw className="w-4 h-4" />
           Değiştir
         </button>
-        <button
+        <button data-allow-raw="true"
           onClick={() => onCancel?.(device)}
           className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-1"
           title="İptal Et"

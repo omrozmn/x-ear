@@ -23,101 +23,94 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20260124_deliverability'
-down_revision = '678bca5f8a40'
+down_revision = '9e4d614c2186'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
+    # Only add new columns or tables not present in previous migrations
+    op.add_column('email_logs', sa.Column('spam_score', sa.Integer, nullable=True))
+    op.add_column('email_logs', sa.Column('dkim_signed', sa.Boolean, default=False, nullable=False))
+    op.add_column('email_logs', sa.Column('unsubscribe_token', sa.String(64), nullable=True))
+    op.add_column('email_logs', sa.Column('is_promotional', sa.Boolean, default=False, nullable=False))
+    op.create_index('ix_email_logs_unsubscribe_token', 'email_logs', ['unsubscribe_token'])
+
     # Create email_bounce table
-    op.create_table(
-        'email_bounce',
+    op.create_table('email_bounce',
         sa.Column('id', sa.String(50), primary_key=True),
-        sa.Column('tenant_id', sa.String(36), sa.ForeignKey('tenants.id'), nullable=False, index=True),
-        sa.Column('email_log_id', sa.String(50), sa.ForeignKey('email_logs.id'), nullable=True),
+        sa.Column('tenant_id', sa.String(36), nullable=False),
+        sa.Column('email_log_id', sa.String(50), nullable=True),
         sa.Column('recipient', sa.String(255), nullable=False),
-        sa.Column('bounce_type', sa.String(20), nullable=False),  # hard, soft, block
+        sa.Column('bounce_type', sa.String(20), nullable=False),
         sa.Column('bounce_reason', sa.Text, nullable=True),
         sa.Column('smtp_code', sa.Integer, nullable=True),
         sa.Column('bounce_count', sa.Integer, default=1, nullable=False),
         sa.Column('first_bounce_at', sa.DateTime, nullable=False),
         sa.Column('last_bounce_at', sa.DateTime, nullable=False),
         sa.Column('is_blacklisted', sa.Boolean, default=False, nullable=False),
-        sa.Column('created_at', sa.DateTime, nullable=False),
-        sa.Column('updated_at', sa.DateTime, nullable=False),
+        sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id']),
+        sa.ForeignKeyConstraint(['email_log_id'], ['email_logs.id']),
     )
-    
-    # Indexes for email_bounce
     op.create_index('ix_email_bounce_tenant_recipient', 'email_bounce', ['tenant_id', 'recipient'])
     op.create_index('ix_email_bounce_tenant_blacklisted', 'email_bounce', ['tenant_id', 'is_blacklisted'])
     op.create_index('ix_email_bounce_type', 'email_bounce', ['bounce_type'])
-    
+
     # Create email_unsubscribe table
-    op.create_table(
-        'email_unsubscribe',
+    op.create_table('email_unsubscribe',
         sa.Column('id', sa.String(50), primary_key=True),
-        sa.Column('tenant_id', sa.String(36), sa.ForeignKey('tenants.id'), nullable=False, index=True),
+        sa.Column('tenant_id', sa.String(36), nullable=False),
         sa.Column('recipient', sa.String(255), nullable=False),
-        sa.Column('scenario', sa.String(100), nullable=False),  # appointment_reminder, promotional, etc.
+        sa.Column('scenario', sa.String(100), nullable=False),
         sa.Column('unsubscribed_at', sa.DateTime, nullable=False),
-        sa.Column('unsubscribe_token', sa.String(64), nullable=False, unique=True),
-        sa.Column('ip_address', sa.String(45), nullable=True),  # IPv6 support
+        sa.Column('unsubscribe_token', sa.String(64), nullable=False),
+        sa.Column('ip_address', sa.String(45), nullable=True),
         sa.Column('user_agent', sa.Text, nullable=True),
-        sa.Column('created_at', sa.DateTime, nullable=False),
-        sa.Column('updated_at', sa.DateTime, nullable=False),
+        sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id']),
+        sa.UniqueConstraint('unsubscribe_token')
     )
-    
-    # Indexes for email_unsubscribe
     op.create_index('ix_email_unsubscribe_tenant_recipient_scenario', 'email_unsubscribe', ['tenant_id', 'recipient', 'scenario'], unique=True)
     op.create_index('ix_email_unsubscribe_token', 'email_unsubscribe', ['unsubscribe_token'])
-    
+
     # Create dmarc_report table
-    op.create_table(
-        'dmarc_report',
+    op.create_table('dmarc_report',
         sa.Column('id', sa.String(50), primary_key=True),
-        sa.Column('tenant_id', sa.String(36), sa.ForeignKey('tenants.id'), nullable=False, index=True),
-        sa.Column('report_id', sa.String(255), nullable=False),  # External report ID
-        sa.Column('org_name', sa.String(255), nullable=False),  # Reporting organization
+        sa.Column('tenant_id', sa.String(36), nullable=False),
+        sa.Column('report_id', sa.String(255), nullable=False),
+        sa.Column('org_name', sa.String(255), nullable=False),
         sa.Column('email', sa.String(255), nullable=True),
         sa.Column('date_begin', sa.DateTime, nullable=False),
         sa.Column('date_end', sa.DateTime, nullable=False),
         sa.Column('domain', sa.String(255), nullable=False),
-        sa.Column('policy_published', sa.Text, nullable=True),  # JSON
-        sa.Column('records', sa.Text, nullable=True),  # JSON array of records
+        sa.Column('policy_published', sa.Text, nullable=True),
+        sa.Column('records', sa.Text, nullable=True),
         sa.Column('pass_count', sa.Integer, default=0),
         sa.Column('fail_count', sa.Integer, default=0),
         sa.Column('failure_rate', sa.Float, default=0.0),
-        sa.Column('created_at', sa.DateTime, nullable=False),
-        sa.Column('updated_at', sa.DateTime, nullable=False),
+        sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id']),
     )
-    
-    # Indexes for dmarc_report
     op.create_index('ix_dmarc_report_tenant_domain', 'dmarc_report', ['tenant_id', 'domain'])
     op.create_index('ix_dmarc_report_date_begin', 'dmarc_report', ['date_begin'])
-    
+
     # Create email_complaint table
-    op.create_table(
-        'email_complaint',
+    op.create_table('email_complaint',
         sa.Column('id', sa.String(50), primary_key=True),
-        sa.Column('tenant_id', sa.String(36), sa.ForeignKey('tenants.id'), nullable=False, index=True),
-        sa.Column('email_log_id', sa.String(50), sa.ForeignKey('email_logs.id'), nullable=True),
+        sa.Column('tenant_id', sa.String(36), nullable=False),
+        sa.Column('email_log_id', sa.String(50), nullable=True),
         sa.Column('recipient', sa.String(255), nullable=False),
-        sa.Column('complaint_type', sa.String(50), nullable=False),  # spam, abuse, fraud, virus, other
-        sa.Column('feedback_loop_provider', sa.String(100), nullable=True),  # gmail, outlook, yahoo, etc.
+        sa.Column('complaint_type', sa.String(50), nullable=False),
+        sa.Column('feedback_loop_provider', sa.String(100), nullable=True),
         sa.Column('complained_at', sa.DateTime, nullable=False),
-        sa.Column('created_at', sa.DateTime, nullable=False),
-        sa.Column('updated_at', sa.DateTime, nullable=False),
+        sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id']),
+        sa.ForeignKeyConstraint(['email_log_id'], ['email_logs.id']),
     )
-    
-    # Indexes for email_complaint
     op.create_index('ix_email_complaint_tenant_recipient', 'email_complaint', ['tenant_id', 'recipient'])
     op.create_index('ix_email_complaint_type', 'email_complaint', ['complaint_type'])
-    
+
     # Create deliverability_metrics table
-    op.create_table(
-        'deliverability_metrics',
+    op.create_table('deliverability_metrics',
         sa.Column('id', sa.String(50), primary_key=True),
-        sa.Column('tenant_id', sa.String(36), sa.ForeignKey('tenants.id'), nullable=False, index=True),
+        sa.Column('tenant_id', sa.String(36), nullable=False),
         sa.Column('date', sa.Date, nullable=False),
         sa.Column('emails_sent', sa.Integer, default=0),
         sa.Column('emails_delivered', sa.Integer, default=0),
@@ -126,21 +119,9 @@ def upgrade():
         sa.Column('bounce_rate', sa.Float, default=0.0),
         sa.Column('complaint_rate', sa.Float, default=0.0),
         sa.Column('deliverability_rate', sa.Float, default=0.0),
-        sa.Column('created_at', sa.DateTime, nullable=False),
-        sa.Column('updated_at', sa.DateTime, nullable=False),
+        sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id']),
     )
-    
-    # Indexes for deliverability_metrics
     op.create_index('ix_deliverability_metrics_tenant_date', 'deliverability_metrics', ['tenant_id', 'date'], unique=True)
-    
-    # Add new columns to email_logs table
-    op.add_column('email_logs', sa.Column('spam_score', sa.Integer, nullable=True))
-    op.add_column('email_logs', sa.Column('dkim_signed', sa.Boolean, default=False, nullable=False))
-    op.add_column('email_logs', sa.Column('unsubscribe_token', sa.String(64), nullable=True))
-    op.add_column('email_logs', sa.Column('is_promotional', sa.Boolean, default=False, nullable=False))
-    
-    # Create index on unsubscribe_token
-    op.create_index('ix_email_logs_unsubscribe_token', 'email_logs', ['unsubscribe_token'])
 
 
 def downgrade():

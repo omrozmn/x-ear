@@ -4,6 +4,43 @@ import { useToastHelpers } from '@x-ear/ui-web';
 import { Shield, Loader2 } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
 
+interface CoverageItem {
+  percentage: number;
+  maxAmount: number;
+  usedAmount: number;
+  remainingAmount: number;
+  lastUpdate: string;
+}
+
+interface ValidityPeriod {
+  startDate: string;
+  endDate: string;
+  remainingDays: number;
+}
+
+interface RecentActivity {
+  date: string;
+  type: string;
+  description: string;
+  amount: number;
+  status: string;
+}
+
+interface PartyRightsData {
+  partyId: string;
+  partyName: string;
+  sgkNo: string;
+  coverage: {
+    hearingAid: CoverageItem;
+    accessories: CoverageItem;
+    maintenance: CoverageItem;
+  };
+  validityPeriod: ValidityPeriod;
+  recentActivity: RecentActivity[];
+  totalUsed: number;
+  totalRemaining: number;
+}
+
 interface PartyRightsSectionProps {
   party: Party;
   partyId: string;
@@ -25,17 +62,17 @@ const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }
 export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, partyId }) => {
   const { success: showSuccess, error: showError } = useToastHelpers();
 
-  const [partyRightsData, setPartyRightsData] = useState<any>(null);
+  const [partyRightsData, setPartyRightsData] = useState<PartyRightsData | null>(null);
   const [isQueryingRights, setIsQueryingRights] = useState(false);
 
   const handleReportQuery = async () => {
     setIsQueryingRights(true);
 
     try {
-      const mockRightsData = {
+      const mockRightsData: PartyRightsData = {
         partyId: partyId,
         partyName: party.firstName + ' ' + party.lastName,
-        sgkNo: (party.hearingProfile?.sgkInfo as Record<string, any>)?.sgkNumber || party.sgkInfo?.sgkNumber || '12345678901',
+        sgkNo: (party.hearingProfile?.sgkInfo as Record<string, unknown>)?.sgkNumber as string || party.sgkInfo?.sgkNumber || '12345678901',
         coverage: {
           hearingAid: {
             percentage: 85,
@@ -150,7 +187,7 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
           <div>
             <h4 className="font-medium text-gray-900 dark:text-white mb-3">Hak Detayları</h4>
             <div className="space-y-3">
-              {Object.entries(partyRightsData.coverage).map(([key, coverage]: [string, any]) => (
+              {Object.entries(partyRightsData.coverage).map(([key, coverage]) => (
                 <div key={key} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
                   <div className="flex justify-between items-start mb-2">
                     <h5 className="font-medium text-gray-900 dark:text-white capitalize">
@@ -195,7 +232,7 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
           <div>
             <h4 className="font-medium text-gray-900 dark:text-white mb-3">Son Hareketler</h4>
             <div className="space-y-2">
-              {partyRightsData.recentActivity.map((activity: any, index: number) => (
+              {partyRightsData.recentActivity.map((activity: RecentActivity, index: number) => (
                 <div key={index} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{activity.description}</p>

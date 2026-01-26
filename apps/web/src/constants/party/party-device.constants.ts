@@ -4,16 +4,17 @@
  * @version 1.0.0
  */
 
-import type { 
-  DeviceType, 
-  DeviceSide, 
-  DeviceStatus 
+import type {
+  DeviceType,
+  DeviceSide,
+  DeviceStatus
 } from '../../types/party/party-base.types';
 
 export const DEVICE_TYPE: Record<DeviceType, string> = {
   hearing_aid: 'İşitme Cihazı',
   cochlear_implant: 'Koklear İmplant',
-  bone_anchored: 'Kemik Ankrajlı'
+  bone_anchored: 'Kemik Ankrajlı',
+  accessory: 'Aksesuar'
 } as const;
 
 export const DEVICE_SIDE: Record<DeviceSide, string> = {
@@ -27,13 +28,16 @@ export const DEVICE_STATUS: Record<DeviceStatus, string> = {
   trial: 'Deneme',
   returned: 'İade Edildi',
   replaced: 'Değiştirildi',
-  assigned: 'Atanmış'
+  assigned: 'Atanmış',
+  inactive: 'Pasif',
+  servicing: 'Serviste'
 } as const;
 
 export const DEVICE_TYPE_COLORS: Record<DeviceType, string> = {
   hearing_aid: '#10B981',
   cochlear_implant: '#3B82F6',
-  bone_anchored: '#F59E0B'
+  bone_anchored: '#F59E0B',
+  accessory: '#64748B'
 } as const;
 
 export const DEVICE_STATUS_COLORS: Record<DeviceStatus, string> = {
@@ -41,7 +45,9 @@ export const DEVICE_STATUS_COLORS: Record<DeviceStatus, string> = {
   trial: '#F59E0B',
   returned: '#6B7280',
   replaced: '#8B5CF6',
-  assigned: '#3B82F6'
+  assigned: '#3B82F6',
+  inactive: '#9CA3AF',
+  servicing: '#EAB308'
 } as const;
 
 // Popular Device Brands

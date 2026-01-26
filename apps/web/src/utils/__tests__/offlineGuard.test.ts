@@ -29,8 +29,8 @@ describe('offlineGuard', () => {
     });
 
     describe('useOfflineGuard hook', () => {
-        let onlineListeners: Array<() => void> = [];
-        let offlineListeners: Array<() => void> = [];
+        let onlineListeners: EventListener[] = [];
+        let offlineListeners: EventListener[] = [];
 
         beforeEach(() => {
             onlineListeners = [];
@@ -43,19 +43,21 @@ describe('offlineGuard', () => {
             });
 
             // Mock window.addEventListener
-            global.window.addEventListener = vi.fn((event: string, callback: any) => {
-                if (event === 'online') onlineListeners.push(callback);
-                if (event === 'offline') offlineListeners.push(callback);
-            });
+            global.window.addEventListener = vi.fn((event: string, callback: EventListenerOrEventListenerObject) => {
+                const handler = typeof callback === 'function' ? callback : callback.handleEvent.bind(callback);
+                if (event === 'online') onlineListeners.push(handler);
+                if (event === 'offline') offlineListeners.push(handler);
+            }) as typeof window.addEventListener;
 
-            global.window.removeEventListener = vi.fn((event: string, callback: any) => {
+            global.window.removeEventListener = vi.fn((event: string, callback: EventListenerOrEventListenerObject) => {
+                const handler = typeof callback === 'function' ? callback : callback.handleEvent.bind(callback);
                 if (event === 'online') {
-                    onlineListeners = onlineListeners.filter(cb => cb !== callback);
+                    onlineListeners = onlineListeners.filter(cb => cb !== handler);
                 }
                 if (event === 'offline') {
-                    offlineListeners = offlineListeners.filter(cb => cb !== callback);
+                    offlineListeners = offlineListeners.filter(cb => cb !== handler);
                 }
-            });
+            }) as typeof window.removeEventListener;
         });
 
         it('should return isAllowed=true when online and no operation specified', () => {
@@ -92,7 +94,7 @@ describe('offlineGuard', () => {
             // Simulate offline event
             act(() => {
                 Object.defineProperty(navigator, 'onLine', { writable: true, value: false });
-                offlineListeners.forEach(listener => listener());
+                offlineListeners.forEach(listener => listener(new Event('offline')));
             });
 
             expect(result.current.isAllowed).toBe(false);
@@ -112,7 +114,7 @@ describe('offlineGuard', () => {
             // Simulate online event
             act(() => {
                 Object.defineProperty(navigator, 'onLine', { writable: true, value: true });
-                onlineListeners.forEach(listener => listener());
+                onlineListeners.forEach(listener => listener(new Event('online')));
             });
 
             expect(result.current.isAllowed).toBe(true);

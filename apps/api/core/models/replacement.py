@@ -3,13 +3,14 @@ import json
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, Numeric
 from sqlalchemy.dialects.sqlite import DATETIME
 from .base import db, BaseModel
+from .mixins import TenantScopedMixin
 
 
-class Replacement(BaseModel):
+class Replacement(BaseModel, TenantScopedMixin):
     __tablename__ = 'replacements'
 
     id = Column(String, primary_key=True)
-    tenant_id = Column(String, nullable=True, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     party_id = Column(String, nullable=False, index=True)
     sale_id = Column(String, nullable=True, index=True)
     old_device_id = Column(String, nullable=True)

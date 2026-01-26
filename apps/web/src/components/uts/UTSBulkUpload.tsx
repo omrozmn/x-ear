@@ -3,6 +3,7 @@ import { Button, Input } from '@x-ear/ui-web';
 import { useStartBulkUtsRegistration } from '@/hooks/uts/useUts';
 import { outbox } from '@/utils/outbox';
 import { parseAndMapCsv, UtsCsvPreview } from '@/utils/uts-csv';
+import type { BulkRegistration } from '@/api/generated/schemas';
 
 // Removed redundant local types UtsPayload and UtsCsvPreview
 
@@ -40,7 +41,8 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
       });
 
       // Also trigger immediate processing via mutation for online case
-      const res = await startBulk.mutateAsync({ csv: fileContent } as unknown as any);
+      // Note: Backend expects deviceIds array, but we're sending csv for bulk processing
+      const res = await startBulk.mutateAsync({ csv: fileContent } as unknown as BulkRegistration);
       const jobId = (res as { jobId?: string })?.jobId || `queued-${Date.now()}`;
       onStarted?.(jobId);
     } catch (err) {

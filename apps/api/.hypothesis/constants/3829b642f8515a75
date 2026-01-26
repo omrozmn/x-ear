@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/middleware/permission_middleware.py
+# hypothesis_version: 6.150.3
+
+[b'application/json', b'authorization', b'content-length', b'content-type', 401, 403, '/api', '/api/admin/', '/api/ai/', 'ADMIN_AUTH_REQUIRED', 'Bearer ', 'GET', 'HS256', 'JWT_SECRET_KEY', 'OPTIONS', 'access.tenant_id', 'access_context', 'admin', 'admin_', 'application/json', 'body', 'code', 'error', 'headers', 'http', 'http.response.body', 'http.response.start', 'is_admin', 'is_impersonating', 'method', 'path', 'public', 'required_permission', 'role', 'role_permissions', 'state', 'status', 'sub', 'super_admin', 'tenant_admin', 'tenant_id', 'type', 'user_type', 'utf-8', 'your_role']

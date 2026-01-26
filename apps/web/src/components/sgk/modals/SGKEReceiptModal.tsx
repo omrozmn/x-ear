@@ -77,7 +77,6 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
   onClose,
   onSave,
   party,
-  receiptId: _receiptId,
   mode = 'view',
   title = 'SGK E-Reçete Detayları'
 }) => {

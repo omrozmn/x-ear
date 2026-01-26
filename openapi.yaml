@@ -698,6 +698,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/inventory/stats:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Stats
+      description: Get inventory stats
+      operationId: listInventoryStats
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InventoryStats_'
+      security:
+      - OAuth2PasswordBearer: []
   /api/inventory/search:
     get:
       tags:
@@ -828,22 +844,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/inventory/stats:
-    get:
-      tags:
-      - Inventory
-      summary: Get Inventory Stats
-      description: Get inventory stats
-      operationId: listInventoryStats
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_InventoryStats_'
-      security:
-      - OAuth2PasswordBearer: []
   /api/inventory/low-stock:
     get:
       tags:
@@ -905,6 +905,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/inventory/categories:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Categories
+      description: Get unique inventory categories
+      operationId: listInventoryCategories
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_str__'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/inventory/brands:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Brands
+      description: Get unique inventory brands
+      operationId: listInventoryBrands
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_str__'
+      security:
+      - OAuth2PasswordBearer: []
   /api/inventory/{item_id}:
     get:
       tags:
@@ -3368,7 +3400,7 @@ paths:
         required: false
         schema:
           type: number
-          minimum: 0.0
+          minimum: 0
           default: 0
           title: Min Amount
       responses:
@@ -3683,12 +3715,14 @@ paths:
       summary: Create Payment Record
       description: Create a new payment record
       operationId: createPaymentRecords
+      security:
+      - OAuth2PasswordBearer: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/routers__payments__PaymentRecordCreate'
-        required: true
       responses:
         '201':
           description: Successful Response
@@ -3702,8 +3736,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - Payments
+      summary: List Payment Records
+      description: List all payment records for the tenant
+      operationId: listPaymentRecords
       security:
       - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 50
+          title: Per Page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_PaymentRecordRead__'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/parties/{party_id}/payment-records:
     get:
       tags:
@@ -4590,6 +4661,7 @@ paths:
         content:
           application/json:
             schema:
+              additionalProperties: true
               type: object
               title: Settings Data
         required: true
@@ -7898,7 +7970,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OCRProcessRequest'
+              $ref: '#/components/schemas/OcrProcessRequest'
         required: true
       responses:
         '200':
@@ -9740,7 +9812,7 @@ paths:
               $ref: '#/components/schemas/RegisterAndSubscribeRequest'
         required: true
       responses:
-        '200':
+        '201':
           description: Successful Response
           content:
             application/json:
@@ -12025,7 +12097,7 @@ paths:
               $ref: '#/components/schemas/AffiliateCreate'
         required: true
       responses:
-        '200':
+        '201':
           description: Successful Response
           content:
             application/json:
@@ -12044,19 +12116,12 @@ paths:
       summary: Login Affiliate
       description: Login affiliate
       operationId: createAffiliateLogin
-      parameters:
-      - name: email
-        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AffiliateLoginRequest'
         required: true
-        schema:
-          type: string
-          title: Email
-      - name: password
-        in: query
-        required: true
-        schema:
-          type: string
-          title: Password
       responses:
         '200':
           description: Successful Response
@@ -14228,14 +14293,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SendSMS'
+              $ref: '#/components/schemas/SendSms'
         required: true
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_SmsLogRead_'
         '422':
           description: Validation Error
           content:
@@ -14262,7 +14328,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_EmailLogRead_'
         '422':
           description: Validation Error
           content:
@@ -14335,7 +14402,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_CommunicationTemplateRead__'
         '422':
           description: Validation Error
           content:
@@ -14347,7 +14415,7 @@ paths:
       - Communications
       summary: Create Template
       description: Create a new communication template
-      operationId: createCommunicationTemplates
+      operationId: createCommunicationTemplate
       security:
       - OAuth2PasswordBearer: []
       requestBody:
@@ -14355,13 +14423,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/routers__communications__TemplateCreate'
+              $ref: '#/components/schemas/schemas__communications__TemplateCreate'
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationTemplateRead_'
         '422':
           description: Validation Error
           content:
@@ -14389,7 +14458,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationTemplateRead_'
         '422':
           description: Validation Error
           content:
@@ -14416,13 +14486,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/routers__communications__TemplateCreate'
+              $ref: '#/components/schemas/schemas__communications__TemplateCreate'
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationTemplateRead_'
         '422':
           description: Validation Error
           content:
@@ -14544,7 +14615,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_CommunicationHistoryRead__'
         '422':
           description: Validation Error
           content:
@@ -14570,7 +14642,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationHistoryRead_'
         '422':
           description: Validation Error
           content:
@@ -14632,7 +14705,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope_Union_SMTPConfigResponse__NoneType__'
+                $ref: '#/components/schemas/ResponseEnvelope_Union_SmtpConfigResponse__NoneType__'
       security:
       - OAuth2PasswordBearer: []
     post:
@@ -14658,7 +14731,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SMTPConfigCreate'
+              $ref: '#/components/schemas/SmtpConfigCreate'
         required: true
       responses:
         '200':
@@ -14666,7 +14739,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope_SMTPConfigResponse_'
+                $ref: '#/components/schemas/ResponseEnvelope_SmtpConfigResponse_'
         '422':
           description: Validation Error
           content:
@@ -15094,6 +15167,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/ai/actions:
     post:
       tags:
@@ -15429,7 +15504,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AIStatusResponse'
+                $ref: '#/components/schemas/AiStatusResponse'
   /api/ai/health:
     get:
       tags:
@@ -15459,6 +15534,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 type: object
                 title: Response Get Capabilities Api Ai Capabilities Get
   /api/ai/metrics:
@@ -15491,7 +15567,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SLAMetricsResponse'
+                $ref: '#/components/schemas/SlaMetricsResponse'
         '422':
           description: Validation Error
           content:
@@ -15574,6 +15650,7 @@ paths:
             application/json:
               schema:
                 type: object
+                additionalProperties: true
                 title: Response Acknowledge Alert Api Ai Alerts  Alert Id  Acknowledge
                   Post
         '404':
@@ -15597,6 +15674,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 type: object
                 title: Response Trigger Alert Check Api Ai Alerts Check Post
   /api/ai/admin/kill-switch:
@@ -15612,7 +15690,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ai__api__admin__KillSwitchStatusResponse'
+                $ref: '#/components/schemas/KillSwitchStatusResponse'
         '403':
           description: Admin permissions required
     post:
@@ -15694,6 +15772,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 type: object
                 title: Response Cleanup Expired Approvals Api Ai Admin Cleanup Expired
                   Post
@@ -15712,7 +15791,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AISettingsResponse'
+                $ref: '#/components/schemas/AiSettingsResponse'
         '403':
           description: Admin permissions required
   /api/ai/composer/autocomplete:
@@ -15831,83 +15910,6 @@ paths:
       - OAuth2PasswordBearer: []
 components:
   schemas:
-    AISettingsResponse:
-      properties:
-        enabled:
-          type: boolean
-          title: Enabled
-          description: Whether AI is enabled
-        phase:
-          type: string
-          title: Phase
-          description: Current phase
-        model_provider:
-          type: string
-          title: Model Provider
-          description: Model provider
-        model_id:
-          type: string
-          title: Model Id
-          description: Model ID
-        rate_limit_per_minute:
-          type: integer
-          title: Rate Limit Per Minute
-          description: Rate limit per minute
-        default_quota:
-          type: integer
-          title: Default Quota
-          description: Default quota per period
-      type: object
-      required:
-      - enabled
-      - phase
-      - model_provider
-      - model_id
-      - rate_limit_per_minute
-      - default_quota
-      title: AISettingsResponse
-      description: AI settings response.
-    AIStatusResponse:
-      properties:
-        enabled:
-          type: boolean
-          title: Enabled
-          description: Whether AI is enabled
-        available:
-          type: boolean
-          title: Available
-          description: Whether AI is currently available
-        phase:
-          allOf:
-          - $ref: '#/components/schemas/PhaseStatusResponse'
-          description: Phase status
-        kill_switch:
-          allOf:
-          - $ref: '#/components/schemas/ai__api__status__KillSwitchStatusResponse'
-          description: Kill switch status
-        usage:
-          allOf:
-          - $ref: '#/components/schemas/UsageStatusResponse'
-          description: Usage status
-        model:
-          allOf:
-          - $ref: '#/components/schemas/ModelStatusResponse'
-          description: Model status
-        timestamp:
-          type: string
-          title: Timestamp
-          description: Status timestamp
-      type: object
-      required:
-      - enabled
-      - available
-      - phase
-      - kill_switch
-      - usage
-      - model
-      - timestamp
-      title: AIStatusResponse
-      description: Complete AI status response.
     ActionPlanResponse:
       properties:
         plan_id:
@@ -15949,6 +15951,7 @@ components:
           type: string
           title: Description
         parameters:
+          additionalProperties: true
           type: object
           title: Parameters
         risk_level:
@@ -16011,7 +16014,8 @@ components:
           description: Log message
         details:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Details
           description: Additional details
@@ -16065,6 +16069,7 @@ components:
           default: 0
         topActions:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Topactions
@@ -16145,7 +16150,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -16181,7 +16187,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -16382,6 +16389,7 @@ components:
           type: array
           title: Toptenants
         domainMetrics:
+          additionalProperties: true
           type: object
           title: Domainmetrics
       type: object
@@ -16396,6 +16404,7 @@ components:
     AdminDashboardMetrics:
       properties:
         metrics:
+          additionalProperties: true
           type: object
           title: Metrics
         recentTenants:
@@ -16470,7 +16479,8 @@ components:
         user:
           anyOf:
           - $ref: '#/components/schemas/AdminUserRead'
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: User
         requiresMfa:
@@ -16541,7 +16551,9 @@ components:
     AffiliateCreate:
       properties:
         name:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Name
           description: Affiliate name
         email:
@@ -16555,6 +16567,12 @@ components:
           - type: 'null'
           title: Phone
           description: Phone number
+        accountHolderName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountholdername
+          description: Account holder name
         companyName:
           anyOf:
           - type: string
@@ -16589,11 +16607,27 @@ components:
           description: Password
       type: object
       required:
-      - name
       - email
       - password
       title: AffiliateCreate
       description: Schema for creating an affiliate
+    AffiliateLoginRequest:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+          description: Email
+        password:
+          type: string
+          title: Password
+          description: Password
+      type: object
+      required:
+      - email
+      - password
+      title: AffiliateLoginRequest
+      description: Schema for affiliate login
     AffiliateRead:
       properties:
         createdAt:
@@ -16610,12 +16644,10 @@ components:
           - type: 'null'
           title: Updatedat
           description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
         name:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Name
           description: Affiliate name
         email:
@@ -16629,6 +16661,11 @@ components:
           - type: 'null'
           title: Phone
           description: Phone number
+        accountHolderName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountholdername
         companyName:
           anyOf:
           - type: string
@@ -16657,9 +16694,12 @@ components:
           title: Isactive
           description: Is affiliate active
           default: true
-        referralCode:
+        id:
+          title: Id
+          description: Unique identifier
+        code:
           type: string
-          title: Referralcode
+          title: Code
           description: Referral code
         totalReferrals:
           type: integer
@@ -16690,10 +16730,9 @@ components:
           description: Last login
       type: object
       required:
-      - id
-      - name
       - email
-      - referralCode
+      - id
+      - code
       title: AffiliateRead
       description: Schema for reading an affiliate
     AffiliateUpdate:
@@ -16800,6 +16839,7 @@ components:
           title: Tool Schema Version
           description: Schema version of the tool
         parameters:
+          additionalProperties: true
           type: object
           title: Parameters
           description: Tool parameters
@@ -16826,6 +16866,94 @@ components:
       - requires_approval
       title: AiActionStepResponse
       description: Response for a single action step.
+    AiPhaseEnum:
+      type: string
+      enum:
+      - read_only
+      - proposal
+      - execution
+      title: AiPhaseEnum
+      description: AI Layer operational phase.
+    AiSettingsResponse:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+          description: Whether AI is enabled
+        phase:
+          type: string
+          title: Phase
+          description: Current phase
+        model_provider:
+          type: string
+          title: Model Provider
+          description: Model provider
+        model_id:
+          type: string
+          title: Model Id
+          description: Model ID
+        rate_limit_per_minute:
+          type: integer
+          title: Rate Limit Per Minute
+          description: Rate limit per minute
+        default_quota:
+          type: integer
+          title: Default Quota
+          description: Default quota per period
+      type: object
+      required:
+      - enabled
+      - phase
+      - model_provider
+      - model_id
+      - rate_limit_per_minute
+      - default_quota
+      title: AiSettingsResponse
+      description: AI settings response.
+    AiStatusResponse:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+          description: Whether AI is enabled
+        phase:
+          $ref: '#/components/schemas/AiPhaseEnum'
+          description: Current AI phase
+        modelId:
+          type: string
+          title: Modelid
+          description: Active model ID
+        modelVersion:
+          type: string
+          title: Modelversion
+          description: Active model version
+        modelAvailable:
+          type: boolean
+          title: Modelavailable
+          description: Whether model is reachable
+        killSwitchActive:
+          type: boolean
+          title: Killswitchactive
+          default: false
+        quotaRemaining:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Quotaremaining
+        quotaLimit:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Quotalimit
+      type: object
+      required:
+      - enabled
+      - phase
+      - modelId
+      - modelVersion
+      - modelAvailable
+      title: AiStatusResponse
+      description: Response schema for AI status endpoint.
     AlertCheckResponse:
       properties:
         should_alert:
@@ -16838,6 +16966,7 @@ components:
           title: Alerts
           description: List of active alerts
         metrics:
+          additionalProperties: true
           type: object
           title: Metrics
           description: Current metrics
@@ -17073,7 +17202,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -17109,7 +17239,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -17218,12 +17349,10 @@ components:
           title: Duration
           default: 30
         appointmentType:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentType'
+          $ref: '#/components/schemas/AppointmentType'
           default: consultation
         status:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentStatus'
+          $ref: '#/components/schemas/AppointmentStatus'
           default: scheduled
         notes:
           anyOf:
@@ -17244,7 +17373,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -17304,12 +17434,10 @@ components:
           title: Duration
           default: 30
         appointmentType:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentType'
+          $ref: '#/components/schemas/AppointmentType'
           default: consultation
         status:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentStatus'
+          $ref: '#/components/schemas/AppointmentStatus'
           default: scheduled
         notes:
           anyOf:
@@ -17604,6 +17732,7 @@ components:
           title: Rejected
           description: Rejected count
         by_risk_level:
+          additionalProperties: true
           type: object
           title: By Risk Level
           description: Counts by risk level
@@ -18144,6 +18273,14 @@ components:
           type: array
           title: Actions
           description: Available actions based on context
+        intentType:
+          type: string
+          enum:
+          - search
+          - action
+          title: Intenttype
+          description: Heuristic-based intent separation
+          default: search
       type: object
       title: AutocompleteResponse
       description: Response containing entities and context-aware actions.
@@ -18305,7 +18442,8 @@ components:
           default: standard
         customerInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Customerinfo
       type: object
@@ -18436,7 +18574,8 @@ components:
           default: ''
         emailTemplate:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Emailtemplate
       type: object
@@ -18860,7 +18999,8 @@ components:
           default: all
         targetCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Targetcriteria
           default: {}
@@ -18959,7 +19099,8 @@ components:
           title: Targetsegment
         targetCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Targetcriteria
         messageTemplate:
@@ -19117,7 +19258,8 @@ components:
           - type: 'null'
         targetCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Targetcriteria
         messageTemplate:
@@ -19303,7 +19445,8 @@ components:
           description: User's natural language message
         context:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Context
           description: Optional context (conversation history, etc.)
@@ -19515,16 +19658,10 @@ components:
           - type: 'null'
           title: Updatedat
           description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
         affiliateId:
-          type: string
           title: Affiliateid
           description: Affiliate ID
         tenantId:
-          type: string
           title: Tenantid
           description: Tenant ID
         amount:
@@ -19536,6 +19673,9 @@ components:
           title: Status
           description: Commission status
           default: pending
+        id:
+          title: Id
+          description: Unique identifier
         tenantName:
           anyOf:
           - type: string
@@ -19551,12 +19691,187 @@ components:
           description: Paid at
       type: object
       required:
-      - id
       - affiliateId
       - tenantId
       - amount
+      - id
       title: CommissionRead
       description: Schema for reading a commission
+    CommunicationHistoryRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        partyId:
+          type: string
+          title: Partyid
+        campaignId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Campaignid
+        templateId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Templateid
+        smsLogId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Smslogid
+        emailLogId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Emaillogid
+        communicationType:
+          type: string
+          title: Communicationtype
+        direction:
+          type: string
+          title: Direction
+        subject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subject
+        content:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Content
+        contactMethod:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contactmethod
+        status:
+          type: string
+          title: Status
+          default: completed
+        priority:
+          type: string
+          title: Priority
+          default: normal
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+          default: {}
+        initiatedBy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Initiatedby
+      type: object
+      required:
+      - id
+      - partyId
+      - communicationType
+      - direction
+      title: CommunicationHistoryRead
+      description: Schema for reading CommunicationHistory - replaces to_dict()
+    CommunicationTemplateRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        name:
+          type: string
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        templateType:
+          type: string
+          title: Templatetype
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        subject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subject
+        bodyText:
+          type: string
+          title: Bodytext
+        bodyHtml:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodyhtml
+        variables:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Variables
+          default: []
+        isActive:
+          type: boolean
+          title: Isactive
+          default: true
+        isSystem:
+          type: boolean
+          title: Issystem
+          default: false
+        usageCount:
+          type: integer
+          title: Usagecount
+          default: 0
+        lastUsedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastusedat
+      type: object
+      required:
+      - id
+      - name
+      - templateType
+      - bodyText
+      title: CommunicationTemplateRead
+      description: Schema for reading CommunicationTemplate - replaces to_dict()
     CompanyInfoUpdate:
       properties:
         name:
@@ -19716,10 +20031,12 @@ components:
           title: Complaint Rate 1H
           description: Complaint rate in last hour (%)
         by_type:
+          additionalProperties: true
           type: object
           title: By Type
           description: Counts by complaint type
         by_provider:
+          additionalProperties: true
           type: object
           title: By Provider
           description: Counts by FBL provider
@@ -19779,12 +20096,12 @@ components:
     CreateActionRequest:
       properties:
         intent:
-          allOf:
-          - $ref: '#/components/schemas/IntentRequest'
+          $ref: '#/components/schemas/IntentRequest'
           description: Classified intent
         context:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Context
           description: Optional context
@@ -19958,12 +20275,14 @@ components:
       properties:
         tenant:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Tenant
         plan:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Plan
         isExpired:
@@ -20009,6 +20328,7 @@ components:
           $ref: '#/components/schemas/DashboardKPIs'
         recentActivity:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Recentactivity
@@ -20197,9 +20517,10 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - additionalProperties:
-              type: string
+          - additionalProperties: true
             type: object
+          - items: {}
+            type: array
           - type: 'null'
           title: Features
           description: Plan features
@@ -20277,6 +20598,7 @@ components:
           anyOf:
           - type: number
           - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
           title: Price
         isActive:
           type: boolean
@@ -20317,6 +20639,7 @@ components:
         accessories:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -20324,6 +20647,7 @@ components:
         services:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -20344,6 +20668,7 @@ components:
           type: array
           title: Assignmentids
         pricing:
+          additionalProperties: true
           type: object
           title: Pricing
         warnings:
@@ -20794,7 +21119,7 @@ components:
           - type: string
           - type: 'null'
           title: Sgkscheme
-        sgksupporttype:
+        sgkSupportType:
           anyOf:
           - type: string
           - type: 'null'
@@ -20814,7 +21139,7 @@ components:
           - type: number
           - type: 'null'
           title: Sgkreduction
-        sgksupport:
+        sgkSupport:
           anyOf:
           - type: number
           - type: 'null'
@@ -21055,7 +21380,7 @@ components:
           type: number
           title: Kdvrate
           description: VAT rate
-          default: 18.0
+          default: 20.0
         features:
           items:
             type: string
@@ -21183,7 +21508,8 @@ components:
           title: Content
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
         mimeType:
@@ -21261,7 +21587,8 @@ components:
           title: Filepath
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
         mimeType:
@@ -21480,6 +21807,7 @@ components:
         materials:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -21514,6 +21842,7 @@ components:
         materials:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -21558,6 +21887,152 @@ components:
       - totalPages
       title: EmailLogListResponse
       description: Schema for email log list response.
+    EmailLogRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        campaignId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Campaignid
+        partyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partyid
+        templateId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Templateid
+        toEmail:
+          type: string
+          title: Toemail
+        fromEmail:
+          type: string
+          title: Fromemail
+        ccEmails:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Ccemails
+          default: []
+        bccEmails:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Bccemails
+          default: []
+        subject:
+          type: string
+          title: Subject
+        bodyText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodytext
+        bodyHtml:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodyhtml
+        attachments:
+          anyOf:
+          - items:
+              additionalProperties: true
+              type: object
+            type: array
+          - type: 'null'
+          title: Attachments
+          default: []
+        status:
+          type: string
+          title: Status
+        providerResponse:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Providerresponse
+        providerMessageId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Providermessageid
+        sentAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Sentat
+        deliveredAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deliveredat
+        openedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Openedat
+        clickedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Clickedat
+        bouncedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Bouncedat
+        errorMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Errormessage
+        retryCount:
+          type: integer
+          title: Retrycount
+          default: 0
+        cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost
+      type: object
+      required:
+      - id
+      - toEmail
+      - fromEmail
+      - subject
+      - status
+      title: EmailLogRead
+      description: Schema for reading EmailLog - replaces to_dict()
     EmailLogResponse:
       properties:
         createdAt:
@@ -21798,7 +22273,8 @@ components:
           description: Secondary text (e.g. Phone, ID, Code)
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
           description: Additional context data
@@ -21883,6 +22359,7 @@ components:
           title: Tool Id
           description: ID of the tool to execute
         args:
+          additionalProperties: true
           type: object
           title: Args
           description: Arguments for the tool
@@ -21914,7 +22391,8 @@ components:
           description: Execution status
         result:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Result
           description: Tool execution result data
@@ -21997,7 +22475,8 @@ components:
           description: Approval status
         execution_result:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Execution Result
           description: Execution result
@@ -22091,7 +22570,8 @@ components:
           title: Partyid
         sgkInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Sgkinfo
       type: object
@@ -22111,7 +22591,8 @@ components:
           title: Audiologist
         audiogramData:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Audiogramdata
       type: object
@@ -22132,7 +22613,8 @@ components:
           title: Audiologist
         audiogramData:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Audiogramdata
       type: object
@@ -22177,7 +22659,8 @@ components:
           default: normal
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
           default: {}
@@ -22307,7 +22790,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -22343,7 +22827,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -22384,6 +22869,7 @@ components:
           title: Confidence
           description: Confidence score
         entities:
+          additionalProperties: true
           type: object
           title: Entities
           description: Extracted entities
@@ -22406,6 +22892,7 @@ components:
           title: Confidence
           description: Confidence score
         entities:
+          additionalProperties: true
           type: object
           title: Entities
           description: Extracted entities
@@ -22519,7 +23006,7 @@ components:
         vatRate:
           type: number
           title: Vatrate
-          default: 18.0
+          default: 20.0
         priceIncludesKdv:
           type: boolean
           title: Priceincludeskdv
@@ -22543,7 +23030,9 @@ components:
           title: Warranty
           default: 0
         tenantId:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Tenantid
         branchId:
           anyOf:
@@ -22560,7 +23049,6 @@ components:
       required:
       - name
       - brand
-      - tenantId
       title: InventoryItemCreate
     InventoryItemRead:
       properties:
@@ -22644,7 +23132,7 @@ components:
         vatRate:
           type: number
           title: Vatrate
-          default: 18.0
+          default: 20.0
         priceIncludesKdv:
           type: boolean
           title: Priceincludeskdv
@@ -22838,8 +23326,7 @@ components:
           title: Invoicenumber
           description: Invoice number
         invoiceType:
-          allOf:
-          - $ref: '#/components/schemas/InvoiceType'
+          $ref: '#/components/schemas/InvoiceType'
           description: Invoice type
           default: sale
         invoiceDate:
@@ -22888,8 +23375,7 @@ components:
           description: Total amount
           default: 0.0
         status:
-          allOf:
-          - $ref: '#/components/schemas/InvoiceStatus'
+          $ref: '#/components/schemas/InvoiceStatus'
           description: Invoice status
           default: draft
         notes:
@@ -22915,6 +23401,28 @@ components:
           title: Items
           description: Invoice items
           default: []
+        taxOffice:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxoffice
+        returnReferenceNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Returnreferencenumber
+        returnReferenceDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Returnreferencedate
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
       type: object
       title: InvoiceCreate
       description: Schema for creating an invoice
@@ -22926,7 +23434,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -23009,7 +23518,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -23249,6 +23759,32 @@ components:
           - type: string
           - type: 'null'
           title: Birfaturaapprovedat
+        taxOffice:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxoffice
+        returnReferenceNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Returnreferencenumber
+        returnReferenceDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Returnreferencedate
+        remoteMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remotemessage
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
       type: object
       title: InvoiceRead
       description: Schema for reading invoice data - matches Invoice.to_dict() output
@@ -23256,7 +23792,8 @@ components:
       properties:
         company_info:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Company Info
         invoice_logo:
@@ -23280,6 +23817,7 @@ components:
       - paid
       - cancelled
       - failed
+      - processing
       title: InvoiceStatus
     InvoiceSyncRequest:
       properties:
@@ -23460,6 +23998,39 @@ components:
       - active
       title: KillSwitchResponse
       description: Response from kill switch operation.
+    KillSwitchStatusResponse:
+      properties:
+        global_switch:
+          additionalProperties: true
+          type: object
+          title: Global Switch
+          description: Global kill switch status
+        tenant_switches:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Tenant Switches
+          description: Tenant kill switches
+        capability_switches:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Capability Switches
+          description: Capability kill switches
+        any_active:
+          type: boolean
+          title: Any Active
+          description: Whether any kill switch is active
+      type: object
+      required:
+      - global_switch
+      - tenant_switches
+      - capability_switches
+      - any_active
+      title: KillSwitchStatusResponse
+      description: Kill switch status response.
     LatencyMetricsResponse:
       properties:
         count:
@@ -23612,7 +24183,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -23648,7 +24220,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -23705,27 +24278,6 @@ components:
           title: Search
       type: object
       title: MockSearchRequest
-    ModelStatusResponse:
-      properties:
-        provider:
-          type: string
-          title: Provider
-          description: Model provider
-        model_id:
-          type: string
-          title: Model Id
-          description: Model ID
-        available:
-          type: boolean
-          title: Available
-          description: Whether model is available
-      type: object
-      required:
-      - provider
-      - model_id
-      - available
-      title: ModelStatusResponse
-      description: Model status.
     MonthlyCount:
       properties:
         year:
@@ -23779,7 +24331,8 @@ components:
           default: info
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
       type: object
@@ -23843,7 +24396,8 @@ components:
           title: Readat
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
       type: object
@@ -23911,12 +24465,14 @@ components:
           title: Userid
         preferences:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Preferences
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
       type: object
@@ -23957,36 +24513,10 @@ components:
       type: object
       title: NotificationUpdate
       description: Schema for updating Notification
-    OCRProcessRequest:
-      properties:
-        imagePath:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Imagepath
-        text:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Text
-        ocrText:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Ocrtext
-        type:
-          type: string
-          title: Type
-          default: medical
-        autoCrop:
-          type: boolean
-          title: Autocrop
-          default: true
-      type: object
-      title: OCRProcessRequest
     OcrDebugResponse:
       properties:
         result:
+          additionalProperties: true
           type: object
           title: Result
         timestamp:
@@ -24001,6 +24531,7 @@ components:
       properties:
         entities:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Entities
@@ -24113,7 +24644,8 @@ components:
       properties:
         patientInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Patientinfo
         timestamp:
@@ -24123,9 +24655,37 @@ components:
       required:
       - timestamp
       title: OcrPatientResponse
+    OcrProcessRequest:
+      properties:
+        imagePath:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imagepath
+        text:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Text
+        ocrText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ocrtext
+        type:
+          type: string
+          title: Type
+          default: medical
+        autoCrop:
+          type: boolean
+          title: Autocrop
+          default: true
+      type: object
+      title: OcrProcessRequest
     OcrProcessResponse:
       properties:
         result:
+          additionalProperties: true
           type: object
           title: Result
         timestamp:
@@ -24228,8 +24788,7 @@ components:
           - type: 'null'
           title: Addressfull
         status:
-          allOf:
-          - $ref: '#/components/schemas/PartyStatus'
+          $ref: '#/components/schemas/PartyStatus'
           default: active
         segment:
           type: string
@@ -24260,6 +24819,7 @@ components:
           title: Tags
           default: []
         sgkInfo:
+          additionalProperties: true
           type: object
           title: Sgkinfo
           default: {}
@@ -24282,7 +24842,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -24318,7 +24879,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -24467,7 +25029,7 @@ components:
           title: Email
         birthDate:
           anyOf:
-          - type: string
+          - {}
           - type: 'null'
           title: Birthdate
         dob:
@@ -24482,7 +25044,8 @@ components:
           title: Gender
         address:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Address
         addressCity:
@@ -24554,7 +25117,8 @@ components:
           title: Tags
         sgkInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Sgkinfo
         roles:
@@ -24699,7 +25263,8 @@ components:
           title: Addressfull
         sgkInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Sgkinfo
       type: object
@@ -25040,6 +25605,7 @@ components:
         installments:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -25394,32 +25960,6 @@ components:
       title: PermissionRead
       description: Schema for reading a permission - matches Permission.to_dict()
         output
-    PhaseStatusResponse:
-      properties:
-        current_phase:
-          type: string
-          title: Current Phase
-          description: Current phase (A, B, or C)
-        phase_name:
-          type: string
-          title: Phase Name
-          description: Phase name (read_only, proposal, execution)
-        execution_allowed:
-          type: boolean
-          title: Execution Allowed
-          description: Whether execution is allowed
-        proposal_allowed:
-          type: boolean
-          title: Proposal Allowed
-          description: Whether proposals are allowed
-      type: object
-      required:
-      - current_phase
-      - phase_name
-      - execution_allowed
-      - proposal_allowed
-      title: PhaseStatusResponse
-      description: AI phase status.
     PlanCreate:
       properties:
         name:
@@ -25448,9 +25988,10 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - additionalProperties:
-              type: string
+          - additionalProperties: true
             type: object
+          - items: {}
+            type: array
           - type: 'null'
           title: Features
           description: Plan features
@@ -25490,7 +26031,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -25543,7 +26085,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -25688,6 +26231,7 @@ components:
           type: string
           title: Url
         fields:
+          additionalProperties: true
           type: object
           title: Fields
         key:
@@ -25702,12 +26246,15 @@ components:
     PricingSettingsResponse:
       properties:
         devices:
+          additionalProperties: true
           type: object
           title: Devices
         accessories:
+          additionalProperties: true
           type: object
           title: Accessories
         services:
+          additionalProperties: true
           type: object
           title: Services
       type: object
@@ -26220,39 +26767,6 @@ components:
       - rate_limit_rate
       title: QuotaMetricsResponse
       description: Quota-related metrics.
-    QuotaStatusResponse:
-      properties:
-        usage_type:
-          type: string
-          title: Usage Type
-          description: Type of usage
-        current_usage:
-          type: integer
-          title: Current Usage
-          description: Current usage count
-        quota_limit:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Quota Limit
-          description: Quota limit (null if unlimited)
-        remaining:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Remaining
-          description: Remaining quota
-        exceeded:
-          type: boolean
-          title: Exceeded
-          description: Whether quota is exceeded
-      type: object
-      required:
-      - usage_type
-      - current_usage
-      - exceeded
-      title: QuotaStatusResponse
-      description: Quota status for a usage type.
     RateMetricsResponse:
       properties:
         total_count:
@@ -26298,6 +26812,7 @@ components:
       properties:
         activity:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Activity
@@ -26464,12 +26979,14 @@ components:
           title: Newinventoryid
         oldDeviceInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Olddeviceinfo
         newDeviceInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Newdeviceinfo
         replacementReason:
@@ -26512,6 +27029,7 @@ components:
     ReplacementInvoiceResponse:
       properties:
         invoice:
+          additionalProperties: true
           type: object
           title: Invoice
         replacement:
@@ -26587,6 +27105,7 @@ components:
           anyOf:
           - type: number
           - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
           - type: 'null'
           title: Pricedifference
         returnInvoiceId:
@@ -27163,9 +27682,6 @@ components:
           title: Success
           default: true
         data:
-          anyOf:
-          - {}
-          - type: 'null'
           title: Data
         message:
           anyOf:
@@ -27787,6 +28303,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[CheckoutSessionResponse]
+    ResponseEnvelope_CommunicationHistoryRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/CommunicationHistoryRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[CommunicationHistoryRead]
+    ResponseEnvelope_CommunicationTemplateRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/CommunicationTemplateRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[CommunicationTemplateRead]
     ResponseEnvelope_ComplaintListResponse_:
       properties:
         success:
@@ -27809,7 +28395,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -27841,7 +28428,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -28244,7 +28832,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -28382,6 +28971,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[EmailLogListResponse]
+    ResponseEnvelope_EmailLogRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/EmailLogRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[EmailLogRead]
     ResponseEnvelope_EmailTemplateRead_:
       properties:
         success:
@@ -29112,6 +29736,82 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[CommissionRead]]
+    ResponseEnvelope_List_CommunicationHistoryRead__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/CommunicationHistoryRead'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[CommunicationHistoryRead]]
+    ResponseEnvelope_List_CommunicationTemplateRead__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/CommunicationTemplateRead'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[CommunicationTemplateRead]]
     ResponseEnvelope_List_DetailedPlanRead__:
       properties:
         success:
@@ -29273,6 +29973,7 @@ components:
         data:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -30290,6 +30991,44 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[UserRead]]
+    ResponseEnvelope_List_str__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[str]]
     ResponseEnvelope_LoginResponse_:
       properties:
         success:
@@ -31864,41 +32603,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[RoleResponse]
-    ResponseEnvelope_SMTPConfigResponse_:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/SMTPConfigResponse'
-          - type: 'null'
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[SMTPConfigResponse]
     ResponseEnvelope_SaleRead_:
       properties:
         success:
@@ -32179,6 +32883,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[SmsHeaderRequestRead]
+    ResponseEnvelope_SmsLogRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SmsLogRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[SmsLogRead]
+    ResponseEnvelope_SmtpConfigResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SmtpConfigResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[SmtpConfigResponse]
     ResponseEnvelope_SpamPreviewResponse_:
       properties:
         success:
@@ -32741,41 +33515,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[Union[AuthUserRead, AuthAdminUserRead]]
-    ResponseEnvelope_Union_SMTPConfigResponse__NoneType__:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/SMTPConfigResponse'
-          - type: 'null'
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[Union[SMTPConfigResponse, NoneType]]
     ResponseEnvelope_Union_SmsProviderConfigRead__NoneType__:
       properties:
         success:
@@ -32811,6 +33550,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[Union[SmsProviderConfigRead, NoneType]]
+    ResponseEnvelope_Union_SmtpConfigResponse__NoneType__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SmtpConfigResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[Union[SmtpConfigResponse, NoneType]]
     ResponseEnvelope_Union_TenantSmsCreditRead__NoneType__:
       properties:
         success:
@@ -32903,7 +33677,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -33539,280 +34314,6 @@ components:
       - role
       title: RoleResponse
       description: Schema for single role response
-    SLAMetricsResponse:
-      properties:
-        timestamp:
-          type: string
-          title: Timestamp
-          description: Metrics timestamp
-        window_minutes:
-          type: integer
-          title: Window Minutes
-          description: Aggregation window in minutes
-        inference_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Inference latency metrics
-        intent_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Intent classification latency
-        planning_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Action planning latency
-        execution_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Execution latency
-        rates:
-          allOf:
-          - $ref: '#/components/schemas/RateMetricsResponse'
-          description: Error and timeout rates
-        approvals:
-          allOf:
-          - $ref: '#/components/schemas/ApprovalMetricsResponse'
-          description: Approval metrics
-        quota:
-          allOf:
-          - $ref: '#/components/schemas/QuotaMetricsResponse'
-          description: Quota metrics
-      type: object
-      required:
-      - timestamp
-      - window_minutes
-      - inference_latency
-      - intent_latency
-      - planning_latency
-      - execution_latency
-      - rates
-      - approvals
-      - quota
-      title: SLAMetricsResponse
-      description: Complete SLA metrics response.
-    SMSLogRead:
-      properties:
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Creation timestamp
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
-        campaignId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Campaignid
-        partyId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Partyid
-        phoneNumber:
-          type: string
-          title: Phonenumber
-        message:
-          type: string
-          title: Message
-        status:
-          $ref: '#/components/schemas/SMSLogStatus'
-        sentAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Sentat
-        deliveredAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Deliveredat
-        errorMessage:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Errormessage
-        cost:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Cost
-          default: 0.0
-      type: object
-      required:
-      - id
-      - phoneNumber
-      - message
-      - status
-      title: SMSLogRead
-    SMSLogStatus:
-      type: string
-      enum:
-      - pending
-      - sent
-      - delivered
-      - failed
-      title: SMSLogStatus
-    SMTPConfigCreate:
-      properties:
-        host:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Host
-          description: SMTP server hostname or IP
-        port:
-          type: integer
-          maximum: 65535.0
-          minimum: 1.0
-          title: Port
-          description: SMTP server port
-        username:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Username
-          description: SMTP authentication username
-        fromEmail:
-          type: string
-          format: email
-          title: Fromemail
-          description: From email address
-        fromName:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Fromname
-          description: From display name
-        useTls:
-          type: boolean
-          title: Usetls
-          description: Use STARTTLS
-          default: false
-        useSsl:
-          type: boolean
-          title: Usessl
-          description: Use SSL/TLS
-          default: true
-        timeout:
-          type: integer
-          maximum: 120.0
-          minimum: 5.0
-          title: Timeout
-          description: Connection timeout in seconds
-          default: 30
-        password:
-          type: string
-          minLength: 1
-          title: Password
-          description: SMTP authentication password (will be encrypted)
-      type: object
-      required:
-      - host
-      - port
-      - username
-      - fromEmail
-      - fromName
-      - password
-      title: SMTPConfigCreate
-      description: Schema for creating SMTP configuration.
-    SMTPConfigResponse:
-      properties:
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Creation timestamp
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
-        host:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Host
-          description: SMTP server hostname or IP
-        port:
-          type: integer
-          maximum: 65535.0
-          minimum: 1.0
-          title: Port
-          description: SMTP server port
-        username:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Username
-          description: SMTP authentication username
-        fromEmail:
-          type: string
-          format: email
-          title: Fromemail
-          description: From email address
-        fromName:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Fromname
-          description: From display name
-        useTls:
-          type: boolean
-          title: Usetls
-          description: Use STARTTLS
-          default: false
-        useSsl:
-          type: boolean
-          title: Usessl
-          description: Use SSL/TLS
-          default: true
-        timeout:
-          type: integer
-          maximum: 120.0
-          minimum: 5.0
-          title: Timeout
-          description: Connection timeout in seconds
-          default: 30
-        tenantId:
-          type: string
-          title: Tenantid
-        isActive:
-          type: boolean
-          title: Isactive
-      type: object
-      required:
-      - id
-      - host
-      - port
-      - username
-      - fromEmail
-      - fromName
-      - tenantId
-      - isActive
-      title: SMTPConfigResponse
-      description: SMTP configuration (password excluded for security)
     SaleCreate:
       properties:
         partyId:
@@ -33966,44 +34467,6 @@ components:
           - type: string
           - type: 'null'
           title: Notes
-        listPriceTotal:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Listpricetotal
-        totalAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Totalamount
-        discountAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Discountamount
-          default: 0.0
-        sgkCoverage:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Sgkcoverage
-          default: 0.0
-        finalAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Finalamount
-        paidAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Paidamount
-          default: 0.0
-        patientPayment:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Patientpayment
         remainingAmount:
           anyOf:
           - type: number
@@ -34027,7 +34490,8 @@ components:
           title: Reportstatus
         patient:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Patient
         devices:
@@ -34051,13 +34515,15 @@ components:
         payments:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
           title: Payments
         invoice:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Invoice
       type: object
@@ -34098,6 +34564,7 @@ components:
           title: Processed
         errors:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -34267,7 +34734,7 @@ components:
           - type: 'null'
         smsLogRead:
           anyOf:
-          - $ref: '#/components/schemas/SMSLogRead'
+          - $ref: '#/components/schemas/SmsLogRead'
           - type: 'null'
         smsProviderConfigCreate:
           anyOf:
@@ -34324,6 +34791,7 @@ components:
         attachments:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -34386,7 +34854,8 @@ components:
           description: Template name if using template
         templateVariables:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Templatevariables
           description: Template variables
@@ -34420,7 +34889,7 @@ components:
       - message
       title: SendEmailResponse
       description: Schema for email sending response.
-    SendSMS:
+    SendSms:
       properties:
         phoneNumber:
           type: string
@@ -34442,7 +34911,7 @@ components:
       required:
       - phoneNumber
       - message
-      title: SendSMS
+      title: SendSms
     SendTestEmailRequest:
       properties:
         recipient:
@@ -34530,10 +34999,12 @@ components:
           title: Message
         tenant:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Tenant
         user:
+          additionalProperties: true
           type: object
           title: User
         token:
@@ -34568,18 +35039,62 @@ components:
           - type: string
           - type: 'null'
           title: Text2
-        texta:
+        textA:
           anyOf:
           - type: string
           - type: 'null'
           title: Texta
-        textb:
+        textB:
           anyOf:
           - type: string
           - type: 'null'
           title: Textb
       type: object
       title: SimilarityRequest
+    SlaMetricsResponse:
+      properties:
+        timestamp:
+          type: string
+          title: Timestamp
+          description: Metrics timestamp
+        window_minutes:
+          type: integer
+          title: Window Minutes
+          description: Aggregation window in minutes
+        inference_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Inference latency metrics
+        intent_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Intent classification latency
+        planning_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Action planning latency
+        execution_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Execution latency
+        rates:
+          $ref: '#/components/schemas/RateMetricsResponse'
+          description: Error and timeout rates
+        approvals:
+          $ref: '#/components/schemas/ApprovalMetricsResponse'
+          description: Approval metrics
+        quota:
+          $ref: '#/components/schemas/QuotaMetricsResponse'
+          description: Quota metrics
+      type: object
+      required:
+      - timestamp
+      - window_minutes
+      - inference_latency
+      - intent_latency
+      - planning_latency
+      - execution_latency
+      - rates
+      - approvals
+      - quota
+      title: SlaMetricsResponse
+      description: Complete SLA metrics response.
     SlotConfig:
       properties:
         name:
@@ -34617,7 +35132,8 @@ components:
           description: Static options for enum type
         validationRules:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Validationrules
           description: Validation rules (min, max, required, etc.)
@@ -34685,8 +35201,7 @@ components:
           type: string
           title: Tenantid
         status:
-          allOf:
-          - $ref: '#/components/schemas/SmsHeaderStatus'
+          $ref: '#/components/schemas/SmsHeaderStatus'
           default: pending
         rejectionReason:
           anyOf:
@@ -34732,6 +35247,82 @@ components:
       - domain
       - other
       title: SmsHeaderType
+    SmsLogRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        campaignId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Campaignid
+        partyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partyid
+        phoneNumber:
+          type: string
+          title: Phonenumber
+        message:
+          type: string
+          title: Message
+        status:
+          $ref: '#/components/schemas/SmsLogStatus'
+        sentAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Sentat
+        deliveredAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deliveredat
+        errorMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Errormessage
+        cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost
+          default: 0.0
+      type: object
+      required:
+      - id
+      - phoneNumber
+      - message
+      - status
+      title: SmsLogRead
+    SmsLogStatus:
+      type: string
+      enum:
+      - pending
+      - sent
+      - delivered
+      - failed
+      title: SmsLogStatus
     SmsPackageCreate:
       properties:
         name:
@@ -34965,6 +35556,153 @@ components:
       - excel
       - filter
       title: SmsSourceType
+    SmtpConfigCreate:
+      properties:
+        host:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Host
+          description: SMTP server hostname or IP
+        port:
+          type: integer
+          maximum: 65535.0
+          minimum: 1.0
+          title: Port
+          description: SMTP server port
+        username:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Username
+          description: SMTP authentication username
+        fromEmail:
+          type: string
+          format: email
+          title: Fromemail
+          description: From email address
+        fromName:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Fromname
+          description: From display name
+        useTls:
+          type: boolean
+          title: Usetls
+          description: Use STARTTLS
+          default: false
+        useSsl:
+          type: boolean
+          title: Usessl
+          description: Use SSL/TLS
+          default: true
+        timeout:
+          type: integer
+          maximum: 120.0
+          minimum: 5.0
+          title: Timeout
+          description: Connection timeout in seconds
+          default: 30
+        password:
+          type: string
+          minLength: 1
+          title: Password
+          description: SMTP authentication password (will be encrypted)
+      type: object
+      required:
+      - host
+      - port
+      - username
+      - fromEmail
+      - fromName
+      - password
+      title: SmtpConfigCreate
+      description: Schema for creating SMTP configuration.
+    SmtpConfigResponse:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        host:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Host
+          description: SMTP server hostname or IP
+        port:
+          type: integer
+          maximum: 65535.0
+          minimum: 1.0
+          title: Port
+          description: SMTP server port
+        username:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Username
+          description: SMTP authentication username
+        fromEmail:
+          type: string
+          format: email
+          title: Fromemail
+          description: From email address
+        fromName:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Fromname
+          description: From display name
+        useTls:
+          type: boolean
+          title: Usetls
+          description: Use STARTTLS
+          default: false
+        useSsl:
+          type: boolean
+          title: Usessl
+          description: Use SSL/TLS
+          default: true
+        timeout:
+          type: integer
+          maximum: 120.0
+          minimum: 5.0
+          title: Timeout
+          description: Connection timeout in seconds
+          default: 30
+        tenantId:
+          type: string
+          title: Tenantid
+        isActive:
+          type: boolean
+          title: Isactive
+      type: object
+      required:
+      - id
+      - host
+      - port
+      - username
+      - fromEmail
+      - fromName
+      - tenantId
+      - isActive
+      title: SmtpConfigResponse
+      description: SMTP configuration (password excluded for security)
     SpamPreviewRequest:
       properties:
         subject:
@@ -35059,7 +35797,8 @@ components:
           description: Execution status
         result:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Result
           description: Execution result
@@ -35231,12 +35970,14 @@ components:
           title: Message
         tenant:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Tenant
         plan:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Plan
       type: object
@@ -35329,7 +36070,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -35365,7 +36107,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -35766,6 +36509,7 @@ components:
     SystemSettingsResponse:
       properties:
         settings:
+          additionalProperties: true
           type: object
           title: Settings
       type: object
@@ -35788,7 +36532,8 @@ components:
           $ref: '#/components/schemas/SmsSourceType'
         filterCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Filtercriteria
         filePath:
@@ -35832,7 +36577,8 @@ components:
           $ref: '#/components/schemas/SmsSourceType'
         filterCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Filtercriteria
         tenantId:
@@ -35885,12 +36631,14 @@ components:
           title: Name
         companyInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Companyinfo
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
       type: object
@@ -35968,8 +36716,7 @@ components:
           title: Taxoffice
           description: Tax office
         status:
-          allOf:
-          - $ref: '#/components/schemas/TenantStatus'
+          $ref: '#/components/schemas/TenantStatus'
           description: Tenant status
           default: active
         productCode:
@@ -36006,14 +36753,16 @@ components:
           default: 0
         companyInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Companyinfo
           description: Company Info
           default: {}
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
           description: Settings
@@ -36026,6 +36775,7 @@ components:
     TenantRatesUpdate:
       properties:
         rates:
+          additionalProperties: true
           type: object
           title: Rates
       type: object
@@ -36115,8 +36865,7 @@ components:
         status:
           $ref: '#/components/schemas/TenantStatus'
         productCode:
-          allOf:
-          - $ref: '#/components/schemas/ProductCode'
+          $ref: '#/components/schemas/ProductCode'
           description: Product Code
         planId:
           anyOf:
@@ -36148,7 +36897,8 @@ components:
           default: 0
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
           description: Tenant settings
@@ -36287,17 +37037,20 @@ components:
           title: Currentusers
         companyInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Companyinfo
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
         featureUsage:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Featureusage
         ownerEmail:
@@ -36455,16 +37208,13 @@ components:
           - type: 'null'
           title: Description
         status:
-          allOf:
-          - $ref: '#/components/schemas/TicketStatus'
+          $ref: '#/components/schemas/TicketStatus'
           default: open
         priority:
-          allOf:
-          - $ref: '#/components/schemas/TicketPriority'
+          $ref: '#/components/schemas/TicketPriority'
           default: medium
         category:
-          allOf:
-          - $ref: '#/components/schemas/TicketCategory'
+          $ref: '#/components/schemas/TicketCategory'
           default: general
         tenantId:
           anyOf:
@@ -36535,7 +37285,8 @@ components:
           default: ''
         details:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Details
         timestamp:
@@ -36603,7 +37354,8 @@ components:
           default: ''
         details:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Details
         timestamp:
@@ -36867,6 +37619,7 @@ components:
           description: Unsubscribe rate percentage
         top_scenarios:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Top Scenarios
@@ -36925,29 +37678,6 @@ components:
       - filename
       - documentType
       title: UploadSGKDocumentRequest
-    UsageStatusResponse:
-      properties:
-        total_requests_today:
-          type: integer
-          title: Total Requests Today
-          description: Total requests today
-        quotas:
-          items:
-            $ref: '#/components/schemas/QuotaStatusResponse'
-          type: array
-          title: Quotas
-          description: Quota status by type
-        any_quota_exceeded:
-          type: boolean
-          title: Any Quota Exceeded
-          description: Whether any quota is exceeded
-      type: object
-      required:
-      - total_requests_today
-      - quotas
-      - any_quota_exceeded
-      title: UsageStatusResponse
-      description: Overall usage status.
     UserAnalytics:
       properties:
         totalUsers:
@@ -37392,6 +38122,7 @@ components:
           type: boolean
           title: Success
         data:
+          additionalProperties: true
           type: object
           title: Data
       type: object
@@ -37409,6 +38140,7 @@ components:
           type: array
           title: Data
         meta:
+          additionalProperties: true
           type: object
           title: Meta
       type: object
@@ -37472,7 +38204,8 @@ components:
           default: false
         emailTemplate:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Emailtemplate
       type: object
@@ -37625,65 +38358,6 @@ components:
       - stepId
       - status
       title: WorkflowUpdateRequest
-    ai__api__admin__KillSwitchStatusResponse:
-      properties:
-        global_switch:
-          type: object
-          title: Global Switch
-          description: Global kill switch status
-        tenant_switches:
-          items:
-            type: object
-          type: array
-          title: Tenant Switches
-          description: Tenant kill switches
-        capability_switches:
-          items:
-            type: object
-          type: array
-          title: Capability Switches
-          description: Capability kill switches
-        any_active:
-          type: boolean
-          title: Any Active
-          description: Whether any kill switch is active
-      type: object
-      required:
-      - global_switch
-      - tenant_switches
-      - capability_switches
-      - any_active
-      title: KillSwitchStatusResponse
-      description: Kill switch status response.
-    ai__api__status__KillSwitchStatusResponse:
-      properties:
-        global_active:
-          type: boolean
-          title: Global Active
-          description: Whether global kill switch is active
-        tenant_active:
-          type: boolean
-          title: Tenant Active
-          description: Whether tenant kill switch is active
-        capabilities_disabled:
-          items:
-            type: string
-          type: array
-          title: Capabilities Disabled
-          description: List of disabled capabilities
-        reason:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reason
-          description: Reason if any switch is active
-      type: object
-      required:
-      - global_active
-      - tenant_active
-      - capabilities_disabled
-      title: KillSwitchStatusResponse
-      description: Kill switch status.
     routers__admin__UpdateTenantUserRequest:
       properties:
         email:
@@ -37853,57 +38527,6 @@ components:
           title: Password
       type: object
       title: UpdateTenantUserRequest
-    routers__communications__TemplateCreate:
-      properties:
-        name:
-          type: string
-          title: Name
-        templateType:
-          type: string
-          title: Templatetype
-        bodyText:
-          type: string
-          title: Bodytext
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-        category:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Category
-        subject:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Subject
-        bodyHtml:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Bodyhtml
-        variables:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Variables
-          default: []
-        isActive:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Isactive
-          default: true
-      type: object
-      required:
-      - name
-      - templateType
-      - bodyText
-      title: TemplateCreate
     routers__payments__PaymentRecordCreate:
       properties:
         partyId:
@@ -38152,7 +38775,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -38180,6 +38804,57 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[dict]
+    schemas__communications__TemplateCreate:
+      properties:
+        name:
+          type: string
+          title: Name
+        templateType:
+          type: string
+          title: Templatetype
+        bodyText:
+          type: string
+          title: Bodytext
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        subject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subject
+        bodyHtml:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodyhtml
+        variables:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Variables
+          default: []
+        isActive:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Isactive
+          default: true
+      type: object
+      required:
+      - name
+      - templateType
+      - bodyText
+      title: TemplateCreate
     schemas__invoices__BulkUploadResponse:
       properties:
         success:
@@ -38193,6 +38868,7 @@ components:
           title: Updated
         errors:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -38227,6 +38903,7 @@ components:
           title: Updated
         errors:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -38250,7 +38927,8 @@ components:
           title: Message
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         error:
@@ -38260,7 +38938,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:

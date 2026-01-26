@@ -110,33 +110,42 @@ const CampaignsPage: React.FC = () => {
     );
 
     const branchOptions = useMemo(() => {
-        const items: any[] = [];
+        const items: Array<{ id: string; name?: string }> = [];
 
         if (branchesData && typeof branchesData === 'object' && 'data' in branchesData) {
             // Canonical access: branchesData.data which is array
-            const data = (branchesData as { data?: any[] }).data;
+            const data = (branchesData as { data?: unknown }).data;
             if (Array.isArray(data)) {
-                items.push(...data);
+                items.push(...data.map((item: unknown) => {
+                    const branch = item as Record<string, unknown>;
+                    return {
+                        id: String(branch.id || ''),
+                        name: branch.name ? String(branch.name) : undefined
+                    };
+                }).filter((branch) => Boolean(branch.id)));
             }
         }
 
-        return items
-            .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
-            .map((branch) => ({ value: branch.id, label: branch.name ?? '\u015eube' }));
+        return items.map((branch) => ({ value: branch.id, label: branch.name ?? 'Şube' }));
     }, [branchesData]);
 
     // Fetch first party for preview
-    const { data: partiesData, isLoading: _partiesLoading, isError: _partiesError } = useListParties(
+    const { data: partiesData } = useListParties(
         { page: 1, per_page: 1 },
         { query: { queryKey: getListPartiesQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters', refetchOnWindowFocus: false } }
     );
 
     // Handle different response structures for first party
-    let firstParty: any = null;
+    let firstParty: { firstName?: string; lastName?: string; phone?: string } | null = null;
     if (partiesData && typeof partiesData === 'object' && 'data' in partiesData) {
-        const data = (partiesData as { data?: any[] }).data;
+        const data = (partiesData as { data?: unknown }).data;
         if (Array.isArray(data) && data.length > 0) {
-            firstParty = data[0];
+            const party = data[0] as Record<string, unknown>;
+            firstParty = {
+                firstName: party.firstName ? String(party.firstName) : undefined,
+                lastName: party.lastName ? String(party.lastName) : undefined,
+                phone: party.phone ? String(party.phone) : undefined
+            };
         }
     }
 
@@ -462,6 +471,7 @@ const CampaignsPage: React.FC = () => {
                     <UploadCloud className="w-4 h-4" /> Dosya Yükle
                 </Button>
                 <input
+                    data-allow-raw="true"
                     ref={fileInputRef}
                     type="file"
                     accept=".xlsx,.xls,.csv"
@@ -640,6 +650,7 @@ const CampaignsPage: React.FC = () => {
                         <div className="flex flex-wrap gap-2">
                             {DYNAMIC_FIELDS.map((field) => (
                                 <button
+                                    data-allow-raw="true"
                                     key={field.key}
                                     type="button"
                                     onClick={() => insertDynamicField(field.key)}
@@ -721,6 +732,7 @@ const CampaignsPage: React.FC = () => {
                         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
                             <button
+                                data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
                                 className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >

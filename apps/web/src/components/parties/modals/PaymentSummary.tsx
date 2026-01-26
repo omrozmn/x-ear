@@ -3,13 +3,8 @@ import { Button, Alert } from '@x-ear/ui-web';
 import { CreditCard, AlertCircle } from 'lucide-react';
 import { listSalePromissoryNotes } from '@/api/client/sales.client';
 import type { SaleRead } from '@/api/client/sales.client';
+import type { ExtendedSaleRead } from '@/types/extended-sales';
 import PaymentTrackingModal from '../../payments/PaymentTrackingModal';
-
-// Extended interface to handle runtime properties missing from schema
-// This must align with what is passed from parent and what PaymentTrackingModal expects
-// interface ExtendedSaleRead extends SaleRead {
-//   partyPayment?: number;
-// }
 
 interface PaymentRecord {
   id: string;
@@ -34,9 +29,10 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentUpdate }) => {
+export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, onPaymentUpdate }) => {
+  const sale = rawSale as unknown as ExtendedSaleRead;
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
-  const [_loading, setLoading] = useState(false);
+  // loading state removed - not used in UI
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Calculate payment totals
@@ -48,7 +44,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentU
   const loadPaymentRecords = async () => {
     if (!sale.id) return;
 
-    setLoading(true);
+    // Loading state removed - not displayed in UI
     try {
       // Try API call first
       try {
@@ -78,8 +74,6 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentU
       setPaymentRecords(mockPayments);
     } catch (error) {
       console.error('Error loading payments:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

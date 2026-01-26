@@ -1,0 +1,31 @@
+{
+    "party": {
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive",
+            "lead": "Lead",
+            "trial": "Trial",
+            "customer": "Customer",
+            "new": "New",
+            "deceased": "Deceased",
+            "archived": "Archived"
+        },
+        "segment": {
+            "new": "New",
+            "trial": "Trial",
+            "purchased": "Purchased",
+            "control": "Control",
+            "renewal": "Renewal",
+            "existing": "Existing",
+            "vip": "VIP"
+        },
+        "label": {
+            "new": "New",
+            "waiting_call": "Waiting Call",
+            "appointment_set": "Appointment Set",
+            "trial_done": "Trial Done",
+            "control_patient": "Control Patient",
+            "sales_complete": "Sales Complete"
+        }
+    }
+}

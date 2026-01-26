@@ -37,7 +37,7 @@ interface SingleSmsTabProps {
     creditLoading: boolean;
 }
 
-export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, creditLoading: _creditLoading }) => {
+export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [recipientName, setRecipientName] = useState('');
     const [message, setMessage] = useState('');
@@ -298,6 +298,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
                     <div className="flex flex-wrap gap-2">
                         {DYNAMIC_FIELDS.map((field) => (
                             <button
+                                data-allow-raw="true"
                                 key={field.key}
                                 type="button"
                                 onClick={() => insertDynamicField(field.key)}
@@ -366,6 +367,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
                         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
                             <button
+                                data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
                                 className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >

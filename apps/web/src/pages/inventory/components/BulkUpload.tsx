@@ -112,7 +112,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               break;
             case 'stock':
             case 'stok':
-            case 'inventory':
+            case 'inventory': {
               const stock = parseInt(value);
               if (!isNaN(stock)) {
                 item.availableInventory = stock;
@@ -120,17 +120,19 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                 errors.push('Stok sayısı geçersiz');
               }
               break;
+            }
             case 'min stock':
             case 'min stok':
-            case 'minimum stock':
+            case 'minimum stock': {
               const minStock = parseInt(value);
               if (!isNaN(minStock)) {
                 item.reorderLevel = minStock;
               }
               break;
+            }
             case 'price':
             case 'fiyat':
-            case 'unit price':
+            case 'unit price': {
               const price = parseFloat(value);
               if (!isNaN(price)) {
                 item.price = price;
@@ -138,25 +140,28 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                 errors.push('Fiyat geçersiz');
               }
               break;
+            }
             case 'cost':
-            case 'maliyet':
+            case 'maliyet': {
               const cost = parseFloat(value);
               if (!isNaN(cost)) {
                 item.cost = cost;
               }
               break;
+            }
             case 'supplier':
             case 'tedarikçi':
               item.supplier = value;
               break;
             case 'warranty':
             case 'garanti':
-            case 'warranty period':
+            case 'warranty period': {
               const warranty = parseInt(value);
               if (!isNaN(warranty)) {
                 item.warranty = warranty;
               }
               break;
+            }
             case 'description':
             case 'açıklama':
               item.description = value;
@@ -280,34 +285,39 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               break;
             case 'stock':
             case 'stok':
-            case 'inventory':
+            case 'inventory': {
               const stock = parseInt(value);
               if (!isNaN(stock)) item.availableInventory = stock;
               break;
+            }
             case 'min stock':
-            case 'min stok':
+            case 'min stok': {
               const minStock = parseInt(value);
               if (!isNaN(minStock)) item.reorderLevel = minStock;
               break;
+            }
             case 'price':
-            case 'fiyat':
+            case 'fiyat': {
               const price = parseFloat(value);
               if (!isNaN(price)) item.price = price;
               break;
+            }
             case 'cost':
-            case 'maliyet':
+            case 'maliyet': {
               const cost = parseFloat(value);
               if (!isNaN(cost)) item.cost = cost;
               break;
+            }
             case 'supplier':
             case 'tedarikçi':
               item.supplier = value;
               break;
             case 'warranty':
-            case 'garanti':
+            case 'garanti': {
               const warranty = parseInt(value);
               if (!isNaN(warranty)) item.warranty = warranty;
               break;
+            }
             case 'description':
             case 'açıklama':
               item.description = value;
@@ -436,12 +446,12 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
             </label>
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
               <input
+                data-allow-raw="true"
                 ref={fileInputRef}
                 type="file"
                 accept=".csv,.xlsx,.xls"
                 onChange={handleFileSelect}
                 className="hidden"
-                data-allow-raw="true"
               />
               <Upload className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
               <p className="text-gray-600 dark:text-gray-400 mb-4">

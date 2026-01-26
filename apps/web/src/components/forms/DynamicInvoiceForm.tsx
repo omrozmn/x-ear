@@ -198,7 +198,7 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
 
       Object.values(section.fields).forEach(field => {
         if (shouldShowField(field, sectionData)) {
-          const fieldValue = (sectionData as any)[field.id];
+          const fieldValue = sectionData[field.id];
           const error = validateField(field, fieldValue);
 
           if (error) {

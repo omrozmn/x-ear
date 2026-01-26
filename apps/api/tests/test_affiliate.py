@@ -10,7 +10,8 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 import models.affiliate_user
 import models.commission_ledger
-models.affiliate_user.Base.metadata.create_all(bind=engine)
+from models.base import Base
+Base.metadata.create_all(bind=engine)
 
 def get_test_db():
     db = TestingSessionLocal()
@@ -34,8 +35,6 @@ def test_affiliate_register_and_login():
 
 def test_commission_flow_for_tenant_signup():
     db = next(get_test_db())
-    # ensure tables exist in this test run
-    models.affiliate_user.Base.metadata.create_all(bind=engine)
     # create affiliate
     affiliate = AffiliateService.create_affiliate(db, "aff2@example.com", "password")
     # simulate tenant signing up via affiliate code

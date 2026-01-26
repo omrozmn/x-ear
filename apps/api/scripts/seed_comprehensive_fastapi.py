@@ -21,7 +21,7 @@ sys.path.insert(0, backend_dir)
 
 # Now import from project
 from database import SessionLocal, engine, Base
-from passlib.hash import pbkdf2_sha256
+from werkzeug.security import generate_password_hash
 
 # Import all models
 from models.tenant import Tenant
@@ -29,7 +29,8 @@ from models.user import User
 from models.admin_user import AdminUser
 from models.role import Role
 from models.branch import Branch
-from models.patient import Patient
+from core.models.party import Party as Patient
+from core.models.enums import PatientStatus
 from models.appointment import Appointment
 from models.inventory import InventoryItem
 from models.device import Device
@@ -52,7 +53,7 @@ except ImportError:
 
 # Configuration
 DEFAULT_PASSWORD = "Test123!"
-PASSWORD_HASH = pbkdf2_sha256.hash(DEFAULT_PASSWORD)
+PASSWORD_HASH = generate_password_hash(DEFAULT_PASSWORD, method='pbkdf2:sha256')
 
 def now_utc():
     return datetime.now(timezone.utc)
@@ -80,6 +81,9 @@ class ComprehensiveSeeder:
         print("="*60 + "\n")
         
         try:
+            print("🛠️ Creating tables...")
+            Base.metadata.create_all(bind=engine)
+            
             self._seed_plans()
             self._seed_admin_users()
             self._seed_tenant()
@@ -169,13 +173,14 @@ class ComprehensiveSeeder:
         
         self.tenant = self.db.query(Tenant).filter_by(name="Test Clinic").first()
         if not self.tenant:
+            from core.models.tenant import TenantStatus
             self.tenant = Tenant(
                 id=gen_id("tenant"),
                 name="Test Clinic",
                 slug="test-clinic",
-                email="clinic@test.com",
-                phone="05551234567",
-                is_active=True,
+                owner_email="clinic@test.com",
+                billing_email="billing@test.com",
+                status=TenantStatus.ACTIVE.value,
                 settings={}
             )
             self.db.add(self.tenant)
@@ -385,7 +390,7 @@ class ComprehensiveSeeder:
                 address_city=fake.city(),
                 address_district=fake.city(),
                 address_full=fake.address(),
-                status=random.choice(statuses),
+                status=PatientStatus.from_legacy(random.choice(statuses)),
                 segment=random.choice(segments)
             )
             self.db.add(patient)
@@ -410,7 +415,7 @@ class ComprehensiveSeeder:
             apt = Appointment(
                 id=gen_id("apt"),
                 tenant_id=self.tenant.id,
-                patient_id=patient.id,
+                party_id=patient.id,
                 branch_id=self.branch.id if self.branch else None,
                 date=apt_date,
                 time=f"{random.randint(9, 17):02d}:00",
@@ -450,7 +455,7 @@ class ComprehensiveSeeder:
             sale = Sale(
                 id=sale_id,
                 tenant_id=self.tenant.id,
-                patient_id=patient.id,
+                party_id=patient.id,
                 product_id=product.id,
                 sale_date=now_utc() - timedelta(days=random.randint(0, 90)),
                 list_price_total=price,

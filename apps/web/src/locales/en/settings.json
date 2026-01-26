@@ -1,0 +1,37 @@
+{
+    "pos": {
+        "title": "Online Payment / POS Settings",
+        "description": "Select a POS provider to accept online payments. You can start quickly using X-Ear POS or use your own integration.",
+        "provider_label": "POS Provider",
+        "provider_help": "Select the POS infrastructure you will use to accept payments",
+        "providers": {
+            "none": "Select...",
+            "xear": "X-Ear POS (Recommended)",
+            "paytr": "PayTR",
+            "iyzico": "Iyzico"
+        },
+        "xear_active": {
+            "title": "X-Ear POS Active",
+            "description": "No API keys needed. System will automatically use the ready POS infrastructure. X-Ear POS is preferred for lowest commission rates."
+        },
+        "config": {
+            "paytr_desc": "You can get your API credentials from PayTR merchant panel (merchant.paytr.com)",
+            "iyzico_desc": "You can get your API and secret keys from Iyzico merchant panel",
+            "merchant_id": "Merchant ID",
+            "merchant_id_placeholder": "ex: 123456",
+            "merchant_key": "Merchant Key",
+            "merchant_key_placeholder": "Secret key",
+            "merchant_salt": "Merchant Salt",
+            "merchant_salt_placeholder": "Secret salt",
+            "test_mode": "Test Mode (No real charges)",
+            "save_btn": "Save Settings",
+            "saving": "Saving..."
+        },
+        "messages": {
+            "select_provider": "Please select a POS provider",
+            "fill_all_fields": "Please fill in all API credentials",
+            "success": "POS settings updated",
+            "error": "Update failed"
+        }
+    }
+}

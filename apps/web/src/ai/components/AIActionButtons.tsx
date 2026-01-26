@@ -14,7 +14,8 @@
 
 import React, { useCallback } from 'react';
 import { AIFeatureWrapper } from './AIFeatureWrapper';
-import { PendingActionBadge, shouldBlockActionSubmission } from './PendingActionBadge';
+import { PendingActionBadge } from './PendingActionBadge';
+import { shouldBlockActionSubmission } from '../utils/pendingActionHelpers';
 import { usePendingActions } from '../hooks/usePendingActions';
 import { useCreateAction } from '../hooks/useAIActions';
 import { useAIContext } from '../hooks/useAIContext';

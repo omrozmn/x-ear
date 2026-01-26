@@ -55,13 +55,15 @@ export const FeaturesTagManager: React.FC<FeaturesTagManagerProps> = ({
             >
               {feature}
               {isEditMode && (
-                <button
+                <Button
                   onClick={() => handleRemoveFeature(feature)}
+                  variant="ghost"
+                  size="sm"
                   className="ml-2 hover:text-blue-900 dark:hover:text-blue-200"
                   title="Kaldır"
                 >
                   <X className="w-3 h-3" />
-                </button>
+                </Button>
               )}
             </span>
           ))}

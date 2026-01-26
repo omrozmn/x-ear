@@ -36,7 +36,7 @@ from .subscription import Subscription
 
 # Communication
 from .communication import Communication
-from .campaign import Campaign, SMSLog
+from .campaign import Campaign, SmsLog
 from .notification import Notification
 from .notification_template import NotificationTemplate
 

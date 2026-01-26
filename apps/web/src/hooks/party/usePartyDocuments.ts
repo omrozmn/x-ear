@@ -10,7 +10,7 @@ export interface PartyDocument {
   fileName: string;
   originalName?: string;
   content?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   mimeType?: string;
   fileSize?: number;
   uploadedBy?: string;

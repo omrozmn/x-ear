@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/metrics.py
+# hypothesis_version: 6.150.1
+
+[0.0, 100.0, 100, '/metrics', '/prometheus', 'getPrometheusMetrics', 'monitoring', 'sent']

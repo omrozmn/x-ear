@@ -98,10 +98,12 @@ export function usePartySales(partyId?: string) {
       // Map Sale[] to PartySale[] with required fields
       const mappedSales: PartySale[] = (result?.data || []).map((sale: SaleRead) => {
         const status = sale.status as 'completed' | 'pending' | 'cancelled';
+        const saleData = sale as unknown as Record<string, unknown>;
         return {
           ...sale,
-          finalAmount: typeof sale.finalAmount === 'number' ? sale.finalAmount : Number(sale.finalAmount || sale.totalAmount || 0),
-          paidAmount: typeof sale.paidAmount === 'number' ? sale.paidAmount : Number(sale.paidAmount || 0),
+          ...sale,
+          finalAmount: typeof saleData.finalAmount === 'number' ? saleData.finalAmount : Number(saleData.finalAmount || saleData.totalAmount || 0),
+          paidAmount: typeof saleData.paidAmount === 'number' ? saleData.paidAmount : Number(saleData.paidAmount || 0),
           paymentStatus: status || 'pending',
         } as unknown as PartySale;
       });

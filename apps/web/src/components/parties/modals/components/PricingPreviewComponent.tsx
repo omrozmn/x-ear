@@ -68,7 +68,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
               Özel Fiyat (Opsiyonel)
             </label>
             <div className="grid grid-cols-2 gap-4">
-              <Input
+              <Input data-allow-raw="true"
                 type="number"
                 step="0.01"
                 placeholder="0.00"
@@ -90,7 +90,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
           {/* SGK Options */}
           <div>
             <label className="flex items-center space-x-2 mb-3">
-              <input
+              <input data-allow-raw="true"
                 type="checkbox"
                 checked={sgkEnabled}
                 onChange={(e) => onSgkToggle(e.target.checked)}

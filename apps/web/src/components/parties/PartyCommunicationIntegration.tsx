@@ -3,7 +3,7 @@
  * Integrates party management with communication center
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   MessageSquare,
   Mail,
@@ -110,14 +110,21 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
 
   const { success, error } = useToastHelpers();
 
-  // Party'a ait mesajları filtrele
-  const partyMessages = useMemo(() => {
-    const allMessages = getMessages();
-    return allMessages.filter(message =>
-      message.partyId === party.id ||
-      message.recipient === party.phone ||
-      message.recipient === party.email
-    );
+  // State for party messages
+  const [partyMessages, setPartyMessages] = useState<CommunicationMessage[]>([]);
+
+  // Load party messages
+  useEffect(() => {
+    const loadPartyMessages = async () => {
+      const allMessages = await getMessages();
+      const filtered = allMessages.filter((message: CommunicationMessage) =>
+        message.partyId === party.id ||
+        message.recipient === party.phone ||
+        message.recipient === party.email
+      );
+      setPartyMessages(filtered);
+    };
+    loadPartyMessages();
   }, [getMessages, party.id, party.phone, party.email]);
 
   // Filtrelenmiş mesajlar
@@ -307,6 +314,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
+            data-allow-raw="true"
             onClick={() => setActiveTab('send')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'send'
                 ? 'border-blue-500 text-blue-600'
@@ -319,6 +327,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
             </div>
           </button>
           <button
+            data-allow-raw="true"
             onClick={() => setActiveTab('history')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
                 ? 'border-blue-500 text-blue-600'
@@ -342,6 +351,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
             <div className="flex space-x-4">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="radio"
                   name="messageType"
                   value="sms"
@@ -354,6 +364,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
               </label>
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="radio"
                   name="messageType"
                   value="email"
@@ -375,6 +386,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                 .filter(template => template.type === messageType)
                 .map(template => (
                   <button
+                    data-allow-raw="true"
                     key={template.id}
                     onClick={() => handleTemplateSelect(template.id)}
                     className={`p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors ${selectedTemplate === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'

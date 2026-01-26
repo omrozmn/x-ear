@@ -36,6 +36,10 @@ import {
   SGK_SUBMENU_EXPANDED,
   FATURA_SUBMENU_EXPANDED,
   REPORTS_SUBMENU_EXPANDED,
+  INVENTORY_KDV_RATE,
+  INVENTORY_PRICE_KDV_INCLUDED,
+  INVENTORY_COST_KDV_INCLUDED,
+  PHASE_A_BANNER_DISMISSED,
 } from '../constants/storage-keys';
 
 interface MigrationRule {
@@ -197,6 +201,28 @@ const MIGRATION_RULES: MigrationRule[] = [
   {
     from: 'inventoryData',
     to: INVENTORY_DATA,
+    version: 'v1'
+  },
+  {
+    from: 'inventory_kdv_rate',
+    to: INVENTORY_KDV_RATE,
+    version: 'v1'
+  },
+  {
+    from: 'inventory_price_kdv_included',
+    to: INVENTORY_PRICE_KDV_INCLUDED,
+    transform: (val: string) => val === 'true',
+    version: 'v1'
+  },
+  {
+    from: 'inventory_cost_kdv_included',
+    to: INVENTORY_COST_KDV_INCLUDED,
+    transform: (val: string) => val === 'true',
+    version: 'v1'
+  },
+  {
+    from: 'main-layout-phase-a-dismissed',
+    to: PHASE_A_BANNER_DISMISSED,
     version: 'v1'
   },
   {

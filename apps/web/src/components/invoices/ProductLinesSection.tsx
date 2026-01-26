@@ -212,7 +212,7 @@ export function ProductLinesSection({
           barcode: String(item.barcode || ''),
           stockCode: undefined,
           // Extract supplier name if it's an object, or use as is if string (though schema says object)
-          supplier: (typeof item.supplier === 'object' && item.supplier !== null && 'name' in item.supplier) ? (item.supplier as Record<string, any>).name || '' : String(item.supplier || ''),
+          supplier: (typeof item.supplier === 'object' && item.supplier !== null && 'name' in item.supplier) ? (item.supplier as Record<string, unknown>).name as string || '' : String(item.supplier || ''),
           unit: undefined,
           description: String(item.description || ''),
           availableInventory: item.availableInventory ?? 0,
@@ -252,7 +252,7 @@ export function ProductLinesSection({
     loadProducts();
   }, []);
 
-  const handleLineChange = (index: number, field: keyof ProductLine, value: any) => {
+  const handleLineChange = (index: number, field: keyof ProductLine, value: string | number | boolean | undefined) => {
     const newLines = [...lines];
     newLines[index] = { ...newLines[index], [field]: value };
     // Otomatik hesaplamalar (tüm sayısal alanlar geçici olarak boş olabilir)
@@ -561,7 +561,7 @@ export function ProductLinesSection({
   };
 
   // Helper for storing numeric inputs that may be temporarily empty string
-  const safeForCompute = (v: any) => (v === '' || v === undefined || v === null) ? 0 : Number(v);
+  const safeForCompute = (v: string | number | undefined | null) => (v === '' || v === undefined || v === null) ? 0 : Number(v);
 
   // Totals computed with safe coercion to avoid undefined/NaN
   const totals = {
@@ -807,14 +807,14 @@ export function ProductLinesSection({
                     Birim Fiyat
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       type="number"
                       value={line.unitPrice === undefined || line.unitPrice === null ? '' : String(line.unitPrice)}
                       onChange={(e) => handleLineChange(index, 'unitPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       min="0"
                       step="0.01"
                       required
-                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="pl-8"
                     />
                     <span className="absolute left-3 top-2.5 text-gray-500 text-sm font-medium">
                       {getCurrencySymbol(currency)}
@@ -828,24 +828,24 @@ export function ProductLinesSection({
                     İskonto
                   </label>
                   <div className="flex gap-1">
-                    <input
+                    <Input
                       type="number"
                       value={line.discount === undefined || line.discount === null ? '' : String(line.discount)}
                       onChange={(e) => handleLineChange(index, 'discount', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       min="0"
                       step="0.01"
                       placeholder="0"
-                      className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
-                    <select
+                    <Select
                       value={line.discountType || 'percentage'}
                       onChange={(e) => handleLineChange(index, 'discountType', e.target.value as 'amount' | 'percentage')}
-                      className="w-16 px-1 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs bg-white"
+                      options={[
+                        { value: 'percentage', label: '%' },
+                        { value: 'amount', label: '₺' }
+                      ]}
+                      className="w-16"
                       title={line.discountType === 'percentage' ? 'Yüzde' : 'Birim'}
-                    >
-                      <option value="percentage">%</option>
-                      <option value="amount">₺</option>
-                    </select>
+                    />
                   </div>
                 </div>
 

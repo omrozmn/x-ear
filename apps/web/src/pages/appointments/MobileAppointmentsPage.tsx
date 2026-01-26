@@ -58,7 +58,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                 title="Ajanda"
                 showBack={false}
                 actions={
-                    <button onClick={handleToday} className="text-primary-600 text-sm font-medium px-2">
+                    <button data-allow-raw="true" onClick={handleToday} className="text-primary-600 text-sm font-medium px-2">
                         Bugün
                     </button>
                 }
@@ -67,7 +67,7 @@ export const MobileAppointmentsPage: React.FC = () => {
             {/* Date Navigation */}
             <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-4 sticky top-14 z-20 shadow-sm">
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-xl p-1">
-                    <button onClick={handlePrevDay} className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
+                    <button data-allow-raw="true" onClick={handlePrevDay} className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
                         <ChevronLeft className="h-5 w-5" />
                     </button>
 
@@ -80,7 +80,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                         </span>
                     </div>
 
-                    <button onClick={handleNextDay} className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
+                    <button data-allow-raw="true" onClick={handleNextDay} className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
                         <ChevronRight className="h-5 w-5" />
                     </button>
                 </div>
@@ -158,6 +158,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                             Bu tarih için planlanmış bir randevu bulunmuyor.
                         </p>
                         <button
+                            data-allow-raw="true"
                             onClick={() => setShowCreateModal(true)}
                             className="mt-6 text-primary-600 font-medium text-sm hover:underline"
                         >

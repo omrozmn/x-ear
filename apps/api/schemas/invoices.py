@@ -17,6 +17,7 @@ class InvoiceStatus(str, Enum):
     PAID = "paid"
     CANCELLED = "cancelled"
     FAILED = "failed"
+    PROCESSING = "processing"
 
 
 class InvoiceType(str, Enum):
@@ -69,6 +70,12 @@ class InvoiceCreate(InvoiceBase):
     party_id: Optional[str] = Field(None, alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
     items: List[InvoiceItemBase] = Field(default=[], description="Invoice items")
+    
+    # New fields for Birfatura
+    tax_office: Optional[str] = Field(None, alias="taxOffice")
+    return_reference_number: Optional[str] = Field(None, alias="returnReferenceNumber")
+    return_reference_date: Optional[datetime] = Field(None, alias="returnReferenceDate")
+    metadata: Optional[Dict[str, Any]] = Field(None, alias="metadata")
 
 
 class InvoiceUpdate(AppBaseModel):
@@ -116,6 +123,13 @@ class InvoiceRead(AppBaseModel, TimestampMixin):
     gib_pdf_link: Optional[str] = Field(None, alias="gibPdfLink")
     birfatura_sent_at: Optional[str] = Field(None, alias="birfaturaSentAt")
     birfatura_approved_at: Optional[str] = Field(None, alias="birfaturaApprovedAt")
+    
+    # New fields
+    tax_office: Optional[str] = Field(None, alias="taxOffice")
+    return_reference_number: Optional[str] = Field(None, alias="returnReferenceNumber")
+    return_reference_date: Optional[str] = Field(None, alias="returnReferenceDate")
+    remote_message: Optional[str] = Field(None, alias="remoteMessage")
+    metadata_json: Optional[Dict[str, Any]] = Field(None, alias="metadata")
 
 
 

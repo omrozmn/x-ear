@@ -18,9 +18,10 @@ import { PartyFormModal } from '../components/parties/PartyFormModal';
 import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
 // import ReportModal from '../components/parties/modals/ReportModal'; // Not used - showReportModal is false
 import { PartyNoteForm } from '../components/forms/PartyNoteForm';
+import type { SaleRead } from '@/api/generated/schemas';
 import { ErrorMessage, NetworkError, NotFoundError } from '../components/ErrorMessage';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { useGlobalError } from '../components/GlobalErrorHandler';
+import { useGlobalError } from '../hooks/useGlobalError';
 import { PARTY_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
@@ -224,7 +225,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
               activeTab={activeTab}
               isLoading={isLoading}
               tabCounts={tabCounts}
-              sales={sales}
+              sales={sales as unknown as SaleRead[]}
             />
           </ErrorBoundary>
         </div>
@@ -282,7 +283,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
           party={party}
           isOpen={showTagModal}
           onClose={() => setShowTagModal(false)}
-          onUpdate={async (partyId: string, updates: any) => {
+          onUpdate={async (partyId: string, updates: Record<string, unknown>) => {
             try {
               await updatePartyMutation.mutateAsync({
                 partyId,

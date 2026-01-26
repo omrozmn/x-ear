@@ -3,6 +3,7 @@ import logging
 import json
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import ORJSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -72,13 +73,16 @@ logger = logging.getLogger("x-ear")
 # separate_input_output_schemas=False: Fixes Orval generating 'unknown' types
 # by avoiding OpenAPI 3.1 anyOf syntax for nullable fields
 app = FastAPI(
-    title="X-Ear CRM API",
-    description="Auto-generated from Flask backend routes",
+    title="x-ear API",
+    description="Backend API for x-ear CRM",
     version="1.0.0",
-    docs_url="/docs",
     openapi_url="/openapi.json",
     separate_input_output_schemas=False,  # Critical: Orval compatibility
+    default_response_class=ORJSONResponse
 )
+
+import schemas.parties
+print(f"DEBUG: schemas.parties loaded from: {schemas.parties.__file__}")
 
 # ============================================================================
 # Health & Readiness Endpoints (Observability)
@@ -440,6 +444,29 @@ app.include_router(ai_admin_router, prefix="/api")
 # AI Composer Router (Unified Intent/Entity/Action)
 from routers import composer
 app.include_router(composer.router, prefix="/api")
+
+# --- Legacy Route Aliases ---
+from fastapi.responses import RedirectResponse
+
+@app.get("/api/patients", tags=["Legacy"], include_in_schema=False)
+async def patients_alias():
+    return RedirectResponse(url="/api/parties", status_code=307)
+
+@app.get("/api/payments", tags=["Legacy"], include_in_schema=False)
+async def payments_alias():
+    return RedirectResponse(url="/api/finance/payments", status_code=307)
+
+@app.get("/api/tasks", tags=["Legacy"], include_in_schema=False)
+async def tasks_alias():
+    return RedirectResponse(url="/api/communications/history", status_code=307)
+
+@app.get("/api/notes", tags=["Legacy"], include_in_schema=False)
+async def notes_alias():
+    return RedirectResponse(url="/api/communications/history", status_code=307)
+
+@app.get("/api/documents", tags=["Legacy"], include_in_schema=False)
+async def documents_alias():
+    return RedirectResponse(url="/api/documents", status_code=307)
 
 if __name__ == "__main__":
     import uvicorn

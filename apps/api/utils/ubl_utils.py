@@ -23,6 +23,28 @@ NS = {
 for prefix, uri in NS.items():
     ET.register_namespace(prefix if prefix != 'ubl' else '', uri)
 
+# GİB Unit Code Mapping
+UNIT_CODE_MAP = {
+    'ADET': 'NIU',
+    'KG': 'KGM',
+    'METRE': 'MTR',
+    'METREKARE': 'MTK',
+    'METREKUP': 'MTQ',
+    'LITRE': 'LTR',
+    'PAKET': 'PA',
+    'KUTU': 'BX',
+    'HIZMET': 'C62',
+    'SAAT': 'HUR',
+    'GUN': 'DAY',
+    'AY': 'MON'
+}
+
+def map_unit_code(unit: str) -> str:
+    if not unit:
+        return 'NIU'
+    unit_upper = unit.upper().replace('İ', 'I').replace('Ş', 'S').replace('Ğ', 'G').replace('Ü', 'U').replace('Ö', 'O').replace('Ç', 'C')
+    return UNIT_CODE_MAP.get(unit_upper, 'NIU')
+
 # Try load app settings (company info) to populate supplier when invoice doesn't include it
 SETTINGS_PATH = os.path.join(os.path.dirname(__file__), '..', 'current_settings.json')
 def load_app_settings():
@@ -133,6 +155,17 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         cbc('InvoiceTypeCode', mapping.get(str(itype).lower(), str(itype).upper()))
     cbc('DocumentCurrencyCode', currency)
 
+    # BillingReference (for IADE/Return invoices)
+    if itype == 'IADE' and (invoice.get('return_reference_number') or invoice.get('return_invoice_number')):
+        bref = ET.SubElement(invoice_root, f"{{{NS['cac']}}}BillingReference")
+        inv_ref = ET.SubElement(bref, f"{{{NS['cac']}}}InvoiceDocumentReference")
+        cbc('ID', invoice.get('return_reference_number') or invoice.get('return_invoice_number'), parent=inv_ref)
+        if invoice.get('return_reference_date') or invoice.get('return_invoice_date'):
+            ref_date = invoice.get('return_reference_date') or invoice.get('return_invoice_date')
+            if 'T' in str(ref_date):
+                ref_date = str(ref_date).split('T')[0]
+            cbc('IssueDate', ref_date, parent=inv_ref)
+
     # Notes (sample files often include multiple cbc:Note entries)
     notes = invoice.get('notes') or invoice.get('notes_list')
     if notes:
@@ -160,30 +193,41 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     # AdditionalDocumentReference entries commonly expected by integrator
     try:
         adr_uuid = invoice.get('uuid') or invoice.get('invoiceNumber') or str(uuid.uuid4())
-        for doc_code, doc_id in (
+        
+        # Mandatory references for rendering and integrator tracking
+        refs = [
             ('CUST_INV_ID', adr_uuid),
             ('OUTPUT_TYPE', '0100'),
             ('TRANSPORT_TYPE', '99'),
-            ('EREPSENDT', 'ELEKTRONIK')
-        ):
+            ('EREPSENDT', 'ELEKTRONIK'),
+            ('XSLT', invoice.get('xslt_code', 'default'))
+        ]
+        
+        # Specialized SGK References
+        if itype == 'SGK' or invoice.get('sgk_data'):
+            sgk = invoice.get('sgk_data') or {}
+            if sgk.get('dosya_no'):
+                refs.append(('DOSYA_NO', sgk['dosya_no']))
+            if sgk.get('mukellef_kodu'):
+                refs.append(('MUKELLEF_KODU', sgk['mukellef_kodu']))
+            if sgk.get('mukellef_adi'):
+                refs.append(('MUKELLEF_ADI', sgk['mukellef_adi']))
+            
+        for doc_code, doc_id in refs:
             adr = ET.SubElement(invoice_root, f"{{{NS['cac']}}}AdditionalDocumentReference")
             cbc('ID', doc_id, parent=adr)
             cbc('IssueDate', issue, parent=adr)
             cbc('DocumentTypeCode', doc_code, parent=adr)
-        # optional sending type and recvpk (if provided in invoice/supplier settings)
+            
+        # Optional sending type and recvpk
         sending_type = invoice.get('sending_type') or (sdata.get('sending_type') if sdata else None)
         if sending_type:
             adr = ET.SubElement(invoice_root, f"{{{NS['cac']}}}AdditionalDocumentReference")
             cbc('ID', str(sending_type), parent=adr)
             cbc('IssueDate', issue, parent=adr)
             cbc('DocumentTypeCode', 'SendingType', parent=adr)
-            cbc('DocumentType', invoice.get('sending_type_display') or '')
-        recvpk = invoice.get('recvpk') or (sdata.get('recvpk') if sdata else None)
-        if recvpk:
-            adr = ET.SubElement(invoice_root, f"{{{NS['cac']}}}AdditionalDocumentReference")
-            cbc('ID', str(recvpk), parent=adr)
-            cbc('IssueDate', issue, parent=adr)
-            cbc('DocumentTypeCode', 'recvpk', parent=adr)
+            if invoice.get('sending_type_display'):
+                 cbc('DocumentType', invoice.get('sending_type_display'), parent=adr)
     except Exception:
         pass
 
@@ -196,16 +240,18 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         sdata = (app_settings.get('settings') or {}).get('company', {}) or {}
     pname = ET.SubElement(party, f"{{{NS['cac']}}}PartyName")
     cbc('Name', sdata.get('name', ''), parent=pname)
-    # Supplier tax ID (if available)
-    taxid = sdata.get('tax_id') or sdata.get('taxNumber') or sdata.get('vkn')
+    taxid = sdata.get('tax_id') or sdata.get('tax_number') or sdata.get('taxNumber') or sdata.get('vkn')
     if taxid:
         party_id = ET.SubElement(party, f"{{{NS['cac']}}}PartyIdentification")
-        # guess scheme by length: TCKN == 11, else VKN
         scheme = 'TCKN' if len(str(taxid)) == 11 else 'VKN'
-        id_el = ET.SubElement(party_id, f"{{{NS['cbc']}}}ID")
-        id_el.set('schemeID', scheme)
-        id_el.text = str(taxid)
-        # Do NOT add a Signature placeholder — integrator (birfatura) will apply e-imza/mali mühür.
+        id_el = cbc('ID', taxid, parent=party_id, attrs={'schemeID': scheme})
+        
+    # Tax Scheme & Tax Office
+    if sdata.get('tax_office') or sdata.get('taxOffice'):
+        ptax = ET.SubElement(party, f"{{{NS['cac']}}}PartyTaxScheme")
+        cbc('RegistrationName', sdata.get('name', ''), parent=ptax)
+        tscheme = ET.SubElement(ptax, f"{{{NS['cac']}}}TaxScheme")
+        cbc('TaxTypeCode', sdata.get('tax_office') or sdata.get('taxOffice'), parent=tscheme)
     # PostalAddress
     addr = sdata.get('address') or {}
     # support address as string or dict
@@ -235,9 +281,13 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     if cust_taxid:
         party_id_c = ET.SubElement(party_c, f"{{{NS['cac']}}}PartyIdentification")
         scheme = 'TCKN' if len(str(cust_taxid)) == 11 else 'VKN'
-        idc = ET.SubElement(party_id_c, f"{{{NS['cbc']}}}ID")
-        idc.set('schemeID', scheme)
-        idc.text = str(cust_taxid)
+        idc = cbc('ID', cust_taxid, parent=party_id_c, attrs={'schemeID': scheme})
+        
+    # Customer Tax Office
+    if cdata.get('tax_office') or cdata.get('taxOffice'):
+        ptax_c = ET.SubElement(party_c, f"{{{NS['cac']}}}PartyTaxScheme")
+        tscheme_c = ET.SubElement(ptax_c, f"{{{NS['cac']}}}TaxScheme")
+        cbc('TaxTypeCode', cdata.get('tax_office') or cdata.get('taxOffice'), parent=tscheme_c)
     # Customer postal address
     caddr = cdata.get('address') or {}
     if isinstance(caddr, str):
@@ -314,8 +364,9 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         il = ET.SubElement(invoice_root, f"{{{NS['cac']}}}InvoiceLine")
         cbc('ID', str(i), parent=il)
         qty_el = cbc('InvoicedQuantity', ln.get('quantity', 1), parent=il)
-        # default unitCode
-        qty_el.set('unitCode', str(ln.get('unitCode') or 'EA'))
+        # default unitCode with mapping
+        unit = ln.get('unitCode') or ln.get('unit') or 'ADET'
+        qty_el.set('unitCode', map_unit_code(unit))
         cbc('LineExtensionAmount', fmt_amount(amount), parent=il, attrs={'currencyID': currency})
         item = ET.SubElement(il, f"{{{NS['cac']}}}Item")
         cbc('Name', ln.get('description', ln.get('name', '')), parent=item)
@@ -371,6 +422,22 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
                 cbc('TaxTypeCode', str(ttype), parent=tax_scheme)
             except Exception:
                 pass
+                
+        # Withholding Tax (Tevkifat) per line
+        if ln.get('withholding_rate') or ln.get('withholdingRate'):
+            w_rate = float(ln.get('withholding_rate') or ln.get('withholdingRate'))
+            w_amount = tamount * (w_rate / 100.0)
+            
+            w_tax = ET.SubElement(il, f"{{{NS['cac']}}}WithholdingTaxTotal")
+            cbc('TaxAmount', fmt_amount(w_amount), parent=w_tax, attrs={'currencyID': currency})
+            w_sub = ET.SubElement(w_tax, f"{{{NS['cac']}}}TaxSubtotal")
+            cbc('TaxableAmount', fmt_amount(tamount), parent=w_sub, attrs={'currencyID': currency})
+            cbc('TaxAmount', fmt_amount(w_amount), parent=w_sub, attrs={'currencyID': currency})
+            cbc('Percent', fmt_amount(w_rate), parent=w_sub)
+            w_cat = ET.SubElement(w_sub, f"{{{NS['cac']}}}TaxCategory")
+            w_ts = ET.SubElement(w_cat, f"{{{NS['cac']}}}TaxScheme")
+            cbc('Name', 'KDV_TEVKIFAT', parent=w_ts)
+            cbc('TaxTypeCode', ln.get('withholding_code') or '9015', parent=w_ts)
 
         # AllowanceCharge per line
         allowance = ln.get('allowance_charge') or ln.get('allowanceCharge')

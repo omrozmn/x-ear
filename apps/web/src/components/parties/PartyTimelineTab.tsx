@@ -104,14 +104,15 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     // Appointment events
     if (party.appointments) {
       party.appointments.forEach((appointment, index) => {
+        const apptData = appointment as Record<string, unknown>;
         events.push({
           id: `appointment-${index}`,
           type: 'appointment',
           title: 'Randevu',
-          description: `${appointment.status === 'scheduled' ? 'Planlandı' : appointment.status === 'completed' ? 'Tamamlandı' : 'İptal Edildi'}${appointment.note ? ` - ${appointment.note}` : ''}`,
-          date: appointment.date,
+          description: `${apptData.status === 'scheduled' ? 'Planlandı' : apptData.status === 'completed' ? 'Tamamlandı' : 'İptal Edildi'}${apptData.note ? ` - ${apptData.note as string}` : ''}`,
+          date: apptData.date as string,
           icon: '📅',
-          priority: appointment.status === 'scheduled' ? 'high' : 'medium',
+          priority: apptData.status === 'scheduled' ? 'high' : 'medium',
           category: 'Appointments'
         });
       });
@@ -137,12 +138,13 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     // Payment events
     if (party.sales) {
       party.sales.forEach((sale, index) => {
+        const saleData = sale as Record<string, unknown>;
         events.push({
           id: `payment-${index}`,
           type: 'payment',
           title: 'Ödeme',
-          description: `₺${sale.totalAmount} - ${sale.paymentMethod || 'Belirtilmemiş'}`,
-          date: sale.saleDate || sale.createdAt || party.createdAt || '',
+          description: `₺${saleData.totalAmount as number} - ${saleData.paymentMethod as string || 'Belirtilmemiş'}`,
+          date: saleData.saleDate as string || saleData.createdAt as string || party.createdAt || '',
           icon: '💰',
           priority: 'high',
           category: 'Financial'
@@ -167,8 +169,9 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     }
 
     // SGK events
-    if (party.sgkWorkflow?.statusHistory) {
-      party.sgkWorkflow.statusHistory.forEach((status: any, index: number) => {
+    if (party.sgkWorkflow && typeof party.sgkWorkflow === 'object' && 'statusHistory' in party.sgkWorkflow) {
+      const sgkWorkflow = party.sgkWorkflow as { statusHistory?: Array<{ status: string; notes?: string; timestamp: string }> };
+      sgkWorkflow.statusHistory?.forEach((status, index) => {
         events.push({
           id: `sgk-${index}`,
           type: 'sgk',
@@ -185,12 +188,13 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     // E-receipt events
     if (party.ereceiptHistory) {
       party.ereceiptHistory.forEach((receipt, index) => {
+        const receiptData = receipt as Record<string, unknown>;
         events.push({
           id: `ereceipt-${index}`,
           type: 'ereceipt',
           title: 'E-Reçete Kaydedildi',
-          description: `Reçete #${receipt.receiptNumber} - ₺${receipt.totalAmount}`,
-          date: receipt.date,
+          description: `Reçete #${receiptData.receiptNumber as string} - ₺${receiptData.totalAmount as number}`,
+          date: receiptData.date as string,
           icon: '💊',
           priority: 'medium',
           category: 'Medical'
@@ -201,14 +205,15 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     // Reports events
     if (party.reports) {
       party.reports.forEach((report, index) => {
+        const reportData = report as Record<string, unknown>;
         events.push({
           id: `report-${index}`,
           type: 'document',
           title: 'Rapor Eklendi',
-          description: `${report.title} - ${report.type}`,
-          date: report.createdAt,
+          description: `${reportData.title as string} - ${reportData.type as string}`,
+          date: reportData.createdAt as string,
           icon: '📄',
-          priority: report.type === 'medical' ? 'high' : 'medium',
+          priority: reportData.type === 'medical' ? 'high' : 'medium',
           category: 'Medical'
         });
       });

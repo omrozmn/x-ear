@@ -6,7 +6,7 @@ import logging
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from schemas.affiliates import AffiliateRead, AffiliateCreate, AffiliateUpdate, CommissionRead
+from schemas.affiliates import AffiliateRead, AffiliateCreate, AffiliateUpdate, CommissionRead, AffiliateLoginRequest
 from models.affiliate_user import AffiliateUser
 from services.affiliate_service import AffiliateService
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -33,20 +33,20 @@ async def check_affiliate(code: str, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/register", operation_id="createAffiliateRegister", response_model=ResponseEnvelope[AffiliateRead])
+@router.post("/register", operation_id="createAffiliateRegister", response_model=ResponseEnvelope[AffiliateRead], status_code=201)
 async def register_affiliate(data: AffiliateCreate, db: Session = Depends(get_db)):
     """Register a new affiliate"""
     try:
         affiliate = AffiliateService.create_affiliate(db, data.email, data.password, data.iban)
-        return ResponseEnvelope(data={"id": affiliate.id, "email": affiliate.email, "code": affiliate.code, "referralCode": affiliate.code})
+        return ResponseEnvelope(data=affiliate)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/login", operation_id="createAffiliateLogin")
-async def login_affiliate(email: str, password: str, db: Session = Depends(get_db)):
+async def login_affiliate(data: AffiliateLoginRequest, db: Session = Depends(get_db)):
     """Login affiliate"""
     try:
-        user = AffiliateService.authenticate(db, email, password)
+        user = AffiliateService.authenticate(db, data.email, data.password)
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         display_id = f"{user.created_at.strftime('%y%m%d')}{user.id}"
@@ -63,13 +63,7 @@ async def get_me(affiliate_id: int, db: Session = Depends(get_db)):
         user = AffiliateService.get_affiliate_by_id(db, affiliate_id)
         if not user:
             raise HTTPException(status_code=404, detail="Affiliate not found")
-        display_id = f"{user.created_at.strftime('%y%m%d')}{user.id}"
-        return ResponseEnvelope(data={
-            "id": user.id, "display_id": display_id, "email": user.email,
-            "iban": user.iban, "account_holder_name": user.account_holder_name,
-            "phone_number": user.phone_number, "is_active": user.is_active, "code": user.code,
-            "referralCode": user.code
-        })
+        return ResponseEnvelope(data=user)
     except HTTPException:
         raise
     except Exception as e:
@@ -80,7 +74,7 @@ async def update_affiliate_payment(affiliate_id: int, data: AffiliateUpdate, db:
     """Update affiliate payment info"""
     try:
         user = AffiliateService.update_payment_info(db, affiliate_id, data.iban, data.company_name, data.phone)
-        return ResponseEnvelope(data={"id": user.id, "iban": user.iban, "account_holder_name": user.account_holder_name, "phone_number": user.phone_number, "referralCode": user.code})
+        return ResponseEnvelope(data=user)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -188,11 +182,7 @@ async def toggle_affiliate_status(affiliate_id: int, db: Session = Depends(get_d
         db.commit()
         db.refresh(affiliate)
         
-        return {
-            "id": affiliate.id,
-            "is_active": affiliate.is_active,
-            "message": f"Affiliate {'activated' if affiliate.is_active else 'deactivated'} successfully"
-        }
+        return ResponseEnvelope(data=affiliate, message=f"Affiliate {'activated' if affiliate.is_active else 'deactivated'} successfully")
     except HTTPException:
         raise
     except Exception as e:
@@ -203,12 +193,7 @@ async def list_affiliates(skip: int = 0, limit: int = 100, db: Session = Depends
     """List all affiliates"""
     try:
         users = AffiliateService.list_affiliates(db, skip, limit)
-        return ResponseEnvelope(data=[{
-            "id": u.id, "display_id": f"{u.created_at.strftime('%y%m%d')}{u.id}",
-            "email": u.email, "iban": u.iban, "account_holder_name": u.account_holder_name,
-            "phone_number": u.phone_number, "is_active": u.is_active,
-            "created_at": u.created_at.isoformat() if u.created_at else None
-        } for u in users])
+        return ResponseEnvelope(data=users)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

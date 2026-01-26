@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PartySale } from '../../hooks/party/usePartySales';
 import {
   DollarSign,
@@ -35,7 +35,7 @@ export const PartySaleCard: React.FC<PartySaleCardProps> = ({
   onCollectPayment,
   onManageInstallments
 }) => {
-  const [_showActions, _setShowActions] = useState(false);
+  // Removed unused state variables _showActions and _setShowActions
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('tr-TR', {

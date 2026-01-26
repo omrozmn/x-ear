@@ -93,7 +93,7 @@ class PartyRead(AppBaseModel, IDMixin, TimestampMixin):
     full_name: Optional[str] = Field(None, alias="fullName")
     phone: Optional[str] = None
     email: Optional[str] = None
-    birth_date: Optional[str] = Field(None, alias="birthDate")
+    birth_date: Optional[Any] = Field(None, alias="birthDate")
     dob: Optional[str] = None
     gender: Optional[str] = None
     
@@ -138,9 +138,36 @@ class PartyRead(AppBaseModel, IDMixin, TimestampMixin):
             # sgk_info_json -> sgk_info
             if 'sgk_info_json' in data and 'sgk_info' not in data:
                 data['sgk_info'] = data.pop('sgk_info_json')
-        elif hasattr(data, '__dict__'):
-            # ORM object - convert to dict-like access
-            pass  # from_attributes=True handles this
+        elif hasattr(data, '_sa_instance_state') or hasattr(data, '__dict__'):
+            # ORM object - Convert to structured dict to handle JSON fields
+            res = {}
+            for field_name in cls.model_fields.keys():
+                # Specialty handling for JSON properties
+                if field_name == 'tags':
+                    val = getattr(data, 'tags_json', [])
+                    res[field_name] = val if val is not None else []
+                elif field_name == 'sgk_info':
+                    val = getattr(data, 'sgk_info_json', {})
+                    res[field_name] = val if val is not None else {}
+                elif field_name == 'status':
+                    status = getattr(data, 'status', None)
+                    res[field_name] = status.value if hasattr(status, 'value') else status
+                elif field_name == 'full_name':
+                    res[field_name] = getattr(data, 'full_name', f"{getattr(data, 'first_name', '')} {getattr(data, 'last_name', '')}".strip())
+                elif field_name == 'birth_date':
+                    val = getattr(data, 'birth_date', None)
+                    if isinstance(val, (datetime, date)):
+                        try:
+                            # Use simple ISO format or standard string conversion
+                           res[field_name] = val.isoformat()
+                        except:
+                           res[field_name] = str(val)
+                    else:
+                        res[field_name] = val
+                elif hasattr(data, field_name):
+                    res[field_name] = getattr(data, field_name)
+                    
+            return res
         return data
 
 # --- Nested Schemas ---
@@ -158,6 +185,16 @@ class HearingProfileRead(AppBaseModel, IDMixin, TimestampMixin):
         if isinstance(data, dict):
             if 'sgk_info_json' in data and 'sgk_info' not in data:
                 data['sgk_info'] = data.pop('sgk_info_json')
+        elif hasattr(data, '_sa_instance_state') or hasattr(data, '__dict__'):
+            # ORM object - use property for JSON field
+            res = {
+                "id": data.id,
+                "party_id": data.party_id,
+                "sgk_info": data.sgk_info_json if hasattr(data, 'sgk_info_json') else data.sgk_info,
+                "created_at": getattr(data, 'created_at', None),
+                "updated_at": getattr(data, 'updated_at', None),
+            }
+            return res
         return data
 
 # --- Search/Filter Schemas ---

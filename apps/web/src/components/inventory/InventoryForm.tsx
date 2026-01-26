@@ -14,6 +14,11 @@ import { SupplierAutocomplete } from '../../pages/inventory/components/SupplierA
 import { CategoryAutocomplete } from '../../pages/inventory/components/CategoryAutocomplete';
 import { BrandAutocomplete } from '../../pages/inventory/components/BrandAutocomplete';
 import { SerialNumberModal } from './SerialNumberModal';
+import {
+  INVENTORY_KDV_RATE,
+  INVENTORY_PRICE_KDV_INCLUDED,
+  INVENTORY_COST_KDV_INCLUDED
+} from '../../constants/storage-keys';
 
 interface InventoryFormProps {
   item?: InventoryItem;
@@ -57,7 +62,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
   // KDV and calculated fields - Load from localStorage
   const [kdvRate, setKdvRate] = useState<number>(() => {
-    const saved = localStorage.getItem('inventory_kdv_rate');
+    const saved = localStorage.getItem(INVENTORY_KDV_RATE);
     return saved ? parseFloat(saved) : 20;
   });
   // Computed values exposed for potential future display
@@ -68,11 +73,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
   // KDV Dahil checkboxes - Load from localStorage
   const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('inventory_price_kdv_included');
+    const saved = localStorage.getItem(INVENTORY_PRICE_KDV_INCLUDED);
     return saved === 'true';
   });
   const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('inventory_cost_kdv_included');
+    const saved = localStorage.getItem(INVENTORY_COST_KDV_INCLUDED);
     return saved === 'true';
   });
 
@@ -112,15 +117,15 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
   // Save KDV preferences to localStorage
   useEffect(() => {
-    localStorage.setItem('inventory_kdv_rate', kdvRate.toString());
+    localStorage.setItem(INVENTORY_KDV_RATE, kdvRate.toString());
   }, [kdvRate]);
 
   useEffect(() => {
-    localStorage.setItem('inventory_price_kdv_included', isPriceKdvIncluded.toString());
+    localStorage.setItem(INVENTORY_PRICE_KDV_INCLUDED, isPriceKdvIncluded.toString());
   }, [isPriceKdvIncluded]);
 
   useEffect(() => {
-    localStorage.setItem('inventory_cost_kdv_included', isCostKdvIncluded.toString());
+    localStorage.setItem(INVENTORY_COST_KDV_INCLUDED, isCostKdvIncluded.toString());
   }, [isCostKdvIncluded]);
 
   // Calculate KDV and total inventory value automatically
@@ -445,6 +450,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               </label>
               <label className="flex items-center cursor-pointer">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={isPriceKdvIncluded}
                   onChange={(e) => setIsPriceKdvIncluded(e.target.checked)}
@@ -486,6 +492,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               </label>
               <label className="flex items-center cursor-pointer">
                 <input
+                  data-allow-raw="true"
                   type="checkbox"
                   checked={isCostKdvIncluded}
                   onChange={(e) => setIsCostKdvIncluded(e.target.checked)}
@@ -674,13 +681,15 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
               >
                 {feature}
-                <button
+                <Button
                   type="button"
                   onClick={() => removeFeature(feature)}
+                  variant="ghost"
+                  size="sm"
                   className="ml-2 text-blue-600 hover:text-blue-800"
                 >
                   <X className="h-3 w-3" />
-                </button>
+                </Button>
               </span>
             ))}
           </div>
@@ -726,13 +735,14 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <button
+          <Button
             type="button"
             onClick={onCancel}
+            variant="outline"
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
           >
             İptal
-          </button>
+          </Button>
           <Button
             type="submit"
             disabled={loading}

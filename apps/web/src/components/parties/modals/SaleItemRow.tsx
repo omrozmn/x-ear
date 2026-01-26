@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { Button, Input, Card, CardContent } from '@x-ear/ui-web';
 import { Search, Trash2 } from 'lucide-react';
-type InventoryItem = any;
+import type { InventoryItemRead } from '@/api/generated/schemas';
+
+type InventoryItem = InventoryItemRead;
 
 interface SaleItem {
   id: string;
@@ -23,7 +25,8 @@ interface SaleItemRowProps {
   searchProducts: (term: string) => InventoryItem[];
 }
 
-export function SaleItemRow({ item, index, products: _products, onUpdate, onRemove, canRemove, searchProducts }: SaleItemRowProps) {
+export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, searchProducts }: SaleItemRowProps) {
+  // products parameter removed - not used (searchProducts function used instead)
   const [searchTerm, setSearchTerm] = useState('');
   const [showProductSearch, setShowProductSearch] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState<InventoryItem[]>([]);
@@ -43,7 +46,7 @@ export function SaleItemRow({ item, index, products: _products, onUpdate, onRemo
     onUpdate({
       product,
       price: product.price || 0,
-      kdvRate: product.kdv || 18
+      kdvRate: product.vatRate || 18
     });
     setShowProductSearch(false);
     setSearchTerm('');
@@ -105,7 +108,7 @@ export function SaleItemRow({ item, index, products: _products, onUpdate, onRemo
                   >
                     <div className="font-medium text-gray-900">{product.name}</div>
                     <div className="text-sm text-gray-600">
-                      {product.brand} - {product.model} | Stok: {product.stock}
+                      {product.brand} - {product.model} | Stok: {product.availableInventory}
                     </div>
                     <div className="text-sm font-medium text-blue-600">
                       {product.price?.toLocaleString('tr-TR')} TL
@@ -124,7 +127,7 @@ export function SaleItemRow({ item, index, products: _products, onUpdate, onRemo
                 {item.product.brand} - {item.product.model}
               </div>
               <div className="text-sm text-blue-600">
-                Stok: {item.product.stock} | KDV: %{item.product.kdv}
+                Stok: {item.product.availableInventory} | KDV: %{item.product.vatRate}
               </div>
             </div>
           )}
@@ -202,8 +205,7 @@ export function SaleItemRow({ item, index, products: _products, onUpdate, onRemo
               <div><span className="text-gray-600">Marka:</span> <span className="font-medium ml-1">{item.product.brand}</span></div>
               <div><span className="text-gray-600">Model:</span> <span className="font-medium ml-1">{item.product.model}</span></div>
               <div><span className="text-gray-600">Kategori:</span> <span className="font-medium ml-1">{item.product.category}</span></div>
-              <div><span className="text-gray-600">Stok:</span> <span className="font-medium ml-1">{item.product.stock}</span></div>
-              <div><span className="text-gray-600">Seri No:</span> <span className="font-medium ml-1">{item.product.serialNumber}</span></div>
+              <div><span className="text-gray-600">Stok:</span> <span className="font-medium ml-1">{item.product.availableInventory}</span></div>
               <div><span className="text-gray-600">Barkod:</span> <span className="font-medium ml-1 font-mono text-xs">{item.product.barcode}</span></div>
             </div>
           </div>

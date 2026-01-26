@@ -67,13 +67,8 @@ def db_session(db_engine):
     connection = db_engine.connect()
     transaction = connection.begin()
     
-    # Force expire_on_commit=False to prevent ObjectDeletedError/DetachedInstanceError
-    # when sharing session between test and app (which commits)
-    from sqlalchemy.orm import Session
-    session = Session(bind=connection, expire_on_commit=False)
-    
-    from sqlalchemy.orm import Session
-    session = Session(bind=connection, expire_on_commit=False)
+    # Use SessionLocal to ensure event listeners (like tenant isolation) are active
+    session = SessionLocal(bind=connection, expire_on_commit=False)
     
     yield session
     
@@ -149,6 +144,8 @@ def auth_headers(test_admin_user):
         'role': test_admin_user.role,
         'tenant_id': test_admin_user.tenant_id,
         'user_type': 'tenant',
+        'role_permissions': ['*'],  # Admin has all permissions in tests
+        'perm_ver': 1,
         'exp': datetime.utcnow() + timedelta(hours=1)
     }
     token = jwt.encode(payload, 'test-secret', algorithm='HS256')

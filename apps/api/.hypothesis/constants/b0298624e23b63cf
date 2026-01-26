@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/complaint_handler_service.py
+# hypothesis_version: 6.150.1
+
+[0.0, 0.1, 100, ':', '<', '<>', '>', '@', 'ALL', 'arrival-date', 'complained', 'complained_at', 'complaint', 'complaint-type:', 'complaint_rate', 'complaint_type', 'email', 'feedback-type', 'feedback-type:', 'provider', 'recipient', 'recipient:', 'sent', 'spam', 'tenant_id', 'threshold', 'timestamp', 'to:', 'unknown']

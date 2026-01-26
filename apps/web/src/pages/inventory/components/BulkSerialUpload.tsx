@@ -32,8 +32,8 @@ export const BulkSerialUpload: React.FC<BulkSerialUploadProps> = ({
             complete: (results) => {
               const serials = results.data
                 .flat()
-                .filter((item: any) => item && typeof item === 'string' && item.trim())
-                .map((item: any) => item.toString().trim());
+                .filter((item: unknown): item is string => typeof item === 'string' && item.trim().length > 0)
+                .map((item) => item.trim());
               
               setSerialNumbers([...new Set(serials)]); // Remove duplicates
             },
@@ -202,12 +202,12 @@ export const BulkSerialUpload: React.FC<BulkSerialUploadProps> = ({
                     Dosya Seç
                   </Button>
                   <input
+                    data-allow-raw="true"
                     ref={fileInputRef}
                     type="file"
                     accept=".csv,.txt"
                     onChange={handleFileSelect}
                     className="hidden"
-                    data-allow-raw="true"
                   />
                   <p className="text-xs text-gray-500">
                     Desteklenen formatlar: .csv, .txt

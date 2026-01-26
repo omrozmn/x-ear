@@ -1,10 +1,10 @@
 """
 Tenant Schemas - Pydantic models for Tenant domain
 """
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from datetime import datetime
 from enum import Enum
-from pydantic import Field, EmailStr
+from pydantic import Field, EmailStr, field_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
@@ -129,8 +129,22 @@ class PlanRead(IDMixin, AppBaseModel):
     plan_type: Optional[str] = Field(None, alias="planType")
     price: Optional[float] = None
     billing_interval: Optional[str] = Field(None, alias="billingInterval")
-    features: Optional[List[Dict[str, Any]]] = None
+    features: Optional[Union[Dict[str, Any], List[Any]]] = None
     max_users: Optional[int] = Field(None, alias="maxUsers")
+
+    @field_validator('features', mode='before')
+    @classmethod
+    def ensure_json(cls, v):
+        """Parse JSON string to dict/list if needed"""
+        if v is None:
+            return []
+        if isinstance(v, str) and (v.startswith('{') or v.startswith('[')):
+            import json
+            try:
+                return json.loads(v)
+            except:
+                return v
+        return v
     max_storage_gb: Optional[int] = Field(None, alias="maxStorageGb")
     is_active: bool = Field(True, alias="isActive")
     is_public: bool = Field(True, alias="isPublic")

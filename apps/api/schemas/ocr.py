@@ -28,7 +28,7 @@ class OcrJobRead(AppBaseModel, IDMixin, TimestampMixin):
 
 # --- Request Schemas ---
 
-class OCRProcessRequest(AppBaseModel):
+class OcrProcessRequest(AppBaseModel):
     image_path: Optional[str] = Field(None, alias="imagePath")
     text: Optional[str] = None
     ocr_text: Optional[str] = Field(None, alias="ocrText")

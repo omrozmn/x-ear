@@ -3,9 +3,35 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web'
 import { Shield, CheckCircle, AlertCircle, Clock, Search } from 'lucide-react';
 
 interface SGKInfoCardProps {
-  sgkPartyInfo: any;
+  sgkPartyInfo: {
+    hasInsurance: boolean;
+    deviceEntitlement?: {
+      remainingQuantity: number;
+      maxQuantity: number;
+      validUntil: string;
+    };
+    batteryEntitlement?: {
+      remainingQuantity: number;
+      maxQuantity: number;
+      validUntil: string;
+    };
+  } | null;
   sgkLoading: boolean;
-  sgkCoverageCalculation: any;
+  sgkCoverageCalculation: {
+    totalCoverage: number;
+    partyPayment: number;
+    deviceCoverage?: {
+      maxCoverage: number;
+      coveragePercentage: number;
+      remainingEntitlement: number;
+    } | null;
+    batteryCoverage?: {
+      maxCoverage: number;
+      coveragePercentage: number;
+      remainingEntitlement: number;
+    } | null;
+    totalCoveragePercentage?: number;
+  } | null;
   onQueryPartyRights: () => void;
 }
 

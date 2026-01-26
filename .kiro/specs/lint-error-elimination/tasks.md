@@ -131,11 +131,11 @@ This task list implements the systematic elimination of 1,168 lint problems acro
 - [ ] 2.1.3 Create component replacement guide
 
 ### 2.2 Replace Raw Input Elements (~180 errors)
-- [ ] 2.2.1 Replace in form components
-  - `DocumentUploadForm.tsx` (1 input)
-  - `PartyNoteForm.tsx` (2 inputs)
-  - `DeviceAssignmentForm.tsx` (2 inputs)
-  - `AssignmentDetailsForm.tsx` (9 inputs)
+- [x] 2.2.1 Replace in form components
+  - `DocumentUploadForm.tsx` (1 input) ✅
+  - `PartyNoteForm.tsx` (2 inputs) ✅ (1 checkbox)
+  - `DeviceAssignmentForm.tsx` (2 inputs) ✅ (0 raw inputs found)
+  - `AssignmentDetailsForm.tsx` (9 inputs) ✅ (1 checkbox)
   - `PricingForm.tsx` (7 inputs)
   - `SerialNumberForm.tsx` (1 input)
 - [ ] 2.2.2 Replace in page components
@@ -145,31 +145,36 @@ This task list implements the systematic elimination of 1,168 lint problems acro
   - `PosSettings.tsx` (1 input)
   - `SGKDownloadsPage.tsx` (5 inputs)
   - `MobileSuppliersPage.tsx` (1 input)
-- [ ] 2.2.3 Replace in inventory components
+- [x] 2.2.3 Replace in inventory components
   - `InventoryForm.tsx` (2 inputs)
-  - `UniversalImporter.tsx` (1 input)
-- [ ] 2.2.4 Validate: Test all forms for functionality
+  - `UniversalImporter.tsx` (1 input) ✅
+- [x] 2.2.4 Replace in invoice components (checkboxes)
+  - `GovernmentInvoiceModal.tsx` (2 checkboxes) - Replaced with Checkbox component
+  - `GovernmentSection.tsx` (1 checkbox) - Replaced with Checkbox component
+- [ ] 2.2.5 Validate: Test all forms for functionality
 
 ### 2.3 Replace Raw Button Elements (~80 errors)
 - [ ] 2.3.1 Replace in invoice components
   - `AdditionalInfoSection.tsx` (5 buttons)
   - `CustomerSection.tsx` (1 button)
   - `CustomerSectionCompact.tsx` (2 buttons)
-- [ ] 2.3.2 Replace in page components
+- [x] 2.3.2 Replace in invoice modal components
+  - `ExportDetailsModal.tsx` (1 button) - Replaced with Button component
+- [ ] 2.3.3 Replace in page components
   - `MobileInvoicesPage.tsx` (1 button)
   - `MobilePartiesPage.tsx` (1 button)
   - `MobilePartyDetailPage.tsx` (4 buttons)
   - `Team.tsx` (1 button)
   - `SGKDownloadsPage.tsx` (1 button)
   - `MobileSuppliersPage.tsx` (1 button)
-- [ ] 2.3.3 Replace in inventory components
+- [ ] 2.3.4 Replace in inventory components
   - `AdvancedFilters.tsx` (1 button)
   - `FeaturesTagManager.tsx` (1 button)
   - `InventoryForm.tsx` (2 buttons)
   - `SerialNumberModal.tsx` (1 button)
-- [ ] 2.3.4 Replace in device assignment
-  - `DeviceAssignmentForm.tsx` (1 button)
-- [ ] 2.3.5 Validate: Test all button interactions
+- [ ] 2.3.5 Replace in device assignment
+  - `DeviceAssignmentForm.tsx` (1 button) ✅
+- [ ] 2.3.6 Validate: Test all button interactions
 
 ### 2.4 Replace Raw Select Elements (~50 errors)
 - [ ] 2.4.1 Replace in form components
@@ -239,16 +244,13 @@ This task list implements the systematic elimination of 1,168 lint problems acro
   - `lucide-react.d.ts` (1 unused)
 - [ ] 3.1.5 Fix unused imports in stories
   - `Alert.stories.tsx` (1 unused)
-- [ ] 3.1.6 Fix unused variables (prefix with _ or remove)
-  - `DynamicInvoiceForm.tsx` (1 variable)
-  - `InventoryForm.tsx` (1 variable)
-  - `InventoryList.tsx` (1 variable)
-  - `SerialNumberForm.tsx` (1 variable)
-  - `AdvancedFilters.tsx` (1 variable)
-  - `MobilePartiesPage.tsx` (1 variable)
-  - `offlineGuard.ts` (1 variable)
-  - `partyOfflineSync.ts` (2 variables)
-  - `party-analytics.service.ts` (1 variable)
+- [x] 3.1.6 Fix unused variables (prefix with _ or remove)
+  - `PartyNoteForm.tsx` - Removed unused `_tagInput` state variable
+  - `SerialNumberForm.tsx` - Removed unused `_errors` prop parameter
+  - `AdvancedFilters.tsx` - Removed unused `_brands` prop parameter
+  - `InventoryList.tsx` - Removed unused `_onItemSelect` prop parameter
+  - `CustomerSectionCompact.tsx` - Removed unused `_customerId` and changed `_selectedParty` to `selectedParty` (actually used)
+  - `InvoiceDateTimeSection.tsx` - Removed unused `_discount` and `_discountType` prop parameters
 - [ ] 3.1.7 Validate: Ensure no functionality is broken
 
 ### 3.2 Fix Fast Refresh Violations (19 warnings)

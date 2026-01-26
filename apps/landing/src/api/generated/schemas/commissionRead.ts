@@ -18,16 +18,16 @@ export interface CommissionRead {
   createdAt?: CommissionReadCreatedAt;
   /** Last update timestamp */
   updatedAt?: CommissionReadUpdatedAt;
-  /** Unique identifier for the resource */
-  id: string;
   /** Affiliate ID */
-  affiliateId: string;
+  affiliateId: unknown;
   /** Tenant ID */
-  tenantId: string;
+  tenantId: unknown;
   /** Commission amount */
   amount: number;
   /** Commission status */
   status?: string;
+  /** Unique identifier */
+  id: unknown;
   /** Tenant name */
   tenantName?: CommissionReadTenantName;
   /** Paid at */

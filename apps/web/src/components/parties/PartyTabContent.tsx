@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Party } from '../../types/party/party-base.types';
+import type { SaleRead } from '@/api/generated';
 import { PartyTab } from './PartyTabs';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -18,9 +19,14 @@ interface PartyTabContentProps {
   party: Party;
   activeTab: PartyTab;
   onPartyUpdate?: (p: Party) => void;
-  sales?: any[];
+  sales?: SaleRead[];
   isLoading?: boolean;
-  tabCounts?: any;
+  tabCounts?: {
+    devices: number;
+    sales: number;
+    timeline: number;
+    documents: number;
+  };
   showNoteModal?: boolean;
   onCloseNoteModal?: () => void;
 }
@@ -29,9 +35,9 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   party,
   activeTab,
   onPartyUpdate,
-  sales: _sales,
+  // sales parameter removed - not used in component
   isLoading,
-  tabCounts: _tabCounts,
+  // tabCounts parameter removed - not used in component
   showNoteModal,
   onCloseNoteModal
 }) => {
@@ -54,9 +60,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
     </div>
   );
 
-  const _formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString('tr-TR');
-  };
+  // _formatDate function removed - not used
 
   switch (activeTab) {
     case 'overview':
@@ -102,7 +106,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
     case 'hearing-tests':
       return (
         <ErrorBoundary>
-          <PartyHearingTestsTab partyId={party?.id || ''} />
+          <PartyHearingTestsTab />
         </ErrorBoundary>
       );
     case 'sgk':

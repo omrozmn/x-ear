@@ -10,8 +10,20 @@ import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 import { toast } from 'react-hot-toast';
 
+interface InventoryItem {
+    id: string;
+    name: string;
+    brand?: string;
+    model?: string;
+    price: number;
+    availableInventory?: number;
+    available_inventory?: number;
+    imageUrl?: string;
+    category?: string | { name: string };
+}
+
 export const MobileInventoryPage: React.FC = () => {
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchValue, setSearchValue] = useState('');
     const { triggerSelection } = useHaptic();
@@ -69,7 +81,7 @@ export const MobileInventoryPage: React.FC = () => {
                 title="Envanter"
                 showBack={false}
                 actions={
-                    <button className="p-2 text-gray-600 dark:text-gray-300">
+                    <button data-allow-raw="true" className="p-2 text-gray-600 dark:text-gray-300">
                         <Filter className="h-5 w-5" />
                     </button>
                 }
@@ -81,6 +93,7 @@ export const MobileInventoryPage: React.FC = () => {
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <input
+                            data-allow-raw="true"
                             type="text"
                             placeholder="Ürün, marka, model ara..."
                             value={searchValue}
@@ -89,6 +102,7 @@ export const MobileInventoryPage: React.FC = () => {
                         />
                     </div>
                     <button
+                        data-allow-raw="true"
                         onClick={handleScan}
                         className="p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-600 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border border-transparent"
                     >
@@ -104,7 +118,7 @@ export const MobileInventoryPage: React.FC = () => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400" />
                         </div>
                     ) : items.length > 0 ? (
-                        items.map((item: any) => (
+                        items.map((item) => (
                             <div
                                 key={item.id}
                                 onClick={() => {
@@ -125,10 +139,10 @@ export const MobileInventoryPage: React.FC = () => {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start">
                                             <h3 className="font-semibold text-gray-900 dark:text-white truncate pr-2">
-                                                {item.name || 'İsimsiz Ürün'}
+                                                {item.name}
                                             </h3>
                                             <p className="font-bold text-gray-900 dark:text-white">
-                                                {formatCurrency(item.price || 0)}
+                                                {formatCurrency(item.price)}
                                             </p>
                                         </div>
 
@@ -139,7 +153,7 @@ export const MobileInventoryPage: React.FC = () => {
                                         <div className="flex items-center gap-3">
                                             <div className={cn(
                                                 "text-xs px-2 py-0.5 rounded-md font-medium flex items-center gap-1",
-                                                (item.availableInventory || 0) > 0 ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300" : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                                (item.availableInventory || item.available_inventory || 0) > 0 ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300" : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
                                             )}>
                                                 <Tag className="h-3 w-3" />
                                                 Stok: {item.availableInventory || item.available_inventory || 0}
@@ -147,7 +161,7 @@ export const MobileInventoryPage: React.FC = () => {
 
                                             {item.category && (
                                                 <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md">
-                                                    {item.category?.name || item.category}
+                                                    {typeof item.category === 'string' ? item.category : item.category.name}
                                                 </span>
                                             )}
                                         </div>

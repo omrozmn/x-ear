@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/ai_composer.py
+# hypothesis_version: 6.150.1
+
+['Current or new value', 'Execution status', 'Matching entities', 'Search query', 'Type of the entity', 'Visual sentiment', 'device', 'dry_run', 'error', 'invoice', 'negative', 'neutral', 'patient', 'positive', 'success', 'supplier', 'user']

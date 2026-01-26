@@ -140,5 +140,7 @@ export const tokenManager = {
     setToken: (token: string) => localStorage.setItem('admin_token', token),
     getToken: () => localStorage.getItem('admin_token'),
     clearToken: () => localStorage.removeItem('admin_token'),
+    setRefreshToken: (token: string) => localStorage.setItem('admin_refresh_token', token),
+    getRefreshToken: () => localStorage.getItem('admin_refresh_token'),
     clearRefreshToken: () => localStorage.removeItem('admin_refresh_token'),
 };

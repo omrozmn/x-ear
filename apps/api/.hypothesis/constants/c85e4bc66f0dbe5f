@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/email_approval_service.py
+# hypothesis_version: 6.150.1
+
+['CRITICAL', 'HIGH', 'UNKNOWN', 'approval', 'approval_id', 'approved', 'by_risk_level', 'count', 'pending', 'reasons', 'rejected', 'reviewed_by', 'risk_level', 'spam_score', 'tenant_id']

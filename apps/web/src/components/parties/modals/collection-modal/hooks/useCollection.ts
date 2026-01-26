@@ -123,7 +123,8 @@ export const useCollection = (sale: Sale, isOpen: boolean) => {
     }
   };
 
-  const submitPayment = async (_formData: FormData) => {
+  const submitPayment = async () => {
+    // formData parameter removed - not used in mock implementation
     if (!sale.id) {
       setState(prev => ({ ...prev, error: 'Sale ID is required' }));
       return;
@@ -169,7 +170,8 @@ export const useCollection = (sale: Sale, isOpen: boolean) => {
     }
   };
 
-  const submitPromissoryNote = async (_formData: FormData) => {
+  const submitPromissoryNote = async () => {
+    // formData parameter removed - not used in mock implementation
     if (!sale.id) {
       setState(prev => ({ ...prev, error: 'Sale ID is required' }));
       return;
@@ -214,7 +216,8 @@ export const useCollection = (sale: Sale, isOpen: boolean) => {
     }
   };
 
-  const collectPromissoryPayment = async (_noteId: string, _amount: number) => {
+  const collectPromissoryPayment = async () => {
+    // noteId and amount parameters removed - not used in mock implementation
     if (!sale.id) {
       setState(prev => ({ ...prev, error: 'Sale ID is required' }));
       return;

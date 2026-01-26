@@ -125,20 +125,15 @@ function parseErrorResponse(error: unknown): AIError {
   };
 
   if (err?.response?.data) {
-    const data = err.response.data;
-
-    const details =
-      data.details && typeof data.details === 'object'
-        ? (data.details as Record<string, unknown>)
-        : undefined;
+    const data = err.response.data as Record<string, unknown>;
 
     if (data.code && typeof data.code === 'string') {
       return {
         code: data.code as AIErrorCode,
-        message: data.message || 'An error occurred',
-        requestId: data.request_id || data.requestId,
-        retryAfter: data.retry_after || data.retryAfter,
-        details,
+        message: (data.message as string) || 'An error occurred',
+        requestId: (data.request_id || data.requestId) as string | undefined,
+        retryAfter: (data.retry_after || data.retryAfter) as number | undefined,
+        details: data.details as Record<string, unknown> | undefined,
       };
     }
 
@@ -158,7 +153,7 @@ function parseErrorResponse(error: unknown): AIError {
 
     return {
       code,
-      message: data.message || 'An error occurred',
+      message: (data.message as string) || 'An error occurred',
     };
   }
 

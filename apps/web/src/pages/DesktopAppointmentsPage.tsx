@@ -2,12 +2,13 @@ import { Button } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { AppointmentList, AppointmentCalendar, AppointmentModal } from '../components/appointments';
 import { useAppointments } from '../hooks/useAppointments';
+import { useTranslation } from 'react-i18next';
 
 
 type ViewMode = 'list' | 'calendar';
 
 export function DesktopAppointmentsPage() {
-
+  const { t } = useTranslation('appointments');
 
   const { error, stats } = useAppointments();
   const [viewMode /*, _setViewMode */] = useState<ViewMode>('calendar');
@@ -43,7 +44,7 @@ export function DesktopAppointmentsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Toplam Randevu</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('stats.total')}</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.total}</p>
             </div>
           </div>
@@ -59,7 +60,7 @@ export function DesktopAppointmentsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tamamlanan</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('stats.completed')}</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.completed || 0}</p>
             </div>
           </div>
@@ -75,7 +76,7 @@ export function DesktopAppointmentsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Bekleyen</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('stats.pending')}</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {(stats.scheduled || 0) + (stats.confirmed || 0)}
               </p>
@@ -93,7 +94,7 @@ export function DesktopAppointmentsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">İptal/Gelmedi</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('stats.cancelled_no_show')}</p>
               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {(stats.cancelled || 0) + (stats.no_show || 0)}
               </p>
@@ -111,9 +112,9 @@ export function DesktopAppointmentsPage() {
         <div className="mb-8 relative">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Randevular</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('page_title')}</h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Hasta randevularını yönetin ve takip edin
+                {t('page_subtitle')}
               </p>
             </div>
             <Button
@@ -124,7 +125,7 @@ export function DesktopAppointmentsPage() {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Yeni Randevu
+              {t('new_appointment')}
             </Button>
           </div>
         </div>
@@ -139,7 +140,7 @@ export function DesktopAppointmentsPage() {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800 dark:text-red-400">Hata</h3>
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-400">{t('error_title')}</h3>
                 <div className="mt-2 text-sm text-red-700 dark:text-red-300">{error}</div>
               </div>
             </div>

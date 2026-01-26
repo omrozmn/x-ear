@@ -25,6 +25,5 @@ declare module "@/packages/ui-web" {
   export const Table: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export const DatePicker: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export default any;
 }

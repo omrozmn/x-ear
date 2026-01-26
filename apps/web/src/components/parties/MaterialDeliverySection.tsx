@@ -21,6 +21,8 @@ interface DeliveryItem {
   notes?: string;
 }
 
+import { MATERIAL_DELIVERIES } from '../../constants/storage-keys';
+
 interface DeliveryBatch {
   id: string;
   batchNumber: string;
@@ -202,10 +204,10 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
         items: deliveryItems
       };
 
-      // Save to localStorage for now
-      const existingDeliveries = JSON.parse(localStorage.getItem('xear_deliveries') || '[]');
+      // Update local storage for persistence
+      const existingDeliveries = JSON.parse(localStorage.getItem(MATERIAL_DELIVERIES) || '[]');
       existingDeliveries.push(newBatch);
-      localStorage.setItem('xear_deliveries', JSON.stringify(existingDeliveries));
+      localStorage.setItem(MATERIAL_DELIVERIES, JSON.stringify(existingDeliveries));
 
       setDeliveryBatches(prev => [newBatch, ...prev]);
 
@@ -289,8 +291,8 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
 
       setDeliveryBatches(updatedBatches);
 
-      // Update localStorage
-      localStorage.setItem('xear_deliveries', JSON.stringify(updatedBatches));
+      // Update local storage
+      localStorage.setItem(MATERIAL_DELIVERIES, JSON.stringify(updatedBatches));
 
       // Log to timeline
       const batch = updatedBatches.find(b => b.id === batchId);

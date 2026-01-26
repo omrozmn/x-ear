@@ -14,12 +14,33 @@ export interface Party {
   name: string;
 }
 
+export interface DeviceInfo {
+  id?: string;
+  brand?: string;
+  model?: string;
+  serialNumber?: string;
+  price?: number;
+}
+
+export interface ReplacementCreatedData {
+  oldDeviceId?: string;
+  newInventoryId?: string;
+  oldDeviceInfo: DeviceInfo;
+  newDeviceInfo: DeviceInfo;
+  replacementReason: string;
+  priceDifference: number;
+  notes: string;
+  createReturnInvoice: boolean;
+  invoiceType: 'individual' | 'corporate' | 'e_archive';
+  timestamp: string;
+}
+
 export interface DeviceReplacementModalProps {
   isOpen: boolean;
   device: Device | null;
   party: Party;
   onClose: () => void;
-  onReplacementCreate: (replacement: any) => void;
+  onReplacementCreate: (replacement: ReplacementCreatedData) => void;
 }
 
 export interface ReplacementFormData {

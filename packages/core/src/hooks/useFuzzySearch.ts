@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import type { FuseOptionKey } from 'fuse.js';
 import { 
   FuzzySearch, 
   FuzzySearchOptions, 
@@ -28,7 +27,7 @@ export interface UseFuzzySearchReturn<T> {
   removeItems: (predicate: (item: T) => boolean) => void;
   stats: {
     totalItems: number;
-    searchKeys: FuseOptionKey<T>[];
+    searchKeys: FuzzySearchOptions<T>['keys'];
     threshold: number;
   };
 }
@@ -124,18 +123,7 @@ export function useFuzzySearch<T>(
     setDataState(prevData => prevData.filter(item => !predicate(item)));
   }, []);
 
-  const stats = useMemo(() => {
-    const raw = fuzzySearch.getStats() as {
-      totalItems?: number;
-      searchKeys?: FuseOptionKey<T>[];
-      threshold?: number;
-    };
-    return {
-      totalItems: raw.totalItems ?? data.length,
-      searchKeys: raw.searchKeys ?? [],
-      threshold: raw.threshold ?? 0.3,
-    };
-  }, [fuzzySearch, data.length]);
+  const stats = useMemo(() => fuzzySearch.getStats(), [fuzzySearch]);
 
   return {
     results,

@@ -21,20 +21,23 @@ const CommunicationTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<CommunicationTemplate[]>([]);
 
   useEffect(() => {
-    const offlineTemplates = getTemplates();
-    const convertedTemplates: CommunicationTemplate[] = offlineTemplates.map(template => ({
-      id: template.id,
-      name: template.name,
-      type: template.templateType,
-      subject: template.subject,
-      content: template.bodyText,
-      variables: template.variables,
-      category: (template.category as CommunicationTemplate['category']) || 'custom',
-      isActive: template.isActive,
-      createdAt: template.createdAt,
-      updatedAt: template.updatedAt
-    }));
-    setTemplates(convertedTemplates);
+    const loadTemplates = async () => {
+      const offlineTemplates = await getTemplates();
+      const convertedTemplates: CommunicationTemplate[] = offlineTemplates.map(template => ({
+        id: template.id,
+        name: template.name,
+        type: template.templateType,
+        subject: template.subject,
+        content: template.bodyText,
+        variables: template.variables,
+        category: (template.category as CommunicationTemplate['category']) || 'custom',
+        isActive: template.isActive,
+        createdAt: template.createdAt,
+        updatedAt: template.updatedAt
+      }));
+      setTemplates(convertedTemplates);
+    };
+    loadTemplates();
   }, [getTemplates, syncStatus]);
 
   const [searchTerm, setSearchTerm] = useState('');

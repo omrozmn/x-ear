@@ -36,7 +36,8 @@ class EndpointTester:
         self.base_url = base_url
         self.session = requests.Session()
         self.admin_token = None
-        self.headers = {"Content-Type": "application/json"}
+        # Add Idempotency-Key required by server for write operations
+        self.headers = {"Content-Type": "application/json", "Idempotency-Key": "test-run-key"}
         
     def log_test(self, name: str, status: str, details: str = ""):
         """Log test result with colors"""

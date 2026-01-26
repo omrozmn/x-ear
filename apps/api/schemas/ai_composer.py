@@ -26,6 +26,7 @@ class AutocompleteResponse(BaseModel):
     """Response containing entities and context-aware actions."""
     entities: List[EntityItem] = Field(default_factory=list, description="Matching entities")
     actions: List[Capability] = Field(default_factory=list, description="Available actions based on context")
+    intent_type: Literal["search", "action"] = Field(default="search", description="Heuristic-based intent separation")
     
     model_config = ConfigDict(
         alias_generator=to_camel,

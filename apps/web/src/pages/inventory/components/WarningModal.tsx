@@ -5,7 +5,7 @@ interface FailureItem {
   id: string;
   message: string;
   status?: number;
-  data?: any;
+  data?: unknown;
 }
 
 interface WarningModalProps {
@@ -42,9 +42,11 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
                     {f.status && <div>Status: {f.status}</div>}
                   </div>
                 </div>
-                {f.data && (
-                  <pre className="text-xs text-gray-700 dark:text-gray-300 mt-1 bg-white dark:bg-gray-700 p-2 rounded overflow-x-auto">{JSON.stringify(f.data, null, 2)}</pre>
-                )}
+                {f.data ? (
+                  <pre className="text-xs text-gray-700 dark:text-gray-300 mt-1 bg-white dark:bg-gray-700 p-2 rounded overflow-x-auto">
+                    {String(JSON.stringify(f.data as Record<string, unknown>, null, 2))}
+                  </pre>
+                ) : null}
               </div>
             ))}
           </div>

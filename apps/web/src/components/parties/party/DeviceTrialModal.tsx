@@ -3,6 +3,7 @@ import { Modal } from '../../ui/Modal';
 import { Button } from '../../ui/Button';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { timelineService } from '../../../services/timeline.service';
+import type { DeviceRead } from '@/api/generated/schemas';
 import { 
   FileText, 
   Calendar, 
@@ -57,17 +58,7 @@ interface DeviceTrialModalProps {
   onClose: () => void;
   onSave: (trialData: Partial<DeviceTrial>) => Promise<void>;
   trial?: DeviceTrial | null;
-  device?: any;
-  partyId: string;
-  isLoading?: boolean;
-}
-
-interface DeviceTrialModalProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (trialData: Partial<DeviceTrial>) => Promise<void>;
-  trial?: DeviceTrial | null;
-  device?: any;
+  device?: DeviceRead;
   partyId: string;
   isLoading?: boolean;
 }
@@ -114,7 +105,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
       });
     } else if (device) {
       // Pre-populate with device information
-      const basePrice = device.price ? parseFloat(device.price) : 0;
+      const basePrice = device.price || 0;
       const trialPrice = basePrice * 0.1; // 10% of device price as trial fee
 
       setFormData({
@@ -243,16 +234,16 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof DeviceTrial, value: any) => {
+  const handleInputChange = (field: keyof DeviceTrial, value: DeviceTrial[typeof field]) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
       
       // Auto-calculate net trial price when pricing fields change
       if (['trialPrice', 'discountType', 'discountValue', 'sgkScheme'].includes(field)) {
-        const basePrice = field === 'trialPrice' ? value : (updated.trialPrice || 0);
-        const discountType = field === 'discountType' ? value : updated.discountType;
-        const discountValue = field === 'discountValue' ? value : (updated.discountValue || 0);
-        const sgkScheme = field === 'sgkScheme' ? value : updated.sgkScheme;
+        const basePrice = field === 'trialPrice' ? value as number : (updated.trialPrice || 0);
+        const discountType = field === 'discountType' ? value as DeviceTrial['discountType'] : updated.discountType;
+        const discountValue = field === 'discountValue' ? value as number : (updated.discountValue || 0);
+        const sgkScheme = field === 'sgkScheme' ? value as string : updated.sgkScheme;
 
         let afterDiscount = basePrice;
         if (discountType === 'percentage') {

@@ -38,7 +38,8 @@ import type {
   ResponseEnvelopeInventoryStats,
   ResponseEnvelopeListDictStrAny,
   ResponseEnvelopeListInventoryItemRead,
-  ResponseEnvelopeListStockMovementRead
+  ResponseEnvelopeListStockMovementRead,
+  ResponseEnvelopeListStr
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -206,6 +207,99 @@ export const useCreateInventory = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * Get inventory stats
+ * @summary Get Inventory Stats
+ */
+export const listInventoryStats = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeInventoryStats>(
+      {url: `/api/inventory/stats`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getListInventoryStatsQueryKey = () => {
+    return [
+    `/api/inventory/stats`
+    ] as const;
+    }
+
+    
+export const getListInventoryStatsQueryOptions = <TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListInventoryStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInventoryStats>>> = ({ signal }) => listInventoryStats(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListInventoryStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listInventoryStats>>>
+export type ListInventoryStatsQueryError = unknown
+
+
+export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listInventoryStats>>,
+          TError,
+          Awaited<ReturnType<typeof listInventoryStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listInventoryStats>>,
+          TError,
+          Awaited<ReturnType<typeof listInventoryStats>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Inventory Stats
+ */
+
+export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListInventoryStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Advanced product search
  * @summary Advanced Search
  */
@@ -288,99 +382,6 @@ export function useListInventorySearch<TData = Awaited<ReturnType<typeof listInv
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
   const queryOptions = getListInventorySearchQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * Get inventory stats
- * @summary Get Inventory Stats
- */
-export const listInventoryStats = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<ResponseEnvelopeInventoryStats>(
-      {url: `/api/inventory/stats`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getListInventoryStatsQueryKey = () => {
-    return [
-    `/api/inventory/stats`
-    ] as const;
-    }
-
-    
-export const getListInventoryStatsQueryOptions = <TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListInventoryStatsQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInventoryStats>>> = ({ signal }) => listInventoryStats(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type ListInventoryStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listInventoryStats>>>
-export type ListInventoryStatsQueryError = unknown
-
-
-export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listInventoryStats>>,
-          TError,
-          Awaited<ReturnType<typeof listInventoryStats>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listInventoryStats>>,
-          TError,
-          Awaited<ReturnType<typeof listInventoryStats>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Get Inventory Stats
- */
-
-export function useListInventoryStats<TData = Awaited<ReturnType<typeof listInventoryStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryStats>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getListInventoryStatsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -660,6 +661,192 @@ export function useListInventoryActivity<TData = Awaited<ReturnType<typeof listI
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
   const queryOptions = getListInventoryActivityQueryOptions(itemId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get unique inventory categories
+ * @summary Get Inventory Categories
+ */
+export const listInventoryCategories = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeListStr>(
+      {url: `/api/inventory/categories`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getListInventoryCategoriesQueryKey = () => {
+    return [
+    `/api/inventory/categories`
+    ] as const;
+    }
+
+    
+export const getListInventoryCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listInventoryCategories>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryCategories>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListInventoryCategoriesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInventoryCategories>>> = ({ signal }) => listInventoryCategories(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInventoryCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListInventoryCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof listInventoryCategories>>>
+export type ListInventoryCategoriesQueryError = unknown
+
+
+export function useListInventoryCategories<TData = Awaited<ReturnType<typeof listInventoryCategories>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryCategories>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listInventoryCategories>>,
+          TError,
+          Awaited<ReturnType<typeof listInventoryCategories>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListInventoryCategories<TData = Awaited<ReturnType<typeof listInventoryCategories>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryCategories>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listInventoryCategories>>,
+          TError,
+          Awaited<ReturnType<typeof listInventoryCategories>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListInventoryCategories<TData = Awaited<ReturnType<typeof listInventoryCategories>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryCategories>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Inventory Categories
+ */
+
+export function useListInventoryCategories<TData = Awaited<ReturnType<typeof listInventoryCategories>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryCategories>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListInventoryCategoriesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get unique inventory brands
+ * @summary Get Inventory Brands
+ */
+export const listInventoryBrands = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeListStr>(
+      {url: `/api/inventory/brands`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getListInventoryBrandsQueryKey = () => {
+    return [
+    `/api/inventory/brands`
+    ] as const;
+    }
+
+    
+export const getListInventoryBrandsQueryOptions = <TData = Awaited<ReturnType<typeof listInventoryBrands>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryBrands>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListInventoryBrandsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInventoryBrands>>> = ({ signal }) => listInventoryBrands(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInventoryBrands>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListInventoryBrandsQueryResult = NonNullable<Awaited<ReturnType<typeof listInventoryBrands>>>
+export type ListInventoryBrandsQueryError = unknown
+
+
+export function useListInventoryBrands<TData = Awaited<ReturnType<typeof listInventoryBrands>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryBrands>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listInventoryBrands>>,
+          TError,
+          Awaited<ReturnType<typeof listInventoryBrands>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListInventoryBrands<TData = Awaited<ReturnType<typeof listInventoryBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryBrands>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listInventoryBrands>>,
+          TError,
+          Awaited<ReturnType<typeof listInventoryBrands>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListInventoryBrands<TData = Awaited<ReturnType<typeof listInventoryBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryBrands>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Inventory Brands
+ */
+
+export function useListInventoryBrands<TData = Awaited<ReturnType<typeof listInventoryBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInventoryBrands>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListInventoryBrandsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

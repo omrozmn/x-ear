@@ -31,6 +31,21 @@ import { outbox } from '../../utils/outbox';
 import { indexedDBManager } from '../../utils/indexeddb';
 import { useSgkDocuments, useUploadSgkDocument, useDeleteSgkDocument } from './useSgkDocuments';
 
+interface MockedService {
+  listDocuments: ReturnType<typeof vi.fn>;
+  uploadDocument: ReturnType<typeof vi.fn>;
+  deleteDocument: ReturnType<typeof vi.fn>;
+}
+
+interface MockedOutbox {
+  addOperation: ReturnType<typeof vi.fn>;
+}
+
+interface MockedIndexedDB {
+  saveFileBlob: ReturnType<typeof vi.fn>;
+  getFileBlob: ReturnType<typeof vi.fn>;
+}
+
 describe('useSgkDocuments hooks', () => {
   let qc: QueryClient;
   beforeEach(() => {
@@ -42,66 +57,67 @@ describe('useSgkDocuments hooks', () => {
   });
 
   it('fetches documents with useSgkDocuments', async () => {
-    (sgkService.listDocuments as any).mockResolvedValue({ data: [{ id: 'doc1' }] });
+    (sgkService as unknown as MockedService).listDocuments.mockResolvedValue({ data: [{ id: 'doc1' }] });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
     const { result } = renderHook(() => useSgkDocuments('party-1'), { wrapper });
 
-    await waitFor(() => (result.current as any).isSuccess);
+    await waitFor(() => result.current.isSuccess);
     expect(sgkService.listDocuments).toHaveBeenCalledWith('party-1');
   });
 
   it('uploads a document and invalidates', async () => {
-    (sgkService.uploadDocument as any).mockResolvedValue({});
+    (sgkService as unknown as MockedService).uploadDocument.mockResolvedValue({});
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 
     const { result } = renderHook(() => useUploadSgkDocument('party-1'), { wrapper });
 
     act(() => {
-      (result.current as any).mutate({ append: 'data', idempotencyKey: 'key-1' } as any);
+      result.current.mutate({ file: new File(['test'], 'test.pdf'), idempotencyKey: 'key-1' });
     });
 
-    await waitFor(() => (result.current as any).isSuccess);
+    await waitFor(() => result.current.isSuccess);
     expect(sgkService.uploadDocument).toHaveBeenCalled();
   });
 
   it('deletes a document and invalidates', async () => {
-    (sgkService.deleteDocument as any).mockResolvedValue({});
+    (sgkService as unknown as MockedService).deleteDocument.mockResolvedValue({});
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 
     const { result } = renderHook(() => useDeleteSgkDocument('party-1'), { wrapper });
 
     act(() => {
-      (result.current as any).mutate({ id: 'doc1', idempotencyKey: 'k1' });
+      result.current.mutate({ id: 'doc1', idempotencyKey: 'k1' });
     });
 
-    await waitFor(() => (result.current as any).isSuccess);
+    await waitFor(() => result.current.isSuccess);
     expect(sgkService.deleteDocument).toHaveBeenCalledWith('doc1');
   });
 
   it('falls back to IndexedDB + outbox when upload fails (offline)', async () => {
     // Simulate network failure
-    (sgkService.uploadDocument as any).mockRejectedValue(new Error('Network error'));
-    (indexedDBManager.saveFileBlob as any).mockResolvedValue('blob-123');
-    (outbox.addOperation as any).mockResolvedValue({ id: 'op-1' });
+    (sgkService as unknown as MockedService).uploadDocument.mockRejectedValue(new Error('Network error'));
+    (indexedDBManager as unknown as MockedIndexedDB).saveFileBlob.mockResolvedValue('blob-123');
+    (outbox as unknown as MockedOutbox).addOperation.mockResolvedValue({ id: 'op-1' });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
     const { result } = renderHook(() => useUploadSgkDocument('party-1'), { wrapper });
 
-    const file = new Blob(['hello'], { type: 'text/plain' });
+    const file = new File(['hello'], 'test.txt', { type: 'text/plain' });
 
     act(() => {
-      (result.current as any).mutate({ file }, {});
+      result.current.mutate({ file });
     });
 
-    await waitFor(() => (result.current as any).isSuccess);
+    await waitFor(() => result.current.isSuccess);
 
     // ensure blob was saved and outbox operation queued
     expect(indexedDBManager.saveFileBlob).toHaveBeenCalled();
     expect(outbox.addOperation).toHaveBeenCalled();
     // returned data should be the queued temporary response
-    const data = (result.current as any).data;
+    const data = result.current.data;
     expect(data).toBeDefined();
-    expect(data.data?.status).toBe('queued');
+    expect((data as Record<string, unknown>)?.data).toBeDefined();
+    expect(((data as Record<string, unknown>)?.data as Record<string, unknown>)?.status).toBe('queued');
   });
 });

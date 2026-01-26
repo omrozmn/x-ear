@@ -10,19 +10,8 @@ import type {
   SGKScheme,
   ServiceInfo
 } from '../types';
-
-// Local type for inventory items
-interface InventoryItem {
-  id?: string;
-  name: string;
-  category?: string;
-  brand?: string;
-  model?: string;
-  price: number;
-  availableInventory?: number;
-  inventory?: number;
-  availableSerials?: string[];
-}
+import type { InventoryItem } from '../components/SaleFormFields';
+import { ExtendedSaleRead } from '@/types/extended-sales';
 
 export const useEditSale = (sale: Sale, isOpen: boolean) => {
   // Form data state
@@ -159,6 +148,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     if (sale && isOpen) {
       // Use efficient fallbacks for extended Sale properties
       const s = sale as unknown as Record<string, unknown>;
+      const extendedSale = sale as unknown as ExtendedSaleRead;
 
       setFormData(prev => ({
         ...prev,
@@ -166,10 +156,10 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
         brand: productDetails?.brand || (s.brand as string) || (s.productBrand as string) || (s.product_brand as string) || '',
         model: productDetails?.model || (s.model as string) || (s.productModel as string) || (s.product_model as string) || '',
         serialNumber: productDetails?.availableSerials?.[0] || (s.serialNumber as string) || (s.serial_number as string) || '',
-        listPrice: sale.listPriceTotal || (s.listPrice as number) || (s.list_price as number) || 0,
-        salePrice: sale.totalAmount || (s.amount as number) || 0,
-        discountAmount: sale.discountAmount || (s.discount_amount as number) || 0,
-        sgkCoverage: sale.sgkCoverage || (s.sgk_coverage as number) || 0,
+        listPrice: extendedSale.listPriceTotal || (s.listPrice as number) || (s.list_price as number) || 0,
+        salePrice: extendedSale.totalAmount || (s.amount as number) || 0,
+        discountAmount: extendedSale.discountAmount || (s.discount_amount as number) || 0,
+        sgkCoverage: extendedSale.sgkCoverage || (s.sgk_coverage as number) || 0,
         notes: sale.notes || '',
         saleDate: sale.saleDate ? sale.saleDate.split('T')[0] : ((s.date as string)?.split('T')[0] || ''),
         deviceId: sale.productId || '',

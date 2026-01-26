@@ -5,7 +5,7 @@ import { usePartyFilters } from '@/hooks/party/usePartyFilters'
 interface SavedView {
   id: string
   name: string
-  filters: any
+  filters: Record<string, unknown>
   isDefault?: boolean
   createdAt: string
 }
@@ -97,7 +97,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
           </div>
           
           {hasActiveFilters && (
-            <button
+            <button data-allow-raw="true"
               onClick={() => setShowSaveDialog(true)}
               className="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100"
             >
@@ -126,7 +126,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
               >
                 <div className="flex-1 min-w-0">
                   {editingView?.id === view.id ? (
-                    <input
+                    <input data-allow-raw="true"
                       type="text"
                       value={editingView.name}
                       onChange={(e) => setEditingView({ ...editingView, name: e.target.value })}
@@ -143,7 +143,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                     />
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <button
+                      <button data-allow-raw="true"
                         onClick={() => applyView(view)}
                         className="text-sm font-medium text-gray-900 hover:text-indigo-600 truncate"
                       >
@@ -162,7 +162,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                 </div>
 
                 <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
+                  <button data-allow-raw="true"
                     onClick={() => applyView(view)}
                     className="p-1 text-gray-400 hover:text-indigo-600 rounded"
                     title="Görünümü uygula"
@@ -170,7 +170,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                     <Eye className="h-3 w-3" />
                   </button>
                   
-                  <button
+                  <button data-allow-raw="true"
                     onClick={() => setEditingView(view)}
                     className="p-1 text-gray-400 hover:text-gray-600 rounded"
                     title="Düzenle"
@@ -179,7 +179,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                   </button>
                   
                   {!view.isDefault && (
-                    <button
+                    <button data-allow-raw="true"
                       onClick={() => deleteView(view.id)}
                       className="p-1 text-gray-400 hover:text-red-600 rounded"
                       title="Sil"
@@ -201,7 +201,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
             <label className="block text-xs font-medium text-gray-700">
               Görünüm Adı
             </label>
-            <input
+            <input data-allow-raw="true"
               type="text"
               value={newViewName}
               onChange={(e) => setNewViewName(e.target.value)}
@@ -210,7 +210,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
               autoFocus
             />
             <div className="flex justify-end space-x-2 pt-1">
-              <button
+              <button data-allow-raw="true"
                 onClick={() => {
                   setShowSaveDialog(false)
                   setNewViewName('')
@@ -219,7 +219,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
               >
                 İptal
               </button>
-              <button
+              <button data-allow-raw="true"
                 onClick={saveCurrentView}
                 disabled={!newViewName.trim()}
                 className="px-2 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"

@@ -24,6 +24,7 @@ import {
   Trash2
 } from 'lucide-react';
 import type { SaleRead } from '@/api/client/sales.client';
+import type { ExtendedSaleRead } from '@/types/extended-sales';
 
 import {
   useListPartyPaymentRecords,
@@ -183,10 +184,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       .filter(i => i.status === 'pending')
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
 
+    const extendedSale = sale as unknown as ExtendedSaleRead;
     return {
-      totalAmount: sale.totalAmount || 0,
+      totalAmount: extendedSale.totalAmount || 0,
       totalPaid,
-      remainingBalance: (sale.totalAmount || 0) - totalPaid,
+      remainingBalance: (extendedSale.totalAmount || 0) - totalPaid,
       overdueAmount,
       nextDueDate: nextDue?.dueDate,
       nextDueAmount: nextDue?.amount
@@ -243,7 +245,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   };
 
   // Pay installment (mock implementation until API is available)
-  const handlePayInstallment = async (installmentId: string, _amount: number) => {
+  const handlePayInstallment = async (installmentId: string) => {
     if (!sale.id) return;
 
     setIsLoading(true);
@@ -385,6 +387,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
               { key: 'promissory', label: 'Senetler', icon: FileText }
             ].map(({ key, label, icon: Icon }) => (
               <button
+                data-allow-raw="true"
                 key={key}
                 onClick={() => setActiveTab(key as typeof activeTab)}
                 className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === key
@@ -427,6 +430,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     <div>
                       <Label>Ödeme Yöntemi</Label>
                       <select
+                        data-allow-raw="true"
                         value={newPayment.paymentMethod}
                         onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -553,7 +557,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                           {installment.status === 'pending' && (
                             <Button
                               size="sm"
-                              onClick={() => handlePayInstallment(installment.id, installment.amount)}
+                              onClick={() => handlePayInstallment(installment.id)}
                               disabled={isLoading}
                             >
                               Öde

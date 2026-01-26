@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from '@tanstack/react-router';
+import { useParams } from '@tanstack/react-router';
 import { Phone, MessageCircle, MoreVertical, Calendar, Package, FileText, User } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { useParty } from '@/hooks/party/useParty';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
+import { Button } from '@x-ear/ui-web';
 
 type Tab = 'general' | 'appointments' | 'devices' | 'sales';
 
 export const MobilePartyDetailPage: React.FC = () => {
     const { partyId } = useParams({ strict: false }) as { partyId?: string };
-    const _navigate = useNavigate();
     const { party, isLoading } = useParty(partyId);
     const [activeTab, setActiveTab] = useState<Tab>('general');
     const { triggerSelection } = useHaptic();
@@ -42,9 +42,9 @@ export const MobilePartyDetailPage: React.FC = () => {
             <MobileHeader
                 title={`${party.firstName} ${party.lastName}`}
                 actions={
-                    <button className="p-2 text-gray-600">
+                    <Button variant="ghost" size="sm" className="p-2 text-gray-600">
                         <MoreVertical className="h-5 w-5" />
-                    </button>
+                    </Button>
                 }
             />
 
@@ -67,32 +67,35 @@ export const MobilePartyDetailPage: React.FC = () => {
 
                 {/* Quick Actions */}
                 <div className="grid grid-cols-2 gap-3">
-                    <button
+                    <Button
                         onClick={handleCall}
+                        variant="ghost"
                         className="flex items-center justify-center gap-2 py-2.5 bg-green-50 text-green-700 rounded-lg font-medium active:bg-green-100 transition-colors"
                     >
                         <Phone className="h-4 w-4" />
                         Ara
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={handleMessage}
+                        variant="ghost"
                         className="flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-700 rounded-lg font-medium active:bg-blue-100 transition-colors"
                     >
                         <MessageCircle className="h-4 w-4" />
                         Mesaj
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Tabs */}
             <div className="sticky top-14 bg-white border-b border-gray-100 z-20 flex overflow-x-auto hide-scrollbar">
                 {tabs.map((tab) => (
-                    <button
+                    <Button
                         key={tab.id}
                         onClick={() => {
                             setActiveTab(tab.id as Tab);
                             triggerSelection();
                         }}
+                        variant="ghost"
                         className={cn(
                             "flex items-center gap-2 px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors",
                             activeTab === tab.id
@@ -102,7 +105,7 @@ export const MobilePartyDetailPage: React.FC = () => {
                     >
                         {tab.icon}
                         {tab.label}
-                    </button>
+                    </Button>
                 ))}
             </div>
 

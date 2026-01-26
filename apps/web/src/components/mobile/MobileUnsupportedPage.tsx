@@ -30,6 +30,7 @@ export const MobileUnsupportedPage: React.FC<MobileUnsupportedPageProps> = ({
                 </p>
 
                 <button
+                    data-allow-raw="true"
                     onClick={() => navigate({ to: '/' })}
                     className="px-6 py-3 bg-white text-gray-700 font-medium rounded-xl border border-gray-200 shadow-sm w-full active:bg-gray-50 flex items-center justify-center gap-2"
                 >

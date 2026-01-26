@@ -1,8 +1,9 @@
 # Campaign and SMS Models
 from .base import db, BaseModel, gen_id, JSONMixin
+from .mixins import TenantScopedMixin
 import json
 
-class Campaign(BaseModel, JSONMixin):
+class Campaign(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'campaigns'
 
     # Primary key with auto-generated default
@@ -12,7 +13,7 @@ class Campaign(BaseModel, JSONMixin):
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     campaign_type = db.Column(db.String(50), default='sms')  # sms, email, notification
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Target audience
     target_segment = db.Column(db.String(50))  # lead, customer, trial, etc.
@@ -67,7 +68,7 @@ class Campaign(BaseModel, JSONMixin):
         campaign_dict.update(base_dict)
         return campaign_dict
 
-class SMSLog(BaseModel, JSONMixin):
+class SmsLog(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'sms_logs'
 
     # Primary key with auto-generated default
@@ -76,7 +77,7 @@ class SMSLog(BaseModel, JSONMixin):
     # Foreign keys
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # SMS details
     phone_number = db.Column(db.String(20), nullable=False)

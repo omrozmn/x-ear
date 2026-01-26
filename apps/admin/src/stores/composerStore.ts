@@ -28,7 +28,7 @@ interface ComposerState {
     selectedAction: Capability | null;
 
     // Slot State
-    slots: Record<string, any>; // Collected arguments
+    slots: Record<string, unknown>; // Collected arguments
     currentSlot: SlotConfig | null; // The slot currently being asked
 
     // Execution State
@@ -42,9 +42,9 @@ interface ComposerState {
     setQuery: (q: string) => void;
     setContext: (entity: EntityItem | null) => void;
     setAvailableActions: (actions: Capability[]) => void;
-    selectAction: (action: Capability) => void;
+    selectAction: (action: Capability, entities?: EntityItem[]) => void;
 
-    updateSlot: (key: string, value: any) => void;
+    updateSlot: (key: string, value: unknown) => void;
     nextSlot: () => void; // Advances to next slot or confirmation
 
     reset: () => void;
@@ -80,12 +80,37 @@ export const useComposerStore = create<ComposerState>()(
 
             setAvailableActions: (actions) => set({ availableActions: actions }),
 
-            selectAction: (action) => {
+            selectAction: (action, entities) => {
+                const currentState = get();
+                const initialSlots: Record<string, unknown> = {};
+
+                // Unified source for entities (either passed or from single context)
+                const sourceEntities = entities || (currentState.context ? [currentState.context] : []);
+
+                // Map all source entities to available slots
+                sourceEntities.forEach(entity => {
+                    const matchingSlot = action.slots?.find(s => {
+                        // Map context type to slot name conventions
+                        // legacy: patient_id compatibility for backward compatibility with old actions
+                        if (entity.type === 'patient' && (s.name === 'party_id' || s.name === 'patient_id')) return true;
+                        if (entity.type === 'device' && (s.name === 'device_id' || s.name === 'inventory_id')) return true;
+                        if (entity.type === 'invoice' && s.name === 'invoice_id') return true;
+                        if (entity.type === 'supplier' && s.name === 'supplier_id') return true;
+                        return false;
+                    });
+
+                    if (matchingSlot) {
+                        initialSlots[matchingSlot.name] = entity.id;
+                        initialSlots[`_${matchingSlot.name}_label`] = entity.label;
+                    }
+                });
+
                 set({
                     selectedAction: action,
-                    slots: {}, // Reset slots
+                    slots: initialSlots,
                     mode: 'slot_filling'
                 });
+
                 // Initialize first slot
                 const state = get();
                 state.nextSlot();

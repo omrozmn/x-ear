@@ -86,7 +86,7 @@ interface BulkSmsTabProps {
     creditLoading?: boolean;
 }
 
-export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoading: _creditLoading }) => {
+export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
     const [audienceFilters, setAudienceFilters] = useState<AudienceFilters>({ status: 'active' });
     const [mode, setMode] = useState<AudienceMode>('filters');
     const [message, setMessage] = useState('');
@@ -488,6 +488,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                     <UploadCloud className="w-4 h-4" /> Dosya Yükle
                 </Button>
                 <input
+                    data-allow-raw="true"
                     ref={fileInputRef}
                     type="file"
                     accept=".xlsx,.xls,.csv"
@@ -684,6 +685,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                     <div className="flex flex-wrap gap-2">
                         {DYNAMIC_FIELDS.map((field) => (
                             <button
+                                data-allow-raw="true"
                                 key={field.key}
                                 type="button"
                                 onClick={() => insertDynamicField(field.key)}
@@ -742,6 +744,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
                             <button
+                                data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
                                 className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >

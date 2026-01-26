@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Select, Card } from '@x-ear/ui-web';
+import { Input, Select, Card, Checkbox } from '@x-ear/ui-web';
 import { InventoryItem } from '../../../types/inventory';
 
 interface PricingInfoSectionProps {
@@ -54,11 +54,10 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                 Satış Fiyatı
               </label>
               <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={isPriceKdvIncluded}
                   onChange={(e) => onPriceKdvIncludedChange(e.target.checked)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mr-2"
+                  className="mr-2"
                   disabled={!isEditMode}
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
@@ -114,11 +113,10 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                 Maliyet
               </label>
               <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={isCostKdvIncluded}
                   onChange={(e) => onCostKdvIncludedChange(e.target.checked)}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mr-2"
+                  className="mr-2"
                   disabled={!isEditMode}
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>

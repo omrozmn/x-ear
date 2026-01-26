@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/bounce_management.py
+# hypothesis_version: 6.150.1
+
+[100, '/admin/bounces', '/stats', 'BOUNCE_NOT_FOUND', 'Bounce ID', 'Bounce reason', 'Current page', 'Email address', 'Hard bounce count', 'Items per page', 'List email bounces', 'List of bounces', 'Number of bounces', 'Page number', 'SMTP error code', 'Soft bounce count', 'Total bounce count', 'Total count', 'UNBLACKLIST_FAILED', 'admin', 'admin.bounces.manage', 'admin.bounces.view', 'code', 'getBounceStats', 'hard', 'listBounces', 'message', 'recipient', 'soft', 'unblacklistRecipient']

@@ -62,9 +62,9 @@ def gen_sale_id(tenant_id=None):
     database UNIQUE constraint. The tenant_id parameter is kept for backward
     compatibility but not used in ID generation.
     """
-    from datetime import datetime
+    from datetime import datetime, timezone
     from sqlalchemy import func
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     yy = str(now.year)[-2:]
     mm = f"{now.month:02d}"
     dd = f"{now.day:02d}"

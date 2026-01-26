@@ -85,7 +85,7 @@ export const ReplacementSummary: React.FC<ReplacementSummaryProps> = ({
 
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
-            <input
+            <input data-allow-raw="true"
               type="checkbox"
               id="createReturnInvoice"
               checked={createReturnInvoice}
@@ -102,7 +102,7 @@ export const ReplacementSummary: React.FC<ReplacementSummaryProps> = ({
               <label className="block text-sm font-medium text-gray-700">
                 Fatura Tipi
               </label>
-              <select
+              <select data-allow-raw="true"
                 value={invoiceType}
                 onChange={(e) => onInvoiceTypeChange(e.target.value as 'individual' | 'corporate' | 'e_archive')}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"

@@ -26,6 +26,7 @@ interface PartyCardProps {
   showActions?: boolean;
   compact?: boolean;
   className?: string;
+  // onPartyUpdate removed - not used in component
 }
 
 /**
@@ -146,6 +147,7 @@ export function PartyCard({
                   <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                     <div className="py-1">
                       <button
+                        data-allow-raw="true"
                         onClick={(e) => {
                           e.stopPropagation();
                           onClick?.(party);
@@ -159,6 +161,7 @@ export function PartyCard({
 
                       {onEdit && (
                         <button
+                          data-allow-raw="true"
                           onClick={(e) => {
                             e.stopPropagation();
                             onEdit(party);
@@ -173,6 +176,7 @@ export function PartyCard({
 
                       {onDelete && (
                         <button
+                          data-allow-raw="true"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDelete(party);
@@ -260,6 +264,7 @@ export function PartyCard({
                 <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                   <div className="py-1">
                     <button
+                      data-allow-raw="true"
                       onClick={(e) => {
                         e.stopPropagation();
                         onClick?.(party);
@@ -273,6 +278,7 @@ export function PartyCard({
 
                     {onEdit && (
                       <button
+                        data-allow-raw="true"
                         onClick={(e) => {
                           e.stopPropagation();
                           onEdit(party);
@@ -287,6 +293,7 @@ export function PartyCard({
 
                     {onDelete && (
                       <button
+                        data-allow-raw="true"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDelete(party);

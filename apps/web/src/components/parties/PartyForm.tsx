@@ -10,7 +10,11 @@ interface PartyFormProps {
   isModal?: boolean;
 }
 
-export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }: PartyFormProps) {
+import { useTranslation } from 'react-i18next';
+
+export function PartyForm({ party, onSave, onCancel }: PartyFormProps) {
+  const { t } = useTranslation(['patients', 'common', 'constants']);
+  // Removed unused isModal parameter
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -62,37 +66,39 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
     const newErrors: Record<string, string> = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'Ad gerekli';
+      newErrors.firstName = t('form.errors.first_name_required');
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Soyad gerekli';
+      newErrors.lastName = t('form.errors.last_name_required');
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Telefon gerekli';
+      newErrors.phone = t('form.errors.phone_required');
     } else if (!/^[0-9+\-\s()]+$/.test(formData.phone)) {
-      newErrors.phone = 'Geçerli telefon numarası girin';
+      newErrors.phone = t('form.errors.phone_invalid');
     }
 
     // TC Number validation with checksum (Turkish ID validation)
     if (formData.tcNumber) {
       if (!/^\d{11}$/.test(formData.tcNumber)) {
-        newErrors.tcNumber = 'TC Kimlik No 11 haneli olmalı';
+        newErrors.tcNumber = t('form.errors.tc_length');
       } else if (formData.tcNumber[0] === '0') {
-        newErrors.tcNumber = 'TC Kimlik No 0 ile başlayamaz';
+        newErrors.tcNumber = t('form.errors.tc_start_zero');
       } else {
         // Turkish ID checksum validation
         const digits = formData.tcNumber.split('').map(Number);
         const sum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
         if ((sum % 10) !== digits[10]) {
-          newErrors.tcNumber = 'Geçersiz TC Kimlik No';
+          newErrors.tcNumber = t('form.errors.tc_invalid');
         }
       }
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Geçerli email adresi girin';
+      if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = t('form.errors.email_invalid');
+      }
     }
 
     setErrors(newErrors);
@@ -180,27 +186,27 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Ad *</label>
+          <label className="block text-sm font-medium mb-1">{t('form.first_name')} *</label>
           <Input
             value={formData.firstName}
             onChange={(e) => handleInputChange('firstName', e.target.value)}
-            placeholder="Hasta adı"
+            placeholder={t('form.first_name')}
             error={errors.firstName}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Soyad *</label>
+          <label className="block text-sm font-medium mb-1">{t('form.last_name')} *</label>
           <Input
             value={formData.lastName}
             onChange={(e) => handleInputChange('lastName', e.target.value)}
-            placeholder="Hasta soyadı"
+            placeholder={t('form.last_name')}
             error={errors.lastName}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Telefon *</label>
+          <label className="block text-sm font-medium mb-1">{t('form.phone')} *</label>
           <Input
             value={formData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -210,7 +216,7 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">TC Kimlik No</label>
+          <label className="block text-sm font-medium mb-1">{t('form.tc_number')}</label>
           <Input
             value={formData.tcNumber}
             onChange={(e) => handleInputChange('tcNumber', e.target.value)}
@@ -221,7 +227,7 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Doğum Tarihi</label>
+          <label className="block text-sm font-medium mb-1">{t('form.birth_date')}</label>
           <Input
             type="date"
             value={formData.birthDate}
@@ -230,47 +236,47 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
+          <label className="block text-sm font-medium mb-1">{t('form.email')}</label>
           <Input
             type="email"
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
-            placeholder="hasta@email.com"
+            placeholder={t('form.email')}
             error={errors.email}
           />
         </div>
 
         <div>
           <Select
-            label="Cinsiyet"
+            label={t('form.gender')}
             value={formData.gender || ''}
             onChange={(e) => setFormData({ ...formData, gender: e.target.value as PartyGender })}
             options={[
-              { value: "", label: "Seçiniz" },
-              { value: "M", label: "Erkek" },
-              { value: "F", label: "Kadın" }
+              { value: "", label: t('form.gender_options.select') },
+              { value: "M", label: t('form.gender_options.male') },
+              { value: "F", label: t('form.gender_options.female') }
             ]}
             fullWidth
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Şube</label>
+          <label className="block text-sm font-medium mb-1">{t('form.branch')}</label>
           <Input
             value={formData.branch}
             onChange={(e) => handleInputChange('branch', e.target.value)}
-            placeholder="Şube adı"
+            placeholder={t('form.branch')}
           />
         </div>
 
         <div>
           <Select
-            label="Durum"
+            label={t('form.status')}
             value={formData.status || ''}
             onChange={(e) => setFormData({ ...formData, status: e.target.value as PartyStatus })}
             options={[
-              { value: "ACTIVE", label: "Aktif" },
-              { value: "INACTIVE", label: "Pasif" }
+              { value: "ACTIVE", label: t('party.status.active', { ns: 'constants' }) },
+              { value: "INACTIVE", label: t('party.status.inactive', { ns: 'constants' }) }
             ]}
             fullWidth
           />
@@ -278,15 +284,15 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
 
         <div>
           <Select
-            label="Segment"
+            label={t('form.segment')}
             value={formData.segment}
             onChange={(e) => setFormData({ ...formData, segment: e.target.value as PartySegment })}
             options={[
-              { value: "NEW", label: "Yeni" },
-              { value: "TRIAL", label: "Deneme" },
-              { value: "PURCHASED", label: "Satın Alınmış" },
-              { value: "CONTROL", label: "Kontrol" },
-              { value: "RENEWAL", label: "Yenileme" }
+              { value: "NEW", label: t('party.segment.new', { ns: 'constants' }) },
+              { value: "TRIAL", label: t('party.segment.trial', { ns: 'constants' }) },
+              { value: "PURCHASED", label: t('party.segment.purchased', { ns: 'constants' }) },
+              { value: "CONTROL", label: t('party.segment.control', { ns: 'constants' }) },
+              { value: "RENEWAL", label: t('party.segment.renewal', { ns: 'constants' }) }
             ]}
             fullWidth
           />
@@ -294,11 +300,11 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
 
         <div>
           <Select
-            label="Dönüşüm Aşaması"
+            label={t('form.conversion_step')}
             value={formData.conversionStep}
             onChange={(e) => setFormData({ ...formData, conversionStep: e.target.value as PartyConversionStep })}
             options={[
-              { value: "lead", label: "Potansiyel" },
+              { value: "lead", label: "Potansiyel" }, // Needs translation keys for Conversion Step if critical
               { value: "contacted", label: "İletişim Kuruldu" },
               { value: "appointment-scheduled", label: "Randevu Planlandı" },
               { value: "visited", label: "Ziyaret Edildi" },
@@ -313,34 +319,35 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Adres</label>
+        <label className="block text-sm font-medium mb-1">{t('form.address')}</label>
         <Textarea
           value={formData.address}
           onChange={(e) => handleInputChange('address', e.target.value)}
-          placeholder="Hasta adresi"
+          placeholder={t('form.address')}
           rows={3}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Notlar</label>
+        <label className="block text-sm font-medium mb-1">{t('form.notes')}</label>
         <Textarea
           value={formData.notes}
           onChange={(e) => handleInputChange('notes', e.target.value)}
-          placeholder="Hasta hakkında notlar"
+          placeholder={t('form.notes')}
           rows={3}
         />
       </div>
 
       <div className="flex items-center space-x-2">
         <input
+          data-allow-raw="true"
           type="checkbox"
           id="deviceTrial"
           checked={formData.deviceTrial}
           onChange={(e) => handleInputChange('deviceTrial', e.target.checked)}
           className="rounded border-gray-300"
         />
-        <label htmlFor="deviceTrial" className="text-sm">Cihaz denemesi yapıldı</label>
+        <label htmlFor="deviceTrial" className="text-sm">{t('form.device_trial')}</label>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
@@ -351,7 +358,7 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
             onClick={onCancel}
             disabled={isSubmitting}
           >
-            İptal
+            {t('cancel', { ns: 'common' })}
           </Button>
         )}
         <Button
@@ -359,7 +366,7 @@ export function PartyForm({ party, onSave, onCancel, isModal: _isModal = false }
           variant="primary"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Kaydediliyor...' : (party ? 'Güncelle' : 'Kaydet')}
+          {isSubmitting ? t('loading', { ns: 'common' }) : (party ? t('save', { ns: 'common' }) : t('add', { ns: 'common' }))}
         </Button>
       </div>
     </form>

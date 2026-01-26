@@ -1,8 +1,9 @@
 # Marketplace Integration Models
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 from sqlalchemy.orm import relationship
 
-class MarketplaceIntegration(BaseModel):
+class MarketplaceIntegration(BaseModel, TenantScopedMixin):
     __tablename__ = 'marketplace_integrations'
     
     id = db.Column(db.String(50), primary_key=True)
@@ -12,7 +13,7 @@ class MarketplaceIntegration(BaseModel):
         if not self.id:
             self.id = gen_id("mkt")
             
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     platform = db.Column(db.String(50), nullable=False) # trendyol, hepsiburada, n11, amazon
     name = db.Column(db.String(100)) # "My Trendyol Store"
@@ -40,7 +41,6 @@ class MarketplaceIntegration(BaseModel):
         base_dict = self.to_dict_base()
         mkt_dict = {
             'id': self.id,
-            'tenantId': self.tenant_id,
             'platform': self.platform,
             'name': self.name,
             'sellerId': self.seller_id,
@@ -55,7 +55,7 @@ class MarketplaceIntegration(BaseModel):
         mkt_dict.update(base_dict)
         return mkt_dict
 
-class MarketplaceProduct(BaseModel):
+class MarketplaceProduct(BaseModel, TenantScopedMixin):
     __tablename__ = 'marketplace_products'
     
     id = db.Column(db.String(50), primary_key=True)
@@ -65,6 +65,7 @@ class MarketplaceProduct(BaseModel):
         if not self.id:
             self.id = gen_id("mkp")
             
+    # tenant_id is now inherited from TenantScopedMixin
     integration_id = db.Column(db.String(50), db.ForeignKey('marketplace_integrations.id'), nullable=False)
     
     local_product_type = db.Column(db.String(20)) # device, accessory

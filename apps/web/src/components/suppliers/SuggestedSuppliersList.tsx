@@ -5,7 +5,8 @@ import {
     SuggestedSupplier,
     useAcceptSuggestedSupplier,
     useRejectSuggestedSupplier,
-    useSupplierInvoices
+    useSupplierInvoices,
+    PurchaseInvoice
 } from '../../hooks/useSupplierInvoices';
 
 interface SuggestedSuppliersListProps {
@@ -46,14 +47,14 @@ function InvoiceListSection({ supplierId }: { supplierId: number }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {invoices.map((inv: any) => (
+                        {invoices.map((inv: PurchaseInvoice) => (
                             <tr key={inv.id} className="border-t">
                                 <td className="px-4 py-2 text-sm">{inv.invoiceNumber}</td>
-                                <td className="px-4 py-2 text-sm">{new Date(inv.invoiceDate).toLocaleDateString('tr-TR')}</td>
+                                <td className="px-4 py-2 text-sm">{new Date(inv.date).toLocaleDateString('tr-TR')}</td>
                                 <td className="px-4 py-2 text-sm text-right">
                                     {new Intl.NumberFormat('tr-TR', {
                                         style: 'currency',
-                                        currency: inv.currency || 'TRY'
+                                        currency: 'TRY'
                                     }).format(inv.totalAmount)}
                                 </td>
                             </tr>
@@ -98,7 +99,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
     };
 
      
-    const columns: any = React.useMemo(
+    const columns = React.useMemo(
         () => {
             const safeAcceptMutation = acceptMutation || { isPending: false };
             const safeRejectMutation = rejectMutation || { isPending: false };
@@ -109,7 +110,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                     id: 'companyName',
                     header: 'Firma Adı',
                     accessorKey: 'companyName',
-                    cell: ({ row }: any) => (
+                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
                         <div className="flex items-center gap-2">
                             <div className="flex-shrink-0">
                                 <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
@@ -128,7 +129,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                     id: 'taxNumber',
                     header: 'Vergi No',
                     accessorKey: 'taxNumber',
-                    cell: ({ row }: any) => (
+                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
                         <div>
                             <div className="text-sm font-medium text-gray-900">{row.original?.taxNumber || 'N/A'}</div>
                             {row.original?.taxOffice && (
@@ -142,7 +143,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                     id: 'invoiceCount',
                     header: 'Fatura Sayısı',
                     accessorKey: 'invoiceCount',
-                    cell: ({ row }: any) => (
+                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
                         <div className="text-center">
                             <Badge variant="default">{row.original?.invoiceCount || 0} fatura</Badge>
                         </div>
@@ -153,7 +154,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                     id: 'totalAmount',
                     header: 'Toplam Tutar',
                     accessorKey: 'totalAmount',
-                    cell: ({ row }: any) => (
+                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
                         <div className="text-right font-medium">
                             {new Intl.NumberFormat('tr-TR', {
                                 style: 'currency',
@@ -167,7 +168,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                     id: 'invoiceDates',
                     header: 'İlk / Son Fatura',
                     accessorKey: 'lastInvoiceDate',
-                    cell: ({ row }: any) => (
+                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
                         <div className="text-sm text-gray-600">
                             {row.original?.firstInvoiceDate && (
                                 <div>{new Date(row.original.firstInvoiceDate).toLocaleDateString('tr-TR')}</div>
@@ -184,7 +185,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                     key: 'actions',
                     id: 'actions',
                     header: 'Aksiyonlar',
-                    cell: ({ row }: any) => (
+                    cell: ({ row }: { row: { original: SuggestedSupplier } }) => (
                         <div className="flex items-center gap-2">
                             <Button
                                 size="sm"
@@ -227,7 +228,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         <>
             <DataTable
                 data={safeSuppliers}
-                columns={columns}
+                columns={columns as unknown as never}
                 loading={isLoading}
             />
 

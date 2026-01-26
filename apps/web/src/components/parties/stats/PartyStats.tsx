@@ -23,7 +23,7 @@ interface StatItem {
   id: string
   name: string
   value: number
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   color: string
   bgColor: string
   trend?: {

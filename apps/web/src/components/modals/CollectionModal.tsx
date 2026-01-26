@@ -108,19 +108,20 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
       // @ts-expect-error - Generated types might trigger conflict until regen
       const resp = await createPaymentRecords(payload);
 
-      const result = (resp as { data?: any })?.data || resp;
+      const result = (resp as { data?: unknown })?.data || resp;
 
       // Call the callback if provided
       if (onCollectPayment) {
-        await onCollectPayment(result);
+        await onCollectPayment(result as PaymentRecord);
       }
 
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Payment collection error:', err);
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
       setError(
-        err?.response?.data?.error ||
-        err?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
         'Ödeme kaydedilemedi'
       );
     } finally {

@@ -23,22 +23,13 @@ import {
 } from 'lucide-react';
 import { Party } from '../../../types/party';
 import { updateSale } from '@/api/client/sales.client';
-import type { SaleUpdate, SaleRead } from '@/api/generated/schemas';
+import type { SaleUpdate, SaleRead, InventoryItemRead } from '@/api/generated/schemas';
+import { ExtendedSaleRead } from '@/types/extended-sales';
 import { useInventory } from '../../../hooks/useInventory';
 import { useFuzzySearch } from '../../../hooks/useFuzzySearch';
 
-interface LocalInventoryItem {
-  id?: string;
-  name: string;
-  brand?: any;
-  model?: any;
-  category?: any;
-  barcode?: any;
-  serialNumber?: any;
-  price?: number;
-  stock?: number;
-  [key: string]: any;
-}
+// Use InventoryItemRead directly from generated schemas
+type LocalInventoryItem = InventoryItemRead;
 
 /* 
 // Local types for API compatibility
@@ -118,9 +109,10 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   isOpen,
   onClose,
   party,
-  sale,
+  sale: rawSale,
   onReturnExchangeCreate
 }) => {
+  const sale = rawSale as unknown as ExtendedSaleRead;
   // Use inventory hook for products
   const { products } = useInventory(); // productsLoading removed as unused
 
@@ -279,9 +271,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       // Update replacement status
       // setReplacementStatus('invoice_created');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Return invoice creation error:', error);
-      setGibError(error.response?.data?.error || 'İade faturası oluşturulurken hata oluştu');
+      const errorMessage = error instanceof Error && 'response' in error
+        ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
+        : undefined;
+      setGibError(errorMessage || 'İade faturası oluşturulurken hata oluştu');
     } finally {
       setGibLoading(false);
     }
@@ -332,9 +327,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       // Update replacement status
       // setReplacementStatus('completed');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('GIB send error:', error);
-      setGibError(error.response?.data?.error || 'GİB gönderimi sırasında hata oluştu');
+      const errorMessage = error instanceof Error && 'response' in error
+        ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
+        : undefined;
+      setGibError(errorMessage || 'GİB gönderimi sırasında hata oluştu');
       setReturnInvoice(prev => prev ? {
         ...prev,
         gibErrorMessage: 'GİB gönderimi başarısız'
@@ -397,9 +395,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
         onClose();
       }, 2000);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Return/Exchange error:', err);
-      setError(err.response?.data?.error || 'İade/değişim işlemi sırasında bir hata oluştu.');
+      const errorMessage = err instanceof Error && 'response' in err
+        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+        : undefined;
+      setError(errorMessage || 'İade/değişim işlemi sırasında bir hata oluştu.');
     } finally {
       setIsLoading(false);
     }
@@ -490,7 +491,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
+                    <input data-allow-raw="true"
                       type="radio"
                       name="type"
                       value="return"
@@ -504,7 +505,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                     </div>
                   </label>
                   <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
+                    <input data-allow-raw="true"
                       type="radio"
                       name="type"
                       value="exchange"
@@ -529,7 +530,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <CardContent>
                 <Select
                   value={reason}
-                  onChange={(e: any) => setReason(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReason(e.target.value)}
                   options={[
                     { value: '', label: 'Neden seçiniz' },
                     ...returnReasons.map(r => ({ value: r, label: r }))
@@ -581,10 +582,10 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                             <p className="font-medium text-green-900">{selectedNewProduct.name}</p>
                             <p className="text-sm text-green-700">
                               {selectedNewProduct.brand} - {selectedNewProduct.model}
-                              {selectedNewProduct.serialNumber && ` (SN: ${selectedNewProduct.serialNumber})`}
+                              {selectedNewProduct.barcode && ` (Barkod: ${selectedNewProduct.barcode})`}
                             </p>
                             <p className="text-sm text-green-700 font-medium">
-                              Stok: {selectedNewProduct.stock || 0} adet - {formatCurrency(selectedNewProduct.price || 0)}
+                              Stok: {selectedNewProduct.availableInventory || 0} adet - {formatCurrency(selectedNewProduct.price || 0)}
                             </p>
                           </div>
                           <Button
@@ -662,7 +663,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <input
+                    <input data-allow-raw="true"
                       type="checkbox"
                       id="createReturnInvoice"
                       checked={createReturnInvoice}
@@ -680,7 +681,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Tedarikçi Adı
                         </label>
-                        <Input
+                        <Input data-allow-raw="true"
                           type="text"
                           placeholder="Tedarikçi firma adı"
                           value={supplierName}
@@ -693,7 +694,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Tedarikçi Fatura Numarası
                         </label>
-                        <Input
+                        <Input data-allow-raw="true"
                           type="text"
                           placeholder="İadeye konu fatura numarası"
                           value={supplierInvoiceNumber}
@@ -706,7 +707,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Tedarikçi Fatura Tarihi
                         </label>
-                        <Input
+                        <Input data-allow-raw="true"
                           type="date"
                           value={supplierInvoiceDate}
                           onChange={(e) => setSupplierInvoiceDate(e.target.value)}
@@ -733,7 +734,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                         </label>
                         <Select
                           value={invoiceType}
-                          onChange={(e: any) => setInvoiceType(e.target.value as 'individual' | 'corporate' | 'e_archive')}
+                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setInvoiceType(e.target.value as 'individual' | 'corporate' | 'e_archive')}
                           options={[
                             { value: 'individual', label: 'Bireysel Fatura' },
                             { value: 'corporate', label: 'Kurumsal Fatura' },

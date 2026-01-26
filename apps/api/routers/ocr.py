@@ -18,7 +18,7 @@ from schemas.base import ResponseEnvelope, ApiError
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 from schemas.ocr import (
-    OcrJobRead, OCRProcessRequest, SimilarityRequest, EntityExtractionRequest,
+    OcrJobRead, OcrProcessRequest, SimilarityRequest, EntityExtractionRequest,
     PatientExtractionRequest, DebugNERRequest, CreateJobRequest,
     OcrHealthResponse, OcrInitResponse, OcrProcessResponse, OcrSimilarityResponse,
     OcrEntitiesResponse, OcrPatientResponse, OcrDebugResponse
@@ -144,7 +144,7 @@ def initialize_nlp_endpoint(
 
 @router.post("/process", operation_id="createOcrProcess", response_model=ResponseEnvelope[OcrProcessResponse])
 def process_document(
-    request_data: OCRProcessRequest,
+    request_data: OcrProcessRequest,
     access: UnifiedAccess = Depends(require_access())
 ):
     """Process document with OCR"""

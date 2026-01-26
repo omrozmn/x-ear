@@ -1,0 +1,39 @@
+{
+    "nav": {
+        "dashboard": "Dashboard",
+        "patients": "Hastalar",
+        "appointments": "Randevular",
+        "invoices": {
+            "main": "Fatura",
+            "sales": "Satışlar",
+            "purchases": "Alışlar",
+            "new": "Yeni Fatura",
+            "payments": "Ödeme Takibi"
+        },
+        "inventory": "Envanter",
+        "suppliers": "Tedarikçiler",
+        "pos": "Tahsilat (POS)",
+        "cashflow": "Kasa",
+        "campaigns": "SMS Gönderimi",
+        "reports": "Raporlar",
+        "automation": "Otomasyon",
+        "communication": "İletişim",
+        "settings": {
+            "main": "Ayarlar",
+            "general": "Genel",
+            "integration": "Entegrasyon",
+            "team": "Ekip Yönetimi",
+            "subscription": "Abonelik"
+        }
+    },
+    "app": {
+        "title_desc": "Hasta Yönetim Sistemi"
+    },
+    "header": {
+        "search_placeholder": "AI ile arama yap veya işlem başlat...",
+        "profile": "Profil",
+        "logout": "Çıkış Yap",
+        "ai_status": "AI Durumu",
+        "notifications": "Bildirimler"
+    }
+}

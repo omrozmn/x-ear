@@ -21,7 +21,7 @@ interface PartyNotesTabProps {
   onPartyUpdate?: (party: Party) => void;
 }
 
-export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpdate: _onPartyUpdate }) => {
+export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
   const [notes, setNotes] = useState<PartyNote[]>(party.notes || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingNote, setEditingNote] = useState<PartyNote | null>(null);
@@ -52,16 +52,16 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpda
       // Let's look at import: listPartyNotes. 
       // If we use 'as any', we are bypassing. 
       // Let's safe-cast to unknown record for now to read .data if types are missing
-      const responseData = (response as unknown as { data: any[] })?.data || [];
+      const responseData = (response as unknown as { data: Array<{ id: string; content?: string; createdAt?: string; createdBy?: string; type?: string }> })?.data || [];
 
       if (Array.isArray(responseData)) {
         // Map API response to PartyNote interface
-        const notesList = responseData.map((note) => ({
+        const notesList: PartyNote[] = responseData.map((note) => ({
           id: note.id || '',
           text: note.content || '',
           date: note.createdAt || new Date().toISOString(),
           author: note.createdBy || 'system',
-          type: note.type || 'general'
+          type: (note.type as PartyNote['type']) || undefined
         }));
 
         setNotes(notesList);
@@ -154,7 +154,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpda
       await updatePartyNote(party.id || '', editingNote.id, updateBody);
 
       // Add timeline event for the edit
-      const timelineBody: any = {
+      const timelineBody: TimelineEventCreate = {
         type: 'note',
         title: 'Not Güncellendi',
         description: editNoteContent,
@@ -186,7 +186,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party, onPartyUpda
       await deletePartyNote(party.id || '', noteId);
 
       // Add timeline event for the deletion
-      const timelineBody: any = {
+      const timelineBody: TimelineEventCreate = {
         type: 'note',
         title: 'Not Silindi',
         description: 'Bir not silindi',

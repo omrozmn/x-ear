@@ -31,7 +31,7 @@ const ErrorMessage: React.FC<{ message: string; onRetry?: () => void }> = ({ mes
       <div className="flex-1">
         <p className="text-sm text-red-800">{message}</p>
         {onRetry && (
-          <button
+          <button data-allow-raw="true"
             onClick={onRetry}
             className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
           >
@@ -68,15 +68,40 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party }) => {
 
   // E-Receipt Query States
   const [eReceiptNo, setEReceiptNo] = useState('');
-  const [eReceiptResult, setEReceiptResult] = useState<any>(null);
+  const [eReceiptResult, setEReceiptResult] = useState<{
+    success: boolean;
+    receiptNo: string;
+    receiptDate: string;
+    doctorName: string;
+    validUntil: string;
+    materials: Array<{
+      code: string;
+      name: string;
+      kdv: string;
+      direction: string;
+      available: boolean;
+    }>;
+  } | null>(null);
   const [eReceiptLoading, setEReceiptLoading] = useState(false);
 
   // Party Reports States
-  const [partyReports, setPartyReports] = useState<any[]>([]);
+  const [partyReports, setPartyReports] = useState<Array<{
+    type: string;
+    date: string;
+    validUntil: string;
+    status: string;
+    renewalDate: string;
+    doctor: string;
+  }>>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
 
   // Device Rights States
-  const [deviceRights, setDeviceRights] = useState<any>(null);
+  const [deviceRights, setDeviceRights] = useState<{
+    deviceRight: boolean;
+    batteryRight: boolean;
+    lastUpdate: string;
+    validUntil: string | null;
+  } | null>(null);
   const [deviceRightsLoading, setDeviceRightsLoading] = useState(false);
 
   // Saved E-Receipts States
@@ -84,7 +109,15 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party }) => {
   const [savedEReceiptsLoading, setSavedEReceiptsLoading] = useState(false);
 
   // Device Assignment States
-  const [deviceAssignments, setDeviceAssignments] = useState<any[]>([]);
+  const [deviceAssignments, setDeviceAssignments] = useState<Array<{
+    id: string;
+    deviceId: string;
+    deviceName: string;
+    earSide: string;
+    assignedDate: string;
+    status: string;
+    serialNumber: string;
+  }>>([]);
   const [deviceAssignmentsLoading, setDeviceAssignmentsLoading] = useState(false);
 
   // Safe access to party data with fallbacks
@@ -424,7 +457,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party }) => {
   };
 
   // Edit e-receipt function (opens edit modal)
-  const editEReceipt = (updatedEReceipt: any) => {
+  const editEReceipt = (updatedEReceipt: SavedEReceipt) => {
     setSavedEReceipts(prev => prev.map(receipt =>
       receipt.id === updatedEReceipt.id ? updatedEReceipt : receipt
     ));
@@ -432,7 +465,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party }) => {
   };
 
   // Download party form function
-  const downloadPartyForm = (_eReceiptId: string) => {
+  const downloadPartyForm = () => {
     // Simulate download
     showSuccess('Başarılı', 'Hasta işlem formu indirildi');
   };

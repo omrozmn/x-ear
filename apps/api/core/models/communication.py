@@ -1,8 +1,9 @@
 # Communication Models (formerly Patient communication models)
 from .base import db, BaseModel, gen_id, JSONMixin
+from .mixins import TenantScopedMixin
 from datetime import datetime, timezone
 
-class EmailLog(BaseModel, JSONMixin):
+class EmailLog(BaseModel, JSONMixin, TenantScopedMixin):
     """Email communication log model"""
     __tablename__ = 'email_logs'
 
@@ -13,7 +14,7 @@ class EmailLog(BaseModel, JSONMixin):
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
     template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Email details
     to_email = db.Column(db.String(255), nullable=False)
@@ -123,7 +124,7 @@ class EmailLog(BaseModel, JSONMixin):
     )
 
 
-class CommunicationTemplate(BaseModel, JSONMixin):
+class CommunicationTemplate(BaseModel, JSONMixin, TenantScopedMixin):
     """Communication template model for SMS and Email templates"""
     __tablename__ = 'communication_templates'
 
@@ -135,7 +136,7 @@ class CommunicationTemplate(BaseModel, JSONMixin):
     description = db.Column(db.Text)
     template_type = db.Column(db.String(20), nullable=False)  # sms, email
     category = db.Column(db.String(50))  # appointment_reminder, payment_due, welcome, etc.
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Content
     subject = db.Column(db.String(500))  # For email templates
@@ -195,7 +196,7 @@ class CommunicationTemplate(BaseModel, JSONMixin):
     )
 
 
-class CommunicationHistory(BaseModel, JSONMixin):
+class CommunicationHistory(BaseModel, JSONMixin, TenantScopedMixin):
     """Unified communication history model"""
     __tablename__ = 'communication_history'
 
@@ -206,7 +207,7 @@ class CommunicationHistory(BaseModel, JSONMixin):
     party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
     template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     
     # Reference to specific communication log
     sms_log_id = db.Column(db.String(50), db.ForeignKey('sms_logs.id'), nullable=True)

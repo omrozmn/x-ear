@@ -52,9 +52,6 @@ const ROLE_LABELS: Record<string, string> = {
   stock_manager: 'Stok Yöneticisi',
 };
 
-// System roles that cannot be deleted (but can be renamed)
-const _SYSTEM_ROLES = ['tenant_admin'];
-
 // Local Permission interface - matches actual API response shape
 interface Permission {
   id: string;
@@ -151,7 +148,7 @@ export function RolePermissionsTab() {
         setCreateModalOpen(false);
         setNewRoleName('');
       },
-      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: { message?: string } | string }>) => {
         let errorMessage = 'Rol oluşturulurken bir hata oluştu';
 
         try {
@@ -192,7 +189,7 @@ export function RolePermissionsTab() {
         setEditingRole(null);
         setEditRoleName('');
       },
-      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: { message?: string } | string }>) => {
         let errorMessage = 'Rol güncellenirken bir hata oluştu';
 
         try {
@@ -256,7 +253,7 @@ export function RolePermissionsTab() {
         queryClient.invalidateQueries({ queryKey: getListPermissionsQueryKey() });
         setHasChanges(false);
       },
-      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: any }>) => {
+      onError: (error: AxiosError<{ error?: { message?: string; code?: string } | string; message?: string; detail?: { message?: string } | string }>) => {
         let errorMessage = 'İzinler güncellenirken bir hata oluştu';
 
         try {

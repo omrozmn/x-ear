@@ -61,9 +61,9 @@ export function PartyFormModal({
   const { data: branchesData } = useListBranches();
   const branches = unwrapArray<BranchRead>(branchesData);
 
-  const getSafeAddressProperty = (address: any, prop: string): unknown => {
+  const getSafeAddressProperty = (address: unknown, prop: string): unknown => {
     if (address && typeof address === 'object' && prop in address) {
-      return address[prop];
+      return (address as Record<string, unknown>)[prop];
     }
     return undefined;
   };
@@ -117,7 +117,7 @@ export function PartyFormModal({
         phone: initialData.phone || '',
         tcNumber: initialData.tcNumber || '',
         gender: initialData.gender || '',
-        birthDate: initialData.birthDate || '',
+        birthDate: (initialData.birthDate as string) || '',
         email: initialData.email || '',
         address: typeof initialData.address === 'string' ? initialData.address : initialData.addressFull || '',
         city: (getSafeAddressProperty(initialData.address, 'city') as string) || initialData.addressCity || '',
@@ -270,13 +270,16 @@ export function PartyFormModal({
       if (result) {
         onClose();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Form submission error:', error);
 
       // Check error structure comprehensively
-      const status = error?.response?.status || error?.status;
-      const errorData = error?.response?.data || error?.data;
-      const errorMsg = errorData?.error || errorData?.message || error?.message;
+      const errorObj = error as Record<string, unknown>;
+      const response = errorObj?.response as Record<string, unknown> | undefined;
+      const status = response?.status || errorObj?.status;
+      const errorData = response?.data || errorObj?.data;
+      const errorDataObj = errorData as Record<string, unknown> | undefined;
+      const errorMsg = errorDataObj?.error || errorDataObj?.message || errorObj?.message;
 
       console.log('Error status:', status);
       console.log('Error message:', errorMsg);
@@ -544,7 +547,7 @@ export function PartyFormModal({
                 Durum
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.status || ''}
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -563,7 +566,7 @@ export function PartyFormModal({
                 Segment
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.segment}
                   onChange={(e) => handleInputChange('segment', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -590,7 +593,7 @@ export function PartyFormModal({
                 Kazanım Türü
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.acquisitionType}
                   onChange={(e) => handleInputChange('acquisitionType', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -614,7 +617,7 @@ export function PartyFormModal({
                 Şube
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.branchId}
                   onChange={(e) => handleInputChange('branchId', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"

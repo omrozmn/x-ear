@@ -58,7 +58,7 @@ class S3Service:
                 filename = f"{uuid.uuid4().hex}"
             
             # Create S3 key with organization
-            timestamp = datetime.utcnow().strftime('%Y/%m/%d')
+            timestamp = datetime.now(timezone.utc).strftime('%Y/%m/%d')
             s3_key = f"{folder}/{tenant_id}/{timestamp}/{uuid.uuid4().hex}_{filename}"
             
             # Get file size
@@ -87,7 +87,7 @@ class S3Service:
                     'Metadata': {
                         'tenant_id': tenant_id,
                         'original_filename': filename,
-                        'upload_date': datetime.utcnow().isoformat()
+                        'upload_date': datetime.now(timezone.utc).isoformat()
                     }
                 }
             )
@@ -158,7 +158,7 @@ class S3Service:
         """
         # Secure filename and generate key
         safe_filename = secure_filename(filename)
-        timestamp = datetime.utcnow().strftime('%Y/%m/%d')
+        timestamp = datetime.now(timezone.utc).strftime('%Y/%m/%d')
         s3_key = f"{folder}/{tenant_id}/{timestamp}/{uuid.uuid4().hex}_{safe_filename}"
         
         if not content_type:
@@ -252,14 +252,14 @@ class S3Service:
                     'key': f"{prefix}2023/01/01/test1.pdf",
                     'filename': 'test1.pdf',
                     'size': 1024,
-                    'last_modified': datetime.utcnow().isoformat(),
+                    'last_modified': datetime.now(timezone.utc).isoformat(),
                     'url': f"https://mock-bucket.s3.mock-region.amazonaws.com/{prefix}2023/01/01/test1.pdf"
                 },
                 {
                     'key': f"{prefix}2023/01/02/image.png",
                     'filename': 'image.png',
                     'size': 2048,
-                    'last_modified': datetime.utcnow().isoformat(),
+                    'last_modified': datetime.now(timezone.utc).isoformat(),
                     'url': f"https://mock-bucket.s3.mock-region.amazonaws.com/{prefix}2023/01/02/image.png"
                 }
             ]

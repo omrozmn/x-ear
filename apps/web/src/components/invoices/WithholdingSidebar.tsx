@@ -71,13 +71,15 @@ export function WithholdingSidebar({
               Tevkifat İade Bilgileri
               {itemIndex !== undefined && ` - Satır ${itemIndex + 1}`}
             </h3>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={onClose}
               className="text-white hover:text-gray-200"
             >
               <X size={24} />
-            </button>
+            </Button>
           </div>
 
           {/* Content */}

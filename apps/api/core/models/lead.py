@@ -1,10 +1,11 @@
 from .base import db, BaseModel, gen_id
+from .mixins import TenantScopedMixin
 
-class Lead(BaseModel):
+class Lead(BaseModel, TenantScopedMixin):
     __tablename__ = 'leads'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('lead'))
-    tenant_id = db.Column(db.String(36), nullable=True, index=True)
+    # tenant_id is now inherited from TenantScopedMixin
     contact_name = db.Column(db.String(150))
     contact_phone = db.Column(db.String(50))
     contact_email = db.Column(db.String(150))

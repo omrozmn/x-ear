@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Input, Button, Loading } from '@x-ear/ui-web';
 import { Search, X, Clock, User, Phone, Filter } from 'lucide-react';
 import { PartySearchItem } from '../../types/party/party-search.types';
+import { PARTY_RECENT_SEARCHES } from '../../constants/storage-keys';
 
 export interface PartySearchFilters {
   query?: string;
@@ -72,11 +73,16 @@ export function PartySearch({
   // Load recent searches from localStorage
   useEffect(() => {
     if (showRecentSearches) {
-      const saved = localStorage.getItem('party-recent-searches');
+      const saved = localStorage.getItem(PARTY_RECENT_SEARCHES);
       if (saved) {
         try {
-          const parsed = JSON.parse(saved);
-          setRecentSearches(parsed.map((item: any) => ({
+          const parsed = JSON.parse(saved) as Array<{
+            id: string;
+            query: string;
+            timestamp: string;
+            resultCount: number;
+          }>;
+          setRecentSearches(parsed.map((item) => ({
             ...item,
             timestamp: new Date(item.timestamp)
           })));
@@ -126,7 +132,7 @@ export function PartySearch({
     ].slice(0, 10);
 
     setRecentSearches(updated);
-    localStorage.setItem('party-recent-searches', JSON.stringify(updated));
+    localStorage.setItem(PARTY_RECENT_SEARCHES, JSON.stringify(updated));
   }, [recentSearches, showRecentSearches]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,7 +152,7 @@ export function PartySearch({
     }
   }, [showRecentSearches, recentSearches.length, filters, onFiltersChange]);
 
-  const handleFilterChange = useCallback((key: keyof PartySearchFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof PartySearchFilters, value: string | string[] | boolean | undefined) => {
     const updatedFilters = { ...filters, [key]: value };
     setFilters(updatedFilters);
     onFiltersChange?.(updatedFilters);
@@ -210,7 +216,7 @@ export function PartySearch({
 
   const clearRecentSearches = useCallback(() => {
     setRecentSearches([]);
-    localStorage.removeItem('party-recent-searches');
+    localStorage.removeItem(PARTY_RECENT_SEARCHES);
   }, []);
 
   // Click outside handler
@@ -257,7 +263,7 @@ export function PartySearch({
         
         {/* Clear button */}
         {localValue && (
-          <button
+          <button data-allow-raw="true"
             type="button"
             onClick={handleClear}
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
@@ -269,7 +275,7 @@ export function PartySearch({
 
         {/* Filter toggle button */}
         {showFilters && (
-          <button
+          <button data-allow-raw="true"
             type="button"
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             className={`absolute inset-y-0 ${localValue ? 'right-8' : 'right-0'} pr-3 flex items-center`}
@@ -308,7 +314,7 @@ export function PartySearch({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Durum
               </label>
-              <select
+              <select data-allow-raw="true"
                 value={filters.status || ''}
                 onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -325,7 +331,7 @@ export function PartySearch({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Segment
               </label>
-              <select
+              <select data-allow-raw="true"
                 value={filters.segment || ''}
                 onChange={(e) => handleFilterChange('segment', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -343,7 +349,7 @@ export function PartySearch({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Kazanım Türü
               </label>
-              <select
+              <select data-allow-raw="true"
                 value={filters.acquisitionType || ''}
                 onChange={(e) => handleFilterChange('acquisitionType', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -362,7 +368,7 @@ export function PartySearch({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Başlangıç Tarihi
               </label>
-              <input
+              <input data-allow-raw="true"
                 type="date"
                 value={filters.dateFrom || ''}
                 onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
@@ -375,7 +381,7 @@ export function PartySearch({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Bitiş Tarihi
               </label>
-              <input
+              <input data-allow-raw="true"
                 type="date"
                 value={filters.dateTo || ''}
                 onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
@@ -388,7 +394,7 @@ export function PartySearch({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Şube
               </label>
-              <select
+              <select data-allow-raw="true"
                 value={filters.branchId || ''}
                 onChange={(e) => handleFilterChange('branchId', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

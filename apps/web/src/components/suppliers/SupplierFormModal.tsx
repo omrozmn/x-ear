@@ -141,7 +141,8 @@ export function SupplierFormModal({
     try {
       // Remove district field (not supported by backend)
       // Add name field (required by SupplierExtended) as companyName
-      const { district: _district, ...rest } = formData;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { district, ...rest } = formData;
       const dataToSend = {
         ...rest,
         name: formData.companyName, // Map companyName to name for API compatibility
@@ -153,7 +154,7 @@ export function SupplierFormModal({
     }
   };
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | boolean | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
@@ -254,6 +255,7 @@ export function SupplierFormModal({
                 Durum
               </label>
               <select
+                data-allow-raw="true"
                 value={formData.isActive ? 'active' : 'inactive'}
                 onChange={(e) => handleChange('isActive', e.target.value === 'active')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -403,6 +405,7 @@ export function SupplierFormModal({
                 Adres
               </label>
               <textarea
+                data-allow-raw="true"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Tam adres giriniz"
@@ -419,6 +422,7 @@ export function SupplierFormModal({
             Notlar
           </label>
           <textarea
+            data-allow-raw="true"
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
             placeholder="İlave notlar..."

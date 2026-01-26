@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/deliverability_alert_service.py
+# hypothesis_version: 6.150.1
+
+['...', 'CRITICAL', 'DELIVERABILITY ALERT', 'HIGH', 'LOW', 'MEDIUM', 'Slack alert prepared', 'admin@x-ear.com', 'admin_email', 'alert_count', 'alerts', 'metrics', 'severity', 'tenant_id', 'webhook_url', 'ℹ️', '⚠️', '🔴', '🚨']

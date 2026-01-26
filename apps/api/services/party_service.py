@@ -31,13 +31,14 @@ class PartyService:
                 detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
             )
         
-        if party.tenant_id != tenant_id:
+        # Allow 'system' tenant (Super Admin) or None to access any party
+        if tenant_id and tenant_id != 'system' and party.tenant_id != tenant_id:
             # Hide cross-tenant existence
             raise HTTPException(
                 status_code=404,
                 detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
             )
-            
+        
         return party
 
     def list_parties(
@@ -56,10 +57,12 @@ class PartyService:
         List parties with filtering and pagination.
         Returns (items, total_count, next_cursor)
         """
-        query = self.db.query(Party).options(joinedload(Party.branch))
+        # Removed joinedload(Party.branch) to avoid 500 error
+        query = self.db.query(Party)
         
         # Tenant Scope
-        query = query.filter_by(tenant_id=tenant_id)
+        if tenant_id != 'system':
+            query = query.filter_by(tenant_id=tenant_id)
         
         # Branch Filtering
         if branch_ids:
@@ -168,11 +171,6 @@ class PartyService:
         
         # Stream results in chunks
         # Implementation note: SQLite cursors might load all, but SQLAlchemy yield_per can help
-    def iter_parties(self, tenant_id: str):
-        """Iterator for large exports"""
-        query = self.db.query(Party).filter_by(tenant_id=tenant_id).execution_options(yield_per=100)
-        for party in query:
-            yield party
 
     def count_parties(self, tenant_id: str, status: str = None, segment: str = None) -> int:
         query = self.db.query(Party).filter_by(tenant_id=tenant_id)
@@ -279,19 +277,29 @@ class PartyService:
     def update_party(self, party_id: str, data: Dict[str, Any], tenant_id: str) -> Party:
         party = self.get_party(party_id, tenant_id)
         
-        # Helper map for Party fields
+        # Helper map for Party fields - Handle both camelCase (legacy/API) and snake_case (Pydantic model_dump)
         if 'firstName' in data: party.first_name = data['firstName']
+        elif 'first_name' in data: party.first_name = data['first_name']
+        
         if 'lastName' in data: party.last_name = data['lastName']
+        elif 'last_name' in data: party.last_name = data['last_name']
+        
         if 'phone' in data: party.phone = data['phone']
+        
         if 'email' in data: party.email = data['email']
+        
         if 'tcNumber' in data: party.tc_number = data['tcNumber']
-        if 'birthDate' in data:
-            d = data['birthDate']
+        elif 'tc_number' in data: party.tc_number = data['tc_number']
+        
+        if 'birthDate' in data or 'birth_date' in data:
+            d = data.get('birthDate') or data.get('birth_date')
             if isinstance(d, date) and not isinstance(d, datetime):
                  party.birth_date = datetime.combine(d, time.min)
             else:
                 party.birth_date = d
+        
         if 'gender' in data: party.gender = data['gender']
+        
         if 'status' in data:
             status_val = data['status']
             if hasattr(status_val, 'value'): # Enum
@@ -309,26 +317,35 @@ class PartyService:
         if 'branchId' in data: party.branch_id = data['branchId']
         if 'tags' in data:
             party.tags_json = data['tags']
+        elif 'tags_json' in data:
+            party.tags_json = data['tags_json']
             
         if 'sgkInfo' in data:
             party.sgk_info_json = data['sgkInfo']
+        elif 'sgk_info' in data:
+            party.sgk_info_json = data['sgk_info']
             
         if 'address' in data:
             addr = data['address']
             if addr:
                 if isinstance(addr, dict):
-                    party.address_city = addr.get('city')
-                    party.address_district = addr.get('district')
-                    party.address_full = addr.get('fullAddress') or addr.get('address')
+                    party.address_city = addr.get('city') or addr.get('addressCity')
+                    party.address_district = addr.get('district') or addr.get('addressDistrict')
+                    party.address_full = addr.get('fullAddress') or addr.get('address') or addr.get('addressFull')
                 elif hasattr(addr, 'city'):
-                     party.address_city = addr.city
-                     party.address_district = addr.district
-                     party.address_full = getattr(addr, 'fullAddress', None) or getattr(addr, 'address', None)
+                     party.address_city = getattr(addr, 'city', None) or getattr(addr, 'addressCity', None)
+                     party.address_district = getattr(addr, 'district', None) or getattr(addr, 'addressDistrict', None)
+                     party.address_full = getattr(addr, 'fullAddress', None) or getattr(addr, 'address', None) or getattr(addr, 'addressFull', None)
 
         # Update remaining attributes (if any other fields are passed directly)
+        skip_fields = [
+            'firstName', 'lastName', 'phone', 'email', 'tcNumber', 'birthDate', 
+            'gender', 'status', 'segment', 'branchId', 'tags', 'sgkInfo', 'address',
+            'first_name', 'last_name', 'tc_number', 'birth_date', 'sgk_info', 'branch_id'
+        ]
         for k, v in data.items():
             # Skip fields already handled or complex objects
-            if k not in ['firstName', 'lastName', 'phone', 'email', 'tcNumber', 'birthDate', 'gender', 'status', 'segment', 'branchId', 'tags', 'sgkInfo', 'address'] and hasattr(party, k):
+            if k not in skip_fields and hasattr(party, k):
                 setattr(party, k, v)
         
         try:
@@ -375,8 +392,8 @@ class PartyService:
         # Map assignments to the structure expected by frontend
         mapped_devices = []
         for assignment in assignments:
-            # Get full dict from model - this includes createdAt, assignedDate, sgkScheme, paymentMethod, etc.
-            d = assignment.to_dict() if hasattr(assignment, 'to_dict') else {}
+            # legacy: Complex hydration logic requires dict manipulation before schema conversion
+            d = assignment.to_dict() if hasattr(assignment, 'to_dict') else {}  # Get full dict from model
             
             # Hydrate with details from linked Device or Inventory
             brand = d.get('brand')

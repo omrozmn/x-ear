@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { WifiOff, Wifi } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
 export const GlobalOfflineAlert: React.FC = () => {
+    const { t } = useTranslation('common');
     const [isOffline, setIsOffline] = useState(!navigator.onLine);
     const [showBackOnline, setShowBackOnline] = useState(false);
     const queryClient = useQueryClient();
@@ -41,8 +43,8 @@ export const GlobalOfflineAlert: React.FC = () => {
             <div className="fixed bottom-4 left-4 z-[9999] bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                 <WifiOff className="h-5 w-5" />
                 <div>
-                    <h4 className="font-semibold text-sm">İnternet Bağlantısı Yok</h4>
-                    <p className="text-xs text-red-100">Değişiklikleriniz daha sonra kaydedilmek üzere sıraya alındı.</p>
+                    <h4 className="font-semibold text-sm">{t('status.offline_title')}</h4>
+                    <p className="text-xs text-red-100">{t('status.offline_desc')}</p>
                 </div>
             </div>
         );
@@ -53,8 +55,8 @@ export const GlobalOfflineAlert: React.FC = () => {
             <div className="fixed bottom-4 left-4 z-[9999] bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                 <Wifi className="h-5 w-5" />
                 <div>
-                    <h4 className="font-semibold text-sm">Bağlantı Kuruldu</h4>
-                    <p className="text-xs text-emerald-100">Veriler senkronize ediliyor...</p>
+                    <h4 className="font-semibold text-sm">{t('status.online_title')}</h4>
+                    <p className="text-xs text-emerald-100">{t('status.online_desc')}</p>
                 </div>
             </div>
         );

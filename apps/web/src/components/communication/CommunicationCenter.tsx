@@ -201,13 +201,13 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
 
   // Load data from offline storage on component mount
   useEffect(() => {
-    const loadOfflineData = () => {
+    const loadOfflineData = async () => {
       try {
-        const _offlineMessages = getMessages({});
-        // const offlineTemplates = getTemplates({});
+        const _offlineMessages = await getMessages({});
+        // const offlineTemplates = await getTemplates({});
 
         setMessages(_offlineMessages);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load offline data:', err);
         error('Çevrimdışı veriler yüklenirken hata oluştu');
       }
@@ -233,8 +233,8 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
         await forcSync();
       }
 
-      const _offlineMessages = getMessages({});
-      // const offlineTemplates = getTemplates({});
+      const _offlineMessages = await getMessages({});
+      // const offlineTemplates = await getTemplates({});
 
       // Convert hook's CommunicationTemplate to component's CommunicationTemplate
       /*

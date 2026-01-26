@@ -189,7 +189,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
     }
   }, [onTemplateCreate]);
 
-  const handleFormSubmit = useCallback(async (formData: Record<string, any>) => {
+  const handleFormSubmit = useCallback(async (formData: Record<string, unknown>) => {
     setFormState(prev => ({ ...prev, isSubmitting: true }));
 
     try {
@@ -197,9 +197,9 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
 
       if (formState.mode === 'create') {
         const createData: CreateInvoiceTemplateData = {
-          name: formData.name,
-          description: formData.description,
-          category: formData.category,
+          name: formData.name as string,
+          description: formData.description as string,
+          category: formData.category as string,
           templateData: formData,
           isActive: true
         };
@@ -215,9 +215,9 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
         }
       } else if (formState.mode === 'edit' && formState.template) {
         const updateData: UpdateInvoiceTemplateData = {
-          name: formData.name,
-          description: formData.description,
-          category: formData.category,
+          name: formData.name as string,
+          description: formData.description as string,
+          category: formData.category as string,
           templateData: formData
         };
 
@@ -569,7 +569,7 @@ interface TemplateFormModalProps {
   mode: 'create' | 'edit' | 'view';
   template: InvoiceTemplate | null;
   isSubmitting: boolean;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: Record<string, unknown>) => void;
   onClose: () => void;
 }
 
@@ -671,8 +671,8 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
           <div className="template-form-content">
             <h3 className="text-lg font-medium mb-4">Fatura Şablonu</h3>
             <DynamicInvoiceForm
-              initialData={template?.templateData as Record<string, any>}
-              onSubmit={(data: Record<string, any>) => setFormData((prev: any) => ({ ...prev, ...data }))}
+              initialData={template?.templateData as Record<string, unknown> | undefined}
+              onSubmit={(data: Record<string, unknown>) => setFormData((prev) => ({ ...prev, ...data }))}
               disabled={isReadOnly}
             />
           </div>

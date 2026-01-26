@@ -1,13 +1,27 @@
 /**
- * AI Chat Client
+ * AI Chat Client (Adapter Layer)
  * 
- * Wrapper for AI chat endpoints following best practices:
- * - Uses axios instance from orval-mutator
- * - Proper error handling
- * - Turkish error messages
+ * Re-exports Orval-generated functions following Rule 258.
+ * Provides a unified interface for AI-related operations.
+ * 
+ * @module api/client/ai.client
  */
 
 import { apiClient } from '../orval-mutator';
+export {
+  createActionApiAiActionsPost,
+  approveActionApiAiActionsActionIdApprovePost,
+  executeActionApiAiActionsActionIdExecutePost,
+  getActionApiAiActionsActionIdGet
+} from '../generated';
+
+export {
+  getStatusApiAiStatusGet as getAIStatus
+} from '../generated/ai-status/ai-status';
+
+export {
+  getPendingApprovalsApiAiAdminPendingApprovalsGet as getPendingActions
+} from '../generated/ai-admin/ai-admin';
 
 export interface ChatRequest {
   prompt: string;
@@ -34,7 +48,8 @@ export interface ChatResponse {
 }
 
 /**
- * Send a chat message to AI
+ * Send a chat message to AI (Manual implementation as it might not be in OpenAPI or needs specific wrapping)
+ * NOTE: If orval generates this, it should be replaced by a re-export.
  */
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
   const response = await apiClient.post<{ data: ChatResponse }>('/api/ai/chat', request, {
@@ -46,14 +61,3 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
   return response.data.data;
 }
 
-/**
- * Get AI status
- */
-export async function getAIStatus(): Promise<{
-  enabled: boolean;
-  phase: string;
-  modelId: string;
-}> {
-  const response = await apiClient.get<{ data: any }>('/api/ai/status');
-  return response.data.data;
-}

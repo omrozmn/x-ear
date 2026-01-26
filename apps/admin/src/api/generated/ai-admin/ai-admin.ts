@@ -25,13 +25,13 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AISettingsResponse,
-  AiApiAdminKillSwitchStatusResponse,
+  AiSettingsResponse,
   CleanupExpiredApprovalsApiAiAdminCleanupExpiredPost200,
   GetPendingApprovalsApiAiAdminPendingApprovalsGetParams,
   HTTPValidationError,
   KillSwitchRequest,
   KillSwitchResponse,
+  KillSwitchStatusResponse,
   PendingApprovalsListResponse
 } from '.././schemas';
 
@@ -50,7 +50,7 @@ export const getKillSwitchStatusApiAiAdminKillSwitchGet = (
 ) => {
       
       
-      return adminApi<AiApiAdminKillSwitchStatusResponse>(
+      return adminApi<KillSwitchStatusResponse>(
       {url: `/api/ai/admin/kill-switch`, method: 'GET', signal
     },
       );
@@ -372,7 +372,7 @@ export const getAiSettingsApiAiAdminSettingsGet = (
 ) => {
       
       
-      return adminApi<AISettingsResponse>(
+      return adminApi<AiSettingsResponse>(
       {url: `/api/ai/admin/settings`, method: 'GET', signal
     },
       );

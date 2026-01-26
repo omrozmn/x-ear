@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/services/ai_email_safety_service.py
+# hypothesis_version: 6.150.1
+
+[1000, 'CRITICAL', 'HIGH', 'LOW', 'MEDIUM', 'promotional']

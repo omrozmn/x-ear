@@ -256,6 +256,13 @@ apiClient.interceptors.request.use(
     // All roles (Tenant Admin, Super Admin) access the same endpoints.
     // Sub-resource filtering and permission checks are handled by AccessContext on the backend.
 
+    // DEMO MODE CHECK (Rule 4): Demo (9001) is read-only
+    const isDemoMode = typeof window !== 'undefined' && window.location.port === '9001';
+    if (isDemoMode && config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
+      console.warn('[orval-mutator] Demo modunda yazma işlemleri engellendi:', config.url);
+      return Promise.reject(new Error('Demo modunda sadece okuma yapılabilir.'));
+    }
+
     // Add idempotency key for non-GET requests
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
       const idempotencyKey = config.headers['Idempotency-Key'] || generateIdempotencyKey();

@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/spam_preview.py
+# hypothesis_version: 6.150.1
+
+['/admin/spam-preview', 'ALL CAPS', 'BLOCK', 'CAPS', 'CAUTION', 'Email body (HTML)', 'Email subject', 'HTML', 'HTML/text ratio', 'KEYWORD', 'LINK', 'List of warnings', 'MANY', 'Preview spam score', 'SPAM', 'SPAM keyword', 'Spam score (0-20+)', 'Warning category', 'Warning message', 'admin', 'admin.emails.send', 'content', 'formatting', 'high', 'keywords', 'link density', 'low', 'medium', 'previewSpamScore', 'punctuation', 'risk_level', 'spam_score', 'structure', 'warnings']

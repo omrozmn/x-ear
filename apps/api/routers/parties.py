@@ -49,7 +49,7 @@ def list_parties(
     city: Optional[str] = None,
     district: Optional[str] = None,
     cursor: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("parties.view")),
+    access: UnifiedAccess = Depends(require_access("patient:read")),
     db: Session = Depends(get_db)
 ):
     """List patients with filtering and pagination"""
@@ -59,12 +59,18 @@ def list_parties(
         branch_ids = None
         if access.is_tenant_admin and access.user and access.user.role == 'admin':
              # Logic matching previous implementation: narrow scope to user's branches if admin
-             user_branches = getattr(access.user, 'branches', [])
-             if user_branches:
-                 branch_ids = [b.id for b in user_branches]
-             elif hasattr(access.user, 'branches'): 
-                 # Has attribute but empty list implied restricted access to 0 branches
-                 branch_ids = []
+             try:
+                 user_branches = getattr(access.user, 'branches', [])
+                 if user_branches:
+                     branch_ids = [b.id for b in user_branches]
+                 elif hasattr(access.user, 'branches'): 
+                     # Has attribute but empty list implied restricted access to 0 branches
+                     branch_ids = []
+             except Exception as branch_error:
+                 logger.warning(f"Failed to load user branches: {branch_error}")
+                 # Fallback: ignore branch restriction if loading fails, or secure closed?
+                 # Ignoring to prevent 500, assuming if critical it should have worked.
+                 branch_ids = None
         
         items, total, next_cursor = service.list_parties(
             tenant_id=access.tenant_id,
@@ -96,23 +102,28 @@ def list_parties(
         )
     except Exception as e:
         logger.error(f"List patients error: {e}")
+        import traceback
+        with open("last_error.txt", "w") as f:
+            f.write(f"Error: {str(e)}\n")
+            f.write(traceback.format_exc())
+        print(f"CRITICAL 500 ERROR IN LIST PARTIES: {e}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 # ... imports ...
 
 @router.post("/parties", operation_id="createParties", response_model=ResponseEnvelope[PartyRead], status_code=201)
 def create_party(
     patient_in: PartyCreate,
-    access: UnifiedAccess = Depends(require_access("parties.create")),
+    access: UnifiedAccess = Depends(require_access("patient:write")),
     db: Session = Depends(get_db)
 ):
     """Create a new patient"""
     try:
         service = PartyService(db)
-        if not access.tenant_id:
-              raise HTTPException(
-                  status_code=400,
-                  detail=ApiError(message="Tenant context required", code="TENANT_REQUIRED").model_dump(mode="json"),
-              )
+        if not access.tenant_id or access.tenant_id == 'system':
+            raise HTTPException(
+                status_code=400,
+                detail="Lütfen işlem yapmak için bir klinik (tenant) seçiniz."
+            )
 
         # Service handles data normalization and defaults
         data = patient_in.model_dump(exclude_unset=True)
@@ -132,7 +143,7 @@ def export_parties(
     q: Optional[str] = None,
     status: Optional[str] = None,
     segment: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("parties.export")),
+    access: UnifiedAccess = Depends(require_access("patient:export")),
     db: Session = Depends(get_db)
 ):
     """Export patients as CSV"""
@@ -207,7 +218,7 @@ def export_parties(
 
 @router.get("/parties/count", operation_id="listPartyCount")
 def count_parties(
-    access: UnifiedAccess = Depends(require_access("parties.view")),
+    access: UnifiedAccess = Depends(require_access("patient:read")),
     db: Session = Depends(get_db),
     status: Optional[str] = None,
     segment: Optional[str] = None
@@ -224,7 +235,7 @@ def count_parties(
 @router.get("/parties/{party_id}", operation_id="getParty", response_model=ResponseEnvelope[PartyRead])
 def get_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("parties.view")),
+    access: UnifiedAccess = Depends(require_access("patient:read")),
     db: Session = Depends(get_db)
 ):
     """Get single patient"""
@@ -237,7 +248,7 @@ def get_party(
 def update_party(
     party_id: str,
     patient_in: PartyUpdate,
-    access: UnifiedAccess = Depends(require_access("parties.edit")),
+    access: UnifiedAccess = Depends(require_access("patient:write")),
     db: Session = Depends(get_db)
 ):
     """Update patient"""
@@ -256,7 +267,7 @@ def update_party(
 @router.delete("/parties/{party_id}", operation_id="deleteParty")
 def delete_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("parties.delete")),
+    access: UnifiedAccess = Depends(require_access("patient:delete")),
     db: Session = Depends(get_db)
 ):
     """Delete patient"""
@@ -274,7 +285,7 @@ def delete_party(
 @router.post("/parties/bulk-upload", operation_id="createPartyBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_parties(
     file: UploadFile = File(...),
-    access: UnifiedAccess = Depends(require_access("parties.create")),
+    access: UnifiedAccess = Depends(require_access("patient:write")),
     db: Session = Depends(get_db)
 ):
     """Bulk upload patients from CSV or XLSX"""

@@ -10,6 +10,7 @@ import { Invoice } from '@/types/invoice'; // Check import path
 import { formatCurrency, formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
+import { Input, Button } from '@x-ear/ui-web';
 
 export const MobileInvoicesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -74,9 +75,9 @@ export const MobileInvoicesPage: React.FC = () => {
                 title="Faturalar"
                 showBack={false}
                 actions={
-                    <button className="p-2 text-gray-600">
+                    <Button variant="ghost" size="sm" className="p-2 text-gray-600">
                         <Filter className="h-5 w-5" />
-                    </button>
+                    </Button>
                 }
             />
 
@@ -84,7 +85,7 @@ export const MobileInvoicesPage: React.FC = () => {
             <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 z-20">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
+                    <Input
                         type="text"
                         placeholder="Fatura no veya hasta ara..."
                         value={searchValue}

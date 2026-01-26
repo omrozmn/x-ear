@@ -38,7 +38,7 @@ class DeviceBase(AppBaseModel):
     # Pricing
     price: float = Field(0.0, description="Sale price")
     cost: float = Field(0.0, description="Cost price")
-    kdv_rate: float = Field(18.0, alias="kdvRate", description="VAT rate")
+    kdv_rate: float = Field(20.0, alias="kdvRate", description="VAT rate")
     
     # Features
     features: List[str] = Field(default=[], description="Device features")

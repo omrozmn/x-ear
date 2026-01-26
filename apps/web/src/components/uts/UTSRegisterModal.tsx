@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Textarea } from '@x-ear/ui-web';
 import { useStartBulkUtsRegistration } from '@/hooks/uts/useUts';
+import type { BulkRegistration } from '@/api/generated/schemas';
 
 const Schema = z.object({
   csv: z.string().min(1, 'CSV boş olamaz')
@@ -20,7 +21,8 @@ export const UTSRegisterModal: React.FC<{
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await startBulk.mutateAsync({ csv: data.csv } as unknown as any);
+      // Note: Backend expects deviceIds array, but we're sending csv for bulk processing
+      await startBulk.mutateAsync({ csv: data.csv } as unknown as BulkRegistration);
       onClose();
     } catch (e) {
       // on error, outbox fallback handled in UTSBulkUpload or service layer

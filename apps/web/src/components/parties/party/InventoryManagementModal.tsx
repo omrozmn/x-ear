@@ -82,7 +82,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
   isOpen,
   onClose,
   onInventoryUpdate,
-  isLoading: _isLoading = false
+  // isLoading parameter removed - not used (internal loading state used instead)
 }) => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');

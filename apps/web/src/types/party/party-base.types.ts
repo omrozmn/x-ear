@@ -40,9 +40,9 @@ export type PartyConversionStep =
   | 'delivered';
 
 // Device Types
-export type DeviceType = 'hearing_aid' | 'cochlear_implant' | 'bone_anchored' | (string & {});
+export type DeviceType = 'hearing_aid' | 'cochlear_implant' | 'bone_anchored' | 'accessory' | (string & Record<string, never>);
 export type DeviceSide = 'left' | 'right' | 'both';
-export type DeviceStatus = 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | (string & {});
+export type DeviceStatus = 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | 'inactive' | 'servicing' | (string & Record<string, never>);
 
 // SGK Types
 export type SGKStatus = 'pending' | 'approved' | 'rejected' | 'paid';
@@ -210,6 +210,7 @@ export interface HearingProfile {
 export interface Party extends OrvalParty {
   // NOTE: Many parts of the web app still use camelCase fields.
   // Orval's PartyRead is primarily snake_case. We allow both here.
+  id: string; // Explicitly include id from OrvalParty
   firstName?: string;
   lastName?: string;
   tcNumber?: string;
@@ -241,12 +242,12 @@ export interface Party extends OrvalParty {
   roles?: Array<{ code: string; is_primary?: boolean }>; // Added for Role/Profile separation
 
   // Fields from legacy party.ts
-  appointments?: any[]; // Avoiding circular dependency for now, or use 'Appointment[]' if imported
-  sales?: any[]; // Use 'Sale[]' if imported
-  reports?: any[]; // Use 'PartyReport[]' if imported
-  ereceiptHistory?: any[]; // Use 'EReceiptRecord[]' if imported
-  sgkWorkflow?: any; // Use 'SGKWorkflow' if imported
-  customData?: any; // Added to match PartyRead and legacy adapter usage
+  appointments?: unknown[]; // Avoiding circular dependency for now, or use 'Appointment[]' if imported
+  sales?: unknown[]; // Use 'Sale[]' if imported
+  reports?: unknown[]; // Use 'PartyReport[]' if imported
+  ereceiptHistory?: unknown[]; // Use 'EReceiptRecord[]' if imported
+  sgkWorkflow?: unknown; // Use 'SGKWorkflow' if imported
+  customData?: Record<string, unknown>; // Added to match PartyRead and legacy adapter usage
 
   // Common snake_case aliases for convenience and backend compatibility
   first_name?: string | undefined;
@@ -259,7 +260,7 @@ export interface Party extends OrvalParty {
   address_district?: string | undefined;
   address_full?: string | undefined;
   priority_score?: number | undefined;
-  sgk_info?: any;
+  sgk_info?: unknown;
 
   // UI helpers
   lastContactDate?: string;

@@ -8,7 +8,8 @@ export type InvoiceStatus =
   | 'rejected'     // reddedildi
   | 'cancelled'    // iptal
   | 'paid'         // odendi
-  | 'overdue';     // gecikmiş
+  | 'overdue'      // gecikmiş
+  | 'processing';  // işleniyor
 
 export type InvoiceType =
   | 'sale'         // satış faturası
@@ -217,6 +218,14 @@ export interface Invoice {
   pdfUrl?: string;
   xmlUrl?: string;
   attachments?: InvoiceAttachment[];
+
+  // New Birfatura & GIB fields
+  edocumentStatus?: string;
+  edocumentType?: string;
+  gibPdfLink?: string;
+  birfaturaSentAt?: string;
+  birfaturaApprovedAt?: string;
+  remoteMessage?: string;
 }
 
 export interface InvoiceAttachment {
@@ -399,6 +408,17 @@ export interface CreateInvoiceData {
   templateId?: string;
   saveAsTemplate?: boolean;
   templateName?: string;
+
+  // Birfatura & Specialized Data
+  taxOffice?: string;
+  returnReferenceNumber?: string;
+  returnReferenceDate?: string;
+  metadata?: Record<string, unknown>;
+  sgkData?: SGKInvoiceData;
+  returnInvoiceDetails?: ReturnInvoiceDetailsData;
+  exportDetails?: ExportDetailsData;
+  medicalDeviceData?: MedicalDeviceData;
+  withholdingData?: WithholdingData;
 }
 
 export interface UpdateInvoiceData extends Partial<CreateInvoiceData> {

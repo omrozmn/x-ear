@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DollarSign, MoreVertical, Eye, Edit, FileText, File } from 'lucide-react';
+import type { SaleRead } from '@/api/client/sales.client';
+import { ExtendedSaleRead } from '@/types/extended-sales';
 
 interface SalesListProps {
-  sales: any[];
-  filteredSales: any[];
+  sales: SaleRead[];
+  filteredSales: SaleRead[];
   hasActiveFilters?: boolean;
-  onSaleClick: (sale: any) => void;
-  onCreateInvoice: (sale: any) => void;
-  onViewInvoice: (sale: any) => void;
-  onManagePromissoryNotes: (sale: any) => void;
-  onCollectPayment: (sale: any) => void;
-  onManageInstallments: (sale: any) => void;
+  onSaleClick: (sale: SaleRead) => void;
+  onCreateInvoice: (sale: SaleRead) => void;
+  onViewInvoice: (sale: SaleRead) => void;
+  onManagePromissoryNotes: (sale: SaleRead) => void;
+  onCollectPayment: (sale: SaleRead) => void;
+  onManageInstallments: (sale: SaleRead) => void;
 }
 
 export const SalesList: React.FC<SalesListProps> = ({
@@ -71,12 +73,15 @@ export const SalesList: React.FC<SalesListProps> = ({
     return `₺${amount.toLocaleString('tr-TR')}`;
   };
 
-  const renderDevicesSummary = (sale: any) => {
-    if (sale.devices && sale.devices.length > 0) {
-      return sale.devices.map((d: any, index: number) => (
+  const renderDevicesSummary = (sale: SaleRead) => {
+    const saleData = sale as unknown as Record<string, unknown>;
+    const devices = saleData.devices as Array<Record<string, unknown>> | undefined;
+
+    if (devices && devices.length > 0) {
+      return devices.map((d, index: number) => (
         <div key={index} className="mb-1">
-          <div className="font-medium text-gray-900">{d.name || d.model || 'Cihaz'}</div>
-          <div className="text-xs text-gray-600">Marka: {d.brand || '-'} | Model: {d.model || '-'}</div>
+          <div className="font-medium text-gray-900">{(d.name || d.model || 'Cihaz') as string}</div>
+          <div className="text-xs text-gray-600">Marka: {(d.brand || '-') as string} | Model: {(d.model || '-') as string}</div>
         </div>
       ));
     }
@@ -94,11 +99,14 @@ export const SalesList: React.FC<SalesListProps> = ({
     return <div className="text-gray-500 text-sm">Ürün bilgisi yok</div>;
   };
 
-  const renderBarcodeSerialInfo = (sale: any) => {
-    if (sale.devices && sale.devices.length > 0) {
-      const device = sale.devices[0];
-      const barcode = device.barcode || device.serialNumber || '-';
-      const serial = device.serialNumber || '-';
+  const renderBarcodeSerialInfo = (sale: SaleRead) => {
+    const saleData = sale as unknown as Record<string, unknown>;
+    const devices = saleData.devices as Array<Record<string, unknown>> | undefined;
+
+    if (devices && devices.length > 0) {
+      const device = devices[0];
+      const barcode = (device.barcode || device.serialNumber || '-') as string;
+      const serial = (device.serialNumber || '-') as string;
 
       return (
         <div>
@@ -121,10 +129,13 @@ export const SalesList: React.FC<SalesListProps> = ({
     return '-';
   };
 
-  const renderPaymentMethods = (sale: any) => {
-    if (sale.paymentRecords && sale.paymentRecords.length > 0) {
-      const paidRecords = sale.paymentRecords.filter((r: any) => (r.status || 'paid') === 'paid');
-      return paidRecords.map((record: any, index: number) => {
+  const renderPaymentMethods = (sale: SaleRead) => {
+    const saleData = sale as unknown as ExtendedSaleRead;
+    const paymentRecords = saleData.paymentRecords as Array<{ status?: string, paymentMethod?: string, amount?: number }> | undefined;
+
+    if (paymentRecords && paymentRecords.length > 0) {
+      const paidRecords = paymentRecords.filter((r) => ((r.status || 'paid') as string) === 'paid');
+      return paidRecords.map((record, index: number) => {
         const methodLabels: Record<string, string> = {
           'cash': 'Nakit',
           'card': 'Kart',
@@ -132,10 +143,11 @@ export const SalesList: React.FC<SalesListProps> = ({
           'installment': 'Taksit',
           'promissory_note': 'Senet'
         };
-        const method = methodLabels[record.paymentMethod] || record.paymentMethod;
+        const method = methodLabels[record.paymentMethod as string] || (record.paymentMethod as string);
+        const amount = record.amount as number | undefined;
         return (
           <div key={index} className="text-xs">
-            {method}:{record.amount?.toLocaleString('tr-TR')}
+            {method}:{amount?.toLocaleString('tr-TR')}
           </div>
         );
       });
@@ -170,37 +182,40 @@ export const SalesList: React.FC<SalesListProps> = ({
     return badges[status] || badges['pending'];
   };
 
-  const calculatePaidAmount = (sale: any) => {
-    if (sale.paidAmount !== undefined && sale.paidAmount !== null) {
-      return parseFloat(sale.paidAmount) || 0;
-    } else if (sale.paid_amount !== undefined && sale.paid_amount !== null) {
-      return parseFloat(sale.paid_amount) || 0;
-    } else if (sale.paymentRecords && sale.paymentRecords.length > 0) {
-      const paidRecords = sale.paymentRecords.filter((r: any) => (r.status || 'paid') === 'paid');
-      return paidRecords.reduce((sum: number, record: any) => sum + (record.amount || 0), 0);
+  const calculatePaidAmount = (sale: SaleRead) => {
+    const extendedSale = sale as unknown as ExtendedSaleRead;
+    if (extendedSale.paidAmount !== undefined && extendedSale.paidAmount !== null) {
+      return parseFloat(String(extendedSale.paidAmount)) || 0;
+    } else if (extendedSale.paid_amount !== undefined && extendedSale.paid_amount !== null) {
+      return parseFloat(String(extendedSale.paid_amount)) || 0;
+    } else if (extendedSale.paymentRecords && Array.isArray(extendedSale.paymentRecords)) {
+      const paymentRecords = extendedSale.paymentRecords as Array<{ status?: string; amount?: number }>;
+      const paidRecords = paymentRecords.filter((r) => ((r.status || 'paid') as string) === 'paid');
+      return paidRecords.reduce((sum: number, record) => sum + ((record.amount as number) || 0), 0);
     }
     return 0;
   };
 
-  const calculatePartyPayable = (sale: any) => {
+  const calculatePartyPayable = (sale: SaleRead) => {
+    const extendedSale = sale as unknown as ExtendedSaleRead;
     // Return final amount directly as backend handles VAT logic and inclusivity
-    const partyPayable = sale.party_payment || sale.partyPayment || sale.totalPartyPayment || sale.finalAmount || sale.final_amount;
+    const partyPayable = extendedSale.party_payment || extendedSale.partyPayment || extendedSale.totalPartyPayment || extendedSale.finalAmount || extendedSale.final_amount;
 
     if (typeof partyPayable === 'number') return partyPayable;
 
     // Fallback calculation if finalAmount not explicit
-    const total = sale.totalAmount || 0;
-    const discount = sale.discountAmount || sale.discount_amount || 0;
-    const sgk = sale.sgkCoverage || 0;
+    const total = extendedSale.totalAmount || 0;
+    const discount = extendedSale.discountAmount || (extendedSale.discount_amount as number) || 0;
+    const sgk = extendedSale.sgkCoverage || 0;
     return total - discount - sgk;
   };
 
   // Deprecated client-side VAT calculation
-  const calculateTotalWithVat = (sale: any) => {
+  const calculateTotalWithVat = (sale: SaleRead) => {
     return calculatePartyPayable(sale);
   };
 
-  const calculateRemaining = (sale: any) => {
+  const calculateRemaining = (sale: SaleRead) => {
     const total = calculateTotalWithVat(sale);
     const paid = calculatePaidAmount(sale);
     return Math.max(0, total - paid);
@@ -263,7 +278,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="font-medium">{sale.id}</div>
                     <div className="text-xs text-gray-600">
-                      {new Date(sale.saleDate || sale.date || sale.createdAt).toLocaleDateString('tr-TR')}
+                      {new Date(sale.saleDate || sale.createdAt || '').toLocaleDateString('tr-TR')}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
@@ -273,13 +288,13 @@ export const SalesList: React.FC<SalesListProps> = ({
                     {renderBarcodeSerialInfo(sale)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                    {formatCurrency(sale.totalAmount || sale.total_amount || 0)}
+                    {formatCurrency((sale as unknown as ExtendedSaleRead).totalAmount || 0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600">
-                    {sale.discountAmount || sale.discount_amount ? `-${formatCurrency(sale.discountAmount || sale.discount_amount)}` : formatCurrency(0)}
+                    {(sale as unknown as ExtendedSaleRead).discountAmount ? `-${formatCurrency((sale as unknown as ExtendedSaleRead).discountAmount)}` : formatCurrency(0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600">
-                    {sale.sgkCoverage || sale.sgk_coverage ? `-${formatCurrency(sale.sgkCoverage || sale.sgk_coverage)}` : formatCurrency(0)}
+                    {(sale as unknown as ExtendedSaleRead).sgkCoverage ? `-${formatCurrency((sale as unknown as ExtendedSaleRead).sgkCoverage)}` : formatCurrency(0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(calculateTotalWithVat(sale))}
@@ -292,10 +307,11 @@ export const SalesList: React.FC<SalesListProps> = ({
                     {formatCurrency(remaining)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {renderStatusBadge(sale.status, paid, remaining)}
+                    {renderStatusBadge(sale.status || '', paid, remaining)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center relative" onClick={(e) => e.stopPropagation()}>
                     <button
+                      data-allow-raw="true"
                       onClick={(e) => {
                         e.stopPropagation();
                         setOpenMenuSaleId(prev => prev === sale.id ? null : (sale.id as string));
@@ -312,6 +328,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                         <ul className="py-1">
                           <li>
                             <button
+                              data-allow-raw="true"
                               onClick={(e) => { e.stopPropagation(); onViewInvoice(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -320,6 +337,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           </li>
                           <li>
                             <button
+                              data-allow-raw="true"
                               onClick={(e) => { e.stopPropagation(); onCreateInvoice(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -328,6 +346,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           </li>
                           <li>
                             <button
+                              data-allow-raw="true"
                               onClick={(e) => { e.stopPropagation(); onCollectPayment(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -336,6 +355,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           </li>
                           <li>
                             <button
+                              data-allow-raw="true"
                               onClick={(e) => { e.stopPropagation(); onManagePromissoryNotes(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -344,6 +364,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           </li>
                           <li>
                             <button
+                              data-allow-raw="true"
                               onClick={(e) => { e.stopPropagation(); onManageInstallments(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >

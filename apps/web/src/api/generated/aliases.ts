@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-24T22:12:43.737Z
+ * Generated: 2026-01-26T22:53:32.953Z
  */
 
 // ACTIVITY_LOGS
@@ -414,7 +414,7 @@ export {
   useCreateCommunicationMessageSendSms,
   useCreateCommunicationMessageSendEmail,
   useListCommunicationTemplates,
-  useCreateCommunicationTemplates,
+  useCreateCommunicationTemplate,
   useGetCommunicationTemplate,
   useUpdateCommunicationTemplate,
   useDeleteCommunicationTemplate,
@@ -493,11 +493,13 @@ export {
 export {
   useListInventory,
   useCreateInventory,
-  useListInventorySearch,
   useListInventoryStats,
+  useListInventorySearch,
   useListInventoryLowStock,
   useListInventoryUnits,
   useListInventoryActivity,
+  useListInventoryCategories,
+  useListInventoryBrands,
   useGetInventory,
   useUpdateInventory as useUpdateInventoryApiInventoryItemIdPut,
   useDeleteInventory as useDeleteInventoryApiInventoryItemIdDelete,
@@ -603,6 +605,7 @@ export {
 // PAYMENTS
 export {
   useCreatePaymentRecords,
+  useListPaymentRecords,
   useListPartyPaymentRecords,
   useUpdatePaymentRecord,
   useListPartyPromissoryNotes,

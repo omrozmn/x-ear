@@ -13,7 +13,7 @@
  * 6. Event-based token change notifications
  */
 
-import { AUTH_TOKEN, REFRESH_TOKEN } from '../constants/storage-keys';
+import { AUTH_TOKEN, REFRESH_TOKEN, AUTH_TOKEN_TIMESTAMP, CURRENT_TENANT_ID } from '../constants/storage-keys';
 
 // DEBUG: Install localStorage spy to catch who's deleting tokens
 if (typeof window !== 'undefined') {
@@ -74,7 +74,7 @@ class TokenManager {
   // Storage keys (canonical - single source)
   private readonly ACCESS_TOKEN_KEY = AUTH_TOKEN;      // 'x-ear.auth.token@v1'
   private readonly REFRESH_TOKEN_KEY = REFRESH_TOKEN;  // 'x-ear.auth.refresh@v1'
-  private readonly TOKEN_TIMESTAMP_KEY = 'x-ear.auth.timestamp@v1';
+  private readonly TOKEN_TIMESTAMP_KEY = AUTH_TOKEN_TIMESTAMP;
 
   // Legacy keys for migration/cleanup only
   private readonly LEGACY_ACCESS_KEYS = ['auth_token', 'token', 'jwt'];
@@ -428,8 +428,8 @@ class TokenManager {
       this.LEGACY_REFRESH_KEYS.forEach(key => localStorage.removeItem(key));
 
       // Clear other auth-related keys
-      localStorage.removeItem('auth_token_timestamp');
-      localStorage.removeItem('current_tenant_id');
+      localStorage.removeItem(AUTH_TOKEN_TIMESTAMP);
+      localStorage.removeItem(CURRENT_TENANT_ID);
 
       console.log('[TokenManager] Cleared storage');
     } catch (error) {

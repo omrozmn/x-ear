@@ -8,7 +8,7 @@ from schemas.auth import PasswordChangeRequest
 from schemas.parties import PartySearchFilters
 from schemas.users import UserPermissionRead, UserRoleRead, UserProfile
 from schemas.sms import SmsHeaderRequestUpdate, SmsProviderConfigCreate
-from schemas.campaigns import SMSLogRead
+from schemas.campaigns import SmsLogRead
 from schemas.tenants import TenantStats
 
 router = APIRouter(tags=["Developer"])
@@ -23,7 +23,7 @@ class SchemaRegistryResponse(AppBaseModel):
     user_permission_read: Optional[UserPermissionRead] = None
     user_role_read: Optional[UserRoleRead] = None
     sms_header_request_update: Optional[SmsHeaderRequestUpdate] = None
-    sms_log_read: Optional[SMSLogRead] = None
+    sms_log_read: Optional[SmsLogRead] = None
     sms_provider_config_create: Optional[SmsProviderConfigCreate] = None
     tenant_stats: Optional[TenantStats] = None
     user_profile: Optional[UserProfile] = None

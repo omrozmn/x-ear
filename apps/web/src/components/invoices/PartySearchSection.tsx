@@ -14,7 +14,8 @@ interface PartySearchSectionProps {
   };
 }
 
-export function PartySearchSection({ onPartySelect, selectedParty: _selectedParty }: PartySearchSectionProps) {
+export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
+  // Removed unused _selectedParty parameter
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedPartyData, setSelectedPartyData] = useState<Party | null>(null);
@@ -85,11 +86,12 @@ export function PartySearchSection({ onPartySelect, selectedParty: _selectedPart
           {showResults && parties.length > 0 && (
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
               {parties.map((party: Party) => (
-                <button
+                <Button
                   key={party.id}
                   type="button"
+                  variant="ghost"
                   onClick={() => handlePartySelect(party)}
-                  className="w-full px-4 py-3 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none border-b border-gray-100 last:border-b-0">
+                  className="w-full px-4 py-3 text-left hover:bg-blue-50 focus:bg-blue-50 border-b border-gray-100 last:border-b-0">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">
@@ -106,7 +108,7 @@ export function PartySearchSection({ onPartySelect, selectedParty: _selectedPart
                     </div>
                     <span className="text-blue-600">→</span>
                   </div>
-                </button>
+                </Button>
               ))}
             </div>
           )}

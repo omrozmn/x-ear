@@ -1,22 +1,8 @@
 import { useState, useEffect } from 'react';
 import { listInventory } from '@/api/client/inventory.client';
-import type { InventoryCategory, InventoryItem } from '@/types/inventory';
+import type { InventoryItem } from '@/types/inventory';
 import type { InventoryItemRead } from '@/api/generated/schemas';
 import type { ReplacementFormData, ReplacementFormState, Device } from '../types';
-
-function toInventoryCategory(value: unknown): InventoryCategory {
-  const v = typeof value === 'string' ? value : '';
-  const normalized = v.trim().toLowerCase();
-  const allowed: InventoryCategory[] = [
-    'hearing_aid',
-    'battery',
-    'accessory',
-    'ear_mold',
-    'cleaning_supplies',
-    'amplifiers',
-  ];
-  return (allowed as string[]).includes(normalized) ? (normalized as InventoryCategory) : 'hearing_aid';
-}
 
 export const useDeviceReplacement = (isOpen: boolean) => {
   const [formData, setFormData] = useState<ReplacementFormData>({
@@ -66,12 +52,12 @@ export const useDeviceReplacement = (isOpen: boolean) => {
       const items = response?.data || [];
       
       // Map backend response to InventoryItem type
-      const mappedItems: InventoryItem[] = (items as InventoryItemRead[]).map((item) => ({
+      const mappedItems: InventoryItem[] = items.map((item: InventoryItemRead) => ({
         id: item.id,
         name: `${item.brand || ''} ${item.model || ''}`.trim() || item.name || 'Bilinmeyen',
         brand: item.brand || '',
         model: item.model || '',
-        category: toInventoryCategory(item.category),
+        category: (item.category as InventoryItem['category']) || 'hearing_aid',
         price: item.price || 0,
         availableInventory: item.availableInventory ?? 0,
         totalInventory: item.totalInventory ?? 0,
@@ -80,7 +66,7 @@ export const useDeviceReplacement = (isOpen: boolean) => {
         availableSerials: item.availableSerials || [],
         barcode: item.barcode || '',
         createdAt: item.createdAt || new Date().toISOString(),
-        lastUpdated: item.updatedAt || new Date().toISOString(),
+        lastUpdated: item.updatedAt || new Date().toISOString()
       }));
       
       // Filter only items with available stock

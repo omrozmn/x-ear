@@ -16,7 +16,8 @@ class AppBaseModel(BaseModel):
         populate_by_name=True,
         alias_generator=to_camel,
         use_enum_values=True,
-        arbitrary_types_allowed=True
+        arbitrary_types_allowed=True,
+        protected_namespaces=()
     )
     
     @field_serializer('*', when_used='json', check_fields=False)
@@ -30,14 +31,14 @@ class IDMixin(BaseModel):
     """Mixin for models that have an ID."""
     id: str = Field(..., description="Unique identifier for the resource")
     
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, protected_namespaces=())
 
 class TimestampMixin(BaseModel):
     """Mixin for models that track creation and update times."""
     created_at: Optional[datetime] = Field(None, description="Creation timestamp", alias="createdAt")
     updated_at: Optional[datetime] = Field(None, description="Last update timestamp", alias="updatedAt")
     
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, protected_namespaces=())
 
 class ResponseMeta(AppBaseModel):
     """Metadata for response envelopes (pagination, etc.)"""
@@ -50,7 +51,7 @@ class ResponseMeta(AppBaseModel):
 
     model_config = ConfigDict(extra='allow')
 
-class ResponseEnvelope(BaseModel, Generic[T]):
+class ResponseEnvelope(AppBaseModel, Generic[T]):
     """
     Standard response envelope for all API responses.
     Matches the existing Flask 'success_response' format.
@@ -63,11 +64,6 @@ class ResponseEnvelope(BaseModel, Generic[T]):
     request_id: Optional[str] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    model_config = ConfigDict(
-        populate_by_name=True,
-        alias_generator=to_camel
-    )
-    
     @field_serializer('timestamp', when_used='json')
     def serialize_timestamp(self, value: datetime) -> str:
         """Serialize timestamp to ISO format string."""

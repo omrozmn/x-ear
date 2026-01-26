@@ -30,7 +30,7 @@ import type {
   EntityExtractionRequest,
   HTTPValidationError,
   ListOcrJobsParams,
-  OCRProcessRequest,
+  OcrProcessRequest,
   PatientExtractionRequest,
   ResponseEnvelopeListOcrJobRead,
   ResponseEnvelopeOcrDebugResponse,
@@ -273,7 +273,7 @@ export const useCreateOcrInitialize = <TError = unknown,
  * @summary Process Document
  */
 export const createOcrProcess = (
-    oCRProcessRequest: OCRProcessRequest,
+    ocrProcessRequest: OcrProcessRequest,
  signal?: AbortSignal
 ) => {
       
@@ -281,7 +281,7 @@ export const createOcrProcess = (
       return customInstance<ResponseEnvelopeOcrProcessResponse>(
       {url: `/api/ocr/process`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: oCRProcessRequest, signal
+      data: ocrProcessRequest, signal
     },
       );
     }
@@ -289,8 +289,8 @@ export const createOcrProcess = (
 
 
 export const getCreateOcrProcessMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OcrProcessRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OcrProcessRequest}, TContext> => {
 
 const mutationKey = ['createOcrProcess'];
 const {mutation: mutationOptions} = options ?
@@ -302,7 +302,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrProcess>>, {data: OCRProcessRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrProcess>>, {data: OcrProcessRequest}> = (props) => {
           const {data} = props ?? {};
 
           return  createOcrProcess(data,)
@@ -314,18 +314,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateOcrProcessMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrProcess>>>
-    export type CreateOcrProcessMutationBody = OCRProcessRequest
+    export type CreateOcrProcessMutationBody = OcrProcessRequest
     export type CreateOcrProcessMutationError = HTTPValidationError
 
     /**
  * @summary Process Document
  */
 export const useCreateOcrProcess = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OcrProcessRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createOcrProcess>>,
         TError,
-        {data: OCRProcessRequest},
+        {data: OcrProcessRequest},
         TContext
       > => {
 

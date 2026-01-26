@@ -6,6 +6,7 @@
 
 import type { PartyRead, PartyReadStatus, SaleRead } from '@/api/generated/schemas';
 import type { DeviceRead } from '@/api/client/devices.client';
+import type { ExtendedSaleRead } from '@/types/extended-sales';
 
 export interface AnalyticsTimeRange {
   start: string;
@@ -86,7 +87,7 @@ export interface PartyStats {
 
 export class PartyAnalyticsService {
 
-  calculatePartyStats(parties: PartyRead[], devices: DeviceRead[] = [], _sales: SaleRead[] = []): PartyStats {
+  calculatePartyStats(parties: PartyRead[], devices: DeviceRead[] = []): PartyStats {
     const totalParties = parties.length;
     const activeParties = parties.filter(p => p.status === 'ACTIVE').length;
 
@@ -110,7 +111,7 @@ export class PartyAnalyticsService {
     const partiesWithBirthDate = parties.filter(p => p.birthDate);
     const averageAge = partiesWithBirthDate.length > 0
       ? partiesWithBirthDate.reduce((sum, p) => {
-        const age = this.calculateAge(p.birthDate!);
+        const age = this.calculateAge(p.birthDate as string);
         return sum + age;
       }, 0) / partiesWithBirthDate.length
       : 0;
@@ -206,14 +207,16 @@ export class PartyAnalyticsService {
     const partiesWithBirthDate = parties.filter(p => p.birthDate);
 
     partiesWithBirthDate.forEach(party => {
-      const age = this.calculateAge(party.birthDate!);
-
-      if (age <= 18) ageGroups['0-18']++;
-      else if (age <= 30) ageGroups['19-30']++;
-      else if (age <= 45) ageGroups['31-45']++;
-      else if (age <= 60) ageGroups['46-60']++;
-      else if (age <= 75) ageGroups['61-75']++;
-      else ageGroups['76+']++;
+      // Ensure birthDate is not undefined (filtered above)
+      if (party.birthDate) {
+        const age = this.calculateAge(party.birthDate as string);
+        if (age <= 18) ageGroups['0-18']++;
+        else if (age <= 30) ageGroups['19-30']++;
+        else if (age <= 45) ageGroups['31-45']++;
+        else if (age <= 60) ageGroups['46-60']++;
+        else if (age <= 75) ageGroups['61-75']++;
+        else ageGroups['76+']++;
+      }
     });
 
     const total = partiesWithBirthDate.length;
@@ -274,7 +277,7 @@ export class PartyAnalyticsService {
     let outstandingBalance = 0;
 
     sales.forEach(sale => {
-      const amount = sale.totalAmount || 0;
+      const amount = (sale as unknown as ExtendedSaleRead).totalAmount || 0;
       totalRevenue += amount;
 
       // Estimate outstanding balance (placeholder logic)

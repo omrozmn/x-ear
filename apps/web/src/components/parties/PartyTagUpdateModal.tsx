@@ -126,7 +126,7 @@ export function PartyTagUpdateModal({
           <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Durum
           </label>
-          <select
+          <select data-allow-raw="true"
             id="status"
             value={status || ''}
             onChange={(e) => setStatus(e.target.value as PartyStatus)}
@@ -141,7 +141,7 @@ export function PartyTagUpdateModal({
           <label htmlFor="segment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Segment
           </label>
-          <select
+          <select data-allow-raw="true"
             id="segment"
             value={segment}
             onChange={(e) => setSegment(e.target.value as PartySegment)}
@@ -162,7 +162,7 @@ export function PartyTagUpdateModal({
           <label htmlFor="acquisitionType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Kazanım Türü
           </label>
-          <select
+          <select data-allow-raw="true"
             id="acquisitionType"
             value={acquisitionType}
             onChange={(e) => setAcquisitionType(e.target.value)}
@@ -183,7 +183,7 @@ export function PartyTagUpdateModal({
           <label htmlFor="branchId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Şube
           </label>
-          <select
+          <select data-allow-raw="true"
             id="branchId"
             value={branchId}
             onChange={(e) => setBranchId(e.target.value)}

@@ -300,15 +300,15 @@ def get_current(
     user = access.user
     
     # Super admin doesn't have tenant subscription
-    if not user or access.is_super_admin:
+    if not user or access.is_admin or access.is_super_admin:
         return ResponseEnvelope(data=CurrentSubscriptionResponse(
             tenant=None,
             plan=None,
             is_super_admin=True,
-            message='Super admin - no tenant subscription'
+            message='Admin context - no tenant subscription'
         ))
     
-    tenant = db.get(Tenant, user.tenant_id)
+    tenant = db.get(Tenant, access.tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
     
@@ -334,7 +334,7 @@ def get_current(
         days_remaining=days_remaining
     ))
 
-@router.post("/register-and-subscribe", operation_id="createSubscriptionRegisterAndSubscribe", response_model=ResponseEnvelope[SignupResponse])
+@router.post("/register-and-subscribe", operation_id="createSubscriptionRegisterAndSubscribe", response_model=ResponseEnvelope[SignupResponse], status_code=201)
 def register_and_subscribe(
     request_data: RegisterAndSubscribeRequest,
     db: Session = Depends(get_db)
@@ -410,9 +410,23 @@ def register_and_subscribe(
             is_active=True
         )
         user.set_password(request_data.password)
-        db.add(user)
-        
         db.commit()
+        
+        # Generate Referral Commission (Regression Fix)
+        if request_data.referral_code and plan.price and float(plan.price) > 0:
+            try:
+                from services.commission_service import CommissionService
+                commission_amount = float(plan.price) * 0.10  # 10% commission
+                CommissionService.create_commission(
+                    db=db,
+                    affiliate_id=tenant.affiliate_id,
+                    tenant_id=tenant.id,
+                    event='signup_subscription',
+                    amount=commission_amount
+                )
+            except Exception as e:
+                # Log error but don't fail registration
+                logger.error(f"Failed to create commission: {e}")
         
         # Generate Token
         access_token = create_access_token(identity=user.id)

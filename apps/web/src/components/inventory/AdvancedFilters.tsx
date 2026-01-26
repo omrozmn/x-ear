@@ -76,7 +76,6 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   onFiltersChange,
   onClearFilters,
   categories,
-  brands: _brands,
   suppliers,
   isExpanded = false,
   onToggleExpanded
@@ -400,9 +399,11 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             </label>
             <div className="flex flex-wrap gap-2">
               {availableFeatures.map((feature) => (
-                <button
+                <Button
                   key={feature}
                   onClick={() => handleFeatureToggle(feature)}
+                  variant="ghost"
+                  size="sm"
                   className="cursor-pointer hover:bg-opacity-80"
                 >
                   <Badge
@@ -413,7 +414,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                       <X className="w-3 h-3 ml-1" />
                     )}
                   </Badge>
-                </button>
+                </Button>
               ))}
             </div>
           </div>

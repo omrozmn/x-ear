@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/access_context.py
+# hypothesis_version: 6.150.1
+
+[401, '@', 'Admin', 'QA', 'Unauthorized', '_access_context', 'admin', 'admin_impersonator', 'allowed_tenants', 'claims', 'effective_role', 'effective_tenant_id', 'error', 'get_all_permissions', 'is_impersonating', 'permissions', 'principal_id', 'principal_kind', 'real_user_email', 'real_user_id', 'role_permissions', 'tenant_admin', 'tenant_id', 'user']

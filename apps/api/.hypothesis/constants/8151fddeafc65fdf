@@ -1,0 +1,4 @@
+# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/auth_principal.py
+# hypothesis_version: 6.150.1
+
+[401, 'Unauthorized', '_current_principal', 'admin', 'admin_', 'claims', 'error', 'id', 'is_super_admin', 'is_tenant_admin', 'is_tenant_member', 'is_tenant_user', 'kind', 'manager', 'owner', 'super_admin', 'tenant_admin', 'tenant_id', 'tenant_user']

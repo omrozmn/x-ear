@@ -40,7 +40,6 @@ export function useUploadSgkDocument(partyId: string) {
         // On network/offline failure, serialize file blob to IndexedDB and enqueue outbox operation
         try {
           if (file instanceof Blob) { // File is a subclass of Blob, so this covers both
-            const _fileObj = file; // No cast needed for basic Blob ops
             const filename = (file instanceof File ? file.name : 'unknown_file');
             const mime = file.type || 'application/octet-stream';
 

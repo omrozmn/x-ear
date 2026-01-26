@@ -290,8 +290,8 @@ def get_party_sgk_documents(
         
         # Get documents from patient's custom_data if available
         documents = []
-        if hasattr(patient, 'custom_data_json') and patient.custom_data_json:
-            documents = patient.custom_data_json.get('documents', [])
+        if hasattr(party, 'custom_data_json') and party.custom_data_json:
+            documents = party.custom_data_json.get('documents', [])
         
         return ResponseEnvelope(data=SgkDocumentListResponse(documents=documents, count=len(documents), timestamp=datetime.now().isoformat()))
     except HTTPException:
