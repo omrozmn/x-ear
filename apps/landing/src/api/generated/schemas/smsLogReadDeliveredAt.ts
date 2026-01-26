@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Creation timestamp
- */
-export type SMSLogReadCreatedAt = string | null;
+export type SmsLogReadDeliveredAt = string | null;

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSLogReadCost = number | null;
+/**
+ * Last update timestamp
+ */
+export type SmsLogReadUpdatedAt = string | null;

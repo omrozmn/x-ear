@@ -5,18 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeSMSLogReadData } from './responseEnvelopeSMSLogReadData';
-import type { ResponseEnvelopeSMSLogReadMessage } from './responseEnvelopeSMSLogReadMessage';
-import type { ResponseEnvelopeSMSLogReadError } from './responseEnvelopeSMSLogReadError';
-import type { ResponseEnvelopeSMSLogReadMeta } from './responseEnvelopeSMSLogReadMeta';
-import type { ResponseEnvelopeSMSLogReadRequestId } from './responseEnvelopeSMSLogReadRequestId';
+import type { ResponseEnvelopeSmsLogReadData } from './responseEnvelopeSmsLogReadData';
+import type { ResponseEnvelopeSmsLogReadMessage } from './responseEnvelopeSmsLogReadMessage';
+import type { ResponseEnvelopeSmsLogReadError } from './responseEnvelopeSmsLogReadError';
+import type { ResponseEnvelopeSmsLogReadMeta } from './responseEnvelopeSmsLogReadMeta';
+import type { ResponseEnvelopeSmsLogReadRequestId } from './responseEnvelopeSmsLogReadRequestId';
 
-export interface ResponseEnvelopeSMSLogRead {
+export interface ResponseEnvelopeSmsLogRead {
   success?: boolean;
-  data?: ResponseEnvelopeSMSLogReadData;
-  message?: ResponseEnvelopeSMSLogReadMessage;
-  error?: ResponseEnvelopeSMSLogReadError;
-  meta?: ResponseEnvelopeSMSLogReadMeta;
-  requestId?: ResponseEnvelopeSMSLogReadRequestId;
+  data?: ResponseEnvelopeSmsLogReadData;
+  message?: ResponseEnvelopeSmsLogReadMessage;
+  error?: ResponseEnvelopeSmsLogReadError;
+  meta?: ResponseEnvelopeSmsLogReadMeta;
+  requestId?: ResponseEnvelopeSmsLogReadRequestId;
   timestamp?: string;
 }

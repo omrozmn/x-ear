@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSLogReadErrorMessage = string | null;
+export type SmsLogReadErrorMessage = string | null;

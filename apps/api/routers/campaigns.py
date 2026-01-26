@@ -11,7 +11,7 @@ import logging
 
 from schemas.base import ResponseEnvelope, ApiError
 from schemas.campaigns import CampaignCreate, CampaignUpdate, CampaignRead, CampaignSendRequest
-from models.campaign import Campaign as CampaignModel, SMSLog
+from models.campaign import Campaign as CampaignModel, SmsLog as SMSLog
 from models.sms_integration import SMSProviderConfig, TenantSMSCredit
 from services.sms_service import VatanSMSService
 from core.models.party import Party

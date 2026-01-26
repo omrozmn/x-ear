@@ -14293,7 +14293,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SendSMS'
+              $ref: '#/components/schemas/SendSms'
         required: true
       responses:
         '200':
@@ -14301,7 +14301,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope_SMSLogRead_'
+                $ref: '#/components/schemas/ResponseEnvelope_SmsLogRead_'
         '422':
           description: Validation Error
           content:
@@ -32603,41 +32603,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[RoleResponse]
-    ResponseEnvelope_SMSLogRead_:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/SMSLogRead'
-          - type: 'null'
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[SMSLogRead]
     ResponseEnvelope_SMTPConfigResponse_:
       properties:
         success:
@@ -32953,6 +32918,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[SmsHeaderRequestRead]
+    ResponseEnvelope_SmsLogRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SmsLogRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[SmsLogRead]
     ResponseEnvelope_SpamPreviewResponse_:
       properties:
         success:
@@ -34358,82 +34358,6 @@ components:
       - quota
       title: SLAMetricsResponse
       description: Complete SLA metrics response.
-    SMSLogRead:
-      properties:
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Creation timestamp
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
-        campaignId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Campaignid
-        partyId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Partyid
-        phoneNumber:
-          type: string
-          title: Phonenumber
-        message:
-          type: string
-          title: Message
-        status:
-          $ref: '#/components/schemas/SMSLogStatus'
-        sentAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Sentat
-        deliveredAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Deliveredat
-        errorMessage:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Errormessage
-        cost:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Cost
-          default: 0.0
-      type: object
-      required:
-      - id
-      - phoneNumber
-      - message
-      - status
-      title: SMSLogRead
-    SMSLogStatus:
-      type: string
-      enum:
-      - pending
-      - sent
-      - delivered
-      - failed
-      title: SMSLogStatus
     SMTPConfigCreate:
       properties:
         host:
@@ -35001,7 +34925,7 @@ components:
           - type: 'null'
         smsLogRead:
           anyOf:
-          - $ref: '#/components/schemas/SMSLogRead'
+          - $ref: '#/components/schemas/SmsLogRead'
           - type: 'null'
         smsProviderConfigCreate:
           anyOf:
@@ -35156,7 +35080,7 @@ components:
       - message
       title: SendEmailResponse
       description: Schema for email sending response.
-    SendSMS:
+    SendSms:
       properties:
         phoneNumber:
           type: string
@@ -35178,7 +35102,7 @@ components:
       required:
       - phoneNumber
       - message
-      title: SendSMS
+      title: SendSms
     SendTestEmailRequest:
       properties:
         recipient:
@@ -35470,6 +35394,82 @@ components:
       - domain
       - other
       title: SmsHeaderType
+    SmsLogRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        campaignId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Campaignid
+        partyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partyid
+        phoneNumber:
+          type: string
+          title: Phonenumber
+        message:
+          type: string
+          title: Message
+        status:
+          $ref: '#/components/schemas/SmsLogStatus'
+        sentAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Sentat
+        deliveredAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deliveredat
+        errorMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Errormessage
+        cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost
+          default: 0.0
+      type: object
+      required:
+      - id
+      - phoneNumber
+      - message
+      - status
+      title: SmsLogRead
+    SmsLogStatus:
+      type: string
+      enum:
+      - pending
+      - sent
+      - delivered
+      - failed
+      title: SmsLogStatus
     SmsPackageCreate:
       properties:
         name:

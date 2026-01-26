@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSLogStatus = typeof SMSLogStatus[keyof typeof SMSLogStatus];
+export type SmsLogStatus = typeof SmsLogStatus[keyof typeof SmsLogStatus];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SMSLogStatus = {
+export const SmsLogStatus = {
   pending: 'pending',
   sent: 'sent',
   delivered: 'delivered',

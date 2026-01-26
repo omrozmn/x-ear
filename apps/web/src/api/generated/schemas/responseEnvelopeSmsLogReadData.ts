@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSLogRead } from './sMSLogRead';
+import type { SmsLogRead } from './smsLogRead';
 
-export type ResponseEnvelopeSMSLogReadData = SMSLogRead | null;
+export type ResponseEnvelopeSmsLogReadData = SmsLogRead | null;

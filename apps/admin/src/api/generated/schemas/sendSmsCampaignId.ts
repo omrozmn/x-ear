@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SendSMSCampaignId = string | null;
+export type SendSmsCampaignId = string | null;

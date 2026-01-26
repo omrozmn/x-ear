@@ -26,7 +26,7 @@ from core.models.party import Party
 from models.appointment import Appointment
 from models.sales import Sale, DeviceAssignment, PaymentRecord
 from models.device import Device
-from models.campaign import Campaign, SMSLog
+from models.campaign import Campaign, SmsLog as SMSLog
 from models.promissory_note import PromissoryNote
 from models.enums import AppointmentStatus
 from middleware.unified_access import UnifiedAccess, require_access, require_admin

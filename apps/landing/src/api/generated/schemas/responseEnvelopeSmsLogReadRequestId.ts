@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseEnvelopeSMSLogReadRequestId = string | null;
+export type ResponseEnvelopeSmsLogReadRequestId = string | null;

@@ -36,10 +36,10 @@ import type {
   ResponseEnvelopeEmailLogRead,
   ResponseEnvelopeListCommunicationHistoryRead,
   ResponseEnvelopeListCommunicationTemplateRead,
-  ResponseEnvelopeSMSLogRead,
+  ResponseEnvelopeSmsLogRead,
   SchemasCommunicationsTemplateCreate,
   SendEmail,
-  SendSMS
+  SendSms
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -146,15 +146,15 @@ export function useListCommunicationMessages<TData = Awaited<ReturnType<typeof l
  * @summary Send Sms
  */
 export const createCommunicationMessageSendSms = (
-    sendSMS: SendSMS,
+    sendSms: SendSms,
  signal?: AbortSignal
 ) => {
       
       
-      return adminApi<ResponseEnvelopeSMSLogRead>(
+      return adminApi<ResponseEnvelopeSmsLogRead>(
       {url: `/api/communications/messages/send-sms`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: sendSMS, signal
+      data: sendSms, signal
     },
       );
     }
@@ -162,8 +162,8 @@ export const createCommunicationMessageSendSms = (
 
 
 export const getCreateCommunicationMessageSendSmsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSMS}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSMS}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSms}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSms}, TContext> => {
 
 const mutationKey = ['createCommunicationMessageSendSms'];
 const {mutation: mutationOptions} = options ?
@@ -175,7 +175,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, {data: SendSMS}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, {data: SendSms}> = (props) => {
           const {data} = props ?? {};
 
           return  createCommunicationMessageSendSms(data,)
@@ -187,18 +187,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateCommunicationMessageSendSmsMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>>
-    export type CreateCommunicationMessageSendSmsMutationBody = SendSMS
+    export type CreateCommunicationMessageSendSmsMutationBody = SendSms
     export type CreateCommunicationMessageSendSmsMutationError = HTTPValidationError
 
     /**
  * @summary Send Sms
  */
 export const useCreateCommunicationMessageSendSms = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSMS}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSms}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createCommunicationMessageSendSms>>,
         TError,
-        {data: SendSMS},
+        {data: SendSms},
         TContext
       > => {
 

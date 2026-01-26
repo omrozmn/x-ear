@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Last update timestamp
- */
-export type SMSLogReadUpdatedAt = string | null;
+export type SmsLogReadSentAt = string | null;

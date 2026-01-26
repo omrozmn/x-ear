@@ -68,7 +68,7 @@ class Campaign(BaseModel, JSONMixin, TenantScopedMixin):
         campaign_dict.update(base_dict)
         return campaign_dict
 
-class SMSLog(BaseModel, JSONMixin, TenantScopedMixin):
+class SmsLog(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'sms_logs'
 
     # Primary key with auto-generated default

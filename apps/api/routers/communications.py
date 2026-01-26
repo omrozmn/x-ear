@@ -10,7 +10,7 @@ import logging
 
 from database import get_db
 from models.communication import EmailLog, CommunicationTemplate, CommunicationHistory
-from models.campaign import SMSLog
+from models.campaign import SmsLog as SMSLog
 from core.models.party import Party
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope, ResponseMeta
