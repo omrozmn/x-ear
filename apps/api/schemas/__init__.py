@@ -206,7 +206,7 @@ from .sms_packages import DetailedSmsPackageRead
 # AI Layer schemas
 from .ai import (
     # Enums
-    AIPhaseEnum,
+    AiPhaseEnum,
     RequestStatusEnum,
     ActionStatusEnum,
     RiskLevelEnum,
@@ -214,41 +214,41 @@ from .ai import (
     UsageTypeEnum,
     AuditEventTypeEnum,
     # Chat
-    AIChatRequest,
-    AIChatResponse,
+    AiChatRequest,
+    AiChatResponse,
     # Request
-    AIRequestBase,
-    AIRequestRead,
+    AiRequestBase,
+    AiRequestRead,
     # Action
     ToolOperation,
     ActionPlan,
     RollbackPlan,
-    AIActionCreate,
-    AIActionRead,
-    AIActionApproveRequest,
-    AIActionRejectRequest,
-    AIActionExecuteRequest,
-    AIActionExecuteResponse,
+    AiActionCreate,
+    AiActionRead,
+    AiActionApproveRequest,
+    AiActionRejectRequest,
+    AiActionExecuteRequest,
+    AiActionExecuteResponse,
     # Audit
-    AIAuditLogRead,
-    AIAuditLogFilters,
+    AiAuditLogRead,
+    AiAuditLogFilters,
     # Usage
-    AIUsageRead,
-    AIUsageSummary,
+    AiUsageRead,
+    AiUsageSummary,
     # Status
-    AIStatusResponse,
+    AiStatusResponse,
     # Admin
-    AIKillSwitchRequest,
-    AIKillSwitchResponse,
-    AIConfigUpdate,
+    AiKillSwitchRequest,
+    AiKillSwitchResponse,
+    AiConfigUpdate,
     # Incident
-    AIIncidentTagRequest,
-    AIIncidentBundleExport,
+    AiIncidentTagRequest,
+    AiIncidentBundleExport,
     # List responses
-    AIRequestListResponse,
-    AIActionListResponse,
-    AIAuditLogListResponse,
-    AIUsageListResponse,
+    AiRequestListResponse,
+    AiActionListResponse,
+    AiAuditLogListResponse,
+    AiUsageListResponse,
 )
 
 # Email Integration schemas

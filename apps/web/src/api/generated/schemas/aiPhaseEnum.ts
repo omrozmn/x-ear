@@ -9,11 +9,11 @@
 /**
  * AI Layer operational phase.
  */
-export type AIPhaseEnum = typeof AIPhaseEnum[keyof typeof AIPhaseEnum];
+export type AiPhaseEnum = typeof AiPhaseEnum[keyof typeof AiPhaseEnum];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AIPhaseEnum = {
+export const AiPhaseEnum = {
   read_only: 'read_only',
   proposal: 'proposal',
   execution: 'execution',

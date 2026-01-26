@@ -15504,7 +15504,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AIStatusResponse'
+                $ref: '#/components/schemas/AiStatusResponse'
   /api/ai/health:
     get:
       tags:
@@ -15910,14 +15910,6 @@ paths:
       - OAuth2PasswordBearer: []
 components:
   schemas:
-    AIPhaseEnum:
-      type: string
-      enum:
-      - read_only
-      - proposal
-      - execution
-      title: AIPhaseEnum
-      description: AI Layer operational phase.
     AISettingsResponse:
       properties:
         enabled:
@@ -15954,50 +15946,6 @@ components:
       - default_quota
       title: AISettingsResponse
       description: AI settings response.
-    AIStatusResponse:
-      properties:
-        enabled:
-          type: boolean
-          title: Enabled
-          description: Whether AI is enabled
-        phase:
-          $ref: '#/components/schemas/AIPhaseEnum'
-          description: Current AI phase
-        modelId:
-          type: string
-          title: Modelid
-          description: Active model ID
-        modelVersion:
-          type: string
-          title: Modelversion
-          description: Active model version
-        modelAvailable:
-          type: boolean
-          title: Modelavailable
-          description: Whether model is reachable
-        killSwitchActive:
-          type: boolean
-          title: Killswitchactive
-          default: false
-        quotaRemaining:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Quotaremaining
-        quotaLimit:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Quotalimit
-      type: object
-      required:
-      - enabled
-      - phase
-      - modelId
-      - modelVersion
-      - modelAvailable
-      title: AIStatusResponse
-      description: Response schema for AI status endpoint.
     ActionPlanResponse:
       properties:
         plan_id:
@@ -16954,6 +16902,58 @@ components:
       - requires_approval
       title: AiActionStepResponse
       description: Response for a single action step.
+    AiPhaseEnum:
+      type: string
+      enum:
+      - read_only
+      - proposal
+      - execution
+      title: AiPhaseEnum
+      description: AI Layer operational phase.
+    AiStatusResponse:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+          description: Whether AI is enabled
+        phase:
+          $ref: '#/components/schemas/AiPhaseEnum'
+          description: Current AI phase
+        modelId:
+          type: string
+          title: Modelid
+          description: Active model ID
+        modelVersion:
+          type: string
+          title: Modelversion
+          description: Active model version
+        modelAvailable:
+          type: boolean
+          title: Modelavailable
+          description: Whether model is reachable
+        killSwitchActive:
+          type: boolean
+          title: Killswitchactive
+          default: false
+        quotaRemaining:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Quotaremaining
+        quotaLimit:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Quotalimit
+      type: object
+      required:
+      - enabled
+      - phase
+      - modelId
+      - modelVersion
+      - modelAvailable
+      title: AiStatusResponse
+      description: Response schema for AI status endpoint.
     AlertCheckResponse:
       properties:
         should_alert:

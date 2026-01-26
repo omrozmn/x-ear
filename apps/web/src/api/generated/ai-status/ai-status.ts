@@ -25,8 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AIStatusResponse,
   AcknowledgeAlertApiAiAlertsAlertIdAcknowledgePost200,
+  AiStatusResponse,
   AlertsResponse,
   GetAlertsApiAiAlertsGetParams,
   GetCapabilitiesApiAiCapabilitiesGet200,
@@ -59,7 +59,7 @@ export const getStatusApiAiStatusGet = (
 ) => {
       
       
-      return customInstance<AIStatusResponse>(
+      return customInstance<AiStatusResponse>(
       {url: `/api/ai/status`, method: 'GET', signal
     },
       );

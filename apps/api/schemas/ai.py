@@ -24,7 +24,7 @@ from schemas.base import AppBaseModel, IDMixin, TimestampMixin, ResponseMeta
 # Enums
 # =============================================================================
 
-class AIPhaseEnum(str, Enum):
+class AiPhaseEnum(str, Enum):
     """AI Layer operational phase."""
     A = "read_only"
     B = "proposal"
@@ -110,14 +110,14 @@ class AuditEventTypeEnum(str, Enum):
 # AI Chat Schemas
 # =============================================================================
 
-class AIChatRequest(AppBaseModel):
+class AiChatRequest(AppBaseModel):
     """Request schema for AI chat endpoint."""
     message: str = Field(..., min_length=1, max_length=4096, description="User message")
     session_id: Optional[str] = Field(None, alias="sessionId", description="Session ID for conversation context")
     context: Optional[Dict[str, Any]] = Field(None, description="Additional context for the AI")
 
 
-class AIChatResponse(AppBaseModel):
+class AiChatResponse(AppBaseModel):
     """Response schema for AI chat endpoint."""
     request_id: str = Field(..., alias="requestId", description="Unique request identifier")
     message: str = Field(..., description="AI response message")
@@ -131,14 +131,14 @@ class AIChatResponse(AppBaseModel):
 # AI Request Schemas
 # =============================================================================
 
-class AIRequestBase(AppBaseModel):
+class AiRequestBase(AppBaseModel):
     """Base schema for AI requests."""
     intent_type: Optional[str] = Field(None, alias="intentType")
     intent_confidence: Optional[float] = Field(None, alias="intentConfidence", ge=0, le=1)
     status: RequestStatusEnum = Field(default=RequestStatusEnum.PENDING)
 
 
-class AIRequestRead(AIRequestBase, IDMixin):
+class AiRequestRead(AiRequestBase, IDMixin):
     """Schema for reading AI request details."""
     tenant_id: str = Field(..., alias="tenantId")
     user_id: str = Field(..., alias="userId")
@@ -178,14 +178,14 @@ class RollbackPlan(AppBaseModel):
     description: str = Field(..., description="Human-readable description")
 
 
-class AIActionCreate(AppBaseModel):
+class AiActionCreate(AppBaseModel):
     """Schema for creating an AI action (internal use)."""
     request_id: str = Field(..., alias="requestId")
     action_plan: ActionPlan = Field(..., alias="actionPlan")
     rollback_plan: Optional[RollbackPlan] = Field(None, alias="rollbackPlan")
 
 
-class AIActionRead(AppBaseModel, IDMixin):
+class AiActionRead(AppBaseModel, IDMixin):
     """Schema for reading AI action details."""
     request_id: str = Field(..., alias="requestId")
     tenant_id: str = Field(..., alias="tenantId")
@@ -211,23 +211,23 @@ class AIActionRead(AppBaseModel, IDMixin):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 
 
-class AIActionApproveRequest(AppBaseModel):
+class AiActionApproveRequest(AppBaseModel):
     """Request schema for approving an AI action."""
     approval_token: str = Field(..., alias="approvalToken", description="HMAC-signed approval token")
 
 
-class AIActionRejectRequest(AppBaseModel):
+class AiActionRejectRequest(AppBaseModel):
     """Request schema for rejecting an AI action."""
     reason: str = Field(..., min_length=1, max_length=1000, description="Rejection reason")
 
 
-class AIActionExecuteRequest(AppBaseModel):
+class AiActionExecuteRequest(AppBaseModel):
     """Request schema for executing an AI action."""
     approval_token: str = Field(..., alias="approvalToken", description="HMAC-signed approval token")
     dry_run: bool = Field(default=False, alias="dryRun", description="If true, simulate without executing")
 
 
-class AIActionExecuteResponse(AppBaseModel):
+class AiActionExecuteResponse(AppBaseModel):
     """Response schema for action execution."""
     action_id: str = Field(..., alias="actionId")
     status: ActionStatusEnum = Field(...)
@@ -240,7 +240,7 @@ class AIActionExecuteResponse(AppBaseModel):
 # AI Audit Log Schemas
 # =============================================================================
 
-class AIAuditLogRead(AppBaseModel, IDMixin):
+class AiAuditLogRead(AppBaseModel, IDMixin):
     """Schema for reading AI audit log entries."""
     tenant_id: str = Field(..., alias="tenantId")
     user_id: str = Field(..., alias="userId")
@@ -269,7 +269,7 @@ class AIAuditLogRead(AppBaseModel, IDMixin):
     created_at: datetime = Field(..., alias="createdAt")
 
 
-class AIAuditLogFilters(AppBaseModel):
+class AiAuditLogFilters(AppBaseModel):
     """Filters for querying AI audit logs."""
     event_type: Optional[AuditEventTypeEnum] = Field(None, alias="eventType")
     request_id: Optional[str] = Field(None, alias="requestId")
@@ -283,7 +283,7 @@ class AIAuditLogFilters(AppBaseModel):
 # AI Usage Schemas
 # =============================================================================
 
-class AIUsageRead(AppBaseModel, IDMixin):
+class AiUsageRead(AppBaseModel, IDMixin):
     """Schema for reading AI usage records."""
     tenant_id: str = Field(..., alias="tenantId")
     usage_date: date = Field(..., alias="usageDate")
@@ -297,7 +297,7 @@ class AIUsageRead(AppBaseModel, IDMixin):
     updated_at: datetime = Field(..., alias="updatedAt")
 
 
-class AIUsageSummary(AppBaseModel):
+class AiUsageSummary(AppBaseModel):
     """Summary of AI usage for a tenant."""
     tenant_id: str = Field(..., alias="tenantId")
     period_start: date = Field(..., alias="periodStart")
@@ -313,10 +313,10 @@ class AIUsageSummary(AppBaseModel):
 # AI Status Schemas
 # =============================================================================
 
-class AIStatusResponse(AppBaseModel):
+class AiStatusResponse(AppBaseModel):
     """Response schema for AI status endpoint."""
     enabled: bool = Field(..., description="Whether AI is enabled")
-    phase: AIPhaseEnum = Field(..., description="Current AI phase")
+    phase: AiPhaseEnum = Field(..., description="Current AI phase")
     ai_model_id: str = Field(..., alias="modelId", description="Active model ID")
     ai_model_version: str = Field(..., alias="modelVersion", description="Active model version")
     ai_model_available: bool = Field(..., alias="modelAvailable", description="Whether model is reachable")
@@ -329,7 +329,7 @@ class AIStatusResponse(AppBaseModel):
 # AI Admin Schemas
 # =============================================================================
 
-class AIKillSwitchRequest(AppBaseModel):
+class AiKillSwitchRequest(AppBaseModel):
     """Request schema for activating/deactivating kill switch."""
     active: bool = Field(..., description="Whether to activate the kill switch")
     scope: str = Field(default="global", description="Scope: global, tenant, or capability")
@@ -337,7 +337,7 @@ class AIKillSwitchRequest(AppBaseModel):
     reason: str = Field(..., min_length=1, max_length=500, description="Reason for activation")
 
 
-class AIKillSwitchResponse(AppBaseModel):
+class AiKillSwitchResponse(AppBaseModel):
     """Response schema for kill switch operations."""
     active: bool = Field(...)
     scope: str = Field(...)
@@ -347,7 +347,7 @@ class AIKillSwitchResponse(AppBaseModel):
     reason: Optional[str] = Field(None)
 
 
-class AIConfigUpdate(AppBaseModel):
+class AiConfigUpdate(AppBaseModel):
     """Request schema for updating AI configuration."""
     quota_limit: Optional[int] = Field(None, alias="quotaLimit", ge=0)
     risk_threshold: Optional[RiskLevelEnum] = Field(None, alias="riskThreshold")
@@ -358,18 +358,18 @@ class AIConfigUpdate(AppBaseModel):
 # Incident Schemas
 # =============================================================================
 
-class AIIncidentTagRequest(AppBaseModel):
+class AiIncidentTagRequest(AppBaseModel):
     """Request schema for tagging an audit record as an incident."""
     audit_log_id: str = Field(..., alias="auditLogId")
     incident_tag: IncidentTagEnum = Field(..., alias="incidentTag")
     notes: Optional[str] = Field(None, max_length=1000)
 
 
-class AIIncidentBundleExport(AppBaseModel):
+class AiIncidentBundleExport(AppBaseModel):
     """Response schema for incident bundle export."""
     bundle_id: str = Field(..., alias="bundleId")
     incident_tag: IncidentTagEnum = Field(..., alias="incidentTag")
-    audit_logs: List[AIAuditLogRead] = Field(..., alias="auditLogs")
+    audit_logs: List[AiAuditLogRead] = Field(..., alias="auditLogs")
     exported_at: datetime = Field(..., alias="exportedAt")
     exported_by: str = Field(..., alias="exportedBy")
 
@@ -378,25 +378,25 @@ class AIIncidentBundleExport(AppBaseModel):
 # List Response Schemas (for pagination)
 # =============================================================================
 
-class AIRequestListResponse(AppBaseModel):
+class AiRequestListResponse(AppBaseModel):
     """Paginated list of AI requests."""
-    data: List[AIRequestRead] = Field(...)
+    data: List[AiRequestRead] = Field(...)
     meta: ResponseMeta = Field(...)
 
 
-class AIActionListResponse(AppBaseModel):
+class AiActionListResponse(AppBaseModel):
     """Paginated list of AI actions."""
-    data: List[AIActionRead] = Field(...)
+    data: List[AiActionRead] = Field(...)
     meta: ResponseMeta = Field(...)
 
 
-class AIAuditLogListResponse(AppBaseModel):
+class AiAuditLogListResponse(AppBaseModel):
     """Paginated list of AI audit logs."""
-    data: List[AIAuditLogRead] = Field(...)
+    data: List[AiAuditLogRead] = Field(...)
     meta: ResponseMeta = Field(...)
 
 
-class AIUsageListResponse(AppBaseModel):
+class AiUsageListResponse(AppBaseModel):
     """Paginated list of AI usage records."""
-    data: List[AIUsageRead] = Field(...)
+    data: List[AiUsageRead] = Field(...)
     meta: ResponseMeta = Field(...)

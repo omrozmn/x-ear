@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from pydantic import BaseModel, Field
 
-from schemas.ai import AIStatusResponse as AIStatusResponseSchema
+from schemas.ai import AiStatusResponse as AiStatusResponseSchema
 from ai.config import get_ai_config, AIPhase
 from ai.services.kill_switch import (
     KillSwitch,
@@ -51,7 +51,7 @@ router = APIRouter(prefix="/ai", tags=["AI Status"])
 # Response Models
 # =============================================================================
 
-# Using schemas.ai.AIStatusResponseSchema via alias to avoid conflict
+# Using schemas.ai.AiStatusResponseSchema via alias to avoid conflict
 
 
 class HealthResponse(BaseModel):
@@ -101,7 +101,7 @@ async def get_current_user_context(request: Request) -> Dict[str, Any]:
 
 @router.get(
     "/status",
-    response_model=AIStatusResponseSchema,
+    response_model=AiStatusResponseSchema,
     responses={
         200: {"description": "AI status retrieved"},
     },
@@ -119,7 +119,7 @@ async def get_current_user_context(request: Request) -> Dict[str, Any]:
 )
 async def get_status(
     user_context: Dict[str, Any] = Depends(get_current_user_context),
-) -> AIStatusResponseSchema:
+) -> AiStatusResponseSchema:
     """Get AI layer status."""
     tenant_id = user_context.get("tenant_id", "unknown")
     
@@ -206,7 +206,7 @@ async def get_status(
         not usage_summary.any_quota_exceeded
     )
     
-    return AIStatusResponseSchema(
+    return AiStatusResponseSchema(
         enabled=config.enabled,
         available=available,
         # Field mapping (if internal names changed in schemas.ai)
