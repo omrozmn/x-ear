@@ -78,6 +78,9 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
     currentSlot: null,
     isDryRun: false,
     executionResult: null,
+    executionSteps: [],
+    executionStatus: 'idle',
+    executionError: null,
 
     setOpen: (open) => set({ isOpen: open }),
     toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),

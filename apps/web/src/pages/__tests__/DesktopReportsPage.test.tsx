@@ -1,10 +1,24 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DesktopReportsPage } from '../DesktopReportsPage';
-import { createMemoryHistory, createRouter, RouterProvider, createRootRoute, createRoute, Outlet } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Mock the API hooks to prevent actual network calls during test
+// Mock Router Hooks
+vi.mock('@tanstack/react-router', () => ({
+    useSearch: () => ({ tab: 'overview' }),
+    useNavigate: () => vi.fn(),
+    Link: ({ children }: any) => <a>{children}</a>
+}));
+
+// Mock Permissions Hook
+vi.mock('../../hooks/usePermissions', () => ({
+    usePermissions: () => ({
+        hasPermission: () => true,
+        isLoading: false
+    })
+}));
+
+// Mock API Hooks
 vi.mock('@/api/client/reports.client', () => ({
     useListReportOverview: () => ({
         data: { data: { total_revenue: 1000, total_sales: 50 }, success: true },
@@ -46,23 +60,9 @@ describe('DesktopReportsPage', () => {
             },
         });
 
-        // Create local route tree to avoid importing global broken one
-        const rootRoute = createRootRoute({
-            component: () => <Outlet />,
-        });
-
-        const indexRoute = createRoute({
-            getParentRoute: () => rootRoute,
-            path: '/',
-            component: DesktopReportsPage,
-        });
-
-        const routeTree = rootRoute.addChildren([indexRoute]);
-        const router = createRouter({ routeTree, history: createMemoryHistory() });
-
         render(
             <QueryClientProvider client={queryClient}>
-                <RouterProvider router={router} />
+                <DesktopReportsPage />
             </QueryClientProvider>
         );
 

@@ -9,16 +9,40 @@
 
 import { useGetParty } from '@/api/generated';
 import type { PartyRead } from '@/api/generated/schemas';
+import type { Party } from '../types/party';
 
 export interface UsePartyReturn {
   // Core state
-  party: PartyRead | null | undefined;
-  data: PartyRead | null | undefined; // Alias for backward compatibility
+  party: Party | null | undefined;
+  data: Party | null | undefined; // Alias for backward compatibility
   isLoading: boolean;
   error: Error | null;
 
   // Utility operations
   refetch: () => void;
+}
+
+/**
+ * Convert PartyRead (API schema) to Party (app type)
+ * Handles null values and type conversions
+ */
+function toParty(partyRead: PartyRead | null | undefined): Party | null {
+  if (!partyRead) return null;
+  
+  return {
+    ...partyRead,
+    // Convert null to undefined for optional string fields
+    firstName: partyRead.firstName ?? undefined,
+    lastName: partyRead.lastName ?? undefined,
+    email: partyRead.email ?? undefined,
+    phone: partyRead.phone ?? undefined,
+    tcNumber: partyRead.tcNumber ?? undefined,
+    birthDate: partyRead.birthDate ?? undefined,
+    address: partyRead.address ?? undefined,
+    // Ensure required fields have defaults
+    createdAt: partyRead.createdAt ?? new Date().toISOString(),
+    updatedAt: partyRead.updatedAt ?? new Date().toISOString(),
+  } as Party;
 }
 
 /**
@@ -38,7 +62,7 @@ export interface UsePartyReturn {
  * return <PartyDetails party={party} />;
  * ```
  */
-export const useParty = (partyId: string | null): UsePartyReturn => {
+export const useParty = (partyId: string | null | undefined): UsePartyReturn => {
   // Use Orval-generated hook for real API calls
   const query = useGetParty(
     partyId || '', // Provide empty string if null to satisfy type requirements
@@ -52,8 +76,8 @@ export const useParty = (partyId: string | null): UsePartyReturn => {
     }
   );
 
-  // Extract data from ResponseEnvelope
-  const partyData = query.data?.data;
+  // Extract data from ResponseEnvelope and convert to Party type
+  const partyData = toParty(query.data?.data);
 
   return {
     party: partyData,

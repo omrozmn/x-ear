@@ -1,4 +1,4 @@
-import { EntityItem, Capability } from '../../api/generated/schemas';
+import { EntityItem, Capability, SlotConfig } from '../../api/generated/schemas';
 import { useComposerStore } from '../../stores/composerStore';
 
 /**
@@ -77,7 +77,7 @@ export async function simulateActionExecution(
             // Let's use the global store instance import access or just use setState directly on the store object if permitted.
             // Re-importing store to get setState
             useComposerStore.setState({
-                currentSlot: sideSlot,
+                currentSlot: sideSlot as SlotConfig,
                 executionStatus: 'waiting'
             });
 
@@ -112,8 +112,7 @@ export async function simulateActionExecution(
         setExecutionStatus('success');
         setExecutionResult({
             status: 'success',
-            result: {},
-            message: 'İşlem Başarılı'
+            result: {}
         });
     }
 }
