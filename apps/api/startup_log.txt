@@ -3128,3 +3128,29 @@ INFO:     127.0.0.1:59321 - "GET /api/devices/brands HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:59322 - "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:59325 - "GET /api/inventory?per_page=100 HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:59326 - "GET /api/inventory/stats HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59405 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59411 - "GET /api/config HTTP/1.1" 200 OK
+{"timestamp": "2026-01-26T20:47:56.539981+00:00", "level": "ERROR", "logger": "ai.api.status", "message": "Missing tenant_id or user_id in request.state"}
+INFO:     127.0.0.1:59414 - "GET /api/ai/status HTTP/1.1" 401 Unauthorized
+{"timestamp": "2026-01-26T20:47:57.599232+00:00", "level": "ERROR", "logger": "ai.api.status", "message": "Missing tenant_id or user_id in request.state"}
+INFO:     127.0.0.1:59419 - "GET /api/ai/status HTTP/1.1" 401 Unauthorized
+{"timestamp": "2026-01-26T20:48:00.511648+00:00", "level": "ERROR", "logger": "ai.api.status", "message": "Missing tenant_id or user_id in request.state"}
+INFO:     127.0.0.1:59460 - "GET /api/ai/status HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59488 - "OPTIONS /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59490 - "OPTIONS /api/sms/packages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59491 - "OPTIONS /api/plans HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59497 - "GET /api/sms/packages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59493 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59496 - "GET /api/plans HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59737 - "GET /api/permissions/my HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59752 - "GET /api/permissions/my HTTP/1.1" 401 Unauthorized
+{"timestamp": "2026-01-26T20:53:15.690933+00:00", "level": "ERROR", "logger": "ai.api.status", "message": "Missing tenant_id or user_id in request.state"}
+INFO:     127.0.0.1:59947 - "GET /api/ai/status HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59949 - "GET /api/inventory?per_page=100 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59948 - "GET /api/inventory/stats HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59950 - "GET /api/permissions/my HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59951 - "GET /api/devices/brands HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59952 - "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59955 - "GET /api/inventory?per_page=100 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59956 - "GET /api/inventory/stats HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60032 - "GET /api/permissions/my HTTP/1.1" 401 Unauthorized
