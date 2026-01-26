@@ -25,7 +25,7 @@ class EmailStatus(str, Enum):
 # SMTP Configuration Schemas
 # ============================================================================
 
-class SMTPConfigBase(AppBaseModel):
+class SmtpConfigBase(AppBaseModel):
     """Base schema for SMTP configuration."""
     host: str = Field(
         ...,
@@ -96,7 +96,7 @@ class SMTPConfigBase(AppBaseModel):
         return v
 
 
-class SMTPConfigCreate(SMTPConfigBase):
+class SmtpConfigCreate(SmtpConfigBase):
     """Schema for creating SMTP configuration."""
     password: str = Field(
         ...,
@@ -105,7 +105,7 @@ class SMTPConfigCreate(SMTPConfigBase):
     )
 
 
-class SMTPConfigUpdate(SMTPConfigBase):
+class SmtpConfigUpdate(SmtpConfigBase):
     """Schema for updating SMTP configuration."""
     password: Optional[str] = Field(
         None,
@@ -113,7 +113,7 @@ class SMTPConfigUpdate(SMTPConfigBase):
     )
 
 
-class SMTPConfigResponse(SMTPConfigBase, IDMixin, TimestampMixin):
+class SmtpConfigResponse(SmtpConfigBase, IDMixin, TimestampMixin):
     """Schema for SMTP configuration response.
     
     Note: password is NEVER included in response for security.

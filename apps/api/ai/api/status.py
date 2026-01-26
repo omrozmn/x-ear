@@ -345,7 +345,7 @@ class QuotaMetricsResponse(BaseModel):
     rate_limit_rate: float = Field(description="Rate limit rate")
 
 
-class SLAMetricsResponse(BaseModel):
+class SlaMetricsResponse(BaseModel):
     """Complete SLA metrics response."""
     timestamp: str = Field(description="Metrics timestamp")
     window_minutes: int = Field(description="Aggregation window in minutes")
@@ -386,7 +386,7 @@ class AlertsResponse(BaseModel):
 
 @router.get(
     "/metrics",
-    response_model=SLAMetricsResponse,
+    response_model=SlaMetricsResponse,
     responses={
         200: {"description": "SLA metrics retrieved"},
     },
@@ -406,12 +406,12 @@ class AlertsResponse(BaseModel):
 )
 async def get_metrics(
     window_minutes: int = Query(default=15, ge=1, le=1440, description="Aggregation window in minutes"),
-) -> SLAMetricsResponse:
+) -> SlaMetricsResponse:
     """Get SLA metrics."""
     collector = get_metrics_collector()
     metrics = collector.get_sla_metrics(window_minutes=window_minutes)
     
-    return SLAMetricsResponse(
+    return SlaMetricsResponse(
         timestamp=metrics.timestamp.isoformat(),
         window_minutes=metrics.window_minutes,
         inference_latency=LatencyMetricsResponse(
