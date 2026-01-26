@@ -485,7 +485,7 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'messages');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { listCommunicationMessages } = await import('@/api/generated/communications/communications');
+    const { listCommunicationMessages } = await import('@/api/generated');
     // Using date_from instead of since as supported by the schema
     const response = await listCommunicationMessages({
       date_from: since,
@@ -531,7 +531,7 @@ class CommunicationOfflineSync {
     // Get last sync timestamp for future incremental sync implementation
     await this.db.get('syncMetadata', 'templates');
 
-    const { listCommunicationTemplates } = await import('@/api/generated/communications/communications');
+    const { listCommunicationTemplates } = await import('@/api/generated');
     const response = await listCommunicationTemplates({
       per_page: 100
     } as ListCommunicationTemplatesParams);

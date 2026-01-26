@@ -116,9 +116,9 @@ jobs:
         run: |
           cd apps/web
           echo "Checking for deep imports from generated API..."
-          if grep -rE "from ['\"]@/api/generated/[^'\"]+/[^'\"]+['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | grep -v "stores/authStore.ts"; then
+          if grep -rE "from ['\"]@/api/generated/[^'\"]+/[^'\"]+['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules"; then
             echo "❌ Deep imports from @/api/generated detected!"
-            echo "Use @/api/client/ barrel imports instead."
+            echo "Use @/api/client/ barrel imports or @/api/generated (barrel) instead."
             exit 1
           fi
           echo "✅ No prohibited deep imports found"

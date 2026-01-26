@@ -697,7 +697,7 @@ export class PartyService {
     await this.ensureInitialized();
     try {
       // Use Orval-generated function
-      const { createPartyBulkUpload } = await import('@/api/generated/parties/parties');
+      const { createPartyBulkUpload } = await import('@/api/generated');
       const response = await createPartyBulkUpload({ file });
 
       // Response is typed now
