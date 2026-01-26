@@ -56,7 +56,7 @@ export interface AmountRange {
 }
 
 export interface PartySearchResult {
-  parties: (PartySearchItem | any)[];
+  parties: PartySearchItem[];
   total: number; // For compatibility
   totalCount: number;
   filteredCount: number;
@@ -115,7 +115,7 @@ export interface PartyMatchRequest {
 }
 
 export interface PartyMatchCandidate {
-  party: PartySearchItem | any;
+  party: PartySearchItem;
   score: number; // for compatibility
   matchScore: number;
   matchReasons: MatchReason[];

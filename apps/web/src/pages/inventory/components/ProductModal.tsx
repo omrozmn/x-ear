@@ -15,8 +15,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   isOpen,
   onClose,
   product,
-  onSave,
-  isLoading: _isLoading = false
+  onSave
 }) => {
   const title = product ? 'Ürün Düzenle' : 'Yeni Ürün Ekle';
   const mode = product ? 'edit' : 'create';

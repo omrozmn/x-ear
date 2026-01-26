@@ -252,7 +252,7 @@ interface SmsAutomationTabProps {
     creditLoading: boolean;
 }
 
-export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = (_props) => {
+export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
     const [rules, setRules] = useState<AutomationRule[]>(SAMPLE_RULES);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
@@ -512,6 +512,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = (_props) => {
                     return (
                         <Card key={category} className="overflow-hidden dark:bg-gray-800 dark:border-gray-700">
                             <button
+                                data-allow-raw="true"
                                 type="button"
                                 className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 transition-colors"
                                 onClick={() => setExpandedCategory(isExpanded ? null : category)}
@@ -617,6 +618,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = (_props) => {
                                                 .filter(([, config]) => config.category === category)
                                                 .map(([trigger, config]) => (
                                                     <button
+                                                        data-allow-raw="true"
                                                         key={trigger}
                                                         type="button"
                                                         onClick={() => {
@@ -655,6 +657,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = (_props) => {
                                     {editingRule ? 'Otomasyonu Düzenle' : 'Yeni Otomasyon Oluştur'}
                                 </h3>
                                 <button
+                                    data-allow-raw="true"
                                     onClick={() => {
                                         setShowCreateModal(false);
                                         setEditingRule(null);
@@ -777,6 +780,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = (_props) => {
                                     <div className="flex flex-wrap gap-2">
                                         {selectedTriggerConfig?.dynamicFields.map((field) => (
                                             <button
+                                                data-allow-raw="true"
                                                 key={field}
                                                 type="button"
                                                 onClick={() => insertDynamicField(field)}
@@ -849,6 +853,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = (_props) => {
                             <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
                                 <button
+                                    data-allow-raw="true"
                                     onClick={() => setShowPreview(false)}
                                     className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 >

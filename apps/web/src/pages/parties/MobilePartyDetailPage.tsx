@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from '@tanstack/react-router';
+import { useParams } from '@tanstack/react-router';
 import { Phone, MessageCircle, MoreVertical, Calendar, Package, FileText, User } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
@@ -12,7 +12,6 @@ type Tab = 'general' | 'appointments' | 'devices' | 'sales';
 
 export const MobilePartyDetailPage: React.FC = () => {
     const { partyId } = useParams({ strict: false }) as { partyId?: string };
-    const _navigate = useNavigate();
     const { party, isLoading } = useParty(partyId);
     const [activeTab, setActiveTab] = useState<Tab>('general');
     const { triggerSelection } = useHaptic();

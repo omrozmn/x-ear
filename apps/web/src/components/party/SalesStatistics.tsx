@@ -1,14 +1,18 @@
 import React from 'react';
 import { DollarSign, CheckCircle, Clock, TrendingUp } from 'lucide-react';
-import { SaleRead } from '@/api/generated/schemas/saleRead';
+import { ExtendedSaleRead } from '@/types/extended-sales';
+import type { SaleRead } from '@/api/client/sales.client';
 
 interface SalesStatisticsProps {
   sales: SaleRead[];
   isVisible: boolean;
 }
 
-export const SalesStatistics: React.FC<SalesStatisticsProps> = ({ sales, isVisible }) => {
+export const SalesStatistics: React.FC<SalesStatisticsProps> = ({ sales: rawSales, isVisible }) => {
+  const sales = rawSales as unknown as ExtendedSaleRead[];
   // Calculate statistics
+  // Notes: Using ExtendedSaleRead as these fields are injected by hybridCamelize at runtime
+  // but missing from the strict generated schema.
   const totalRevenue = sales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0);
   const totalPaid = sales.reduce((sum, sale) => sum + (sale.paidAmount || 0), 0);
   const totalPending = totalRevenue - totalPaid;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGlobalError } from '../contexts/GlobalErrorContext';
+import { useGlobalError } from '../hooks/useGlobalError';
 
 // HOC for wrapping components with error handling
 export const withErrorHandling = <P extends object>(

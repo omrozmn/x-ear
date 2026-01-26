@@ -26,12 +26,12 @@ import type {
 
 import type {
   AISettingsResponse,
-  AiApiAdminKillSwitchStatusResponse,
   CleanupExpiredApprovalsApiAiAdminCleanupExpiredPost200,
   GetPendingApprovalsApiAiAdminPendingApprovalsGetParams,
   HTTPValidationError,
   KillSwitchRequest,
   KillSwitchResponse,
+  KillSwitchStatusResponse,
   PendingApprovalsListResponse
 } from '.././schemas';
 
@@ -50,7 +50,7 @@ export const getKillSwitchStatusApiAiAdminKillSwitchGet = (
 ) => {
       
       
-      return customInstance<AiApiAdminKillSwitchStatusResponse>(
+      return customInstance<KillSwitchStatusResponse>(
       {url: `/api/ai/admin/kill-switch`, method: 'GET', signal
     },
       );

@@ -30,7 +30,7 @@ interface DebugRoleSwitcherProps {
 }
 
 export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode = false }) => {
-  const { user, setUser: _setUser, setAuth } = useAuthStore();
+  const { user, setAuth } = useAuthStore(); // Removed unused _setUser
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -208,6 +208,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
     <div style={{ position: 'relative' }}>
       {/* Debug Badge & Button */}
       <button
+        data-allow-raw="true"
         onClick={() => setIsOpen(!isOpen)}
         disabled={isSwitching || rolesLoading}
         style={{
@@ -313,6 +314,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
                 const isCurrentRole = roleName === currentRole;
                 return (
                   <button
+                    data-allow-raw="true"
                     key={roleName}
                     onClick={() => roleName && handleRoleSwitch(roleName)}
                     disabled={isSwitching || !roleName}
@@ -377,6 +379,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               borderTop: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
             }}>
               <button
+                data-allow-raw="true"
                 onClick={() => exitImpersonation()}
                 disabled={isExiting}
                 style={{

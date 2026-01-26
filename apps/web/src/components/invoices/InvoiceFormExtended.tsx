@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Button } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { Invoice, CreateInvoiceData, InvoiceStatus, InvoiceTypeLegacy, PaymentMethod, InvoiceAddress, InvoiceItem } from '../../types/invoice';
 import { InvoiceScenarioSection } from './InvoiceScenarioSection';
 import { InvoiceTypeSection } from './InvoiceTypeSection';
@@ -8,9 +8,9 @@ import { AdditionalInfoSection } from './AdditionalInfoSection';
 import { CustomerSectionCompact } from './CustomerSectionCompact';
 import ExportDetailsCard from './ExportDetailsCard';
 import { SGKInvoiceSection } from './SGKInvoiceSection';
-import { GovernmentSection, GOVERNMENT_EXEMPTION_REASONS } from './GovernmentSection';
+import { GovernmentSection } from './GovernmentSection';
+import { GOVERNMENT_EXEMPTION_REASONS } from '../../constants/governmentInvoiceConstants';
 import WithholdingCard from './WithholdingCard';
-import { Select, Input } from '@x-ear/ui-web';
 import { WithholdingModal } from './WithholdingModal';
 import { GovernmentInvoiceModal } from './GovernmentInvoiceModal';
 import { SGKInvoiceData } from '../../types/invoice';
@@ -162,7 +162,7 @@ export function InvoiceFormExtended({
   const [governmentModalOpen, setGovernmentModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [medicalModalOpen, setMedicalModalOpen] = useState(false);
-  const [currentItemIndex, setCurrentItemIndex] = useState<number>();
+  const [currentItemIndex] = useState<number>(); // Removed unused setCurrentItemIndex
 
   // Koşullu görünürlük
   const currentScenario = extendedData.scenarioData?.scenario;
@@ -239,10 +239,7 @@ export function InvoiceFormExtended({
     }
   }, [onDataChange]);
 
-  const _handleOpenWithholdingModal = useCallback((itemIndex?: number) => {
-    setCurrentItemIndex(itemIndex);
-    setWithholdingModalOpen(true);
-  }, []);
+  // Removed unused _handleOpenWithholdingModal - withholding modal is opened via other means
 
   const handleSaveWithholding = useCallback((data: WithholdingData) => {
     console.log('Withholding data saved:', data, 'for item:', currentItemIndex);
@@ -450,27 +447,25 @@ export function InvoiceFormExtended({
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">KDV Oranı (%)</label>
-                                <input
+                                <Input
                                   type="number"
                                   value={extendedData.specialTaxBase?.taxRate || ''}
                                   onChange={(e) => handleExtendedFieldChange('specialTaxBase', {
                                     ...extendedData.specialTaxBase,
                                     taxRate: parseFloat(e.target.value)
                                   })}
-                                  className="w-full border rounded px-2 py-1"
                                   placeholder="18"
                                 />
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
-                                <input
+                                <Input
                                   type="text"
                                   value={extendedData.specialTaxBase?.description || ''}
                                   onChange={(e) => handleExtendedFieldChange('specialTaxBase', {
                                     ...extendedData.specialTaxBase,
                                     description: e.target.value
                                   })}
-                                  className="w-full border rounded px-2 py-1"
                                   placeholder="Özel matrah açıklaması"
                                 />
                               </div>
@@ -487,39 +482,36 @@ export function InvoiceFormExtended({
                             <div className="space-y-3">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
-                                <input
+                                <Input
                                   type="text"
                                   value={extendedData.returnInvoiceDetails?.returnInvoiceNumber || ''}
                                   onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
                                     ...extendedData.returnInvoiceDetails,
                                     returnInvoiceNumber: e.target.value
                                   })}
-                                  className="w-full border rounded px-2 py-1"
                                   placeholder="İade edilen fatura numarası"
                                 />
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura Tarihi</label>
-                                <input
+                                <Input
                                   type="date"
                                   value={extendedData.returnInvoiceDetails?.returnInvoiceDate || ''}
                                   onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
                                     ...extendedData.returnInvoiceDetails,
                                     returnInvoiceDate: e.target.value
                                   })}
-                                  className="w-full border rounded px-2 py-1"
                                 />
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
-                                <input
+                                <Input
                                   type="text"
                                   value={extendedData.returnInvoiceDetails?.returnReason || ''}
                                   onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
                                     ...extendedData.returnInvoiceDetails,
                                     returnReason: e.target.value
                                   })}
-                                  className="w-full border rounded px-2 py-1"
                                   placeholder="İade nedeni"
                                 />
                               </div>
@@ -532,13 +524,14 @@ export function InvoiceFormExtended({
                           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                             <div className="flex items-center justify-between mb-3">
                               <h3 className="text-sm font-bold text-gray-900">İlaç/Tıbbi Cihaz</h3>
-                              <button
+                              <Button
                                 type="button"
+                                variant="secondary"
+                                size="sm"
                                 onClick={() => setMedicalModalOpen(true)}
-                                className="text-xs px-3 py-1 bg-purple-600 text-white rounded"
                               >
                                 Detaylar
-                              </button>
+                              </Button>
                             </div>
                             {extendedData.medicalDeviceData ? (
                               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -604,11 +597,10 @@ export function InvoiceFormExtended({
             {/* Notes / Açıklama (editable) */}
             <div className="bg-white rounded-lg shadow p-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
-              <textarea
+              <Textarea
                 value={extendedData.notes || ''}
                 onChange={(e) => handleExtendedFieldChange('notes', e.target.value)}
                 placeholder="Fatura açıklaması (ör. Değişim: Phonak Audeo Paradise P90)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm resize-none"
                 rows={3}
               />
             </div>
@@ -654,19 +646,43 @@ export function InvoiceFormExtended({
                 currency: typeof extendedData.currency === 'string' ? extendedData.currency : 'TRY',
                 exchangeRate: typeof extendedData.exchangeRate === 'number' ? extendedData.exchangeRate : 1,
                 notes: resolveNotes(extendedData.notes),
-                items: Array.isArray(extendedData.items) ? extendedData.items.map((item: InvoiceItem | Record<string, unknown>) => ({
-                  name: typeof item === 'object' && item !== null && 'name' in item && typeof item.name === 'string' ? item.name : '',
-                  description: typeof item === 'object' && item !== null && 'description' in item && typeof item.description === 'string' ? item.description : undefined,
-                  quantity: typeof item === 'object' && item !== null && 'quantity' in item ? Number(item.quantity || 1) : 1,
-                  unitPrice: typeof item === 'object' && item !== null && 'unitPrice' in item ? Number(item.unitPrice || 0) : 0,
-                  discount: typeof item === 'object' && item !== null && 'discount' in item ? Number(item.discount || 0) : 0,
-                  discountType: typeof item === 'object' && item !== null && 'discountType' in item && typeof item.discountType === 'string' && (item.discountType === 'percentage' || item.discountType === 'amount') ? item.discountType : 'percentage',
-                  taxRate: typeof item === 'object' && item !== null && 'taxRate' in item ? Number(item.taxRate || 0) : 0,
-                  unit: typeof item === 'object' && item !== null && 'unit' in item && typeof item.unit === 'string' ? item.unit : 'ADET'
-                })) : [],
+                items: Array.isArray(extendedData.items) ? extendedData.items.map((item: InvoiceItem | Record<string, unknown>) => {
+                  const invoiceItem = item as Partial<InvoiceItem>;
+                  return {
+                    name: typeof invoiceItem.name === 'string' ? invoiceItem.name : String(invoiceItem.name || ''),
+                    description: invoiceItem.description,
+                    quantity: Number(invoiceItem.quantity || 1),
+                    unitPrice: Number(invoiceItem.unitPrice || 0),
+                    discount: Number(invoiceItem.discount || 0),
+                    discountType: invoiceItem.discountType || 'percentage',
+                    taxRate: Number(invoiceItem.taxRate || 0),
+                    unit: typeof invoiceItem.unit === 'string' ? invoiceItem.unit : 'ADET',
+                    // Map critical missing line fields
+                    aliciStokKodu: invoiceItem.aliciStokKodu,
+                    withholdingRate: invoiceItem.withholdingRate,
+                    medicalDeviceData: invoiceItem.medicalDeviceData,
+                    serialNumber: invoiceItem.serialNumber,
+                  };
+                }) : [],
                 subtotal: Number(extendedData.subtotal || 0),
                 totalAmount: Number(extendedData.totalAmount || extendedData.grandTotal || 0),
                 status: (typeof extendedData.status === 'string' ? extendedData.status : 'draft') as InvoiceStatus,
+
+                // Map top-level specialized data
+                taxOffice: (typeof extendedData.customerAddress === 'object' && extendedData.customerAddress ? (extendedData.customerAddress as unknown as Record<string, unknown>)?.taxOffice as string | undefined : undefined) ||
+                  (typeof extendedData.billingAddress === 'object' && extendedData.billingAddress ? (extendedData.billingAddress as unknown as Record<string, unknown>)?.taxOffice as string | undefined : undefined),
+                returnReferenceNumber: extendedData.returnInvoiceDetails?.returnInvoiceNumber,
+                returnReferenceDate: extendedData.returnInvoiceDetails?.returnInvoiceDate,
+                sgkData: extendedData.sgkData,
+                returnInvoiceDetails: extendedData.returnInvoiceDetails,
+                exportDetails: extendedData.exportDetails,
+                medicalDeviceData: extendedData.medicalDeviceData,
+                withholdingData: extendedData.withholdingData,
+                metadata: {
+                  governmentData: extendedData.governmentData,
+                  scenario: extendedData.scenario,
+                  scenarioData: extendedData.scenarioData,
+                }
               };
               onSubmit(submissionData);
             }} className="px-4 py-2 bg-blue-600 text-white">

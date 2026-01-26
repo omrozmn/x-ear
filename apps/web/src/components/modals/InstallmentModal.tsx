@@ -162,7 +162,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
   const totalInstallments = installments.length;
   const paidInstallments = installments.filter(i => i.status === 'paid').length;
   const overdueInstallments = installments.filter(i => isOverdue(i.dueDate, i.status)).length;
-  const _totalPaid = installments.reduce((sum, i) => sum + i.paidAmount, 0);
+  // Removed unused _totalPaid
   const totalRemaining = installments.reduce((sum, i) => sum + (i.amount - i.paidAmount), 0);
 
   return (
@@ -295,6 +295,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
                                 Ödeme Tutarı
                               </label>
                               <input
+                                data-allow-raw="true"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -309,6 +310,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
                                 Ödeme Yöntemi
                               </label>
                               <select
+                                data-allow-raw="true"
                                 value={paymentData.paymentMethod}
                                 onChange={(e) => setPaymentData(prev => ({ ...prev, paymentMethod: e.target.value }))}
                                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"

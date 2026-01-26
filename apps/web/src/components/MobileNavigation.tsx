@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
-import { 
-  Home, 
-  Users, 
-  Calendar, 
-  MessageSquare, 
-  Settings, 
-  Menu, 
+import {
+  Home,
+  Users,
+  Calendar,
+  MessageSquare,
+  Settings,
+  Menu,
   X,
   Bell,
   Search
@@ -14,6 +14,7 @@ import {
 import { Button, Input } from '@x-ear/ui-web';
 import { useResponsive } from '../hooks/useResponsive';
 import { usePWA } from '../hooks/usePWA';
+import { useTranslation } from 'react-i18next';
 
 interface MobileNavigationProps {
   className?: string;
@@ -21,27 +22,27 @@ interface MobileNavigationProps {
 
 const navigationItems = [
   {
-    name: 'Ana Sayfa',
+    name: 'nav.dashboard',
     href: '/',
     icon: Home,
   },
   {
-    name: 'Hastalar',
+    name: 'nav.patients',
     href: '/parties',
     icon: Users,
   },
   {
-    name: 'Randevular',
+    name: 'nav.appointments',
     href: '/appointments',
     icon: Calendar,
   },
   {
-    name: 'İletişim',
+    name: 'nav.communication',
     href: '/communication',
     icon: MessageSquare,
   },
   {
-    name: 'Ayarlar',
+    name: 'nav.settings.main',
     href: '/settings',
     icon: Settings,
   },
@@ -50,6 +51,7 @@ const navigationItems = [
 export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   className = '',
 }) => {
+  const { t } = useTranslation(['layout', 'common']);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { isMobile } = useResponsive();
@@ -89,11 +91,11 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
           <div className="flex items-center space-x-2">
             {/* Online/Offline Indicator */}
             <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
-            
+
             <Button variant="ghost" size="sm" className="p-2">
               <Search className="h-5 w-5" />
             </Button>
-            
+
             <Button variant="ghost" size="sm" className="p-2 relative">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs"></span>
@@ -104,9 +106,8 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
 
       {/* Slide-out Menu */}
       <div
-        className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${
-          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         {/* Backdrop */}
         <div
@@ -127,7 +128,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   X-Ear
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Hasta Yönetim Sistemi
+                  {t('app.title_desc')}
                 </p>
               </div>
             </div>
@@ -152,14 +153,13 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   key={item.name}
                   to={item.href}
                   onClick={closeMenu}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive
+                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${isActive
                       ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
+                    }`}
                 >
                   <Icon className="h-5 w-5" />
-                  <span className="font-medium">{item.name}</span>
+                  <span className="font-medium">{t(item.name)}</span>
                 </Link>
               );
             })}
@@ -168,7 +168,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
           {/* Menu Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-              <span>Durum: {isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+              <span>Durum: {isOnline ? t('status.online', { ns: 'common' }) : t('status.offline', { ns: 'common' })}</span>
               <span>v1.0.0</span>
             </div>
           </div>
@@ -186,14 +186,13 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-colors ${
-                  isActive
+                className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-colors ${isActive
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-500 dark:text-gray-400'
-                }`}
+                  }`}
               >
                 <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{item.name}</span>
+                <span className="text-xs font-medium">{t(item.name)}</span>
               </Link>
             );
           })}

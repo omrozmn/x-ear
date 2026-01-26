@@ -1,0 +1,15 @@
+{
+    "validation": {
+        "required": "This field is required",
+        "tc_length": "TC Identity Number must be 11 digits",
+        "name_required": "First name is required",
+        "last_name_required": "Last name is required",
+        "phone_required": "Phone number is required",
+        "email_invalid": "Enter a valid email address",
+        "date_required": "Date is required",
+        "patient_required": "Patient selection is required",
+        "patient_name_required": "Patient name is required",
+        "time_required": "Time selection is required",
+        "type_required": "Appointment type selection is required"
+    }
+}

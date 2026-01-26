@@ -26,7 +26,17 @@ const meta: Meta<typeof PriceInput> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const PriceInputWrapper = (args: any) => {
+interface PriceInputWrapperProps {
+  value?: string | number;
+  label?: string;
+  currency?: 'TL' | 'USD' | 'EUR';
+  placeholder?: string;
+  disabled?: boolean;
+  required?: boolean;
+  error?: string;
+}
+
+const PriceInputWrapper = (args: PriceInputWrapperProps) => {
   const [value, setValue] = useState(args.value || '');
   
   return (

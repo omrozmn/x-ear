@@ -293,7 +293,9 @@ export class PurchaseService {
   async importFromXML(xmlData: string, fileName: string): Promise<Purchase> {
     try {
       // Parse XML and extract purchase data
-      const purchaseData = this.parseXMLToPurchaseData(xmlData, fileName);
+      const purchaseData = this.parseXMLToPurchaseData();
+      // TODO: Use xmlData and fileName when XML parsing is implemented
+      console.debug('XML import requested:', { fileName, dataLength: xmlData.length });
 
       // Create purchase with XML data
       const purchase = await this.createPurchase({
@@ -310,7 +312,8 @@ export class PurchaseService {
     }
   }
 
-  private parseXMLToPurchaseData(_xmlData: string, _fileName: string): CreatePurchaseData {
+  private parseXMLToPurchaseData(): CreatePurchaseData {
+    // TODO: Implement XML parsing when needed
     // Basic XML parsing - in real implementation, use proper XML parser
     return {
       type: 'standard',

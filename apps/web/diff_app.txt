@@ -1,0 +1,99 @@
+diff --git a/apps/web/src/App.tsx b/apps/web/src/App.tsx
+index a0d511cb..c4c6665a 100644
+--- a/apps/web/src/App.tsx
++++ b/apps/web/src/App.tsx
+@@ -1,3 +1,4 @@
++/*
+ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+ import { RouterProvider, createRouter } from '@tanstack/react-router';
+@@ -8,78 +9,28 @@ import { GlobalErrorProvider } from './components/GlobalErrorHandler';
+ import { ToastProvider } from '@x-ear/ui-web';
+ import { ThemeProvider } from './components/theme-provider';
+ import { routeTree } from './routeTree.gen';
+-
+-// Import orval-mutator to configure axios globally
+ import './api/orval-mutator';
++import { PhoneVerificationModal } from './components/PhoneVerificationModal';
++*/
+ 
+-// Create a new router instance
+-const router = createRouter({ routeTree });
++console.log('XXX DEBUG: Minimal App.tsx loaded XXX');
+ 
+-// Register the router instance for type safety
++/*
++const router = createRouter({ routeTree });
+ declare module '@tanstack/react-router' {
+   interface Register {
+     router: typeof router;
+   }
+ }
+-
+-import { PhoneVerificationModal } from './components/PhoneVerificationModal';
+-import { AIChatWidget } from './components/ai/AIChatWidget';
+-
+-const queryClient = new QueryClient({
+-  defaultOptions: {
+-    queries: {
+-      staleTime: 1000 * 60 * 10, // Increased to 10 minutes for better caching
+-      gcTime: 1000 * 60 * 60, // Increased to 60 minutes for longer cache retention
+-      refetchOnWindowFocus: false, // Prevent unnecessary refetches on window focus
+-      refetchOnReconnect: true, // Refetch when coming back online
+-      retry: (failureCount, error: unknown) => {
+-        // Don't retry on 4xx errors
+-        if (error && typeof error === 'object' && 'response' in error) {
+-          const httpError = error as { response?: { status?: number } };
+-          if (httpError.response?.status && httpError.response.status >= 400 && httpError.response.status < 500) {
+-            return false;
+-          }
+-        }
+-        // Reduce retry count to prevent resource exhaustion
+-        return failureCount < 2;
+-      },
+-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with max 30s
+-    },
+-    mutations: {
+-      retry: (failureCount, error: unknown) => {
+-        // Don't retry mutations on 4xx errors
+-        if (error && typeof error === 'object' && 'response' in error) {
+-          const httpError = error as { response?: { status?: number } };
+-          if (httpError.response?.status && httpError.response.status >= 400 && httpError.response.status < 500) {
+-            return false;
+-          }
+-        }
+-        return failureCount < 1; // Only retry once for mutations
+-      },
+-    },
+-  },
+-});
++const queryClient = new QueryClient({});
++*/
+ 
+ function App() {
+-
+   return (
+-    <ErrorBoundary>
+-      <QueryClientProvider client={queryClient}>
+-        <ToastProvider>
+-          <GlobalErrorProvider>
+-            <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+-              <AuthProvider>
+-                <RouterProvider router={router} />
+-                <PhoneVerificationModal />
+-                <AIChatWidget />
+-                <Toaster position="top-right" />
+-                <ReactQueryDevtools initialIsOpen={false} />
+-              </AuthProvider>
+-            </ThemeProvider>
+-          </GlobalErrorProvider>
+-        </ToastProvider>
+-      </QueryClientProvider>
+-    </ErrorBoundary>
++    <div style={{ padding: 20, color: 'green', fontSize: 24 }}>
++      <h1>App.tsx Loaded (Minimal)</h1>
++      <p>Imports are commented out. If you see this, one of the imports is crashy.</p>
++    </div>
+   );
+ }
+ 

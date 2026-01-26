@@ -9,7 +9,6 @@ interface SyncStatus {
   lastSync?: string;
   isOnline: boolean;
 }
-import { PartyStorageService } from '../../services/party/party-storage.service';
 
 // Define request types locally - these match the PartySyncService expectations
 interface PartyCreateRequest {
@@ -41,7 +40,6 @@ interface PartyUpdateRequest extends Partial<PartyCreateRequest> {
 export function usePartyMutations() {
   // Services
   const syncService = useMemo(() => new PartySyncService(), []);
-  const _storageService = useMemo(() => new PartyStorageService(), []);
 
   // State
   const [loading, setLoading] = useState(false);
@@ -138,7 +136,9 @@ export function usePartyMutations() {
         updatedAt: new Date().toISOString()
       };
 
-      const updatedParty = await syncService.updateParty(updatedPartyData, idempotencyKey);
+      const updatedParty = await syncService.updateParty(updatedPartyData);
+      // idempotencyKey is generated but not used yet - will be used when API supports it
+      console.debug('Update idempotency key:', idempotencyKey);
 
       options?.onSuccess?.(updatedParty as Party);
       return updatedParty;
@@ -253,9 +253,11 @@ export function usePartyMutations() {
 
         try {
           const fullParty = { ...data, id } as unknown as LocalParty;
-          const updatedParty = await syncService.updateParty(fullParty, idempotencyKey);
+          const updatedParty = await syncService.updateParty(fullParty);
           updatedParties.push(updatedParty as unknown as Party);
           options?.onProgress?.(i + 1, total);
+          // idempotencyKey is generated but not used yet - will be used when API supports it
+          console.debug('Idempotency key:', idempotencyKey);
         } catch (err) {
           console.error(`Failed to update party ${id}:`, err);
           // Continue with other parties

@@ -1,4 +1,4 @@
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { InvoiceFilters as IInvoiceFilters, InvoiceStatus, PaymentMethod } from '../../types/invoice';
 
@@ -57,7 +57,8 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
           {/* Filter Tabs */}
           <div className="border-b border-gray-200 mb-6">
             <nav className="flex space-x-8">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setActiveTab('basic')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'basic'
@@ -65,8 +66,9 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}>
                 Temel Filtreler
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => setActiveTab('advanced')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'advanced'
@@ -74,7 +76,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}>
                 Gelişmiş Filtreler
-              </button>
+              </Button>
             </nav>
           </div>
 
@@ -232,25 +234,17 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
               </div>
 
               <div className="flex items-center space-x-4">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.isPaid || false}
-                    onChange={(e) => handleFilterChange('isPaid', e.target.checked || undefined)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">Ödenenler</span>
-                </label>
+                <Checkbox
+                  checked={filters.isPaid || false}
+                  onChange={(e) => handleFilterChange('isPaid', e.target.checked || undefined)}
+                  label="Ödenenler"
+                />
 
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.isOverdue || false}
-                    onChange={(e) => handleFilterChange('isOverdue', e.target.checked || undefined)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">Vadesi Geçenler</span>
-                </label>
+                <Checkbox
+                  checked={filters.isOverdue || false}
+                  onChange={(e) => handleFilterChange('isOverdue', e.target.checked || undefined)}
+                  label="Vadesi Geçenler"
+                />
               </div>
             </div>
           )}

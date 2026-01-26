@@ -4,26 +4,14 @@ import { FileText, Eye, Download, Scissors, Zap } from 'lucide-react';
 import PartySearch from './PartySearch';
 import DocumentTypeSelector from './DocumentTypeSelector';
 import { type Party } from '../../types/party';
+import { type ProcessingResult, type MatchedParty } from './DocumentPreview';
 
 interface ProcessedDocument {
   id: string;
   originalImage: string;
   processedImage: string;
   croppedImage?: string;
-  ocrResult?: {
-    text: string;
-    confidence: number;
-    partyInfo?: {
-      firstName?: string;
-      lastName?: string;
-      tcNumber?: string;
-      confidence: number;
-    };
-    documentType?: {
-      type: string;
-      confidence: number;
-    };
-  };
+  ocrResult?: ProcessingResult['result'];
   edgeDetection?: {
     corners: Array<{ x: number; y: number }>;
     confidence: number;
@@ -157,34 +145,21 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({
 
     // Find the highest scoring document type
     const maxScore = Math.max(...Object.values(scores));
-    const detectedType = Object.entries(scores).find(([_key, score]) => score === maxScore)?.[0];
+    const detectedType = Object.entries(scores).find(([, score]) => score === maxScore)?.[0];
     
     // Return detected type if confidence is high enough, otherwise 'diger'
     return maxScore >= 3 ? detectedType! : 'diger';
   }, []);
 
   // Enhanced text extraction with better OCR simulation
-  const extractTextFromImage = useCallback(async (_imageData: string): Promise<{
-    text: string;
-    confidence: number;
-    partyInfo?: {
-      firstName?: string;
-      lastName?: string;
-      tcNumber?: string;
-      confidence: number;
-    };
-    documentType?: {
-      type: string;
-      confidence: number;
-    };
-  }> => {
+  const extractTextFromImage = useCallback(async (): Promise<ProcessingResult['result']> => {
     // Simulate OCR processing with realistic delay
     await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
 
     // Enhanced mock OCR results with more realistic patterns
     const mockTexts = [
       {
-        text: `T.C. SAĞLIK BAKANLIĞI
+        ocr_text: `T.C. SAĞLIK BAKANLIĞI
 SGK REÇETE
 Hasta Adı: AHMET YILMAZ
 TC Kimlik No: 12345678901
@@ -192,52 +167,49 @@ Tarih: ${new Date().toLocaleDateString('tr-TR')}
 İlaç Listesi:
 - Aspirin 100mg
 - Vitamin D3`,
-        partyInfo: {
-          firstName: "AHMET",
-          lastName: "YILMAZ", 
+        matched_party: {
+          name: "AHMET YILMAZ",
           tcNumber: "12345678901",
-          confidence: 0.92
+          match_details: {
+            confidence: 0.92
+          }
         },
-        documentType: {
-          type: "sgk_reçete",
-          confidence: 0.95
-        }
+        document_type: "sgk_reçete",
+        confidence_score: 0.95
       },
       {
-        text: `ODYOMETRI TEST SONUCU
+        ocr_text: `ODYOMETRI TEST SONUCU
 Hasta: FATMA KAYA
 TC: 98765432109
 Test Tarihi: ${new Date().toLocaleDateString('tr-TR')}
 Sağ Kulak: Normal
 Sol Kulak: Hafif kayıp`,
-        partyInfo: {
-          firstName: "FATMA",
-          lastName: "KAYA",
-          tcNumber: "98765432109", 
-          confidence: 0.88
+        matched_party: {
+          name: "FATMA KAYA",
+          tcNumber: "98765432109",
+          match_details: {
+            confidence: 0.88
+          }
         },
-        documentType: {
-          type: "odyometri",
-          confidence: 0.91
-        }
+        document_type: "odyometri",
+        confidence_score: 0.91
       },
       {
-        text: `DOKTOR RAPORU
+        ocr_text: `DOKTOR RAPORU
 Dr. Mehmet Özkan
 Hasta: ALİ DEMİR
 TC: 11223344556
 Tanı: Kronik otitis media
 Önerilen tedavi: Antibiyotik`,
-        partyInfo: {
-          firstName: "ALİ",
-          lastName: "DEMİR",
+        matched_party: {
+          name: "ALİ DEMİR",
           tcNumber: "11223344556",
-          confidence: 0.85
+          match_details: {
+            confidence: 0.85
+          }
         },
-        documentType: {
-          type: "sgk_rapor", 
-          confidence: 0.89
-        }
+        document_type: "sgk_rapor",
+        confidence_score: 0.89
       }
     ];
 
@@ -246,28 +218,28 @@ Tanı: Kronik otitis media
     const baseConfidence = 0.8 + Math.random() * 0.15; // 80-95% base confidence
 
     return {
-      text: randomResult.text,
-      confidence: baseConfidence,
-      partyInfo: randomResult.partyInfo ? {
-        ...randomResult.partyInfo,
-        confidence: randomResult.partyInfo.confidence * baseConfidence
+      ocr_text: randomResult.ocr_text,
+      confidence_score: baseConfidence,
+      matched_party: randomResult.matched_party ? {
+        ...randomResult.matched_party,
+        match_details: {
+          ...randomResult.matched_party.match_details,
+          confidence: (randomResult.matched_party.match_details?.confidence || 0) * baseConfidence
+        }
       } : undefined,
-      documentType: randomResult.documentType ? {
-        ...randomResult.documentType,
-        confidence: randomResult.documentType.confidence * baseConfidence
-      } : undefined,
+      document_type: randomResult.document_type,
     };
   }, []);
 
   // Generate filename based on party and document type
-  const generateFileName = useCallback((partyInfo: any, documentType: string): string => {
-    const firstName = partyInfo?.firstName || 'Bilinmeyen';
-    const lastName = partyInfo?.lastName || 'Hasta';
+  const generateFileName = useCallback((partyInfo: MatchedParty | undefined, documentType: string): string => {
+    const name = partyInfo?.name || partyInfo?.party?.firstName || 'Bilinmeyen';
+    const lastName = partyInfo?.party?.lastName || 'Hasta';
     
     const docType = documentType.replace(/\s+/g, '_');
     const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
     
-    return `${firstName}_${lastName}_${docType}_${timestamp}.pdf`;
+    return `${name}_${lastName}_${docType}_${timestamp}.pdf`;
   }, []);
 
   // Process all images
@@ -298,26 +270,23 @@ Tanı: Kronik otitis media
 
         // Step 3: Extract text with OCR
         setProcessingProgress(baseProgress + 60);
-        const ocrResult = await extractTextFromImage(edgeDetection.croppedImage);
+        const ocrResult = await extractTextFromImage();
 
         // Step 4: Detect document type
-        const detectedType = detectDocumentType(ocrResult.text);
+        const detectedType = detectDocumentType(ocrResult?.ocr_text || '');
         
         // Step 5: Generate filename
-        const fileName = generateFileName(ocrResult.partyInfo, detectedType);
+        const fileName = generateFileName(ocrResult?.matched_party, detectedType);
 
         const processedDoc: ProcessedDocument = {
           id: `doc_${Date.now()}_${i}`,
           originalImage: URL.createObjectURL(image),
           processedImage: compressedImage,
           croppedImage: edgeDetection.croppedImage,
-          ocrResult: {
+          ocrResult: ocrResult ? {
             ...ocrResult,
-            documentType: {
-              type: detectedType,
-              confidence: ocrResult.documentType?.confidence || 0.8
-            }
-          },
+            document_type: detectedType
+          } : undefined,
           edgeDetection: {
             corners: edgeDetection.corners,
             confidence: edgeDetection.confidence,
@@ -368,7 +337,7 @@ Tanı: Kronik otitis media
           ? { 
               ...doc, 
               selectedDocumentType: docType,
-              finalFileName: generateFileName(doc.ocrResult?.partyInfo, docType)
+              finalFileName: generateFileName(doc.ocrResult?.matched_party, docType)
             }
           : doc
       ));
@@ -411,10 +380,10 @@ Tanı: Kronik otitis media
     }
     
     // Add OCR text
-    if (doc.ocrResult?.text) {
+    if (doc.ocrResult?.ocr_text) {
       pdf.setFontSize(10);
       pdf.text('OCR Metni:', 20, 220);
-      const splitText = pdf.splitTextToSize(doc.ocrResult.text, 160);
+      const splitText = pdf.splitTextToSize(doc.ocrResult.ocr_text, 160);
       pdf.text(splitText, 20, 230);
     }
     
@@ -551,38 +520,45 @@ Tanı: Kronik otitis media
               
               {selectedDoc.ocrResult && (
                 <div className="space-y-4">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <div className="text-sm font-medium mb-2">Tespit Edilen Metin:</div>
-                    <div className="text-sm whitespace-pre-wrap">
-                      {selectedDoc.ocrResult.text}
+                  {selectedDoc.ocrResult.ocr_text && (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="text-sm font-medium mb-2">Tespit Edilen Metin:</div>
+                      <div className="text-sm whitespace-pre-wrap">
+                        {selectedDoc.ocrResult.ocr_text}
+                      </div>
+                      {selectedDoc.ocrResult.confidence_score !== undefined && (
+                        <div className="text-xs text-gray-500 mt-2">
+                          Güven: %{Math.round(selectedDoc.ocrResult.confidence_score * 100)}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-xs text-gray-500 mt-2">
-                      Güven: %{Math.round(selectedDoc.ocrResult.confidence * 100)}
-                    </div>
-                  </div>
+                  )}
 
-                  {selectedDoc.ocrResult.partyInfo && (
+                  {selectedDoc.ocrResult.matched_party && (
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <div className="text-sm font-medium mb-2">Hasta Bilgileri:</div>
                       <div className="text-sm space-y-1">
-                        <div>Ad: {selectedDoc.ocrResult.partyInfo.firstName}</div>
-                        <div>Soyad: {selectedDoc.ocrResult.partyInfo.lastName}</div>
-                        <div>TC: {selectedDoc.ocrResult.partyInfo.tcNumber}</div>
-                        <div className="text-xs text-gray-500">
-                          Güven: %{Math.round(selectedDoc.ocrResult.partyInfo.confidence * 100)}
-                        </div>
+                        <div>İsim: {selectedDoc.ocrResult.matched_party.name}</div>
+                        <div>TC: {selectedDoc.ocrResult.matched_party.tcNumber}</div>
+                        {selectedDoc.ocrResult.matched_party.match_details?.confidence !== undefined && (
+                          <div className="text-xs text-gray-500">
+                            Güven: %{Math.round(selectedDoc.ocrResult.matched_party.match_details.confidence * 100)}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {selectedDoc.ocrResult.documentType && (
+                  {selectedDoc.ocrResult.document_type && (
                     <div className="p-3 bg-green-50 rounded-lg">
                       <div className="text-sm font-medium mb-2">Belge Türü:</div>
                       <div className="text-sm">
-                        {selectedDoc.ocrResult.documentType.type}
-                        <div className="text-xs text-gray-500">
-                          Güven: %{Math.round(selectedDoc.ocrResult.documentType.confidence * 100)}
-                        </div>
+                        {selectedDoc.ocrResult.document_type}
+                        {selectedDoc.ocrResult.confidence_score !== undefined && (
+                          <div className="text-xs text-gray-500">
+                            Güven: %{Math.round(selectedDoc.ocrResult.confidence_score * 100)}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -615,7 +591,7 @@ Tanı: Kronik otitis media
                   }}
                 >
                   <FileText className="w-4 h-4 mr-2" />
-                  {selectedDoc.selectedDocumentType || selectedDoc.ocrResult?.documentType?.type || 'Belge Türü Seç'}
+                  {selectedDoc.selectedDocumentType || selectedDoc.ocrResult?.document_type || 'Belge Türü Seç'}
                 </Button>
               </div>
 
@@ -696,7 +672,7 @@ Tanı: Kronik otitis media
           setSelectedDocumentId(null);
         }}
         onSelect={handleDocumentTypeSelect}
-        currentType={selectedDocumentId ? documents.find(d => d.id === selectedDocumentId)?.ocrResult?.documentType?.type : undefined}
+        currentType={selectedDocumentId ? documents.find(d => d.id === selectedDocumentId)?.ocrResult?.document_type : undefined}
       />
     </>
   );

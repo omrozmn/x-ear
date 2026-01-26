@@ -314,6 +314,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
+            data-allow-raw="true"
             onClick={() => setActiveTab('send')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'send'
                 ? 'border-blue-500 text-blue-600'
@@ -326,6 +327,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
             </div>
           </button>
           <button
+            data-allow-raw="true"
             onClick={() => setActiveTab('history')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
                 ? 'border-blue-500 text-blue-600'
@@ -349,6 +351,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
             <div className="flex space-x-4">
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="radio"
                   name="messageType"
                   value="sms"
@@ -361,6 +364,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
               </label>
               <label className="flex items-center">
                 <input
+                  data-allow-raw="true"
                   type="radio"
                   name="messageType"
                   value="email"
@@ -382,6 +386,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                 .filter(template => template.type === messageType)
                 .map(template => (
                   <button
+                    data-allow-raw="true"
                     key={template.id}
                     onClick={() => handleTemplateSelect(template.id)}
                     className={`p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors ${selectedTemplate === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'

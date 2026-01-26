@@ -147,7 +147,8 @@ export class PartyOfflineSync {
     const party = await this.db.get('parties', id);
     if (!party) return null;
 
-    const { syncStatus: _syncStatus, ...partyData } = party;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { syncStatus, ...partyData } = party;
     return partyData;
   }
 
@@ -156,7 +157,8 @@ export class PartyOfflineSync {
 
     const parties = await this.db.getAll('parties');
     return parties.map(p => {
-      const { syncStatus: _syncStatus, ...party } = p;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { syncStatus, ...party } = p;
       return party;
     });
   }

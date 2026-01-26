@@ -37,7 +37,7 @@ export const LoanerInfoCard: React.FC<LoanerInfoCardProps> = ({ device, onReturn
                         )}
                     </div>
                 </div>
-                <button
+                <button data-allow-raw="true"
                     onClick={(e) => {
                         e.stopPropagation();
                         if (window.confirm('Bu emanet cihazı stoğa döndürmek istediğinize emin misiniz?')) {

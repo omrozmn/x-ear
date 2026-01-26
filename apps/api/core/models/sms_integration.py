@@ -94,19 +94,17 @@ class SMSHeaderRequest(BaseModel, JSONMixin, TenantScopedMixin):
         }
 
 class SMSPackage(BaseModel, JSONMixin):
-    """SMS Package available for purchase"""
+    """SMS Package available for purchase (Platform Global)"""
     __tablename__ = 'sms_packages'
 
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("smspkg"))
-    
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     sms_count = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
     currency = db.Column(db.String(3), default='TRY')
-    
     is_active = db.Column(db.Boolean, default=True)
-    
+
     def to_dict(self):
         base = self.to_dict_base()
         return {

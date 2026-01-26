@@ -81,7 +81,7 @@ export const MobileInventoryPage: React.FC = () => {
                 title="Envanter"
                 showBack={false}
                 actions={
-                    <button className="p-2 text-gray-600 dark:text-gray-300">
+                    <button data-allow-raw="true" className="p-2 text-gray-600 dark:text-gray-300">
                         <Filter className="h-5 w-5" />
                     </button>
                 }
@@ -93,6 +93,7 @@ export const MobileInventoryPage: React.FC = () => {
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <input
+                            data-allow-raw="true"
                             type="text"
                             placeholder="Ürün, marka, model ara..."
                             value={searchValue}
@@ -101,6 +102,7 @@ export const MobileInventoryPage: React.FC = () => {
                         />
                     </div>
                     <button
+                        data-allow-raw="true"
                         onClick={handleScan}
                         className="p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-600 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border border-transparent"
                     >

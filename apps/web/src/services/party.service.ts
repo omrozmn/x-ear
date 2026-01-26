@@ -1,6 +1,7 @@
 import {
   PartyFilters,
   PartySearchResult,
+  PartySearchItem,
   PartyStats,
   PartyDevice,
   PartyNote,
@@ -418,7 +419,7 @@ export class PartyService {
       const hasMore = endIndex < filteredParties.length;
 
       return {
-        parties: paginatedParties as unknown as Party[],
+        parties: paginatedParties as unknown as PartySearchItem[],
         total: filteredParties.length,
         totalCount: this.parties.length,
         filteredCount: filteredParties.length,
@@ -558,7 +559,7 @@ export class PartyService {
     else if (score >= 0.6) confidence = 'medium';
 
     return {
-      party,
+      party: party as unknown as PartySearchItem,
       score,
       matchScore: score,
       matchReasons: [],

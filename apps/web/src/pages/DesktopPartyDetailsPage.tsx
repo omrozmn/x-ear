@@ -21,7 +21,7 @@ import { PartyNoteForm } from '../components/forms/PartyNoteForm';
 import type { SaleRead } from '@/api/generated/schemas';
 import { ErrorMessage, NetworkError, NotFoundError } from '../components/ErrorMessage';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { useGlobalError } from '../components/GlobalErrorHandler';
+import { useGlobalError } from '../hooks/useGlobalError';
 import { PARTY_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';

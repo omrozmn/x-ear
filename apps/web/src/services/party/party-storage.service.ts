@@ -1,5 +1,5 @@
 import type { Party as OrvalParty } from '../../types/party';
-import { PartyFilters, PartySearchResult, PartyStatus, PartySegment } from '../../types/party';
+import { PartyFilters, PartySearchResult, PartySearchItem, PartyStatus, PartySegment } from '../../types/party';
 import { indexedDBManager } from '../../utils/indexeddb';
 
 /**
@@ -81,7 +81,7 @@ export class PartyStorageService {
     const paginatedParties = filteredParties.slice(startIndex, endIndex);
 
     return {
-      parties: paginatedParties,
+      parties: paginatedParties as unknown as PartySearchItem[],
       total: allParties.length,
       totalCount: allParties.length,
       filteredCount: filteredParties.length,

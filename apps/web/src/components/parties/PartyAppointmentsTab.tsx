@@ -90,7 +90,8 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
     }
   };
 
-  const handleCancelAppointment = async (appointmentId: string, _reason?: string) => {
+  const handleCancelAppointment = async (appointmentId: string) => {
+    // reason parameter removed - not used by API endpoint
     try {
       // Cancel endpoint might not body or might expect different structure. 
       // Checking generated code: createAppointmentCancel(appointmentId) takes no body?? 
@@ -105,7 +106,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
     }
   };
 
-  const handleConfirmAppointment = async (appointmentId: string, _notes?: string) => {
+  const handleConfirmAppointment = async (appointmentId: string) => {
     try {
       // Complete endpoint takes only appointmentId
       await createAppointmentComplete(appointmentId);
@@ -276,7 +277,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
                         <Check className="w-4 h-4" />
                       </Button>
                       <Button
-                        onClick={() => appointment.id && handleCancelAppointment(appointment.id, 'Hasta tarafından iptal edildi')}
+                        onClick={() => appointment.id && handleCancelAppointment(appointment.id)}
                         className="p-2 text-red-600 hover:bg-red-50"
                         title="İptal Et"
                       >

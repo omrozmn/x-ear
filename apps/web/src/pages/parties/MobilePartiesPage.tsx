@@ -13,7 +13,7 @@ import { Input, Button } from '@x-ear/ui-web';
 export const MobilePartiesPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchValue, setSearchValue] = useState('');
-    const { data, isLoading, error: _error } = useParties();
+    const { data, isLoading } = useParties();
     const parties = data?.parties || [];
 
     const handleRefresh = async () => {

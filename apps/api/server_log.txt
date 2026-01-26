@@ -8373,3 +8373,51 @@ Traceback (most recent call last):
   File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/subscription.py", line 10, in <module>
     from models.mixins import TenantScopedMixin
 ModuleNotFoundError: No module named 'models.mixins'
+{"timestamp": "2026-01-26T08:56:05.695720+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'models/mixins.py'. Reloading...
+{"timestamp": "2026-01-26T08:56:06.688750+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "21 changes detected"}
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 241, in <module>
+    from routers import parties, auth, users
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/__init__.py", line 83, in <module>
+    from . import communications
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/communications.py", line 35
+    def now_utc():
+    ^
+IndentationError: expected an indented block after function definition on line 32
+{"timestamp": "2026-01-26T08:56:17.631574+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'routers/communications.py'. Reloading...
+{"timestamp": "2026-01-26T08:56:19.491323+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_id" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_version" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_available" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_provider" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+INFO:     Started server process [84475]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

@@ -17,6 +17,8 @@ from models.inventory import InventoryItem
 from models.invoice import Invoice
 from services.stock_service import create_stock_movement
 from services.device_assignment_service import DeviceAssignmentService
+from services.event_service import event_service
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks
 
 from schemas.sales import (
     SaleRead, SaleCreate, SaleUpdate, 
@@ -705,6 +707,7 @@ def _update_inventory_stock(db: Session, product: InventoryItem, qty: int, trans
 @router.post("/sales", operation_id="createSales")
 def create_sale(
     sale_in: SaleCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):

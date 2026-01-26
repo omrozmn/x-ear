@@ -31,7 +31,7 @@ const ErrorMessage: React.FC<{ message: string; onRetry?: () => void }> = ({ mes
       <div className="flex-1">
         <p className="text-sm text-red-800">{message}</p>
         {onRetry && (
-          <button
+          <button data-allow-raw="true"
             onClick={onRetry}
             className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
           >
@@ -465,7 +465,7 @@ export const PartySGKTab: React.FC<PartySGKTabProps> = ({ party }) => {
   };
 
   // Download party form function
-  const downloadPartyForm = (_eReceiptId: string) => {
+  const downloadPartyForm = () => {
     // Simulate download
     showSuccess('Başarılı', 'Hasta işlem formu indirildi');
   };

@@ -136,11 +136,13 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
               <h3 className="text-lg font-semibold text-gray-900">
                 Ürün Ara
               </h3>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none">
+              >
                 <span className="text-2xl">×</span>
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -180,10 +182,11 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
               {products.length > 0 ? (
                 <div className="space-y-2">
                   {products.map((product) => (
-                    <button
+                    <Button
                       key={product.id}
+                      variant="ghost"
                       onClick={() => handleSelect(product)}
-                      className="w-full p-4 text-left border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                      className="w-full p-4 text-left border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="font-medium text-gray-900">
@@ -221,7 +224,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
                         </div>
                         <span className="text-blue-600 text-xl">→</span>
                       </div>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               ) : searchQuery.length >= 2 && !isLoading ? (

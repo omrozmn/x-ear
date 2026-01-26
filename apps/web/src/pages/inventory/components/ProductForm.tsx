@@ -14,11 +14,6 @@ interface ProductFormProps {
   mode: 'create' | 'edit';
 }
 
-const _BRANDS = [
-  'Phonak', 'Oticon', 'Widex', 'Signia', 'ReSound',
-  'Starkey', 'Unitron', 'Bernafon', 'Hansaton', 'Sonic'
-];
-
 const CATEGORIES: { value: InventoryCategory; label: string; icon: string }[] = [
   { value: 'hearing_aid', label: 'İşitme Cihazı', icon: '🦻' },
   { value: 'battery', label: 'Pil', icon: '🔋' },
@@ -26,15 +21,6 @@ const CATEGORIES: { value: InventoryCategory; label: string; icon: string }[] = 
   { value: 'ear_mold', label: 'Kulak Kalıbı', icon: '👂' },
   { value: 'cleaning_supplies', label: 'Temizlik Malzemesi', icon: '🧽' },
   { value: 'amplifiers', label: 'Amplifikatör', icon: '📢' }
-];
-
-const _TYPES: { value: InventoryType; label: string }[] = [
-  { value: 'digital_programmable', label: 'Dijital Programlanabilir' },
-  { value: 'rechargeable_digital', label: 'Şarjlı Dijital' },
-  { value: 'zinc_air', label: 'Çinko Hava' },
-  { value: 'custom_silicone', label: 'Özel Silikon' },
-  { value: 'maintenance_kit', label: 'Bakım Kiti' },
-  { value: 'wireless_amplifier', label: 'Kablosuz Amplifikatör' }
 ];
 
 const EAR_DIRECTIONS: { value: EarDirection; label: string }[] = [

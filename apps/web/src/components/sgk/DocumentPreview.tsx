@@ -75,7 +75,6 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   const [imageZoom, setImageZoom] = useState(1);
   const [imageRotation, setImageRotation] = useState(0);
   const [showFullOCR, setShowFullOCR] = useState(false);
-  const [_highlightedText, setHighlightedText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,7 +87,6 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       setImageZoom(1);
       setImageRotation(0);
       setShowFullOCR(false);
-      setHighlightedText('');
       setSearchTerm('');
     }
   }, [isOpen]);
@@ -119,7 +117,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     
     if (data.entities && data.entities.length > 0) {
       return data.entities
-        .map((entity: any) => entity.text || '')
+        .map((entity: Entity) => (entity.text as string | undefined) || '')
         .filter(text => text.trim())
         .join(' ');
     }

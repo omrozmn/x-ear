@@ -694,24 +694,27 @@ export class SGKService {
           case 'process':
             await this.processDocument({ imagePath: documentId });
             break;
-          case 'approve':
+          case 'approve': {
             const workflow = this.workflows.find(w => w.documentId === documentId);
             if (workflow) {
               await this.updateWorkflowStatus(workflow.id, 'approved', operation.data?.notes);
             }
             break;
-          case 'reject':
+          }
+          case 'reject': {
             const rejectWorkflow = this.workflows.find(w => w.documentId === documentId);
             if (rejectWorkflow) {
               await this.updateWorkflowStatus(rejectWorkflow.id, 'rejected', operation.data?.rejectionReason);
             }
             break;
-          case 'submit':
+          }
+          case 'submit': {
             const submitWorkflow = this.workflows.find(w => w.documentId === documentId);
             if (submitWorkflow) {
               await this.updateWorkflowStatus(submitWorkflow.id, 'submitted', operation.data?.notes);
             }
             break;
+          }
         }
         result.processed++;
       } catch (error) {

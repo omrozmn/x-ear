@@ -228,7 +228,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="ear">Kulak</Label>
-                <select
+                <select data-allow-raw="true"
                   id="ear"
                   value={formData.ear}
                   onChange={(e) => handleInputChange('ear', e.target.value as 'left' | 'right' | 'both')}
@@ -299,7 +299,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
 
             <div>
               <Label htmlFor="paymentMethod">Ödeme Yöntemi</Label>
-              <select
+              <select data-allow-raw="true"
                 id="paymentMethod"
                 value={state.paymentMethod}
                 onChange={(e) => onStateChange({ paymentMethod: e.target.value })}

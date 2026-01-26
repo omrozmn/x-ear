@@ -77,15 +77,18 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
 
     // Handle different response structures
     if (categoriesData) {
-      const responseData = categoriesData as Record<string, any>;
+      const responseData = categoriesData as Record<string, unknown>;
       if (Array.isArray(responseData)) {
         apiCategories = responseData;
       } else if (responseData?.data) {
         const innerData = responseData.data;
         if (Array.isArray(innerData)) {
           apiCategories = innerData;
-        } else if (innerData?.categories && Array.isArray(innerData.categories)) {
-          apiCategories = innerData.categories;
+        } else if (typeof innerData === 'object' && innerData !== null) {
+          const innerDataObj = innerData as Record<string, unknown>;
+          if (innerDataObj.categories && Array.isArray(innerDataObj.categories)) {
+            apiCategories = innerDataObj.categories;
+          }
         }
       }
     }

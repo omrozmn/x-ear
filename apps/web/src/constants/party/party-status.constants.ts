@@ -11,34 +11,35 @@ import type {
 } from '../../types/party/party-base.types';
 
 // Map backend PartyStatus values to Turkish labels
+// Map backend PartyStatus values to translation keys
 export const PARTY_STATUS: Record<PartyStatus, string> = {
-  active: 'Aktif',
-  inactive: 'Pasif',
-  lead: 'Potansiyel',
-  trial: 'Deneme',
-  customer: 'Müşteri',
-  new: 'Yeni',
-  deceased: 'Vefat',
-  archived: 'Arşivlenmiş'
+  active: 'party.status.active',
+  inactive: 'party.status.inactive',
+  lead: 'party.status.lead',
+  trial: 'party.status.trial',
+  customer: 'party.status.customer',
+  new: 'party.status.new',
+  deceased: 'party.status.deceased',
+  archived: 'party.status.archived'
 } as const;
 
 export const PARTY_SEGMENT: Record<PartySegment, string> = {
-  NEW: 'Yeni',
-  TRIAL: 'Deneme',
-  PURCHASED: 'Satın Alındı',
-  CONTROL: 'Kontrol',
-  RENEWAL: 'Yenileme',
-  EXISTING: 'Mevcut',
-  VIP: 'VIP'
+  NEW: 'party.segment.new',
+  TRIAL: 'party.segment.trial',
+  PURCHASED: 'party.segment.purchased',
+  CONTROL: 'party.segment.control',
+  RENEWAL: 'party.segment.renewal',
+  EXISTING: 'party.segment.existing',
+  VIP: 'party.segment.vip'
 } as const;
 
 export const PARTY_LABEL: Record<PartyLabel, string> = {
-  'yeni': 'Yeni',
-  'arama-bekliyor': 'Arama Bekliyor',
-  'randevu-verildi': 'Randevu Verildi',
-  'deneme-yapildi': 'Deneme Yapıldı',
-  'kontrol-hastasi': 'Kontrol Hastası',
-  'satis-tamamlandi': 'Satış Tamamlandı'
+  'yeni': 'party.label.new',
+  'arama-bekliyor': 'party.label.waiting_call',
+  'randevu-verildi': 'party.label.appointment_set',
+  'deneme-yapildi': 'party.label.trial_done',
+  'kontrol-hastasi': 'party.label.control_patient',
+  'satis-tamamlandi': 'party.label.sales_complete'
 } as const;
 
 export const STATUS_COLORS: Record<PartyStatus, string> = {

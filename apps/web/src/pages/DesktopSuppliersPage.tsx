@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button, Input, Modal, Tabs, TabsList, TabsTrigger, TabsContent, Badge } from '@x-ear/ui-web';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier, type SupplierFormData } from '../hooks/useSuppliers';
 import { useSuggestedSuppliers } from '../hooks/useSupplierInvoices';
 import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Trash2 } from 'lucide-react';
@@ -22,7 +22,6 @@ export function DesktopSuppliersPage() {
 
 
   const navigate = useNavigate();
-  const { supplierId: _supplierId } = useParams({ strict: false }) as { supplierId?: string };
 
   // State
   const [searchValue, setSearchValue] = useState('');

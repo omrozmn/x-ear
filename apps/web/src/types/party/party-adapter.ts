@@ -4,40 +4,46 @@
  * @version 1.0.0
  */
 
-import type { Party } from './party-base.types';
+import type { Party, PartyDevice, PartyNote, PartyCommunication } from './party-base.types';
+import type { PartyRead } from '@/api/generated/schemas';
 
 // Adapter interface for converting between API and UI formats
 export interface PartyAdapter {
-  fromApi: (apiData: any) => Party;
-  toApi: (party: Party) => any;
-  fromForm: (formData: any) => Party;
-  toForm: (party: Party) => any;
+  fromApi: (apiData: Record<string, unknown>) => Party;
+  toApi: (party: Party) => Record<string, unknown>;
+  fromForm: (formData: Record<string, unknown>) => Party;
+  toForm: (party: Party) => Record<string, unknown>;
 }
 
 // Legacy conversion function for backward compatibility
-export const convertOrvalToLegacyParty = (orvalParty: any): Party => {
-  return {
-    ...orvalParty,
-    id: orvalParty.id,
-    tcNumber: orvalParty.tcNumber || orvalParty.identityNumber || orvalParty.identity_number,
-    firstName: orvalParty.firstName || orvalParty.first_name,
-    lastName: orvalParty.lastName || orvalParty.last_name,
-    phone: orvalParty.phone,
-    email: orvalParty.email,
-    birthDate: orvalParty.birthDate || orvalParty.birth_date,
-    gender: orvalParty.gender,
-    status: orvalParty.status,
-    segment: orvalParty.segment,
-    createdAt: orvalParty.createdAt || orvalParty.created_at,
-    updatedAt: orvalParty.updatedAt || orvalParty.updated_at,
-    devices: orvalParty.devices || [],
-    notes: orvalParty.notes || [],
-    communications: orvalParty.communications || [],
+export const convertOrvalToLegacyParty = (orvalParty: PartyRead | Record<string, unknown>): Party => {
+  const asRecord = orvalParty as Record<string, unknown>;
+  
+  // Create a clean Party object without spreading to avoid null issues
+  const party: Party = {
+    id: (orvalParty.id ?? '') as string,
+    tcNumber: (orvalParty.tcNumber ?? asRecord.identityNumber ?? asRecord.identity_number ?? undefined) as string | undefined,
+    identityNumber: (orvalParty.identityNumber ?? asRecord.identity_number ?? undefined) as string | undefined,
+    firstName: (orvalParty.firstName ?? asRecord.first_name ?? '') as string,
+    lastName: (orvalParty.lastName ?? asRecord.last_name ?? '') as string,
+    phone: (orvalParty.phone ?? undefined) as string | undefined,
+    email: (orvalParty.email ?? undefined) as string | undefined,
+    birthDate: (orvalParty.birthDate ?? asRecord.birth_date ?? undefined) as string | undefined,
+    gender: (orvalParty.gender ?? undefined) as string | undefined,
+    status: (orvalParty.status ?? 'active') as string,
+    segment: (orvalParty.segment ?? undefined) as string | undefined,
+    createdAt: (orvalParty.createdAt ?? asRecord.created_at ?? '') as string,
+    updatedAt: (orvalParty.updatedAt ?? asRecord.updated_at ?? '') as string,
+    devices: (asRecord.devices ?? []) as PartyDevice[],
+    notes: (asRecord.notes ?? []) as PartyNote[],
+    communications: (asRecord.communications ?? []) as PartyCommunication[],
   };
+  
+  return party;
 };
 
 // Create party request function
-export const createPartyRequest = (party: Party): any => {
+export const createPartyRequest = (party: Party): Record<string, unknown> => {
   return {
     firstName: party.firstName || '',
     lastName: party.lastName || '',
@@ -55,34 +61,34 @@ export const createPartyRequest = (party: Party): any => {
 
 // Default party adapter implementation
 export const defaultPartyAdapter: PartyAdapter = {
-  fromApi: (apiData: any): Party => {
+  fromApi: (apiData: Record<string, unknown>): Party => {
     return {
-      id: apiData.id,
-      tcNumber: apiData.tc_number || apiData.tcNumber,
-      firstName: apiData.first_name || apiData.firstName,
-      lastName: apiData.last_name || apiData.lastName,
-      phone: apiData.phone,
-      email: apiData.email,
-      birthDate: apiData.birth_date || apiData.birthDate,
-      gender: apiData.gender,
-      addressCity: apiData.address_city || apiData.addressCity,
-      addressDistrict: apiData.address_district || apiData.addressDistrict,
-      addressFull: apiData.address_full || apiData.addressFull,
-      status: apiData.status,
-      segment: apiData.segment,
-      acquisitionType: apiData.acquisition_type || apiData.acquisitionType,
-      conversionStep: apiData.conversion_step || apiData.conversionStep,
-      referredBy: apiData.referred_by || apiData.referredBy,
-      priorityScore: apiData.priority_score || apiData.priorityScore || 0,
-      tags: apiData.tags || [],
-      sgkInfo: apiData.sgk_info || apiData.sgkInfo,
-      customData: apiData.custom_data || apiData.customData,
-      createdAt: apiData.created_at || apiData.createdAt,
-      updatedAt: apiData.updated_at || apiData.updatedAt,
+      id: apiData.id as string,
+      tcNumber: (apiData.tc_number || apiData.tcNumber) as string | undefined,
+      firstName: (apiData.first_name || apiData.firstName) as string,
+      lastName: (apiData.last_name || apiData.lastName) as string,
+      phone: apiData.phone as string | undefined,
+      email: apiData.email as string | undefined,
+      birthDate: (apiData.birth_date || apiData.birthDate) as string | undefined,
+      gender: apiData.gender as string | undefined,
+      addressCity: (apiData.address_city || apiData.addressCity) as string | undefined,
+      addressDistrict: (apiData.address_district || apiData.addressDistrict) as string | undefined,
+      addressFull: (apiData.address_full || apiData.addressFull) as string | undefined,
+      status: apiData.status as string,
+      segment: apiData.segment as string | undefined,
+      acquisitionType: (apiData.acquisition_type || apiData.acquisitionType) as string | undefined,
+      conversionStep: (apiData.conversion_step || apiData.conversionStep) as string | undefined,
+      referredBy: (apiData.referred_by || apiData.referredBy) as string | undefined,
+      priorityScore: (apiData.priority_score || apiData.priorityScore || 0) as number,
+      tags: (apiData.tags || []) as string[],
+      sgkInfo: (apiData.sgk_info || apiData.sgkInfo) as Record<string, unknown> | undefined,
+      customData: (apiData.custom_data || apiData.customData) as Record<string, unknown> | undefined,
+      createdAt: (apiData.created_at || apiData.createdAt) as string,
+      updatedAt: (apiData.updated_at || apiData.updatedAt) as string,
     };
   },
 
-  toApi: (party: Party): any => {
+  toApi: (party: Party): Record<string, unknown> => {
     return {
       id: party.id,
       tc_number: party.tcNumber,
@@ -109,34 +115,34 @@ export const defaultPartyAdapter: PartyAdapter = {
     };
   },
 
-  fromForm: (formData: any): Party => {
+  fromForm: (formData: Record<string, unknown>): Party => {
     return {
-      id: formData.id,
-      tcNumber: formData.tcNumber,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      phone: formData.phone,
-      email: formData.email,
-      birthDate: formData.birthDate,
-      gender: formData.gender,
-      addressCity: formData.addressCity,
-      addressDistrict: formData.addressDistrict,
-      addressFull: formData.addressFull,
-      status: formData.status || 'active',
-      segment: formData.segment,
-      acquisitionType: formData.acquisitionType,
-      conversionStep: formData.conversionStep,
-      referredBy: formData.referredBy,
-      priorityScore: formData.priorityScore || 0,
-      tags: formData.tags || [],
-      sgkInfo: formData.sgkInfo,
-      customData: formData.customData,
-      createdAt: formData.createdAt,
-      updatedAt: formData.updatedAt,
+      id: formData.id as string,
+      tcNumber: formData.tcNumber as string | undefined,
+      firstName: formData.firstName as string,
+      lastName: formData.lastName as string,
+      phone: formData.phone as string | undefined,
+      email: formData.email as string | undefined,
+      birthDate: formData.birthDate as string | undefined,
+      gender: formData.gender as string | undefined,
+      addressCity: formData.addressCity as string | undefined,
+      addressDistrict: formData.addressDistrict as string | undefined,
+      addressFull: formData.addressFull as string | undefined,
+      status: (formData.status || 'active') as string,
+      segment: formData.segment as string | undefined,
+      acquisitionType: formData.acquisitionType as string | undefined,
+      conversionStep: formData.conversionStep as string | undefined,
+      referredBy: formData.referredBy as string | undefined,
+      priorityScore: (formData.priorityScore || 0) as number,
+      tags: (formData.tags || []) as string[],
+      sgkInfo: formData.sgkInfo as Record<string, unknown> | undefined,
+      customData: formData.customData as Record<string, unknown> | undefined,
+      createdAt: formData.createdAt as string,
+      updatedAt: formData.updatedAt as string,
     };
   },
 
-  toForm: (party: Party): any => {
+  toForm: (party: Party): Record<string, unknown> => {
     return {
       id: party.id,
       tcNumber: party.tcNumber,

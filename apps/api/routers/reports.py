@@ -75,7 +75,7 @@ def apply_branch_filter(query, model, branch_ids: Optional[List[str]]):
 
 def tenant_filter(query, model, access: UnifiedAccess):
     """Apply tenant filter"""
-    if access.tenant_id and hasattr(model, 'access.tenant_id'):
+    if access.tenant_id and hasattr(model, 'tenant_id'):
         return query.filter(model.tenant_id == access.tenant_id)
     return query
 

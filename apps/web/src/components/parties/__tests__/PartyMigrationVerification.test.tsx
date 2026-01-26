@@ -100,11 +100,11 @@ const createMockParty = (roles: string[], hasProfile: boolean): PartyDetailRespo
         devices: [],
         sales: [],
         communications: []
-    } as any;
+    } as unknown as PartyDetailResponseData;
 };
 
 describe('Party Role & Profile Integration Verification', () => {
-    const mockUseParams = useParams as any;
+    const mockUseParams = useParams as unknown as ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
         vi.clearAllMocks();

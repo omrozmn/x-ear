@@ -46,29 +46,69 @@ def autocomplete(
     
     # --- 1. Entity Search ---
     
-    # Search Parties (Patients)
-    if not context_entity_type or context_entity_type == "patient":
+    # --- 1. Entity Search ---
+    
+    # Search Parties (Patients) - ALWAYS search unless specifically excluded by a future 'block' logic
+    # We want to support "Patient" -> "Device" flows, so we shouldn't block patient search even if device is context
+    # (though usually you search patient first).
+    # But definitely if context is Patient, we might want to search OTHER patients (maybe?) or just Devices.
+    # The user issue is: "Selected Patient" -> Type "Oticon" -> No results.
+    # So we MUST search Devices even if context is Patient.
+    
+    should_search_patients = True
+    should_search_devices = True
+    
+    if should_search_patients:
         party_service = PartyService(db)
-        # We reuse the list logic but keep it lightweight
+        
+        # Determine tenant scope for search
+        search_tenant = access.tenant_id
+        if not search_tenant and access.is_super_admin:
+            search_tenant = 'system'
+            
         parties, _, _ = party_service.list_parties(
-            tenant_id=access.tenant_id,
+            tenant_id=search_tenant,
             search=q,
             per_page=5
         )
         for p in parties:
+            # Parse tags safely
+            tags = []
+            if p.tags_json:
+                import json
+                try:
+                    loaded = json.loads(p.tags_json) if isinstance(p.tags_json, str) else p.tags_json
+                    if isinstance(loaded, list):
+                        tags = loaded
+                except:
+                    pass
+
             entities.append(EntityItem(
                 id=str(p.id),
                 type="patient",
                 label=f"{p.first_name} {p.last_name}",
                 sub_label=p.phone or p.tc_number,
-                metadata={"status": p.status}
+                metadata={
+                    "status": p.status,
+                    "tags": tags 
+                }
             ))
 
     # Search Devices (Inventory)
-    if not context_entity_type or context_entity_type == "device":
-        # Direct DB query for speed/simplicity as no generic InventoryService exists yet
-        inv_items = db.query(InventoryItem).filter(
-            InventoryItem.tenant_id == access.tenant_id,
+    # Allows finding devices even if context is Patient (for assignment)
+    if should_search_devices:
+        # Direct DB query for speed/simplicity
+        inv_query = db.query(InventoryItem)
+        
+        # Tenant filter
+        if access.tenant_id:
+            inv_query = inv_query.filter(InventoryItem.tenant_id == access.tenant_id)
+        # If super_admin and no tenant, return all (no filter)
+        elif not access.is_super_admin:
+             # Regular user with no tenant (shouldn't happen) -> return empty
+             inv_query = inv_query.filter(InventoryItem.tenant_id == 'none') 
+
+        inv_items = inv_query.filter(
             or_(
                 InventoryItem.brand.ilike(f"%{q}%"),
                 InventoryItem.model.ilike(f"%{q}%"),
@@ -124,7 +164,10 @@ def autocomplete(
              if q.lower() in c.name.lower()
         ]
 
-    return AutocompleteResponse(entities=entities, actions=actions)
+    # Determine Intent Type
+    intent_type = "action" if actions else "search"
+
+    return AutocompleteResponse(entities=entities, actions=actions, intent_type=intent_type)
 
 
 @router.post("/execute", response_model=ExecuteResponse)

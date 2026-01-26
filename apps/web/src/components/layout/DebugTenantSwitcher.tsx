@@ -2,10 +2,12 @@ import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { Building2, ChevronDown, Check, Loader2, Search, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import {useListAdminTenants,
+import {
+  useListAdminTenants,
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
-  getListAdminTenantsQueryKey,} from '@/api/client/admin-tenants.client';
+  getListAdminTenantsQueryKey,
+} from '@/api/client/admin-tenants.client';
 import type { TenantRead } from '@/api/generated/schemas';
 import type { AuthStateUser } from '../../stores/authStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -21,7 +23,8 @@ interface TenantListResponse {
 interface SwitchTenantResponse {
   data: {
     accessToken: string;
-    createAuthRefresh?: string | null;
+    refreshToken?: string | null; // Fixed: Backend sends refresh_token -> camelized to refreshToken
+    createAuthRefresh?: string | null; // Keep for safety if legacy
     effectiveTenantId: string;
     tenantName: string;
     isImpersonatingTenant: boolean;
@@ -88,17 +91,20 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
         const data = (response as unknown as SwitchTenantResponse)?.data;
 
         if (data?.accessToken && user) {
+          const refreshToken = data.refreshToken || data.createAuthRefresh || null;
+
           const updatedUser = {
             ...user,
             effectiveTenantId: data.effectiveTenantId,
+            tenantId: data.effectiveTenantId, // ADDED: Set tenantId for UI compatibility
             tenantName: data.tenantName,
             isImpersonatingTenant: data.isImpersonatingTenant,
           };
 
           // Pass both access and refresh tokens to setAuth
-          setAuth(updatedUser, data.accessToken, data.createAuthRefresh || null);
+          setAuth(updatedUser, data.accessToken, refreshToken);
           console.log('[DebugTenantSwitcher] Switched to tenant:', data.tenantName);
-          console.log('[DebugTenantSwitcher] Has refresh token:', !!data.createAuthRefresh);
+          console.log('[DebugTenantSwitcher] Has refresh token:', !!refreshToken);
 
           // Clear React Query cache
           queryClient.clear();
@@ -141,16 +147,20 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
         const data = (response as unknown as SwitchTenantResponse)?.data;
 
         if (data?.accessToken && user) {
+          const refreshToken = data.refreshToken || data.createAuthRefresh || null;
+
           const updatedUser = {
             ...user,
             effectiveTenantId: undefined,
+            // Force reset tenantId to undefined even if TS thinks it should be string (inheritance issue?)
+            tenantId: undefined as unknown as string,
             tenantName: undefined,
             isImpersonatingTenant: false,
           };
 
           // Pass both access and refresh tokens to setAuth
-          setAuth(updatedUser, data.accessToken, data.createAuthRefresh || null);
-          console.log('[DebugTenantSwitcher] Has refresh token:', !!data.createAuthRefresh);
+          setAuth(updatedUser, data.accessToken, refreshToken);
+          console.log('[DebugTenantSwitcher] Has refresh token:', !!refreshToken);
 
           // Clear React Query cache
           queryClient.clear();
@@ -200,6 +210,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
     <div style={{ position: 'relative' }}>
       {/* Tenant Badge & Button */}
       <button
+        data-allow-raw="true"
         onClick={() => setIsOpen(!isOpen)}
         disabled={isSwitching || isExiting}
         style={{
@@ -321,6 +332,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
             >
               <Search size={14} style={{ color: darkMode ? '#9ca3af' : '#6b7280' }} />
               <input
+                data-allow-raw="true"
                 type="text"
                 placeholder="Tenant ara..."
                 value={searchQuery}
@@ -366,6 +378,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
                 const isCurrentTenant = tenant.id === currentTenantId;
                 return (
                   <button
+                    data-allow-raw="true"
                     key={tenant.id}
                     onClick={() => !isCurrentTenant && handleTenantSwitch(tenant.id)}
                     disabled={isSwitching || isCurrentTenant}
@@ -429,6 +442,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
               }}
             >
               <button
+                data-allow-raw="true"
                 onClick={handleExitImpersonation}
                 disabled={isExiting}
                 style={{

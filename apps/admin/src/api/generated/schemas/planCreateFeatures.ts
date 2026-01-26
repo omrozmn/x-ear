@@ -10,4 +10,4 @@ import type { PlanCreateFeaturesAnyOf } from './planCreateFeaturesAnyOf';
 /**
  * Plan features
  */
-export type PlanCreateFeatures = PlanCreateFeaturesAnyOf | null;
+export type PlanCreateFeatures = PlanCreateFeaturesAnyOf | unknown[] | null;

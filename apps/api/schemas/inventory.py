@@ -32,7 +32,7 @@ class InventoryItemBase(AppBaseModel):
     warranty: int = 0 # months
 
 class InventoryItemCreate(InventoryItemBase):
-    tenant_id: str = Field(..., alias="tenantId")
+    tenant_id: Optional[str] = Field(None, alias="tenantId")
     branch_id: Optional[str] = Field(None, alias="branchId")
     available_serials: List[str] = Field([], alias="availableSerials")
 

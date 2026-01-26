@@ -24,12 +24,15 @@ import { PartyAutocomplete } from './PartyAutocomplete';
 import { Party } from '../../types/party/party-base.types';
 
 // Validation schema
+// Validation schema - Moved inside component to access useTranslation or imported i18n
+import i18next from '../../i18n';
+
 const appointmentSchema = z.object({
-  partyId: z.string().min(1, 'Hasta seçimi zorunludur'),
-  partyName: z.string().min(1, 'Hasta adı zorunludur'),
-  date: z.date({ required_error: 'Tarih seçimi zorunludur' }),
-  time: z.string().min(1, 'Saat seçimi zorunludur'),
-  type: z.enum(['consultation', 'hearing-test', 'device-trial', 'follow-up'], { required_error: 'Randevu türü seçimi zorunludur' }),
+  partyId: z.string().min(1, i18next.t('validation.patient_required', { ns: 'validation' })),
+  partyName: z.string().min(1, i18next.t('validation.patient_name_required', { ns: 'validation' })),
+  date: z.date({ required_error: i18next.t('validation.date_required', { ns: 'validation' }) }),
+  time: z.string().min(1, i18next.t('validation.time_required', { ns: 'validation' })),
+  type: z.enum(['consultation', 'hearing-test', 'device-trial', 'follow-up'], { required_error: i18next.t('validation.type_required', { ns: 'validation' }) }),
   status: z.enum(['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show', 'rescheduled']).default('scheduled'),
   notes: z.string().optional(),
   duration: z.number().min(15).max(240).default(30),
@@ -169,7 +172,7 @@ export function AppointmentFormModal({
       <div className="p-6">
         <div className="mb-6">
           <Text className="text-xl font-semibold">
-            {isEditing ? 'Randevuyu Düzenle' : 'Yeni Randevu'}
+            {isEditing ? i18next.t('modal.title_edit', { ns: 'appointments' }) : i18next.t('modal.title_create', { ns: 'appointments' })}
           </Text>
           {selectedDate && (
             <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">

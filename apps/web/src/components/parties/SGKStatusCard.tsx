@@ -22,23 +22,7 @@ export const SGKStatusCard: React.FC<SGKStatusCardProps> = ({
   const sgkStatus = (party?.status as string) || 'pending';
 
   // Enhanced SGK data with fallbacks (matching legacy implementation)
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case 'approved':
-      case 'active':
-        return { text: 'Onaylı', class: 'status-badge status-active', color: 'green' };
-      case 'pending':
-        return { text: 'Beklemede', class: 'status-badge status-pending', color: 'yellow' };
-      case 'expired':
-        return { text: 'Süresi Dolmuş', class: 'status-badge status-expired', color: 'red' };
-      case 'rejected':
-        return { text: 'Reddedildi', class: 'status-badge status-rejected', color: 'red' };
-      default:
-        return { text: 'Bilinmiyor', class: 'status-badge status-pending', color: 'gray' };
-    }
-  };
-
-  const _statusInfo = getStatusInfo(sgkStatus);
+  // getStatusInfo function removed - not used
   const reportDate = sgkData.reportDate ? new Date(sgkData.reportDate as string).toLocaleDateString('tr-TR') : 'Belirtilmemiş';
   const reportNo = sgkData.reportNo || 'Belirtilmemiş';
   const validityPeriod = sgkData.validityPeriod || 'Belirtilmemiş';

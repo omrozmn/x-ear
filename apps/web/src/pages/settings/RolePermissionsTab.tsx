@@ -19,13 +19,6 @@ import { Modal } from '@/components/ui/Modal';
 import { Button, Input, Checkbox } from '@x-ear/ui-web';
 import { AxiosError } from '@/api/orval-mutator';
 
-// Type for API error responses
-type ApiErrorResponse = {
-  error?: { message?: string; code?: string } | string;
-  message?: string;
-  detail?: { message?: string } | string;
-};
-
 // Permission categories with icons
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
   parties: { label: 'Hastalar', icon: <Users className="w-5 h-5" /> },
@@ -58,9 +51,6 @@ const ROLE_LABELS: Record<string, string> = {
   accountant: 'Muhasebeci',
   stock_manager: 'Stok Yöneticisi',
 };
-
-// System roles that cannot be deleted (but can be renamed)
-const _SYSTEM_ROLES = ['tenant_admin'];
 
 // Local Permission interface - matches actual API response shape
 interface Permission {

@@ -1,5 +1,5 @@
 # Invoice and Proforma Models (formerly Patient related)
-from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, ForeignKey, Numeric
+from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, ForeignKey, Numeric, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
@@ -51,6 +51,13 @@ class Invoice(BaseModel, TenantScopedMixin):
     birfatura_sent_at = Column(DateTime)  # Birfatura'ya gönderilme tarihi
     birfatura_approved_at = Column(DateTime)  # GİB onay tarihi
     
+    # Extended Metadata for Birfatura/GİB
+    tax_office = Column(String(100))
+    return_reference_number = Column(String(100))
+    return_reference_date = Column(DateTime)
+    remote_message = Column(Text)  # Detailed message from Birfatura
+    metadata_json = Column(JSON)  # Flexible storage for SGK, Medical, and other specialized data
+    
     # Relationships
     party = relationship('Party')
     device = relationship('Device')
@@ -85,7 +92,12 @@ class Invoice(BaseModel, TenantScopedMixin):
             'hasGibXml': self.gib_xml_data is not None,
             'gibPdfLink': self.gib_pdf_link,
             'birfaturaSentAt': self.birfatura_sent_at.isoformat() if self.birfatura_sent_at else None,
-            'birfaturaApprovedAt': self.birfatura_approved_at.isoformat() if self.birfatura_approved_at else None
+            'birfaturaApprovedAt': self.birfatura_approved_at.isoformat() if self.birfatura_approved_at else None,
+            'taxOffice': self.tax_office,
+            'returnReferenceNumber': self.return_reference_number,
+            'returnReferenceDate': self.return_reference_date.isoformat() if self.return_reference_date else None,
+            'remoteMessage': self.remote_message,
+            'metadata': self.metadata_json
         }
 
 

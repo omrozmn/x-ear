@@ -5,7 +5,6 @@
  * This adapter layer satisifes the no-restricted-imports rule.
  */
 
-/* eslint-disable no-restricted-imports */
 import { apiClient } from '../orval-mutator';
 import type { AiActionPlanResponse } from '@/api/generated/schemas';
 

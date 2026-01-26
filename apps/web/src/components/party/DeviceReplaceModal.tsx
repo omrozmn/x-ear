@@ -226,15 +226,27 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       showSuccess("Fatura GİB'e gönderildi");
       await refetchReplacements();
     } catch (e: unknown) {
-      const msg = (e as any)?.response?.data?.message || (e as Error).message || 'GİB gönderimi başarısız';
+      const errorResponse = e as { response?: { data?: { message?: string } } };
+      const msg = errorResponse?.response?.data?.message || (e as Error).message || 'GİB gönderimi başarısız';
       setActionMessage(msg);
       showError(msg);
     }
   };
 
   const renderInvoiceActions = (rep: FrontendReplacement) => {
-    const invoiceId = rep.return_invoice_id || (rep as any).returnInvoiceId || (rep.return_invoice as any)?.id || rep.return_invoice_id;
-    const invoiceStatus = (rep.return_invoice as any)?.status || (rep as any).returnInvoiceStatus || (rep as any).return_invoice_status || (rep as any).returnInvoice?.status || (rep.gib_sent ? 'gib_sent' : undefined);
+    const repData = rep as Record<string, unknown>;
+    const returnInvoice = repData.return_invoice as Record<string, unknown> | undefined;
+    
+    const invoiceId = (rep.return_invoice_id || 
+                      repData.returnInvoiceId || 
+                      returnInvoice?.id || 
+                      rep.return_invoice_id) as string | undefined;
+    
+    const invoiceStatus = (returnInvoice?.status || 
+                         repData.returnInvoiceStatus || 
+                         repData.return_invoice_status || 
+                         (repData.returnInvoice as Record<string, unknown> | undefined)?.status || 
+                         (rep.gib_sent ? 'gib_sent' : undefined)) as string | undefined;
 
     if (invoiceId && invoiceStatus === 'gib_sent') {
       return (
@@ -348,7 +360,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Değişim Sebebi *
             </label>
-            <select
+            <select data-allow-raw="true"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -367,7 +379,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Notlar
             </label>
-            <textarea
+            <textarea data-allow-raw="true"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -417,7 +429,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                 {(selectedInventory.availableSerials && selectedInventory.availableSerials.length > 0) && (
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">Seri No Seçimi (mevcut)</label>
-                    <select value={selectedSerial || ''} onChange={(e) => setSelectedSerial(e.target.value)} className="w-full px-3 py-2 border rounded">
+                    <select data-allow-raw="true" value={selectedSerial || ''} onChange={(e) => setSelectedSerial(e.target.value)} className="w-full px-3 py-2 border rounded">
                       <option value="">-- Seri seçin --</option>
                       {(selectedInventory.availableSerials || []).map((s) => (
                         <option key={s} value={s}>{s}</option>
@@ -447,8 +459,8 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                       <div className="text-sm">
                         <div className="font-medium">{(rep.replacementReason || 'Değişim') as React.ReactNode}</div>
                         <div className="text-xs text-muted-foreground">
-                          Eski: {(rep.old_device_info_parsed as any)?.brand || (rep.old_device_info as any)?.brand || rep.old_device_info as any} {(rep.old_device_info_parsed as any)?.model || (rep.old_device_info as any)?.model || ''}
-                          {' '}• Yeni: {(rep.new_device_info_parsed as any)?.brand || (rep.new_device_info as any)?.brand || rep.new_device_info as any} {(rep.new_device_info_parsed as any)?.model || (rep.new_device_info as any)?.model || ''}
+                          Eski: {(rep.old_device_info_parsed as Record<string, unknown>)?.brand as string || (rep.old_device_info as Record<string, unknown>)?.brand as string || String(rep.old_device_info)} {(rep.old_device_info_parsed as Record<string, unknown>)?.model as string || (rep.old_device_info as Record<string, unknown>)?.model as string || ''}
+                          {' '}• Yeni: {(rep.new_device_info_parsed as Record<string, unknown>)?.brand as string || (rep.new_device_info as Record<string, unknown>)?.brand as string || String(rep.new_device_info)} {(rep.new_device_info_parsed as Record<string, unknown>)?.model as string || (rep.new_device_info as Record<string, unknown>)?.model as string || ''}
                         </div>
                         <div className="text-xs text-muted-foreground">Durum: {rep.status}</div>
                       </div>

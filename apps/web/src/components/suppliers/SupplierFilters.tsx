@@ -26,6 +26,7 @@ export function SupplierFilters({
           </label>
           <div className="flex gap-2">
             <button
+              data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: undefined })}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 !filters?.status
@@ -36,6 +37,7 @@ export function SupplierFilters({
               Tümü
             </button>
             <button
+              data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: 'ACTIVE' })}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 filters?.status === 'ACTIVE'
@@ -46,6 +48,7 @@ export function SupplierFilters({
               Aktif
             </button>
             <button
+              data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: 'INACTIVE' })}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 filters?.status === 'INACTIVE'
@@ -64,6 +67,7 @@ export function SupplierFilters({
             Şehir
           </label>
           <input
+            data-allow-raw="true"
             id="city-filter"
             type="text"
             placeholder="Şehir filtrele..."

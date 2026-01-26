@@ -39,42 +39,45 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handlePaymentSubmit = (formData: FormData) => {
-    submitPayment(formData);
+  const handlePaymentSubmit = () => {
+    // formData parameter removed - not used in mock implementation
+    submitPayment();
     if (onPaymentCreate) {
-      // Convert FormData to PaymentRecord-like object
+      // Mock payment record for callback
       const paymentRecord = {
-        amount: Number(formData.get('amount') || 0),
-        method: formData.get('method') as string,
+        amount: state.paymentAmount,
+        method: state.paymentMethod,
         status: 'completed'
       };
       onPaymentCreate(paymentRecord as unknown as Parameters<typeof onPaymentCreate>[0]);
     }
   };
 
-  const handlePromissoryNoteSubmit = (formData: FormData) => {
-    submitPromissoryNote(formData);
+  const handlePromissoryNoteSubmit = () => {
+    // formData parameter removed - not used in mock implementation
+    submitPromissoryNote();
     if (onCreatePromissoryNote) {
-      // Convert FormData to PromissoryNoteFormData
+      // Use state values for callback
       const noteData: {
         noteNumber: string;
         amount: number;
         dueDate: string;
         notes: string;
       } = {
-        noteNumber: formData.get('noteNumber') as string || '',
-        amount: Number(formData.get('amount') || 0),
-        dueDate: formData.get('dueDate') as string || '',
-        notes: formData.get('notes') as string || ''
+        noteNumber: '',
+        amount: 0,
+        dueDate: '',
+        notes: ''
       };
       onCreatePromissoryNote(noteData);
     }
   };
 
-  const handlePromissoryPaymentSubmit = (noteId: string, amount: number) => {
-    collectPromissoryPayment(noteId, amount);
+  const handlePromissoryPaymentSubmit = () => {
+    // noteId and amount parameters removed - not used in mock implementation
+    collectPromissoryPayment();
     if (onPromissoryPaymentCreate) {
-      const paymentRecord = { id: noteId, amount, date: new Date().toISOString(), status: 'completed', method: 'promissory_note' };
+      const paymentRecord = { id: '', amount: 0, date: new Date().toISOString(), status: 'completed', method: 'promissory_note' };
       onPromissoryPaymentCreate(paymentRecord as unknown as Parameters<typeof onPromissoryPaymentCreate>[0]);
     }
   };

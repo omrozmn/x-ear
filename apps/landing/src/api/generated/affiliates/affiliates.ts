@@ -26,8 +26,8 @@ import type {
 
 import type {
   AffiliateCreate,
+  AffiliateLoginRequest,
   AffiliateUpdate,
-  CreateAffiliateLoginParams,
   HTTPValidationError,
   ListAffiliateListParams,
   ListAffiliateLookupParams,
@@ -205,14 +205,15 @@ export const useCreateAffiliateRegister = <TError = HTTPValidationError,
  * @summary Login Affiliate
  */
 export const createAffiliateLogin = (
-    params: CreateAffiliateLoginParams,
+    affiliateLoginRequest: AffiliateLoginRequest,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<unknown>(
       {url: `/api/affiliates/login`, method: 'POST',
-        params, signal
+      headers: {'Content-Type': 'application/json', },
+      data: affiliateLoginRequest, signal
     },
       );
     }
@@ -220,8 +221,8 @@ export const createAffiliateLogin = (
 
 
 export const getCreateAffiliateLoginMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAffiliateLogin>>, TError,{params: CreateAffiliateLoginParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAffiliateLogin>>, TError,{params: CreateAffiliateLoginParams}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAffiliateLogin>>, TError,{data: AffiliateLoginRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAffiliateLogin>>, TError,{data: AffiliateLoginRequest}, TContext> => {
 
 const mutationKey = ['createAffiliateLogin'];
 const {mutation: mutationOptions} = options ?
@@ -233,10 +234,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAffiliateLogin>>, {params: CreateAffiliateLoginParams}> = (props) => {
-          const {params} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAffiliateLogin>>, {data: AffiliateLoginRequest}> = (props) => {
+          const {data} = props ?? {};
 
-          return  createAffiliateLogin(params,)
+          return  createAffiliateLogin(data,)
         }
 
         
@@ -245,18 +246,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateAffiliateLoginMutationResult = NonNullable<Awaited<ReturnType<typeof createAffiliateLogin>>>
-    
+    export type CreateAffiliateLoginMutationBody = AffiliateLoginRequest
     export type CreateAffiliateLoginMutationError = HTTPValidationError
 
     /**
  * @summary Login Affiliate
  */
 export const useCreateAffiliateLogin = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAffiliateLogin>>, TError,{params: CreateAffiliateLoginParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAffiliateLogin>>, TError,{data: AffiliateLoginRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createAffiliateLogin>>,
         TError,
-        {params: CreateAffiliateLoginParams},
+        {data: AffiliateLoginRequest},
         TContext
       > => {
 

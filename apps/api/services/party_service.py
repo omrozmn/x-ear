@@ -31,13 +31,14 @@ class PartyService:
                 detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
             )
         
-        if party.tenant_id != tenant_id:
+        # Allow 'system' tenant (Super Admin) or None to access any party
+        if tenant_id and tenant_id != 'system' and party.tenant_id != tenant_id:
             # Hide cross-tenant existence
             raise HTTPException(
                 status_code=404,
                 detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
             )
-            
+        
         return party
 
     def list_parties(
@@ -56,10 +57,12 @@ class PartyService:
         List parties with filtering and pagination.
         Returns (items, total_count, next_cursor)
         """
-        query = self.db.query(Party).options(joinedload(Party.branch))
+        # Removed joinedload(Party.branch) to avoid 500 error
+        query = self.db.query(Party)
         
         # Tenant Scope
-        query = query.filter_by(tenant_id=tenant_id)
+        if tenant_id != 'system':
+            query = query.filter_by(tenant_id=tenant_id)
         
         # Branch Filtering
         if branch_ids:
@@ -168,11 +171,6 @@ class PartyService:
         
         # Stream results in chunks
         # Implementation note: SQLite cursors might load all, but SQLAlchemy yield_per can help
-    def iter_parties(self, tenant_id: str):
-        """Iterator for large exports"""
-        query = self.db.query(Party).filter_by(tenant_id=tenant_id).execution_options(yield_per=100)
-        for party in query:
-            yield party
 
     def count_parties(self, tenant_id: str, status: str = None, segment: str = None) -> int:
         query = self.db.query(Party).filter_by(tenant_id=tenant_id)

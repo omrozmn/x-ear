@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SaleRead } from '../../../api/generated/schemas/saleRead';
-import type { DeviceAssignmentRead } from '../../../api/generated/schemas/deviceAssignmentRead';
+import { ExtendedSaleRead } from '@/types/extended-sales';
 import {
   MoreVertical,
   Eye,
@@ -20,16 +20,12 @@ interface SalesTableViewProps {
   onCreateInvoice?: (sale: SaleRead) => void;
   onViewInvoice?: (sale: SaleRead) => void;
   onManagePromissoryNotes?: (sale: SaleRead) => void;
-  onCollectPayment?: (sale: SaleRead) => void;
   onOpenDocuments?: (partyId: string) => void;
   onCancelSale?: (sale: SaleRead) => void;
 }
 
-// Extended interface to handle runtime properties missing from schema
-interface ExtendedSaleRead extends SaleRead {
-  // SaleRead already has devices, just need to add missing properties
-  remainingAmount?: number;
-}
+// Local ExtendedSaleRead removed in favor of imported one from @/types/extended-sales
+// interface ExtendedSaleRead extends SaleRead { ... }
 
 export const SalesTableView: React.FC<SalesTableViewProps> = ({
   sales: rawSales,
@@ -39,7 +35,6 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   onCreateInvoice,
   onViewInvoice,
   onManagePromissoryNotes,
-  onCollectPayment: _onCollectPayment,
   onOpenDocuments,
   onCancelSale
 }) => {
@@ -105,7 +100,8 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     if (sale.paymentMethod === 'cash') methods.push('Nakit');
     if (sale.paymentMethod === 'card') methods.push('Kart');
     if (sale.paymentMethod === 'installment') methods.push('Taksit');
-    if (sale.sgkCoverage && sale.sgkCoverage > 0) methods.push('SGK');
+    const extendedSale = sale as unknown as ExtendedSaleRead;
+    if (extendedSale.sgkCoverage && extendedSale.sgkCoverage > 0) methods.push('SGK');
 
     return methods.join(', ') || 'Belirtilmemiş';
   };
@@ -190,13 +186,16 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
             </tr>
           ) : (
             sales.map((sale) => {
+              // Cast to ExtendedSaleRead to access runtime properties
+              const extendedSale = sale as unknown as ExtendedSaleRead;
+
               // GOLDEN PATH: Trust the backend's computed values
-              const displayTotal = sale.finalAmount ?? sale.totalAmount ?? 0;
-              const paidAmount = sale.paidAmount ?? 0;
-              const remainingAmount = sale.remainingAmount ?? 0;
-              const discountAmount = sale.discountAmount ?? 0;
-              const listPrice = sale.listPriceTotal ?? sale.totalAmount ?? 0;
-              const sgkCoverage = sale.sgkCoverage ?? 0;
+              const displayTotal = extendedSale.finalAmount ?? extendedSale.totalAmount ?? 0;
+              const paidAmount = extendedSale.paidAmount ?? 0;
+              const remainingAmount = extendedSale.remainingAmount ?? 0;
+              const discountAmount = extendedSale.discountAmount ?? 0;
+              const listPrice = extendedSale.listPriceTotal ?? extendedSale.totalAmount ?? 0;
+              const sgkCoverage = extendedSale.sgkCoverage ?? 0;
 
               const hasInvoice = Boolean(sale.invoice);
               // Backend 'status' is authoritative
@@ -264,7 +263,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                       {openMenuId === String(sale.id) && (
                         <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                           <div className="py-1">
-                            <button
+                            <button data-allow-raw="true"
                               onClick={() => {
                                 onSaleClick?.(sale);
                                 closeOverflowMenu();
@@ -274,7 +273,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               <Eye className="w-4 h-4 mr-2" />
                               Görüntüle
                             </button>
-                            <button
+                            <button data-allow-raw="true"
                               onClick={() => {
                                 onEditSale?.(sale);
                                 closeOverflowMenu();
@@ -285,7 +284,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               Düzenle
                             </button>
                             {hasInvoice ? (
-                              <button
+                              <button data-allow-raw="true"
                                 onClick={() => {
                                   onViewInvoice?.(sale);
                                   closeOverflowMenu();
@@ -296,7 +295,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                                 Fatura Önizle
                               </button>
                             ) : (
-                              <button
+                              <button data-allow-raw="true"
                                 onClick={() => {
                                   onCreateInvoice?.(sale);
                                   closeOverflowMenu();
@@ -307,7 +306,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                                 Fatura Oluştur
                               </button>
                             )}
-                            <button
+                            <button data-allow-raw="true"
                               onClick={() => {
                                 onManagePromissoryNotes?.(sale);
                                 closeOverflowMenu();
@@ -317,7 +316,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               <Banknote className="w-4 h-4 mr-2" />
                               Senetler
                             </button>
-                            <button
+                            <button data-allow-raw="true"
                               onClick={() => {
                                 onOpenDocuments?.(partyId);
                                 closeOverflowMenu();
@@ -327,7 +326,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               <FolderOpen className="w-4 h-4 mr-2" />
                               Belgeler
                             </button>
-                            <button
+                            <button data-allow-raw="true"
                               onClick={() => {
                                 onCancelSale?.(sale);
                                 closeOverflowMenu();

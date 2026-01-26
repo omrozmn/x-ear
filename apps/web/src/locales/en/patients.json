@@ -1,0 +1,53 @@
+{
+    "list": {
+        "loading": "Loading patients...",
+        "empty_title": "No patients found",
+        "empty_desc": "Try changing your search criteria.",
+        "columns": {
+            "name": "Name",
+            "tc": "ID Number",
+            "phone": "Phone",
+            "segment": "Segment",
+            "acquisition": "Acquisition",
+            "branch": "Branch",
+            "status": "Status",
+            "created_at": "Created At",
+            "actions": "Actions"
+        },
+        "update_tag_tooltip": "Click to update tag"
+    },
+    "modal": {
+        "contact_title": "Contact - {{name}}"
+    },
+    "form": {
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "phone": "Phone",
+        "tc_number": "ID Number",
+        "birth_date": "Birth Date",
+        "email": "Email",
+        "gender": "Gender",
+        "branch": "Branch",
+        "status": "Status",
+        "segment": "Segment",
+        "conversion_step": "Conversion Step",
+        "address": "Address",
+        "notes": "Notes",
+        "device_trial": "Device trial done",
+        "gender_options": {
+            "select": "Select",
+            "male": "Male",
+            "female": "Female"
+        },
+        "errors": {
+            "first_name_required": "First name required",
+            "last_name_required": "Last name required",
+            "phone_required": "Phone required",
+            "phone_invalid": "Enter a valid phone number",
+            "tc_length": "ID Number must be 11 digits",
+            "tc_start_zero": "ID Number cannot start with 0",
+            "tc_invalid": "Invalid ID Number",
+            "email_invalid": "Enter a valid email address"
+        }
+    }
+}

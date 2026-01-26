@@ -274,7 +274,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">E-Reçete Detayları</h3>
-                <button
+                <button data-allow-raw="true"
                   onClick={() => setPreviewEReceipt(null)}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -343,7 +343,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold">E-Reçete Düzenle</h3>
-                <button
+                <button data-allow-raw="true"
                   onClick={handleCancelEdit}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -358,7 +358,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       E-Reçete No
                     </label>
-                    <input
+                    <input data-allow-raw="true"
                       type="text"
                       value={editFormData.number}
                       disabled
@@ -369,7 +369,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Doktor Adı *
                     </label>
-                    <input
+                    <input data-allow-raw="true"
                       type="text"
                       value={editFormData.doctorName}
                       onChange={(e) => updateEditFormData('doctorName', e.target.value)}
@@ -380,7 +380,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Geçerlilik Tarihi *
                     </label>
-                    <input
+                    <input data-allow-raw="true"
                       type="date"
                       value={editFormData.validUntil}
                       onChange={(e) => updateEditFormData('validUntil', e.target.value)}
@@ -395,14 +395,14 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                     Malzemeler
                   </label>
                   <div className="space-y-3">
-                    {editFormData.materials.map((material: any, index: number) => (
+                    {editFormData.materials.map((material: SavedEReceiptMaterial, index: number) => (
                       <div key={`${material.code}-${index}`} className="border rounded-lg p-4 bg-gray-50">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Malzeme Kodu
                             </label>
-                            <input
+                            <input data-allow-raw="true"
                               type="text"
                               value={material.code}
                               disabled
@@ -413,7 +413,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Malzeme Adı
                             </label>
-                            <input
+                            <input data-allow-raw="true"
                               type="text"
                               value={material.name}
                               disabled
@@ -424,7 +424,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Başvuru Tarihi *
                             </label>
-                            <input
+                            <input data-allow-raw="true"
                               type="date"
                               value={material.applicationDate}
                               max={new Date().toISOString().split('T')[0]}
@@ -436,7 +436,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Teslim Durumu
                             </label>
-                            <select
+                            <select data-allow-raw="true"
                               value={material.deliveryStatus}
                               onChange={(e) => updateMaterialStatus(index, e.target.value as 'saved' | 'delivered')}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

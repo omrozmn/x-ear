@@ -68,7 +68,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
             />
           </div>
 
-          <select
+          <select data-allow-raw="true"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
@@ -80,7 +80,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
             <option value="year">Bu Yıl</option>
           </select>
 
-          <select
+          <select data-allow-raw="true"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
@@ -91,7 +91,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
             <option value="cancelled">İptal Edildi</option>
           </select>
 
-          <select
+          <select data-allow-raw="true"
             value={paymentMethodFilter}
             onChange={(e) => setPaymentMethodFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
@@ -155,7 +155,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
                 Sıralama
               </label>
               <div className="flex gap-2">
-                <select
+                <select data-allow-raw="true"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
@@ -164,7 +164,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
                   <option value="amount">Tutar</option>
                   <option value="status">Durum</option>
                 </select>
-                <select
+                <select data-allow-raw="true"
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
                   className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"

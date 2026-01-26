@@ -1,0 +1,31 @@
+{
+    "party": {
+        "status": {
+            "active": "Aktif",
+            "inactive": "Pasif",
+            "lead": "Potansiyel",
+            "trial": "Deneme",
+            "customer": "Müşteri",
+            "new": "Yeni",
+            "deceased": "Vefat",
+            "archived": "Arşivlenmiş"
+        },
+        "segment": {
+            "new": "Yeni",
+            "trial": "Deneme",
+            "purchased": "Satın Alındı",
+            "control": "Kontrol",
+            "renewal": "Yenileme",
+            "existing": "Mevcut",
+            "vip": "VIP"
+        },
+        "label": {
+            "new": "Yeni",
+            "waiting_call": "Arama Bekliyor",
+            "appointment_set": "Randevu Verildi",
+            "trial_done": "Deneme Yapıldı",
+            "control_patient": "Kontrol Hastası",
+            "sales_complete": "Satış Tamamlandı"
+        }
+    }
+}

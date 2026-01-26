@@ -41,7 +41,7 @@ interface ComposerState {
     setQuery: (q: string) => void;
     setContext: (entity: EntityItem | null) => void;
     setAvailableActions: (actions: Capability[]) => void;
-    selectAction: (action: Capability) => void;
+    selectAction: (action: Capability, entities?: EntityItem[]) => void;
 
     updateSlot: (key: string, value: unknown) => void;
     nextSlot: () => void; // Advances to next slot or confirmation
@@ -50,83 +50,102 @@ interface ComposerState {
     setExecutionResult: (res: ExecuteResponse) => void;
 }
 
-export const useComposerStore = create<ComposerState>()(
-    devtools(
-        (set, get) => ({
-            isOpen: false,
-            mode: 'idle',
-            query: '',
-            context: null,
-            availableActions: [],
-            selectedAction: null,
-            slots: {},
-            currentSlot: null,
-            isDryRun: false,
-            executionResult: null,
+export const useComposerStore = create<ComposerState>((set, get) => ({
+    isOpen: false,
+    mode: 'idle',
+    query: '',
+    context: null,
+    availableActions: [],
+    selectedAction: null,
+    slots: {},
+    currentSlot: null,
+    isDryRun: false,
+    executionResult: null,
 
-            setOpen: (open) => set({ isOpen: open }),
-            toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
+    setOpen: (open) => set({ isOpen: open }),
+    toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
 
-            setQuery: (q) => set({ query: q }),
+    setQuery: (q) => set({ query: q }),
 
-            setContext: (entity) => set({
-                context: entity,
-                mode: entity ? 'context_locked' : 'idle',
-                query: '', // Clear query when context locked
-                selectedAction: null,
-                slots: {}
-            }),
+    setContext: (entity) => set({
+        context: entity,
+        mode: entity ? 'context_locked' : 'idle',
+        query: '', // Clear query when context locked
+        selectedAction: null,
+        slots: {}
+    }),
 
-            setAvailableActions: (actions) => set({ availableActions: actions }),
+    setAvailableActions: (actions) => set({ availableActions: actions }),
 
-            selectAction: (action) => {
-                set({
-                    selectedAction: action,
-                    slots: {}, // Reset slots
-                    mode: 'slot_filling'
-                });
-                // Initialize first slot
-                const state = get();
-                state.nextSlot();
-            },
+    selectAction: (action, entities) => {
+        const currentState = get();
+        const initialSlots: Record<string, unknown> = {};
 
-            updateSlot: (key, value) => {
-                set((state) => ({
-                    slots: { ...state.slots, [key]: value }
-                }));
-            },
+        // Unified source for entities (either passed or from single context)
+        const sourceEntities = entities || (currentState.context ? [currentState.context] : []);
 
-            nextSlot: () => {
-                const { selectedAction, slots } = get();
-                if (!selectedAction) return;
+        // Map all source entities to available slots
+        sourceEntities.forEach(entity => {
+            const matchingSlot = action.slots?.find(s => {
+                // Map context type to slot name conventions
+                if (entity.type === 'patient' && (s.name === 'party_id' || s.name === 'patient_id')) return true;
+                if (entity.type === 'device' && (s.name === 'device_id' || s.name === 'inventory_id')) return true;
+                if (entity.type === 'invoice' && s.name === 'invoice_id') return true;
+                if (entity.type === 'supplier' && s.name === 'supplier_id') return true;
+                return false;
+            });
 
-                // Find first missing slot
-                const requiredSlots = selectedAction.slots || [];
-                const nextMissing = requiredSlots.find(s => {
-                    const val = slots[s.name];
-                    return val === undefined || val === null || val === '';
-                });
+            if (matchingSlot) {
+                initialSlots[matchingSlot.name] = entity.id;
+                initialSlots[`_${matchingSlot.name}_label`] = entity.label;
+            }
+        });
 
-                if (nextMissing) {
-                    set({ currentSlot: nextMissing, mode: 'slot_filling' });
-                } else {
-                    // All slots filled
-                    set({ currentSlot: null, mode: 'confirmation' });
-                }
-            },
+        set({
+            selectedAction: action,
+            slots: initialSlots,
+            mode: 'slot_filling'
+        });
 
-            reset: () => set({
-                mode: 'idle',
-                query: '',
-                context: null,
-                selectedAction: null,
-                slots: {},
-                currentSlot: null,
-                executionResult: null
-            }),
+        // Initialize first slot
+        const state = get();
+        state.nextSlot();
+    },
 
-            setExecutionResult: (res) => set({ executionResult: res })
-        }),
-        { name: 'ComposerStore' }
-    )
-);
+    updateSlot: (key, value) => {
+        set((state) => ({
+            slots: { ...state.slots, [key]: value }
+        }));
+    },
+
+    nextSlot: () => {
+        const { selectedAction, slots } = get();
+        if (!selectedAction) return;
+
+        // Find first missing slot
+        const requiredSlots = selectedAction.slots || [];
+        const nextMissing = requiredSlots.find(s => {
+            const val = slots[s.name];
+            return val === undefined || val === null || val === '';
+        });
+
+        if (nextMissing) {
+            set({ currentSlot: nextMissing, mode: 'slot_filling' });
+        } else {
+            // All slots filled
+            set({ currentSlot: null, mode: 'confirmation' });
+        }
+    },
+
+    reset: () => set({
+        mode: 'idle',
+        query: '',
+        context: null,
+        selectedAction: null,
+        slots: {},
+        currentSlot: null,
+        executionResult: null
+    }),
+
+    setExecutionResult: (res) => set({ executionResult: res })
+}));

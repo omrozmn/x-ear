@@ -83,9 +83,9 @@ export interface Sale {
   status?: SaleStatus;
   notes?: string;
   payments?: PaymentRecord[]; // Additional field for local use
-  devices?: any[]; // Device details from assignments
+  devices?: unknown[]; // Device details from assignments - flexible type for runtime data
   soldBy?: string;
-  paymentRecords?: any[]; // Payment records from PaymentRecord table
+  paymentRecords?: unknown[]; // Payment records from PaymentRecord table - flexible type for runtime data
   createdAt?: string;
   updatedAt?: string;
 }
@@ -98,7 +98,7 @@ export interface CommunicationRecord {
   content: string;
   timestamp: Date;
   status: 'sent' | 'delivered' | 'failed' | 'pending';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CommunicationPreferences {

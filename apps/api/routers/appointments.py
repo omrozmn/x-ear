@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel, Field
 import logging
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 
 from database import get_db
@@ -16,12 +16,15 @@ from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
 from schemas.appointments import (
     AppointmentRead, AppointmentCreate, AppointmentUpdate, 
+    AppointmentRead, AppointmentCreate, AppointmentUpdate, 
     RescheduleRequest, AppointmentAvailability
 )
 from models.appointment import Appointment
 from models.enums import AppointmentStatus
 from core.models.party import Party
 from models.tenant import Tenant
+from services.event_service import event_service
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 
 
 logger = logging.getLogger(__name__)
@@ -103,10 +106,18 @@ def get_appointments(
         
         # Pagination
         total = query.count()
-        appointments = query.offset((page - 1) * per_page).limit(per_page).all()
+        appointments = query.options(joinedload(Appointment.party)).offset((page - 1) * per_page).limit(per_page).all()
+        
+        # Transform map to include party_name if missing
+        results = []
+        for apt in appointments:
+            appt_data = AppointmentRead.model_validate(apt)
+            if apt.party:
+                appt_data.party_name = f"{apt.party.first_name} {apt.party.last_name}"
+            results.append(appt_data)
         
         return ResponseEnvelope(
-            data=appointments,
+            data=results,
             meta={
                 "total": total,
                 "page": page,
@@ -122,6 +133,7 @@ def get_appointments(
 @router.post("/appointments", operation_id="createAppointments", status_code=201, response_model=ResponseEnvelope[AppointmentRead])
 def create_appointment(
     appointment_in: AppointmentCreate,
+    background_tasks: BackgroundTasks,
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
@@ -174,6 +186,30 @@ def create_appointment(
         db_session.commit()
         
         logger.info(f"Appointment created: {appointment.id}")
+
+        # Trigger Automation Event
+        try:
+             # Prepare payload
+            payload = {
+                "appointment_id": appointment.id,
+                "party_id": appointment.party_id,
+                "date": appointment.date.isoformat(),
+                "time": appointment.time,
+                "type": appointment.appointment_type,
+                # Resolve patient name for template
+                "patient": {
+                    "id": data['party_id'] 
+                    # Note: We might need to fetch party name if not in data, but event_service handles lookup by party_id
+                }
+            }
+            background_tasks.add_task(
+                event_service.handle_event,
+                "appointment_created",
+                payload,
+                appointment.tenant_id
+            )
+        except Exception as e:
+            logger.error(f"Failed to trigger appointment_created event: {e}")
         
         return ResponseEnvelope(data=appointment)
     except HTTPException:

@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useAuthStore } from '../stores/authStore';
 import { Party, PartyDevice, PartyFilters, PartyStatus, PartySegment } from '../types/party';
 import { partyService } from '../services/party.service';
 import { partySearchService } from '../services/party/party-search.service';
@@ -633,8 +634,16 @@ export function usePartyDevices(partyId: string) {
 export function useCreateParty() {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuthStore();
 
   const mutateAsync = useCallback(async (data: Omit<Party, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Super Admin Tenant Check
+    if (user?.role === 'super_admin' && !user.tenantId) {
+      const msg = "Lütfen işlem yapmak için bir klinik (tenant) seçiniz.";
+      // Toast notification should be handled by UI layer, but we throw error to block
+      throw new Error(msg);
+    }
+
     setIsPending(true);
     setError(null);
     try {
@@ -647,7 +656,7 @@ export function useCreateParty() {
     } finally {
       setIsPending(false);
     }
-  }, []);
+  }, [user]);
 
   return { mutateAsync, isPending, isError: !!error, error };
 }
@@ -655,9 +664,15 @@ export function useCreateParty() {
 export function useUpdateParty() {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuthStore();
 
   // Relaxed signature to accept PartyCreate structures or flexible updates
   const mutateAsync = useCallback(async ({ partyId, updates }: { partyId: string; updates: Partial<Party> | Record<string, unknown> }) => {
+    // Super Admin Tenant Check
+    if (user?.role === 'super_admin' && !user.tenantId) {
+      throw new Error("Lütfen işlem yapmak için bir klinik (tenant) seçiniz.");
+    }
+
     setIsPending(true);
     setError(null);
     try {
@@ -671,7 +686,7 @@ export function useUpdateParty() {
     } finally {
       setIsPending(false);
     }
-  }, []);
+  }, [user]);
 
   return { mutateAsync, isPending, isError: !!error, error };
 }
@@ -679,8 +694,14 @@ export function useUpdateParty() {
 export function useDeleteParty() {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuthStore();
 
   const mutateAsync = useCallback(async (partyId: string) => {
+    // Super Admin Tenant Check
+    if (user?.role === 'super_admin' && !user.tenantId) {
+      throw new Error("Lütfen işlem yapmak için bir klinik (tenant) seçiniz.");
+    }
+
     setIsPending(true);
     setError(null);
     try {
@@ -692,7 +713,7 @@ export function useDeleteParty() {
     } finally {
       setIsPending(false);
     }
-  }, []);
+  }, [user]);
 
   return { mutateAsync, isPending, isError: !!error, error };
 }

@@ -211,7 +211,7 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">E-Reçete Detayları - {selectedEReceipt.number}</h3>
-                <button
+                <button data-allow-raw="true"
                   onClick={() => setSelectedEReceipt(null)}
                   className="text-gray-400 hover:text-gray-600"
                 >

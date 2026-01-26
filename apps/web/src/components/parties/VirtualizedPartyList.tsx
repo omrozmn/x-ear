@@ -324,7 +324,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
         {/* Filters */}
         {showFilters && (
           <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-3">
-            <select
+            <select data-allow-raw="true"
               value={filters?.status || 'all'}
               onChange={(e) => handleFilterChange('status', e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -335,7 +335,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
               <option value="archived">Arşivlenmiş</option>
             </select>
 
-            <select
+            <select data-allow-raw="true"
               value={filters?.segment || 'all'}
               onChange={(e) => handleFilterChange('segment', e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -348,7 +348,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
               <option value="renewal">Yenileme</option>
             </select>
 
-            <select
+            <select data-allow-raw="true"
               value={filters?.label || 'all'}
               onChange={(e) => handleFilterChange('label', e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -362,7 +362,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
               <option value="satis-tamamlandi">Satış Tamamlandı</option>
             </select>
 
-            <select
+            <select data-allow-raw="true"
               value={filters?.hasDevices ? 'true' : filters?.hasDevices === false ? 'false' : 'all'}
               onChange={(e) => handleFilterChange('hasDevices', e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -372,7 +372,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
               <option value="false">Cihazı Yok</option>
             </select>
 
-            <select
+            <select data-allow-raw="true"
               value={filters?.sgkStatus || 'all'}
               onChange={(e) => handleFilterChange('sgkStatus', e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"

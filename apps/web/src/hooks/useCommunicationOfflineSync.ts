@@ -273,12 +273,12 @@ class CommunicationSyncManager {
   private async syncMessagesFromServer(): Promise<void> {
     try {
       const response = await listCommunicationMessages();
-      const result = (response as any)?.data || response;
+      const result = (response as { data?: unknown })?.data || response;
 
-      if (!result.success) return;
+      if (!(result as { success?: boolean }).success) return;
 
-      const serverMessages = result.data.map((msg: any) => ({
-        ...msg,
+      const serverMessages = ((result as { data?: unknown[] }).data || []).map((msg: unknown) => ({
+        ...(msg as Record<string, unknown>),
         syncStatus: 'synced'
       }));
 
@@ -295,12 +295,12 @@ class CommunicationSyncManager {
   private async syncTemplatesFromServer(): Promise<void> {
     try {
       const response = await listCommunicationTemplates();
-      const result = (response as any)?.data || response;
+      const result = (response as { data?: unknown })?.data || response;
 
-      if (!result.success) return;
+      if (!(result as { success?: boolean }).success) return;
 
-      const serverTemplates = result.data.map((tmpl: any) => ({
-        ...tmpl,
+      const serverTemplates = ((result as { data?: unknown[] }).data || []).map((tmpl: unknown) => ({
+        ...(tmpl as Record<string, unknown>),
         syncStatus: 'synced'
       }));
 

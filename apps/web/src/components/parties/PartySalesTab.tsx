@@ -12,6 +12,7 @@ import { Party } from '../../types/party/party-base.types';
 import { Sale } from '../../types/party/party-communication.types';
 import { ResponseEnvelopeListSaleRead } from '../../api/generated/schemas/responseEnvelopeListSaleRead';
 import { SaleRead } from '../../api/generated/schemas/saleRead';
+import { ExtendedSaleRead } from '@/types/extended-sales';
 // import { PaymentRecordRead } from '../../api/generated/schemas/paymentRecordRead';
 // Local definition since schema is missing
 interface PaymentRecordRead {
@@ -89,7 +90,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   //   coveragePercentage: number;
   // } | null>(null);
   // const [sgkLoading, setSgkLoading] = useState(false);
-  const [sgkCoverageCalculation, setSgkCoverageCalculation] = useState<{
+  const [sgkCoverageCalculation,] = useState<{
     totalCoverage: number;
     partyPayment: number;
     deviceCoverage?: {
@@ -270,39 +271,13 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
 
 
 
-  const _calculateSGKCoverage = (sgkInfo: { 
-    deviceEntitlement?: { hasEntitlement?: boolean; remainingQuantity?: number }; 
-    batteryEntitlement?: { hasEntitlement?: boolean; remainingQuantity?: number };
-    coveragePercentage?: number 
-  }) => {
-    const deviceCoverage = sgkInfo.deviceEntitlement?.hasEntitlement
-      ? {
-        maxCoverage: 15000,
-        coveragePercentage: sgkInfo.coveragePercentage || 80,
-        remainingEntitlement: sgkInfo.deviceEntitlement.remainingQuantity || 0
-      }
-      : null;
-
-    const batteryCoverage = sgkInfo.batteryEntitlement?.hasEntitlement
-      ? {
-        maxCoverage: 500,
-        coveragePercentage: 100,
-        remainingEntitlement: sgkInfo.batteryEntitlement.remainingQuantity || 0
-      }
-      : null;
-
-    setSgkCoverageCalculation({
-      totalCoverage: 0,
-      partyPayment: 0,
-      deviceCoverage,
-      batteryCoverage,
-      totalCoveragePercentage: sgkInfo.coveragePercentage || 0
-    });
-  };
+  // calculateSGKCoverage function removed - not used in component
+  // Was used to calculate SGK coverage details but functionality not implemented
 
   // Filter sales
   const filteredSales = useMemo(() => {
-    let filtered = sales;
+    const extendedSales = sales as unknown as ExtendedSaleRead[];
+    let filtered = extendedSales;
 
     if (searchTerm) {
       filtered = filtered.filter(sale =>
@@ -395,10 +370,6 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const handleEditSaleClick = (sale: SaleRead) => {
     setSelectedSale(sale);
     setShowEditSaleModal(true);
-  };
-  const handleCollectionClick = (sale: SaleRead) => {
-    setSelectedSale(sale);
-    setShowCollectionModal(true);
   };
   const handlePromissoryNoteClick = (sale: SaleRead) => {
     setSelectedSale(sale);
@@ -548,7 +519,6 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
               partyId={party.id || ''}
               onSaleClick={(sale) => handleEditSaleClick(sale as SaleRead)}
               onEditSale={(sale) => handleEditSaleClick(sale as SaleRead)}
-              onCollectPayment={(sale) => handleCollectionClick(sale as SaleRead)}
               onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as SaleRead)}
             />
           )}

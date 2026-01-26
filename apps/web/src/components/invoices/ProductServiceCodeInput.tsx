@@ -1,4 +1,4 @@
-import { Input } from '@x-ear/ui-web';
+import { Input, Button } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { FileText } from 'lucide-react';
 
@@ -50,22 +50,26 @@ export function ProductServiceCodeInput({
           placeholder="00.00.00.00.00.00"
           className="flex-1 font-mono text-sm"
         />
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => setShowCommonCodes(!showCommonCodes)}
-          className="px-3 py-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 text-sm whitespace-nowrap flex items-center gap-1">
+          className="whitespace-nowrap flex items-center gap-1"
+        >
           <FileText size={16} />
           Sık Kullanılan
-        </button>
+        </Button>
       </div>
 
       {/* Sık Kullanılan Kodlar */}
       {showCommonCodes && (
         <div className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {commonServiceCodes.map((item) => (
-            <button
+            <Button
               key={item.code}
               type="button"
+              variant="ghost"
               onClick={() => handleCodeSelect(item.code)}
               className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
               <div className="font-mono text-sm text-blue-600 mb-1">
@@ -74,7 +78,7 @@ export function ProductServiceCodeInput({
               <div className="text-sm text-gray-700">
                 {item.description}
               </div>
-            </button>
+            </Button>
           ))}
         </div>
       )}

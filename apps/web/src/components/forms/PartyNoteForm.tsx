@@ -47,7 +47,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [tagInput, setTagInput] = useState<string>('');
+  // Removed unused tagInput state - tags functionality is temporarily commented out
 
   // Reset form when modal opens/closes or note changes
   useEffect(() => {
@@ -58,7 +58,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           ...note,
           tags: note.tags || []
         });
-        setTagInput('');
+        // Removed setTagInput - tags functionality is temporarily commented out
       } else {
         // Create mode
         setFormData({
@@ -71,7 +71,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           createdBy: getCurrentUserId(),
           tags: []
         });
-        setTagInput('');
+        // Removed setTagInput - tags functionality is temporarily commented out
       }
       setErrors({});
     }

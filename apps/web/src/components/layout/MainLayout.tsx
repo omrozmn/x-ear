@@ -23,14 +23,14 @@ import {
   ChevronDown,
   MessageSquare,
   CreditCard,
-  Search,
-  Command
+  Search
+  // Removed unused: Command
 } from 'lucide-react';
 import { useAuthStore, AuthStateUser } from '../../stores/authStore';
 import { DebugRoleSwitcher } from './DebugRoleSwitcher';
 import { DebugTenantSwitcher } from './DebugTenantSwitcher';
 import { PagePermissionsViewer } from './PagePermissionsViewer';
-import { useTheme } from '../theme-provider';
+import { useTheme } from '../../hooks/useTheme';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { GlobalOfflineAlert } from '../common/GlobalOfflineAlert';
@@ -40,11 +40,13 @@ import { ComposerOverlay } from '../../components/ai/ComposerOverlay';
 import { useComposerStore } from '../../stores/composerStore';
 import { useAIStatus, useAIContextSync } from '../../ai/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { 
-  SIDEBAR_COLLAPSED, 
-  JWT_TOKEN, 
-  AUTH_TOKEN, 
-  REFRESH_TOKEN, 
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import {
+  SIDEBAR_COLLAPSED,
+  JWT_TOKEN,
+  AUTH_TOKEN,
+  REFRESH_TOKEN,
   PHASE_A_BANNER_DISMISSED,
   AUTH_STORAGE_PERSIST
 } from '../../constants/storage-keys';
@@ -94,6 +96,7 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const { t } = useTranslation('layout');
   const { user: rawUser, subscription } = useAuthStore();
   const user = rawUser as AuthStateUser | null;
   console.log('MainLayout render - user:', user);
@@ -174,25 +177,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const menuItems = [
-    { key: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/' },
-    { key: 'parties', label: 'Hastalar', icon: Users, href: '/parties' },
-    { key: 'appointments', label: 'Randevular', icon: Calendar, href: '/appointments' },
+    { key: 'dashboard', label: t('nav.dashboard'), icon: BarChart3, href: '/' },
+    { key: 'parties', label: t('nav.patients'), icon: Users, href: '/parties' },
+    { key: 'appointments', label: t('nav.appointments'), icon: Calendar, href: '/appointments' },
     {
       key: 'invoices',
-      label: 'Fatura',
+      label: t('nav.invoices.main'),
       icon: FileText,
       submenu: [
-        { label: 'Satışlar', href: '/invoices' },
-        { label: 'Alışlar', href: '/invoices/purchases' },
-        { label: 'Yeni Fatura', href: '/invoices/new' },
-        { label: 'Ödeme Takibi', href: '/invoices/payments' }
+        { label: t('nav.invoices.sales'), href: '/invoices' },
+        { label: t('nav.invoices.purchases'), href: '/invoices/purchases' },
+        { label: t('nav.invoices.new'), href: '/invoices/new' },
+        { label: t('nav.invoices.payments'), href: '/invoices/payments' }
       ]
     },
-    { key: 'inventory', label: 'Envanter', icon: Package, href: '/inventory' },
-    { key: 'suppliers', label: 'Tedarikçiler', icon: Building2, href: '/suppliers' },
-    { key: 'pos', label: 'Tahsilat (POS)', icon: CreditCard, href: '/pos' },
-    { key: 'cashflow', label: 'Kasa', icon: Wallet, href: '/cashflow' },
-    { key: 'campaigns', label: 'SMS Gönderimi', icon: MessageSquare, href: '/campaigns' },
+    { key: 'inventory', label: t('nav.inventory'), icon: Package, href: '/inventory' },
+    { key: 'suppliers', label: t('nav.suppliers'), icon: Building2, href: '/suppliers' },
+    { key: 'pos', label: t('nav.pos'), icon: CreditCard, href: '/pos' },
+    { key: 'cashflow', label: t('nav.cashflow'), icon: Wallet, href: '/cashflow' },
+    { key: 'campaigns', label: t('nav.campaigns'), icon: MessageSquare, href: '/campaigns' },
     /* SGK - v1'de aktif edilecek
     {
       key: 'sgk',
@@ -206,17 +209,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       ]
     },
     */
-    { key: 'reports', label: 'Raporlar', icon: PieChart, href: '/reports' },
-    { key: 'automation', label: 'Otomasyon', icon: Bot, href: '/automation' },
+    { key: 'reports', label: t('nav.reports'), icon: PieChart, href: '/reports' },
+    { key: 'automation', label: t('nav.automation'), icon: Bot, href: '/automation' },
     {
       key: 'settings',
-      label: 'Ayarlar',
+      label: t('nav.settings.main'),
       icon: Settings,
       submenu: [
-        { label: 'Genel', href: '/settings' },
-        { label: 'Entegrasyon', href: '/settings/integration' },
-        { label: 'Ekip Yönetimi', href: '/settings/team' },
-        { label: 'Abonelik', href: '/settings/subscription' }
+        { label: t('nav.settings.general'), href: '/settings' },
+        { label: t('nav.settings.integration'), href: '/settings/integration' },
+        { label: t('nav.settings.team'), href: '/settings/team' },
+        { label: t('nav.settings.subscription'), href: '/settings/subscription' }
       ]
     }
   ];
@@ -335,29 +338,28 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </h1>
 
             {/* AI Composer Trigger - Centered Search Bar */}
-            <AIFeatureWrapper hideWhenUnavailable showLoading={false}>
-              <div className="hidden md:flex flex-1 max-w-xl mx-4">
-                <div
-                  onClick={toggleOpen}
-                  className={cn(
-                    "w-full flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer transition-colors border",
-                    "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
-                    "hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
-                  )}
-                >
-                  <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                    <Search size={18} />
-                    <Bot size={18} className="text-blue-500" />
-                    <span className="text-sm">AI ile arama yap veya işlem başlat...</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-white dark:bg-gray-800 px-1.5 font-mono text-[10px] font-medium text-gray-500 dark:text-gray-400 opacity-100">
-                      <span className="text-xs">⌘</span>K
-                    </kbd>
-                  </div>
+            {/* AI Composer Trigger - Centered Search Bar */}
+            <div className="hidden md:flex flex-1 max-w-xl mx-4">
+              <div
+                onClick={toggleOpen}
+                className={cn(
+                  "w-full flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer transition-colors border",
+                  "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
+                  "hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
+                )}
+              >
+                <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                  <Search size={18} />
+                  <Bot size={18} className="text-blue-500" />
+                  <span className="text-sm">{t('header.search_placeholder')}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-white dark:bg-gray-800 px-1.5 font-mono text-[10px] font-medium text-gray-500 dark:text-gray-400 opacity-100">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
                 </div>
               </div>
-            </AIFeatureWrapper>
+            </div>
 
             <div className="flex items-center gap-4">
               {/* Dark Mode Toggle */}
@@ -369,10 +371,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </Button>
 
+              {/* Language Switcher */}
+              <LanguageSwitcher />
+
               {/* Notifications */}
               <Button
                 className="relative p-2 h-auto text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                title="Bildirimler"
+                title={t('header.notifications')}
                 variant='ghost'>
                 <Bell size={20} />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -419,7 +424,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-gray-100 dark:border-gray-700"
                     >
                       <User size={16} className="mr-2" />
-                      <span>Profil</span>
+                      <span>{t('header.profile')}</span>
                     </Link>
                     <Link
                       to={"/settings" as unknown as "/"}
@@ -427,7 +432,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-gray-100 dark:border-gray-700"
                     >
                       <Settings size={16} className="mr-2" />
-                      <span>Ayarlar</span>
+                      <span>{t('nav.settings.main')}</span>
                     </Link>
                     <Button
                       onClick={() => {
@@ -450,7 +455,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       className="flex items-center w-full px-4 py-3 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 transition-colors h-auto"
                       variant='ghost'>
                       <LogOut size={16} className="mr-2" />
-                      <span>Çıkış Yap</span>
+                      <span>{t('header.logout')}</span>
                     </Button>
                   </div>
                 )}
@@ -516,9 +521,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </AIFeatureWrapper>
 
       {/* AI Composer Overlay (Cmd+K) */}
-      <AIFeatureWrapper capability="actions" hideWhenUnavailable showLoading={false}>
-        <ComposerOverlay />
-      </AIFeatureWrapper>
+      {/* AI Composer Overlay (Cmd+K) */}
+      <ComposerOverlay />
     </div>
   );
 };

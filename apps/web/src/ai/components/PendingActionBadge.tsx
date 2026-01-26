@@ -26,34 +26,13 @@ import {
   PENDING_BADGE_VARIANT_CLASSES,
   PENDING_BADGE_POSITION_CLASSES,
 } from './constants';
-import { PendingIcon } from './helpers';
+import { PendingIcon } from './icons';
+import { getPendingActionByType, shouldBlockActionSubmission } from '../utils/pendingActionHelpers';
 
-// =============================================================================
-// Helper Functions (exports)
-// =============================================================================
-
-export function getPendingActionByType(
-  actionType: string,
-  pendingActions: ActionPlan[]
-): ActionPlan | undefined {
-  const normalized = actionType.trim().toLowerCase();
-  if (!normalized) return undefined;
-
-  return pendingActions.find((action) =>
-    action.steps.some((step) =>
-      step.toolName === actionType ||
-      step.toolName.toLowerCase() === normalized ||
-      step.description.toLowerCase().includes(normalized)
-    )
-  );
-}
-
-export function shouldBlockActionSubmission(
-  actionType: string,
-  pendingActions: ActionPlan[]
-): boolean {
-  return !!getPendingActionByType(actionType, pendingActions);
-}
+// Re-export utilities for backward compatibility
+// Note: This triggers react-refresh warning but is intentional for backward compatibility
+// These utilities are also available from '../utils/pendingActionHelpers'
+export { getPendingActionByType, shouldBlockActionSubmission };
 
 // =============================================================================
 // Types

@@ -258,7 +258,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Durum
                 </label>
-                <select
+                <select data-allow-raw="true"
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -322,7 +322,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   'Cihaz temizliği',
                   'Garanti kontrolü'
                 ].map((quickNote) => (
-                  <button
+                  <button data-allow-raw="true"
                     key={quickNote}
                     type="button"
                     onClick={() => {

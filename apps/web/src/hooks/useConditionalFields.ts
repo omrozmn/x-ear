@@ -105,7 +105,7 @@ export const useConditionalFields = (
     const result: Record<string, InvoiceFieldDefinition[]> = {};
 
     visibleSections.forEach(section => {
-      const sectionData = (formData as any)[section.name] || ({} as Record<string, unknown>);
+      const sectionData = (formData as Record<string, unknown>)[section.name] as Record<string, unknown> || {};
       result[section.name] = Object.values(section.fields).filter(field =>
         shouldShowField(field, sectionData)
       );
@@ -140,11 +140,11 @@ export const useConditionalFields = (
   };
 
   // Validate all dependencies and return missing ones
-  const validateDependencies = (_data: InvoiceFormData): Record<string, string[]> => {
+  const validateDependencies = (data: InvoiceFormData): Record<string, string[]> => {
     const missingDependencies: Record<string, string[]> = {};
 
     visibleSections.forEach(section => {
-      const sectionData = (formData as any)[section.name] || ({} as Record<string, unknown>);
+      const sectionData = ((data as Record<string, unknown>)[section.name] || {}) as Record<string, unknown>;
 
       Object.values(section.fields).forEach(field => {
         if (shouldShowField(field, sectionData) && field.conditional) {

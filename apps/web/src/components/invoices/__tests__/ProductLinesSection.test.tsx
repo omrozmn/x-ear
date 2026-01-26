@@ -50,7 +50,7 @@ describe('ProductLinesSection', () => {
       }
     ];
 
-    const _linesState = [...initialLines];
+    // Removed unused _linesState
     const TestWrapper = () => {
       const [lines, setLines] = React.useState(initialLines);
       return <ProductLinesSection lines={lines} onChange={(next) => setLines(next)} />;
@@ -66,7 +66,7 @@ describe('ProductLinesSection', () => {
 
     await waitFor(() => {
       // After click, the first line should update taxRate to 10
-      const _updatedLine = screen.getByDisplayValue(/Test Product/);
+      screen.getByDisplayValue(/Test Product/); // Removed unused _updatedLine
       // Find the KDV select for the line and assert it shows 10
       const kdvSelect = screen.getAllByLabelText(/KDV/i)[0] as HTMLSelectElement;
       expect(kdvSelect.value).toBe('10');

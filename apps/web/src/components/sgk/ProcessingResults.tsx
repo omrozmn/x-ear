@@ -14,7 +14,6 @@ interface ProcessingResultsProps {
 
 const ProcessingResults: React.FC<ProcessingResultsProps> = ({
   results,
-  isProcessing: _isProcessing,
   onRetry,
 }) => {
   const [selectedResult, setSelectedResult] = useState<ProcessingResult | null>(null);

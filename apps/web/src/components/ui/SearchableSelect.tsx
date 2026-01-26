@@ -83,6 +83,7 @@ export function SearchableSelect({
       <div className="relative">
         {/* Trigger Button */}
         <button
+          data-allow-raw="true"
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
@@ -120,6 +121,7 @@ export function SearchableSelect({
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-2.5 text-gray-400" />
                 <input
+                  data-allow-raw="true"
                   ref={inputRef}
                   type="text"
                   value={searchTerm}
@@ -135,6 +137,7 @@ export function SearchableSelect({
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((option) => (
                   <button
+                    data-allow-raw="true"
                     key={option.value}
                     type="button"
                     onClick={() => handleSelect(option.value)}

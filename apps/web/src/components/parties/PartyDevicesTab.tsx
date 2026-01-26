@@ -11,7 +11,7 @@ import type {
   SaleRead
 } from '@/api/generated/schemas';
 
-
+import { ExtendedSaleRead } from '@/types/extended-sales';
 import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
 import { DeviceAssignment } from '../forms/device-assignment-form/components/AssignmentDetailsForm';
 import { PartyDeviceCard } from '../party/PartyDeviceCard';
@@ -305,9 +305,9 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       showSuccess('Başarılı', 'Cihaz güncellendi');
     } catch (error: unknown) {
       console.error('[handleUpdateDevice] Error:', error);
-      const errorMessage = error instanceof Error && 'response' in error 
-        ? (error as { response?: { data?: { error?: string } }; message?: string }).response?.data?.error || 
-          (error as { message?: string }).message
+      const errorMessage = error instanceof Error && 'response' in error
+        ? (error as { response?: { data?: { error?: string } }; message?: string }).response?.data?.error ||
+        (error as { message?: string }).message
         : undefined;
       const msg = errorMessage || 'Cihaz güncellenirken hata oluştu';
       showError('Hata', msg);
@@ -319,10 +319,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
   };
 
   const handleReplaceDevice = async (
-    oldDeviceId: string, 
-    reasonOrData: string | Record<string, unknown>, 
-    maybeNotes?: string, 
-    maybeNewInventoryId?: string, 
+    oldDeviceId: string,
+    reasonOrData: string | Record<string, unknown>,
+    maybeNotes?: string,
+    maybeNewInventoryId?: string,
     maybeNewDeviceInfo?: unknown
   ) => {
     try {
@@ -423,7 +423,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
   const quickStats = {
     activeDevices: devices.filter(d => d.status === 'assigned').length,
     trials: devices.filter(d => d.trialStartDate).length,
-    totalValue: sales.reduce((sum, s) => sum + (s.totalAmount || 0), 0),
+    totalValue: sales.reduce((sum, s) => sum + ((s as unknown as ExtendedSaleRead).totalAmount || 0), 0),
     ereceiptsCount: 0 // This would come from a separate API
   };
 
@@ -673,7 +673,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         onSave={(data) => handleAssignDevice(data)}
         onUpdate={async (data) => {
           if (editingDevice?.id) {
-            await handleUpdateDevice(editingDevice.id, data);
+            await handleUpdateDevice(editingDevice.id, data as unknown as Partial<PartyDevice>);
           }
         }}
       />

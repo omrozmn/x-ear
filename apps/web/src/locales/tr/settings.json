@@ -1,0 +1,37 @@
+{
+    "pos": {
+        "title": "Online Ödeme / POS Ayarları",
+        "description": "Online ödeme almak için bir POS sağlayıcı seçin. X-Ear POS kullanarak hızlıca başlayabilir veya kendi entegrasyonunuzu yapabilirsiniz.",
+        "provider_label": "POS Sağlayıcı",
+        "provider_help": "Ödeme almak için kullanacağınız POS altyapısını seçin",
+        "providers": {
+            "none": "Seçiniz...",
+            "xear": "X-Ear POS (Önerilen)",
+            "paytr": "PayTR",
+            "iyzico": "İyzico"
+        },
+        "xear_active": {
+            "title": "X-Ear POS Aktif",
+            "description": "Herhangi bir API anahtarı girmenize gerek yok. Sistem otomatik olarak hazır POS altyapısını kullanacak. En düşük komisyon oranları için X-Ear POS tercih edilir."
+        },
+        "config": {
+            "paytr_desc": "PayTR mağaza panelinden (merchant.paytr.com) API bilgilerinizi alabilirsiniz",
+            "iyzico_desc": "İyzico iş yeri panelinden API ve gizli anahtarlarınızı alabilirsiniz",
+            "merchant_id": "Mağaza No (Merchant ID)",
+            "merchant_id_placeholder": "örn: 123456",
+            "merchant_key": "Mağaza Parola (Merchant Key)",
+            "merchant_key_placeholder": "Gizli anahtar",
+            "merchant_salt": "Mağaza Gizli Anahtar (Merchant Salt)",
+            "merchant_salt_placeholder": "Gizli tuz (salt)",
+            "test_mode": "Test Modu (Gerçek para çekilmez)",
+            "save_btn": "Ayarları Kaydet",
+            "saving": "Kaydediliyor..."
+        },
+        "messages": {
+            "select_provider": "Lütfen bir POS sağlayıcı seçin",
+            "fill_all_fields": "Lütfen tüm API bilgilerini doldurun",
+            "success": "POS ayarları güncellendi",
+            "error": "Güncelleme başarısız"
+        }
+    }
+}

@@ -153,7 +153,7 @@ export class EFaturaXMLService {
     const invoiceLines: EFaturaInvoiceLine[] = items.map((item, index) => ({
       id: (index + 1).toString(),
       invoicedQuantity: {
-        unitCode: this.mapUnitToEFatura(item.unitPrice),
+        unitCode: this.mapUnitToEFatura(),
         value: item.quantity
       },
       lineExtensionAmount: {
@@ -196,7 +196,7 @@ export class EFaturaXMLService {
           value: item.unitPrice
         },
         baseQuantity: {
-          unitCode: this.mapUnitToEFatura(item.unitPrice),
+          unitCode: this.mapUnitToEFatura(),
           value: 1
         }
       }
@@ -490,7 +490,7 @@ export class EFaturaXMLService {
     return mapping[type] || EFATURA_INVOICE_TYPE_CODES.SATIS;
   }
 
-  private mapUnitToEFatura(_unitPrice: number): string {
+  private mapUnitToEFatura(): string {
     // Default to piece (C62) - this could be enhanced based on product type
     return EFATURA_UNIT_CODES.C62;
   }

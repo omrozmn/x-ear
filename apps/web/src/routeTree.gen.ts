@@ -224,11 +224,11 @@ export interface FileRoutesByFullPath {
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
   '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
-  '/parties': typeof PartiesIndexRoute
-  '/pos': typeof PosIndexRoute
-  '/reports': typeof ReportsIndexRoute
-  '/sgk': typeof SgkIndexRoute
-  '/suppliers': typeof SuppliersIndexRoute
+  '/parties/': typeof PartiesIndexRoute
+  '/pos/': typeof PosIndexRoute
+  '/reports/': typeof ReportsIndexRoute
+  '/sgk/': typeof SgkIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -324,11 +324,11 @@ export interface FileRouteTypes {
     | '/suppliers/$supplierId'
     | '/inventory/'
     | '/invoices/'
-    | '/parties'
-    | '/pos'
-    | '/reports'
-    | '/sgk'
-    | '/suppliers'
+    | '/parties/'
+    | '/pos/'
+    | '/reports/'
+    | '/sgk/'
+    | '/suppliers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -499,35 +499,35 @@ declare module '@tanstack/react-router' {
     '/suppliers/': {
       id: '/suppliers/'
       path: '/suppliers'
-      fullPath: '/suppliers'
+      fullPath: '/suppliers/'
       preLoaderRoute: typeof SuppliersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sgk/': {
       id: '/sgk/'
       path: '/sgk'
-      fullPath: '/sgk'
+      fullPath: '/sgk/'
       preLoaderRoute: typeof SgkIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports/': {
       id: '/reports/'
       path: '/reports'
-      fullPath: '/reports'
+      fullPath: '/reports/'
       preLoaderRoute: typeof ReportsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos/': {
       id: '/pos/'
       path: '/pos'
-      fullPath: '/pos'
+      fullPath: '/pos/'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parties/': {
       id: '/parties/'
       path: '/parties'
-      fullPath: '/parties'
+      fullPath: '/parties/'
       preLoaderRoute: typeof PartiesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }

@@ -352,6 +352,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
                   PDF, JPG, PNG, DOC, DOCX formatları desteklenir
                 </p>
                 <input
+                  data-allow-raw="true"
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                   onChange={handleFileUpload}

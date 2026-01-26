@@ -1,0 +1,15 @@
+{
+    "validation": {
+        "required": "Bu alan zorunludur",
+        "tc_length": "TC Kimlik Numarası 11 haneli olmalıdır",
+        "name_required": "İsim zorunludur",
+        "last_name_required": "Soyisim zorunludur",
+        "phone_required": "Telefon numarası zorunludur",
+        "email_invalid": "Geçerli bir e-posta adresi giriniz",
+        "date_required": "Tarih zorunludur",
+        "patient_required": "Hasta seçimi zorunludur",
+        "patient_name_required": "Hasta adı zorunludur",
+        "time_required": "Saat seçimi zorunludur",
+        "type_required": "Randevu türü seçimi zorunludur"
+    }
+}

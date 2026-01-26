@@ -1,0 +1,130 @@
+{
+    "page_title": "Appointments",
+    "page_subtitle": "Manage and track patient appointments",
+    "new_appointment": "New Appointment",
+    "loading": "Loading appointments...",
+    "error_title": "Error",
+    "filters": {
+        "status": "Status",
+        "type": "Type",
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "search": "Search",
+        "search_placeholder": "Patient name, doctor, notes...",
+        "all": "All"
+    },
+    "stats": {
+        "total": "Total Appointments",
+        "completed": "Completed",
+        "pending": "Pending",
+        "cancelled_no_show": "Cancelled/No Show"
+    },
+    "list": {
+        "empty_title": "No appointments found",
+        "empty_desc": "No appointments found matching the criteria.",
+        "summary": "Showing {{count}} appointments",
+        "columns": {
+            "patient": "Patient",
+            "date_time": "Date & Time",
+            "type": "Type",
+            "status": "Status",
+            "doctor": "Doctor",
+            "duration": "Duration",
+            "actions": "Actions"
+        },
+        "actions": {
+            "complete": "Complete",
+            "no_show": "No Show",
+            "cancel": "Cancel",
+            "edit": "Edit",
+            "delete": "Delete"
+        }
+    },
+    "modal": {
+        "title_create": "New Appointment",
+        "title_edit": "Edit Appointment",
+        "title_view": "Appointment Details",
+        "patient_info": "Patient Info",
+        "date": "Date",
+        "time": "Time",
+        "duration": "Duration",
+        "type": "Type",
+        "status": "Status",
+        "doctor": "Doctor",
+        "location": "Location",
+        "title": "Title",
+        "notes": "Notes",
+        "created_at": "Created At",
+        "updated_at": "Updated At",
+        "quick_actions": "Quick Actions",
+        "delete_title": "Delete Appointment",
+        "delete_confirm": "Are you sure you want to delete this appointment? This action cannot be undone.",
+        "actions": {
+            "confirm": "Confirm",
+            "complete": "Complete",
+            "no_show": "No Show",
+            "reschedule": "Reschedule",
+            "close": "Close",
+            "delete": "Delete",
+            "deleting": "Deleting..."
+        }
+    },
+    "form": {
+        "patient": "Patient *",
+        "patient_placeholder": "Search by patient name or ID...",
+        "date": "Date *",
+        "time": "Time *",
+        "duration": "Duration (minutes) *",
+        "type": "Appointment Type *",
+        "notes": "Notes",
+        "notes_placeholder": "Appointment notes...",
+        "date_placeholder": "DD/MM/YYYY",
+        "title": "Title *",
+        "title_placeholder": "Appointment title",
+        "create_btn": "Create Appointment",
+        "update_btn": "Update Appointment",
+        "cancel_btn": "Cancel",
+        "errors": {
+            "patient_required": "Patient selection is required",
+            "date_required": "Date is required",
+            "date_past": "Cannot select past date",
+            "time_required": "Time is required",
+            "time_invalid": "Enter a valid time (HH:MM)",
+            "duration_min": "Duration must be greater than 0",
+            "duration_max": "Duration cannot exceed 8 hours",
+            "type_required": "Appointment type is required",
+            "create_error": "Failed to save appointment",
+            "party_create_error": "Failed to create patient"
+        },
+        "success": {
+            "create": "Appointment created successfully",
+            "update": "Appointment updated successfully",
+            "party_create": "New patient created"
+        }
+    },
+    "views": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month",
+        "list": "List"
+    },
+    "status": {
+        "scheduled": "Scheduled",
+        "confirmed": "Confirmed",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "no_show": "No Show",
+        "rescheduled": "Rescheduled"
+    },
+    "types": {
+        "consultation": "Consultation",
+        "follow_up": "Follow-up",
+        "trial": "Trial",
+        "delivery": "Delivery",
+        "control_visit": "Control Visit",
+        "battery_renewal": "Battery Renewal",
+        "repair": "Repair",
+        "fitting": "Fitting",
+        "assessment": "Assessment"
+    }
+}

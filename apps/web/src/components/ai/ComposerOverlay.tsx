@@ -1,29 +1,41 @@
 import { useEffect, useCallback, useState, useMemo } from 'react';
 import { useComposerStore } from '../../stores/composerStore';
+import { useSpotlightStore } from '../../stores/spotlightStore';
+import { useChatStore } from '../../ai/stores/chatStore';
 import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle } from 'lucide-react';
 import {
     useAutocompleteApiAiComposerAutocompleteGet,
     useExecuteToolApiAiComposerExecutePost,
-    useAnalyzeDocumentsApiAiComposerAnalyzePost
-} from '../../api/generated/ai-composer/ai-composer';
-import { useCreateUploadPresigned } from '../../api/generated/upload/upload';
+    useAnalyzeDocumentsApiAiComposerAnalyzePost,
+    useCreateUploadPresigned
+} from '../../api/generated';
 import type { ExecuteResponse, EntityItem, Capability, AnalysisSuggestion } from '../../api/generated/schemas';
 import { usePermissionCheck } from '../../hooks/usePermissionCheck';
 import toast from 'react-hot-toast';
 import { Button, Input } from '@x-ear/ui-web';
+import { EntityPreviewModal } from './EntityPreviewModal';
 
 export function ComposerOverlay() {
     const {
         isOpen, setOpen,
         mode, query, context, selectedAction, currentSlot, slots, executionResult,
-        setQuery, setContext, selectAction, updateSlot, nextSlot, reset, setExecutionResult
+        setQuery, selectAction, updateSlot, nextSlot, reset, setExecutionResult
     } = useComposerStore();
+
+    const {
+        stagedEntities, addStagedEntity, removeStagedEntity
+    } = useSpotlightStore();
+
+    const { setVisible: setChatVisible } = useChatStore();
 
     const { canAll } = usePermissionCheck();
     const onClose = useCallback(() => setOpen(false), [setOpen]);
 
     // Entity search state for slot filling
     const [slotSearchQuery, setSlotSearchQuery] = useState('');
+
+    // Preview state
+    const [previewEntity, setPreviewEntity] = useState<EntityItem | null>(null);
 
     // Autocomplete query hook
     const { data: autocompleteData, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(
@@ -178,12 +190,14 @@ export function ComposerOverlay() {
     }, [isOpen, setOpen, onClose]);
 
     const handleSelectEntity = (entity: EntityItem) => {
-        setContext(entity);
-        setQuery('');
+        setPreviewEntity(entity);
     };
 
     const handleSelectAction = (action: Capability) => {
-        selectAction(action);
+        // Spotlight Handoff Logic
+        selectAction(action, stagedEntities);
+        setOpen(false);
+        setChatVisible(true);
     };
 
     const handleSlotEntitySelect = (entity: EntityItem) => {
@@ -251,28 +265,38 @@ export function ComposerOverlay() {
                 <div className="p-4 border-b border-gray-100 flex items-center gap-2">
                     <Search className="text-gray-400 w-5 h-5" />
 
-                    {/* Context Chip */}
-                    {context && (
-                        <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm font-medium">
-                            {context.type === 'patient' && <User size={14} />}
-                            {context.type === 'device' && <Box size={14} />}
-                            {context.label}
-                            <Button 
-                                onClick={reset} 
-                                variant="ghost" 
-                                size="sm"
-                                className="hover:text-blue-900 ml-1 p-0 h-auto min-h-0"
-                            >
-                                <X size={14} />
-                            </Button>
-                        </span>
-                    )}
+                    {/* Staged Entity Chips */}
+                    <div className="flex gap-1 flex-wrap">
+                        {stagedEntities.map(e => (
+                            <span key={e.id} className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm font-medium">
+                                {e.type === 'patient' && <User size={14} />}
+                                {e.type === 'device' && <Box size={14} />}
+                                {e.label}
+                                <Button
+                                    onClick={() => removeStagedEntity(e.id)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="hover:text-blue-900 ml-1 p-0 h-auto min-h-0"
+                                >
+                                    <X size={14} />
+                                </Button>
+                            </span>
+                        ))}
+                    </div>
 
                     <Input
                         className="flex-1 outline-none text-lg placeholder:text-gray-400 border-0 focus:ring-0 shadow-none"
-                        placeholder={context ? "Bir işlem yazın..." : "Hasta, cihaz veya fatura ara..."}
+                        placeholder={stagedEntities.length > 0 ? "Bir işlem yazın..." : "Hasta, cihaz veya fatura ara..."}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && query.length > 0) {
+                                // If there is a clear action in autocomplete, handoff
+                                if (autocompleteData?.intentType === 'action' && permittedActions.length > 0) {
+                                    handleSelectAction(permittedActions[0]);
+                                }
+                            }
+                        }}
                         autoFocus
                     />
 
@@ -304,12 +328,25 @@ export function ComposerOverlay() {
                                             onClick={() => handleSelectEntity(e)}
                                             className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
                                         >
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600 relative">
                                                 {e.type === 'patient' ? <User size={18} /> : <Box size={18} />}
+                                                <span className="absolute -bottom-1 -right-1 px-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded border border-white">
+                                                    {e.type === 'patient' ? 'HASTA' : 'CİHAZ'}
+                                                </span>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-medium text-gray-900 truncate">{e.label}</div>
-                                                <div className="text-xs text-gray-500 truncate">{e.subLabel}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="font-medium text-gray-900 truncate">{e.label}</div>
+                                                    {e.metadata?.tags && Array.isArray(e.metadata.tags) ?
+                                                        (e.metadata.tags.filter((t): t is string => typeof t === 'string')).map((tag, i) => (
+                                                            <span key={i} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full border border-gray-200 truncate max-w-[80px]">
+                                                                {tag}
+                                                            </span>
+                                                        ))
+                                                        : null
+                                                    }
+                                                </div>
+                                                <div className="text-xs text-gray-500 truncate">{e.subLabel || ''}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -326,8 +363,11 @@ export function ComposerOverlay() {
                                             onClick={() => handleSelectAction(a)}
                                             className="flex items-center gap-3 p-2 hover:bg-purple-50 rounded-lg cursor-pointer group transition-colors"
                                         >
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 flex items-center justify-center group-hover:from-purple-100 group-hover:to-purple-200 transition-colors">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 flex items-center justify-center group-hover:from-purple-100 group-hover:to-purple-200 transition-colors relative">
                                                 <Zap size={18} />
+                                                <span className="absolute -bottom-1 -right-1 px-1 bg-purple-100 text-purple-700 text-[10px] font-bold rounded border border-white">
+                                                    AKSİYON
+                                                </span>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-medium text-purple-900">{a.name}</div>
@@ -344,7 +384,8 @@ export function ComposerOverlay() {
                                 (!permittedActions.length) && (
                                     <div className="p-4 text-center text-gray-500">
                                         <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                                        Sonuç bulunamadı
+                                        <p>İlgili kayıt bulunamadı.</p>
+                                        <p className="text-xs mt-1 text-gray-400">Yazdıklarınız AI işlem promptu olarak kullanılacaktır.</p>
                                     </div>
                                 )}
                         </div>
@@ -503,6 +544,19 @@ export function ComposerOverlay() {
                         </div>
                     )}
 
+                    {/* Entity Preview Modal */}
+                    {previewEntity && (
+                        <EntityPreviewModal
+                            entity={previewEntity}
+                            onClose={() => setPreviewEntity(null)}
+                            onAdd={(e) => {
+                                addStagedEntity(e);
+                                setQuery('');
+                                setPreviewEntity(null);
+                            }}
+                        />
+                    )}
+
                     {/* File Upload Mode */}
                     {mode === 'slot_filling' && currentSlot && (currentSlot.uiType as string) === 'file' && (
                         <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
@@ -558,10 +612,10 @@ export function ComposerOverlay() {
                                     .filter(([k]) => !k.startsWith('_')) // Hide internal fields
                                     .map(([k, v]) => {
                                         const label = slots[`_${k}_label`];
-                                        const displayValue = typeof label === 'string' 
-                                            ? label 
+                                        const displayValue = typeof label === 'string'
+                                            ? label
                                             : (v !== null && v !== undefined ? String(v) : '-');
-                                        
+
                                         return (
                                             <div key={k} className="flex justify-between items-center mb-2 text-sm">
                                                 <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>

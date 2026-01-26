@@ -82,21 +82,8 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
     );
   }
 
-  const _formatStatus = (status?: string) => {
-    if (!status) return { label: 'Belirtilmemiş', variant: 'secondary' as const };
-    const statusMap: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' | 'secondary' }> = {
-      ACTIVE: { label: 'Aktif', variant: 'success' },
-      active: { label: 'Aktif', variant: 'success' },
-      INACTIVE: { label: 'Pasif', variant: 'secondary' },
-      inactive: { label: 'Pasif', variant: 'secondary' },
-      PENDING: { label: 'Beklemede', variant: 'warning' },
-      pending: { label: 'Beklemede', variant: 'warning' },
-      TRIAL: { label: 'Deneme', variant: 'warning' },
-      trial: { label: 'Deneme', variant: 'warning' },
-      archived: { label: 'Arşivlenmiş', variant: 'danger' },
-    };
-    return statusMap[status] || { label: status, variant: 'secondary' as const };
-  };
+  // formatStatus function removed - not used in render
+  // const statusInfo = formatStatus(party.status || undefined);
 
   const formatSegment = (segment?: string) => {
     const segmentMap: Record<string, string> = {

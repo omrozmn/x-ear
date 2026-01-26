@@ -44,8 +44,8 @@ export interface UsePartyReturn {
 }
 
 export const useParty = (
-  partyId: string | null,
-  _options: UsePartyOptions = {}
+  partyId: string | null
+  // Removed unused _options parameter - will be implemented in future version
 ): UsePartyReturn => {
   const [party, setParty] = useState<Party | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -196,8 +196,9 @@ export const useParty = (
   }, []);
 
   // Remove note
-  const removeNote = useCallback(async (_noteId: string): Promise<void> => {
+  const removeNote = useCallback(async (noteId: string): Promise<void> => {
     // Mock implementation
+    console.log('Removing note:', noteId);
   }, []);
 
   // Add communication

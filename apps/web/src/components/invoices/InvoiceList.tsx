@@ -1,4 +1,4 @@
-import { Button, Input } from '@x-ear/ui-web';
+import { Button, Input, Checkbox } from '@x-ear/ui-web';
 import { Eye, Edit2, FileText, Truck, FilePlus } from 'lucide-react';
 import InvoiceBulkOperations from '../invoice/InvoiceBulkOperations';
 import { InvoicePreviewModal } from '../modals/InvoicePreviewModal';
@@ -20,8 +20,8 @@ export function InvoiceList({
   filters,
   onFiltersChange,
   onSelectionChange,
-  showActions = true,
-  compact: _compact = false
+  showActions = true
+  // Removed unused compact parameter
 }: InvoiceListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -186,6 +186,7 @@ export function InvoiceList({
       case 'paid': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'overdue': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
       case 'cancelled': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+      case 'processing': return 'bg-yellow-100 dark:bg-yellow-900/10 text-yellow-800 dark:text-yellow-500 animate-pulse';
       default: return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
     }
   };
@@ -197,6 +198,7 @@ export function InvoiceList({
       case 'paid': return 'Ödendi';
       case 'overdue': return 'Vadesi Geçti';
       case 'cancelled': return 'İptal';
+      case 'processing': return 'İşleniyor...';
       default: return status;
     }
   };
@@ -269,15 +271,12 @@ export function InvoiceList({
         {/* Header Row */}
         <div className="hidden sm:grid grid-cols-5 gap-4 px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
           <div className="flex flex-col">
-            <label className="flex items-center gap-2 text-xs text-gray-400">
-              <input
-                type="checkbox"
-                aria-label="Tümünü seç"
-                onChange={(e) => selectAllOnPage(e.target.checked)}
-                className="h-4 w-4"
-              />
-              <span>Tümünü seç</span>
-            </label>
+            <Checkbox
+              checked={false}
+              onChange={(e) => selectAllOnPage(e.target.checked)}
+              label="Tümünü seç"
+              aria-label="Tümünü seç"
+            />
             <div className="mt-1 text-sm text-gray-500">Belge No</div>
           </div>
           <div>Müşteri</div>
@@ -298,13 +297,11 @@ export function InvoiceList({
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center">
                     <div className="flex items-center gap-3">
-                      <input
-                        aria-label={`Select invoice ${invoice.invoiceNumber}`}
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedIds.has(invoice.id)}
                         onChange={(e) => toggleSelect(invoice.id, e)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="h-5 w-5"
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        aria-label={`Select invoice ${invoice.invoiceNumber}`}
                       />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{invoice.invoiceNumber}</p>
@@ -345,7 +342,14 @@ export function InvoiceList({
 
                           {invoice.status === 'sent' && (
                             <>
-                              <Button onClick={(e) => { e.stopPropagation(); invoiceService.generateInvoicePdf(invoice.id).then(res => { if (res.success && res.data) invoiceService.previewPdfBlob(res.data); }); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Fatura Aç" aria-label="Fatura Aç">
+                              <Button onClick={(e) => {
+                                e.stopPropagation();
+                                if (invoice.gibPdfLink) {
+                                  window.open(invoice.gibPdfLink, '_blank');
+                                } else {
+                                  invoiceService.generateInvoicePdf(invoice.id).then(res => { if (res.success && res.data) invoiceService.previewPdfBlob(res.data); });
+                                }
+                              }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Fatura Aç" aria-label="Fatura Aç">
                                 <FileText size={16} />
                               </Button>
                               <Button onClick={(e) => { e.stopPropagation(); const saleId = invoice.saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
@@ -355,16 +359,41 @@ export function InvoiceList({
                           )}
 
                           <div className="relative">
-
-                            <button data-invoice-menu-button onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); } }} className="p-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white rounded-md" aria-label="İşlemler" aria-expanded={openMenuId === invoice.id}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              data-invoice-menu-button
+                              onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); }}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); } }}
+                              aria-label="İşlemler"
+                              aria-expanded={openMenuId === invoice.id}
+                            >
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                            </button>
+                            </Button>
 
                             {openMenuId === invoice.id && (
                               <div data-invoice-menu className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
-                                <button onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(invoice, e); setOpenMenuId(null); }} className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700">Kaydı Sil</button>
-                                <button onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoice(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyalama hatası'); } finally { setOpenMenuId(null); } }} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Kopyala</button>
-                                <button onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoiceWithCancellation(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyala+İptal hatası'); } finally { setOpenMenuId(null); } }} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Kopyala ve İptal Et</button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(invoice, e); setOpenMenuId(null); }}
+                                  className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                >
+                                  Kaydı Sil
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoice(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyalama hatası'); } finally { setOpenMenuId(null); } }}
+                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                >
+                                  Kopyala
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoiceWithCancellation(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyala+İptal hatası'); } finally { setOpenMenuId(null); } }}
+                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                >
+                                  Kopyala ve İptal Et
+                                </Button>
                               </div>
                             )}
                           </div>

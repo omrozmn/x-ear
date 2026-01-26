@@ -15,7 +15,7 @@ export function SupplierDetailPage() {
   // Cast to Extended type to access extra fields if needed
   const supplierData = supplier as unknown as SupplierExtended;
 
-  const { data: productsData, isLoading: productsLoading, error: productsError } = useSupplierProducts(supplierData?.companyName || supplierData?.name) as any;
+  const { data: productsData, isLoading: productsLoading, error: productsError } = useSupplierProducts(supplierData?.companyName || supplierData?.name) as { data: unknown; isLoading: boolean; error: unknown };
   const deleteSupplierMutation = useDeleteSupplier();
   const updateSupplierMutation = useUpdateSupplier();
 
@@ -217,7 +217,7 @@ export function SupplierDetailPage() {
                     </div>
                   ) : productsError ? (
                     <div className="text-red-500 text-center py-8">Ürünler yüklenirken hata oluştu.</div>
-                  ) : (productsData as any)?.data?.products?.length ? (
+                  ) : (productsData as Record<string, unknown>)?.data && Array.isArray(((productsData as Record<string, unknown>).data as Record<string, unknown>).products) && ((productsData as Record<string, unknown>).data as { products: unknown[] }).products.length ? (
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead>

@@ -38,7 +38,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
   const [selectedScheme, setSelectedScheme] = useState<SGKScheme | null>(null);
   const [sgkDocumentUploaded, setSgkDocumentUploaded] = useState(false);
   const [loadingSchemes, setLoadingSchemes] = useState(false);
-  const [_uploadingDocument, setUploadingDocument] = useState(false);
+  // uploadingDocument state removed - set but never used in UI
 
   // Mock SGK schemes based on party criteria
   const loadSGKSchemes = () => {
@@ -109,12 +109,10 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploadingDocument(true);
-    
+    // uploadingDocument state removed - not displayed in UI
     // Simulate document upload and processing
     setTimeout(() => {
       setSgkDocumentUploaded(true);
-      setUploadingDocument(false);
     }, 2000);
   };
 

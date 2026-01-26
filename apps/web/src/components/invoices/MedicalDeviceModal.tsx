@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Input, Button, DatePicker } from '@x-ear/ui-web';
+import { Input, Button, DatePicker, RadioGroup } from '@x-ear/ui-web';
 import { Info, AlertTriangle } from 'lucide-react';
 import { MedicalDeviceData } from '../../types/invoice';
 
@@ -146,36 +146,17 @@ export function MedicalDeviceModal({
           <div className="bg-white px-6 py-4">
             <div className="space-y-4">
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Ürün Türü *
-                </label>
-                <div className="flex space-x-4">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="productType"
-                      value="ilac"
-                      checked={formData.productType === 'ilac'}
-                      onChange={(e) => handleChange('productType', e.target.value)}
-                      className="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">İlaç</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="productType"
-                      value="tibbicihaz"
-                      checked={formData.productType === 'tibbicihaz'}
-                      onChange={(e) => handleChange('productType', e.target.value)}
-                      className="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Tıbbi Cihaz</span>
-                  </label>
-                </div>
-                {errors.productType && (
-                  <p className="mt-1 text-sm text-red-600">{errors.productType}</p>
-                )}
+                <RadioGroup
+                  label="Ürün Türü *"
+                  name="productType"
+                  value={formData.productType}
+                  onChange={(value) => handleChange('productType', value)}
+                  options={[
+                    { value: 'ilac', label: 'İlaç' },
+                    { value: 'tibbicihaz', label: 'Tıbbi Cihaz' }
+                  ]}
+                  error={errors.productType}
+                />
               </div>
 
 

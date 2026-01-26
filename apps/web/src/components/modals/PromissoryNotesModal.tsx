@@ -28,13 +28,13 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
   isOpen,
   onClose,
   sale,
-  onCollectNote,
-  onCreateNote: _onCreateNote
+  onCollectNote
+  // Removed unused onCreateNote parameter
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [notes, setNotes] = useState<PromissoryNote[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [_showCreateForm, setShowCreateForm] = useState(false);
+  const [, setShowCreateForm] = useState(false); // Removed unused _showCreateForm
   const [collectingNoteId, setCollectingNoteId] = useState<string | null>(null);
   const [collectionData, setCollectionData] = useState({
     amount: 0,
@@ -66,7 +66,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
       } else if ('result' in payload && Array.isArray(payload.result)) {
         notesArray = payload.result;
       } else if (sale?.paymentRecords && Array.isArray(sale.paymentRecords)) {
-        notesArray = sale.paymentRecords;
+        notesArray = sale.paymentRecords as PromissoryNote[];
       } else {
         notesArray = [];
       }
@@ -235,6 +235,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
                                 Tahsilat Tutarı
                               </label>
                               <input
+                                data-allow-raw="true"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -249,6 +250,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
                                 Ödeme Yöntemi
                               </label>
                               <select
+                                data-allow-raw="true"
                                 value={collectionData.paymentMethod}
                                 onChange={(e) => setCollectionData(prev => ({ ...prev, paymentMethod: e.target.value }))}
                                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"

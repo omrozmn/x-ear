@@ -31,7 +31,13 @@ import type {
   ListCommunicationMessagesParams,
   ListCommunicationStatsParams,
   ListCommunicationTemplatesParams,
-  RoutersCommunicationsTemplateCreate,
+  ResponseEnvelopeCommunicationHistoryRead,
+  ResponseEnvelopeCommunicationTemplateRead,
+  ResponseEnvelopeEmailLogRead,
+  ResponseEnvelopeListCommunicationHistoryRead,
+  ResponseEnvelopeListCommunicationTemplateRead,
+  ResponseEnvelopeSMSLogRead,
+  SchemasCommunicationsTemplateCreate,
   SendEmail,
   SendSMS
 } from '.././schemas';
@@ -145,7 +151,7 @@ export const createCommunicationMessageSendSms = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSMSLogRead>(
       {url: `/api/communications/messages/send-sms`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: sendSMS, signal
@@ -210,7 +216,7 @@ export const createCommunicationMessageSendEmail = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeEmailLogRead>(
       {url: `/api/communications/messages/send-email`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: sendEmail, signal
@@ -275,7 +281,7 @@ export const listCommunicationTemplates = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListCommunicationTemplateRead>(
       {url: `/api/communications/templates`, method: 'GET',
         params, signal
     },
@@ -363,27 +369,27 @@ export function useListCommunicationTemplates<TData = Awaited<ReturnType<typeof 
  * Create a new communication template
  * @summary Create Template
  */
-export const createCommunicationTemplates = (
-    routersCommunicationsTemplateCreate: RoutersCommunicationsTemplateCreate,
+export const createCommunicationTemplate = (
+    schemasCommunicationsTemplateCreate: SchemasCommunicationsTemplateCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeCommunicationTemplateRead>(
       {url: `/api/communications/templates`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: routersCommunicationsTemplateCreate, signal
+      data: schemasCommunicationsTemplateCreate, signal
     },
       );
     }
   
 
 
-export const getCreateCommunicationTemplatesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext> => {
+export const getCreateCommunicationTemplateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplate>>, TError,{data: SchemasCommunicationsTemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplate>>, TError,{data: SchemasCommunicationsTemplateCreate}, TContext> => {
 
-const mutationKey = ['createCommunicationTemplates'];
+const mutationKey = ['createCommunicationTemplate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -393,10 +399,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationTemplates>>, {data: RoutersCommunicationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationTemplate>>, {data: SchemasCommunicationsTemplateCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createCommunicationTemplates(data,)
+          return  createCommunicationTemplate(data,)
         }
 
         
@@ -404,23 +410,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateCommunicationTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunicationTemplates>>>
-    export type CreateCommunicationTemplatesMutationBody = RoutersCommunicationsTemplateCreate
-    export type CreateCommunicationTemplatesMutationError = HTTPValidationError
+    export type CreateCommunicationTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunicationTemplate>>>
+    export type CreateCommunicationTemplateMutationBody = SchemasCommunicationsTemplateCreate
+    export type CreateCommunicationTemplateMutationError = HTTPValidationError
 
     /**
  * @summary Create Template
  */
-export const useCreateCommunicationTemplates = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
+export const useCreateCommunicationTemplate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplate>>, TError,{data: SchemasCommunicationsTemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createCommunicationTemplates>>,
+        Awaited<ReturnType<typeof createCommunicationTemplate>>,
         TError,
-        {data: RoutersCommunicationsTemplateCreate},
+        {data: SchemasCommunicationsTemplateCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateCommunicationTemplatesMutationOptions(options);
+      const mutationOptions = getCreateCommunicationTemplateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -434,7 +440,7 @@ export const getCommunicationTemplate = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeCommunicationTemplateRead>(
       {url: `/api/communications/templates/${templateId}`, method: 'GET', signal
     },
       );
@@ -523,14 +529,14 @@ export function useGetCommunicationTemplate<TData = Awaited<ReturnType<typeof ge
  */
 export const updateCommunicationTemplate = (
     templateId: string,
-    routersCommunicationsTemplateCreate: RoutersCommunicationsTemplateCreate,
+    schemasCommunicationsTemplateCreate: SchemasCommunicationsTemplateCreate,
  ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeCommunicationTemplateRead>(
       {url: `/api/communications/templates/${templateId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: routersCommunicationsTemplateCreate
+      data: schemasCommunicationsTemplateCreate
     },
       );
     }
@@ -538,8 +544,8 @@ export const updateCommunicationTemplate = (
 
 
 export const getUpdateCommunicationTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: SchemasCommunicationsTemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: SchemasCommunicationsTemplateCreate}, TContext> => {
 
 const mutationKey = ['updateCommunicationTemplate'];
 const {mutation: mutationOptions} = options ?
@@ -551,7 +557,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCommunicationTemplate>>, {templateId: string;data: RoutersCommunicationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCommunicationTemplate>>, {templateId: string;data: SchemasCommunicationsTemplateCreate}> = (props) => {
           const {templateId,data} = props ?? {};
 
           return  updateCommunicationTemplate(templateId,data,)
@@ -563,18 +569,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateCommunicationTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof updateCommunicationTemplate>>>
-    export type UpdateCommunicationTemplateMutationBody = RoutersCommunicationsTemplateCreate
+    export type UpdateCommunicationTemplateMutationBody = SchemasCommunicationsTemplateCreate
     export type UpdateCommunicationTemplateMutationError = HTTPValidationError
 
     /**
  * @summary Update Template
  */
 export const useUpdateCommunicationTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: SchemasCommunicationsTemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateCommunicationTemplate>>,
         TError,
-        {templateId: string;data: RoutersCommunicationsTemplateCreate},
+        {templateId: string;data: SchemasCommunicationsTemplateCreate},
         TContext
       > => {
 
@@ -654,7 +660,7 @@ export const listCommunicationHistory = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeListCommunicationHistoryRead>(
       {url: `/api/communications/history`, method: 'GET',
         params, signal
     },
@@ -748,7 +754,7 @@ export const createCommunicationHistory = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeCommunicationHistoryRead>(
       {url: `/api/communications/history`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: historyCreate, signal

@@ -68,12 +68,14 @@ export const PartyCard: React.FC<PartyCardProps> = ({
                 {party.phone && (
                     <>
                         <button
+                            data-allow-raw="true"
                             onClick={(e) => handleAction(e, () => onCall?.(party.phone as string))}
                             className="p-2 bg-green-50 text-green-600 rounded-full active:bg-green-100"
                         >
                             <Phone className="h-5 w-5" />
                         </button>
                         <button
+                            data-allow-raw="true"
                             onClick={(e) => handleAction(e, () => onMessage?.(party.phone as string))}
                             className="p-2 bg-blue-50 text-blue-600 rounded-full active:bg-blue-100"
                         >

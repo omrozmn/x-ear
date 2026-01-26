@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import i18next from '../../i18n'; // Import initialized i18n instance
 
 // Enums based on generated types
 export const PartyStatusSchema = z.enum(['active', 'inactive']);
@@ -14,16 +15,16 @@ export const PartyAddressSchema = z.object({
 // Core Party schema based on generated Orval types
 export const PartySchema = z.object({
   id: z.string().optional(),
-  tcNumber: z.string().min(11, 'TC Number must be 11 digits').max(11, 'TC Number must be 11 digits'),
+  tcNumber: z.string().min(11, i18next.t('validation.tc_length', { ns: 'validation' })).max(11, i18next.t('validation.tc_length', { ns: 'validation' })),
   tc_number: z.string().optional(),
   identityNumber: z.string().optional(),
   identity_number: z.string().optional(),
-  firstName: z.string().min(1, 'First name is required'),
+  firstName: z.string().min(1, i18next.t('validation.name_required', { ns: 'validation' })),
   first_name: z.string().optional(),
-  lastName: z.string().min(1, 'Last name is required'),
+  lastName: z.string().min(1, i18next.t('validation.last_name_required', { ns: 'validation' })),
   last_name: z.string().optional(),
-  phone: z.string().min(1, 'Phone number is required'),
-  email: z.string().email().optional().or(z.literal('')),
+  phone: z.string().min(1, i18next.t('validation.phone_required', { ns: 'validation' })),
+  email: z.string().email(i18next.t('validation.email_invalid', { ns: 'validation' })).optional().or(z.literal('')),
   birthDate: z.string().optional(), // ISO date string
   birth_date: z.string().optional(),
   gender: PartyGenderSchema.optional(),
@@ -60,10 +61,10 @@ export const PartySchema = z.object({
 
 // Create schema for API calls
 export const CreatePartySchema = z.object({
-  tcNumber: z.string().min(11, 'TC Number must be 11 digits').max(11, 'TC Number must be 11 digits'),
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  phone: z.string().min(1, 'Phone number is required'),
+  tcNumber: z.string().min(11, i18next.t('validation.tc_length', { ns: 'validation' })).max(11, i18next.t('validation.tc_length', { ns: 'validation' })),
+  firstName: z.string().min(1, i18next.t('validation.name_required', { ns: 'validation' })),
+  lastName: z.string().min(1, i18next.t('validation.last_name_required', { ns: 'validation' })),
+  phone: z.string().min(1, i18next.t('validation.phone_required', { ns: 'validation' })),
   email: z.string().email().optional().or(z.literal('')),
   birthDate: z.string().optional(),
   gender: PartyGenderSchema.optional(),

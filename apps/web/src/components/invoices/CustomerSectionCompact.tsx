@@ -42,7 +42,7 @@ export function CustomerSectionCompact({
   const [searchResults, setSearchResults] = useState<Party[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [selectedParty, setSelectedParty] = useState<Party | null>(null);
+  // Removed unused selectedParty state - party selection is handled directly via onChange
   const [districts, setDistricts] = useState<string[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
@@ -130,7 +130,7 @@ export function CustomerSectionCompact({
 
   // Hasta seçimi
   const handlePartySelect = useCallback((party: Party) => {
-    setSelectedParty(party);
+    // Removed setSelectedParty - not needed, party info is stored via onChange
     setShowResults(false);
     setShowSuccessMessage(true);
 
@@ -219,7 +219,7 @@ export function CustomerSectionCompact({
 
   // Alıcıyı temizle
   const handleClearCustomer = useCallback(() => {
-    setSelectedParty(null);
+    // Removed setSelectedParty - not needed
     setShowSuccessMessage(false);
     onChange('customerId', '');
     onChange('customerFirstName', '');

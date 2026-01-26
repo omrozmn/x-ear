@@ -807,14 +807,14 @@ export function ProductLinesSection({
                     Birim Fiyat
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       type="number"
                       value={line.unitPrice === undefined || line.unitPrice === null ? '' : String(line.unitPrice)}
                       onChange={(e) => handleLineChange(index, 'unitPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       min="0"
                       step="0.01"
                       required
-                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="pl-8"
                     />
                     <span className="absolute left-3 top-2.5 text-gray-500 text-sm font-medium">
                       {getCurrencySymbol(currency)}
@@ -828,24 +828,24 @@ export function ProductLinesSection({
                     İskonto
                   </label>
                   <div className="flex gap-1">
-                    <input
+                    <Input
                       type="number"
                       value={line.discount === undefined || line.discount === null ? '' : String(line.discount)}
                       onChange={(e) => handleLineChange(index, 'discount', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       min="0"
                       step="0.01"
                       placeholder="0"
-                      className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
-                    <select
+                    <Select
                       value={line.discountType || 'percentage'}
                       onChange={(e) => handleLineChange(index, 'discountType', e.target.value as 'amount' | 'percentage')}
-                      className="w-16 px-1 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs bg-white"
+                      options={[
+                        { value: 'percentage', label: '%' },
+                        { value: 'amount', label: '₺' }
+                      ]}
+                      className="w-16"
                       title={line.discountType === 'percentage' ? 'Yüzde' : 'Birim'}
-                    >
-                      <option value="percentage">%</option>
-                      <option value="amount">₺</option>
-                    </select>
+                    />
                   </div>
                 </div>
 

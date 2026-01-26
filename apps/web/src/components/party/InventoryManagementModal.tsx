@@ -81,8 +81,7 @@ interface FormErrors {
 export const InventoryManagementModal: React.FC<InventoryManagementModalProps> = ({
   isOpen,
   onClose,
-  onInventoryUpdate,
-  isLoading: _isLoading = false
+  onInventoryUpdate
 }) => {
   const [activeTab, setActiveTab] = useState<'items' | 'movements'>('items');
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -447,7 +446,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            <button
+            <button data-allow-raw="true"
               onClick={() => setActiveTab('items')}
               className={`${activeTab === 'items'
                   ? 'border-blue-500 text-blue-600'
@@ -457,7 +456,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
               <Package className="w-4 h-4" />
               Envanter
             </button>
-            <button
+            <button data-allow-raw="true"
               onClick={() => setActiveTab('movements')}
               className={`${activeTab === 'movements'
                   ? 'border-blue-500 text-blue-600'

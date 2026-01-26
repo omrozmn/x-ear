@@ -12,7 +12,7 @@ const meta: Meta<typeof FormField> = {
   argTypes: {
     type: {
       control: { type: 'select' },
-      options: ['text', 'email', 'password', 'number', 'tel', 'url', 'date'],
+      options: ['text', 'email', 'number', 'tel', 'date'],
     },
     disabled: {
       control: { type: 'boolean' },
@@ -26,15 +26,35 @@ const meta: Meta<typeof FormField> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const FormFieldWrapper = (args: any) => {
+interface FormFieldWrapperProps {
+  value?: string | number;
+  label?: string;
+  type?: 'text' | 'number' | 'date' | 'email' | 'tel';
+  placeholder?: string;
+  disabled?: boolean;
+  required?: boolean;
+  error?: string;
+  icon?: string;
+  min?: number;
+  max?: number;
+}
+
+const FormFieldWrapper = (args: FormFieldWrapperProps) => {
   const [value, setValue] = useState(args.value || '');
   
   return (
     <div className="w-80">
       <FormField
-        {...args}
+        label={args.label || 'Field Label'}
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
+        onChange={(value: string) => setValue(value)}
+        type={args.type}
+        placeholder={args.placeholder}
+        required={args.required}
+        disabled={args.disabled}
+        error={args.error}
+        min={args.min}
+        max={args.max}
       />
     </div>
   );
@@ -71,10 +91,10 @@ export const Required: Story = {
 export const WithError: Story = {
   render: FormFieldWrapper,
   args: {
-    label: 'Şifre',
-    type: 'password',
-    placeholder: 'Şifrenizi girin',
-    error: 'Şifre en az 8 karakter olmalıdır',
+    label: 'E-posta',
+    type: 'email',
+    placeholder: 'E-posta adresinizi girin',
+    error: 'Geçerli bir e-posta adresi girin',
     required: true,
   },
 };

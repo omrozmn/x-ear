@@ -21,13 +21,6 @@ interface BulkAction {
   color: 'primary' | 'secondary' | 'danger' | 'warning';
 }
 
-interface CSVImportData {
-  file: File | null;
-  mapping: Record<string, string>;
-  preview: Record<string, unknown>[];
-  errors: string[];
-}
-
 const BULK_ACTIONS: BulkAction[] = [
   {
     id: 'export-csv',
@@ -83,13 +76,13 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
   const { success, error, warning } = useToastHelpers();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // CSV Import State
-  const [csvImport, setCsvImport] = useState<CSVImportData>({
-    file: null,
-    mapping: {},
-    preview: [],
-    errors: []
-  });
+  // CSV Import State - removed unused variables
+  // const [csvImport, setCsvImport] = useState<CSVImportData>({
+  //   file: null,
+  //   mapping: {},
+  //   preview: [],
+  //   errors: []
+  // });
 
   // Bulk Actions State
   const [bulkTagData, setBulkTagData] = useState({
@@ -196,46 +189,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
   });
 
   // New importer integration will be provided via UniversalImporter component
-
-  const _handleCSVImportSubmit = useCallback(async () => {
-    if (!csvImport.file) return;
-
-    try {
-      setIsProcessing(true);
-
-      // Mock import - gerçek API entegrasyonu için backend endpoint gerekli
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-
-      const mockResult = {
-        created: Math.floor(Math.random() * 10) + 1,
-        updated: Math.floor(Math.random() * 5),
-        errors: []
-      };
-
-      if (mockResult.errors.length > 0) {
-        warning(`${mockResult.created + mockResult.updated} hasta işlendi, ${mockResult.errors.length} hata oluştu`);
-      } else {
-        success(`${mockResult.created} yeni hasta eklendi, ${mockResult.updated} hasta güncellendi`);
-      }
-
-      importModal.closeModal();
-      onRefresh();
-
-      // CSV import state'ini temizle
-      setCsvImport({
-        file: null,
-        mapping: {},
-        preview: [],
-        errors: []
-      });
-
-    } catch (err: unknown) {
-      console.error('CSV import error:', err);
-      error('CSV içe aktarma sırasında hata oluştu');
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [csvImport.file, success, warning, error, importModal, onRefresh]);
+  // handleCSVImportSubmit function removed - not used (CSV import functionality not implemented)
 
   const handleBulkTag = useCallback(async () => {
     try {

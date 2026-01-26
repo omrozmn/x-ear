@@ -1,6 +1,7 @@
 import { DollarSign, MoreVertical, Eye, Edit, FileText, File } from 'lucide-react';
 import { Button, Dropdown } from '@x-ear/ui-web';
 import type { SaleRead } from '@/api/generated';
+import { ExtendedSaleRead } from '@/types/extended-sales';
 
 interface SalesListProps {
   sales: SaleRead[];
@@ -158,8 +159,9 @@ export const SalesList: React.FC<SalesListProps> = ({
   };
 
   const calculatePaidAmount = (sale: SaleRead) => {
-    if (sale.paidAmount !== undefined && sale.paidAmount !== null) {
-      return parseFloat(String(sale.paidAmount)) || 0;
+    const extendedSale = sale as unknown as ExtendedSaleRead;
+    if (extendedSale.paidAmount !== undefined && extendedSale.paidAmount !== null) {
+      return parseFloat(String(extendedSale.paidAmount)) || 0;
     } else if (sale.paymentRecords && sale.paymentRecords.length > 0) {
       const paidRecords = sale.paymentRecords.filter((r) => (r.status || 'paid') === 'paid');
       return paidRecords.reduce((sum: number, record) => sum + (record.amount || 0), 0);
@@ -168,12 +170,13 @@ export const SalesList: React.FC<SalesListProps> = ({
   };
 
   const calculatePartyPayable = (sale: SaleRead) => {
+    const extendedSale = sale as unknown as ExtendedSaleRead;
     // Use patientPayment (which exists in schema) or calculate from other fields
-    const partyPayable = sale.patientPayment || sale.finalAmount;
+    const partyPayable = extendedSale.partyPayment || extendedSale.patientPayment || extendedSale.finalAmount;
     if (typeof partyPayable === 'number') return partyPayable;
-    const total = sale.totalAmount || 0;
-    const discount = sale.discountAmount || 0;
-    const sgk = sale.sgkCoverage || 0;
+    const total = extendedSale.totalAmount || 0;
+    const discount = extendedSale.discountAmount || 0;
+    const sgk = extendedSale.sgkCoverage || 0;
     return total - discount - sgk;
   };
 
@@ -236,6 +239,7 @@ export const SalesList: React.FC<SalesListProps> = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredSales.map((sale) => {
+              const extendedSale = sale as unknown as ExtendedSaleRead;
               const paid = calculatePaidAmount(sale);
               const remaining = calculateRemaining(sale);
               const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
@@ -260,10 +264,10 @@ export const SalesList: React.FC<SalesListProps> = ({
                     {renderBarcodeSerialInfo(sale)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                    {formatCurrency(sale.totalAmount || 0)}
+                    {formatCurrency(extendedSale.totalAmount || 0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600">
-                    {sale.discountAmount ? `-${formatCurrency(sale.discountAmount)}` : formatCurrency(0)}
+                    {extendedSale.discountAmount ? `-${formatCurrency(extendedSale.discountAmount)}` : formatCurrency(0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(calculateTotalWithVat(sale))}

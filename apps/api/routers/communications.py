@@ -30,10 +30,8 @@ router = APIRouter(prefix="/api/communications", tags=["Communications"])
 # ============================================================================
 
 def now_utc():
-
-
-def now_utc():
     return datetime.now(timezone.utc)
+
 
 @router.get("/messages", operation_id="listCommunicationMessages")
 async def list_messages(

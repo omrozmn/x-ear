@@ -43,11 +43,6 @@ export const SGKPage: React.FC = () => {
     setIsDocumentProcessorOpen(true);
   };
 
-  const _handleFileUpload = (files: File[]) => {
-    setUploadedFiles(files);
-    setIsDocumentProcessorOpen(true);
-  };
-
   const handleDocumentProcessingComplete = (results: unknown) => {
     setProcessingResults(results as ProcessingResult[]);
     setIsDocumentProcessorOpen(false);

@@ -171,8 +171,10 @@ export function PartyFilters({
           </div>
           <div className="flex flex-wrap gap-1.5">
             {statusOptions.map((option) => (
-              <button
+              <Button
                 key={option.value}
+                variant="ghost"
+                size="sm"
                 onClick={() => handleFilterChange('status',
                   (filters.status || []).includes(option.value)
                     ? (filters.status || []).filter((s) => s !== option.value)
@@ -187,7 +189,7 @@ export function PartyFilters({
                 {option.count !== undefined && option.count > 0 && (
                   <span className="ml-1 text-xs opacity-75">({option.count})</span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -200,8 +202,10 @@ export function PartyFilters({
           </div>
           <div className="flex flex-wrap gap-1.5">
             {segmentOptions.map((option) => (
-              <button
+              <Button
                 key={option.value}
+                variant="ghost"
+                size="sm"
                 onClick={() => handleFilterChange('segment',
                   (filters.segment || []).includes(option.value)
                     ? (filters.segment || []).filter((s) => s !== option.value)
@@ -216,7 +220,7 @@ export function PartyFilters({
                 {option.count !== undefined && option.count > 0 && (
                   <span className="ml-1 text-xs opacity-75">({option.count})</span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -229,14 +233,16 @@ export function PartyFilters({
           </div>
           <div className="flex flex-wrap gap-1.5">
             {acquisitionOptions.map((option) => (
-              <button
+              <Button
                 key={option.value}
+                variant="ghost"
+                size="sm"
                 onClick={() => handleFilterChange('acquisitionType',
                   filters.acquisitionType?.includes(option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement")
                     ? filters.acquisitionType.filter(s => s !== option.value)
                     : [...(filters.acquisitionType || []), option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement"]
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${filters.acquisitionType?.includes(option.value as any)
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${filters.acquisitionType?.includes(option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement")
                   ? 'bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-300'
                   : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
                   }`}
@@ -245,7 +251,7 @@ export function PartyFilters({
                 {option.count !== undefined && option.count > 0 && (
                   <span className="ml-1 text-xs opacity-75">({option.count})</span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -283,8 +289,10 @@ export function PartyFilters({
           </div>
           <div className="flex flex-wrap gap-1.5">
             {branchOptions.map((option) => (
-              <button
+              <Button
                 key={option.value}
+                variant="ghost"
+                size="sm"
                 onClick={() => handleFilterChange('branchId',
                   filters.branchId === option.value ? undefined : option.value
                 )}
@@ -297,7 +305,7 @@ export function PartyFilters({
                 {option.count !== undefined && option.count > 0 && (
                   <span className="ml-1 text-xs opacity-75">({option.count})</span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

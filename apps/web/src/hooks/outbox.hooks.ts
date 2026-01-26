@@ -210,8 +210,6 @@ export const useOutbox = () => {
         } catch (error) {
           // Network error or HTTP error (axios throws on non-2xx)
           // Increment retry count
-          const err = error as Record<string, unknown>;
-          const _isNetworkError = err?.code === 'ERR_NETWORK' || err?.message === 'Network Error';
           const updatedItem: OutboxItem = {
             ...item,
             retryCount: item.retryCount + 1,

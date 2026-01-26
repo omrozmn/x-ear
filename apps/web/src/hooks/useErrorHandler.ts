@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+// eslint-disable-next-line no-restricted-imports
 import { AxiosError } from 'axios';
 
 export interface AppError {
@@ -7,6 +8,19 @@ export interface AppError {
   statusCode?: number;
   details?: unknown;
   timestamp: Date;
+}
+
+interface AxiosErrorLike {
+  response?: {
+    status?: number;
+    data?: {
+      message?: string;
+      code?: string;
+      [key: string]: unknown;
+    };
+  };
+  message?: string;
+  code?: string;
 }
 
 export const useErrorHandler = () => {
@@ -18,13 +32,15 @@ export const useErrorHandler = () => {
 
     let appError: AppError;
 
-    if (error instanceof AxiosError) {
+    // Check if error looks like an Axios error
+    const axiosLike = error as AxiosErrorLike;
+    if (axiosLike && axiosLike.response) {
       // API errors
       appError = {
-        message: error.response?.data?.message || error.message || 'Bir API hatası oluştu',
-        code: error.code,
-        statusCode: error.response?.status,
-        details: error.response?.data,
+        message: axiosLike.response?.data?.message || axiosLike.message || 'Bir API hatası oluştu',
+        code: axiosLike.code || axiosLike.response?.data?.code,
+        statusCode: axiosLike.response?.status,
+        details: axiosLike.response?.data,
         timestamp: new Date()
       };
     } else if (error instanceof Error) {

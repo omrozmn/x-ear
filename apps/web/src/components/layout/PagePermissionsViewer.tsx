@@ -116,6 +116,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
     <>
       {/* Floating Button */}
       <button
+        data-allow-raw="true"
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
@@ -204,6 +205,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
                 </div>
               </div>
               <button
+                data-allow-raw="true"
                 onClick={() => setIsOpen(false)}
                 style={{
                   border: 'none',

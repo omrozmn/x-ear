@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -8,7 +8,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [
     react(),
-    TanStackRouterVite() as any,
+    TanStackRouterVite() as Plugin,
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {

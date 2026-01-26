@@ -2,8 +2,9 @@ import React, { Component, ReactNode } from 'react';
 import { isDev } from '../../utils/env';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
+import { withTranslation, WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
@@ -15,7 +16,7 @@ interface State {
   errorInfo?: React.ErrorInfo;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryBase extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
@@ -55,22 +56,23 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       // Default error UI
+      const { t } = this.props;
       return (
         <div className="min-h-[400px] flex items-center justify-center p-6">
           <div className="text-center max-w-md">
             <div className="mb-6">
               <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Bir Hata Oluştu
+                {t('error.title', { ns: 'common' })}
               </h2>
               <p className="text-gray-600 mb-4">
-                Sayfa yüklenirken beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin.
+                {t('error.unexpected', { ns: 'common' })}
               </p>
             </div>
 
             {isDev() && this.state.error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
-                <h3 className="font-medium text-red-800 mb-2">Hata Detayları:</h3>
+                <h3 className="font-medium text-red-800 mb-2">{t('error.details', { ns: 'common' })}:</h3>
                 <pre className="text-xs text-red-700 overflow-auto max-h-32">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
@@ -85,7 +87,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 className="inline-flex items-center"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Tekrar Dene
+                {t('retry', { ns: 'common' })}
               </Button>
               <Button
                 onClick={this.handleGoHome}
@@ -93,7 +95,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 className="inline-flex items-center"
               >
                 <Home className="w-4 h-4 mr-2" />
-                Ana Sayfa
+                {t('nav.dashboard', { ns: 'layout' })}
               </Button>
             </div>
           </div>
@@ -104,3 +106,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation('common')(ErrorBoundaryBase);

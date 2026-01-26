@@ -117,7 +117,7 @@ export function PartyFormModal({
         phone: initialData.phone || '',
         tcNumber: initialData.tcNumber || '',
         gender: initialData.gender || '',
-        birthDate: initialData.birthDate || '',
+        birthDate: (initialData.birthDate as string) || '',
         email: initialData.email || '',
         address: typeof initialData.address === 'string' ? initialData.address : initialData.addressFull || '',
         city: (getSafeAddressProperty(initialData.address, 'city') as string) || initialData.addressCity || '',
@@ -547,7 +547,7 @@ export function PartyFormModal({
                 Durum
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.status || ''}
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -566,7 +566,7 @@ export function PartyFormModal({
                 Segment
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.segment}
                   onChange={(e) => handleInputChange('segment', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -593,7 +593,7 @@ export function PartyFormModal({
                 Kazanım Türü
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.acquisitionType}
                   onChange={(e) => handleInputChange('acquisitionType', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
@@ -617,7 +617,7 @@ export function PartyFormModal({
                 Şube
               </label>
               <div className="relative">
-                <select
+                <select data-allow-raw="true"
                   value={formData.branchId}
                   onChange={(e) => handleInputChange('branchId', e.target.value)}
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"

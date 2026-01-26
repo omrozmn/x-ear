@@ -2,11 +2,13 @@ import { Button, Input } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { Eye, EyeOff, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
-import { useTheme } from './theme-provider';
+import { useTheme } from '../hooks/useTheme';
 import { LAST_LOGIN_CREDENTIALS } from '../constants/storage-keys';
 import '../styles/login-animations.css';
+import { useTranslation } from 'react-i18next';
 
 export function LoginForm() {
+  const { t } = useTranslation('auth');
   const { setTheme, theme } = useTheme();
 
   const getInitialCreds = () => {
@@ -42,7 +44,7 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
-      setError('Kullanıcı adı ve şifre gereklidir');
+      setError(t('errors.required_fields'));
       return;
     }
 
@@ -66,7 +68,7 @@ export function LoginForm() {
       const currentError = useAuthStore.getState().error;
 
       if (!currentError) {
-        setError('Giriş başarısız oldu. Lütfen tekrar deneyin.');
+        setError(t('errors.login_failed'));
       }
     }
   };
@@ -149,7 +151,7 @@ export function LoginForm() {
               X-EAR CRM
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              İşitme Cihazı Hasta Yönetim Sistemi
+              {t('subtitle')}
             </p>
           </div>
 
@@ -157,7 +159,7 @@ export function LoginForm() {
             <div className="space-y-4">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Kullanıcı Adı / Telefon / E-posta
+                  {t('username_label')}
                 </label>
                 <Input
                   id="username"
@@ -166,7 +168,7 @@ export function LoginForm() {
                   autoComplete="username"
                   required
                   className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
-                  placeholder="Kullanıcı adı, telefon veya e-posta"
+                  placeholder={t('username_placeholder')}
                   value={username}
                   onChange={(e) => {
                     setUsername(e.target.value);
@@ -178,7 +180,7 @@ export function LoginForm() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Şifre
+                  {t('password_label')}
                 </label>
                 <div className="relative">
                   <Input
@@ -188,7 +190,7 @@ export function LoginForm() {
                     autoComplete="current-password"
                     required
                     className="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
-                    placeholder="Şifrenizi girin"
+                    placeholder={t('password_placeholder')}
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -201,7 +203,7 @@ export function LoginForm() {
                     className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
-                    aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                    aria-label={showPassword ? t('hide_password') : t('show_password')}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -227,10 +229,10 @@ export function LoginForm() {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                  Giriş yapılıyor...
+                  {t('logging_in')}
                 </div>
               ) : (
-                'Giriş Yap'
+                t('login_action')
               )}
             </button>
 
@@ -255,7 +257,7 @@ export function LoginForm() {
                 }}
                 className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors font-medium"
               >
-                Şifremi Unuttum
+                {t('forgot_password')}
               </button>
             </div>
           </form>

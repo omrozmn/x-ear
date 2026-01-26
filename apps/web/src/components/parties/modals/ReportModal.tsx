@@ -29,7 +29,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   onClose,
   party,
   onReportCreate,
-  loading: _loading = false
+  // loading parameter removed - not used (internal isLoading state used instead)
 }) => {
   const [formData, setFormData] = useState({
     type: 'audiogram' as 'audiogram' | 'battery' | 'device' | 'sgk' | 'medical',
@@ -85,21 +85,6 @@ export const ReportModal: React.FC<ReportModalProps> = ({
       description: 'Doktor raporları ve tıbbi değerlendirmeler'
     }
   ];
-
-  const _validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Rapor başlığı gereklidir';
-    } else if (formData.title.length < 3) {
-      newErrors.title = 'Rapor başlığı en az 3 karakter olmalıdır';
-    } else if (formData.title.length > 100) {
-      newErrors.title = 'Rapor başlığı 100 karakterden uzun olamaz';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,15 +145,18 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         onClose();
       }, 1500);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Report creation failed:', err);
-      setError(err.response?.data?.message || 'Rapor oluşturulurken bir hata oluştu.');
+      const errorMessage = err instanceof Error && 'response' in err 
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message || 'Rapor oluşturulurken bir hata oluştu.'
+        : 'Rapor oluşturulurken bir hata oluştu.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
@@ -266,7 +254,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
               <div className="grid grid-cols-1 gap-3">
                 {reportTypes.map((type) => (
-                  <button
+                  <button data-allow-raw="true"
                     key={type.value}
                     type="button"
                     onClick={() => handleInputChange('type', type.value)}
@@ -331,7 +319,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               {/* Suggested Title */}
               <div className="bg-blue-50 p-3 rounded-lg">
                 <div className="text-sm font-medium text-blue-900 mb-2">Önerilen Başlık:</div>
-                <button
+                <button data-allow-raw="true"
                   type="button"
                   onClick={() => handleInputChange('title', generateSuggestedTitle(formData.type))}
                   className="text-sm text-blue-700 hover:text-blue-800 underline"

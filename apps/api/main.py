@@ -3,6 +3,7 @@ import logging
 import json
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import ORJSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -72,13 +73,16 @@ logger = logging.getLogger("x-ear")
 # separate_input_output_schemas=False: Fixes Orval generating 'unknown' types
 # by avoiding OpenAPI 3.1 anyOf syntax for nullable fields
 app = FastAPI(
-    title="X-Ear CRM API",
-    description="Auto-generated from Flask backend routes",
+    title="x-ear API",
+    description="Backend API for x-ear CRM",
     version="1.0.0",
-    docs_url="/docs",
     openapi_url="/openapi.json",
     separate_input_output_schemas=False,  # Critical: Orval compatibility
+    default_response_class=ORJSONResponse
 )
+
+import schemas.parties
+print(f"DEBUG: schemas.parties loaded from: {schemas.parties.__file__}")
 
 # ============================================================================
 # Health & Readiness Endpoints (Observability)

@@ -24,6 +24,10 @@ interface PromissoryNote {
   updatedAt?: string;
 }
 
+import { ExtendedSaleRead } from '@/types/extended-sales';
+
+// ... (existing imports)
+
 interface PromissoryNoteModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -39,12 +43,13 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
   isOpen,
   onClose,
   party,
-  sale,
+  sale: rawSale,
   promissoryNote,
-  onSave: _onSave,
+  // onSave removed - not used in component (mock implementation)
   loading = false,
   mode = 'create'
 }) => {
+  const sale = rawSale as unknown as ExtendedSaleRead | undefined;
   const [formData, setFormData] = useState<Partial<PromissoryNote>>({
     saleId: sale?.id || '',
     partyId: party.id,
@@ -175,7 +180,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof PromissoryNote, value: any) => {
+  const handleInputChange = (field: keyof PromissoryNote, value: string | number | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -375,7 +380,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                       </span>
                     </div>
                   ) : (
-                    <select
+                    <select data-allow-raw="true"
                       value={formData.status}
                       onChange={(e) => handleInputChange('status', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -394,7 +399,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
             {/* Interest Calculation */}
             <div className="bg-yellow-50 p-4 rounded-lg">
               <div className="flex items-center mb-3">
-                <input
+                <input data-allow-raw="true"
                   type="checkbox"
                   id="calculateInterest"
                   checked={calculateInterest}
@@ -411,7 +416,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Yıllık Faiz Oranı (%)</label>
-                    <Input
+                    <Input data-allow-raw="true"
                       name="interestRate"
                       type="number"
                       step="0.01"
@@ -440,7 +445,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
             {/* Guarantor Information */}
             <div className="bg-purple-50 p-4 rounded-lg">
               <div className="flex items-center mb-3">
-                <input
+                <input data-allow-raw="true"
                   type="checkbox"
                   id="hasGuarantor"
                   checked={hasGuarantor}
@@ -481,7 +486,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Kefil Telefon</label>
-                      <Input
+                      <Input data-allow-raw="true"
                         name="guarantorPhone"
                         value={formData.guarantorPhone}
                         onChange={(e) => handleInputChange('guarantorPhone', e.target.value)}

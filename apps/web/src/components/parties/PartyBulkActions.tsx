@@ -520,6 +520,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                   ) : currentAction.inputType === 'select' ? (
                     <div>
                       <select
+                        data-allow-raw="true"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         disabled={isProcessing}

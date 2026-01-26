@@ -16,9 +16,9 @@ vi.mock('@x-ear/ui-web', () => ({
 }));
 
 vi.mock('@/hooks/sgk/useSgkDocuments', () => ({
-  useSgkDocuments: (_partyId: string) => ({ data: { data: [{ id: 'temp-1', filename: 'f.txt', status: 'queued' }] }, isLoading: false, isError: false }),
-  useUploadSgkDocument: (_partyId: string) => ({ mutate: vi.fn(), isLoading: false }),
-  useDeleteSgkDocument: (_partyId: string) => ({ mutate: vi.fn() }),
+  useSgkDocuments: () => ({ data: { data: [{ id: 'temp-1', filename: 'f.txt', status: 'queued' }] }, isLoading: false, isError: false }),
+  useUploadSgkDocument: () => ({ mutate: vi.fn(), isLoading: false }),
+  useDeleteSgkDocument: () => ({ mutate: vi.fn() }),
 }));
 
 import DocumentList from '../DocumentList';

@@ -66,6 +66,7 @@ export const MobileDashboard: React.FC = () => {
                         <div className="grid grid-cols-4 gap-4">
                             {quickActions.map((action, idx) => (
                                 <button
+                                    data-allow-raw="true"
                                     key={idx}
                                     onClick={() => {
                                         navigate({ to: action.to });

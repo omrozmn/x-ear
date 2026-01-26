@@ -80,8 +80,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Campaigns
       summary: Create Campaign
@@ -146,7 +144,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: campaign_id
         in: path
         required: true
@@ -209,7 +206,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: campaign_id
         in: path
         required: true
@@ -364,8 +360,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Parties
       summary: Create Party
@@ -514,7 +508,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -569,8 +562,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/parties/bulk-upload:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Parties
       summary: Bulk Upload Parties
@@ -681,8 +672,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Inventory
       summary: Create Inventory
@@ -709,6 +698,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/inventory/stats:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Stats
+      description: Get inventory stats
+      operationId: listInventoryStats
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InventoryStats_'
+      security:
+      - OAuth2PasswordBearer: []
   /api/inventory/search:
     get:
       tags:
@@ -839,22 +844,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/inventory/stats:
-    get:
-      tags:
-      - Inventory
-      summary: Get Inventory Stats
-      description: Get inventory stats
-      operationId: listInventoryStats
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_InventoryStats_'
-      security:
-      - OAuth2PasswordBearer: []
   /api/inventory/low-stock:
     get:
       tags:
@@ -916,6 +905,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/inventory/categories:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Categories
+      description: Get unique inventory categories
+      operationId: listInventoryCategories
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_str__'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/inventory/brands:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Brands
+      description: Get unique inventory brands
+      operationId: listInventoryBrands
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_str__'
+      security:
+      - OAuth2PasswordBearer: []
   /api/inventory/{item_id}:
     get:
       tags:
@@ -954,7 +975,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: item_id
         in: path
         required: true
@@ -1017,7 +1037,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: item_id
         in: path
         required: true
@@ -1172,8 +1191,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Sales
       summary: Create Sale
@@ -1236,7 +1253,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1298,7 +1314,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1359,7 +1374,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1394,7 +1408,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: sale_id
         in: path
         required: true
@@ -1427,8 +1440,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sales/recalc:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Sales
       summary: Recalc Sales
@@ -1478,7 +1489,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -1530,7 +1540,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: assignment_id
         in: path
         required: true
@@ -1566,7 +1575,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: assignment_id
         in: path
         required: true
@@ -1588,8 +1596,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/pricing-preview:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Sales
       summary: Pricing Preview
@@ -1617,8 +1623,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/auth/lookup-phone:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Lookup Phone
@@ -1645,8 +1649,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/forgot-password:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Forgot Password
@@ -1679,7 +1681,6 @@ paths:
       description: Verify OTP for phone verification or password reset
       operationId: createAuthVerifyOtp
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: authorization
         in: header
         required: false
@@ -1709,8 +1710,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/reset-password:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Reset Password
@@ -1737,8 +1736,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/login:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Login
@@ -1765,8 +1762,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/refresh:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Refresh Token
@@ -1799,8 +1794,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/auth/send-verification-otp:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Send Verification Otp
@@ -1829,8 +1822,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/auth/set-password:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Auth
       summary: Set Password
@@ -1930,8 +1921,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Appointments
       summary: Create Appointment
@@ -2106,7 +2095,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2169,7 +2157,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2205,7 +2192,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2235,7 +2221,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: appointment_id
         in: path
         required: true
@@ -2431,8 +2416,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Devices
       summary: Create Device
@@ -2490,8 +2473,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Devices
       summary: Create Device Brand
@@ -2570,7 +2551,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: device_id
         in: path
         required: true
@@ -2632,7 +2612,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: device_id
         in: path
         required: true
@@ -2659,8 +2638,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/notifications:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Notifications
       summary: Create Notification
@@ -2744,7 +2721,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: notification_id
         in: path
         required: true
@@ -2774,7 +2750,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: notification_id
         in: path
         required: true
@@ -2891,8 +2866,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Notifications
       summary: Set User Notification Settings
@@ -2949,8 +2922,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Branches
       summary: Create Branch
@@ -2987,7 +2958,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: branch_id
         in: path
         required: true
@@ -3544,8 +3514,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Roles
       summary: Create Role
@@ -3582,7 +3550,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -3645,7 +3612,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -3680,7 +3646,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -3745,19 +3710,19 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/payment-records:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Payments
       summary: Create Payment Record
       description: Create a new payment record
       operationId: createPaymentRecords
+      security:
+      - OAuth2PasswordBearer: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/routers__payments__PaymentRecordCreate'
-        required: true
       responses:
         '201':
           description: Successful Response
@@ -3771,8 +3736,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - Payments
+      summary: List Payment Records
+      description: List all payment records for the tenant
+      operationId: listPaymentRecords
       security:
       - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 50
+          title: Per Page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_PaymentRecordRead__'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/parties/{party_id}/payment-records:
     get:
       tags:
@@ -3829,7 +3831,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: record_id
         in: path
         required: true
@@ -3894,8 +3895,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/promissory-notes:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Payments
       summary: Create Promissory Notes
@@ -3932,7 +3931,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: note_id
         in: path
         required: true
@@ -3968,7 +3966,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: note_id
         in: path
         required: true
@@ -4064,8 +4061,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Users
       summary: Create User
@@ -4109,8 +4104,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Users
       summary: Update Me
@@ -4139,8 +4132,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/users/me/password:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Users
       summary: Change Password
@@ -4176,7 +4167,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -4247,8 +4237,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Tenant Users
       summary: Create Tenant User
@@ -4312,7 +4300,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -4354,8 +4341,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Tenant Users
       summary: Update Tenant Company
@@ -4461,8 +4446,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Suppliers
       summary: Create Supplier
@@ -4583,7 +4566,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: supplier_id
         in: path
         required: true
@@ -4670,8 +4652,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Settings
       summary: Update Settings
@@ -4701,8 +4681,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/auth/login:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Admin Login
@@ -4729,8 +4707,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/users:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Create Admin User
@@ -4861,7 +4837,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -4925,8 +4900,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Create Admin Ticket
@@ -4962,7 +4935,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: ticket_id
         in: path
         required: true
@@ -4997,7 +4969,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: ticket_id
         in: path
         required: true
@@ -5024,8 +4995,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/debug/switch-role:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Debug Switch Role
@@ -5069,8 +5038,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/debug/switch-tenant:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Debug Switch Tenant
@@ -5098,8 +5065,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/debug/exit-impersonation:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin
       summary: Debug Exit Impersonation
@@ -5201,8 +5166,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Tenants
       summary: Create Tenant
@@ -5266,7 +5229,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5357,7 +5319,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5393,7 +5354,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5435,7 +5395,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5470,7 +5429,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5538,7 +5496,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5663,7 +5620,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5704,7 +5660,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -5820,8 +5775,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Plans
       summary: Create Plan
@@ -5886,7 +5839,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: plan_id
         in: path
         required: true
@@ -5997,8 +5949,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Addons
       summary: Create Addon
@@ -6063,7 +6013,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: addon_id
         in: path
         required: true
@@ -6251,8 +6200,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Create Invoice
@@ -6296,8 +6243,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Add To Print Queue
@@ -6340,8 +6285,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Create Invoice Template
@@ -6370,8 +6313,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/invoices/batch-generate:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Batch Generate Invoices
@@ -6435,7 +6376,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -6528,7 +6468,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -6550,8 +6489,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/invoices/bulk-upload:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoices
       summary: Bulk Upload Invoices
@@ -6594,8 +6531,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Upload Sgk Document
@@ -6678,8 +6613,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/upload:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Upload And Process Files
@@ -6735,8 +6668,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/e-receipt/query:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Query E Receipt
@@ -6802,8 +6733,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/patient-rights/query:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Query Patient Rights
@@ -6831,8 +6760,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/sgk/workflow/create:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Create Sgk Workflow
@@ -6868,7 +6795,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: workflow_id
         in: path
         required: true
@@ -6931,7 +6857,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: workflow_id
         in: path
         required: true
@@ -6986,8 +6911,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/seed-test-patients:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SGK
       summary: Seed Test Patients
@@ -7143,8 +7066,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/deliverability/snapshot:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - admin
       summary: Create daily metrics snapshot
@@ -7259,7 +7180,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: bounce_id
         in: path
         required: true
@@ -7281,8 +7201,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/spam-preview:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - admin
       summary: Preview spam score
@@ -7530,7 +7448,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: approval_id
         in: path
         required: true
@@ -7566,7 +7483,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: approval_id
         in: path
         required: true
@@ -7688,8 +7604,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/complaints/process-fbl:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - admin
       summary: Process FBL report
@@ -7893,8 +7807,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Permissions
       summary: Create Permission
@@ -7975,7 +7887,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_name
         in: path
         required: true
@@ -8017,8 +7928,6 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_OcrHealthResponse_'
   /api/ocr/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Init Database
@@ -8035,8 +7944,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/initialize:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Initialize Nlp Endpoint
@@ -8053,8 +7960,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/process:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Process Document
@@ -8083,8 +7988,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/similarity:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Calculate Similarity
@@ -8113,8 +8016,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/entities:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Extract Entities
@@ -8143,8 +8044,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/extract_patient:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Extract Patient Name
@@ -8173,8 +8072,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ocr/debug_ner:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Debug Ner
@@ -8233,8 +8130,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - OCR
       summary: Create Job
@@ -8292,8 +8187,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/upload/presigned:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Upload
       summary: Get Presigned Upload Url
@@ -8429,7 +8322,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8589,7 +8481,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8625,7 +8516,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8786,7 +8676,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8821,7 +8710,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8922,7 +8810,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -8957,7 +8844,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -9085,8 +8971,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - CashRecords
       summary: Create Cash Record
@@ -9290,8 +9174,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - PaymentIntegrations
       summary: Update Paytr Config
@@ -9319,8 +9201,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/payments/pos/paytr/initiate:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - PaymentIntegrations
       summary: Initiate Paytr Payment
@@ -9351,8 +9231,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/payments/pos/paytr/callback:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - PaymentIntegrations
       summary: Paytr Callback
@@ -9515,7 +9393,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -9551,7 +9428,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -9626,8 +9502,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_List_DetailedPlanRead__'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Plans
       summary: Create Plan
@@ -9680,7 +9554,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: plan_id
         in: path
         required: true
@@ -9748,8 +9621,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_List_AddonRead__'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Addons
       summary: Create Addon
@@ -9802,7 +9673,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: addon_id
         in: path
         required: true
@@ -9857,8 +9727,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/subscriptions/subscribe:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Subscriptions
       summary: Subscribe
@@ -9887,8 +9755,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/subscriptions/complete-signup:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Subscriptions
       summary: Complete Signup
@@ -9933,8 +9799,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/subscriptions/register-and-subscribe:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Subscriptions
       summary: Register And Subscribe
@@ -9947,7 +9811,7 @@ paths:
               $ref: '#/components/schemas/RegisterAndSubscribeRequest'
         required: true
       responses:
-        '200':
+        '201':
           description: Successful Response
           content:
             application/json:
@@ -9961,8 +9825,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/settings/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Init Db
@@ -9994,8 +9856,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Update Settings
@@ -10027,8 +9887,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/settings/cache/clear:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Clear Cache
@@ -10045,8 +9903,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/settings/backup:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminSettings
       summary: Trigger Backup
@@ -10092,8 +9948,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AdminRoles
       summary: Create Admin Role
@@ -10158,7 +10012,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -10249,7 +10102,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: role_id
         in: path
         required: true
@@ -10359,7 +10211,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: user_id
         in: path
         required: true
@@ -10428,8 +10279,6 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_TurnstileConfigResponse_'
   /api/register-phone:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Registration
       summary: Register Phone
@@ -10455,8 +10304,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/verify-registration-otp:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Registration
       summary: Verify Registration Otp
@@ -10483,8 +10330,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/api-keys/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin API Keys
       summary: Init Db
@@ -10548,8 +10393,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin API Keys
       summary: Create Api Key
@@ -10815,8 +10658,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/admin/integrations/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Integrations
       summary: Init Db
@@ -10848,8 +10689,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Integrations
       summary: Update Vatan Sms Config
@@ -10893,8 +10732,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Integrations
       summary: Update Birfatura Config
@@ -11058,8 +10895,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Invoices
       summary: Create Admin Invoice
@@ -11125,7 +10960,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -11176,8 +11010,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/marketplaces/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Marketplaces
       summary: Init Db
@@ -11224,8 +11056,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Marketplaces
       summary: Create Integration
@@ -11262,7 +11092,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: integration_id
         in: path
         required: true
@@ -11284,8 +11113,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/notifications/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Notifications
       summary: Init Db
@@ -11358,8 +11185,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/notifications/send:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Notifications
       summary: Send Notification
@@ -11449,8 +11274,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Notifications
       summary: Create Template
@@ -11487,7 +11310,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: template_id
         in: path
         required: true
@@ -11792,8 +11614,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/production/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Production
       summary: Init Db
@@ -11849,7 +11669,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: order_id
         in: path
         required: true
@@ -11877,8 +11696,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/scan-queue/init-db:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Scan Queue
       summary: Init Db
@@ -11934,7 +11751,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: scan_id
         in: path
         required: true
@@ -12011,8 +11827,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Admin Suppliers
       summary: Create Supplier
@@ -12077,7 +11891,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: supplier_id
         in: path
         required: true
@@ -12149,8 +11962,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/automation/sgk/process:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Automation
       summary: Trigger Sgk Processing
@@ -12167,8 +11978,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/automation/backup:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Automation
       summary: Trigger Backup
@@ -12275,8 +12084,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/affiliates/register:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Affiliates
       summary: Register Affiliate
@@ -12289,7 +12096,7 @@ paths:
               $ref: '#/components/schemas/AffiliateCreate'
         required: true
       responses:
-        '200':
+        '201':
           description: Successful Response
           content:
             application/json:
@@ -12308,20 +12115,12 @@ paths:
       summary: Login Affiliate
       description: Login affiliate
       operationId: createAffiliateLogin
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-      - name: email
-        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AffiliateLoginRequest'
         required: true
-        schema:
-          type: string
-          title: Email
-      - name: password
-        in: query
-        required: true
-        schema:
-          type: string
-          title: Password
       responses:
         '200':
           description: Successful Response
@@ -12369,7 +12168,6 @@ paths:
       description: Update affiliate payment info
       operationId: updateAffiliate
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: affiliate_id
         in: path
         required: true
@@ -12457,7 +12255,6 @@ paths:
       description: Toggle affiliate active/inactive status
       operationId: updateAffiliateToggleStatus
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: affiliate_id
         in: path
         required: true
@@ -12550,8 +12347,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/checkout/session:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Checkout
       summary: Create Checkout Session
@@ -12578,8 +12373,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/checkout/confirm:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Checkout
       summary: Confirm Payment
@@ -12642,7 +12435,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: party_id
         in: path
         required: true
@@ -12707,7 +12499,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: replacement_id
         in: path
         required: true
@@ -12743,7 +12534,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: replacement_id
         in: path
         required: true
@@ -12779,7 +12569,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -12800,8 +12589,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /EFatura/sendDocument:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Document
@@ -12817,8 +12604,6 @@ paths:
       - OAuth2PasswordBearer: []
   /EFatura/sendBasicInvoice:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Basic Invoice
@@ -12834,8 +12619,6 @@ paths:
       - OAuth2PasswordBearer: []
   /EFatura/Create:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Create Invoice
@@ -12859,7 +12642,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -12888,7 +12670,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -12909,8 +12690,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /birfatura/sync-invoices:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Sync Invoices
@@ -12938,8 +12717,6 @@ paths:
       - OAuth2PasswordBearer: []
   /OutEBelgeV2/SendDocument:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Document V2
@@ -12955,8 +12732,6 @@ paths:
       - OAuth2PasswordBearer: []
   /OutEBelgeV2/SendBasicInvoiceFromModel:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Send Basic Invoice From Model
@@ -12972,8 +12747,6 @@ paths:
       - OAuth2PasswordBearer: []
   /Musteri/FirmaMusteriGetir:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Search Firm Customers Mock
@@ -13001,8 +12774,6 @@ paths:
       - OAuth2PasswordBearer: []
   /Firma/FirmaPKBilgisiGetir:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Get Firm Pk Info Mock
@@ -13030,8 +12801,6 @@ paths:
       - OAuth2PasswordBearer: []
   /Firma/FirmaAdresBilgisiGetir:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - BirFatura
       summary: Get Firm Address Info Mock
@@ -13073,8 +12842,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Apps
       summary: Create App
@@ -13137,7 +12904,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: app_id
         in: path
         required: true
@@ -13199,7 +12965,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: app_id
         in: path
         required: true
@@ -13234,7 +12999,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: app_id
         in: path
         required: true
@@ -13261,8 +13025,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/pos/commission/calculate:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - POS Commission
       summary: Calculate Commission Endpoint
@@ -13305,8 +13067,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/pos/commission/installment-options:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - POS Commission
       summary: Get Installment Options
@@ -13369,7 +13129,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: tenant_id
         in: path
         required: true
@@ -13410,8 +13169,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - POS Commission
       summary: Update System Rates
@@ -13487,8 +13244,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /registrations/bulk:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - UTS
       summary: Start Bulk Registration
@@ -13554,7 +13309,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: job_id
         in: path
         required: true
@@ -13629,8 +13383,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS
       summary: Create Package
@@ -13667,7 +13419,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: package_id
         in: path
         required: true
@@ -13737,8 +13488,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     put:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Update Sms Config
@@ -13782,8 +13531,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Request Sms Header
@@ -13820,7 +13567,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: header_id
         in: path
         required: true
@@ -13887,8 +13633,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Create Target Audience
@@ -13925,7 +13669,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: document_type
         in: query
         required: false
@@ -14009,8 +13752,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/sms/documents/submit:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMS Integration
       summary: Submit Sms Documents
@@ -14046,7 +13787,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: name
         in: query
         required: false
@@ -14118,7 +13858,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: header_id
         in: path
         required: true
@@ -14186,8 +13925,6 @@ paths:
               schema: {}
   /api/invoices/create-dynamic:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoice Management
       summary: Create Dynamic Invoice
@@ -14251,7 +13988,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -14286,8 +14022,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Invoice Management
       summary: Update Invoice Settings
@@ -14323,7 +14057,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -14353,7 +14086,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -14383,7 +14115,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: invoice_id
         in: path
         required: true
@@ -14552,8 +14283,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/communications/messages/send-sms:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Send Sms
@@ -14570,7 +14299,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_SMSLogRead_'
         '422':
           description: Validation Error
           content:
@@ -14581,8 +14311,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/communications/messages/send-email:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Send Email
@@ -14599,7 +14327,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_EmailLogRead_'
         '422':
           description: Validation Error
           content:
@@ -14672,7 +14401,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_CommunicationTemplateRead__'
         '422':
           description: Validation Error
           content:
@@ -14680,13 +14410,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Create Template
       description: Create a new communication template
-      operationId: createCommunicationTemplates
+      operationId: createCommunicationTemplate
       security:
       - OAuth2PasswordBearer: []
       requestBody:
@@ -14694,13 +14422,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/routers__communications__TemplateCreate'
+              $ref: '#/components/schemas/schemas__communications__TemplateCreate'
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationTemplateRead_'
         '422':
           description: Validation Error
           content:
@@ -14728,7 +14457,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationTemplateRead_'
         '422':
           description: Validation Error
           content:
@@ -14744,7 +14474,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: template_id
         in: path
         required: true
@@ -14756,13 +14485,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/routers__communications__TemplateCreate'
+              $ref: '#/components/schemas/schemas__communications__TemplateCreate'
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationTemplateRead_'
         '422':
           description: Validation Error
           content:
@@ -14884,7 +14614,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_CommunicationHistoryRead__'
         '422':
           description: Validation Error
           content:
@@ -14892,8 +14623,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Communications
       summary: Create Communication History
@@ -14912,7 +14641,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_CommunicationHistoryRead_'
         '422':
           description: Validation Error
           content:
@@ -14978,8 +14708,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - SMTP Configuration
       summary: Create Or Update Smtp Config
@@ -15038,7 +14766,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: Idempotency-Key
         in: header
         required: false
@@ -15210,7 +14937,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: Idempotency-Key
         in: header
         required: false
@@ -15238,8 +14964,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /tool-api/email/notify:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - tool-api
       summary: Send email notification from AI Layer
@@ -15269,8 +14993,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/commissions/create:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - Commission Ledger
       summary: Create Commission
@@ -15306,7 +15028,6 @@ paths:
       security:
       - OAuth2PasswordBearer: []
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: commission_id
         in: query
         required: true
@@ -15410,8 +15131,6 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_SchemaRegistryResponse_'
   /api/ai/chat:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Chat
       summary: Process natural language chat message
@@ -15447,10 +15166,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/ai/actions:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Actions
       summary: Create an action plan from intent
@@ -15523,7 +15242,6 @@ paths:
       description: Approve an action for execution.
       operationId: approve_action_api_ai_actions__action_id__approve_post
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: action_id
         in: path
         required: true
@@ -15563,7 +15281,6 @@ paths:
       description: Execute an action plan.
       operationId: execute_action_api_ai_actions__action_id__execute_post
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: action_id
         in: path
         required: true
@@ -15918,7 +15635,6 @@ paths:
       description: Acknowledge an alert to mark it as handled.
       operationId: acknowledge_alert_api_ai_alerts__alert_id__acknowledge_post
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       - name: alert_id
         in: path
         required: true
@@ -15944,8 +15660,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/alerts/check:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Status
       summary: Check metrics and emit alerts
@@ -15972,12 +15686,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ai__api__admin__KillSwitchStatusResponse'
+                $ref: '#/components/schemas/KillSwitchStatusResponse'
         '403':
           description: Admin permissions required
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Admin
       summary: Manage kill switch
@@ -16045,8 +15757,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/admin/cleanup-expired:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Admin
       summary: Cleanup expired approvals
@@ -16129,8 +15839,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/composer/execute:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Composer
       summary: Execute Tool
@@ -16161,8 +15869,6 @@ paths:
       - OAuth2PasswordBearer: []
   /api/ai/composer/analyze:
     post:
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
       tags:
       - AI Composer
       summary: Analyze Documents
@@ -16198,17 +15904,15 @@ paths:
       security:
       - OAuth2PasswordBearer: []
 components:
-  parameters:
-    - $ref: '#/components/parameters/IdempotencyKey'
-    IdempotencyKey:
-      name: Idempotency-Key
-      in: header
-      description: Unique key for request idempotency (UUID v4 recommended)
-      required: true
-      schema:
-        type: string
-        format: uuid
   schemas:
+    AIPhaseEnum:
+      type: string
+      enum:
+      - read_only
+      - proposal
+      - execution
+      title: AIPhaseEnum
+      description: AI Layer operational phase.
     AISettingsResponse:
       properties:
         enabled:
@@ -16251,41 +15955,45 @@ components:
           type: boolean
           title: Enabled
           description: Whether AI is enabled
-        available:
-          type: boolean
-          title: Available
-          description: Whether AI is currently available
         phase:
           allOf:
-          - $ref: '#/components/schemas/PhaseStatusResponse'
-          description: Phase status
-        kill_switch:
-          allOf:
-          - $ref: '#/components/schemas/ai__api__status__KillSwitchStatusResponse'
-          description: Kill switch status
-        usage:
-          allOf:
-          - $ref: '#/components/schemas/UsageStatusResponse'
-          description: Usage status
-        model:
-          allOf:
-          - $ref: '#/components/schemas/ModelStatusResponse'
-          description: Model status
-        timestamp:
+          - $ref: '#/components/schemas/AIPhaseEnum'
+          description: Current AI phase
+        modelId:
           type: string
-          title: Timestamp
-          description: Status timestamp
+          title: Modelid
+          description: Active model ID
+        modelVersion:
+          type: string
+          title: Modelversion
+          description: Active model version
+        modelAvailable:
+          type: boolean
+          title: Modelavailable
+          description: Whether model is reachable
+        killSwitchActive:
+          type: boolean
+          title: Killswitchactive
+          default: false
+        quotaRemaining:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Quotaremaining
+        quotaLimit:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Quotalimit
       type: object
       required:
       - enabled
-      - available
       - phase
-      - kill_switch
-      - usage
-      - model
-      - timestamp
+      - modelId
+      - modelVersion
+      - modelAvailable
       title: AIStatusResponse
-      description: Complete AI status response.
+      description: Response schema for AI status endpoint.
     ActionPlanResponse:
       properties:
         plan_id:
@@ -16327,7 +16035,6 @@ components:
           type: string
           title: Description
         parameters:
-          - $ref: '#/components/parameters/IdempotencyKey'
           type: object
           title: Parameters
         risk_level:
@@ -16920,7 +16627,9 @@ components:
     AffiliateCreate:
       properties:
         name:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Name
           description: Affiliate name
         email:
@@ -16934,6 +16643,12 @@ components:
           - type: 'null'
           title: Phone
           description: Phone number
+        accountHolderName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountholdername
+          description: Account holder name
         companyName:
           anyOf:
           - type: string
@@ -16968,11 +16683,27 @@ components:
           description: Password
       type: object
       required:
-      - name
       - email
       - password
       title: AffiliateCreate
       description: Schema for creating an affiliate
+    AffiliateLoginRequest:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+          description: Email
+        password:
+          type: string
+          title: Password
+          description: Password
+      type: object
+      required:
+      - email
+      - password
+      title: AffiliateLoginRequest
+      description: Schema for affiliate login
     AffiliateRead:
       properties:
         createdAt:
@@ -16989,12 +16720,10 @@ components:
           - type: 'null'
           title: Updatedat
           description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
         name:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Name
           description: Affiliate name
         email:
@@ -17008,6 +16737,11 @@ components:
           - type: 'null'
           title: Phone
           description: Phone number
+        accountHolderName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountholdername
         companyName:
           anyOf:
           - type: string
@@ -17036,9 +16770,12 @@ components:
           title: Isactive
           description: Is affiliate active
           default: true
-        referralCode:
+        id:
+          title: Id
+          description: Unique identifier
+        code:
           type: string
-          title: Referralcode
+          title: Code
           description: Referral code
         totalReferrals:
           type: integer
@@ -17069,10 +16806,9 @@ components:
           description: Last login
       type: object
       required:
-      - id
-      - name
       - email
-      - referralCode
+      - id
+      - code
       title: AffiliateRead
       description: Schema for reading an affiliate
     AffiliateUpdate:
@@ -17179,7 +16915,6 @@ components:
           title: Tool Schema Version
           description: Schema version of the tool
         parameters:
-          - $ref: '#/components/parameters/IdempotencyKey'
           type: object
           title: Parameters
           description: Tool parameters
@@ -18524,6 +18259,14 @@ components:
           type: array
           title: Actions
           description: Available actions based on context
+        intentType:
+          type: string
+          enum:
+          - search
+          - action
+          title: Intenttype
+          description: Heuristic-based intent separation
+          default: search
       type: object
       title: AutocompleteResponse
       description: Response containing entities and context-aware actions.
@@ -19895,16 +19638,10 @@ components:
           - type: 'null'
           title: Updatedat
           description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
         affiliateId:
-          type: string
           title: Affiliateid
           description: Affiliate ID
         tenantId:
-          type: string
           title: Tenantid
           description: Tenant ID
         amount:
@@ -19916,6 +19653,9 @@ components:
           title: Status
           description: Commission status
           default: pending
+        id:
+          title: Id
+          description: Unique identifier
         tenantName:
           anyOf:
           - type: string
@@ -19931,12 +19671,186 @@ components:
           description: Paid at
       type: object
       required:
-      - id
       - affiliateId
       - tenantId
       - amount
+      - id
       title: CommissionRead
       description: Schema for reading a commission
+    CommunicationHistoryRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        partyId:
+          type: string
+          title: Partyid
+        campaignId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Campaignid
+        templateId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Templateid
+        smsLogId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Smslogid
+        emailLogId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Emaillogid
+        communicationType:
+          type: string
+          title: Communicationtype
+        direction:
+          type: string
+          title: Direction
+        subject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subject
+        content:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Content
+        contactMethod:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contactmethod
+        status:
+          type: string
+          title: Status
+          default: completed
+        priority:
+          type: string
+          title: Priority
+          default: normal
+        metadata:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Metadata
+          default: {}
+        initiatedBy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Initiatedby
+      type: object
+      required:
+      - id
+      - partyId
+      - communicationType
+      - direction
+      title: CommunicationHistoryRead
+      description: Schema for reading CommunicationHistory - replaces to_dict()
+    CommunicationTemplateRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        name:
+          type: string
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        templateType:
+          type: string
+          title: Templatetype
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        subject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subject
+        bodyText:
+          type: string
+          title: Bodytext
+        bodyHtml:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodyhtml
+        variables:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Variables
+          default: []
+        isActive:
+          type: boolean
+          title: Isactive
+          default: true
+        isSystem:
+          type: boolean
+          title: Issystem
+          default: false
+        usageCount:
+          type: integer
+          title: Usagecount
+          default: 0
+        lastUsedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastusedat
+      type: object
+      required:
+      - id
+      - name
+      - templateType
+      - bodyText
+      title: CommunicationTemplateRead
+      description: Schema for reading CommunicationTemplate - replaces to_dict()
     CompanyInfoUpdate:
       properties:
         name:
@@ -20577,9 +20491,9 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - additionalProperties:
-              type: string
-            type: object
+          - type: object
+          - items: {}
+            type: array
           - type: 'null'
           title: Features
           description: Plan features
@@ -21435,7 +21349,7 @@ components:
           type: number
           title: Kdvrate
           description: VAT rate
-          default: 18.0
+          default: 20.0
         features:
           items:
             type: string
@@ -21938,6 +21852,150 @@ components:
       - totalPages
       title: EmailLogListResponse
       description: Schema for email log list response.
+    EmailLogRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        campaignId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Campaignid
+        partyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partyid
+        templateId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Templateid
+        toEmail:
+          type: string
+          title: Toemail
+        fromEmail:
+          type: string
+          title: Fromemail
+        ccEmails:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Ccemails
+          default: []
+        bccEmails:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Bccemails
+          default: []
+        subject:
+          type: string
+          title: Subject
+        bodyText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodytext
+        bodyHtml:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodyhtml
+        attachments:
+          anyOf:
+          - items:
+              type: object
+            type: array
+          - type: 'null'
+          title: Attachments
+          default: []
+        status:
+          type: string
+          title: Status
+        providerResponse:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Providerresponse
+        providerMessageId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Providermessageid
+        sentAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Sentat
+        deliveredAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deliveredat
+        openedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Openedat
+        clickedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Clickedat
+        bouncedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Bouncedat
+        errorMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Errormessage
+        retryCount:
+          type: integer
+          title: Retrycount
+          default: 0
+        cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost
+      type: object
+      required:
+      - id
+      - toEmail
+      - fromEmail
+      - subject
+      - status
+      title: EmailLogRead
+      description: Schema for reading EmailLog - replaces to_dict()
     EmailLogResponse:
       properties:
         createdAt:
@@ -22899,7 +22957,7 @@ components:
         vatRate:
           type: number
           title: Vatrate
-          default: 18.0
+          default: 20.0
         priceIncludesKdv:
           type: boolean
           title: Priceincludeskdv
@@ -22923,7 +22981,9 @@ components:
           title: Warranty
           default: 0
         tenantId:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Tenantid
         branchId:
           anyOf:
@@ -22940,7 +23000,6 @@ components:
       required:
       - name
       - brand
-      - tenantId
       title: InventoryItemCreate
     InventoryItemRead:
       properties:
@@ -23024,7 +23083,7 @@ components:
         vatRate:
           type: number
           title: Vatrate
-          default: 18.0
+          default: 20.0
         priceIncludesKdv:
           type: boolean
           title: Priceincludeskdv
@@ -23295,6 +23354,27 @@ components:
           title: Items
           description: Invoice items
           default: []
+        taxOffice:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxoffice
+        returnReferenceNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Returnreferencenumber
+        returnReferenceDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Returnreferencedate
+        metadata:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Metadata
       type: object
       title: InvoiceCreate
       description: Schema for creating an invoice
@@ -23629,6 +23709,31 @@ components:
           - type: string
           - type: 'null'
           title: Birfaturaapprovedat
+        taxOffice:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxoffice
+        returnReferenceNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Returnreferencenumber
+        returnReferenceDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Returnreferencedate
+        remoteMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remotemessage
+        metadata:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Metadata
       type: object
       title: InvoiceRead
       description: Schema for reading invoice data - matches Invoice.to_dict() output
@@ -23660,6 +23765,7 @@ components:
       - paid
       - cancelled
       - failed
+      - processing
       title: InvoiceStatus
     InvoiceSyncRequest:
       properties:
@@ -23840,6 +23946,36 @@ components:
       - active
       title: KillSwitchResponse
       description: Response from kill switch operation.
+    KillSwitchStatusResponse:
+      properties:
+        global_switch:
+          type: object
+          title: Global Switch
+          description: Global kill switch status
+        tenant_switches:
+          items:
+            type: object
+          type: array
+          title: Tenant Switches
+          description: Tenant kill switches
+        capability_switches:
+          items:
+            type: object
+          type: array
+          title: Capability Switches
+          description: Capability kill switches
+        any_active:
+          type: boolean
+          title: Any Active
+          description: Whether any kill switch is active
+      type: object
+      required:
+      - global_switch
+      - tenant_switches
+      - capability_switches
+      - any_active
+      title: KillSwitchStatusResponse
+      description: Kill switch status response.
     LatencyMetricsResponse:
       properties:
         count:
@@ -24085,27 +24221,6 @@ components:
           title: Search
       type: object
       title: MockSearchRequest
-    ModelStatusResponse:
-      properties:
-        provider:
-          type: string
-          title: Provider
-          description: Model provider
-        model_id:
-          type: string
-          title: Model Id
-          description: Model ID
-        available:
-          type: boolean
-          title: Available
-          description: Whether model is available
-      type: object
-      required:
-      - provider
-      - model_id
-      - available
-      title: ModelStatusResponse
-      description: Model status.
     MonthlyCount:
       properties:
         year:
@@ -24847,7 +24962,7 @@ components:
           title: Email
         birthDate:
           anyOf:
-          - type: string
+          - {}
           - type: 'null'
           title: Birthdate
         dob:
@@ -25774,32 +25889,6 @@ components:
       title: PermissionRead
       description: Schema for reading a permission - matches Permission.to_dict()
         output
-    PhaseStatusResponse:
-      properties:
-        current_phase:
-          type: string
-          title: Current Phase
-          description: Current phase (A, B, or C)
-        phase_name:
-          type: string
-          title: Phase Name
-          description: Phase name (read_only, proposal, execution)
-        execution_allowed:
-          type: boolean
-          title: Execution Allowed
-          description: Whether execution is allowed
-        proposal_allowed:
-          type: boolean
-          title: Proposal Allowed
-          description: Whether proposals are allowed
-      type: object
-      required:
-      - current_phase
-      - phase_name
-      - execution_allowed
-      - proposal_allowed
-      title: PhaseStatusResponse
-      description: AI phase status.
     PlanCreate:
       properties:
         name:
@@ -25828,9 +25917,9 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - additionalProperties:
-              type: string
-            type: object
+          - type: object
+          - items: {}
+            type: array
           - type: 'null'
           title: Features
           description: Plan features
@@ -26600,39 +26689,6 @@ components:
       - rate_limit_rate
       title: QuotaMetricsResponse
       description: Quota-related metrics.
-    QuotaStatusResponse:
-      properties:
-        usage_type:
-          type: string
-          title: Usage Type
-          description: Type of usage
-        current_usage:
-          type: integer
-          title: Current Usage
-          description: Current usage count
-        quota_limit:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Quota Limit
-          description: Quota limit (null if unlimited)
-        remaining:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Remaining
-          description: Remaining quota
-        exceeded:
-          type: boolean
-          title: Exceeded
-          description: Whether quota is exceeded
-      type: object
-      required:
-      - usage_type
-      - current_usage
-      - exceeded
-      title: QuotaStatusResponse
-      description: Quota status for a usage type.
     RateMetricsResponse:
       properties:
         total_count:
@@ -28167,6 +28223,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[CheckoutSessionResponse]
+    ResponseEnvelope_CommunicationHistoryRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/CommunicationHistoryRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[CommunicationHistoryRead]
+    ResponseEnvelope_CommunicationTemplateRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/CommunicationTemplateRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[CommunicationTemplateRead]
     ResponseEnvelope_ComplaintListResponse_:
       properties:
         success:
@@ -28762,6 +28888,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[EmailLogListResponse]
+    ResponseEnvelope_EmailLogRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/EmailLogRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[EmailLogRead]
     ResponseEnvelope_EmailTemplateRead_:
       properties:
         success:
@@ -29492,6 +29653,82 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[CommissionRead]]
+    ResponseEnvelope_List_CommunicationHistoryRead__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/CommunicationHistoryRead'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[CommunicationHistoryRead]]
+    ResponseEnvelope_List_CommunicationTemplateRead__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/CommunicationTemplateRead'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[CommunicationTemplateRead]]
     ResponseEnvelope_List_DetailedPlanRead__:
       properties:
         success:
@@ -30670,6 +30907,44 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[UserRead]]
+    ResponseEnvelope_List_str__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[str]]
     ResponseEnvelope_LoginResponse_:
       properties:
         success:
@@ -32244,6 +32519,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[RoleResponse]
+    ResponseEnvelope_SMSLogRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SMSLogRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[SMSLogRead]
     ResponseEnvelope_SMTPConfigResponse_:
       properties:
         success:
@@ -34346,44 +34656,6 @@ components:
           - type: string
           - type: 'null'
           title: Notes
-        listPriceTotal:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Listpricetotal
-        totalAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Totalamount
-        discountAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Discountamount
-          default: 0.0
-        sgkCoverage:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Sgkcoverage
-          default: 0.0
-        finalAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Finalamount
-        paidAmount:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Paidamount
-          default: 0.0
-        patientPayment:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Patientpayment
         remainingAmount:
           anyOf:
           - type: number
@@ -37305,29 +37577,6 @@ components:
       - filename
       - documentType
       title: UploadSGKDocumentRequest
-    UsageStatusResponse:
-      properties:
-        total_requests_today:
-          type: integer
-          title: Total Requests Today
-          description: Total requests today
-        quotas:
-          items:
-            $ref: '#/components/schemas/QuotaStatusResponse'
-          type: array
-          title: Quotas
-          description: Quota status by type
-        any_quota_exceeded:
-          type: boolean
-          title: Any Quota Exceeded
-          description: Whether any quota is exceeded
-      type: object
-      required:
-      - total_requests_today
-      - quotas
-      - any_quota_exceeded
-      title: UsageStatusResponse
-      description: Overall usage status.
     UserAnalytics:
       properties:
         totalUsers:
@@ -38005,65 +38254,6 @@ components:
       - stepId
       - status
       title: WorkflowUpdateRequest
-    ai__api__admin__KillSwitchStatusResponse:
-      properties:
-        global_switch:
-          type: object
-          title: Global Switch
-          description: Global kill switch status
-        tenant_switches:
-          items:
-            type: object
-          type: array
-          title: Tenant Switches
-          description: Tenant kill switches
-        capability_switches:
-          items:
-            type: object
-          type: array
-          title: Capability Switches
-          description: Capability kill switches
-        any_active:
-          type: boolean
-          title: Any Active
-          description: Whether any kill switch is active
-      type: object
-      required:
-      - global_switch
-      - tenant_switches
-      - capability_switches
-      - any_active
-      title: KillSwitchStatusResponse
-      description: Kill switch status response.
-    ai__api__status__KillSwitchStatusResponse:
-      properties:
-        global_active:
-          type: boolean
-          title: Global Active
-          description: Whether global kill switch is active
-        tenant_active:
-          type: boolean
-          title: Tenant Active
-          description: Whether tenant kill switch is active
-        capabilities_disabled:
-          items:
-            type: string
-          type: array
-          title: Capabilities Disabled
-          description: List of disabled capabilities
-        reason:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Reason
-          description: Reason if any switch is active
-      type: object
-      required:
-      - global_active
-      - tenant_active
-      - capabilities_disabled
-      title: KillSwitchStatusResponse
-      description: Kill switch status.
     routers__admin__UpdateTenantUserRequest:
       properties:
         email:
@@ -38233,57 +38423,6 @@ components:
           title: Password
       type: object
       title: UpdateTenantUserRequest
-    routers__communications__TemplateCreate:
-      properties:
-        name:
-          type: string
-          title: Name
-        templateType:
-          type: string
-          title: Templatetype
-        bodyText:
-          type: string
-          title: Bodytext
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-        category:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Category
-        subject:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Subject
-        bodyHtml:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Bodyhtml
-        variables:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Variables
-          default: []
-        isActive:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Isactive
-          default: true
-      type: object
-      required:
-      - name
-      - templateType
-      - bodyText
-      title: TemplateCreate
     routers__payments__PaymentRecordCreate:
       properties:
         partyId:
@@ -38560,6 +38699,57 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[dict]
+    schemas__communications__TemplateCreate:
+      properties:
+        name:
+          type: string
+          title: Name
+        templateType:
+          type: string
+          title: Templatetype
+        bodyText:
+          type: string
+          title: Bodytext
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        subject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subject
+        bodyHtml:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bodyhtml
+        variables:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Variables
+          default: []
+        isActive:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Isactive
+          default: true
+      type: object
+      required:
+      - name
+      - templateType
+      - bodyText
+      title: TemplateCreate
     schemas__invoices__BulkUploadResponse:
       properties:
         success:

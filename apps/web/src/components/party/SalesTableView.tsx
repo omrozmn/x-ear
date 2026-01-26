@@ -19,7 +19,6 @@ interface SalesTableViewProps {
   onCreateInvoice?: (sale: PartySale) => void;
   onViewInvoice?: (sale: PartySale) => void;
   onManagePromissoryNotes?: (sale: PartySale) => void;
-  onCollectPayment?: (sale: PartySale) => void;
   onOpenDocuments?: (partyId: string) => void;
   onCancelSale?: (sale: PartySale) => void;
 }
@@ -32,7 +31,6 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   onCreateInvoice,
   onViewInvoice,
   onManagePromissoryNotes,
-  onCollectPayment: _onCollectPayment,
   onOpenDocuments,
   onCancelSale
 }) => {
@@ -79,42 +77,49 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
     return (
       <div className="flex flex-col gap-1 overflow-hidden">
-        {sale.devices.map((device: any, idx) => (
-          <div key={idx} className="text-sm border-b border-gray-100 last:border-0 pb-1 last:pb-0">
-            {device.barcode && (
-              <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block">
-                {device.barcode}
-              </div>
-            )}
+        {sale.devices.map((device, idx) => {
+          const deviceData = device as typeof device & { 
+            serialNumberLeft?: string; 
+            serialNumberRight?: string; 
+          };
+          
+          return (
+            <div key={idx} className="text-sm border-b border-gray-100 last:border-0 pb-1 last:pb-0">
+              {deviceData.barcode && (
+                <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block">
+                  {deviceData.barcode}
+                </div>
+              )}
 
-            {/* Standard Serial Number */}
-            {device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
-              <div className="text-xs text-gray-600 font-medium">
-                {device.serialNumber} {device.ear ? `(${device.ear === 'left' ? 'Sol' : device.ear === 'right' ? 'Sağ' : device.ear})` : ''}
-              </div>
-            )}
+              {/* Standard Serial Number */}
+              {deviceData.serialNumber && !deviceData.serialNumberLeft && !deviceData.serialNumberRight && (
+                <div className="text-xs text-gray-600 font-medium">
+                  {deviceData.serialNumber} {deviceData.ear ? `(${deviceData.ear === 'left' ? 'Sol' : deviceData.ear === 'right' ? 'Sağ' : deviceData.ear})` : ''}
+                </div>
+              )}
 
-            {/* Bilateral/Left Serial Number */}
-            {device.serialNumberLeft && (
-              <div className="text-xs text-gray-600 font-medium">
-                <span className="text-[10px] text-gray-400 mr-1 italic">Sol:</span>
-                {device.serialNumberLeft}
-              </div>
-            )}
+              {/* Bilateral/Left Serial Number */}
+              {deviceData.serialNumberLeft && (
+                <div className="text-xs text-gray-600 font-medium">
+                  <span className="text-[10px] text-gray-400 mr-1 italic">Sol:</span>
+                  {deviceData.serialNumberLeft}
+                </div>
+              )}
 
-            {/* Bilateral/Right Serial Number */}
-            {device.serialNumberRight && (
-              <div className="text-xs text-gray-600 font-medium">
-                <span className="text-[10px] text-gray-400 mr-1 italic">Sağ:</span>
-                {device.serialNumberRight}
-              </div>
-            )}
+              {/* Bilateral/Right Serial Number */}
+              {deviceData.serialNumberRight && (
+                <div className="text-xs text-gray-600 font-medium">
+                  <span className="text-[10px] text-gray-400 mr-1 italic">Sağ:</span>
+                  {deviceData.serialNumberRight}
+                </div>
+              )}
 
-            {!device.barcode && !device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
-              <div className="text-xs text-gray-400 italic">Barkod/Seri No Yok</div>
-            )}
-          </div>
-        ))}
+              {!deviceData.barcode && !deviceData.serialNumber && !deviceData.serialNumberLeft && !deviceData.serialNumberRight && (
+                <div className="text-xs text-gray-400 italic">Barkod/Seri No Yok</div>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -297,6 +302,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                         <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                           <div className="py-1">
                             <button
+                              data-allow-raw="true"
                               onClick={() => {
                                 onSaleClick?.(sale);
                                 closeOverflowMenu();
@@ -307,6 +313,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               Görüntüle
                             </button>
                             <button
+                              data-allow-raw="true"
                               onClick={() => {
                                 onEditSale?.(sale);
                                 closeOverflowMenu();
@@ -318,6 +325,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                             </button>
                             {hasInvoice ? (
                               <button
+                                data-allow-raw="true"
                                 onClick={() => {
                                   onViewInvoice?.(sale);
                                   closeOverflowMenu();
@@ -329,6 +337,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               </button>
                             ) : (
                               <button
+                                data-allow-raw="true"
                                 onClick={() => {
                                   onCreateInvoice?.(sale);
                                   closeOverflowMenu();
@@ -340,6 +349,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               </button>
                             )}
                             <button
+                              data-allow-raw="true"
                               onClick={() => {
                                 onManagePromissoryNotes?.(sale);
                                 closeOverflowMenu();
@@ -350,6 +360,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               Senetler
                             </button>
                             <button
+                              data-allow-raw="true"
                               onClick={() => {
                                 onOpenDocuments?.(partyId);
                                 closeOverflowMenu();
@@ -360,6 +371,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               Belgeler
                             </button>
                             <button
+                              data-allow-raw="true"
                               onClick={() => {
                                 onCancelSale?.(sale);
                                 closeOverflowMenu();

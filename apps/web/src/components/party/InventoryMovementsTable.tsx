@@ -153,7 +153,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                     />
                 </div>
                 {(startDate || endDate) && (
-                    <button
+                    <button data-allow-raw="true"
                         onClick={() => {
                             setStartDate('');
                             setEndDate('');
@@ -223,7 +223,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             {movementsResponse?.meta && (
                 <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg sm:px-6">
                     <div className="flex items-center justify-between w-full sm:hidden">
-                        <button
+                        <button data-allow-raw="true"
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
                             className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${page === 1
@@ -233,7 +233,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                         >
                             Önceki
                         </button>
-                        <button
+                        <button data-allow-raw="true"
                             onClick={() => setPage((p) => p + 1)}
                             disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
                             className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md ${page * 20 >= (movementsResponse?.meta?.total || 0)
@@ -257,7 +257,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                         </div>
                         <div>
                             <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                                <button
+                                <button data-allow-raw="true"
                                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                                     disabled={page === 1}
                                     className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1
@@ -269,7 +269,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                                     {/* ChevronLeft equivalent */}
                                     &larr; Önceki
                                 </button>
-                                <button
+                                <button data-allow-raw="true"
                                     onClick={() => setPage((p) => p + 1)}
                                     disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
                                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page * 20 >= (movementsResponse?.meta?.total || 0)

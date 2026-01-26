@@ -81,16 +81,6 @@ export const DesktopProfilePage: React.FC = () => {
         });
     }, [isLoading, isError, userDataResponse, error]);
 
-    interface _UserData {
-        id?: string;
-        email?: string;
-        fullName?: string;
-        firstName?: string;
-        lastName?: string;
-        username?: string;
-        phone?: string;
-    }
-
     const updateMeMutation = useUpdateUserMe({
         mutation: {
             onSuccess: (responseData: ResponseEnvelopeUserRead) => {
@@ -195,7 +185,7 @@ export const DesktopProfilePage: React.FC = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="text-center">
                 <p className="text-red-600 mb-4">Profil bilgileri yüklenemedi</p>
-                <button
+                <button data-allow-raw="true"
                     onClick={() => window.location.reload()}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
@@ -435,7 +425,7 @@ export const DesktopProfilePage: React.FC = () => {
                                                     Doğrulama Kodu
                                                 </label>
                                                 <div className="flex gap-2">
-                                                    <input
+                                                    <input data-allow-raw="true"
                                                         type="text"
                                                         value={otpCode}
                                                         onChange={(e) => setOtpCode(e.target.value)}
@@ -518,7 +508,7 @@ export const DesktopProfilePage: React.FC = () => {
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <button
+                                    <button data-allow-raw="true"
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"

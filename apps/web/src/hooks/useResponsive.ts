@@ -111,7 +111,7 @@ export const useMediaQuery = (query: string): boolean => {
 
 // Hook for device detection
 export const useDeviceDetection = () => {
-  const [deviceInfo, _setDeviceInfo] = useState(() => {
+  const [deviceInfo] = useState(() => {
     if (typeof window === 'undefined') {
       return {
         isMobile: false,

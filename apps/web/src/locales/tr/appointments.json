@@ -1,0 +1,130 @@
+{
+    "page_title": "Randevular",
+    "page_subtitle": "Hasta randevularını yönetin ve takip edin",
+    "new_appointment": "Yeni Randevu",
+    "loading": "Randevular yükleniyor...",
+    "error_title": "Hata",
+    "filters": {
+        "status": "Durum",
+        "type": "Tür",
+        "start_date": "Başlangıç Tarihi",
+        "end_date": "Bitiş Tarihi",
+        "search": "Arama",
+        "search_placeholder": "Hasta adı, doktor, notlar...",
+        "all": "Tümü"
+    },
+    "stats": {
+        "total": "Toplam Randevu",
+        "completed": "Tamamlanan",
+        "pending": "Bekleyen",
+        "cancelled_no_show": "İptal/Gelmedi"
+    },
+    "list": {
+        "empty_title": "Randevu bulunamadı",
+        "empty_desc": "Belirtilen kriterlere uygun randevu bulunmuyor.",
+        "summary": "Toplam {{count}} randevu gösteriliyor",
+        "columns": {
+            "patient": "Hasta",
+            "date_time": "Tarih & Saat",
+            "type": "Tür",
+            "status": "Durum",
+            "doctor": "Doktor",
+            "duration": "Süre",
+            "actions": "İşlemler"
+        },
+        "actions": {
+            "complete": "Tamamla",
+            "no_show": "Gelmedi",
+            "cancel": "İptal",
+            "edit": "Düzenle",
+            "delete": "Sil"
+        }
+    },
+    "modal": {
+        "title_create": "Yeni Randevu",
+        "title_edit": "Randevuyu Düzenle",
+        "title_view": "Randevu Detayları",
+        "patient_info": "Hasta Bilgileri",
+        "date": "Tarih",
+        "time": "Saat",
+        "duration": "Süre",
+        "type": "Tür",
+        "status": "Durum",
+        "doctor": "Doktor",
+        "location": "Lokasyon",
+        "title": "Başlık",
+        "notes": "Notlar",
+        "created_at": "Oluşturulma",
+        "updated_at": "Güncelleme",
+        "quick_actions": "Hızlı İşlemler",
+        "delete_title": "Randevuyu Sil",
+        "delete_confirm": "Bu randevuyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+        "actions": {
+            "confirm": "Onayla",
+            "complete": "Tamamla",
+            "no_show": "Gelmedi",
+            "reschedule": "Ertele",
+            "close": "Kapat",
+            "delete": "Sil",
+            "deleting": "Siliniyor..."
+        }
+    },
+    "form": {
+        "patient": "Hasta *",
+        "patient_placeholder": "Hasta adı veya TC ile arayın...",
+        "date": "Tarih *",
+        "time": "Saat *",
+        "duration": "Süre (dakika) *",
+        "type": "Randevu Türü *",
+        "notes": "Notlar",
+        "notes_placeholder": "Randevu ile ilgili notlar...",
+        "date_placeholder": "GG/AA/YYYY",
+        "title": "Başlık *",
+        "title_placeholder": "Randevu başlığı",
+        "create_btn": "Randevu Oluştur",
+        "update_btn": "Randevuyu Güncelle",
+        "cancel_btn": "İptal",
+        "errors": {
+            "patient_required": "Hasta seçimi zorunludur",
+            "date_required": "Tarih zorunludur",
+            "date_past": "Geçmiş tarih seçilemez",
+            "time_required": "Saat zorunludur",
+            "time_invalid": "Geçerli bir saat formatı giriniz (HH:MM)",
+            "duration_min": "Süre 0'dan büyük olmalıdır",
+            "duration_max": "Süre 8 saatten fazla olamaz",
+            "type_required": "Randevu türü zorunludur",
+            "create_error": "Randevu kaydedilemedi",
+            "party_create_error": "Hasta oluşturulamadı"
+        },
+        "success": {
+            "create": "Randevu başarıyla oluşturuldu",
+            "update": "Randevu başarıyla güncellendi",
+            "party_create": "Yeni hasta oluşturuldu"
+        }
+    },
+    "views": {
+        "day": "Gün",
+        "week": "Hafta",
+        "month": "Ay",
+        "list": "Liste"
+    },
+    "status": {
+        "scheduled": "Planlandı",
+        "confirmed": "Onaylandı",
+        "completed": "Tamamlandı",
+        "cancelled": "İptal Edildi",
+        "no_show": "Gelmedi",
+        "rescheduled": "Ertelendi"
+    },
+    "types": {
+        "consultation": "Konsültasyon",
+        "follow_up": "Kontrol Muayenesi",
+        "trial": "Deneme Başlangıç",
+        "delivery": "Cihaz Teslimi",
+        "control_visit": "Kontrol Ziyareti",
+        "battery_renewal": "Pil Yenileme",
+        "repair": "Tamir",
+        "fitting": "Cihaz Ayarı",
+        "assessment": "Değerlendirme"
+    }
+}

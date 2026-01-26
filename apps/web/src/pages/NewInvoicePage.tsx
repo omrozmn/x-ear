@@ -5,7 +5,8 @@ import { ArrowLeft, CheckCircle, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
 import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
 import { SGKInvoiceSection } from '../components/invoices/SGKInvoiceSection';
-import { GovernmentSection, GOVERNMENT_EXEMPTION_REASONS } from '../components/invoices/GovernmentSection';
+import { GovernmentSection } from '../components/invoices/GovernmentSection';
+import { GOVERNMENT_EXEMPTION_REASONS } from '../constants/governmentInvoiceConstants';
 import { Select } from '@x-ear/ui-web';
 import { CustomerSectionCompact } from '../components/invoices/CustomerSectionCompact';
 import WithholdingCard from '../components/invoices/WithholdingCard';
@@ -436,7 +437,7 @@ function InvoiceSidebar({
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900">{activeLineEditor?.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor?.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{(activeLineEditor?.index ?? 0) + 1}</h3>
-            <button onClick={onCloseLineEditor} className="text-sm text-gray-500">Kapat</button>
+            <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-gray-500">Kapat</button>
           </div>
           <div>
             {activeLineEditor?.type === 'withholding' && activeLineEditor.index !== undefined && extendedData && (

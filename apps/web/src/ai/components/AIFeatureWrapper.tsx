@@ -4,17 +4,16 @@ import { useAIContext } from '../hooks/useAIContext';
 import type { AICapability } from '../types/ai.types';
 import {
   checkAIAvailability,
-} from '../utils/aiAvailability';
-import type {
-  AIUnavailableReason,
-  AIAvailabilityResult,
+  getUnavailableMessage,
+  type AIUnavailableReason,
+  type AIAvailabilityResult,
 } from '../utils/aiAvailability';
 import { getStatusIcon, getStatusColors } from './helpers';
 
-export { checkAIAvailability, getUnavailableMessage } from '../utils/aiAvailability';
-export type { AIUnavailableReason, AIAvailabilityResult } from '../utils/aiAvailability';
-
-
+// Re-export utilities for backward compatibility
+// Note: This triggers react-refresh warning but is intentional for backward compatibility
+// These utilities are also available from '../utils/aiAvailability'
+export { checkAIAvailability, getUnavailableMessage, type AIUnavailableReason, type AIAvailabilityResult };
 
 /**
  * Props for AIFeatureWrapper component
@@ -279,48 +278,12 @@ export function AIFeatureWrapper({
 }
 
 // =============================================================================
-// Hook for programmatic access
+// Re-export hook for backward compatibility
+// Note: This triggers react-refresh warning but is intentional for backward compatibility
+// Hook is also available from '../hooks/useAIFeatureAvailability'
 // =============================================================================
 
-/**
- * useAIFeatureAvailability Hook
- * 
- * Provides programmatic access to AI feature availability checks.
- * Useful when you need to check availability without rendering a wrapper.
- * 
- * @param capability - Optional capability to check
- * @param requirePartyContext - Whether party context is required
- * @returns AIAvailabilityResult
- * 
- * @example
- * ```tsx
- * const { available, reason, message } = useAIFeatureAvailability('chat');
- * 
- * if (!available) {
- *   console.log(`AI unavailable: ${message}`);
- * }
- * ```
- */
-export function useAIFeatureAvailability(
-  capability?: AICapability,
-  requirePartyContext: boolean = false
-): AIAvailabilityResult {
-  const { data: status, isLoading, isError } = useAIStatus();
-  const { isValid: isContextValid, role, partyId } = useAIContext({ capability });
-
-  return useMemo(() => {
-    return checkAIAvailability(
-      status,
-      isLoading,
-      isError,
-      capability,
-      role,
-      isContextValid,
-      !!partyId,
-      requirePartyContext
-    );
-  }, [status, isLoading, isError, capability, role, isContextValid, partyId, requirePartyContext]);
-}
+export { useAIFeatureAvailability } from '../hooks/useAIFeatureAvailability';
 
 // =============================================================================
 // Default Export

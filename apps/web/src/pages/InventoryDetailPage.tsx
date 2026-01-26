@@ -219,7 +219,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
     try {
       // include kdv in the payload so backend can persist kdv_rate
-      const payload: InventoryItemUpdate & Record<string, any> = {
+      const payload: InventoryItemUpdate & Record<string, unknown> = {
         name: editedItem.name ?? item.name,
         brand: editedItem.brand ?? item.brand,
         model: editedItem.model,
@@ -258,7 +258,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: serials.length
       });
 
-      const _response = await createInventorySerials(id, { serials });
+      await createInventorySerials(id, { serials });
 
       // If inventoryAddSerialNumbers returns void, remove the success check and just reload
       await loadItem();

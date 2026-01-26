@@ -4,6 +4,7 @@ import { Home, Users, Calendar, User } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { cn } from '@/lib/utils';
 import '@/styles/mobile.css';
+import { useTranslation } from 'react-i18next';
 
 interface NavItem {
     icon: React.ReactNode;
@@ -13,13 +14,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-    { icon: <Home className="h-5 w-5" />, label: 'Ana Sayfa', href: '/' },
-    { icon: <Users className="h-5 w-5" />, label: 'Hastalar', href: '/parties' },
-    { icon: <Calendar className="h-5 w-5" />, label: 'Randevu', href: '/appointments' },
-    { icon: <User className="h-5 w-5" />, label: 'Profil', href: '/profile' },
+    { icon: <Home className="h-5 w-5" />, label: 'nav.dashboard', href: '/' },
+    { icon: <Users className="h-5 w-5" />, label: 'nav.patients', href: '/parties' },
+    { icon: <Calendar className="h-5 w-5" />, label: 'nav.appointments', href: '/appointments' },
+    { icon: <User className="h-5 w-5" />, label: 'header.profile', href: '/profile' },
 ];
 
 export const BottomNav: React.FC = () => {
+    const { t } = useTranslation('layout');
     const location = useLocation();
     const { triggerSelection } = useHaptic();
 
@@ -57,7 +59,7 @@ export const BottomNav: React.FC = () => {
                                 "text-[10px] font-medium",
                                 active && "font-semibold"
                             )}>
-                                {item.label}
+                                {t(item.label)}
                             </span>
 
                             {active && (

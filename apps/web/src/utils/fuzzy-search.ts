@@ -142,13 +142,13 @@ export function fuzzySearch<T extends object>(
     }> = [];
 
     // Search in specified keys or all string properties
+    const itemRecord = item as Record<string, unknown>;
     const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key =>
-      typeof (item as any)[key] === 'string'
+      typeof itemRecord[key] === 'string'
     );
 
     for (const key of searchKeys) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const value = (item as any)[key];
+      const value = itemRecord[key];
       if (typeof value !== 'string') continue;
 
       const searchValue = caseSensitive ? value : value.toLowerCase();
@@ -282,13 +282,13 @@ export function getSearchSuggestions<T extends object>(
   const query = partialQuery.toLowerCase();
 
   for (const item of items) {
+    const itemRecord = item as Record<string, unknown>;
     const searchKeys = keys.length > 0 ? keys : Object.keys(item).filter(key =>
-      typeof (item as any)[key] === 'string'
+      typeof itemRecord[key] === 'string'
     );
 
     for (const key of searchKeys) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const value = (item as any)[key];
+      const value = itemRecord[key];
       if (typeof value !== 'string') continue;
 
       const words = value.toLowerCase().split(/\s+/);

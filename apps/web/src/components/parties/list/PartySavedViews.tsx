@@ -68,7 +68,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
           <Bookmark className="h-4 w-4" />
           Kayıtlı Görünümler
         </h3>
-        <button
+        <button data-allow-raw="true"
           onClick={() => setIsCreating(true)}
           className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
         >
@@ -81,7 +81,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
         {/* Create New View */}
         {isCreating && (
           <div className="p-3 border border-blue-200 rounded-lg bg-blue-50">
-            <input
+            <input data-allow-raw="true"
               type="text"
               value={viewName}
               onChange={(e) => setViewName(e.target.value)}
@@ -90,14 +90,14 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
               autoFocus
             />
             <div className="flex gap-2">
-              <button
+              <button data-allow-raw="true"
                 onClick={handleSaveNew}
                 disabled={!viewName.trim()}
                 className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Kaydet
               </button>
-              <button
+              <button data-allow-raw="true"
                 onClick={cancelEditing}
                 className="px-3 py-1 text-xs border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
               >
@@ -119,7 +119,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
           >
             {editingView === view.id ? (
               <div>
-                <input
+                <input data-allow-raw="true"
                   type="text"
                   value={viewName}
                   onChange={(e) => setViewName(e.target.value)}
@@ -127,14 +127,14 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                   autoFocus
                 />
                 <div className="flex gap-2">
-                  <button
+                  <button data-allow-raw="true"
                     onClick={() => handleUpdateView(view.id)}
                     disabled={!viewName.trim()}
                     className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Güncelle
                   </button>
-                  <button
+                  <button data-allow-raw="true"
                     onClick={cancelEditing}
                     className="px-3 py-1 text-xs border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
                   >
@@ -145,7 +145,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
             ) : (
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <button
+                  <button data-allow-raw="true"
                     onClick={() => onSelectView(view.id)}
                     className="text-left w-full"
                   >
@@ -167,7 +167,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-1">
-                  <button
+                  <button data-allow-raw="true"
                     onClick={() => startEditing(view)}
                     className="p-1 text-gray-400 hover:text-gray-600 rounded"
                     title="Düzenle"
@@ -175,7 +175,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                     <Edit2 className="h-3 w-3" />
                   </button>
                   {!view.isDefault && (
-                    <button
+                    <button data-allow-raw="true"
                       onClick={() => onDeleteView(view.id)}
                       className="p-1 text-gray-400 hover:text-red-600 rounded"
                       title="Sil"

@@ -23,7 +23,7 @@ declare module '@tanstack/react-router' {
 }
 
 import { PhoneVerificationModal } from './components/PhoneVerificationModal';
-import { AIChatWidget } from './components/ai/AIChatWidget';
+import { AIChatWidget } from './ai/components/AIChatWidget/AIChatWidget';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,7 +71,6 @@ function App() {
               <AuthProvider>
                 <RouterProvider router={router} />
                 <PhoneVerificationModal />
-                <AIChatWidget />
                 <Toaster position="top-right" />
                 <ReactQueryDevtools initialIsOpen={false} />
               </AuthProvider>

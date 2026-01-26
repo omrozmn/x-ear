@@ -122,7 +122,7 @@ export const useCreateAppointment = () => {
         queryClient.setQueryData(appointmentKeys.lists(), context.previousAppointments);
       }
     },
-    onSuccess: (_result, _data) => {
+    onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
     },

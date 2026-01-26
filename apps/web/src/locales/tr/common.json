@@ -1,0 +1,47 @@
+{
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "loading": "Yükleniyor...",
+    "search": "Ara",
+    "success": "Başarılı",
+    "error_label": "Hata",
+    "retry": "Tekrar Dene",
+    "add": "Ekle",
+    "search_placeholder_product": "Ürün ara (marka, model, kategori)...",
+    "no_results": "Sonuç bulunamadı",
+    "type_to_search": "Arama yapmak için yazın",
+    "error": {
+        "title": "Bir Hata Oluştu",
+        "unexpected": "Sayfa yüklenirken beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin.",
+        "details": "Hata Detayları"
+    },
+    "status": {
+        "online": "Çevrimiçi",
+        "offline": "Çevrimdışı",
+        "offline_title": "İnternet Bağlantısı Yok",
+        "offline_desc": "Değişiklikleriniz daha sonra kaydedilmek üzere sıraya alındı.",
+        "online_title": "Bağlantı Kuruldu",
+        "online_desc": "Veriler senkronize ediliyor..."
+    },
+    "categories": {
+        "hearing_aid": "İşitme Cihazı",
+        "accessory": "Aksesuar",
+        "battery": "Pil",
+        "maintenance": "Bakım",
+        "ear_mold": "Kulak Kalıbı",
+        "device": "Cihaz",
+        "undefined": "Kategori belirtilmemiş"
+    },
+    "product": {
+        "out_of_stock": "Stokta yok",
+        "stock_left": "{{count}} adet kaldı",
+        "stock": "{{count}} adet"
+    },
+    "language": {
+        "select": "Dil Seçin",
+        "tr": "Türkçe",
+        "en": "English"
+    }
+}
