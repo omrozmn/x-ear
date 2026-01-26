@@ -3156,3 +3156,11 @@ INFO:     127.0.0.1:59956 - "GET /api/inventory/stats HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:60032 - "GET /api/permissions/my HTTP/1.1" 401 Unauthorized
 {"timestamp": "2026-01-26T20:58:13.056993+00:00", "level": "ERROR", "logger": "ai.api.status", "message": "Missing tenant_id or user_id in request.state"}
 INFO:     127.0.0.1:60209 - "GET /api/ai/status HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61652 - "GET /health HTTP/1.1" 200 OK
+{"timestamp": "2026-01-26T21:23:55.953478+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T21:23:56.626022+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "54 changes detected"}
+{"timestamp": "2026-01-26T21:23:57.153137+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "36 changes detected"}
+{"timestamp": "2026-01-26T21:23:57.740673+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "328 changes detected"}
+{"timestamp": "2026-01-26T21:23:58.411572+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "57 changes detected"}
+{"timestamp": "2026-01-26T21:23:59.040724+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "367 changes detected"}
+{"timestamp": "2026-01-26T21:23:59.734634+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "198 changes detected"}

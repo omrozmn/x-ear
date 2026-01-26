@@ -5,5 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { ResponseMeta } from './responseMeta';
 
-export type ResponseEnvelopeAnyData = unknown | null;
+export type ResponseEnvelopeListSmsPackageReadMeta = ResponseMeta | null;
