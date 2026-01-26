@@ -122,7 +122,34 @@ grep -rE "patientId|patient_id" src/ | grep -v "// legacy"
 
 **Fix**: Ran `pnpm install` to regenerate lockfile
 
-**Status**: ⏳ Pending commit
+**Commit**: fc9e0c2f
+
+### Issue 4: Unused @ts-expect-error Directive
+**File**: `apps/web/src/components/ui/Button.tsx`
+
+**Problem**: Unused `@ts-expect-error` directive on line 17
+
+**Fix**: Removed the directive as it's no longer needed
+
+**Commit**: fff95b4e
+
+### Issue 5: Admin App TypeScript Errors
+**Files**:
+- `apps/admin/src/ai/hooks/useAIContextSync.ts`
+- `apps/admin/src/ai/hooks/usePendingActions.ts`
+- `apps/admin/src/pages/admin/AffiliatesPage.tsx`
+
+**Problems**:
+- useAIContextSync: AdminUser type doesn't have effectiveTenantId property
+- usePendingActions: API parameters mismatch (using wrong field names)
+- AffiliatesPage: AffiliateRead.id typed as unknown
+
+**Fixes**:
+- useAIContextSync: Added tenant_id fallback for AdminUser type
+- usePendingActions: Fixed API parameter mapping (use tenant_id, map response.items)
+- AffiliatesPage: Handle unknown id type with String() conversion
+
+**Commit**: fff95b4e
 
 ## 📊 Summary
 
