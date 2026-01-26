@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type OCRProcessRequestText = string | null;
+export type OcrProcessRequestImagePath = string | null;

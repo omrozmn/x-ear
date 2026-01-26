@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type OCRProcessRequestImagePath = string | null;
+/**
+ * Creation timestamp
+ */
+export type SmtpConfigResponseCreatedAt = string | null;

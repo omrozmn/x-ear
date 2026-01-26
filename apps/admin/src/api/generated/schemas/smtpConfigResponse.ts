@@ -5,11 +5,19 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { SmtpConfigResponseCreatedAt } from './smtpConfigResponseCreatedAt';
+import type { SmtpConfigResponseUpdatedAt } from './smtpConfigResponseUpdatedAt';
 
 /**
- * Schema for creating SMTP configuration.
+ * SMTP configuration (password excluded for security)
  */
-export interface SMTPConfigCreate {
+export interface SmtpConfigResponse {
+  /** Creation timestamp */
+  createdAt?: SmtpConfigResponseCreatedAt;
+  /** Last update timestamp */
+  updatedAt?: SmtpConfigResponseUpdatedAt;
+  /** Unique identifier for the resource */
+  id: string;
   /**
    * SMTP server hostname or IP
    * @minLength 1
@@ -46,9 +54,6 @@ export interface SMTPConfigCreate {
    * @maximum 120
    */
   timeout?: number;
-  /**
-   * SMTP authentication password (will be encrypted)
-   * @minLength 1
-   */
-  password: string;
+  tenantId: string;
+  isActive: boolean;
 }

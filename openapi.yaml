@@ -7970,7 +7970,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OCRProcessRequest'
+              $ref: '#/components/schemas/OcrProcessRequest'
         required: true
       responses:
         '200':
@@ -14705,7 +14705,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope_Union_SMTPConfigResponse__NoneType__'
+                $ref: '#/components/schemas/ResponseEnvelope_Union_SmtpConfigResponse__NoneType__'
       security:
       - OAuth2PasswordBearer: []
     post:
@@ -14731,7 +14731,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SMTPConfigCreate'
+              $ref: '#/components/schemas/SmtpConfigCreate'
         required: true
       responses:
         '200':
@@ -14739,7 +14739,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope_SMTPConfigResponse_'
+                $ref: '#/components/schemas/ResponseEnvelope_SmtpConfigResponse_'
         '422':
           description: Validation Error
           content:
@@ -15567,7 +15567,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SLAMetricsResponse'
+                $ref: '#/components/schemas/SlaMetricsResponse'
         '422':
           description: Validation Error
           content:
@@ -24513,33 +24513,6 @@ components:
       type: object
       title: NotificationUpdate
       description: Schema for updating Notification
-    OCRProcessRequest:
-      properties:
-        imagePath:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Imagepath
-        text:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Text
-        ocrText:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Ocrtext
-        type:
-          type: string
-          title: Type
-          default: medical
-        autoCrop:
-          type: boolean
-          title: Autocrop
-          default: true
-      type: object
-      title: OCRProcessRequest
     OcrDebugResponse:
       properties:
         result:
@@ -24682,6 +24655,33 @@ components:
       required:
       - timestamp
       title: OcrPatientResponse
+    OcrProcessRequest:
+      properties:
+        imagePath:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imagepath
+        text:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Text
+        ocrText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ocrtext
+        type:
+          type: string
+          title: Type
+          default: medical
+        autoCrop:
+          type: boolean
+          title: Autocrop
+          default: true
+      type: object
+      title: OcrProcessRequest
     OcrProcessResponse:
       properties:
         result:
@@ -32603,41 +32603,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[RoleResponse]
-    ResponseEnvelope_SMTPConfigResponse_:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/SMTPConfigResponse'
-          - type: 'null'
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[SMTPConfigResponse]
     ResponseEnvelope_SaleRead_:
       properties:
         success:
@@ -32953,6 +32918,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[SmsLogRead]
+    ResponseEnvelope_SmtpConfigResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SmtpConfigResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[SmtpConfigResponse]
     ResponseEnvelope_SpamPreviewResponse_:
       properties:
         success:
@@ -33515,41 +33515,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[Union[AuthUserRead, AuthAdminUserRead]]
-    ResponseEnvelope_Union_SMTPConfigResponse__NoneType__:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/SMTPConfigResponse'
-          - type: 'null'
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[Union[SMTPConfigResponse, NoneType]]
     ResponseEnvelope_Union_SmsProviderConfigRead__NoneType__:
       properties:
         success:
@@ -33585,6 +33550,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[Union[SmsProviderConfigRead, NoneType]]
+    ResponseEnvelope_Union_SmtpConfigResponse__NoneType__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SmtpConfigResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[Union[SmtpConfigResponse, NoneType]]
     ResponseEnvelope_Union_TenantSmsCreditRead__NoneType__:
       properties:
         success:
@@ -34314,197 +34314,6 @@ components:
       - role
       title: RoleResponse
       description: Schema for single role response
-    SLAMetricsResponse:
-      properties:
-        timestamp:
-          type: string
-          title: Timestamp
-          description: Metrics timestamp
-        window_minutes:
-          type: integer
-          title: Window Minutes
-          description: Aggregation window in minutes
-        inference_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Inference latency metrics
-        intent_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Intent classification latency
-        planning_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Action planning latency
-        execution_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
-          description: Execution latency
-        rates:
-          $ref: '#/components/schemas/RateMetricsResponse'
-          description: Error and timeout rates
-        approvals:
-          $ref: '#/components/schemas/ApprovalMetricsResponse'
-          description: Approval metrics
-        quota:
-          $ref: '#/components/schemas/QuotaMetricsResponse'
-          description: Quota metrics
-      type: object
-      required:
-      - timestamp
-      - window_minutes
-      - inference_latency
-      - intent_latency
-      - planning_latency
-      - execution_latency
-      - rates
-      - approvals
-      - quota
-      title: SLAMetricsResponse
-      description: Complete SLA metrics response.
-    SMTPConfigCreate:
-      properties:
-        host:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Host
-          description: SMTP server hostname or IP
-        port:
-          type: integer
-          maximum: 65535.0
-          minimum: 1.0
-          title: Port
-          description: SMTP server port
-        username:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Username
-          description: SMTP authentication username
-        fromEmail:
-          type: string
-          format: email
-          title: Fromemail
-          description: From email address
-        fromName:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Fromname
-          description: From display name
-        useTls:
-          type: boolean
-          title: Usetls
-          description: Use STARTTLS
-          default: false
-        useSsl:
-          type: boolean
-          title: Usessl
-          description: Use SSL/TLS
-          default: true
-        timeout:
-          type: integer
-          maximum: 120.0
-          minimum: 5.0
-          title: Timeout
-          description: Connection timeout in seconds
-          default: 30
-        password:
-          type: string
-          minLength: 1
-          title: Password
-          description: SMTP authentication password (will be encrypted)
-      type: object
-      required:
-      - host
-      - port
-      - username
-      - fromEmail
-      - fromName
-      - password
-      title: SMTPConfigCreate
-      description: Schema for creating SMTP configuration.
-    SMTPConfigResponse:
-      properties:
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Creation timestamp
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
-        host:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Host
-          description: SMTP server hostname or IP
-        port:
-          type: integer
-          maximum: 65535.0
-          minimum: 1.0
-          title: Port
-          description: SMTP server port
-        username:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Username
-          description: SMTP authentication username
-        fromEmail:
-          type: string
-          format: email
-          title: Fromemail
-          description: From email address
-        fromName:
-          type: string
-          maxLength: 255
-          minLength: 1
-          title: Fromname
-          description: From display name
-        useTls:
-          type: boolean
-          title: Usetls
-          description: Use STARTTLS
-          default: false
-        useSsl:
-          type: boolean
-          title: Usessl
-          description: Use SSL/TLS
-          default: true
-        timeout:
-          type: integer
-          maximum: 120.0
-          minimum: 5.0
-          title: Timeout
-          description: Connection timeout in seconds
-          default: 30
-        tenantId:
-          type: string
-          title: Tenantid
-        isActive:
-          type: boolean
-          title: Isactive
-      type: object
-      required:
-      - id
-      - host
-      - port
-      - username
-      - fromEmail
-      - fromName
-      - tenantId
-      - isActive
-      title: SMTPConfigResponse
-      description: SMTP configuration (password excluded for security)
     SaleCreate:
       properties:
         partyId:
@@ -35242,6 +35051,50 @@ components:
           title: Textb
       type: object
       title: SimilarityRequest
+    SlaMetricsResponse:
+      properties:
+        timestamp:
+          type: string
+          title: Timestamp
+          description: Metrics timestamp
+        window_minutes:
+          type: integer
+          title: Window Minutes
+          description: Aggregation window in minutes
+        inference_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Inference latency metrics
+        intent_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Intent classification latency
+        planning_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Action planning latency
+        execution_latency:
+          $ref: '#/components/schemas/LatencyMetricsResponse'
+          description: Execution latency
+        rates:
+          $ref: '#/components/schemas/RateMetricsResponse'
+          description: Error and timeout rates
+        approvals:
+          $ref: '#/components/schemas/ApprovalMetricsResponse'
+          description: Approval metrics
+        quota:
+          $ref: '#/components/schemas/QuotaMetricsResponse'
+          description: Quota metrics
+      type: object
+      required:
+      - timestamp
+      - window_minutes
+      - inference_latency
+      - intent_latency
+      - planning_latency
+      - execution_latency
+      - rates
+      - approvals
+      - quota
+      title: SlaMetricsResponse
+      description: Complete SLA metrics response.
     SlotConfig:
       properties:
         name:
@@ -35703,6 +35556,153 @@ components:
       - excel
       - filter
       title: SmsSourceType
+    SmtpConfigCreate:
+      properties:
+        host:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Host
+          description: SMTP server hostname or IP
+        port:
+          type: integer
+          maximum: 65535.0
+          minimum: 1.0
+          title: Port
+          description: SMTP server port
+        username:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Username
+          description: SMTP authentication username
+        fromEmail:
+          type: string
+          format: email
+          title: Fromemail
+          description: From email address
+        fromName:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Fromname
+          description: From display name
+        useTls:
+          type: boolean
+          title: Usetls
+          description: Use STARTTLS
+          default: false
+        useSsl:
+          type: boolean
+          title: Usessl
+          description: Use SSL/TLS
+          default: true
+        timeout:
+          type: integer
+          maximum: 120.0
+          minimum: 5.0
+          title: Timeout
+          description: Connection timeout in seconds
+          default: 30
+        password:
+          type: string
+          minLength: 1
+          title: Password
+          description: SMTP authentication password (will be encrypted)
+      type: object
+      required:
+      - host
+      - port
+      - username
+      - fromEmail
+      - fromName
+      - password
+      title: SmtpConfigCreate
+      description: Schema for creating SMTP configuration.
+    SmtpConfigResponse:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        host:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Host
+          description: SMTP server hostname or IP
+        port:
+          type: integer
+          maximum: 65535.0
+          minimum: 1.0
+          title: Port
+          description: SMTP server port
+        username:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Username
+          description: SMTP authentication username
+        fromEmail:
+          type: string
+          format: email
+          title: Fromemail
+          description: From email address
+        fromName:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Fromname
+          description: From display name
+        useTls:
+          type: boolean
+          title: Usetls
+          description: Use STARTTLS
+          default: false
+        useSsl:
+          type: boolean
+          title: Usessl
+          description: Use SSL/TLS
+          default: true
+        timeout:
+          type: integer
+          maximum: 120.0
+          minimum: 5.0
+          title: Timeout
+          description: Connection timeout in seconds
+          default: 30
+        tenantId:
+          type: string
+          title: Tenantid
+        isActive:
+          type: boolean
+          title: Isactive
+      type: object
+      required:
+      - id
+      - host
+      - port
+      - username
+      - fromEmail
+      - fromName
+      - tenantId
+      - isActive
+      title: SmtpConfigResponse
+      description: SMTP configuration (password excluded for security)
     SpamPreviewRequest:
       properties:
         subject:

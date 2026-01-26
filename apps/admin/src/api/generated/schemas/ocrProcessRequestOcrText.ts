@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Last update timestamp
- */
-export type SMTPConfigResponseUpdatedAt = string | null;
+export type OcrProcessRequestOcrText = string | null;

@@ -33,7 +33,7 @@ import type {
   GetMetricsApiAiMetricsGetParams,
   HTTPValidationError,
   HealthResponse,
-  SLAMetricsResponse,
+  SlaMetricsResponse,
   TriggerAlertCheckApiAiAlertsCheckPost200
 } from '.././schemas';
 
@@ -347,7 +347,7 @@ export const getMetricsApiAiMetricsGet = (
 ) => {
       
       
-      return adminApi<SLAMetricsResponse>(
+      return adminApi<SlaMetricsResponse>(
       {url: `/api/ai/metrics`, method: 'GET',
         params, signal
     },

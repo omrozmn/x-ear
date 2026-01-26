@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Creation timestamp
- */
-export type SMTPConfigResponseCreatedAt = string | null;
+export type OcrProcessRequestText = string | null;
