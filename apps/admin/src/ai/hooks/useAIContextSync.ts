@@ -42,9 +42,14 @@ interface ContextState {
 /**
  * Extract tenant_id from user object
  */
-function extractTenantId(user: { effectiveTenantId?: string } | null): string | null {
+function extractTenantId(user: { effectiveTenantId?: string; tenant_id?: string } | null): string | null {
   if (user?.effectiveTenantId) {
     return user.effectiveTenantId;
+  }
+  
+  // Fallback to tenant_id for AdminUser type
+  if (user && 'tenant_id' in user && typeof user.tenant_id === 'string') {
+    return user.tenant_id;
   }
 
   try {

@@ -14,7 +14,6 @@ export const Button: React.FC<Props> = ({ variant = 'primary', children, style, 
         ? `${base} bg-gray-100 text-gray-900`
         : `${base} bg-transparent`;
   return (
-    // @ts-expect-error - React version mismatch between packages
     <UIButton className={cls} {...rest} style={style} variant='default'>
       {children}
     </UIButton>

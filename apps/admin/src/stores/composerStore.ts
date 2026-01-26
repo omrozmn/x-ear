@@ -91,6 +91,7 @@ export const useComposerStore = create<ComposerState>()(
                 sourceEntities.forEach(entity => {
                     const matchingSlot = action.slots?.find(s => {
                         // Map context type to slot name conventions
+                        // legacy: patient_id compatibility for backward compatibility with old actions
                         if (entity.type === 'patient' && (s.name === 'party_id' || s.name === 'patient_id')) return true;
                         if (entity.type === 'device' && (s.name === 'device_id' || s.name === 'inventory_id')) return true;
                         if (entity.type === 'invoice' && s.name === 'invoice_id') return true;

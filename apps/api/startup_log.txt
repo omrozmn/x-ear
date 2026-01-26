@@ -3154,3 +3154,5 @@ INFO:     127.0.0.1:59952 - "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 401
 INFO:     127.0.0.1:59955 - "GET /api/inventory?per_page=100 HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:59956 - "GET /api/inventory/stats HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:60032 - "GET /api/permissions/my HTTP/1.1" 401 Unauthorized
+{"timestamp": "2026-01-26T20:58:13.056993+00:00", "level": "ERROR", "logger": "ai.api.status", "message": "Missing tenant_id or user_id in request.state"}
+INFO:     127.0.0.1:60209 - "GET /api/ai/status HTTP/1.1" 401 Unauthorized

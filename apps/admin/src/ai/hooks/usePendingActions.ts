@@ -237,37 +237,19 @@ export function usePendingActions(
 
       try {
         const response = await getPendingActions({
-          status: 'pending_approval',
           tenant_id: context.tenant_id,
-          party_id: context.party_id,
         });
 
         return {
-          actions: (response.actions || []).map((apiPlan) => ({
-            planId: apiPlan.plan_id,
-            status: apiPlan.status as import('../types/ai.types').ActionPlanStatus,
-            overallRiskLevel: apiPlan.overall_risk_level as import('../types/ai.types').RiskLevel,
-            requiresApproval: apiPlan.requires_approval,
-            planHash: apiPlan.plan_hash,
-            approvalToken: apiPlan.approval_token || undefined,
-            createdAt: apiPlan.created_at,
-            steps: (apiPlan.steps || []).map((s: {
-              step_number: number;
-              tool_name: string;
-              tool_schema_version: string;
-              parameters?: Record<string, unknown>;
-              description: string;
-              risk_level: string;
-              requires_approval: boolean;
-            }) => ({
-              stepNumber: s.step_number,
-              toolName: s.tool_name,
-              toolSchemaVersion: s.tool_schema_version,
-              parameters: s.parameters || {},
-              description: s.description,
-              riskLevel: s.risk_level as import('../types/ai.types').RiskLevel,
-              requiresApproval: s.requires_approval,
-            })),
+          actions: (response.items || []).map((apiItem) => ({
+            planId: apiItem.id,
+            status: 'pending_approval' as import('../types/ai.types').ActionPlanStatus,
+            overallRiskLevel: apiItem.risk_level as import('../types/ai.types').RiskLevel,
+            requiresApproval: true,
+            planHash: apiItem.action_id,
+            approvalToken: undefined,
+            createdAt: apiItem.created_at,
+            steps: [],
           })),
           total: response.total || 0
         };
@@ -465,21 +447,18 @@ export async function prefetchPendingActions(
     queryKey: [PENDING_ACTIONS_QUERY_KEY, tenantId, partyId],
     queryFn: async () => {
       const response = await getPendingActions({
-        status: 'pending_approval',
         tenant_id: tenantId,
-        party_id: partyId,
       });
       return {
-        actions: (response.actions || []).map((apiPlan) => ({
-          planId: apiPlan.plan_id,
-          // Minimal mapping required for cache consistency
-          status: apiPlan.status as import('../types/ai.types').ActionPlanStatus,
-          overallRiskLevel: apiPlan.overall_risk_level as import('../types/ai.types').RiskLevel,
-          requiresApproval: apiPlan.requires_approval,
-          planHash: apiPlan.plan_hash,
-          createdAt: apiPlan.created_at,
-          steps: [], // Prefetch usually doesn't need deep steps, or map if critical
-        }) as unknown as ActionPlan), // assertive cast to match return type
+        actions: (response.items || []).map((apiItem) => ({
+          planId: apiItem.id,
+          status: 'pending_approval' as import('../types/ai.types').ActionPlanStatus,
+          overallRiskLevel: apiItem.risk_level as import('../types/ai.types').RiskLevel,
+          requiresApproval: true,
+          planHash: apiItem.action_id,
+          createdAt: apiItem.created_at,
+          steps: [],
+        }) as unknown as ActionPlan),
         total: response.total || 0
       };
     },
