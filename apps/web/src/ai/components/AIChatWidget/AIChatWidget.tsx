@@ -26,6 +26,7 @@ import { ChatInput } from './ChatInput';
 import { useChatStore } from '../../stores/chatStore';
 import { useMobile } from '../../../hooks/useMobile';
 import { QuickActions } from './QuickActions';
+import { ActionProgress } from './ActionProgress';
 
 // =============================================================================
 // Types
@@ -247,7 +248,7 @@ export function AIChatWidget({
 
   const {
     mode, selectedAction: currentAction, currentSlot, slots,
-    updateSlot, nextSlot, reset, executionResult
+    updateSlot, nextSlot, reset, executionResult, executionStatus
   } = useComposerStore();
 
   // Derived state
@@ -505,18 +506,27 @@ export function AIChatWidget({
                 <p className="text-sm font-bold text-purple-900 mb-1">İşlemi Onaylıyor musunuz?</p>
                 <p className="text-xs text-purple-700 mb-2">{currentAction.name} - {Object.keys(slots).length} parametre hazır.</p>
                 <div className="flex gap-2">
-                  <button data-allow-raw="true"
+                  <button
                     onClick={() => {
-                      // Execute handoff or direct execution
-                      console.log('Confirmed in Chat');
-                      // For now just reset or execute if possible
-                      reset();
+                      // Temporary: Start Mock Execution
+                      // In real app, this would call executeAction
+                      // We will trigger this via a helper or direct store manipulation for now
+                      // But strictly we need to import mockExecutor. 
+                      // For now, I'll just set the status to trigger the UI, then we'll wire the logic.
+                      // Actually, I should probably wait for the mock executor to be available to wire it correctly.
+                      // I will put a placeholder comment here or use a window dispatch if needed, but best is to keep current behavior 
+                      // until I modify the confirmation handler.
+                      // The user can't click 'Confirm' yet to trigger the NEW flow, but I need to render the NEW component.
+                      useComposerStore.getState().setExecutionStatus('init');
+                      import('../../utils/mockExecutor').then(({ simulateActionExecution }) => {
+                        simulateActionExecution(currentAction, slots, useComposerStore.getState());
+                      });
                     }}
                     className="bg-purple-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-purple-700"
                   >
                     Onayla
                   </button>
-                  <button data-allow-raw="true"
+                  <button
                     onClick={reset}
                     className="bg-white border border-purple-200 text-purple-700 px-3 py-1.5 rounded text-xs font-bold"
                   >
@@ -526,8 +536,15 @@ export function AIChatWidget({
               </div>
             )}
 
-            {/* Execution/Dry-run Result in Chat */}
-            {isOpen && executionResult && (
+            {/* NEW: Action Execution Progress (Replaces the old result view for the new flow) */}
+            {isOpen && executionStatus !== 'idle' && (
+              <div className="my-2">
+                <ActionProgress />
+              </div>
+            )}
+
+            {/* Legacy Execution/Dry-run Result - Only show if NO active execution flow (backward compat) */}
+            {isOpen && executionResult && executionStatus === 'idle' && (
               <div className={`mt-2 p-3 rounded-lg border animate-in slide-in-from-bottom-2 ${executionResult.status === 'success' ? 'bg-green-50 border-green-100 text-green-900' :
                 executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
                   'bg-red-50 border-red-100 text-red-900'

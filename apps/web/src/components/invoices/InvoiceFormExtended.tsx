@@ -682,6 +682,11 @@ export function InvoiceFormExtended({
                   governmentData: extendedData.governmentData,
                   scenario: extendedData.scenario,
                   scenarioData: extendedData.scenarioData,
+                  sgkData: extendedData.sgkData,
+                  medicalDeviceData: extendedData.medicalDeviceData,
+                  exportDetails: extendedData.exportDetails,
+                  returnInvoiceDetails: extendedData.returnInvoiceDetails,
+                  withholdingData: extendedData.withholdingData,
                 }
               };
               onSubmit(submissionData);

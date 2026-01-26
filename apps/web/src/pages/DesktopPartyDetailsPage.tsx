@@ -6,7 +6,7 @@ import {
   Activity,
   CreditCard
 } from 'lucide-react';
-import { useParty } from '../hooks/party/useParty';
+import { useParty } from '../hooks/useParty';
 import { usePartyDevices } from '../hooks/party/usePartyDevices';
 import { usePartySales } from '../hooks/party/usePartySales';
 import { usePartyTimeline } from '../hooks/party/usePartyTimeline';
@@ -46,8 +46,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [, setShowReportModal] = useState(false); // Value unused, setter used in PartyHeader
 
-  const { party, isLoading, error, loadParty } = useParty(partyId);
-  const refetch = () => partyId ? loadParty(partyId) : Promise.resolve();
+  const { party, isLoading, error, refetch } = useParty(partyId);
   const updatePartyMutation = useUpdateParty();
   const { devices } = usePartyDevices(partyId ?? '');
   const { sales } = usePartySales(partyId);
