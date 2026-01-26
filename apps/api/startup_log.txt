@@ -4801,3 +4801,79 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 {"timestamp": "2026-01-26T22:24:23.770141+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
 {"timestamp": "2026-01-26T22:24:24.926900+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T22:33:26.302712+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'ai/api/admin.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40633]
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+python3(57490) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+{"timestamp": "2026-01-26T22:33:28.575857+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_id" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_version" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_available" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_provider" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 131, in _main
+    prepare(preparation_data)
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 246, in prepare
+    _fixup_main_from_path(data['init_main_from_path'])
+  File "/opt/homebrew/anaconda3/lib/python3.12/multiprocessing/spawn.py", line 297, in _fixup_main_from_path
+    main_content = runpy.run_path(main_path,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/main.py", line 429, in <module>
+    from ai.api import (
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/__init__.py", line 16, in <module>
+    from ai.api.admin import router as admin_router
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/admin.py", line 409, in <module>
+    response_model=AISettingsResponse,
+                   ^^^^^^^^^^^^^^^^^^
+NameError: name 'AISettingsResponse' is not defined. Did you mean: 'AiSettingsResponse'?
+DEBUG: schemas.parties loaded from: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/parties.py
+{"timestamp": "2026-01-26T22:33:30.567779+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+{"timestamp": "2026-01-26T22:33:52.167499+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+WARNING:  WatchFiles detected changes in 'ai/api/admin.py'. Reloading...
+python3(57747) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_id" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_version" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_available" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:149: UserWarning: Field "model_provider" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+{"timestamp": "2026-01-26T22:33:54.976083+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}
+INFO:     Started server process [57747]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+{"timestamp": "2026-01-26T22:33:59.367845+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "1 change detected"}
+{"timestamp": "2026-01-26T22:34:00.356862+00:00", "level": "INFO", "logger": "watchfiles.main", "message": "3 changes detected"}

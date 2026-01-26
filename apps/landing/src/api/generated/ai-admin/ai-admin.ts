@@ -25,7 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AISettingsResponse,
+  AiSettingsResponse,
   CleanupExpiredApprovalsApiAiAdminCleanupExpiredPost200,
   GetPendingApprovalsApiAiAdminPendingApprovalsGetParams,
   HTTPValidationError,
@@ -372,7 +372,7 @@ export const getAiSettingsApiAiAdminSettingsGet = (
 ) => {
       
       
-      return customInstance<AISettingsResponse>(
+      return customInstance<AiSettingsResponse>(
       {url: `/api/ai/admin/settings`, method: 'GET', signal
     },
       );

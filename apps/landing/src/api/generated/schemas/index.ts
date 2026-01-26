@@ -6,7 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from './aISettingsResponse';
 export * from './acknowledgeAlertApiAiAlertsAlertIdAcknowledgePost200';
 export * from './actionPlanResponse';
 export * from './actionPlanResponseEstimatedDurationSeconds';
@@ -118,6 +117,7 @@ export * from './aiActionPlanResponseApprovalToken';
 export * from './aiActionStepResponse';
 export * from './aiActionStepResponseParameters';
 export * from './aiPhaseEnum';
+export * from './aiSettingsResponse';
 export * from './aiStatusResponse';
 export * from './aiStatusResponseQuotaLimit';
 export * from './aiStatusResponseQuotaRemaining';

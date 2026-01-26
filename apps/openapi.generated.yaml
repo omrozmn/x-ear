@@ -15787,7 +15787,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AISettingsResponse'
+                $ref: '#/components/schemas/AiSettingsResponse'
         '403':
           description: Admin permissions required
   /api/ai/composer/autocomplete:
@@ -15906,42 +15906,6 @@ paths:
       - OAuth2PasswordBearer: []
 components:
   schemas:
-    AISettingsResponse:
-      properties:
-        enabled:
-          type: boolean
-          title: Enabled
-          description: Whether AI is enabled
-        phase:
-          type: string
-          title: Phase
-          description: Current phase
-        model_provider:
-          type: string
-          title: Model Provider
-          description: Model provider
-        model_id:
-          type: string
-          title: Model Id
-          description: Model ID
-        rate_limit_per_minute:
-          type: integer
-          title: Rate Limit Per Minute
-          description: Rate limit per minute
-        default_quota:
-          type: integer
-          title: Default Quota
-          description: Default quota per period
-      type: object
-      required:
-      - enabled
-      - phase
-      - model_provider
-      - model_id
-      - rate_limit_per_minute
-      - default_quota
-      title: AISettingsResponse
-      description: AI settings response.
     ActionPlanResponse:
       properties:
         plan_id:
@@ -16906,6 +16870,42 @@ components:
       - execution
       title: AiPhaseEnum
       description: AI Layer operational phase.
+    AiSettingsResponse:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+          description: Whether AI is enabled
+        phase:
+          type: string
+          title: Phase
+          description: Current phase
+        model_provider:
+          type: string
+          title: Model Provider
+          description: Model provider
+        model_id:
+          type: string
+          title: Model Id
+          description: Model ID
+        rate_limit_per_minute:
+          type: integer
+          title: Rate Limit Per Minute
+          description: Rate limit per minute
+        default_quota:
+          type: integer
+          title: Default Quota
+          description: Default quota per period
+      type: object
+      required:
+      - enabled
+      - phase
+      - model_provider
+      - model_id
+      - rate_limit_per_minute
+      - default_quota
+      title: AiSettingsResponse
+      description: AI settings response.
     AiStatusResponse:
       properties:
         enabled:

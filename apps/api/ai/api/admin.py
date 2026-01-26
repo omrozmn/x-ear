@@ -96,7 +96,7 @@ class PendingApprovalsListResponse(BaseModel):
     total: int = Field(description="Total count")
 
 
-class AISettingsResponse(BaseModel):
+class AiSettingsResponse(BaseModel):
     """AI settings response."""
     enabled: bool = Field(description="Whether AI is enabled")
     phase: str = Field(description="Current phase")
@@ -406,7 +406,7 @@ async def cleanup_expired_approvals(
 
 @router.get(
     "/settings",
-    response_model=AISettingsResponse,
+    response_model=AiSettingsResponse,
     responses={
         200: {"description": "Settings retrieved"},
         403: {"description": "Admin permissions required"},
@@ -415,11 +415,11 @@ async def cleanup_expired_approvals(
 )
 async def get_ai_settings(
     user_context: Dict[str, Any] = Depends(require_admin),
-) -> AISettingsResponse:
+) -> AiSettingsResponse:
     """Get current AI settings."""
     config = get_ai_config()
     
-    return AISettingsResponse(
+    return AiSettingsResponse(
         enabled=config.enabled,
         phase=config.phase.name,
         model_provider=config.model.provider,
