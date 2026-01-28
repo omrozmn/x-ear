@@ -38,6 +38,12 @@ dist/
 .env
 .env.*
 
+# Vast.ai SSH keys (security)
+vast_temp_key
+vast_temp_key.pub
+**/vast_temp_key
+**/vast_temp_key.pub
+
 # Backend local instance files and DBs
 /apps/backend/instance/
 /apps/backend/database.db
@@ -60,3 +66,9 @@ huggingface/
 pip-wheel-metadata/
 
 apps/backend/.venv
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+*.trace.zip

@@ -47,6 +47,24 @@ interface ComposerState {
 
     reset: () => void;
     setExecutionResult: (res: ExecuteResponse) => void;
+
+    // Execution Progress State
+    executionSteps: ExecutionStep[];
+    executionStatus: ExecutionStatus;
+    executionError: string | null;
+
+    setExecutionStatus: (status: ExecutionStatus) => void;
+    addExecutionStep: (step: ExecutionStep) => void;
+    updateExecutionStep: (id: string, updates: Partial<ExecutionStep>) => void;
+    setExecutionError: (error: string | null) => void;
+}
+
+export type ExecutionStatus = 'idle' | 'init' | 'running' | 'waiting' | 'success' | 'error';
+
+export interface ExecutionStep {
+    id: string;
+    label: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
 }
 
 export const useComposerStore = create<ComposerState>((set, get) => ({
@@ -60,6 +78,9 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
     currentSlot: null,
     isDryRun: false,
     executionResult: null,
+    executionSteps: [],
+    executionStatus: 'idle',
+    executionError: null,
 
     setOpen: (open) => set({ isOpen: open }),
     toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
@@ -144,8 +165,24 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         selectedAction: null,
         slots: {},
         currentSlot: null,
-        executionResult: null
+        executionResult: null,
+        executionSteps: [],
+        executionStatus: 'idle',
+        executionError: null
     }),
 
-    setExecutionResult: (res) => set({ executionResult: res })
+    setExecutionResult: (res) => set({ executionResult: res }),
+
+    // Execution Progress Actions
+    setExecutionStatus: (status) => set({ executionStatus: status, mode: status === 'running' ? 'executing' : get().mode }),
+
+    addExecutionStep: (step) => set((state) => ({
+        executionSteps: [...state.executionSteps, step]
+    })),
+
+    updateExecutionStep: (id, updates) => set((state) => ({
+        executionSteps: state.executionSteps.map(s => s.id === id ? { ...s, ...updates } : s)
+    })),
+
+    setExecutionError: (error) => set({ executionError: error })
 }));
