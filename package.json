@@ -26,7 +26,15 @@
     "db:migrate": "cd apps/backend && python -m alembic upgrade head",
     "db:migration": "cd apps/backend && python -m alembic revision --autogenerate",
     "backend:setup": "cd apps/backend && pip install -r requirements.txt",
-    "precommit:typecheck": "cd apps/web && npm run type-check"
+    "precommit:typecheck": "cd apps/web && npm run type-check",
+    "test:critical-flows": "playwright test tests/e2e/critical-flows",
+    "test:critical-flows:p0": "playwright test tests/e2e/critical-flows/p0-revenue-legal",
+    "test:critical-flows:p1": "playwright test tests/e2e/critical-flows/p1-core-operations",
+    "test:critical-flows:p2": "playwright test tests/e2e/critical-flows/p2-admin-operations",
+    "test:critical-flows:sync": "playwright test tests/e2e/critical-flows/cross-app-sync",
+    "test:critical-flows:watch": "playwright test tests/e2e/critical-flows --ui",
+    "test:critical-flows:debug": "playwright test tests/e2e/critical-flows --debug",
+    "test:critical-flows:ci": "playwright test tests/e2e/critical-flows --reporter=list,html --workers=4"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
