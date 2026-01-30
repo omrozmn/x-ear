@@ -35,6 +35,7 @@ SKIP_PATHS = [
     "/api/auth/login",
     "/api/auth/refresh",
     "/api/auth/logout",
+    "/api/auth/lookup-phone",
     "/docs",
     "/openapi.json",
     "/redoc",

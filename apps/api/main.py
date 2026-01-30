@@ -134,7 +134,7 @@ app.add_middleware(IdempotencyMiddleware)
 # Requirements: 2.1, 2.7 (AI Security Fixes)
 from ai.middleware.auth import AIAuthMiddleware
 
-app.add_middleware(AIAuthMiddleware)
+app.add_middleware(AIAuthMiddleware, ai_path_prefix="/api/ai")
 
 # Permission middleware should run early (after request-id) to ensure consistent errors/logs.
 app.add_middleware(FastAPIPermissionMiddleware)
@@ -248,7 +248,7 @@ from routers import appointments, dashboard, devices
 from routers import notifications, branches, reports, roles
 from routers import payments, tenant_users, suppliers, settings
 # Admin routers
-from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics
+from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics, admin_example_documents
 # Additional routers
 from routers import invoices, sgk
 # Newly migrated routers
@@ -304,6 +304,7 @@ app.include_router(admin_dashboard.router, prefix="/api")
 app.include_router(admin_plans.router, prefix="/api")
 app.include_router(admin_addons.router, prefix="/api")
 app.include_router(admin_analytics.router, prefix="/api")
+app.include_router(admin_example_documents.router, prefix="/api")
 
 # Additional routers
 app.include_router(invoices.router, prefix="/api")

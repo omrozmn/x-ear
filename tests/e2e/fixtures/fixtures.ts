@@ -24,7 +24,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
         page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
 
         // 1. Login via API
-        const tokens = await login(request, process.env.TEST_USER_PHONE || '+905551234567', process.env.TEST_USER_OTP || 'password123');
+        const tokens = await login(request, process.env.TEST_USER_EMAIL || 'admin@x-ear.com', process.env.TEST_USER_PASSWORD || 'password123');
 
         // 2. Real Backend Mode - No Mocks
         console.log('[Fixture] Running against REAL BACKEND (No Mocks)');

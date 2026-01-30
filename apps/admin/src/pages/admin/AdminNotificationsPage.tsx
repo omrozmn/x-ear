@@ -18,7 +18,7 @@ const AdminNotificationsPage: React.FC = () => {
     const [customTitle, setCustomTitle] = useState('');
     const [customMessage, setCustomMessage] = useState('');
 
-    const templates = (templatesData as any)?.data || [];
+    const templates = (templatesData as any)?.templates || (templatesData as any)?.data || (Array.isArray(templatesData) ? templatesData : []);
 
     const handleSend = async () => {
         if (!customTitle || !customMessage) {

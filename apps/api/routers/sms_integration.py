@@ -55,8 +55,22 @@ async def get_sms_config(
             db.commit()
             db.refresh(config)
         
-        # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return ResponseEnvelope(data=SmsProviderConfigRead.model_validate(config).model_dump(by_alias=True) if config else None)
+        if config:
+            # Manually construct response with documents_json
+            config_dict = {
+                'id': config.id,
+                'tenantId': config.tenant_id,
+                'apiUsername': config.api_username,
+                'documentsEmail': config.documents_email,
+                'documents': config.documents_json,  # Use documents_json property
+                'documentsSubmitted': config.documents_submitted,
+                'documentsSubmittedAt': config.documents_submitted_at.isoformat() if config.documents_submitted_at else None,
+                'allDocumentsApproved': config.all_documents_approved,
+                'isActive': config.is_active
+            }
+            return ResponseEnvelope(data=config_dict)
+        
+        return ResponseEnvelope(data=None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -275,38 +289,103 @@ async def upload_sms_document(
         if not access.tenant_id:
             raise HTTPException(status_code=400, detail="Tenant context required")
         
-        # Save file to temp location
-        suffix = os.path.splitext(file.filename or '')[1] or '.pdf'
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix, prefix=f'sms_doc_{document_type}_')
+        # Get or create SMS config
+        config = db.query(SMSProviderConfig).filter(SMSProviderConfig.tenant_id == access.tenant_id).first()
+        if not config:
+            config = SMSProviderConfig(tenant_id=access.tenant_id)
+            db.add(config)
+            db.flush()
+        
+        # Create storage directory if not exists
+        storage_dir = os.path.join(os.path.dirname(__file__), '..', 'storage', 'sms_documents', access.tenant_id)
+        os.makedirs(storage_dir, exist_ok=True)
+        
+        # Save file with original filename
+        file_extension = os.path.splitext(file.filename or '')[1] or '.pdf'
+        safe_filename = f"{document_type}_{uuid.uuid4().hex[:8]}{file_extension}"
+        file_path = os.path.join(storage_dir, safe_filename)
+        
+        # Write file content
         content = await file.read()
-        tmp.write(content)
-        tmp.close()
+        with open(file_path, 'wb') as f:
+            f.write(content)
+        
+        # Update documents list in config
+        docs = config.documents_json
+        # Remove existing document of same type
+        docs = [d for d in docs if d.get('type') != document_type]
+        # Add new document
+        docs.append({
+            'type': document_type,
+            'filename': file.filename,
+            'path': file_path,
+            'size': len(content),
+            'status': 'uploaded',
+            'uploadedAt': datetime.now(timezone.utc).isoformat()
+        })
+        config.documents_json = docs
+        
+        db.commit()
+        db.refresh(config)
         
         return ResponseEnvelope(data={
             "filename": file.filename,
             "documentType": document_type,
-            "path": tmp.name,
+            "path": file_path,
             "size": len(content)
         })
     except HTTPException:
         raise
     except Exception as e:
+        db.rollback()
+        logging.error(f"Error uploading SMS document: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/documents/{document_type}/download", operation_id="listSmDocumentDownload")
 async def download_sms_document(
     document_type: str,
+    preview: bool = Query(False, description="Return URL for preview instead of file"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    """Download SMS document by type"""
+    """Download SMS document by type or get preview URL"""
     try:
-        # Mock implementation - return placeholder
-        return ResponseEnvelope(data={
-            "documentType": document_type,
-            "downloadUrl": f"/api/sms/documents/file/{document_type}.pdf"
-        })
+        if not access.tenant_id:
+            raise HTTPException(status_code=400, detail="Tenant context required")
+        
+        # Get SMS config
+        config = db.query(SMSProviderConfig).filter(SMSProviderConfig.tenant_id == access.tenant_id).first()
+        if not config:
+            raise HTTPException(status_code=404, detail="Config not found")
+        
+        # Find document in list
+        docs = config.documents_json
+        doc = next((d for d in docs if d.get('type') == document_type), None)
+        
+        if not doc or not doc.get('path'):
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        file_path = doc['path']
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="File not found on disk")
+        
+        # If preview mode, return URL
+        if preview:
+            # Generate relative URL for frontend to fetch
+            relative_path = file_path.replace(os.path.join(os.path.dirname(__file__), '..', 'storage', 'sms_documents'), '')
+            preview_url = f"/api/sms/documents/file{relative_path}"
+            return ResponseEnvelope(data={"url": preview_url})
+        
+        # Otherwise return file directly
+        return FileResponse(
+            path=file_path,
+            filename=doc.get('filename', f'{document_type}.pdf'),
+            media_type='application/pdf'
+        )
+    except HTTPException:
+        raise
     except Exception as e:
+        logging.error(f"Error downloading SMS document: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/documents/{document_type}", operation_id="deleteSmDocument")
@@ -317,6 +396,21 @@ async def delete_sms_document(
 ):
     """Delete SMS document"""
     try:
+        if not access.tenant_id:
+            raise HTTPException(status_code=400, detail="Tenant context required")
+        
+        # Get SMS config
+        config = db.query(SMSProviderConfig).filter(SMSProviderConfig.tenant_id == access.tenant_id).first()
+        if not config:
+            raise HTTPException(status_code=404, detail="Config not found")
+        
+        # Remove document from list
+        docs = config.documents_json
+        docs = [d for d in docs if d.get('type') != document_type]
+        config.documents_json = docs
+        
+        db.commit()
+        
         return ResponseEnvelope(message=f"Document {document_type} deleted")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -333,12 +427,37 @@ async def submit_sms_documents(
 ):
     """Submit SMS documents for review"""
     try:
+        if not access.tenant_id:
+            raise HTTPException(status_code=400, detail="Tenant context required")
+        
+        # Get SMS config
+        config = db.query(SMSProviderConfig).filter(SMSProviderConfig.tenant_id == access.tenant_id).first()
+        if not config:
+            raise HTTPException(status_code=404, detail="Config not found")
+        
+        # Update submission status
+        config.documents_submitted = True
+        config.documents_submitted_at = datetime.now(timezone.utc)
+        
+        # Update all document statuses to 'sent'
+        docs = config.documents_json
+        for doc in docs:
+            if doc.get('status') == 'uploaded':
+                doc['status'] = 'sent'
+        config.documents_json = docs
+        
+        db.commit()
+        db.refresh(config)
+        
         return ResponseEnvelope(data={
             "status": "submitted",
             "documentType": data.document_type,
-            "submittedAt": datetime.now().isoformat()
+            "submittedAt": datetime.now(timezone.utc).isoformat()
         })
+    except HTTPException:
+        raise
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/audiences/upload", operation_id="createSmAudienceUpload")

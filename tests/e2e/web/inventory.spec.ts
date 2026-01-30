@@ -20,7 +20,8 @@ test.describe('Inventory CRUD Operations', () => {
         await tenantPage.waitForLoadState('networkidle');
 
         // Click Add/New button
-        const addButton = tenantPage.getByRole('button', { name: /Yeni|Ekle|Add|Ürün/i }).first();
+        // Click Add/New button "Yeni Ürün"
+        const addButton = tenantPage.getByRole('button', { name: 'Yeni Ürün' }).first();
         const hasAdd = await addButton.isVisible({ timeout: 5000 }).catch(() => false);
 
         if (hasAdd) {

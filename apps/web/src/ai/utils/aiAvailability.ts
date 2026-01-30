@@ -97,7 +97,7 @@ export function checkAIAvailability(
     }
 
     // Check if AI is enabled
-    if (!status.enabled) {
+    if (!status?.enabled) {
         return {
             available: false,
             reason: 'disabled',
@@ -106,16 +106,16 @@ export function checkAIAvailability(
     }
 
     // Check kill switch
-    if (status.killSwitch.globalActive || status.killSwitch.tenantActive) {
+    if (status.killSwitch?.globalActive || status.killSwitch?.tenantActive) {
         return {
             available: false,
             reason: 'kill_switch',
-            message: status.killSwitch.reason || UNAVAILABLE_MESSAGES.kill_switch,
+            message: status.killSwitch?.reason || UNAVAILABLE_MESSAGES.kill_switch,
         };
     }
 
     // Check quota
-    if (status.usage.anyQuotaExceeded) {
+    if (status.usage?.anyQuotaExceeded) {
         return {
             available: false,
             reason: 'quota_exceeded',
@@ -126,7 +126,7 @@ export function checkAIAvailability(
     // If capability is specified, perform capability-specific checks
     if (capability) {
         // Check if capability is disabled by kill switch
-        if (status.killSwitch.capabilitiesDisabled.includes(capability)) {
+        if (status.killSwitch?.capabilitiesDisabled?.includes(capability)) {
             return {
                 available: false,
                 reason: 'capability_disabled',
@@ -144,7 +144,7 @@ export function checkAIAvailability(
         }
 
         // Check phase requirement
-        const currentPhase = status.phase.currentPhase;
+        const currentPhase = status.phase?.currentPhase || 'A';
         const capabilityConfig = AI_CAPABILITIES[capability];
 
         if (capabilityConfig) {
@@ -162,7 +162,7 @@ export function checkAIAvailability(
         if (!isCapabilityAvailable(
             capability,
             currentPhase,
-            status.killSwitch.capabilitiesDisabled,
+            status.killSwitch?.capabilitiesDisabled || [],
             userRole || undefined
         )) {
             return {
@@ -183,7 +183,7 @@ export function checkAIAvailability(
     }
 
     // Check general availability
-    if (!status.available) {
+    if (!status?.available) {
         return {
             available: false,
             reason: 'unknown',

@@ -19,8 +19,8 @@ const AdminAppointmentsPage: React.FC = () => {
         status: statusFilter || undefined
     });
 
-    const appointments = (appointmentsData as any)?.data?.appointments || [];
-    const pagination = (appointmentsData as any)?.data?.pagination;
+    const appointments = (appointmentsData as any)?.appointments || (appointmentsData as any)?.data?.appointments || (appointmentsData as any)?.data || [];
+    const pagination = (appointmentsData as any)?.pagination || (appointmentsData as any)?.data?.pagination;
 
     const getStatusBadge = (status: string) => {
         switch (status) {

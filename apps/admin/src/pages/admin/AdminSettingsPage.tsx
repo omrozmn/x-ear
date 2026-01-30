@@ -27,8 +27,9 @@ const AdminSettingsPage: React.FC = () => {
     const backupMutation = useCreateAdminSettingBackup();
 
     useEffect(() => {
-        if ((settingsData as any)?.data) {
-            setSettings((settingsData as any).data);
+        const actualSettings = (settingsData as any)?.settings || (settingsData as any)?.data;
+        if (actualSettings) {
+            setSettings(actualSettings);
         }
     }, [settingsData]);
 

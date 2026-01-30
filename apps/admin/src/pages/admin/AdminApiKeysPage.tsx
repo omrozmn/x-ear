@@ -23,8 +23,8 @@ const AdminApiKeysPage: React.FC = () => {
     const createApiKeyMutation = useCreateAdminApiKey();
     const revokeApiKeyMutation = useDeleteAdminApiKey();
 
-    const keys = (keysData as any)?.data?.keys || [];
-    const pagination = (keysData as any)?.data?.pagination;
+    const keys = (keysData as any)?.keys || (keysData as any)?.data?.keys || (keysData as any)?.data || [];
+    const pagination = (keysData as any)?.pagination || (keysData as any)?.data?.pagination;
 
     const handleCreate = async () => {
         if (!keyName || !tenantId) {
@@ -42,8 +42,9 @@ const AdminApiKeysPage: React.FC = () => {
                 }
             });
 
-            if ((result as any).data?.apiKey) {
-                setNewKey((result as any).data.apiKey);
+            const actualData = (result as any).data || result;
+            if (actualData?.apiKey) {
+                setNewKey(actualData.apiKey);
                 toast.success('API Anahtarı oluşturuldu');
                 refetch();
             }

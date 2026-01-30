@@ -30,6 +30,7 @@ import {
   getInvoice,
   listAdminInvoices,
   listInvoicePdf,
+  listInvoiceTemplates,
   updateInvoice,
 } from '@/api/client/invoices.client';
 import type {
@@ -527,7 +528,7 @@ export class InvoiceService {
     let totalAmount = existing.totalAmount;
 
     if (updates.items) {
-       
+
       const calc = this.calculateInvoice(updates.items as InvoiceItem[]);
       items = calc.items as InvoiceItem[];
       subtotal = calc.subtotal;
@@ -883,9 +884,14 @@ export class InvoiceService {
 
   // Template Operations
   async getTemplates(): Promise<InvoiceTemplate[]> {
-    // TODO: Implement listInvoiceTemplates when available in generated API
-    console.warn('listInvoiceTemplates API not available');
-    return [];
+    try {
+      const response = await listInvoiceTemplates();
+      // Unwrap ResponseEnvelope
+      return (response?.data || []) as unknown as InvoiceTemplate[];
+    } catch (error) {
+      console.error('Failed to fetch invoice templates:', error);
+      return [];
+    }
   }
 
   // New P1 Features

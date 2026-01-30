@@ -21,8 +21,8 @@ const AdminInventoryPage: React.FC = () => {
         category: categoryFilter || undefined
     });
 
-    const inventory = (inventoryData as any)?.data?.inventory || [];
-    const pagination = (inventoryData as any)?.data?.pagination;
+    const inventory = (inventoryData as any)?.inventory || (inventoryData as any)?.data?.inventory || [];
+    const pagination = (inventoryData as any)?.pagination || (inventoryData as any)?.data?.pagination;
 
     const getStatusBadge = (status: string) => {
         switch (status) {

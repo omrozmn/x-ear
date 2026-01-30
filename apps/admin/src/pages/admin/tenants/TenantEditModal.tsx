@@ -39,7 +39,7 @@ export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: strin
             enabled: !!tenantId && isOpen
         }
     });
-    const tenant = (tenantData as any)?.data?.tenant as ExtendedTenant;
+    const tenant = (tenantData as any)?.tenant || (tenantData as any)?.data?.tenant as ExtendedTenant;
 
     useEffect(() => {
         if (tenantId && isOpen) {

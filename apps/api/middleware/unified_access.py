@@ -143,6 +143,7 @@ def _build_access_from_token(
     
     user_id = payload.get("sub")
     if not user_id:
+        logger.error(f"Invalid token: missing subject (sub) claim. Payload keys: {list(payload.keys())}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"message": "Invalid token: missing subject", "code": "INVALID_TOKEN"}
@@ -160,8 +161,10 @@ def _build_access_from_token(
         admin = db.get(AdminUser, actual_id)
         
         if not admin:
+            logger.error(f"Admin user not found in DB. ID: {actual_id}")
             raise HTTPException(status_code=401, detail="Admin user not found")
         if not admin.is_active:
+            logger.error(f"Admin user inactive. ID: {actual_id}")
             raise HTTPException(status_code=401, detail="Admin user inactive")
         
         # Get permissions
@@ -209,8 +212,10 @@ def _build_access_from_token(
     
     user = db.get(User, user_id)
     if not user:
+        logger.error(f"User not found in DB. ID: {user_id}")
         raise HTTPException(status_code=401, detail="User not found")
     if not user.is_active:
+        logger.error(f"User user inactive. ID: {user_id}")
         raise HTTPException(status_code=401, detail="User inactive")
     
     # Check permission version - if changed, token is stale
@@ -218,6 +223,7 @@ def _build_access_from_token(
     user_perm_ver = getattr(user, 'permissions_version', 1) or 1
     
     if token_perm_ver != user_perm_ver:
+        logger.warning(f"Permission version mismatch. Token: {token_perm_ver}, User: {user_perm_ver}")
         raise HTTPException(
             status_code=401,
             detail={

@@ -74,6 +74,7 @@ async def create_supplier(
             raise HTTPException(status_code=400, detail="Company name is required")
         
         new_supplier = Supplier(
+            tenant_id=data.tenant_id,
             company_name=data.company_name,
             contact_person=data.contact_person,
             email=data.email,
@@ -140,6 +141,8 @@ async def update_supplier(
             supplier.tax_office = data.tax_office
         if data.is_active is not None:
             supplier.is_active = data.is_active
+        if data.tenant_id is not None:
+            supplier.tenant_id = data.tenant_id
         
         supplier.updated_at = datetime.utcnow()
         db.commit()

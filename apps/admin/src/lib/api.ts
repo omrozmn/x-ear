@@ -115,10 +115,14 @@ apiClient.interceptors.response.use(
             // Only logout if it's a real auth error, not just missing permissions
             if (isAuthError) {
                 console.warn('Authentication error detected, logging out:', errorMessage);
+                // disable auto-logout for debugging
+                /*
                 localStorage.removeItem('admin_token');
                 if (window.location.pathname !== '/login') {
                     window.location.href = '/login';
                 }
+                */
+                console.warn("[Lib API] Auto-logout disabled for debugging");
             } else {
                 // Just log the authorization error, don't logout
                 console.warn('Authorization error (not logging out):', errorMessage);

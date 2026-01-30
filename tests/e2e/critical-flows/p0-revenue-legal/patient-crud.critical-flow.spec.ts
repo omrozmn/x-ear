@@ -16,7 +16,7 @@ import { test, expect } from '../../fixtures/fixtures';
 import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-01: Patient CRUD', () => {
-  test('should complete patient CRUD lifecycle successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should complete patient CRUD lifecycle successfully', async ({ tenantPage, request, authTokens }) => {
     // Generate unique test data
     const timestamp = Date.now();
     const uniqueId = timestamp.toString().slice(-8);
@@ -65,7 +65,7 @@ test.describe('FLOW-01: Patient CRUD', () => {
     
     // STEP 3: Verify creation via API
     console.log('[FLOW-01] Step 3: Verify party created via API');
-    const listResponse = await apiContext.get('/api/parties?page=1&perPage=50', {
+    const listResponse = await request.get('/api/parties?page=1&perPage=50', {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     
@@ -112,7 +112,7 @@ test.describe('FLOW-01: Patient CRUD', () => {
     await tenantPage.waitForLoadState('networkidle');
     
     // Verify update via API
-    const getResponse = await apiContext.get(`/api/parties/${partyId}`, {
+    const getResponse = await request.get(`/api/parties/${partyId}`, {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     
@@ -148,7 +148,7 @@ test.describe('FLOW-01: Patient CRUD', () => {
     await expect(deletedPartyElement).not.toBeVisible({ timeout: 5000 });
     
     // Verify via API (should return 404)
-    const verifyDeleteResponse = await apiContext.get(`/api/parties/${partyId}`, {
+    const verifyDeleteResponse = await request.get(`/api/parties/${partyId}`, {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     

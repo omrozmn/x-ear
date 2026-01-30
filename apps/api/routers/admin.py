@@ -159,8 +159,14 @@ def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
         db.commit()
         
         admin_identity = admin.id if admin.id.startswith('admin_') else f'admin_{admin.id}'
-        access_token = create_access_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
-        refresh_token = create_refresh_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
+        # CRITICAL: AIAuthMiddleware requires tenant_id claim
+        token_claims = {
+            'role': admin.role, 
+            'user_type': 'admin',
+            'tenant_id': 'system'  # System tenant for admins
+        }
+        access_token = create_access_token(admin_identity, token_claims)
+        refresh_token = create_refresh_token(admin_identity, token_claims)
         
         user_data = {
             'id': admin.id,

@@ -1,4 +1,4 @@
-import { EntityItem, Capability, SlotConfig } from '../../api/generated/schemas';
+import { Capability, SlotConfig } from '../../api/generated/schemas';
 import { useComposerStore } from '../../stores/composerStore';
 
 /**
@@ -10,7 +10,7 @@ export async function simulateActionExecution(
     slots: Record<string, unknown>,
     store: ReturnType<typeof useComposerStore.getState>
 ) {
-    const { addExecutionStep, updateExecutionStep, setExecutionStatus, setExecutionResult, setExecutionError, updateSlot, nextSlot } = store;
+    const { addExecutionStep, updateExecutionStep, setExecutionStatus, setExecutionResult, setExecutionError } = store;
 
     // 1. INIT
     setExecutionStatus('init');

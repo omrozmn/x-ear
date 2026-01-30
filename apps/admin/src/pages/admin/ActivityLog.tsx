@@ -139,10 +139,10 @@ export default function ActivityLogPage() {
     const { data: statsData } = useListActivityLogStats({});
     const { data: filterOptions } = useListActivityLogFilterOptions();
 
-    const logs = (logsData?.data as any)?.logs || [];
-    const meta = (logsData?.data as any)?.meta;
-    const stats = statsData?.data as any;
-    const options = (filterOptions as any)?.data || {};
+    const logs = (logsData as any)?.logs || (logsData as any)?.data?.logs || (logsData as any)?.data || [];
+    const meta = (logsData as any)?.meta || (logsData as any)?.data?.meta || (logsData as any)?.data?.pagination;
+    const stats = (statsData as any)?.stats || (statsData as any)?.data || statsData;
+    const options = (filterOptions as any)?.options || (filterOptions as any)?.data || {};
 
     return (
         <div className="p-6 max-w-7xl mx-auto">

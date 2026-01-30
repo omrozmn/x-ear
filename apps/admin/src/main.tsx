@@ -23,6 +23,25 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient()
 
+// --- DEBUG TRAP START ---
+if (typeof window !== 'undefined') {
+    const originalRemoveItem = window.localStorage.removeItem;
+    const originalClear = window.localStorage.clear;
+
+    window.localStorage.removeItem = function (key) {
+        if (key === 'admin_token') {
+            console.error('[TRAP] localStorage.removeItem("admin_token") called!', new Error().stack);
+        }
+        return originalRemoveItem.apply(this, arguments as any);
+    };
+
+    window.localStorage.clear = function () {
+        console.error('[TRAP] localStorage.clear() called!', new Error().stack);
+        return originalClear.apply(this, arguments as any);
+    };
+}
+// --- DEBUG TRAP END ---
+
 // Render the app
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {

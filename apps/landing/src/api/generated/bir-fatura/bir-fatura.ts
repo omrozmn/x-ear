@@ -16,6 +16,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  GetOutBoxDocumentsRequest,
+  GetPDFLinkRequest,
   HTTPValidationError,
   InvoiceSyncRequest,
   MockDetailRequest,
@@ -530,6 +532,136 @@ export const useCreateOutebelgev2Sendbasicinvoicefrommodel = <TError = unknown,
       > => {
 
       const mutationOptions = getCreateOutebelgev2SendbasicinvoicefrommodelMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get outgoing documents from BirFatura
+ * @summary Get Outbox Documents
+ */
+export const createOutebelgev2Getoutboxdocuments = (
+    getOutBoxDocumentsRequest: GetOutBoxDocumentsRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/OutEBelgeV2/GetOutBoxDocuments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: getOutBoxDocumentsRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateOutebelgev2GetoutboxdocumentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Getoutboxdocuments>>, TError,{data: GetOutBoxDocumentsRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Getoutboxdocuments>>, TError,{data: GetOutBoxDocumentsRequest}, TContext> => {
+
+const mutationKey = ['createOutebelgev2Getoutboxdocuments'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOutebelgev2Getoutboxdocuments>>, {data: GetOutBoxDocumentsRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createOutebelgev2Getoutboxdocuments(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOutebelgev2GetoutboxdocumentsMutationResult = NonNullable<Awaited<ReturnType<typeof createOutebelgev2Getoutboxdocuments>>>
+    export type CreateOutebelgev2GetoutboxdocumentsMutationBody = GetOutBoxDocumentsRequest
+    export type CreateOutebelgev2GetoutboxdocumentsMutationError = HTTPValidationError
+
+    /**
+ * @summary Get Outbox Documents
+ */
+export const useCreateOutebelgev2Getoutboxdocuments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Getoutboxdocuments>>, TError,{data: GetOutBoxDocumentsRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createOutebelgev2Getoutboxdocuments>>,
+        TError,
+        {data: GetOutBoxDocumentsRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateOutebelgev2GetoutboxdocumentsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get PDF link for documents
+ * @summary Get Pdf Link By Uuid
+ */
+export const createOutebelgev2Getpdflinkbyuuid = (
+    getPDFLinkRequest: GetPDFLinkRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/OutEBelgeV2/GetPDFLinkByUUID`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: getPDFLinkRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateOutebelgev2GetpdflinkbyuuidMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Getpdflinkbyuuid>>, TError,{data: GetPDFLinkRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Getpdflinkbyuuid>>, TError,{data: GetPDFLinkRequest}, TContext> => {
+
+const mutationKey = ['createOutebelgev2Getpdflinkbyuuid'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOutebelgev2Getpdflinkbyuuid>>, {data: GetPDFLinkRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createOutebelgev2Getpdflinkbyuuid(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOutebelgev2GetpdflinkbyuuidMutationResult = NonNullable<Awaited<ReturnType<typeof createOutebelgev2Getpdflinkbyuuid>>>
+    export type CreateOutebelgev2GetpdflinkbyuuidMutationBody = GetPDFLinkRequest
+    export type CreateOutebelgev2GetpdflinkbyuuidMutationError = HTTPValidationError
+
+    /**
+ * @summary Get Pdf Link By Uuid
+ */
+export const useCreateOutebelgev2Getpdflinkbyuuid = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOutebelgev2Getpdflinkbyuuid>>, TError,{data: GetPDFLinkRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createOutebelgev2Getpdflinkbyuuid>>,
+        TError,
+        {data: GetPDFLinkRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateOutebelgev2GetpdflinkbyuuidMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

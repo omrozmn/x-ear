@@ -771,3 +771,29 @@ If you no longer wish to receive these emails, you can unsubscribe here:
         """Reset email metrics (for testing or periodic reset)."""
         email_metrics.reset()
         logger.info("Email metrics reset")
+
+
+# Singleton instance for easy import
+_email_service_instance = None
+
+def get_email_service(db: Session = None) -> EmailService:
+    """Get or create EmailService singleton instance."""
+    global _email_service_instance
+    
+    if _email_service_instance is None or db is not None:
+        from services.smtp_config_service import SMTPConfigService
+        from services.email_template_service import EmailTemplateService
+        from services.encryption_service import EncryptionService
+        
+        if db is None:
+            db = next(get_db())
+        
+        encryption_service = EncryptionService()
+        smtp_config_service = SMTPConfigService(db, encryption_service)
+        template_service = EmailTemplateService()
+        _email_service_instance = EmailService(db, smtp_config_service, template_service)
+    
+    return _email_service_instance
+
+# For backward compatibility
+email_service = get_email_service()

@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 _default_sqlite_path = Path(__file__).resolve().parent.parent / "instance" / "xear_crm.db"
 # Use plain path (spaces handled correctly by driver, encoding breaks it)
 DATABASE_URL = os.getenv('DATABASE_URL', f"sqlite:///{_default_sqlite_path.as_posix()}")
+print(f"DEBUG: DATABASE_URL loaded in core.database: {DATABASE_URL}")
 
 # Ensure instance directory exists for file-based sqlite
 try:

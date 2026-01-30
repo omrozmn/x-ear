@@ -12,11 +12,7 @@ const AffiliatesPage: React.FC = () => {
 
   // Backend returns array directly, not wrapped
   // Backend returns array directly, but response envelope might wrap it
-  const affiliates = Array.isArray(affiliatesData)
-    ? affiliatesData
-    : (affiliatesData as { data?: unknown })?.data && Array.isArray((affiliatesData as { data: unknown }).data)
-      ? (affiliatesData as { data: AffiliateRead[] }).data
-      : [];
+  const affiliates = (affiliatesData as any)?.affiliates || (affiliatesData as any)?.data?.affiliates || (Array.isArray(affiliatesData) ? affiliatesData : (affiliatesData as any)?.data || []);
 
   if (isLoading) return <div className="p-4">Yükleniyor...</div>;
   if (error) return <div className="p-4 text-red-600">Hata oluştu: {(error as Error).message}</div>;
@@ -52,37 +48,38 @@ const AffiliatesPage: React.FC = () => {
               {affiliates.map((a: AffiliateRead) => {
                 const affiliateId = String(a.id);
                 return (
-                <tr
-                  key={affiliateId}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => setSelectedAffiliateId(affiliateId)}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600">
-                    {affiliateId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.phone ? String(a.phone) : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.iban || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${a.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {a.isActive ? 'Evet' : 'Hayır'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.createdAt ? new Date(a.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedAffiliateId(affiliateId);
-                      }}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Detaylar
-                    </button>
-                  </td>
-                </tr>
-              )})}
+                  <tr
+                    key={affiliateId}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedAffiliateId(affiliateId)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600">
+                      {affiliateId}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.phone ? String(a.phone) : '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.iban || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${a.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {a.isActive ? 'Evet' : 'Hayır'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.createdAt ? new Date(a.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedAffiliateId(affiliateId);
+                        }}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Detaylar
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
               {(!affiliates || affiliates.length === 0) && (
                 <tr>
                   <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">Kayıt bulunamadı.</td>

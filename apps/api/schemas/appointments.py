@@ -1,37 +1,8 @@
 from typing import Optional, List
-from enum import Enum
 from datetime import datetime, date
 from pydantic import Field, field_validator, ValidationInfo
 from .base import AppBaseModel, IDMixin, TimestampMixin
-
-# Enums
-class AppointmentStatus(str, Enum):
-    SCHEDULED = 'scheduled'
-    CONFIRMED = 'confirmed'
-    COMPLETED = 'completed'
-    CANCELLED = 'cancelled'
-    NO_SHOW = 'no_show'
-    RESCHEDULED = 'rescheduled'
-
-    @classmethod
-    def from_legacy(cls, value: str):
-        """Map legacy status strings to Enum"""
-        mapping = {
-            'pending': cls.SCHEDULED,
-            'arrived': cls.CONFIRMED,
-            'missed': cls.NO_SHOW,
-            'deleted': cls.CANCELLED,
-        }
-        return mapping.get(value.lower(), cls(value.lower()))
-
-class AppointmentType(str, Enum):
-    CONSULTATION = 'consultation'
-    HEARING_TEST = 'hearing_test'
-    DEVICE_TRIAL = 'device_trial'
-    DEVICE_FITTING = 'device_fitting'
-    CONTROL = 'control'
-    REPAIR = 'repair'
-    OTHER = 'other'
+from .enums import AppointmentStatus, AppointmentType
 
 # --- Appointment Schemas ---
 class AppointmentBase(AppBaseModel):

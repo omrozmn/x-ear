@@ -64,3 +64,18 @@ class MockSearchRequest(AppBaseModel):
 
 class MockDetailRequest(AppBaseModel):
     id: str
+
+class GetOutBoxDocumentsRequest(AppBaseModel):
+    """Request schema for GetOutBoxDocuments"""
+    systemType: str = Field(..., description="EFATURA, EARSIV, etc.")
+    documentType: str = Field(..., description="INVOICE, DESPATCHADVICE, etc.")
+    startDateTime: str = Field(..., description="ISO 8601 string")
+    endDateTime: str = Field(..., description="ISO 8601 string")
+    invoiceNo: Optional[str] = None
+    pageNumber: int = 0
+    pageSize: int = 20
+
+class GetPDFLinkRequest(AppBaseModel):
+    """Request schema for GetPDFLinkByUUID"""
+    uuids: List[str] = Field(..., description="List of document UUIDs")
+    systemType: str = Field(..., description="EFATURA, EARSIV, etc.")

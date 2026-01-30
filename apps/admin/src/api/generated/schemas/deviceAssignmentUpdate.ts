@@ -19,11 +19,11 @@ import type { DeviceAssignmentUpdateBasePrice } from './deviceAssignmentUpdateBa
 import type { DeviceAssignmentUpdateDiscountType } from './deviceAssignmentUpdateDiscountType';
 import type { DeviceAssignmentUpdateDiscountValue } from './deviceAssignmentUpdateDiscountValue';
 import type { DeviceAssignmentUpdateSgkScheme } from './deviceAssignmentUpdateSgkScheme';
-import type { DeviceAssignmentUpdateSgkSupportType } from './deviceAssignmentUpdateSgkSupportType';
+import type { DeviceAssignmentUpdateSgksupporttype } from './deviceAssignmentUpdateSgksupporttype';
 import type { DeviceAssignmentUpdateSalePrice } from './deviceAssignmentUpdateSalePrice';
 import type { DeviceAssignmentUpdatePatientPayment } from './deviceAssignmentUpdatePatientPayment';
 import type { DeviceAssignmentUpdateSgkReduction } from './deviceAssignmentUpdateSgkReduction';
-import type { DeviceAssignmentUpdateSgkSupport } from './deviceAssignmentUpdateSgkSupport';
+import type { DeviceAssignmentUpdateSgksupport } from './deviceAssignmentUpdateSgksupport';
 import type { DeviceAssignmentUpdateDownPayment } from './deviceAssignmentUpdateDownPayment';
 import type { DeviceAssignmentUpdatePaymentMethod } from './deviceAssignmentUpdatePaymentMethod';
 import type { DeviceAssignmentUpdateNotes } from './deviceAssignmentUpdateNotes';
@@ -51,11 +51,11 @@ export interface DeviceAssignmentUpdate {
   discountType?: DeviceAssignmentUpdateDiscountType;
   discountValue?: DeviceAssignmentUpdateDiscountValue;
   sgkScheme?: DeviceAssignmentUpdateSgkScheme;
-  sgkSupportType?: DeviceAssignmentUpdateSgkSupportType;
+  sgksupporttype?: DeviceAssignmentUpdateSgksupporttype;
   salePrice?: DeviceAssignmentUpdateSalePrice;
   patientPayment?: DeviceAssignmentUpdatePatientPayment;
   sgkReduction?: DeviceAssignmentUpdateSgkReduction;
-  sgkSupport?: DeviceAssignmentUpdateSgkSupport;
+  sgksupport?: DeviceAssignmentUpdateSgksupport;
   downPayment?: DeviceAssignmentUpdateDownPayment;
   paymentMethod?: DeviceAssignmentUpdatePaymentMethod;
   notes?: DeviceAssignmentUpdateNotes;

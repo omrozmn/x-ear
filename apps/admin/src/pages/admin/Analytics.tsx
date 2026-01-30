@@ -71,8 +71,12 @@ const Analytics: React.FC = () => {
     return (
       <div className="p-6 text-center text-red-600 bg-red-50 m-4 rounded-lg border border-red-200">
         <h3 className="font-bold text-lg">Veriler Yüklenemedi</h3>
-        <p className="mt-2">{(error as any)?.message}</p>
-        <p className="text-xs mt-1 font-mono text-red-500">{(error as any)?.response?.data?.error}</p>
+        <p className="mt-2">{(error as any)?.message || 'Bir hata oluştu'}</p>
+        <p className="text-xs mt-1 font-mono text-red-500">
+          {typeof (error as any)?.response?.data?.error === 'object'
+            ? JSON.stringify((error as any)?.response?.data?.error)
+            : (error as any)?.response?.data?.error || ''}
+        </p>
       </div>
     );
   }

@@ -507,6 +507,7 @@ export function AIChatWidget({
                 <p className="text-xs text-purple-700 mb-2">{currentAction.name} - {Object.keys(slots).length} parametre hazır.</p>
                 <div className="flex gap-2">
                   <button
+                    data-allow-raw="true"
                     onClick={() => {
                       // Temporary: Start Mock Execution
                       // In real app, this would call executeAction
@@ -527,6 +528,7 @@ export function AIChatWidget({
                     Onayla
                   </button>
                   <button
+                    data-allow-raw="true"
                     onClick={reset}
                     className="bg-white border border-purple-200 text-purple-700 px-3 py-1.5 rounded text-xs font-bold"
                   >

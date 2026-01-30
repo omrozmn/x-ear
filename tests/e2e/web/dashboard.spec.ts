@@ -35,7 +35,8 @@ test.describe('Dashboard Module', () => {
         await tenantPage.waitForLoadState('networkidle');
 
         // Look for action buttons
-        const buttons = tenantPage.locator('button');
+        // Look for action buttons, role="button", or known icons like Refresh
+        const buttons = tenantPage.locator('button, [role="button"], .lucide-refresh-cw');
         const buttonCount = await buttons.count();
         expect(buttonCount).toBeGreaterThan(0);
     });

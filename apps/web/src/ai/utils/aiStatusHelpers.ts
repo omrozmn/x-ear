@@ -36,7 +36,7 @@ export function getStatusType(status: AIStatus | null | undefined): AIStatusType
     }
 
     // Kill switch is active
-    if (status.killSwitch.globalActive || status.killSwitch.tenantActive) {
+    if (status.killSwitch?.globalActive || status.killSwitch?.tenantActive) {
         return 'unavailable';
     }
 
@@ -47,9 +47,9 @@ export function getStatusType(status: AIStatus | null | undefined): AIStatusType
 
     // Check for degraded conditions
     const hasDegradedConditions =
-        status.usage.anyQuotaExceeded ||
-        status.killSwitch.capabilitiesDisabled.length > 0 ||
-        !status.model.available;
+        status.usage?.anyQuotaExceeded ||
+        (status.killSwitch?.capabilitiesDisabled?.length || 0) > 0 ||
+        !status.model?.available;
 
     if (hasDegradedConditions) {
         return 'degraded';
@@ -71,11 +71,11 @@ export function getDetailedStatusLabel(status: AIStatus | null | undefined): str
         return 'Devre Dışı';
     }
 
-    if (status.killSwitch.globalActive) {
+    if (status.killSwitch?.globalActive) {
         return 'Durduruldu';
     }
 
-    if (status.killSwitch.tenantActive) {
+    if (status.killSwitch?.tenantActive) {
         return 'Tenant Durduruldu';
     }
 
@@ -83,15 +83,15 @@ export function getDetailedStatusLabel(status: AIStatus | null | undefined): str
         return 'Aktif';
     }
 
-    if (status.usage.anyQuotaExceeded) {
+    if (status.usage?.anyQuotaExceeded) {
         return 'Limit Aşıldı';
     }
 
-    if (status.killSwitch.capabilitiesDisabled.length > 0) {
+    if ((status.killSwitch?.capabilitiesDisabled?.length || 0) > 0) {
         return 'Kısıtlı';
     }
 
-    if (!status.model.available) {
+    if (!status.model?.available) {
         return 'Model Kullanılamıyor';
     }
 

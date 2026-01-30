@@ -84,7 +84,7 @@ async function fetchAISettings(): Promise<AISettingsData> {
     url: '/api/ai/admin/settings',
     method: 'GET',
   });
-  return response;
+  return (response as any).data || response;
 }
 
 // =============================================================================

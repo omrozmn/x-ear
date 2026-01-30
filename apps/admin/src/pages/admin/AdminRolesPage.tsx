@@ -35,9 +35,9 @@ const AdminRolesPage: React.FC = () => {
     const deleteRoleMutation = useDeleteAdminRole();
     const updatePermissionsMutation = useUpdateRolePermissions();
 
-    const roles = (rolesData as any)?.data?.roles || [];
-    const groupedPermissions = (permissionsData as any)?.data?.grouped || {};
-    const categories = (permissionsData as any)?.data?.categories || [];
+    const roles = (rolesData as any)?.roles || (rolesData as any)?.data?.roles || [];
+    const groupedPermissions = (permissionsData as any)?.grouped || (permissionsData as any)?.data?.grouped || {};
+    const categories = (permissionsData as any)?.categories || (permissionsData as any)?.data?.categories || [];
 
     const handleCreate = async () => {
         if (!roleName) {

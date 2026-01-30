@@ -1,7 +1,7 @@
 # Appointment Models (formerly Patient appointment models)
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
-from .enums import AppointmentStatus
+from schemas.enums import AppointmentStatus
 import sqlalchemy as sa
 
 class Appointment(BaseModel, TenantScopedMixin):

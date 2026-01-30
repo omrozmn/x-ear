@@ -10,7 +10,7 @@ import {
     useListReportPatients as useListReportParties,
     getListReportPatientsQueryKey as getListReportPartiesQueryKey
 } from '@/api/client/reports.client';
-import { FilterState, ReportParties } from '../types';
+import { ReportParties, FilterState } from '../types';
 
 interface PartiesTabProps {
     filters: FilterState;

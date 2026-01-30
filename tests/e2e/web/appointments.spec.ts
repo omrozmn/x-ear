@@ -29,7 +29,8 @@ test.describe('Appointments CRUD Operations', () => {
         await tenantPage.waitForLoadState('networkidle');
 
         // Look for new appointment button
-        const newButton = tenantPage.getByRole('button', { name: /Yeni|Randevu|Ekle|Add/i }).first();
+        // Look for new appointment button "New Appointment"
+        const newButton = tenantPage.getByRole('button', { name: 'New Appointment' }).first();
         await expect(newButton).toBeVisible({ timeout: 5000 });
     });
 
@@ -38,7 +39,8 @@ test.describe('Appointments CRUD Operations', () => {
         await tenantPage.waitForLoadState('networkidle');
 
         // Click new appointment button
-        const newButton = tenantPage.getByRole('button', { name: /Yeni|Randevu|Ekle/i }).first();
+        // Click new appointment button
+        const newButton = tenantPage.getByRole('button', { name: 'New Appointment' }).first();
         const hasButton = await newButton.isVisible({ timeout: 5000 }).catch(() => false);
 
         if (hasButton) {

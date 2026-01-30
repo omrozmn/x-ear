@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare, Download } from 'lucide-react';
 import {
     useListSmConfig,
     useListSmHeaders,
@@ -19,6 +19,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useAuthStore } from '@/stores/authStore';
 import { customInstance } from '@/api/orval-mutator';
 import { PosSettings } from './PosSettings';
+import { extractErrorMessage } from '@/utils/error-utils';
 
 interface SmsDocument {
     type: string;
@@ -63,8 +64,9 @@ export default function IntegrationSettings() {
     const { mutateAsync: submitDocuments } = useCreateSmDocumentSubmit();
     const { mutateAsync: requestHeader } = useCreateSmHeaders();
 
-    const [isUploading, setIsUploading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [uploadingDocs, setUploadingDocs] = useState<Record<string, boolean>>({});
+    const [recentlyUploaded, setRecentlyUploaded] = useState<Record<string, boolean>>({});
     const [uploadedDocs, setUploadedDocs] = useState<Array<{ type: string; status?: string; id?: string }>>([]);
     const [documentsSubmitted, setDocumentsSubmitted] = useState(false);
     const [allDocumentsApproved, setAllDocumentsApproved] = useState(false);
@@ -96,23 +98,26 @@ export default function IntegrationSettings() {
 
     const handleFileUpload = async (file: File, docType: string) => {
         if (!canUpload(docType)) return;
-        setIsUploading(true);
+        setUploadingDocs(prev => ({ ...prev, [docType]: true }));
+        
         try {
             await uploadDocument({ data: { file }, params: { document_type: docType } });
+            
             showSuccessToast('Belge yüklendi');
-            refetchConfig();
+            
+            // Show "Yüklendi" state for 2 seconds
+            setRecentlyUploaded(prev => ({ ...prev, [docType]: true }));
+            setTimeout(() => {
+                setRecentlyUploaded(prev => ({ ...prev, [docType]: false }));
+            }, 2000);
+            
+            // Refetch config to get updated document list with filenames
+            await refetchConfig();
         } catch (error: unknown) {
-            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
-            const errorData = errorObj?.response?.data?.error;
-            let msg = 'Yükleme başarısız';
-            if (typeof errorData === 'string') {
-                msg = errorData;
-            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
-                msg = errorData.message;
-            }
-            showErrorToast(msg);
+            const errorMessage = extractErrorMessage(error, 'Yükleme başarısız');
+            showErrorToast(errorMessage);
         } finally {
-            setIsUploading(false);
+            setUploadingDocs(prev => ({ ...prev, [docType]: false }));
         }
     };
 
@@ -124,15 +129,8 @@ export default function IntegrationSettings() {
             showSuccessToast('Belge silindi');
             refetchConfig();
         } catch (error: unknown) {
-            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
-            const errorData = errorObj?.response?.data?.error;
-            let msg = 'Silme başarısız';
-            if (typeof errorData === 'string') {
-                msg = errorData;
-            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
-                msg = errorData.message;
-            }
-            showErrorToast(msg);
+            const errorMessage = extractErrorMessage(error, 'Silme başarısız');
+            showErrorToast(errorMessage);
         } finally {
             setIsDeleting(false);
         }
@@ -142,13 +140,13 @@ export default function IntegrationSettings() {
         const doc = uploadedDocs.find(d => d.type === docType);
         if (!doc) return;
         try {
-            // Document download/preview endpoint
-            const response = await customInstance<{ data: { url: string }, url?: string }>({
-                url: `/api/sms/documents/${docType}/download`,
+            // Document download/preview endpoint with preview=true query param
+            const response = await customInstance<{ data: { url: string } }>({
+                url: `/api/sms/documents/${docType}/download?preview=true`,
                 method: 'GET'
             });
 
-            const previewUrl = response?.data?.url || response?.url;
+            const previewUrl = response?.data?.url;
             const docFilename = (doc as { filename?: string }).filename || 'document';
             if (previewUrl) {
                 setPreviewDoc({ type: docType, url: previewUrl, filename: docFilename });
@@ -156,7 +154,8 @@ export default function IntegrationSettings() {
                 showErrorToast('Önizleme URL\'i alınamadı');
             }
         } catch (error) {
-            showErrorToast('Önizleme açılamadı');
+            const errorMessage = extractErrorMessage(error, 'Önizleme açılamadı');
+            showErrorToast(errorMessage);
         }
     };
 
@@ -170,15 +169,8 @@ export default function IntegrationSettings() {
             setDocumentsSubmitted(true);
             refetchConfig();
         } catch (error: unknown) {
-            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
-            const errorData = errorObj?.response?.data?.error;
-            let msg = 'Gönderim başarısız';
-            if (typeof errorData === 'string') {
-                msg = errorData;
-            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
-                msg = errorData.message;
-            }
-            showErrorToast(msg);
+            const errorMessage = extractErrorMessage(error, 'Gönderim başarısız');
+            showErrorToast(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -207,15 +199,8 @@ export default function IntegrationSettings() {
             if (headerDocInputRef.current) headerDocInputRef.current.value = '';
             refetchHeaders();
         } catch (error: unknown) {
-            const errorObj = error as { response?: { data?: { error?: { message?: string } | string } } };
-            const errorData = errorObj?.response?.data?.error;
-            let msg = 'Talep oluşturulamadı';
-            if (typeof errorData === 'string') {
-                msg = errorData;
-            } else if (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') {
-                msg = errorData.message;
-            }
-            showErrorToast(msg);
+            const errorMessage = extractErrorMessage(error, 'Talep oluşturulamadı');
+            showErrorToast(errorMessage);
         }
     };
 
@@ -304,6 +289,40 @@ export default function IntegrationSettings() {
                                     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">SMS Başvuru Belgeleri</h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">SMS hizmeti kullanabilmek için aşağıdaki belgeleri yüklemeniz gerekmektedir.</p>
+                                        
+                                        {/* Example Contract Section */}
+                                        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                                                        <FileText className="w-5 h-5 text-blue-600" />
+                                                        Sözleşme Şablonları
+                                                    </h4>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Boş sözleşmeyi indirip doldurun veya örnek sözleşmeyi inceleyerek nasıl doldurulacağını öğrenin.
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2 ml-4">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => window.open('/documents/sms/contract-example.pdf', '_blank')}
+                                                        className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                                                    >
+                                                        <Download className="w-4 h-4" />
+                                                        Sözleşme İndir
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setShowContractExample(true)}
+                                                        className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" />
+                                                        Örnek Sözleşme
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
                                         <div className="space-y-4">
                                             {REQUIRED_DOCUMENTS.map((doc) => {
                                                 const uploaded = getUploadedDoc(doc.id);
@@ -317,24 +336,21 @@ export default function IntegrationSettings() {
                                                                 <div className="font-medium text-gray-900 dark:text-white">{doc.label}</div>
                                                                 {uploaded && (
                                                                     <div className="flex items-center gap-2 mt-1">
-                                                                        <span className="text-xs text-gray-500">{(uploaded as { filename?: string }).filename || 'document'}</span>
+                                                                        <button
+                                                                            data-allow-raw="true"
+                                                                            onClick={() => handlePreviewDocument(doc.id)}
+                                                                            className="text-xs text-blue-600 hover:underline cursor-pointer flex items-center gap-1"
+                                                                            title="Önizle ve indir"
+                                                                        >
+                                                                            <Eye className="w-3 h-3" />
+                                                                            {(uploaded as { filename?: string }).filename || 'document'}
+                                                                        </button>
                                                                         {getDocStatusBadge(uploaded)}
                                                                     </div>
                                                                 )}
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            {doc.hasExample && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => setShowContractExample(true)}
-                                                                    className="p-2 text-blue-600"
-                                                                    title="Örnek Sözleşme"
-                                                                >
-                                                                    <ExternalLink className="w-4 h-4" />
-                                                                </Button>
-                                                            )}
                                                             {uploaded && (
                                                                 <>
                                                                     <Button
@@ -361,28 +377,49 @@ export default function IntegrationSettings() {
                                                                 </>
                                                             )}
                                                             {!uploaded || canUploadThis ? (
-                                                                <Button
-                                                                    variant="primary"
-                                                                    size="sm"
-                                                                    disabled={isUploading || isDisabled}
-                                                                    className="relative overflow-hidden"
-                                                                >
-                                                                    <Upload className="w-4 h-4 mr-2" />
-                                                                    {uploaded ? 'Değiştir' : 'Yükle'}
-                                                                    <input
-                                                                        data-allow-raw="true"
-                                                                        type="file"
-                                                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                                                        accept=".pdf,.jpg,.jpeg,.png"
-                                                                        disabled={isUploading || isDisabled}
-                                                                        ref={(el) => { uploadInputsRef.current[doc.id] = el; }}
-                                                                        onChange={(e) => {
-                                                                            const file = e.target.files?.[0];
-                                                                            if (file) handleFileUpload(file, doc.id);
-                                                                            e.target.value = '';
-                                                                        }}
-                                                                    />
-                                                                </Button>
+                                                                (() => {
+                                                                    const isUploadingThis = uploadingDocs[doc.id];
+                                                                    const isRecentlyUploadedThis = recentlyUploaded[doc.id];
+                                                                    
+                                                                    return (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            disabled={isUploadingThis || isDisabled}
+                                                                            className="relative overflow-hidden"
+                                                                        >
+                                                                            {isUploadingThis ? (
+                                                                                <>
+                                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                                    Yükleniyor...
+                                                                                </>
+                                                                            ) : isRecentlyUploadedThis ? (
+                                                                                <>
+                                                                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                                                                    Yüklendi
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <Upload className="w-4 h-4 mr-2" />
+                                                                                    {uploaded ? 'Değiştir' : 'Yükle'}
+                                                                                </>
+                                                                            )}
+                                                                            <input
+                                                                                data-allow-raw="true"
+                                                                                type="file"
+                                                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                                accept=".pdf,.jpg,.jpeg,.png"
+                                                                                disabled={isUploadingThis || isDisabled}
+                                                                                ref={(el) => { uploadInputsRef.current[doc.id] = el; }}
+                                                                                onChange={(e) => {
+                                                                                    const file = e.target.files?.[0];
+                                                                                    if (file) handleFileUpload(file, doc.id);
+                                                                                    e.target.value = '';
+                                                                                }}
+                                                                            />
+                                                                        </Button>
+                                                                    );
+                                                                })()
                                                             ) : null}
                                                         </div>
                                                     </div>
@@ -390,10 +427,31 @@ export default function IntegrationSettings() {
                                             })}
                                         </div>
                                         {allDocsUploaded && !documentsSubmitted && (
-                                            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                                <Button onClick={handleSubmitDocuments} disabled={isSubmitting} className="w-full">
-                                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                                                    Belgeleri Gönder
+                                            <div className="mt-6 pt-6 border-t-2 border-gray-300 dark:border-gray-600">
+                                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+                                                    <div className="flex items-start gap-2">
+                                                        <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                                                            Tüm belgeler yüklendi. Başvurunuzu onaya göndermek için aşağıdaki butona tıklayın.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Button 
+                                                    onClick={handleSubmitDocuments} 
+                                                    disabled={isSubmitting} 
+                                                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                                >
+                                                    {isSubmitting ? (
+                                                        <>
+                                                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                                            Gönderiliyor...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <CheckCircle className="w-5 h-5 mr-2" />
+                                                            Belgeleri Onaya Gönder
+                                                        </>
+                                                    )}
                                                 </Button>
                                             </div>
                                         )}
@@ -506,7 +564,7 @@ export default function IntegrationSettings() {
                             </Dialog.Close>
                         </div>
                         <div className="flex-1 p-4 overflow-auto">
-                            <iframe src="/vatansms_contract_example.pdf" className="w-full h-full border-0 rounded-lg" title="Contract Example" />
+                            <iframe src="/documents/sms/contract-example.pdf" className="w-full h-full border-0 rounded-lg" title="Contract Example" />
                         </div>
                     </Dialog.Content>
                 </Dialog.Portal>

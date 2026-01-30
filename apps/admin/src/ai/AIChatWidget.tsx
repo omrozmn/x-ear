@@ -18,6 +18,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAIChat } from './hooks/useAIChat';
 import { useComposerStore } from '../stores/composerStore';
+import { useAuth } from '../contexts/AuthContext';
 import { useAIStatus } from './hooks/useAIStatus';
 import { AIStatusIndicator } from './components/AIStatusIndicator';
 import { PhaseABanner } from './components/PhaseABanner';
@@ -222,13 +223,18 @@ export function AIChatWidget({
   onOpen,
   onClose,
 }: AIChatWidgetProps): React.ReactElement | null {
+  // Authentication check
+  const { isAuthenticated } = useAuth();
+
   // State
   const { isVisible: isOpen, setVisible: setIsOpen } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Hooks
-  const { data: status, isLoading: isStatusLoading } = useAIStatus();
+  // Only fetch AI status if user is authenticated to prevent 401 on login page
+  const { data: status, isLoading: isStatusLoading } = useAIStatus({ enabled: isAuthenticated });
+
   const {
     messages,
     sendMessage,
@@ -316,7 +322,7 @@ export function AIChatWidget({
   // ==========================================================================
   // Don't render if AI is disabled entirely
   // ==========================================================================
-  if (!isStatusLoading && !isEnabled) {
+  if (!isAuthenticated || (!isStatusLoading && !isEnabled)) {
     return null;
   }
 

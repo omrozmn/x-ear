@@ -16,17 +16,14 @@
 
 import React from 'react';
 import type { AIStatus } from '../types/ai.types';
-import { getStatusType, getDetailedStatusLabel, type AIStatusType } from '../utils/aiStatusHelpers';
+import { getStatusType, getDetailedStatusLabel } from '../utils/aiStatusHelpers';
 import {
   STATUS_INDICATOR_SIZE_CLASSES,
   STATUS_INDICATOR_LABEL_SIZE_CLASSES,
   STATUS_INDICATOR_COLORS,
 } from './constants';
 
-// Re-export utilities for backward compatibility
-// Note: This triggers react-refresh warning but is intentional for backward compatibility
-// These utilities are also available from '../utils/aiStatusHelpers'
-export { getStatusType, getDetailedStatusLabel, type AIStatusType };
+// Note: Utilities removed for Fast Refresh compatibility.
 
 // =============================================================================
 // Types

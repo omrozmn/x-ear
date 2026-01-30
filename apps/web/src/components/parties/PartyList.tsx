@@ -16,9 +16,8 @@ import {
   StatusBadge,
   SegmentBadge,
   AcquisitionStatusBadge,
-  formatDate,
-  formatPhone,
 } from './PartyListHelpers';
+import { formatDate, formatPhone } from './PartyListUtils';
 import { useListBranches } from '../../api/generated/branches/branches';
 import { unwrapArray } from '../../utils/response-unwrap';
 import { BranchRead } from '../../api/generated/schemas';

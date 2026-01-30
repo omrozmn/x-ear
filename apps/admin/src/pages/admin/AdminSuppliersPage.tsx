@@ -4,13 +4,10 @@ import {
     useCreateAdminSupplier,
     useUpdateAdminSupplier,
     useDeleteAdminSupplier,
+    useListAdminTenants,
     SupplierRead,
     SupplierCreate
 } from '@/lib/api-client';
-
-// Local type aliases
-type Supplier = SupplierRead;
-type SupplierInput = SupplierCreate;
 import {
     PlusIcon,
     MagnifyingGlassIcon,
@@ -28,6 +25,11 @@ const AdminSuppliersPage: React.FC = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('all');
 
+    // Fetch tenants for dropdown
+    const { data: tenantsData } = useListAdminTenants({ page: 1, limit: 100 });
+    const tenants = (tenantsData as any)?.tenants || (tenantsData as any)?.data?.tenants || [];
+    // console.log('DEBUG: tenantsData:', tenantsData); // Removing debug log
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
 
@@ -43,7 +45,7 @@ const AdminSuppliersPage: React.FC = () => {
     const createMutation = useCreateAdminSupplier({
         mutation: {
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['/admin/suppliers'] });
+                queryClient.invalidateQueries({ queryKey: [`/api/admin/suppliers`] });
                 toast.success('Tedarikçi başarıyla oluşturuldu');
                 handleCloseModal();
             },
@@ -56,7 +58,7 @@ const AdminSuppliersPage: React.FC = () => {
     const updateMutation = useUpdateAdminSupplier({
         mutation: {
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['/admin/suppliers'] });
+                queryClient.invalidateQueries({ queryKey: [`/api/admin/suppliers`] });
                 toast.success('Tedarikçi güncellendi');
                 handleCloseModal();
             },
@@ -69,7 +71,7 @@ const AdminSuppliersPage: React.FC = () => {
     const deleteMutation = useDeleteAdminSupplier({
         mutation: {
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['/admin/suppliers'] });
+                queryClient.invalidateQueries({ queryKey: [`/api/admin/suppliers`] });
                 toast.success('Tedarikçi silindi');
             },
             onError: (error: any) => {
@@ -94,8 +96,8 @@ const AdminSuppliersPage: React.FC = () => {
         }
     };
 
-    const suppliers = (suppliersData as any)?.data?.suppliers || [];
-    const pagination = (suppliersData as any)?.data?.pagination;
+    const suppliers = (suppliersData as any)?.suppliers || (suppliersData as any)?.data?.suppliers || [];
+    const pagination = (suppliersData as any)?.pagination || (suppliersData as any)?.data?.pagination;
 
     return (
         <div className="space-y-6">
@@ -256,11 +258,25 @@ const AdminSuppliersPage: React.FC = () => {
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     initialData={editingSupplier}
-                    onSubmit={(data) => {
+                    tenants={tenants}
+                    onSubmit={(data: any) => {
+                        // Transform data to match backend schema strictly (snake_case)
+                        const payload: any = {
+                            tenant_id: data.tenantId,
+                            company_name: data.companyName,
+                            contact_person: data.contactName,
+                            email: data.email || null,
+                            phone: data.phone || null,
+                            address: data.address || null,
+                            tax_number: data.taxId || null,
+                            tax_office: data.taxOffice || null,
+                            is_active: data.status === 'active'
+                        };
+
                         if (editingSupplier) {
-                            updateMutation.mutate({ supplierId: Number(editingSupplier.id!), data });
+                            updateMutation.mutate({ supplierId: Number(editingSupplier.id!), data: payload });
                         } else {
-                            createMutation.mutate({ data });
+                            createMutation.mutate({ data: payload });
                         }
                     }}
                     isLoading={createMutation.isPending || updateMutation.isPending}
@@ -274,6 +290,7 @@ interface SupplierModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialData: Supplier | null;
+    tenants: any[];
     onSubmit: (data: SupplierInput) => void;
     isLoading: boolean;
 }
@@ -282,10 +299,12 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
     isOpen,
     onClose,
     initialData,
+    tenants,
     onSubmit,
     isLoading
 }) => {
     const [formData, setFormData] = useState<any>({
+        tenantId: (initialData as any)?.tenantId || '',
         companyName: (initialData as any)?.companyName || '',
         contactName: (initialData as any)?.contactName || '',
         email: initialData?.email || '',
@@ -304,7 +323,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" role="dialog" aria-modal="true">
             <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-medium text-gray-900">
@@ -316,6 +335,25 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Tenant Selector */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Abone (Tenant) *</label>
+                        <select
+                            required
+                            value={formData.tenantId}
+                            onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            disabled={!!initialData} // Disable if editing existing supplier
+                        >
+                            <option value="">Seçiniz</option>
+                            {tenants.map((tenant: any) => (
+                                <option key={tenant.id} value={tenant.id}>
+                                    {tenant.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Firma Adı *</label>
@@ -423,5 +461,9 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
         </div>
     );
 };
+
+// Local type aliases
+type Supplier = SupplierRead;
+type SupplierInput = SupplierCreate;
 
 export default AdminSuppliersPage;

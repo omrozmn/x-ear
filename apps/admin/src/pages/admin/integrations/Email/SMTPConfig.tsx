@@ -4,7 +4,7 @@ import { Input, Button, Card, CardHeader, CardTitle, CardContent, Alert, AlertDe
 import { EnvelopeIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { z } from 'zod';
-import type { SMTPConfigCreate } from '@/api/generated/schemas';
+import type { SmtpConfigCreate } from '@/api/generated/schemas';
 import { EmailIntegrationNav } from '@/components/integrations/EmailIntegrationNav';
 
 // Zod validation schema
@@ -26,7 +26,7 @@ const SMTPConfig: React.FC = () => {
   const sendTestMutation = useSendTestEmail();
 
   // Form state
-  const [formData, setFormData] = useState<SMTPConfigCreate>({
+  const [formData, setFormData] = useState<SmtpConfigCreate>({
     host: '',
     port: 587,
     username: '',
@@ -60,7 +60,7 @@ const SMTPConfig: React.FC = () => {
     }
   }, [configData]);
 
-  const handleInputChange = (field: keyof SMTPConfigCreate, value: string | number | boolean) => {
+  const handleInputChange = (field: keyof SmtpConfigCreate, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear validation error for this field
     if (validationErrors[field]) {

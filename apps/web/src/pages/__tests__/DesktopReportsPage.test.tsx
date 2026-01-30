@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DesktopReportsPage } from '../DesktopReportsPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 vi.mock('@tanstack/react-router', () => ({
     useSearch: () => ({ tab: 'overview' }),
     useNavigate: () => vi.fn(),
-    Link: ({ children }: any) => <a>{children}</a>
+    Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>
 }));
 
 // Mock Permissions Hook
@@ -42,10 +42,10 @@ vi.mock('@/api/client/reports.client', () => ({
 // Mock UI components
 vi.mock('@x-ear/ui-web', async () => {
     return {
-        Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
-        Input: (props: any) => <input {...props} />,
-        Select: (props: any) => <select {...props} />,
-        Modal: ({ isOpen, children }: any) => isOpen ? <div>{children}</div> : null,
+        Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button data-allow-raw="true" onClick={onClick}>{children}</button>,
+        Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input data-allow-raw="true" {...props} />,
+        Select: (props: React.SelectHTMLAttributes<HTMLSelectElement>) => <select data-allow-raw="true" {...props} />,
+        Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) => isOpen ? <div>{children}</div> : null,
         Pagination: () => <div>Pagination</div>
     };
 });

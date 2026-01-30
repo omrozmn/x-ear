@@ -20,7 +20,7 @@ const FileManager: React.FC = () => {
     // Fetch files
     const { data: filesData, isLoading } = useListUploadFiles({ folder: currentFolder });
     // Accessing nested data structure based on the API response schema
-    const files = (filesData as any)?.data?.files || [];
+    const files = (filesData as any)?.files || (filesData as any)?.data?.files || [];
 
     // Get presigned URL mutation
     const { mutateAsync: getPresignedUrl } = useCreateUploadPresigned();

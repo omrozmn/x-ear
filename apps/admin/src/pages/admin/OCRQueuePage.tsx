@@ -12,7 +12,7 @@ const OCRQueuePage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('');
     const { data: jobsData, isLoading, refetch } = useListOcrJobs({ status: statusFilter || undefined });
 
-    const jobs = (jobsData as any)?.data || [];
+    const jobs = (jobsData as any)?.jobs || (jobsData as any)?.data || [];
 
     const getStatusBadge = (status: string) => {
         switch (status) {

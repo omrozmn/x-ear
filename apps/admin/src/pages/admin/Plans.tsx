@@ -1,18 +1,10 @@
-
 import React, { useState } from 'react';
-
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
-
-import {
-  useListAdminPlans,
-  useCreateAdminPlan,
-  useUpdateAdminPlan,
-  useDeleteAdminPlan,
-} from '@/lib/api-client';
+import { apiClient } from '@/lib/api';
+import { useListAdminPlans, useDeleteAdminPlan } from '@/lib/api-client';
 import type { DetailedPlanRead as PlanRead } from '@/api/generated/schemas';
-
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/ui/Pagination';
 
@@ -23,18 +15,27 @@ const Plans: React.FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+
+  // Use generated hook for reading data (GET usually works fine with standard params)
   const { data: plansData, isLoading, error } = useListAdminPlans({ page, limit } as any);
 
-  const plans = (plansData as any)?.data?.plans || [];
-  const pagination = (plansData as any)?.data?.pagination;
+  const plans = (plansData as any)?.plans || (plansData as any)?.data?.plans || [];
+  const pagination = (plansData as any)?.pagination || (plansData as any)?.data?.pagination;
 
-  const { mutateAsync: createPlan } = useCreateAdminPlan();
-  const { mutateAsync: updatePlan } = useUpdateAdminPlan();
+  // Use generated hook for DELETE (usually simplest payload/param)
   const { mutateAsync: deletePlan } = useDeleteAdminPlan();
 
-  // Local state interface for the form, where features is an array for easier UI handling
-  interface PlanFormState extends Omit<any, 'features'> {
+  // Local state interface
+  interface PlanFormState {
+    name: string;
+    description: string;
+    price: number;
+    planType: string;
+    billingInterval: string;
+    maxUsers: number;
+    maxStorageGb: number;
     features: any[];
+    isActive: boolean;
   }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,10 +57,12 @@ const Plans: React.FC = () => {
     isActive: true
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleOpenModal = (plan?: PlanRead) => {
     if (plan) {
       setEditingPlan(plan);
-      // Convert features object/array to array for UI
+      // Convert features to array for UI
       let featuresArray: any[] = [];
       if (Array.isArray(plan.features)) {
         featuresArray = plan.features;
@@ -74,10 +77,10 @@ const Plans: React.FC = () => {
         name: plan.name || '',
         description: plan.description || '',
         price: plan.price || 0,
-        planType: plan.planType || 'BASIC',
-        billingInterval: plan.billingInterval || 'MONTHLY',
-        maxUsers: plan.maxUsers || 1,
-        maxStorageGb: plan.maxStorageGb || 1,
+        planType: plan.planType || (plan as any).plan_type || 'BASIC',
+        billingInterval: plan.billingInterval || (plan as any).billing_interval || 'MONTHLY',
+        maxUsers: plan.maxUsers || (plan as any).max_users || 1,
+        maxStorageGb: plan.maxStorageGb || (plan as any).max_storage_gb || 1,
         features: featuresArray,
         isActive: plan.isActive ?? true
       });
@@ -87,59 +90,62 @@ const Plans: React.FC = () => {
         name: '',
         description: '',
         price: 0,
-        plan_type: 'BASIC',
-        billing_interval: 'MONTHLY',
-        max_users: 1,
-        max_storage_gb: 1,
+        planType: 'BASIC',
+        billingInterval: 'MONTHLY',
+        maxUsers: 1,
+        maxStorageGb: 1,
         features: [],
-        is_active: true
+        isActive: true
       });
     }
     setIsModalOpen(true);
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Convert features array back to object for API
+      // Convert features array back to key-value object
       const featuresObject = formData.features.reduce((acc, feature) => {
-        if (feature.key) {
-          acc[feature.key] = {
-            name: feature.name,
-            limit: feature.limit,
-            is_visible: feature.is_visible
-          };
-        }
+        const key = feature.key || feature.name.toLowerCase().replace(/ /g, '_');
+        acc[key] = {
+          name: feature.name,
+          limit: feature.limit,
+          is_visible: feature.is_visible
+        };
         return acc;
       }, {} as Record<string, any>);
 
-      const apiData: any = {
-        ...formData,
-        features: featuresObject
+      // Explicit snake_case payload
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        plan_type: formData.planType,
+        billing_interval: formData.billingInterval,
+        max_users: formData.maxUsers,
+        max_storage_gb: formData.maxStorageGb,
+        features: featuresObject,
+        is_active: formData.isActive
       };
 
       if (editingPlan) {
-        await updatePlan({ planId: editingPlan.id!, data: apiData });
+        await apiClient.put(`/admin/plans/${editingPlan.id}`, payload);
         toast.success('Plan güncellendi');
       } else {
-        await createPlan({ data: apiData });
+        await apiClient.post(`/admin/plans`, payload);
         toast.success('Plan oluşturuldu');
       }
-      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] }); // Invalidate both possible keys
       setIsModalOpen(false);
     } catch (e: any) {
+      console.error('Plan save error:', e);
       toast.error(e.response?.data?.error?.message || 'İşlem başarısız');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleToggleActiveClick = (plan: PlanRead) => {
-    setTogglingPlan(plan);
-    setIsToggleModalOpen(true);
   };
 
   const handleConfirmToggle = async () => {
@@ -147,17 +153,23 @@ const Plans: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await updatePlan({
-        planId: togglingPlan.id,
-        data: {
-          name: togglingPlan.name!,
-          price: togglingPlan.price!,
-          isActive: !togglingPlan.isActive
-        } as any
-      });
-      // Invalidate to ensure consistency
-      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
+      // Only send fields that need updating, but typically PUT requires full object or specific PATCH endpoint.
+      // Assuming PUT based on previous code. Safest is to send minimal update if supported, or correct full payload.
+      // Using direct axios put to /admin/plans/{id} with just is_active if backend supports it, otherwise sending known fields.
+      // Here we'll try sending just the status update if backend supports partial updates via PUT or PATCH, 
+      // but the generated hook used PUT. Let's send key fields manually.
+
+      const payload = {
+        name: togglingPlan.name,
+        price: togglingPlan.price,
+        plan_type: togglingPlan.planType || (togglingPlan as any).plan_type,
+        is_active: !togglingPlan.isActive
+      };
+
+      await apiClient.put(`/admin/plans/${togglingPlan.id}`, payload);
+
       toast.success('Plan durumu güncellendi');
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       setIsToggleModalOpen(false);
     } catch (e: any) {
       console.error('Toggle active error:', e);
@@ -167,17 +179,12 @@ const Plans: React.FC = () => {
     }
   };
 
-  const handleDeleteClick = (planId: string) => {
-    setDeletingPlanId(planId);
-    setIsDeleteModalOpen(true);
-  };
-
   const handleConfirmDelete = async () => {
     if (!deletingPlanId) return;
     setIsSubmitting(true);
     try {
       await deletePlan({ planId: deletingPlanId });
-      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       toast.success('Plan silindi');
       setIsDeleteModalOpen(false);
     } catch (e: any) {
@@ -196,7 +203,7 @@ const Plans: React.FC = () => {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Planlar</h1>
@@ -212,11 +219,14 @@ const Plans: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="p-6 text-center">Yükleniyor...</div>
+          <div className="p-12 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-sm text-gray-500">Planlar yükleniyor...</p>
+          </div>
         ) : error ? (
-          <div className="p-6 text-center text-red-600">Planlar yüklenirken hata oluştu</div>
+          <div className="p-6 text-center text-red-600 bg-red-50 rounded-lg">Planlar yüklenirken hata oluştu</div>
         ) : (
-          <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -230,19 +240,24 @@ const Plans: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {plans.map((plan: PlanRead) => (
-                  <tr key={plan.id} className="hover:bg-gray-50">
+                  <tr key={plan.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{plan.name}</div>
                       <div className="text-xs text-gray-500">{plan.description}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {plan.planType} / {plan.billingInterval}
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        {plan.planType || (plan as any).plan_type}
+                      </span>
+                      <span className="ml-2 text-xs text-gray-400">
+                        {plan.billingInterval || (plan as any).billing_interval}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {plan.price?.toLocaleString('tr-TR')} {'TRY'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      {plan.price?.toLocaleString('tr-TR')} ₺
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {plan.maxUsers} Kullanıcı
+                      {plan.maxUsers || (plan as any).max_users} Kullanıcı
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -252,25 +267,24 @@ const Plans: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <button
-                          onClick={() => handleToggleActiveClick(plan)}
-                          className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${plan.isActive
-                            ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500'
-                            : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500'
+                          onClick={() => { setTogglingPlan(plan); setIsToggleModalOpen(true); }}
+                          className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded transition-colors ${plan.isActive
+                            ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                            : 'text-green-700 bg-green-50 hover:bg-green-100'
                             }`}
-                          title={plan.isActive ? 'Pasif Yap' : 'Aktif Yap'}
                         >
                           {plan.isActive ? 'Pasife Al' : 'Aktifleştir'}
                         </button>
                         <button
                           onClick={() => handleOpenModal(plan)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
                           title="Düzenle"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteClick(plan.id!)}
-                          className="text-red-600 hover:text-red-900"
+                          onClick={() => { setDeletingPlanId(plan.id!); setIsDeleteModalOpen(true); }}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Sil"
                         >
                           <TrashIcon className="h-4 w-4" />
@@ -281,46 +295,53 @@ const Plans: React.FC = () => {
                 ))}
               </tbody>
             </table>
-            <Pagination
-              currentPage={page}
-              totalPages={pagination?.totalPages || 1}
-              totalItems={pagination?.total || 0}
-              itemsPerPage={limit}
-              onPageChange={setPage}
-              onItemsPerPageChange={setLimit}
-            />
+
+            <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 sm:px-6">
+              <Pagination
+                currentPage={page}
+                totalPages={pagination?.totalPages || 1}
+                totalItems={pagination?.total || 0}
+                itemsPerPage={limit}
+                onPageChange={setPage}
+                onItemsPerPageChange={setLimit}
+              />
+            </div>
           </div>
         )}
 
+        {/* Create/Edit Modal */}
         <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
           <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow" />
-            <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=open]:animate-contentShow overflow-y-auto">
-              <Dialog.Title className="text-xl font-medium text-gray-900 mb-4">
-                {editingPlan ? 'Planı Düzenle' : 'Yeni Plan Oluştur'}
-              </Dialog.Title>
+            <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[700px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50 overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <Dialog.Title className="text-xl font-bold text-gray-900">
+                  {editingPlan ? 'Planı Düzenle' : 'Yeni Plan Oluştur'}
+                </Dialog.Title>
+                <Dialog.Close className="text-gray-400 hover:text-gray-500">
+                  <XMarkIcon className="h-6 w-6" />
+                </Dialog.Close>
+              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="plan-name" className="block text-sm font-medium text-gray-700">Plan Adı</label>
+                    <label className="block text-sm font-medium text-gray-700">Plan Adı</label>
                     <input
-                      id="plan-name"
                       type="text"
                       required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label htmlFor="plan-price" className="block text-sm font-medium text-gray-700">Fiyat (TRY)</label>
+                    <label className="block text-sm font-medium text-gray-700">Fiyat (TRY)</label>
                     <input
-                      id="plan-price"
                       type="number"
                       required
                       min="0"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                     />
@@ -328,22 +349,20 @@ const Plans: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="plan-description" className="block text-sm font-medium text-gray-700">Açıklama</label>
+                  <label className="block text-sm font-medium text-gray-700">Açıklama</label>
                   <textarea
-                    id="plan-description"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-                    rows={2}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                    rows={3}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="plan-type" className="block text-sm font-medium text-gray-700">Plan Tipi</label>
+                    <label className="block text-sm font-medium text-gray-700">Plan Tipi</label>
                     <select
-                      id="plan-type"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.planType}
                       onChange={(e) => setFormData({ ...formData, planType: e.target.value })}
                     >
@@ -351,10 +370,9 @@ const Plans: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="billing-interval" className="block text-sm font-medium text-gray-700">Faturalama Aralığı</label>
+                    <label className="block text-sm font-medium text-gray-700">Faturalama Aralığı</label>
                     <select
-                      id="billing-interval"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.billingInterval}
                       onChange={(e) => setFormData({ ...formData, billingInterval: e.target.value })}
                     >
@@ -363,47 +381,47 @@ const Plans: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="max-users" className="block text-sm font-medium text-gray-700">Max Kullanıcı</label>
+                    <label className="block text-sm font-medium text-gray-700">Max Kullanıcı</label>
                     <input
-                      id="max-users"
                       type="number"
                       min="1"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.maxUsers}
                       onChange={(e) => setFormData({ ...formData, maxUsers: Number(e.target.value) })}
                     />
                   </div>
                   <div>
-                    <label htmlFor="max-storage" className="block text-sm font-medium text-gray-700">Max Depolama (GB)</label>
+                    <label className="block text-sm font-medium text-gray-700">Max Depolama (GB)</label>
                     <input
-                      id="max-storage"
                       type="number"
                       min="1"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.maxStorageGb}
                       onChange={(e) => setFormData({ ...formData, maxStorageGb: Number(e.target.value) })}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Özellikler (Features)</label>
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Özellikler (Features)</h4>
 
-                  {/* Feature List */}
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-3 mb-4 max-h-[200px] overflow-y-auto px-1">
                     {formData.features.map((feature: any, index: number) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200">
                         <div>
                           <div className="font-medium text-sm text-gray-900">{feature.name}</div>
-                          <div className="text-xs text-gray-500">Key: {feature.key} | Limit: {feature.limit > 0 ? feature.limit : 'Sınırsız'}</div>
+                          <div className="text-xs text-gray-500 flex gap-2">
+                            <span className="bg-gray-200 px-1 rounded font-mono">{feature.key || feature.name.toLowerCase().replace(/ /g, '_')}</span>
+                            <span>Limit: {feature.limit > 0 ? feature.limit : 'Sınırsız'}</span>
+                          </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
                             type="button"
                             onClick={() => toggleFeature(index)}
-                            className={`p-1 rounded-md ${feature.is_visible ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}`}
+                            className={`p-1.5 rounded-md transition-colors ${feature.is_visible ? 'text-green-600 bg-green-100 hover:bg-green-200' : 'text-gray-400 bg-gray-200 hover:bg-gray-300'}`}
                             title={feature.is_visible ? 'Görünür' : 'Gizli'}
                           >
                             {feature.is_visible ? <CheckIcon className="h-4 w-4" /> : <XMarkIcon className="h-4 w-4" />}
@@ -415,7 +433,7 @@ const Plans: React.FC = () => {
                               newFeatures.splice(index, 1);
                               setFormData({ ...formData, features: newFeatures });
                             }}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded-md"
+                            className="p-1.5 text-red-600 hover:bg-red-100 rounded-md transition-colors"
                             title="Sil"
                           >
                             <TrashIcon className="h-4 w-4" />
@@ -426,94 +444,70 @@ const Plans: React.FC = () => {
                   </div>
 
                   {/* Add New Feature */}
-                  <div className="grid grid-cols-12 gap-2 items-end bg-gray-50 p-3 rounded-md border border-gray-200">
-                    <div className="col-span-3">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Key</label>
-                      <input
-                        type="text"
-                        placeholder="sms_limit"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-xs border p-1.5"
-                        id="new-feature-key"
-                      />
-                    </div>
-                    <div className="col-span-4">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">İsim</label>
-                      <input
-                        type="text"
-                        placeholder="SMS Hakkı"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-xs border p-1.5"
-                        id="new-feature-name"
-                      />
-                    </div>
-                    <div className="col-span-3">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Limit (0=Sınırsız)</label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-xs border p-1.5"
-                        id="new-feature-limit"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const keyInput = document.getElementById('new-feature-key') as HTMLInputElement;
-                          const nameInput = document.getElementById('new-feature-name') as HTMLInputElement;
-                          const limitInput = document.getElementById('new-feature-limit') as HTMLInputElement;
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                    <h5 className="text-xs font-semibold text-blue-800 uppercase mb-2">Yeni Özellik Ekle</h5>
+                    <div className="grid grid-cols-12 gap-3 items-end">
+                      <div className="col-span-4">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">İsim</label>
+                        <input id="new-feat-name" type="text" placeholder="Örn: SMS Hakkı" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
+                      </div>
+                      <div className="col-span-4">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Key (Opsiyonel)</label>
+                        <input id="new-feat-key" type="text" placeholder="sms_limit" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Limit</label>
+                        <input id="new-feat-limit" type="number" placeholder="0" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
+                      </div>
+                      <div className="col-span-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nameInput = document.getElementById('new-feat-name') as HTMLInputElement;
+                            const keyInput = document.getElementById('new-feat-key') as HTMLInputElement;
+                            const limitInput = document.getElementById('new-feat-limit') as HTMLInputElement;
 
-                          if (keyInput.value && nameInput.value) {
-                            const newFeature = {
-                              key: keyInput.value,
-                              name: nameInput.value,
-                              limit: parseInt(limitInput.value) || 0,
-                              is_visible: true
-                            };
-
-                            setFormData({
-                              ...formData,
-                              features: [...formData.features, newFeature]
-                            });
-
-                            keyInput.value = '';
-                            nameInput.value = '';
-                            limitInput.value = '';
-                          }
-                        }}
-                        className="w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        <PlusIcon className="h-4 w-4 mr-1" /> Ekle
-                      </button>
+                            if (nameInput.value) {
+                              const newFeature = {
+                                name: nameInput.value,
+                                key: keyInput.value || nameInput.value.toLowerCase().replace(/ /g, '_'),
+                                limit: parseInt(limitInput.value) || 0,
+                                is_visible: true
+                              };
+                              setFormData({ ...formData, features: [...formData.features, newFeature] });
+                              nameInput.value = '';
+                              keyInput.value = '';
+                              limitInput.value = '';
+                            } else {
+                              toast.error('Özellik ismi gerekli');
+                            }
+                          }}
+                          className="w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
+                        >
+                          <PlusIcon className="h-3 w-3 mr-1" /> Ekle
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 flex justify-end space-x-3">
-                  <Dialog.Close asChild>
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      İptal
-                    </button>
-                  </Dialog.Close>
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    İptal
+                  </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                   >
                     {isSubmitting ? 'İşleniyor...' : (editingPlan ? 'Güncelle' : 'Oluştur')}
                   </button>
                 </div>
               </form>
-              <Dialog.Close asChild>
-                <button
-                  className="absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
-                  aria-label="Close"
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </button>
-              </Dialog.Close>
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
@@ -521,89 +515,66 @@ const Plans: React.FC = () => {
         {/* Delete Confirmation Modal */}
         <Dialog.Root open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
           <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow z-40" />
-            <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=open]:animate-contentShow z-50">
+            <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-xl z-50">
               <div className="flex items-center mb-4 text-red-600">
                 <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
-                <Dialog.Title className="text-xl font-medium text-gray-900">
-                  Planı Sil
-                </Dialog.Title>
+                <Dialog.Title className="text-xl font-bold">Planı Sil</Dialog.Title>
               </div>
-              <div className="mb-6 text-sm text-gray-500">
+              <div className="mb-6 text-gray-600">
                 Bu planı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
               </div>
               <div className="flex justify-end space-x-3">
-                <Dialog.Close asChild>
-                  <button
-                    type="button"
-                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    İptal
-                  </button>
-                </Dialog.Close>
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  İptal
+                </button>
                 <button
                   onClick={handleConfirmDelete}
                   disabled={isSubmitting}
-                  className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                 >
                   {isSubmitting ? 'Siliniyor...' : 'Sil'}
                 </button>
               </div>
-              <Dialog.Close asChild>
-                <button
-                  className="absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
-                  aria-label="Close"
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </button>
-              </Dialog.Close>
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
 
-        {/* Toggle Status Confirmation Modal */}
+        {/* Status Toggle Modal */}
         <Dialog.Root open={isToggleModalOpen} onOpenChange={setIsToggleModalOpen}>
           <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow z-40" />
-            <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=open]:animate-contentShow z-50">
+            <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-xl z-50">
               <div className="flex items-center mb-4 text-amber-500">
                 <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
-                <Dialog.Title className="text-xl font-medium text-gray-900">
-                  Durum Değişikliği
-                </Dialog.Title>
+                <Dialog.Title className="text-xl font-bold text-gray-900">Durum Değişikliği</Dialog.Title>
               </div>
-              <div className="mb-6 text-sm text-gray-500">
+              <div className="mb-6 text-gray-600">
                 Bu planın durumunu <strong>{togglingPlan?.isActive ? 'Pasif' : 'Aktif'}</strong> olarak değiştirmek istediğinize emin misiniz?
               </div>
               <div className="flex justify-end space-x-3">
-                <Dialog.Close asChild>
-                  <button
-                    type="button"
-                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    İptal
-                  </button>
-                </Dialog.Close>
+                <button
+                  onClick={() => setIsToggleModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  İptal
+                </button>
                 <button
                   onClick={handleConfirmToggle}
                   disabled={isSubmitting}
-                  className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${togglingPlan?.isActive ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
+                  className={`px-4 py-2 rounded-md text-white shadow-sm disabled:opacity-50 ${togglingPlan?.isActive ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'}`}
                 >
-                  {isSubmitting ? 'Güncelleniyor...' : (togglingPlan?.isActive ? 'Pasifleştir' : 'Aktifleştir')}
+                  {isSubmitting ? 'İşleniyor...' : 'Onayla'}
                 </button>
               </div>
-              <Dialog.Close asChild>
-                <button
-                  className="absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
-                  aria-label="Close"
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </button>
-              </Dialog.Close>
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
-      </div >
+
+      </div>
     </>
   );
 };

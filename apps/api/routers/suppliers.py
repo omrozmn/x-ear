@@ -330,6 +330,9 @@ def update_supplier(
         
         data = supplier_in.model_dump(exclude_unset=True, by_alias=False)
         
+        # Exclude read-only aliases and other non-model fields
+        exclude_fields = {'name', 'code', 'contact_name', 'tenant_id'}
+        
         # Check for duplicate name
         if 'company_name' in data and data['company_name'] != supplier.company_name:
             existing = db_session.query(Supplier).filter_by(
@@ -343,7 +346,7 @@ def update_supplier(
                 )
         
         for key, value in data.items():
-            if hasattr(supplier, key):
+            if key not in exclude_fields and hasattr(supplier, key):
                 setattr(supplier, key, value)
         
         db_session.commit()

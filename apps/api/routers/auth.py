@@ -309,7 +309,7 @@ def verify_otp(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/auth/reset-password", operation_id="createAuthResetPassword", response_model=ResponseEnvelope[ResetPasswordResponse])
-def reset_password(
+async def reset_password(
     request_data: ResetPasswordRequest,
     db_session: Session = Depends(get_db)
 ):
@@ -318,6 +318,35 @@ def reset_password(
         identifier = request_data.identifier
         otp = request_data.otp
         new_password = request_data.new_password
+        captcha_token = request_data.captcha_token
+        
+        # Validate captcha token if provided
+        if captcha_token:
+            from utils.recaptcha import verify_recaptcha_token, is_valid_recaptcha
+            
+            try:
+                verification_result = await verify_recaptcha_token(captcha_token, action='password_reset')
+                
+                if not is_valid_recaptcha(verification_result, expected_action='password_reset'):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=ApiError(
+                            message="Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.",
+                            code="CAPTCHA_INVALID"
+                        ).model_dump(mode="json")
+                    )
+            except Exception as e:
+                logger.error(f"Captcha verification error: {e}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=ApiError(
+                        message="Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.",
+                        code="CAPTCHA_VERIFICATION_FAILED"
+                    ).model_dump(mode="json")
+                )
+        else:
+            # If no captcha token provided, log warning but allow (for backward compatibility during migration)
+            logger.warning(f"Password reset without captcha token for identifier: {identifier}")
         
         otp_store = get_otp_store()
         stored = otp_store.get_otp(identifier)
@@ -546,6 +575,15 @@ def refresh_token(
     """Refresh access token using refresh token"""
     try:
         # oauth2_scheme returns the token without "Bearer " prefix
+        if not authorization:
+             raise HTTPException(
+                status_code=401,
+                detail=ApiError(
+                    message="Refresh token required",
+                    code="TOKEN_REQUIRED"
+                ).model_dump(mode="json")
+            )
+
         token = authorization
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
@@ -618,9 +656,10 @@ def refresh_token(
                     ).model_dump(mode="json")
                 )
             
+            # FIXED: logic was using access.tenant_id which AIAuthMiddleware rejected
             access_token = create_access_token(
                 identity=user.id,
-                additional_claims={'access.tenant_id': user.tenant_id, 'role': user.role}
+                additional_claims={'tenant_id': user.tenant_id, 'role': user.role}
             )
             
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))

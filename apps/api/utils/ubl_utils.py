@@ -263,13 +263,16 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             cbc('StreetName', addr.get('street'), parent=paddr)
         if addr.get('buildingNumber'):
             cbc('BuildingNumber', addr.get('buildingNumber'), parent=paddr)
+        if addr.get('district') or addr.get('citySubdivisionName'):
+            cbc('CitySubdivisionName', addr.get('district') or addr.get('citySubdivisionName'), parent=paddr)
         if addr.get('city'):
             cbc('CityName', addr.get('city'), parent=paddr)
         if addr.get('postalZone'):
             cbc('PostalZone', addr.get('postalZone'), parent=paddr)
         if addr.get('country'):
             cc = ET.SubElement(paddr, f"{{{NS['cac']}}}Country")
-            cbc('Name', addr.get('country'), parent=cc)
+            cbc('IdentificationCode', 'TR', parent=cc)
+            cbc('Name', addr.get('country') or 'TÜRKİYE', parent=cc)
 
     # Customer
     customer = ET.SubElement(invoice_root, f"{{{NS['cac']}}}AccountingCustomerParty")
@@ -298,13 +301,16 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             cbc('StreetName', caddr.get('street'), parent=paddrc)
         if caddr.get('buildingNumber'):
             cbc('BuildingNumber', caddr.get('buildingNumber'), parent=paddrc)
+        if caddr.get('district') or caddr.get('citySubdivisionName'):
+            cbc('CitySubdivisionName', caddr.get('district') or caddr.get('citySubdivisionName'), parent=paddrc)
         if caddr.get('city'):
             cbc('CityName', caddr.get('city'), parent=paddrc)
         if caddr.get('postalZone'):
             cbc('PostalZone', caddr.get('postalZone'), parent=paddrc)
         if caddr.get('country'):
             cc = ET.SubElement(paddrc, f"{{{NS['cac']}}}Country")
-            cbc('Name', caddr.get('country'), parent=cc)
+            cbc('IdentificationCode', 'TR', parent=cc)
+            cbc('Name', caddr.get('country') or 'TÜRKİYE', parent=cc)
 
     # Invoice lines and line totals
     lines = invoice.get('lines') or []

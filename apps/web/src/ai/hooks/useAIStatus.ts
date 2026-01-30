@@ -17,11 +17,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { customInstance } from '../../api/orval-mutator';
 import { useAISessionStore } from '../stores/aiSessionStore';
-import type { 
-  AIStatus, 
-  AIPhaseStatus, 
+import type {
+  AIStatus,
+  AIPhaseStatus,
   UseAIStatusOptions,
-  UseAIStatusReturn 
+  UseAIStatusReturn
 } from '../types/ai.types';
 
 // =============================================================================
@@ -91,9 +91,9 @@ async function fetchAIStatus(): Promise<AIStatus> {
  * ```
  */
 export function useAIStatus(options: UseAIStatusOptions = {}): UseAIStatusReturn {
-  const { 
-    enabled = true, 
-    refetchInterval = DEFAULT_REFETCH_INTERVAL 
+  const {
+    enabled = true,
+    refetchInterval = DEFAULT_REFETCH_INTERVAL
   } = options;
 
   // Get setLastAIStatus from session store
@@ -197,7 +197,7 @@ export function useAIEnabled(): boolean {
 export function useAIKillSwitchActive(): boolean {
   const { data } = useAIStatus();
   if (!data) return false;
-  return data.killSwitch.globalActive || data.killSwitch.tenantActive;
+  return data.killSwitch?.globalActive || data.killSwitch?.tenantActive || false;
 }
 
 /**

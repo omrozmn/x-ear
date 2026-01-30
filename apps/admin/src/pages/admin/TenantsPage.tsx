@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Ban, CheckCircle, Users, Trash2 } from 'lucide-react';
+import { Plus, Search, CheckCircle, Users, Trash2, AlertTriangle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/ui/Pagination';
 import { TenantEditModal, TenantCreateModal } from './tenants';
@@ -9,6 +9,7 @@ import {
     useListAdminTenants,
     useUpdateAdminTenantStatus
 } from '@/lib/api-client';
+import * as Dialog from '@radix-ui/react-dialog';
 
 type TenantStatus = 'active' | 'trial' | 'suspended' | 'cancelled';
 
@@ -20,6 +21,8 @@ export default function TenantsPage() {
     const [limit, setLimit] = useState(10);
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [statusModalOpen, setStatusModalOpen] = useState(false);
+    const [selectedTenantForStatus, setSelectedTenantForStatus] = useState<{ id: string, status: string } | null>(null);
     const queryClient = useQueryClient();
 
     const { data: tenantsData, isLoading } = useListAdminTenants({
@@ -36,24 +39,35 @@ export default function TenantsPage() {
 
     const { mutateAsync: updateStatus } = useUpdateAdminTenantStatus();
 
-    const handleStatusChange = async (tenantId: string, newStatus: string, e: React.MouseEvent) => {
+    const handleStatusChange = (tenantId: string, newStatus: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (window.confirm(`Abone durumunu ${newStatus} olarak değiştirmek istediğinize emin misiniz?`)) {
-            await toast.promise(
-                (async () => {
-                    await updateStatus({
-                        tenantId,
-                        data: { status: newStatus as any }
-                    });
-                    await queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
-                })(),
-                {
-                    loading: 'Durum güncelleniyor...',
-                    success: 'Abone durumu güncellendi',
-                    error: 'Durum güncellenemedi'
-                }
-            );
-        }
+        setSelectedTenantForStatus({ id: tenantId, status: newStatus });
+        setStatusModalOpen(true);
+    };
+
+    const confirmStatusChange = async () => {
+        if (!selectedTenantForStatus) return;
+
+        const { id, status } = selectedTenantForStatus;
+
+        await toast.promise(
+            (async () => {
+                await updateStatus({
+                    tenantId: id,
+                    data: { status: status as any }
+                });
+                // Invalidate both potential key formats to be safe
+                await queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
+                await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
+            })(),
+            {
+                loading: 'Durum güncelleniyor...',
+                success: 'Abone durumu güncellendi',
+                error: 'Durum güncellenemedi'
+            }
+        );
+        setStatusModalOpen(false);
+        setSelectedTenantForStatus(null);
     };
 
     const handleDelete = async (tenantId: string, e: React.MouseEvent) => {
@@ -164,7 +178,8 @@ export default function TenantsPage() {
                                         </tr>
                                     ) : (
                                         tenants.map((tenant: any) => {
-                                            const productConfig = getProductConfig(tenant.product_code);
+                                            const productCode = tenant.productCode || tenant.product_code;
+                                            const productConfig = getProductConfig(productCode);
                                             return (
                                                 <tr
                                                     key={tenant.id}
@@ -178,7 +193,7 @@ export default function TenantsPage() {
                                                             </div>
                                                             <div className="ml-4">
                                                                 <div className="font-medium text-gray-900">{tenant.name}</div>
-                                                                <div className="text-gray-500">{tenant.owner_email}</div>
+                                                                <div className="text-gray-500">{tenant.ownerEmail || tenant.owner_email}</div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -204,16 +219,16 @@ export default function TenantsPage() {
                                                         </span>
                                                     </td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                        {tenant.current_plan || 'Plan Yok'}
+                                                        {tenant.currentPlan || tenant.current_plan || 'Plan Yok'}
                                                     </td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                         <div className="flex items-center">
                                                             <Users className="mr-1.5 h-4 w-4 text-gray-400" />
-                                                            Max: {tenant.max_users}
+                                                            Max: {tenant.maxUsers || tenant.max_users}
                                                         </div>
                                                     </td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                        {tenant.created_at ? new Date(tenant.created_at).toLocaleDateString('tr-TR') : '-'}
+                                                        {(tenant.createdAt || tenant.created_at) ? new Date(tenant.createdAt || tenant.created_at).toLocaleDateString('tr-TR') : '-'}
                                                     </td>
                                                     <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                                         <div className="flex justify-end space-x-2">
@@ -229,10 +244,9 @@ export default function TenantsPage() {
                                                             {tenant.status === 'active' && (
                                                                 <button
                                                                     onClick={(e) => handleStatusChange(tenant.id!, 'suspended', e)}
-                                                                    className="text-yellow-600 hover:text-yellow-900"
-                                                                    title="Askıya Al"
+                                                                    className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                                                                 >
-                                                                    <Ban className="h-5 w-5" />
+                                                                    Askıya Al
                                                                 </button>
                                                             )}
                                                             <button
@@ -274,6 +288,46 @@ export default function TenantsPage() {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
             />
+
+            <Dialog.Root open={statusModalOpen} onOpenChange={setStatusModalOpen}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
+                    <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none z-50">
+                        <div className="flex items-center mb-4 text-amber-500">
+                            <AlertTriangle className="h-6 w-6 mr-2" />
+                            <Dialog.Title className="text-xl font-medium text-gray-900">
+                                Durum Değişikliği Onayı
+                            </Dialog.Title>
+                        </div>
+                        <div className="mb-6 text-sm text-gray-500">
+                            Abone durumunu <strong>{selectedTenantForStatus?.status === 'active' ? 'Aktif' : 'Askıya Alınmış'}</strong> olarak değiştirmek istediğinize emin misiniz?
+                        </div>
+                        <div className="flex justify-end space-x-3">
+                            <Dialog.Close asChild>
+                                <button
+                                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                >
+                                    İptal
+                                </button>
+                            </Dialog.Close>
+                            <button
+                                onClick={confirmStatusChange}
+                                className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${selectedTenantForStatus?.status === 'suspended' ? 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
+                            >
+                                Onayla
+                            </button>
+                        </div>
+                        <Dialog.Close asChild>
+                            <button
+                                className="absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
+                                aria-label="Close"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </Dialog.Close>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
         </div>
     );
 }

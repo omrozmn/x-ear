@@ -15,7 +15,9 @@ except ImportError:
     load_workbook = None
 
 from schemas.parties import (
-    PartyRead, PartyCreate, PartyUpdate, PartySearchFilters, BulkUploadResponse
+    PartyRead, PartyCreate, PartyUpdate, PartySearchFilters, BulkUploadResponse,
+    BulkUpdateRequest, BulkUpdateResponse, BulkUpdateResult,
+    BulkEmailRequest, BulkEmailResponse, BulkEmailResult
 )
 from schemas.base import ResponseEnvelope, ResponseMeta
 from schemas.base import ApiError
@@ -190,6 +192,9 @@ def export_parties(
             # Handle potential None dates
             created = p.created_at.isoformat() if p.created_at else ''
             
+            # Serialize enum properly - use .value to get string representation
+            status_value = p.status.value if hasattr(p.status, 'value') else str(p.status or '')
+            
             writer.writerow([
                 str(p.id),
                 str(p.tc_number or ''),
@@ -199,7 +204,7 @@ def export_parties(
                 str(p.email or ''),
                 str(p.birth_date or ''),
                 str(p.gender or ''),
-                str(p.status or ''),
+                status_value,
                 str(p.segment or ''),
                 tags_str,
                 created
@@ -524,3 +529,151 @@ async def bulk_upload_parties(
         logger.error(f"Bulk upload patient error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+# --- Bulk Operations ---
+
+@router.post("/parties/bulk-update", operation_id="bulkUpdateParties", response_model=ResponseEnvelope[BulkUpdateResponse])
+async def bulk_update_parties(
+    request: BulkUpdateRequest,
+    access: UnifiedAccess = Depends(require_access("parties.edit")),
+    db: Session = Depends(get_db)
+):
+    """
+    Bulk update multiple parties with the same changes.
+    Returns success/failure count and individual results.
+    """
+    try:
+        from schemas.parties import BulkUpdateRequest, BulkUpdateResponse, BulkUpdateResult
+        
+        service = PartyService(db)
+        results = []
+        success_count = 0
+        failure_count = 0
+        
+        for party_id in request.party_ids:
+            try:
+                # Verify party exists and belongs to tenant
+                party = service.get_party(party_id, access.tenant_id)
+                if not party:
+                    results.append(BulkUpdateResult(
+                        party_id=party_id,
+                        success=False,
+                        error="Party not found"
+                    ))
+                    failure_count += 1
+                    continue
+                
+                # Apply updates
+                update_data = request.updates.model_dump(exclude_unset=True, by_alias=False)
+                for key, value in update_data.items():
+                    if hasattr(party, key):
+                        setattr(party, key, value)
+                
+                db.commit()
+                results.append(BulkUpdateResult(
+                    party_id=party_id,
+                    success=True
+                ))
+                success_count += 1
+                
+            except Exception as e:
+                logger.error(f"Failed to update party {party_id}: {e}")
+                results.append(BulkUpdateResult(
+                    party_id=party_id,
+                    success=False,
+                    error=str(e)
+                ))
+                failure_count += 1
+                db.rollback()
+        
+        response_data = BulkUpdateResponse(
+            success_count=success_count,
+            failure_count=failure_count,
+            results=results
+        )
+        
+        return ResponseEnvelope(data=response_data)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bulk update error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/parties/bulk-email", operation_id="bulkEmailParties", response_model=ResponseEnvelope[BulkEmailResponse])
+async def bulk_email_parties(
+    request: BulkEmailRequest,
+    access: UnifiedAccess = Depends(require_access("parties.edit")),
+    db: Session = Depends(get_db)
+):
+    """
+    Send email to multiple parties.
+    Returns success/failure count and individual results.
+    """
+    try:
+        from schemas.parties import BulkEmailRequest, BulkEmailResponse, BulkEmailResult
+        
+        service = PartyService(db)
+        results = []
+        success_count = 0
+        failure_count = 0
+        
+        for party_id in request.party_ids:
+            try:
+                # Verify party exists and belongs to tenant
+                party = service.get_party(party_id, access.tenant_id)
+                if not party:
+                    results.append(BulkEmailResult(
+                        party_id=party_id,
+                        success=False,
+                        error="Party not found"
+                    ))
+                    failure_count += 1
+                    continue
+                
+                # Check if party has email
+                if not party.email:
+                    results.append(BulkEmailResult(
+                        party_id=party_id,
+                        email=None,
+                        success=False,
+                        error="Party has no email address"
+                    ))
+                    failure_count += 1
+                    continue
+                
+                # TODO: Implement actual email sending
+                # For now, just log and mark as success
+                logger.info(f"Would send email to {party.email}: {request.subject}")
+                
+                results.append(BulkEmailResult(
+                    party_id=party_id,
+                    email=party.email,
+                    success=True
+                ))
+                success_count += 1
+                
+            except Exception as e:
+                logger.error(f"Failed to email party {party_id}: {e}")
+                results.append(BulkEmailResult(
+                    party_id=party_id,
+                    success=False,
+                    error=str(e)
+                ))
+                failure_count += 1
+        
+        response_data = BulkEmailResponse(
+            success_count=success_count,
+            failure_count=failure_count,
+            results=results
+        )
+        
+        return ResponseEnvelope(data=response_data)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bulk email error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

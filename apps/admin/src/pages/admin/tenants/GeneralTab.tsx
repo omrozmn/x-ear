@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useUpdateAdminTenant } from '@/lib/api-client';
+import { useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api'; // Use main apiClient for reliable interceptors/headers
 import { PRODUCT_REGISTRY } from '@/config/productRegistry';
 
 interface ExtendedTenant {
     id?: string;
     name?: string;
     owner_email?: string;
+    ownerEmail?: string; // Handle camelCase variant
     status?: string;
     max_users?: number;
+    maxUsers?: number;
     product_code?: string;
+    productCode?: string;
     [key: string]: any;
 }
 
@@ -19,36 +23,59 @@ interface GeneralTabProps {
 }
 
 export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
-    const { mutateAsync: updateTenant, isPending } = useUpdateAdminTenant();
+    const queryClient = useQueryClient();
+    const [isPending, setIsPending] = useState(false);
+
+    // Helper to get initial value with fallback for snake_case/camelCase
+    const getInitialValue = (keySnake: string, keyCamel: string, defaultValue: any) => {
+        return tenant[keySnake] ?? tenant[keyCamel] ?? defaultValue;
+    };
+
     const [formData, setFormData] = useState({
-        name: tenant.name || '',
-        owner_email: tenant.owner_email || '',
-        status: tenant.status || 'active',
-        max_users: tenant.max_users || 5,
-        product_code: tenant.product_code || 'xear_hearing'
+        name: getInitialValue('name', 'name', ''),
+        owner_email: getInitialValue('owner_email', 'ownerEmail', ''),
+        status: getInitialValue('status', 'status', 'active'),
+        max_users: getInitialValue('max_users', 'maxUsers', 5),
+        product_code: getInitialValue('product_code', 'productCode', 'xear_hearing')
     });
 
     useEffect(() => {
         setFormData({
-            name: tenant.name || '',
-            owner_email: tenant.owner_email || '',
-            status: tenant.status || 'active',
-            max_users: tenant.max_users || 5,
-            product_code: tenant.product_code || 'xear_hearing'
+            name: getInitialValue('name', 'name', ''),
+            owner_email: getInitialValue('owner_email', 'ownerEmail', ''),
+            status: getInitialValue('status', 'status', 'active'),
+            max_users: getInitialValue('max_users', 'maxUsers', 5),
+            product_code: getInitialValue('product_code', 'productCode', 'xear_hearing')
         });
     }, [tenant]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsPending(true);
         try {
-            await updateTenant({
-                tenantId: tenant.id!,
-                data: formData as any
-            });
+            // Explicitly construct payload to ensure snake_case
+            const payload = {
+                name: formData.name,
+                owner_email: formData.owner_email,
+                status: formData.status,
+                max_users: Number(formData.max_users),
+                product_code: formData.product_code
+            };
+
+            await apiClient.put(`/api/admin/tenants/${tenant.id}`, payload);
+
             toast.success('Abone bilgileri güncellendi');
+            // Invalidate queries to refresh data
+            await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Güncelleme başarısız');
+            console.error('Update tenant error:', error);
+            const message = error.response?.data?.error?.message
+                || error.response?.data?.message
+                || 'Güncelleme başarısız';
+            toast.error(message);
+        } finally {
+            setIsPending(false);
         }
     };
 

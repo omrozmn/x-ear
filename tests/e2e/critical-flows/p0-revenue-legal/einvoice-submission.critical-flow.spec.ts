@@ -13,7 +13,7 @@ import { test, expect } from '../../fixtures/fixtures';
 import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-05: E-Invoice Submission', () => {
-  test('should submit invoice to GIB successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should submit invoice to GIB successfully', async ({ tenantPage, request, authTokens }) => {
     const timestamp = Date.now();
 
     // STEP 1: Navigate to invoices and find a draft invoice
@@ -22,7 +22,7 @@ test.describe('FLOW-05: E-Invoice Submission', () => {
     await tenantPage.waitForLoadState('networkidle');
     
     // Get list of invoices via API to find one we can submit
-    const listResponse = await apiContext.get('/api/invoices?page=1&perPage=10', {
+    const listResponse = await request.get('/api/invoices?page=1&perPage=10', {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     
@@ -101,7 +101,7 @@ test.describe('FLOW-05: E-Invoice Submission', () => {
     
     // STEP 6: Verify invoice status updated via API
     console.log('[FLOW-05] Step 6: Verify invoice status via API');
-    const invoiceResponse = await apiContext.get(`/api/invoices/${invoiceId}`, {
+    const invoiceResponse = await request.get(`/api/invoices/${invoiceId}`, {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     
@@ -114,7 +114,7 @@ test.describe('FLOW-05: E-Invoice Submission', () => {
     
     // STEP 7: Verify outbox record created
     console.log('[FLOW-05] Step 7: Verify outbox record');
-    const outboxResponse = await apiContext.get('/api/efatura/outbox?page=1&perPage=10', {
+    const outboxResponse = await request.get('/api/efatura/outbox?page=1&perPage=10', {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     

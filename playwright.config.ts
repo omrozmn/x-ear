@@ -115,5 +115,47 @@ export default defineConfig({
                 baseURL: process.env.LANDING_BASE_URL || 'http://localhost:3000',
             },
         },
+
+        // Critical Flow Regression Tests
+        {
+            name: 'critical-flows-p0',
+            testDir: './tests/e2e/critical-flows/p0-revenue-legal',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
+            },
+            fullyParallel: true,
+            retries: 2,
+        },
+        {
+            name: 'critical-flows-p1',
+            testDir: './tests/e2e/critical-flows/p1-core-operations',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
+            },
+            fullyParallel: true,
+            retries: 1,
+        },
+        {
+            name: 'critical-flows-p2',
+            testDir: './tests/e2e/critical-flows/p2-admin-operations',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
+            },
+            fullyParallel: true,
+            retries: 1,
+        },
+        {
+            name: 'critical-flows-sync',
+            testDir: './tests/e2e/critical-flows/cross-app-sync',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
+            },
+            fullyParallel: true,
+            retries: 1,
+        },
     ],
 });

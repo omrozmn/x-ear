@@ -25,7 +25,7 @@ class TenantStatus(str, Enum):
         return None
 
 
-from core.models.enums import ProductCode
+from .enums import ProductCode
 
 class TenantBase(AppBaseModel):
     """Base tenant schema"""

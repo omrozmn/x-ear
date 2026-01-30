@@ -37,35 +37,6 @@ export const StatusBadge = ({ status }: { status?: string }) => {
   }
 };
 
-// Deprecated function - to be removed after refactor
-export const getStatusBadge = (status?: string) => <StatusBadge status={status} />;
-
-/**
- * Helper functions for PartyList component
- * Keeps main component under 500 LOC
- */
-
-
-
-export const formatDate = (dateString?: string) => {
-  if (!dateString) return '-';
-  try {
-    return new Date(dateString).toLocaleDateString('tr-TR');
-  } catch {
-    return '-';
-  }
-};
-
-export const formatPhone = (phone?: string) => {
-  if (!phone) return '-';
-  // Format Turkish phone number
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 11 && cleaned.startsWith('0')) {
-    return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7, 9)} ${cleaned.slice(9)}`;
-  }
-  return phone;
-};
-
 export const SegmentBadge = ({ segment }: { segment?: string }) => {
   const { t } = useTranslation('constants');
 
@@ -89,12 +60,11 @@ export const SegmentBadge = ({ segment }: { segment?: string }) => {
       return <Badge variant="secondary" size="sm">{label}</Badge>;
   }
 };
-export const getSegmentBadge = (segment?: string) => <SegmentBadge segment={segment} />;
 
 export const AcquisitionStatusBadge = ({ acquisitionType }: { acquisitionType?: string }) => {
   if (!acquisitionType) return <Badge variant="secondary" size="sm">-</Badge>;
 
-  const label = acquisitionType; // Translations needed for this too
+  const label = acquisitionType;
   const upperType = acquisitionType.toUpperCase().replace('-', '_');
 
   switch (upperType) {
@@ -112,7 +82,6 @@ export const AcquisitionStatusBadge = ({ acquisitionType }: { acquisitionType?: 
       return <Badge variant="secondary" size="sm">{label}</Badge>;
   }
 };
-export const getAcquisitionStatusBadge = (acquisitionType?: string) => <AcquisitionStatusBadge acquisitionType={acquisitionType} />;
 
 export const BranchBadge = ({ branchId, branchName }: { branchId?: string, branchName?: string }) => {
   if (!branchId && !branchName) return <Badge variant="secondary" size="sm">-</Badge>;
@@ -127,4 +96,6 @@ export const BranchBadge = ({ branchId, branchName }: { branchId?: string, branc
 
   return <Badge variant="default" size="sm">{label}</Badge>;
 };
-export const getBranchBadge = (branchId?: string, branchName?: string) => <BranchBadge branchId={branchId} branchName={branchName} />;
+
+// Deprecated wrapper functions - removed as they trigger Fast Refresh warnings and are unused.
+// Use components <StatusBadge />, <SegmentBadge />, etc. directly.

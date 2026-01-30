@@ -28,8 +28,8 @@ test.describe('Suppliers CRUD Operations', () => {
         await tenantPage.goto('/suppliers');
         await tenantPage.waitForLoadState('networkidle');
 
-        // Click new button
-        const newButton = tenantPage.getByRole('button', { name: /Yeni|Ekle|Tedarikçi/i }).first();
+        // Click new button "Yeni Tedarikçi"
+        const newButton = tenantPage.getByRole('button', { name: 'Yeni Tedarikçi' }).first();
         const hasButton = await newButton.isVisible({ timeout: 5000 }).catch(() => false);
 
         if (hasButton) {
@@ -50,15 +50,17 @@ test.describe('Suppliers CRUD Operations', () => {
         await tenantPage.waitForLoadState('networkidle');
 
         // Click on first supplier if available
-        const firstItem = tenantPage.locator('table tbody tr, [class*="item"], [class*="card"]').first();
-        const hasItems = await firstItem.isVisible({ timeout: 5000 }).catch(() => false);
+        const firstRow = tenantPage.locator('tbody tr').first();
+        const hasRows = await firstRow.isVisible({ timeout: 5000 }).catch(() => false);
 
-        if (hasItems) {
-            await firstItem.click();
-            await tenantPage.waitForLoadState('networkidle');
+        if (hasRows) {
+            // Click the first supplier in the list
+            await firstRow.locator('td').first().click();
 
-            // Verify detail page loaded
-            expect(tenantPage.url().includes('/suppliers/')).toBeTruthy();
+            // Wait for navigation to detail page
+            await tenantPage.waitForURL(url => url.toString().includes('/suppliers/') && url.toString().length > url.toString().indexOf('/suppliers/') + 11, { timeout: 15000 });
+
+            expect(tenantPage.url()).toContain('/suppliers/');
         } else {
             expect(true).toBeTruthy();
         }

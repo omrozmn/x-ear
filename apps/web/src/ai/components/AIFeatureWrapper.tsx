@@ -4,16 +4,11 @@ import { useAIContext } from '../hooks/useAIContext';
 import type { AICapability } from '../types/ai.types';
 import {
   checkAIAvailability,
-  getUnavailableMessage,
   type AIUnavailableReason,
-  type AIAvailabilityResult,
 } from '../utils/aiAvailability';
 import { getStatusIcon, getStatusColors } from './helpers';
 
-// Re-export utilities for backward compatibility
-// Note: This triggers react-refresh warning but is intentional for backward compatibility
-// These utilities are also available from '../utils/aiAvailability'
-export { checkAIAvailability, getUnavailableMessage, type AIUnavailableReason, type AIAvailabilityResult };
+// Note: Utilities removed for Fast Refresh compatibility. Imports are now handled directly from source.
 
 /**
  * Props for AIFeatureWrapper component
@@ -277,13 +272,7 @@ export function AIFeatureWrapper({
   );
 }
 
-// =============================================================================
-// Re-export hook for backward compatibility
-// Note: This triggers react-refresh warning but is intentional for backward compatibility
-// Hook is also available from '../hooks/useAIFeatureAvailability'
-// =============================================================================
-
-export { useAIFeatureAvailability } from '../hooks/useAIFeatureAvailability';
+// Note: Hook removed for Fast Refresh compatibility. Imports are now handled directly from source.
 
 // =============================================================================
 // Default Export

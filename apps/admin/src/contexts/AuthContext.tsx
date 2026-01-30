@@ -106,14 +106,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const response = await adminLogin({ data: credentials }) as any;
 
-            console.log('Login response after unwrap:', response);
+            console.log('Login response (unwrapped):', response);
 
-            // Handle MFA requirement - response is already unwrapped to {token, user, requires_mfa}
-            if (response.requires_mfa) {
+            // Handle MFA requirement
+            if (response.requires_mfa || response.requiresMfa) {
                 return { requires_mfa: true };
             }
 
-            // After envelope unwrapping, response is directly {token, user, refresh_token, requires_mfa}
+            // Response is already unwrapped by mutator: {token, user, refreshToken, requiresMfa}
             if (response.token && response.user) {
                 const { token, user, refreshToken, refresh_token } = response;
                 const rToken = refreshToken || refresh_token;
@@ -123,16 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (rToken) tokenManager.setRefreshToken(rToken);
 
                 toast.success('Giriş başarılı');
-                return { user: user as unknown as TypeAdminUser, token };
-            }
-
-            // Fallback: if response still has nested structure (shouldn't happen after unwrap fix)
-            if (response.data && response.data.token && response.data.user) {
-                const { token, user } = response.data;
-                setAuth(user as unknown as TypeAdminUser, token);
-                tokenManager.setToken(token);
-                toast.success('Giriş başarılı');
-                return { user: user as unknown as TypeAdminUser, token };
+                return { user: user as unknown as TypeAdminUser, token, tokens: { token, refreshToken: rToken } };
             }
 
             console.error('Unexpected login response format:', response);
@@ -144,11 +135,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = () => {
+        console.warn('[AuthContext] Logout called', new Error().stack);
         clearAuth();
         tokenManager.clearToken();
         tokenManager.clearRefreshToken();
         toast.success('Çıkış yapıldı');
-        window.location.href = '/login';
+        // window.location.href = '/login'; // Disable redirect to see logs
     };
 
     return (

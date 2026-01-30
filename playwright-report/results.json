@@ -75,6 +75,22 @@
         "metadata": {
           "actualWorkers": 1
         },
+        "id": "admin",
+        "name": "admin",
+        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/admin",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "web-webkit",
         "name": "web-webkit",
         "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web",
@@ -139,9 +155,9 @@
         "metadata": {
           "actualWorkers": 1
         },
-        "id": "admin",
-        "name": "admin",
-        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/admin",
+        "id": "landing",
+        "name": "landing",
+        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/landing",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -151,13 +167,61 @@
       {
         "outputDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 2,
         "metadata": {
           "actualWorkers": 1
         },
-        "id": "landing",
-        "name": "landing",
-        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/landing",
+        "id": "critical-flows-p0",
+        "name": "critical-flows-p0",
+        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/critical-flows/p0-revenue-legal",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "critical-flows-p1",
+        "name": "critical-flows-p1",
+        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/critical-flows/p1-core-operations",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "critical-flows-p2",
+        "name": "critical-flows-p2",
+        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/critical-flows/p2-admin-operations",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "critical-flows-sync",
+        "name": "critical-flows-sync",
+        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/critical-flows/cross-app-sync",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -175,20 +239,20 @@
   },
   "suites": [
     {
-      "title": "web/replacements.spec.ts",
-      "file": "web/replacements.spec.ts",
+      "title": "web/deep_qa_suppliers_verify.spec.ts",
+      "file": "web/deep_qa_suppliers_verify.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Service Operations (Replacements)",
-          "file": "web/replacements.spec.ts",
-          "line": 7,
+          "title": "Deep QA Audit: Suppliers Verification (Absolute Certainty)",
+          "file": "web/deep_qa_suppliers_verify.spec.ts",
+          "line": 3,
           "column": 6,
           "specs": [
             {
-              "title": "should create a replacement request from party devices",
+              "title": "should Read, Update, and Delete the seeded QA_TEST_SEED SUPPLIER",
               "ok": false,
               "tags": [],
               "tests": [
@@ -202,564 +266,400 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30481,
+                      "status": "failed",
+                      "duration": 16275,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts:26:27",
+                        "location": {
+                          "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts",
+                          "column": 27,
+                          "line": 26
+                        },
+                        "snippet": "  24 |\n  25 |         const row = page.locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first();\n> 26 |         await expect(row).toBeVisible({ timeout: 10000 });\n     |                           ^\n  27 |         console.log('✅ UI Verification (Read): Supplier found in list.');\n  28 |\n  29 |         // 4. Perform Update (Edit)"
                       },
                       "errors": [
                         {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
                           "location": {
-                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/replacements.spec.ts",
-                            "column": 71,
-                            "line": 21
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts",
+                            "column": 27,
+                            "line": 26
                           },
-                          "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel(/Ad|First Name/i).first()\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"button\" class=\"go1091339057\" aria-label=\"Open match details for /sgk/downloads\">…</div>\u001b[22m\n\u001b[2m    - fill(\"RepTest1768917763093\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and editable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying fill action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and editable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying fill action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    52 × waiting for element to be visible, enabled and editable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying fill action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  19 |\n  20 |                 const timestamp = Date.now();\n> 21 |                 await tenantPage.getByLabel(/Ad|First Name/i).first().fill(`RepTest${timestamp}`);\n     |                                                                       ^\n  22 |                 await tenantPage.getByLabel(/Soyad|Last Name/i).first().fill('Owner');\n  23 |                 await tenantPage.getByLabel(/Telefon|Phone/i).first().fill(`+9055599${timestamp.toString().slice(-5)}`);\n  24 |\n    at startAddParty (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/replacements.spec.ts:21:71)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/replacements.spec.ts:37:13"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n\n\n  24 |\n  25 |         const row = page.locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first();\n> 26 |         await expect(row).toBeVisible({ timeout: 10000 });\n     |                           ^\n  27 |         console.log('✅ UI Verification (Read): Supplier found in list.');\n  28 |\n  29 |         // 4. Perform Update (Edit)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts:26:27"
                         }
                       ],
                       "stdout": [
                         {
-                          "text": "[Fixture] Running against REAL BACKEND (No Mocks)\n"
+                          "text": "BROWSER LOG: [vite] connecting...\n"
                         },
                         {
-                          "text": "[Fixture] Injecting auth script...\n"
+                          "text": "BROWSER LOG: [vite] connected.\n"
                         },
                         {
-                          "text": "[BROWSER] [Init] Setting storage keys...\n"
+                          "text": "BROWSER LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
                         },
                         {
-                          "text": "[BROWSER] [vite] connecting...\n"
+                          "text": "BROWSER LOG: i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com\n"
                         },
                         {
-                          "text": "[BROWSER] [vite] connected.\n"
+                          "text": "BROWSER LOG: i18next: languageChanged en-US\n"
                         },
                         {
-                          "text": "[BROWSER] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
+                          "text": "BROWSER LOG: i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: common, fallbackLng: Array(1)}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] localStorage spy installed\n"
+                          "text": "BROWSER LOG: [TokenManager] localStorage spy installed\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Wrote access token to canonical key\n"
+                          "text": "BROWSER LOG: [TokenManager] Hydrated from storage: {hasAccessToken: false, hasRefreshToken: false, isExpired: true, userId: null}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Verification - token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                          "text": "BROWSER LOG: [aiSessionStore] Rehydrating, running cleanup...\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Wrote refresh token to canonical key\n"
+                          "text": "BROWSER LOG: XXX DEBUG: Imports loaded, attempting to render App XXX\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Verification - refresh token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                          "text": "BROWSER LOG: XXX DEBUG: Render called XXX\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Hydrated from storage: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: false, hasRefreshToken: false, isExpired: true, ttl: 0}\n"
                         },
                         {
-                          "text": "[BROWSER] [aiSessionStore] Rehydrating, running cleanup...\n"
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
                         },
                         {
-                          "text": "[BROWSER] main.tsx loaded\n"
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: false, hasRefreshToken: false, isExpired: true, ttl: 0}\n"
                         },
                         {
-                          "text": "[BROWSER] [main.tsx] TokenManager initialized: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
                         },
                         {
-                          "text": "[BROWSER] [main.tsx] After sync: {hasAccessToken: true, hasRefreshToken: true}\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] Starting migration and auth init...\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] 🔄 Starting storage migration...\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] ✅ Storage migration completed. Migrated 0 keys.\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] Rendering App...\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] App rendered\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] [Init] Setting storage keys...\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] [vite] connecting...\n"
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
                         },
                         {
-                          "text": "[BROWSER] [vite] connected.\n"
+                          "text": "BROWSER LOG: [orval-mutator] İstek için token bulunamadı: /api/auth/login\n"
                         },
                         {
-                          "text": "[BROWSER] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
+                          "text": "BROWSER LOG: [authStore] Login successful, storing tokens via TokenManager: {hasAccessToken: true, hasRefreshToken: true, accessTokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., refreshTokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., user: Object}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] localStorage spy installed\n"
+                          "text": "BROWSER LOG: [TokenManager] Setting tokens: {hasAccessToken: true, hasRefreshToken: true, accessPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Wrote access token to canonical key\n"
+                          "text": "BROWSER LOG: [TokenManager] Persisted to storage\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Verification - token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Wrote refresh token to canonical key\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Verification - refresh token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Hydrated from storage: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [aiSessionStore] Context changed, resetting store: {previousTenant: null, newTenant: tenant-1, previousParty: null, newParty: null}\n"
                         },
                         {
-                          "text": "[BROWSER] [aiSessionStore] Rehydrating, running cleanup...\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] main.tsx loaded\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [main.tsx] TokenManager initialized: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/ai/status, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [main.tsx] After sync: {hasAccessToken: true, hasRefreshToken: true}\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] Starting migration and auth init...\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] Rendering App...\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] App rendered\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] Transformed user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567} {isAdmin: false}\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [vite] connecting...\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
+                          "text": "BROWSER LOG: [vite] connected.\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] Transformed user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567} {isAdmin: false}\n"
+                          "text": "BROWSER LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com\n"
                         },
                         {
-                          "text": "[BROWSER] Auth state restored successfully with user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
+                          "text": "BROWSER LOG: i18next: languageChanged en-US\n"
                         },
                         {
-                          "text": "[BROWSER] Auth state restored successfully with user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
+                          "text": "BROWSER LOG: i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: common, fallbackLng: Array(1)}\n"
                         },
                         {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
+                          "text": "BROWSER LOG: [TokenManager] localStorage spy installed\n"
                         },
                         {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
+                          "text": "BROWSER LOG: [TokenManager] Wrote access token to canonical key\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "BROWSER LOG: [TokenManager] Verification - token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: [TokenManager] Wrote refresh token to canonical key\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: [TokenManager] Verification - refresh token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "BROWSER LOG: [TokenManager] Hydrated from storage: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: [aiSessionStore] Rehydrating, running cleanup...\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: XXX DEBUG: Imports loaded, attempting to render App XXX\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/ai/status, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: XXX DEBUG: Render called XXX\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/branches, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [vite] connecting...\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/branches, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [vite] connected.\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "BROWSER LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: i18next: languageChanged en-US\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "BROWSER LOG: i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: common, fallbackLng: Array(1)}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: [TokenManager] localStorage spy installed\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: [TokenManager] Wrote access token to canonical key\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - calling API...\n"
+                          "text": "BROWSER LOG: [TokenManager] Verification - token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [TokenManager] Wrote refresh token to canonical key\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - calling API...\n"
+                          "text": "BROWSER LOG: [TokenManager] Verification - refresh token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [TokenManager] Hydrated from storage: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/parties, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [aiSessionStore] Rehydrating, running cleanup...\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - raw response: []\n"
+                          "text": "BROWSER LOG: XXX DEBUG: Imports loaded, attempting to render App XXX\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - items count: 0\n"
+                          "text": "BROWSER LOG: XXX DEBUG: Render called XXX\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] No appointments found from server\n"
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
                         },
                         {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/parties, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
                         },
                         {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
                         },
                         {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "Searching for QA_TEST_SEED SUPPLIER...\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "BROWSER LOG: [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - raw response: []\n"
+                          "text": "BROWSER LOG: [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - items count: 0\n"
+                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
                         },
                         {
-                          "text": "[BROWSER] [appointment.service] No appointments found from server\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [Init] Setting storage keys...\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/ai/status, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [vite] connecting...\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [vite] connected.\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] localStorage spy installed\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Wrote access token to canonical key\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Verification - token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Wrote refresh token to canonical key\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Verification - refresh token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
                         },
                         {
-                          "text": "[BROWSER] [TokenManager] Hydrated from storage: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [aiSessionStore] Rehydrating, running cleanup...\n"
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
                         },
                         {
-                          "text": "[BROWSER] main.tsx loaded\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [main.tsx] TokenManager initialized: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_e2e_tenant}\n"
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "[BROWSER] [main.tsx] After sync: {hasAccessToken: true, hasRefreshToken: true}\n"
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - raw response: []\n"
                         },
                         {
-                          "text": "[BROWSER] Starting migration and auth init...\n"
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - items count: 0\n"
                         },
                         {
-                          "text": "[BROWSER] Rendering App...\n"
+                          "text": "BROWSER LOG: [appointment.service] No appointments found from server\n"
                         },
                         {
-                          "text": "[BROWSER] App rendered\n"
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - raw response: []\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28796}\n"
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - items count: 0\n"
                         },
                         {
-                          "text": "[BROWSER] [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28796}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [initializeAuth] Transformed user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567} {isAdmin: false}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [initializeAuth] Transformed user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567} {isAdmin: false}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] Auth state restored successfully with user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
-                        },
-                        {
-                          "text": "[BROWSER] Auth state restored successfully with user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
-                        },
-                        {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
-                        },
-                        {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/ai/status, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/branches, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/branches, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
-                        },
-                        {
-                          "text": "[BROWSER] MainLayout render - user: {id: usr_e2e_tenant, email: tenant@x-ear.com, firstName: Tenant, lastName: Admin, phone: +905551234567}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - calling API...\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - calling API...\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/parties, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [orval-mutator] Request interceptor: {url: /api/parties, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_e2e_tenant}\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - raw response: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - items count: 0\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] No appointments found from server\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - raw response: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] bootstrapFromServer - items count: 0\n"
-                        },
-                        {
-                          "text": "[BROWSER] [appointment.service] No appointments found from server\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Party tenantId: undefined\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] All branches: []\n"
-                        },
-                        {
-                          "text": "[BROWSER] [PartyTagUpdateModal] Filtered branches: []\n"
+                          "text": "BROWSER LOG: [appointment.service] No appointments found from server\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-20T14:02:39.280Z",
+                      "startTime": "2026-01-30T16:29:56.349Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/replacements-Service-Opera-67b42--request-from-party-devices-web/test-failed-1.png"
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/deep_qa_suppliers_verify-D-5e5bf-eeded-QA-TEST-SEED-SUPPLIER-web/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/deep_qa_suppliers_verify-D-5e5bf-eeded-QA-TEST-SEED-SUPPLIER-web/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/replacements-Service-Opera-67b42--request-from-party-devices-web/error-context.md"
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/deep_qa_suppliers_verify-D-5e5bf-eeded-QA-TEST-SEED-SUPPLIER-web/error-context.md"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts",
+                        "column": 27,
+                        "line": 26
+                      }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "223d63fba5fd5ff9393d-2294a1e31c47024b5bbc",
-              "file": "web/replacements.spec.ts",
-              "line": 9,
+              "id": "31bb5b72ccd7a7f07ef5-c3e3d4bf2b52f191e332",
+              "file": "web/deep_qa_suppliers_verify.spec.ts",
+              "line": 4,
               "column": 5
             }
           ]
@@ -769,8 +669,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-01-20T14:02:38.868Z",
-    "duration": 31121.362,
+    "startTime": "2026-01-30T16:29:55.772Z",
+    "duration": 17240.864,
     "expected": 0,
     "skipped": 0,
     "unexpected": 1,

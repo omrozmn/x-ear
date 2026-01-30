@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-26T22:53:32.953Z
+ * Generated: 2026-01-27T14:45:58.546Z
  */
 
 // ACTIVITY_LOGS
@@ -363,6 +363,8 @@ export {
   useCreateBirfaturaSyncInvoices,
   useCreateOutebelgev2Senddocument,
   useCreateOutebelgev2Sendbasicinvoicefrommodel,
+  useCreateOutebelgev2Getoutboxdocuments,
+  useCreateOutebelgev2Getpdflinkbyuuid,
   useCreateMusteriFirmamusterigetir,
   useCreateFirmaFirmapkbilgisigetir,
   useCreateFirmaFirmaadresbilgisigetir,
@@ -580,6 +582,8 @@ export {
   useUpdateParty,
   useDeleteParty,
   useCreatePartyBulkUpload,
+  useBulkUpdateParties,
+  useBulkEmailParties,
 } from './parties/parties';
 
 // PARTY_SUBRESOURCES

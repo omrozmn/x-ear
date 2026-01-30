@@ -14,7 +14,8 @@ export const Button: React.FC<Props> = ({ variant = 'primary', children, style, 
         ? `${base} bg-gray-100 text-gray-900`
         : `${base} bg-transparent`;
   return (
-    <UIButton className={cls} {...rest} style={style} variant='default'>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    <UIButton className={cls} {...rest} style={style as any} variant='default'>
       {children}
     </UIButton>
   );

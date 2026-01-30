@@ -36,9 +36,9 @@ const AdminBirFaturaPage: React.FC = () => {
     }, { query: { enabled: activeTab === 'logs' } });
 
     const stats = (statsData as any)?.data;
-    const invoices = (invoicesData as any)?.data?.invoices || [];
-    const logs = (logsData as any)?.data?.logs || [];
-    const pagination = activeTab === 'logs' ? (logsData as any)?.data?.pagination : (invoicesData as any)?.data?.pagination;
+    const invoices = (invoicesData as any)?.invoices || (invoicesData as any)?.data?.invoices || [];
+    const logs = (logsData as any)?.logs || (logsData as any)?.data?.logs || [];
+    const pagination = activeTab === 'logs' ? ((logsData as any)?.pagination || (logsData as any)?.data?.pagination) : ((invoicesData as any)?.pagination || (invoicesData as any)?.data?.pagination);
 
     return (
         <div className="p-6 max-w-7xl mx-auto">

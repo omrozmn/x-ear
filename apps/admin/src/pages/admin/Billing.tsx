@@ -80,22 +80,22 @@ const Billing: React.FC = () => {
     status: statusFilter !== 'all' ? (statusFilter as InvoiceRead['status']) : undefined
   });
 
-  const invoices = ((invoicesData as any)?.data?.invoices || []) as InvoiceRead[];
-  const pagination = (invoicesData as any)?.data?.pagination;
+  const invoices = ((invoicesData as any)?.invoices || (invoicesData as any)?.data?.invoices || []) as InvoiceRead[];
+  const pagination = (invoicesData as any)?.pagination || (invoicesData as any)?.data?.pagination;
 
   // Fetch plans
   const { data: plansData } = useListAdminPlans();
-  const plans = ((plansData as any)?.data?.plans || []) as PlanRead[];
+  const plans = ((plansData as any)?.plans || (plansData as any)?.data?.plans || []) as PlanRead[];
 
   // Fetch tenants for invoice creation
   const { data: tenantsData } = useListAdminTenants({ limit: 100 }, { query: { enabled: showCreateModal } });
-  const tenants = (tenantsData as any)?.data?.tenants || [];
+  const tenants = (tenantsData as any)?.tenants || (tenantsData as any)?.data?.tenants || [];
 
   // Fetch invoice details
   const { data: invoiceDetailsData } = useGetAdminInvoice(selectedInvoiceId!, {
     query: { enabled: !!selectedInvoiceId && showInvoiceModal }
   });
-  const selectedInvoice = (invoiceDetailsData as any)?.data?.invoice;
+  const selectedInvoice = (invoiceDetailsData as any)?.invoice || (invoiceDetailsData as any)?.data?.invoice;
 
   // Placeholder for payment recording to satisfy TS. Functionality to be implemented.
   const recordPayment = async (params: any) => {

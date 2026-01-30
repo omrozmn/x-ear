@@ -151,42 +151,44 @@ async function fetchMetrics(windowMinutes: number): Promise<AIMetricsResponse> {
     params: { window_minutes: windowMinutes },
   });
 
+  const actualData = (response as any).data || response;
+
   // Transform backend response to frontend types
   return {
-    window_minutes: response.window_minutes,
-    timestamp: response.timestamp,
+    window_minutes: actualData.window_minutes,
+    timestamp: actualData.timestamp,
     latency: {
-      p50: response.inference_latency.p50_ms,
-      p95: response.inference_latency.p95_ms,
-      p99: response.inference_latency.p99_ms,
-      avg: response.inference_latency.mean_ms,
-      max: response.inference_latency.max_ms,
-      sample_count: response.inference_latency.count,
+      p50: actualData.inference_latency?.p50_ms || 0,
+      p95: actualData.inference_latency?.p95_ms || 0,
+      p99: actualData.inference_latency?.p99_ms || 0,
+      avg: actualData.inference_latency?.mean_ms || 0,
+      max: actualData.inference_latency?.max_ms || 0,
+      sample_count: actualData.inference_latency?.count || 0,
     },
     errors: {
-      total_requests: response.rates.total_count,
-      error_count: response.rates.error_count,
-      error_rate: response.rates.error_rate,
-      timeout_count: response.rates.timeout_count,
-      timeout_rate: response.rates.timeout_rate,
+      total_requests: actualData.rates?.total_count || 0,
+      error_count: actualData.rates?.error_count || 0,
+      error_rate: actualData.rates?.error_rate || 0,
+      timeout_count: actualData.rates?.timeout_count || 0,
+      timeout_rate: actualData.rates?.timeout_rate || 0,
       errors_by_code: {}, // Not provided by backend in this endpoint
     },
     approvals: {
       pending_count: 0, // Would need separate endpoint
-      approved_count: response.approvals.approvals_granted,
-      rejected_count: response.approvals.approvals_rejected,
+      approved_count: actualData.approvals?.approvals_granted || 0,
+      rejected_count: actualData.approvals?.approvals_rejected || 0,
       expired_count: 0, // Not provided
-      avg_approval_time_ms: response.approvals.avg_approval_latency_ms,
-      rejection_rate: response.approvals.human_rejection_rate,
+      avg_approval_time_ms: actualData.approvals?.avg_approval_latency_ms || 0,
+      rejection_rate: actualData.approvals?.human_rejection_rate || 0,
     },
     quotas: {
-      quota_rejections: response.quota.quota_rejections,
-      quota_rejection_rate: response.quota.quota_rejection_rate,
+      quota_rejections: actualData.quota?.quota_rejections || 0,
+      quota_rejection_rate: actualData.quota?.quota_rejection_rate || 0,
       tenants_at_limit: 0, // Not provided
       by_capability: {}, // Not provided in this format
     },
     usage: {
-      total_requests: response.rates.total_count,
+      total_requests: actualData.rates?.total_count || 0,
       unique_users: 0, // Not provided
       unique_tenants: 0, // Not provided
       by_capability: {}, // Not provided
@@ -204,7 +206,7 @@ async function fetchAlerts(options: {
   limit?: number;
 }): Promise<AIAlertsResponse> {
   const params: Record<string, string | number | boolean> = {};
-  
+
   if (options.severity) {
     params.severity = options.severity;
   }
@@ -237,8 +239,11 @@ async function fetchAlerts(options: {
     params,
   });
 
+  const actualData = (response as any).data || response;
+  const rawAlerts = actualData.alerts || (Array.isArray(actualData) ? actualData : []);
+
   // Transform backend response to frontend types
-  const alerts: AIAlert[] = response.alerts.map((alert) => ({
+  const alerts: AIAlert[] = rawAlerts.map((alert: any) => ({
     alert_id: alert.alert_id,
     type: alert.alert_type as AIAlert['type'],
     severity: alert.severity as AIAlert['severity'],
@@ -257,8 +262,8 @@ async function fetchAlerts(options: {
 
   return {
     alerts,
-    active_count: response.active_count,
-    total_count: response.total_count,
+    active_count: actualData.active_count ?? alerts.filter((a: any) => !a.acknowledged).length,
+    total_count: actualData.total_count ?? alerts.length,
   };
 }
 

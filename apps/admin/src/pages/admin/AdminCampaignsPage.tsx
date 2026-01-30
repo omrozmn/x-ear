@@ -96,8 +96,8 @@ const AdminCampaignsPage: React.FC = () => {
         }
     };
 
-    const campaigns = (campaignsData as any)?.data?.campaigns || [];
-    const pagination = (campaignsData as any)?.data?.pagination;
+    const campaigns = (campaignsData as any)?.campaigns || (campaignsData as any)?.data?.campaigns || [];
+    const pagination = (campaignsData as any)?.pagination || (campaignsData as any)?.data?.pagination;
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return '-';

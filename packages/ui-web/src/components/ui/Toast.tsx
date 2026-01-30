@@ -171,9 +171,22 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
               </h4>
               {toast.message && (
                 <p className="mt-1 text-sm text-gray-600 break-words">
-                  {typeof toast.message === 'object'
-                    ? (toast.message as any).message || JSON.stringify(toast.message)
-                    : toast.message}
+                  {(() => {
+                    if (process.env.NODE_ENV === 'development' && typeof toast.message === 'object') {
+                      console.warn('⚠️ Toast received object message:', toast.message);
+                      console.trace('Toast object message trace');
+                    }
+                    
+                    if (typeof toast.message === 'string') {
+                      return toast.message;
+                    }
+                    
+                    if (typeof toast.message === 'object' && toast.message !== null) {
+                      return (toast.message as any).message || JSON.stringify(toast.message);
+                    }
+                    
+                    return String(toast.message);
+                  })()}
                 </p>
               )}
             </div>

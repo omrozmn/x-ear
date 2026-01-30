@@ -15,10 +15,10 @@ import { test, expect } from '../../fixtures/fixtures';
 import { createTestParty, waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-02: Device Assignment', () => {
-  test('should assign hearing aid to patient successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should assign hearing aid to patient successfully', async ({ tenantPage, request, authTokens }) => {
     // Prerequisites: Create test party
     const timestamp = Date.now();
-    const partyId = await createTestParty(apiContext, authTokens.accessToken, {
+    const partyId = await createTestParty(request, authTokens.accessToken, {
       firstName: 'Mehmet',
       lastName: 'Kaya',
       phone: `+90555${timestamp.toString().slice(-7)}`
@@ -70,7 +70,7 @@ test.describe('FLOW-02: Device Assignment', () => {
     
     // STEP 7: Verify assignment via API
     console.log('[FLOW-02] Step 7: Verify assignment via API');
-    const response = await apiContext.get(`/api/parties/${partyId}/device-assignments`, {
+    const response = await request.get(`/api/parties/${partyId}/device-assignments`, {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     

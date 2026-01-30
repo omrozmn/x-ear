@@ -1,6 +1,8 @@
 import os
 import json
+import datetime
 import requests
+import base64
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -47,40 +49,38 @@ class BirfaturaClient:
                 'Payload': json_data
             }
 
-        url = self._url(path)
-        resp = self.session.post(url, headers=self.headers, json=json_data, timeout=timeout)
-        resp.raise_for_status()
         try:
-            return resp.json()
-        except ValueError:
-            return {'text': resp.text}
+            url = self._url(path)
+            resp = self.session.post(url, headers=self.headers, json=json_data, timeout=timeout)
+            resp.raise_for_status()
+            try:
+                return resp.json()
+            except ValueError:
+                return {'text': resp.text}
+        except Exception as e:
+            if hasattr(e, 'response') and e.response is not None:
+                 print(f"Exception Response: {e.response.text}")
+            raise e
 
     def send_document(self, payload: dict) -> dict:
-        """Send document to GİB via Birfatura
+        """Send document to GİB via Birfatura.
         
-        Real API Response Structure:
-        {
-            "Success": true,
-            "Message": "İşlem başarılı",
-            "Result": {
-                "invoiceNo": "ABC2024000001234",
-                "zipped": "base64_gzipped_pdf_data...",
-                "htmlString": "<html>...</html>",
-                "pdfLink": "https://uygulama.edonustur.com/pdf/..."
-            }
-        }
+        Args:
+            payload: dict containing:
+                - documentBytes: Base64 string OR raw XML string/bytes
+                - isDocumentNoAuto: bool (default True)
+                - systemTypeCodes: str (default "EFATURA")
+                - receiverTag: optional str
+                - fileName: optional str (used if zipping)
         """
         if self._use_mock:
-            import base64
+            # Mock implementation
             import gzip
             import uuid
             
-            # Generate a realistic mock PDF content
             mock_pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\nMOCK PDF FOR TESTING"
             mock_gzipped = gzip.compress(mock_pdf_content)
             mock_zipped = base64.b64encode(mock_gzipped).decode('utf-8')
-            
-            # Generate a mock ETTN (UUID format)
             mock_ettn = str(uuid.uuid4()).upper()
             
             return {
@@ -95,7 +95,62 @@ class BirfaturaClient:
                 '_mock': True,
                 '_ettn': mock_ettn
             }
-        return self.post('/api/outEBelgeV2/SendDocument', payload)
+        
+        raw_data = payload.get("documentBytes") or payload.get("documentBase64") or payload.get("buffer")
+        
+        # Helper to determine if content is XML (raw or decoded from b64)
+        def is_xml(content):
+            if isinstance(content, bytes):
+                try:
+                    return content.strip().startswith(b'<?xml') or content.strip().startswith(b'<Invoice')
+                except: return False
+            if isinstance(content, str):
+                try:
+                    stripped = content.strip()
+                    return stripped.startswith('<?xml') or stripped.startswith('<Invoice')
+                except: return False
+            return False
+
+        should_zip = False
+        xml_bytes = None
+        
+        if is_xml(raw_data):
+            should_zip = True
+            xml_bytes = raw_data if isinstance(raw_data, bytes) else raw_data.encode('utf-8')
+        elif isinstance(raw_data, str):
+            try:
+                decoded = base64.b64decode(raw_data)
+                if is_xml(decoded):
+                    should_zip = True
+                    xml_bytes = decoded
+            except:
+                pass
+                
+        if should_zip:
+            import io
+            import zipfile
+            
+            file_name = payload.get("fileName") or f"document_{int(datetime.datetime.utcnow().timestamp())}.xml"
+            if not file_name.endswith('.xml'):
+                file_name += '.xml'
+                
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+                zip_file.writestr(file_name, xml_bytes)
+            
+            final_bytes_b64 = base64.b64encode(zip_buffer.getvalue()).decode('utf-8')
+        else:
+            # Assume it's already a base64 string (ideally a ZIP)
+            final_bytes_b64 = raw_data
+
+        final_payload = {
+            "documentBytes": final_bytes_b64,
+            "isDocumentNoAuto": payload.get("isDocumentNoAuto", True),
+            "systemTypeCodes": payload.get("systemTypeCodes") or payload.get("systemType", "EFATURA"),
+            "receiverTag": payload.get("receiverTag")
+        }
+        
+        return self.post('/api/outEBelgeV2/SendDocument', final_payload)
 
     def send_basic_invoice(self, payload: dict) -> dict:
         if self._use_mock:
@@ -106,24 +161,46 @@ class BirfaturaClient:
             }
         return self.post('/api/outEBelgeV2/SendBasicInvoiceFromModel', payload)
     
+    def get_number_of_credits(self, payload: dict) -> dict:
+        """Get remaining credits"""
+        # Payload can be empty or have parameters like 'kn' if needed, generally empty works for self
+        return self.post('/api/outEBelgeV2/GetNumberOfCredits', payload)
+
     def get_inbox_documents(self, payload: dict) -> dict:
         """Get incoming documents (invoices from suppliers)"""
-        return self.post('/api/OutEBelgeV2/GetInBoxDocuments', payload)
+        return self.post('/api/outEBelgeV2/GetInBoxDocuments', payload)
     
     def get_outbox_documents(self, payload: dict) -> dict:
         """Get outgoing documents (return/correction invoices to suppliers)"""
-        return self.post('/api/OutEBelgeV2/GetOutBoxDocuments', payload)
+        return self.post('/api/outEBelgeV2/GetOutBoxDocuments', payload)
     
     def get_inbox_documents_with_detail(self, payload: dict) -> dict:
         """Get incoming documents with detailed XML content"""
-        return self.post('/api/OutEBelgeV2/GetInBoxDocumentsWithDetail', payload)
+        return self.post('/api/outEBelgeV2/GetInBoxDocumentsWithDetail', payload)
 
     def preview_document_pdf(self, payload: dict) -> dict:
         """Get PDF preview of a document"""
-        return self.post('/api/OutEBelgeV2/PreviewDocumentReturnPDF', payload)
+        return self.post('/api/outEBelgeV2/PreviewDocumentReturnPDF', payload)
+
+    def get_pdf_link_by_uuid(self, payload: dict) -> dict:
+        """Get PDF download link by UUID.
+        
+        Args:
+            payload: dict containing:
+                - uuids: (required) List[str]
+                - systemType: (required) "EFATURA", etc.
+        """
+        return self.post('/api/outEBelgeV2/GetPDFLinkByUUID', payload)
 
     def document_download_by_uuid(self, payload: dict) -> dict:
-        """Download document by UUID in specified format (XML, HTML, ZARF)
+        """Download document by UUID in specified format (XML, HTML, PDF, ZARF)
+        
+        Args:
+            payload: dict containing:
+                - documentUUID: (required) str
+                - inOutCode: (required) "OUT" or "IN"
+                - systemTypeCodes: (required) "EFATURA", "EARSIV", etc.
+                - fileExtension: (required) "XML", "PDF", "HTML", "ZARF"
         
         Real API Response Structure:
         {
@@ -135,13 +212,13 @@ class BirfaturaClient:
         }
         """
         if self._use_mock:
-            import base64
             import gzip
+            import uuid
             
-            doc_type = payload.get('documentType', 'XML')
-            uuid_val = payload.get('uuid', 'UNKNOWN')
+            file_ext = payload.get('fileExtension', 'XML')
+            uuid_val = payload.get('documentUUID', 'UNKNOWN')
             
-            if doc_type == 'XML':
+            if file_ext == 'XML':
                 mock_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
     <UBLVersionID>2.1</UBLVersionID>
@@ -153,7 +230,7 @@ class BirfaturaClient:
     <!-- Mock XML content for testing -->
 </Invoice>'''.encode('utf-8')
             else:
-                mock_content = f'Mock {doc_type} content for UUID: {uuid_val}'.encode('utf-8')
+                mock_content = f'Mock {file_ext} content for UUID: {uuid_val}'.encode('utf-8')
             
             mock_gzipped = gzip.compress(mock_content)
             mock_base64 = base64.b64encode(mock_gzipped).decode('utf-8')
@@ -166,7 +243,7 @@ class BirfaturaClient:
                 },
                 '_mock': True
             }
-        return self.post('/api/OutEBelgeV2/DocumentDownloadByUUID', payload)
+        return self.post('/api/outEBelgeV2/DocumentDownloadByUUID', payload)
     
     def create_invoice(self, payload: dict) -> dict:
         """Create invoice (draft mode, not sent to GİB yet)"""

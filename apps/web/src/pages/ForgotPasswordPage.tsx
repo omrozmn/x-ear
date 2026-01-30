@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Input, Button } from '@x-ear/ui-web';
 import { ArrowLeft, Phone, Lock, CheckCircle, Eye, EyeOff, User, ShieldCheck } from 'lucide-react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useAuthStore } from '../stores/authStore';
 import '../styles/login-animations.css';
 
@@ -9,6 +10,7 @@ type Step = 'identifier' | 'confirmPhone' | 'otp' | 'newPassword' | 'success';
 
 export function ForgotPasswordPage() {
   const [step, setStep] = useState<Step>('identifier');
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   // State for identifier (username/email/phone)
   const [identifier, setIdentifier] = useState('');
@@ -132,10 +134,31 @@ export function ForgotPasswordPage() {
     try {
       setIsLoading(true);
       setError(null);
-      await resetPassword(workingPhone, otp, newPassword);
+
+      // Execute reCAPTCHA
+      if (!executeRecaptcha) {
+        setError('reCAPTCHA yüklenemedi. Lütfen sayfayı yenileyin.');
+        return;
+      }
+
+      const captchaToken = await executeRecaptcha('password_reset');
+
+      if (!captchaToken) {
+        setError('Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.');
+        return;
+      }
+
+      await resetPassword(workingPhone, otp, newPassword, captchaToken);
       setStep('success');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Şifre sıfırlanamadı');
+      // Check if error is captcha-related
+      const errorMessage = error instanceof Error ? error.message : 'Şifre sıfırlanamadı';
+      
+      if (errorMessage.toLowerCase().includes('captcha')) {
+        setError('Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -21,18 +21,25 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from core.models import (
-    Tenant, User, Party, Role, Inventory, Branch,
+    Tenant, User, Party, Role, Branch,
     HearingProfile, Base
 )
-from core.security import get_password_hash
+from core.models.inventory import InventoryItem
+from werkzeug.security import generate_password_hash
 import uuid
 
 
 def seed_test_data():
     """Seed test data for E2E tests."""
     
-    # Get database URL from environment
-    database_url = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/xear_test')
+    # Get database URL from environment - default to SQLite for local dev
+    database_url = os.getenv('DATABASE_URL')
+    
+    # If DATABASE_URL points to PostgreSQL but we're in local dev, use SQLite
+    if not database_url or 'postgresql' in database_url:
+        # Use SQLite for local development
+        db_path = Path(__file__).parent.parent / 'instance' / 'xear_crm.db'
+        database_url = f'sqlite:///{db_path}'
     
     print(f"🌱 Seeding test data to: {database_url}")
     
@@ -51,11 +58,15 @@ def seed_test_data():
                 id=tenant_id,
                 name="E2E Test Clinic",
                 slug="e2e-test-clinic",
-                subscription_plan="PRO",
-                subscription_status="active",
-                subscription_expires_at=datetime.utcnow() + timedelta(days=365),
+                owner_email="owner@e2e-test.com",
+                billing_email="billing@e2e-test.com",
+                current_plan="PRO",
+                status="active",
+                subscription_start_date=datetime.utcnow(),
+                subscription_end_date=datetime.utcnow() + timedelta(days=365),
                 is_active=True,
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
             )
             db.add(tenant)
             print(f"✅ Created test tenant: {tenant_id}")
@@ -70,13 +81,14 @@ def seed_test_data():
             user = User(
                 id=str(uuid.uuid4()),
                 tenant_id=tenant_id,
+                username=test_user_phone,
                 phone=test_user_phone,
                 email="test@e2e.example.com",
                 first_name="Test",
                 last_name="User",
-                password_hash=get_password_hash("password123"),
+                password_hash=generate_password_hash("password123", method='pbkdf2:sha256'),
                 is_active=True,
-                is_verified=True,
+                is_phone_verified=True,
                 created_at=datetime.utcnow()
             )
             db.add(user)
@@ -132,14 +144,14 @@ def seed_test_data():
         ]
         
         for aid in hearing_aids:
-            inventory = db.query(Inventory).filter_by(
+            inventory = db.query(InventoryItem).filter_by(
                 tenant_id=tenant_id,
                 brand=aid["brand"],
                 model=aid["model"]
             ).first()
             
             if not inventory:
-                inventory = Inventory(
+                inventory = InventoryItem(
                     id=str(uuid.uuid4()),
                     tenant_id=tenant_id,
                     name=f"{aid['brand']} {aid['model']}",

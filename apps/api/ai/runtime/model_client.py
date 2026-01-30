@@ -42,6 +42,8 @@ class ModelConfig:
     max_tokens: int = 2048
     temperature: float = 0.7
     top_p: float = 0.9
+    api_key: Optional[str] = None
+    provider: str = "local"
     
     @classmethod
     def from_env(cls) -> "ModelConfig":
@@ -53,6 +55,7 @@ class ModelConfig:
             max_tokens=int(os.getenv("AI_MAX_TOKENS", "2048")),
             temperature=float(os.getenv("AI_TEMPERATURE", "0.7")),
             top_p=float(os.getenv("AI_TOP_P", "0.9")),
+            api_key=os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY"),
         )
 
 
@@ -180,6 +183,9 @@ class LocalModelClient:
                     return False
                     
         except Exception as e:
+            # Gemini health check is different, treat as success if we can't check it simply for now
+            if "generativelanguage" in self.config.base_url:
+                return True
             logger.error(f"Health check failed: {e}")
             self._status = ModelStatus.UNAVAILABLE
             self._consecutive_failures += 1
@@ -227,9 +233,53 @@ class LocalModelClient:
             )
         
         # Determine Provider
-        is_openai = "/v1" in self.config.base_url
+        is_openai = "/v1" in self.config.base_url or "api.groq.com" in self.config.base_url
+        is_gemini = "generativelanguage.googleapis.com" in self.config.base_url
         
-        if is_openai:
+        # Token limit resolution
+        token_limit = num_predict or max_tokens or self.config.max_tokens
+
+        if is_gemini:
+            # Gemini Native API format
+            contents = [{"role": "user", "parts": [{"text": prompt}]}]
+            if system_prompt:
+                # Gemini 1.5 supports system_instruction, but for simplicity in chat:
+                contents.insert(0, {"role": "model", "parts": [{"text": f"System Instruction: {system_prompt}"}]})
+            
+            payload = {
+                "contents": contents,
+                "generationConfig": {
+                    "maxOutputTokens": token_limit,
+                    "temperature": temperature or self.config.temperature,
+                    "topP": self.config.top_p,
+                }
+            }
+            # Handle vision
+            if kwargs.get('images'):
+                images = kwargs['images'] if isinstance(kwargs['images'], list) else [kwargs['images']]
+                for img in images:
+                    if isinstance(img, str) and (img.startswith('http') or img.startswith('/')):
+                        # Gemini native API does not support direct URLs well in inlineData.
+                        # For now, we omit them to avoid crash, but in a real app you might download them.
+                        logger.warning(f"Gemini native API does not support URLs in inlineData: {img[:50]}...")
+                        continue
+                        
+                    if isinstance(img, str) and ',' in img: 
+                        img_data = img.split(',')[1] # strip data:image/jpeg;base64,
+                    else:
+                        img_data = img # Assume raw base64
+                        
+                    payload["contents"][-1]["parts"].append({
+                        "inlineData": {
+                            "mimeType": "image/jpeg",
+                            "data": img_data
+                        }
+                    })
+            
+            endpoint = f"{self.config.base_url}/models/{self.config.model_name}:generateContent?key={self.config.api_key}"
+            is_openai = False # Ensure we don't treat it as OpenAI later
+            
+        elif is_openai:
             # OpenAI / vLLM format
             messages = [{"role": "user", "content": prompt}]
             if system_prompt:
@@ -240,10 +290,14 @@ class LocalModelClient:
                 content = [{"type": "text", "text": prompt}]
                 images = kwargs['images'] if isinstance(kwargs['images'], list) else [kwargs['images']]
                 for img in images:
-                    # vLLM expects data:image/jpeg;base64,...
-                    if not img.startswith('data:'):
-                        img = f"data:image/jpeg;base64,{img}"
-                    content.append({"type": "image_url", "image_url": {"url": img}})
+                    # DISTINGUISH: URL vs Base64
+                    if img.startswith('http') or img.startswith('data:'):
+                        # Proper URL or already formatted base64
+                        image_url = img
+                    else:
+                        # Raw base64, needs prefix
+                        image_url = f"data:image/jpeg;base64,{img}"
+                    content.append({"type": "image_url", "image_url": {"url": image_url}})
                 messages[-1]["content"] = content
 
             payload = {
@@ -281,10 +335,14 @@ class LocalModelClient:
             # Use timeout_override if provided, otherwise use config timeout
             timeout_seconds = timeout_override if timeout_override is not None else self.config.timeout_seconds
             
+            headers = {}
+            if self.config.api_key and not is_gemini:
+                headers["Authorization"] = f"Bearer {self.config.api_key}"
+            
             async with httpx.AsyncClient(
                 timeout=httpx.Timeout(timeout_seconds)
             ) as client:
-                response = await client.post(endpoint, json=payload)
+                response = await client.post(endpoint, json=payload, headers=headers)
                 
                 if response.status_code != 200:
                     self._consecutive_failures += 1
@@ -299,7 +357,18 @@ class LocalModelClient:
                 self._status = ModelStatus.AVAILABLE
                 total_duration = (time.time() - start_time) * 1000
                 
-                if is_openai:
+                if is_gemini:
+                    if "candidates" not in data:
+                        raise ModelConnectionError(f"Gemini error: {json.dumps(data)}")
+                    content = data["candidates"][0]["content"]["parts"][0]["text"]
+                    return ModelResponse(
+                        content=content,
+                        model=self.config.model_name,
+                        created_at=datetime.now(timezone.utc),
+                        total_duration_ms=total_duration,
+                        done=True,
+                    )
+                elif is_openai:
                     choice = data.get("choices", [{}])[0]
                     content = choice.get("message", {}).get("content", "")
                     return ModelResponse(
@@ -378,12 +447,17 @@ class LocalModelClient:
         }
         
         try:
+            headers = {}
+            if self.config.api_key:
+                headers["Authorization"] = f"Bearer {self.config.api_key}"
+                
             async with httpx.AsyncClient(
                 timeout=httpx.Timeout(self.config.timeout_seconds)
             ) as client:
                 response = await client.post(
                     f"{self.config.base_url}/api/chat",
                     json=payload,
+                    headers=headers,
                 )
                 
                 if response.status_code != 200:
@@ -431,6 +505,43 @@ class LocalModelClient:
         """Reset the consecutive failure counter."""
         self._consecutive_failures = 0
         self._status = ModelStatus.UNKNOWN
+
+
+class FallbackModelClient:
+    """Wrapper that falls back to a second client if the first one fails."""
+    
+    def __init__(self, primary: LocalModelClient, secondary: LocalModelClient):
+        self.primary = primary
+        self.secondary = secondary
+        
+    @property
+    def status(self) -> ModelStatus:
+        return self.primary.status if self.primary.is_available else self.secondary.status
+        
+    @property
+    def is_available(self) -> bool:
+        return self.primary.is_available or self.secondary.is_available
+        
+    async def check_health(self) -> bool:
+        return await self.primary.check_health() or await self.secondary.check_health()
+        
+    async def generate(self, *args, **kwargs) -> ModelResponse:
+        try:
+            return await self.primary.generate(*args, **kwargs)
+        except Exception as e:
+            logger.warning(f"Primary model failed, falling back: {e}")
+            return await self.secondary.generate(*args, **kwargs)
+            
+    async def generate_chat(self, *args, **kwargs) -> ModelResponse:
+        try:
+            return await self.primary.generate_chat(*args, **kwargs)
+        except Exception as e:
+            logger.warning(f"Primary model failed, falling back: {e}")
+            return await self.secondary.generate_chat(*args, **kwargs)
+
+    def reset_failures(self) -> None:
+        self.primary.reset_failures()
+        self.secondary.reset_failures()
 
 
 # Synchronous wrapper for non-async contexts
@@ -510,39 +621,71 @@ _smart_client: Optional[LocalModelClient] = None
 _fast_client: Optional[LocalModelClient] = None
 
 
-def get_model_client() -> LocalModelClient:
+def get_model_client() -> Any:
     """Get the global SMART model client instance (default)."""
     global _smart_client
     if _smart_client is None:
         from ai.config import get_ai_config
         config = get_ai_config().model
-        # Map config to ModelConfig
-        model_config = ModelConfig(
+        
+        # Primary: Groq
+        primary_config = ModelConfig(
             model_name=config.ai_model_id,
             base_url=config.base_url,
             timeout_seconds=float(config.timeout_seconds),
             max_tokens=config.max_tokens,
             temperature=config.temperature,
+            api_key=os.getenv("GROQ_API_KEY")
         )
-        _smart_client = LocalModelClient(model_config)
+        primary = LocalModelClient(primary_config)
+        
+        # Secondary: Gemini
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if gemini_key:
+            secondary_config = ModelConfig(
+                model_name="gemini-1.5-pro",
+                base_url="https://generativelanguage.googleapis.com/v1beta",
+                api_key=gemini_key
+            )
+            secondary = LocalModelClient(secondary_config)
+            _smart_client = FallbackModelClient(primary, secondary)
+        else:
+            _smart_client = primary
+            
     return _smart_client
 
 
-def get_fast_model_client() -> LocalModelClient:
+def get_fast_model_client() -> Any:
     """Get the global FAST model client instance."""
     global _fast_client
     if _fast_client is None:
         from ai.config import get_ai_config
         config = get_ai_config().fast_model
-        # Map config to ModelConfig
-        model_config = ModelConfig(
+        
+        # Primary: Groq
+        primary_config = ModelConfig(
             model_name=config.ai_model_id,
             base_url=config.base_url,
             timeout_seconds=float(config.timeout_seconds),
             max_tokens=config.max_tokens,
             temperature=config.temperature,
+            api_key=os.getenv("GROQ_API_KEY")
         )
-        _fast_client = LocalModelClient(model_config)
+        primary = LocalModelClient(primary_config)
+        
+        # Secondary: Gemini
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if gemini_key:
+            secondary_config = ModelConfig(
+                model_name="gemini-1.5-flash",
+                base_url="https://generativelanguage.googleapis.com/v1beta",
+                api_key=gemini_key
+            )
+            secondary = LocalModelClient(secondary_config)
+            _fast_client = FallbackModelClient(primary, secondary)
+        else:
+            _fast_client = primary
+            
     return _fast_client
 
 

@@ -102,7 +102,7 @@ export default function SMSPackagesPage() {
                 {isLoading ? (
                     <div className="col-span-3 flex justify-center p-8"><Loader2 className="animate-spin" /></div>
                 ) : (
-                    (packagesData as any)?.data?.map((pkg: any) => (
+                    ((packagesData as any)?.packages || (packagesData as any)?.data || []).map((pkg: any) => (
                         <div key={pkg.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative group">
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button variant="ghost" size="sm" onClick={() => openEdit(pkg)}>
@@ -142,8 +142,8 @@ export default function SMSPackagesPage() {
             </div>
             <Pagination
                 currentPage={page}
-                totalPages={(packagesData as any)?.pagination?.totalPages || 1}
-                totalItems={(packagesData as any)?.pagination?.total || 0}
+                totalPages={(packagesData as any)?.pagination?.totalPages || (packagesData as any)?.data?.pagination?.totalPages || 1}
+                totalItems={(packagesData as any)?.pagination?.total || (packagesData as any)?.data?.pagination?.total || 0}
                 itemsPerPage={limit}
                 onPageChange={setPage}
                 onItemsPerPageChange={setLimit}

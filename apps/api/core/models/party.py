@@ -1,7 +1,7 @@
 # Party Model (formerly Patient)
 from .base import db, BaseModel, gen_id, JSONMixin, now_utc, LowercaseEnum
 from .mixins import TenantScopedMixin
-from .enums import PatientStatus
+from schemas.enums import PartyStatus
 from datetime import datetime
 import json
 import sqlalchemy as sa
@@ -35,7 +35,7 @@ class Party(BaseModel, TenantScopedMixin, JSONMixin):
     address_full = db.Column(db.Text)
     
     # CRM fields - Custom type for case-insensitive enum handling
-    status = db.Column(LowercaseEnum(PatientStatus), default=PatientStatus.ACTIVE)
+    status = db.Column(LowercaseEnum(PartyStatus), default=PartyStatus.ACTIVE)
     segment = db.Column(db.String(20), default='lead')
     acquisition_type = db.Column(db.String(50), default='walk-in')
     conversion_step = db.Column(db.String(50))

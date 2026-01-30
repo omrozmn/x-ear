@@ -27,6 +27,8 @@ const DOCUMENT_LABELS: Record<string, string> = {
 export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) => {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [previewDoc, setPreviewDoc] = useState<{ type: string; url: string; filename: string } | null>(null);
+    const [revisionDialog, setRevisionDialog] = useState<{ docType: string; note: string } | null>(null);
+    const [confirmEmailDialog, setConfirmEmailDialog] = useState(false);
 
     const { data: documentsData, isLoading, refetch } = useListAdminTenantSmsDocuments(tenantId, {
         query: { enabled: !!tenantId }
@@ -58,7 +60,13 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
     };
 
     const handleRequestRevision = async (docType: string) => {
-        const note = prompt('Revizyon notu (opsiyonel):');
+        setRevisionDialog({ docType, note: '' });
+    };
+
+    const confirmRequestRevision = async () => {
+        if (!revisionDialog) return;
+        const { docType, note } = revisionDialog;
+        setRevisionDialog(null);
         setActionLoading(docType);
         try {
             await updateStatus({
@@ -77,7 +85,11 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
     };
 
     const handleSendEmail = async () => {
-        if (!window.confirm('Tüm belgeleri e-posta ile göndermek istediğinize emin misiniz?')) return;
+        setConfirmEmailDialog(true);
+    };
+
+    const confirmSendEmail = async () => {
+        setConfirmEmailDialog(false);
         setActionLoading('send-email');
         try {
             await sendEmail({ tenantId });
@@ -220,6 +232,74 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                             </div>
                             <div className="flex-1 p-4 overflow-auto">
                                 <iframe src={previewDoc.url} className="w-full h-full border-0 rounded-lg min-h-[600px]" title="Document Preview" />
+                            </div>
+                        </Dialog.Content>
+                    </Dialog.Portal>
+                </Dialog.Root>
+            )}
+
+            {/* Revision Note Dialog */}
+            {revisionDialog && (
+                <Dialog.Root open={!!revisionDialog} onOpenChange={() => setRevisionDialog(null)}>
+                    <Dialog.Portal>
+                        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[90]" />
+                        <Dialog.Content className="fixed left-[50%] top-[50%] w-full max-w-md translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white shadow-2xl focus:outline-none z-[100] p-6">
+                            <Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
+                                Revizyon Notu
+                            </Dialog.Title>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Belge için revizyon notu girin (opsiyonel):
+                            </p>
+                            <textarea
+                                value={revisionDialog.note}
+                                onChange={(e) => setRevisionDialog({ ...revisionDialog, note: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[100px]"
+                                placeholder="Revizyon nedeni..."
+                            />
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    onClick={() => setRevisionDialog(null)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={confirmRequestRevision}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+                                >
+                                    Revizyon İste
+                                </button>
+                            </div>
+                        </Dialog.Content>
+                    </Dialog.Portal>
+                </Dialog.Root>
+            )}
+
+            {/* Email Confirmation Dialog */}
+            {confirmEmailDialog && (
+                <Dialog.Root open={confirmEmailDialog} onOpenChange={setConfirmEmailDialog}>
+                    <Dialog.Portal>
+                        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[90]" />
+                        <Dialog.Content className="fixed left-[50%] top-[50%] w-full max-w-md translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white shadow-2xl focus:outline-none z-[100] p-6">
+                            <Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
+                                E-posta Gönder
+                            </Dialog.Title>
+                            <p className="text-sm text-gray-600 mb-6">
+                                Tüm belgeleri e-posta ile göndermek istediğinize emin misiniz?
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setConfirmEmailDialog(false)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={confirmSendEmail}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                                >
+                                    Gönder
+                                </button>
                             </div>
                         </Dialog.Content>
                     </Dialog.Portal>

@@ -20,7 +20,8 @@ test.describe('Invoices CRUD Operations', () => {
         await tenantPage.waitForLoadState('networkidle');
 
         // Click new invoice button
-        const newButton = tenantPage.getByRole('button', { name: /Yeni|Fatura|Ekle|Oluştur/i }).first();
+        // Click new invoice button "Yeni Fatura"
+        const newButton = tenantPage.getByRole('button', { name: 'Yeni Fatura' }).first();
         const hasButton = await newButton.isVisible({ timeout: 5000 }).catch(() => false);
 
         if (hasButton) {

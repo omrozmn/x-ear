@@ -20,8 +20,6 @@ import { useAIPhase } from '../hooks/useAIStatus';
 import {
   isDismissedInSession,
   setDismissedInSession,
-  resetPhaseABannerDismissed,
-  shouldShowPhaseABanner,
 } from '../utils/aiPhaseHelpers';
 import {
   DEFAULT_PHASE_A_MESSAGE,
@@ -29,10 +27,7 @@ import {
 } from './constants';
 import { InfoIcon, CloseIcon } from './icons';
 
-// Re-export utilities for backward compatibility
-// Note: This triggers react-refresh warning but is intentional for backward compatibility
-// These utilities are also available from '../utils/aiPhaseHelpers'
-export { resetPhaseABannerDismissed, shouldShowPhaseABanner };
+// Note: Utilities removed for Fast Refresh compatibility.
 
 // =============================================================================
 // Types

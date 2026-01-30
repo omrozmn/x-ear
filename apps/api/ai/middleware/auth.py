@@ -111,7 +111,7 @@ class AIAuthMiddleware:
         self.app = app
         self.ai_path_prefix = ai_path_prefix
         self.exclude_paths = exclude_paths or [
-            "/ai/status",  # Status endpoint may not require auth
+            # "/ai/status",  # Status endpoint now requires auth for tenant context
             "/ai/health",  # Health check may not require auth
         ]
     

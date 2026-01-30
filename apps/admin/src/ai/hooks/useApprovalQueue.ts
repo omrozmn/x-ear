@@ -50,7 +50,7 @@ interface ApprovalActionResponse {
  */
 async function fetchApprovalQueue(tenantId?: string): Promise<ApprovalQueueResponse> {
   const params = tenantId ? { tenant_id: tenantId } : undefined;
-  
+
   const response = await adminApi<{
     items: Array<{
       id: string;
@@ -70,8 +70,11 @@ async function fetchApprovalQueue(tenantId?: string): Promise<ApprovalQueueRespo
     params,
   });
 
+  const actualData = (response as any).data || response;
+  const rawItems = actualData.items || (Array.isArray(actualData) ? actualData : []);
+
   // Transform backend response to frontend types
-  const items: PendingApprovalItem[] = response.items.map((item) => ({
+  const items: PendingApprovalItem[] = rawItems.map((item: any) => ({
     action_id: item.action_id,
     plan_id: item.id, // Using queue item id as plan_id
     tenant_id: item.tenant_id,
@@ -87,7 +90,7 @@ async function fetchApprovalQueue(tenantId?: string): Promise<ApprovalQueueRespo
 
   return {
     items,
-    total: response.total,
+    total: actualData.total || items.length,
     page: 1,
     page_size: items.length,
   };
@@ -162,7 +165,7 @@ export function useApprovalQueue(
     enabled = true,
     refetchInterval = DEFAULT_REFETCH_INTERVAL,
   } = options;
-  
+
   const queryClient = useQueryClient();
 
   // Build query key with tenant filter

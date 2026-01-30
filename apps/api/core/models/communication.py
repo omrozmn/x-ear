@@ -234,7 +234,7 @@ class CommunicationHistory(BaseModel, JSONMixin, TenantScopedMixin):
 
     # Relationships
     party = db.relationship('Party', backref='communication_history', lazy=True)
-    sms_log = db.relationship('SMSLog', backref='communication_history', lazy=True)
+    sms_log = db.relationship('SmsLog', backref='communication_history', lazy=True)
     email_log = db.relationship('EmailLog', backref='communication_history', lazy=True)
     template = db.relationship('CommunicationTemplate', backref='communication_history', lazy=True)
 

@@ -40,6 +40,7 @@ class SupplierBase(AppBaseModel):
 
 class SupplierCreate(AppBaseModel):
     """Schema for creating a supplier"""
+    tenant_id: str = Field(..., alias="tenantId", description="Owner tenant ID")
     name: Optional[str] = Field(None, description="Frontend alias for companyName")
     code: Optional[str] = Field(None, description="Frontend alias for companyCode")
     contact_name: Optional[str] = Field(None, alias="contactName", description="Frontend alias for contactPerson")
@@ -77,6 +78,7 @@ class SupplierCreate(AppBaseModel):
 
 class SupplierUpdate(AppBaseModel):
     """Schema for updating a supplier"""
+    tenant_id: Optional[str] = Field(None, alias="tenantId", description="Owner tenant ID")
     name: Optional[str] = Field(None, description="Frontend alias for companyName")
     code: Optional[str] = Field(None, description="Frontend alias for companyCode")
     contact_name: Optional[str] = Field(None, alias="contactName", description="Frontend alias for contactPerson")

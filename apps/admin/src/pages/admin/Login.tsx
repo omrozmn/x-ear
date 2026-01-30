@@ -48,8 +48,10 @@ const Login: React.FC = () => {
       if (result.requires_mfa) {
         setRequiresMFA(true);
         toast.success('Please enter your MFA code');
-      } else if (result.tokens) {
-        // Login successful, redirect will happen automatically via isAuthenticated change
+      } else if (result.token) {
+        // Login successful, wait a bit for token to be saved to localStorage
+        // then redirect
+        await new Promise(resolve => setTimeout(resolve, 100));
         window.location.href = '/';
       }
     } catch (error: any) {

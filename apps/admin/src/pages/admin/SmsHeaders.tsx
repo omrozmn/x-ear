@@ -97,7 +97,7 @@ export default function SMSHeadersPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {(headersData as any)?.data?.map((header: any) => (
+                                {((headersData as any)?.headers || (headersData as any)?.data || []).map((header: any) => (
                                     <tr key={header.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 font-mono text-xs text-gray-500">{header.tenantId}</td>
                                         <td className="px-6 py-4 font-bold text-gray-900">{header.headerText}</td>
@@ -143,7 +143,7 @@ export default function SMSHeadersPage() {
                                         </td>
                                     </tr>
                                 ))}
-                                {(headersData as any)?.data?.length === 0 && (
+                                {((headersData as any)?.headers || (headersData as any)?.data || []).length === 0 && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                                             Bu filtrede kayıt bulunamadı.

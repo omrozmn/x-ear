@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
-import { CreditCard, MessageSquare, PlusCircle, Plus, Settings, Trash2 } from 'lucide-react';
+import { CreditCard, MessageSquare, PlusCircle, Plus, Settings, Trash2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import * as Dialog from '@radix-ui/react-dialog';
 import { apiClient } from '@/lib/api';
-import {
-    useListAdminPlans,
-    useListAdminAddons,
-    useCreateAdminTenantSubscribe,
-    useCreateAdminTenantAddons,
-    useUpdateAdminTenant,
-} from '@/lib/api-client';
+import { useListAdminPlans, useListAdminAddons } from '@/lib/api-client';
 
 // Local type since Tenant is not exported from generated client
 interface ExtendedTenant {
@@ -20,9 +16,18 @@ interface ExtendedTenant {
     subscription_start_date?: string;
     subscription_end_date?: string;
     feature_usage?: Record<string, any>;
+    [key: string]: any;
 }
 
-export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdate: () => void }) => {
+interface SubscriptionTabProps {
+    tenant: ExtendedTenant;
+    onUpdate: () => void;
+}
+
+export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
+    const queryClient = useQueryClient();
+
+    // Use generated hooks for reading data (GET usually works fine)
     const { data: plansData } = useListAdminPlans();
     const plans = (plansData as any)?.data?.plans || (plansData as any)?.plans || [];
 
@@ -40,9 +45,8 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
     const [loadingRemoveAddon, setLoadingRemoveAddon] = useState(false);
     const [loadingSmsUpdate, setLoadingSmsUpdate] = useState(false);
 
-    const { mutateAsync: subscribeTenant } = useCreateAdminTenantSubscribe();
-    const { mutateAsync: addTenantAddon } = useCreateAdminTenantAddons();
-    const { mutateAsync: updateTenant } = useUpdateAdminTenant();
+    // Modal state for deletions
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         setSelectedPlanId(tenant.current_plan_id || '');
@@ -50,18 +54,19 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         setManualSmsLimit(smsLimit);
     }, [tenant]);
 
+    // Use apiClient manually for updates to ensure consistency and avoid auth issues
+
     const handleSubscribe = async () => {
         if (!selectedPlanId) return;
         setLoadingSubscribe(true);
         try {
-            await subscribeTenant({
-                tenantId: tenant.id!,
-                data: {
-                    plan_id: selectedPlanId,
-                    billing_interval: billingInterval
-                }
+            await apiClient.post(`/api/admin/tenants/${tenant.id}/subscribe`, {
+                plan_id: selectedPlanId,
+                billing_interval: billingInterval
             });
+
             toast.success('Abonelik güncellendi');
+            await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: any) {
             toast.error(error.response?.data?.error?.message || 'Abonelik güncellenemedi');
@@ -74,14 +79,13 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         if (!selectedAddonId) return;
         setLoadingAddon(true);
         try {
-            await addTenantAddon({
-                tenantId: tenant.id!,
-                data: {
-                    addon_id: selectedAddonId
-                }
+            await apiClient.post(`/api/admin/tenants/${tenant.id}/addons`, {
+                addon_id: selectedAddonId
             });
+
             toast.success('Ek özellik eklendi');
             setSelectedAddonId('');
+            await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: any) {
             console.error('Add addon error:', error);
@@ -91,22 +95,31 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         }
     };
 
-    const handleRemoveAddon = async (addonId: string) => {
-        if (!addonId) return;
-        if (!confirm('Bu özelliği kaldırmak istediğinize emin misiniz?')) return;
+    const handleRemoveAddon = async () => {
+        if (!confirmDeleteId) return;
         setLoadingRemoveAddon(true);
         try {
-            await apiClient.delete(`/admin/tenants/${tenant.id}/addons`, {
-                data: { addon_id: addonId }
+            await apiClient.delete(`/api/admin/tenants/${tenant.id}/addons`, {
+                data: { addon_id: confirmDeleteId }
             });
+
             toast.success('Ek özellik kaldırıldı');
+            await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: any) {
             console.error('Remove addon error:', error);
             toast.error(error.response?.data?.error?.message || 'Ek özellik kaldırılamadı');
         } finally {
             setLoadingRemoveAddon(false);
+            setConfirmDeleteId(null);
         }
+    };
+
+    // SMS updates use the general tenant update endpoint
+    const updateTenantFeatureUsage = async (newUsage: any) => {
+        await apiClient.put(`/api/admin/tenants/${tenant.id}`, {
+            feature_usage: newUsage
+        });
     };
 
     const handleUpdateSmsLimit = async () => {
@@ -120,6 +133,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
             const currentUsage = { ...(tenant.feature_usage || {}) };
             const key = 'sms';
 
+            // Normalize key
             if (currentUsage['SMS']) {
                 currentUsage['sms'] = currentUsage['SMS'];
                 delete currentUsage['SMS'];
@@ -127,17 +141,14 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
 
             currentUsage[key] = {
                 ...(currentUsage[key] || {}),
-                limit: typeof manualSmsLimit === 'string' ? parseInt(manualSmsLimit) || 0 : manualSmsLimit,
+                limit: limitVal,
                 used: currentUsage[key]?.used || 0
             };
 
-            await updateTenant({
-                tenantId: tenant.id!,
-                data: {
-                    feature_usage: currentUsage
-                } as any
-            });
+            await updateTenantFeatureUsage(currentUsage);
+
             toast.success('SMS limiti güncellendi');
+            await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: any) {
             console.error('Update SMS limit error:', error);
@@ -157,6 +168,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
             const currentUsage = { ...(tenant.feature_usage || {}) };
             const key = 'sms';
 
+            // Normalize key
             if (currentUsage['SMS']) {
                 currentUsage['sms'] = currentUsage['SMS'];
                 delete currentUsage['SMS'];
@@ -171,15 +183,12 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                 used: currentUsage[key]?.used || 0
             };
 
-            await updateTenant({
-                tenantId: tenant.id!,
-                data: {
-                    feature_usage: currentUsage
-                } as any
-            });
+            await updateTenantFeatureUsage(currentUsage);
+
             toast.success(`${selectedSmsPackage} SMS paketi eklendi`);
             setSelectedSmsPackage(null);
             setManualSmsLimit(newLimit);
+            await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: any) {
             console.error('Add SMS package error:', error);
@@ -277,6 +286,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                         </select>
                         <button
                             onClick={handleAddAddon}
+                            type="button"
                             disabled={loadingAddon || !selectedAddonId}
                             className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 text-sm font-medium whitespace-nowrap"
                         >
@@ -301,7 +311,8 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                                             </p>
                                         </div>
                                         <button
-                                            onClick={() => handleRemoveAddon(addon.addon_id || addon.id)}
+                                            onClick={() => setConfirmDeleteId(addon.addon_id || addon.id)}
+                                            type="button"
                                             disabled={loadingRemoveAddon}
                                             className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
                                             title="Kaldır"
@@ -336,6 +347,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                             />
                             <button
                                 onClick={handleUpdateSmsLimit}
+                                type="button"
                                 disabled={loadingSmsUpdate}
                                 className="bg-indigo-600 text-white px-3 text-xs font-medium rounded hover:bg-indigo-700 disabled:opacity-50"
                             >
@@ -350,6 +362,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                             {[100, 500, 1000, 5000].map(amount => (
                                 <button
                                     key={amount}
+                                    type="button"
                                     onClick={() => setSelectedSmsPackage(selectedSmsPackage === amount ? null : amount)}
                                     className={`
                                         px-3 py-2 border rounded-md text-center transition-all
@@ -367,6 +380,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                         {selectedSmsPackage && (
                             <button
                                 onClick={handleAddSmsPackage}
+                                type="button"
                                 disabled={loadingSmsUpdate}
                                 className="w-full mt-2 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 shadow-md flex items-center justify-center font-medium transition-all animate-in fade-in slide-in-from-top-2"
                             >
@@ -440,6 +454,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                     </div>
                     <button
                         onClick={handleSubscribe}
+                        type="button"
                         disabled={loadingSubscribe || !selectedPlanId}
                         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm font-medium h-[38px]"
                     >
@@ -447,6 +462,29 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
                     </button>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <Dialog.Root open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
+                    <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50">
+                        <div className="flex items-center mb-4 text-red-500">
+                            <AlertTriangle className="h-6 w-6 mr-2" />
+                            <Dialog.Title className="text-xl font-bold text-gray-900">Özelliği Kaldır</Dialog.Title>
+                        </div>
+                        <div className="mb-6 text-gray-600">
+                            Bu özelliği kaldırmak istediğinize emin misiniz? Bu işlem geri alınamaz.
+                        </div>
+                        <div className="flex justify-end space-x-3">
+                            <button onClick={() => setConfirmDeleteId(null)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">İptal</button>
+                            <button onClick={handleRemoveAddon} disabled={loadingRemoveAddon} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50">
+                                {loadingRemoveAddon ? 'Kaldırılıyor...' : 'Kaldır'}
+                            </button>
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
+
         </div>
     );
 };

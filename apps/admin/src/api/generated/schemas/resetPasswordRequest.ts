@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { ResetPasswordRequestCaptchaToken } from './resetPasswordRequestCaptchaToken';
 
 /**
  * Reset password request schema
@@ -19,4 +20,6 @@ export interface ResetPasswordRequest {
    * @minLength 6
    */
   newPassword: string;
+  /** reCAPTCHA token for bot protection */
+  captchaToken?: ResetPasswordRequestCaptchaToken;
 }

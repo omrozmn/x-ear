@@ -23,13 +23,13 @@ async function globalSetup(config: FullConfig) {
 
     // 2. Login or Bootstrap as Super Admin
     // Using created test user which is TENANT_ADMIN
-    const adminPhone = process.env.TEST_USER_PHONE || '+905551234567';
+    const adminIdentifier = process.env.TEST_USER_EMAIL || 'admin@x-ear.com';
     const adminPassword = process.env.TEST_USER_PASSWORD || 'password123';
     let adminToken = '';
 
     try {
         const loginRes = await api.post('/api/auth/login', {
-            data: { identifier: adminPhone, password: adminPassword },
+            data: { identifier: adminIdentifier, password: adminPassword },
             headers: { 'Idempotency-Key': 'global-setup-login' }
         });
 

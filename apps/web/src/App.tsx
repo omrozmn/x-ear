@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { Toaster } from 'react-hot-toast';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalErrorProvider } from './components/GlobalErrorHandler';
@@ -60,23 +61,26 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <GlobalErrorProvider>
-            <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-              <AuthProvider>
-                <RouterProvider router={router} />
-                <PhoneVerificationModal />
-                <Toaster position="top-right" />
-                <ReactQueryDevtools initialIsOpen={false} />
-              </AuthProvider>
-            </ThemeProvider>
-          </GlobalErrorProvider>
-        </ToastProvider>
-      </QueryClientProvider>
+      <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <GlobalErrorProvider>
+              <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+                <AuthProvider>
+                  <RouterProvider router={router} />
+                  <PhoneVerificationModal />
+                  <Toaster position="top-right" />
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </AuthProvider>
+              </ThemeProvider>
+            </GlobalErrorProvider>
+          </ToastProvider>
+        </QueryClientProvider>
+      </GoogleReCaptchaProvider>
     </ErrorBoundary>
   );
 }

@@ -15,7 +15,7 @@ import { test, expect } from '../../fixtures/fixtures';
 import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-04: Invoice Generation', () => {
-  test('should generate invoice with sequential number successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should generate invoice with sequential number successfully', async ({ tenantPage, request, authTokens }) => {
     const timestamp = Date.now();
     const uniqueId = timestamp.toString().slice(-8);
 
@@ -70,7 +70,7 @@ test.describe('FLOW-04: Invoice Generation', () => {
     
     // STEP 6: Verify invoice created via API
     console.log('[FLOW-04] Step 6: Verify invoice via API');
-    const response = await apiContext.get('/api/invoices?page=1&perPage=10', {
+    const response = await request.get('/api/invoices?page=1&perPage=10', {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     

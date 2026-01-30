@@ -588,6 +588,66 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
+  /api/parties/bulk-update:
+    post:
+      tags:
+      - Parties
+      summary: Bulk Update Parties
+      description: 'Bulk update multiple parties with the same changes.
+
+        Returns success/failure count and individual results.'
+      operationId: bulkUpdateParties
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_BulkUpdateResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/parties/bulk-email:
+    post:
+      tags:
+      - Parties
+      summary: Bulk Email Parties
+      description: 'Send email to multiple parties.
+
+        Returns success/failure count and individual results.'
+      operationId: bulkEmailParties
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkEmailRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_BulkEmailResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/inventory:
     get:
       tags:
@@ -3400,7 +3460,7 @@ paths:
         required: false
         schema:
           type: number
-          minimum: 0
+          minimum: 0.0
           default: 0
           title: Min Amount
       responses:
@@ -4661,7 +4721,6 @@ paths:
         content:
           application/json:
             schema:
-              additionalProperties: true
               type: object
               title: Settings Data
         required: true
@@ -12746,6 +12805,60 @@ paths:
               schema: {}
       security:
       - OAuth2PasswordBearer: []
+  /OutEBelgeV2/GetOutBoxDocuments:
+    post:
+      tags:
+      - BirFatura
+      summary: Get Outbox Documents
+      description: Get outgoing documents from BirFatura
+      operationId: createOutebelgev2Getoutboxdocuments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetOutBoxDocumentsRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /OutEBelgeV2/GetPDFLinkByUUID:
+    post:
+      tags:
+      - BirFatura
+      summary: Get Pdf Link By Uuid
+      description: Get PDF link for documents
+      operationId: createOutebelgev2Getpdflinkbyuuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetPDFLinkRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /Musteri/FirmaMusteriGetir:
     post:
       tags:
@@ -13700,7 +13813,7 @@ paths:
       tags:
       - SMS Integration
       summary: Download Sms Document
-      description: Download SMS document by type
+      description: Download SMS document by type or get preview URL
       operationId: listSmDocumentDownload
       security:
       - OAuth2PasswordBearer: []
@@ -13711,6 +13824,15 @@ paths:
         schema:
           type: string
           title: Document Type
+      - name: preview
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Return URL for preview instead of file
+          default: false
+          title: Preview
+        description: Return URL for preview instead of file
       responses:
         '200':
           description: Successful Response
@@ -15534,7 +15656,6 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
                 type: object
                 title: Response Get Capabilities Api Ai Capabilities Get
   /api/ai/metrics:
@@ -15650,7 +15771,6 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: true
                 title: Response Acknowledge Alert Api Ai Alerts  Alert Id  Acknowledge
                   Post
         '404':
@@ -15674,7 +15794,6 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
                 type: object
                 title: Response Trigger Alert Check Api Ai Alerts Check Post
   /api/ai/admin/kill-switch:
@@ -15772,7 +15891,6 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
                 type: object
                 title: Response Cleanup Expired Approvals Api Ai Admin Cleanup Expired
                   Post
@@ -15951,7 +16069,6 @@ components:
           type: string
           title: Description
         parameters:
-          additionalProperties: true
           type: object
           title: Parameters
         risk_level:
@@ -16014,8 +16131,7 @@ components:
           description: Log message
         details:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Details
           description: Additional details
@@ -16069,7 +16185,6 @@ components:
           default: 0
         topActions:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Topactions
@@ -16150,8 +16265,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -16187,8 +16301,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -16389,7 +16502,6 @@ components:
           type: array
           title: Toptenants
         domainMetrics:
-          additionalProperties: true
           type: object
           title: Domainmetrics
       type: object
@@ -16404,7 +16516,6 @@ components:
     AdminDashboardMetrics:
       properties:
         metrics:
-          additionalProperties: true
           type: object
           title: Metrics
         recentTenants:
@@ -16479,8 +16590,7 @@ components:
         user:
           anyOf:
           - $ref: '#/components/schemas/AdminUserRead'
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: User
         requiresMfa:
@@ -16839,7 +16949,6 @@ components:
           title: Tool Schema Version
           description: Schema version of the tool
         parameters:
-          additionalProperties: true
           type: object
           title: Parameters
           description: Tool parameters
@@ -16917,7 +17026,8 @@ components:
           title: Enabled
           description: Whether AI is enabled
         phase:
-          $ref: '#/components/schemas/AiPhaseEnum'
+          allOf:
+          - $ref: '#/components/schemas/AiPhaseEnum'
           description: Current AI phase
         modelId:
           type: string
@@ -16966,7 +17076,6 @@ components:
           title: Alerts
           description: List of active alerts
         metrics:
-          additionalProperties: true
           type: object
           title: Metrics
           description: Current metrics
@@ -17202,8 +17311,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -17239,8 +17347,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -17349,10 +17456,12 @@ components:
           title: Duration
           default: 30
         appointmentType:
-          $ref: '#/components/schemas/AppointmentType'
+          allOf:
+          - $ref: '#/components/schemas/AppointmentType'
           default: consultation
         status:
-          $ref: '#/components/schemas/AppointmentStatus'
+          allOf:
+          - $ref: '#/components/schemas/AppointmentStatus'
           default: scheduled
         notes:
           anyOf:
@@ -17373,8 +17482,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -17434,10 +17542,12 @@ components:
           title: Duration
           default: 30
         appointmentType:
-          $ref: '#/components/schemas/AppointmentType'
+          allOf:
+          - $ref: '#/components/schemas/AppointmentType'
           default: consultation
         status:
-          $ref: '#/components/schemas/AppointmentStatus'
+          allOf:
+          - $ref: '#/components/schemas/AppointmentStatus'
           default: scheduled
         notes:
           anyOf:
@@ -17732,7 +17842,6 @@ components:
           title: Rejected
           description: Rejected count
         by_risk_level:
-          additionalProperties: true
           type: object
           title: By Risk Level
           description: Counts by risk level
@@ -18442,8 +18551,7 @@ components:
           default: standard
         customerInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Customerinfo
       type: object
@@ -18574,8 +18682,7 @@ components:
           default: ''
         emailTemplate:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Emailtemplate
       type: object
@@ -18960,6 +19067,72 @@ components:
       required:
       - name
       title: BrandCreate
+    BulkEmailRequest:
+      properties:
+        partyIds:
+          items:
+            type: string
+          type: array
+          title: Partyids
+        subject:
+          type: string
+          title: Subject
+        body:
+          type: string
+          title: Body
+        templateId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Templateid
+      type: object
+      required:
+      - partyIds
+      - subject
+      - body
+      title: BulkEmailRequest
+    BulkEmailResponse:
+      properties:
+        successCount:
+          type: integer
+          title: Successcount
+        failureCount:
+          type: integer
+          title: Failurecount
+        results:
+          items:
+            $ref: '#/components/schemas/BulkEmailResult'
+          type: array
+          title: Results
+      type: object
+      required:
+      - successCount
+      - failureCount
+      - results
+      title: BulkEmailResponse
+    BulkEmailResult:
+      properties:
+        partyId:
+          type: string
+          title: Partyid
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        success:
+          type: boolean
+          title: Success
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+      type: object
+      required:
+      - partyId
+      - success
+      title: BulkEmailResult
     BulkRegistration:
       properties:
         deviceIds:
@@ -18977,6 +19150,57 @@ components:
       required:
       - deviceIds
       title: BulkRegistration
+    BulkUpdateRequest:
+      properties:
+        partyIds:
+          items:
+            type: string
+          type: array
+          title: Partyids
+        updates:
+          $ref: '#/components/schemas/PartyUpdate'
+      type: object
+      required:
+      - partyIds
+      - updates
+      title: BulkUpdateRequest
+    BulkUpdateResponse:
+      properties:
+        successCount:
+          type: integer
+          title: Successcount
+        failureCount:
+          type: integer
+          title: Failurecount
+        results:
+          items:
+            $ref: '#/components/schemas/BulkUpdateResult'
+          type: array
+          title: Results
+      type: object
+      required:
+      - successCount
+      - failureCount
+      - results
+      title: BulkUpdateResponse
+    BulkUpdateResult:
+      properties:
+        partyId:
+          type: string
+          title: Partyid
+        success:
+          type: boolean
+          title: Success
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+      type: object
+      required:
+      - partyId
+      - success
+      title: BulkUpdateResult
     CampaignCreate:
       properties:
         name:
@@ -18999,8 +19223,7 @@ components:
           default: all
         targetCriteria:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Targetcriteria
           default: {}
@@ -19099,8 +19322,7 @@ components:
           title: Targetsegment
         targetCriteria:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Targetcriteria
         messageTemplate:
@@ -19258,8 +19480,7 @@ components:
           - type: 'null'
         targetCriteria:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Targetcriteria
         messageTemplate:
@@ -19445,8 +19666,7 @@ components:
           description: User's natural language message
         context:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Context
           description: Optional context (conversation history, etc.)
@@ -19771,8 +19991,7 @@ components:
           default: normal
         metadata:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Metadata
           default: {}
@@ -20031,12 +20250,10 @@ components:
           title: Complaint Rate 1H
           description: Complaint rate in last hour (%)
         by_type:
-          additionalProperties: true
           type: object
           title: By Type
           description: Counts by complaint type
         by_provider:
-          additionalProperties: true
           type: object
           title: By Provider
           description: Counts by FBL provider
@@ -20096,12 +20313,12 @@ components:
     CreateActionRequest:
       properties:
         intent:
-          $ref: '#/components/schemas/IntentRequest'
+          allOf:
+          - $ref: '#/components/schemas/IntentRequest'
           description: Classified intent
         context:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Context
           description: Optional context
@@ -20275,14 +20492,12 @@ components:
       properties:
         tenant:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Tenant
         plan:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Plan
         isExpired:
@@ -20328,7 +20543,6 @@ components:
           $ref: '#/components/schemas/DashboardKPIs'
         recentActivity:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Recentactivity
@@ -20517,8 +20731,7 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - items: {}
             type: array
           - type: 'null'
@@ -20598,7 +20811,6 @@ components:
           anyOf:
           - type: number
           - type: string
-            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
           title: Price
         isActive:
           type: boolean
@@ -20639,7 +20851,6 @@ components:
         accessories:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -20647,7 +20858,6 @@ components:
         services:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -20668,7 +20878,6 @@ components:
           type: array
           title: Assignmentids
         pricing:
-          additionalProperties: true
           type: object
           title: Pricing
         warnings:
@@ -21119,7 +21328,7 @@ components:
           - type: string
           - type: 'null'
           title: Sgkscheme
-        sgkSupportType:
+        sgksupporttype:
           anyOf:
           - type: string
           - type: 'null'
@@ -21139,7 +21348,7 @@ components:
           - type: number
           - type: 'null'
           title: Sgkreduction
-        sgkSupport:
+        sgksupport:
           anyOf:
           - type: number
           - type: 'null'
@@ -21508,8 +21717,7 @@ components:
           title: Content
         metadata:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Metadata
         mimeType:
@@ -21587,8 +21795,7 @@ components:
           title: Filepath
         metadata:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Metadata
         mimeType:
@@ -21807,7 +22014,6 @@ components:
         materials:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -21842,7 +22048,6 @@ components:
         materials:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -21960,7 +22165,6 @@ components:
         attachments:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -21971,8 +22175,7 @@ components:
           title: Status
         providerResponse:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Providerresponse
         providerMessageId:
@@ -22273,8 +22476,7 @@ components:
           description: Secondary text (e.g. Phone, ID, Code)
         metadata:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Metadata
           description: Additional context data
@@ -22359,7 +22561,6 @@ components:
           title: Tool Id
           description: ID of the tool to execute
         args:
-          additionalProperties: true
           type: object
           title: Args
           description: Arguments for the tool
@@ -22391,8 +22592,7 @@ components:
           description: Execution status
         result:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Result
           description: Tool execution result data
@@ -22475,8 +22675,7 @@ components:
           description: Approval status
         execution_result:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Execution Result
           description: Execution result
@@ -22491,6 +22690,63 @@ components:
       - created_at
       title: GetActionResponse
       description: Response for getting action details.
+    GetOutBoxDocumentsRequest:
+      properties:
+        systemtype:
+          type: string
+          title: Systemtype
+          description: EFATURA, EARSIV, etc.
+        documenttype:
+          type: string
+          title: Documenttype
+          description: INVOICE, DESPATCHADVICE, etc.
+        startdatetime:
+          type: string
+          title: Startdatetime
+          description: ISO 8601 string
+        enddatetime:
+          type: string
+          title: Enddatetime
+          description: ISO 8601 string
+        invoiceno:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoiceno
+        pagenumber:
+          type: integer
+          title: Pagenumber
+          default: 0
+        pagesize:
+          type: integer
+          title: Pagesize
+          default: 20
+      type: object
+      required:
+      - systemtype
+      - documenttype
+      - startdatetime
+      - enddatetime
+      title: GetOutBoxDocumentsRequest
+      description: Request schema for GetOutBoxDocuments
+    GetPDFLinkRequest:
+      properties:
+        uuids:
+          items:
+            type: string
+          type: array
+          title: Uuids
+          description: List of document UUIDs
+        systemtype:
+          type: string
+          title: Systemtype
+          description: EFATURA, EARSIV, etc.
+      type: object
+      required:
+      - uuids
+      - systemtype
+      title: GetPDFLinkRequest
+      description: Request schema for GetPDFLinkByUUID
     HTTPValidationError:
       properties:
         detail:
@@ -22570,8 +22826,7 @@ components:
           title: Partyid
         sgkInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Sgkinfo
       type: object
@@ -22591,8 +22846,7 @@ components:
           title: Audiologist
         audiogramData:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Audiogramdata
       type: object
@@ -22613,8 +22867,7 @@ components:
           title: Audiologist
         audiogramData:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Audiogramdata
       type: object
@@ -22659,8 +22912,7 @@ components:
           default: normal
         metadata:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Metadata
           default: {}
@@ -22790,8 +23042,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -22827,8 +23078,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -22869,7 +23119,6 @@ components:
           title: Confidence
           description: Confidence score
         entities:
-          additionalProperties: true
           type: object
           title: Entities
           description: Extracted entities
@@ -22892,7 +23141,6 @@ components:
           title: Confidence
           description: Confidence score
         entities:
-          additionalProperties: true
           type: object
           title: Entities
           description: Extracted entities
@@ -23326,7 +23574,8 @@ components:
           title: Invoicenumber
           description: Invoice number
         invoiceType:
-          $ref: '#/components/schemas/InvoiceType'
+          allOf:
+          - $ref: '#/components/schemas/InvoiceType'
           description: Invoice type
           default: sale
         invoiceDate:
@@ -23375,7 +23624,8 @@ components:
           description: Total amount
           default: 0.0
         status:
-          $ref: '#/components/schemas/InvoiceStatus'
+          allOf:
+          - $ref: '#/components/schemas/InvoiceStatus'
           description: Invoice status
           default: draft
         notes:
@@ -23419,8 +23669,7 @@ components:
           title: Returnreferencedate
         metadata:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Metadata
       type: object
@@ -23434,8 +23683,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -23518,8 +23766,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -23781,8 +24028,7 @@ components:
           title: Remotemessage
         metadata:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Metadata
       type: object
@@ -23792,8 +24038,7 @@ components:
       properties:
         company_info:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Company Info
         invoice_logo:
@@ -24001,20 +24246,17 @@ components:
     KillSwitchStatusResponse:
       properties:
         global_switch:
-          additionalProperties: true
           type: object
           title: Global Switch
           description: Global kill switch status
         tenant_switches:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Tenant Switches
           description: Tenant kill switches
         capability_switches:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Capability Switches
@@ -24183,8 +24425,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -24220,8 +24461,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -24331,8 +24571,7 @@ components:
           default: info
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
       type: object
@@ -24396,8 +24635,7 @@ components:
           title: Readat
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
       type: object
@@ -24465,14 +24703,12 @@ components:
           title: Userid
         preferences:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Preferences
         settings:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Settings
       type: object
@@ -24516,7 +24752,6 @@ components:
     OcrDebugResponse:
       properties:
         result:
-          additionalProperties: true
           type: object
           title: Result
         timestamp:
@@ -24531,7 +24766,6 @@ components:
       properties:
         entities:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Entities
@@ -24644,8 +24878,7 @@ components:
       properties:
         patientInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Patientinfo
         timestamp:
@@ -24685,7 +24918,6 @@ components:
     OcrProcessResponse:
       properties:
         result:
-          additionalProperties: true
           type: object
           title: Result
         timestamp:
@@ -24788,7 +25020,8 @@ components:
           - type: 'null'
           title: Addressfull
         status:
-          $ref: '#/components/schemas/PartyStatus'
+          allOf:
+          - $ref: '#/components/schemas/PartyStatus'
           default: active
         segment:
           type: string
@@ -24819,7 +25052,6 @@ components:
           title: Tags
           default: []
         sgkInfo:
-          additionalProperties: true
           type: object
           title: Sgkinfo
           default: {}
@@ -24842,8 +25074,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -24879,8 +25110,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -25044,8 +25274,7 @@ components:
           title: Gender
         address:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Address
         addressCity:
@@ -25117,8 +25346,7 @@ components:
           title: Tags
         sgkInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Sgkinfo
         roles:
@@ -25263,8 +25491,7 @@ components:
           title: Addressfull
         sgkInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Sgkinfo
       type: object
@@ -25605,7 +25832,6 @@ components:
         installments:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -25988,8 +26214,7 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - items: {}
             type: array
           - type: 'null'
@@ -26031,8 +26256,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -26085,8 +26309,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -26231,7 +26454,6 @@ components:
           type: string
           title: Url
         fields:
-          additionalProperties: true
           type: object
           title: Fields
         key:
@@ -26246,15 +26468,12 @@ components:
     PricingSettingsResponse:
       properties:
         devices:
-          additionalProperties: true
           type: object
           title: Devices
         accessories:
-          additionalProperties: true
           type: object
           title: Accessories
         services:
-          additionalProperties: true
           type: object
           title: Services
       type: object
@@ -26812,7 +27031,6 @@ components:
       properties:
         activity:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Activity
@@ -26979,14 +27197,12 @@ components:
           title: Newinventoryid
         oldDeviceInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Olddeviceinfo
         newDeviceInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Newdeviceinfo
         replacementReason:
@@ -27029,7 +27245,6 @@ components:
     ReplacementInvoiceResponse:
       properties:
         invoice:
-          additionalProperties: true
           type: object
           title: Invoice
         replacement:
@@ -27105,7 +27320,6 @@ components:
           anyOf:
           - type: number
           - type: string
-            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
           - type: 'null'
           title: Pricedifference
         returnInvoiceId:
@@ -27334,6 +27548,12 @@ components:
           minLength: 6
           title: Newpassword
           description: New password
+        captchaToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Captchatoken
+          description: reCAPTCHA token for bot protection
       type: object
       required:
       - identifier
@@ -27682,6 +27902,9 @@ components:
           title: Success
           default: true
         data:
+          anyOf:
+          - {}
+          - type: 'null'
           title: Data
         message:
           anyOf:
@@ -28198,6 +28421,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[BranchRead]
+    ResponseEnvelope_BulkEmailResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/BulkEmailResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[BulkEmailResponse]
+    ResponseEnvelope_BulkUpdateResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/BulkUpdateResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[BulkUpdateResponse]
     ResponseEnvelope_CampaignRead_:
       properties:
         success:
@@ -28395,8 +28688,7 @@ components:
           title: Error
         meta:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -28428,8 +28720,7 @@ components:
           title: Error
         meta:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -28832,8 +29123,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -29973,7 +30263,6 @@ components:
         data:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -33677,8 +33966,7 @@ components:
           title: Error
         meta:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -34490,8 +34778,7 @@ components:
           title: Reportstatus
         patient:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Patient
         devices:
@@ -34515,15 +34802,13 @@ components:
         payments:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
           title: Payments
         invoice:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Invoice
       type: object
@@ -34564,7 +34849,6 @@ components:
           title: Processed
         errors:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -34791,7 +35075,6 @@ components:
         attachments:
           anyOf:
           - items:
-              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -34854,8 +35137,7 @@ components:
           description: Template name if using template
         templateVariables:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Templatevariables
           description: Template variables
@@ -34999,12 +35281,10 @@ components:
           title: Message
         tenant:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Tenant
         user:
-          additionalProperties: true
           type: object
           title: User
         token:
@@ -35039,12 +35319,12 @@ components:
           - type: string
           - type: 'null'
           title: Text2
-        textA:
+        texta:
           anyOf:
           - type: string
           - type: 'null'
           title: Texta
-        textB:
+        textb:
           anyOf:
           - type: string
           - type: 'null'
@@ -35062,25 +35342,32 @@ components:
           title: Window Minutes
           description: Aggregation window in minutes
         inference_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
+          allOf:
+          - $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Inference latency metrics
         intent_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
+          allOf:
+          - $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Intent classification latency
         planning_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
+          allOf:
+          - $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Action planning latency
         execution_latency:
-          $ref: '#/components/schemas/LatencyMetricsResponse'
+          allOf:
+          - $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Execution latency
         rates:
-          $ref: '#/components/schemas/RateMetricsResponse'
+          allOf:
+          - $ref: '#/components/schemas/RateMetricsResponse'
           description: Error and timeout rates
         approvals:
-          $ref: '#/components/schemas/ApprovalMetricsResponse'
+          allOf:
+          - $ref: '#/components/schemas/ApprovalMetricsResponse'
           description: Approval metrics
         quota:
-          $ref: '#/components/schemas/QuotaMetricsResponse'
+          allOf:
+          - $ref: '#/components/schemas/QuotaMetricsResponse'
           description: Quota metrics
       type: object
       required:
@@ -35132,8 +35419,7 @@ components:
           description: Static options for enum type
         validationRules:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Validationrules
           description: Validation rules (min, max, required, etc.)
@@ -35201,7 +35487,8 @@ components:
           type: string
           title: Tenantid
         status:
-          $ref: '#/components/schemas/SmsHeaderStatus'
+          allOf:
+          - $ref: '#/components/schemas/SmsHeaderStatus'
           default: pending
         rejectionReason:
           anyOf:
@@ -35797,8 +36084,7 @@ components:
           description: Execution status
         result:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Result
           description: Execution result
@@ -35970,14 +36256,12 @@ components:
           title: Message
         tenant:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Tenant
         plan:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Plan
       type: object
@@ -36070,8 +36354,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -36107,8 +36390,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -36509,7 +36791,6 @@ components:
     SystemSettingsResponse:
       properties:
         settings:
-          additionalProperties: true
           type: object
           title: Settings
       type: object
@@ -36532,8 +36813,7 @@ components:
           $ref: '#/components/schemas/SmsSourceType'
         filterCriteria:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Filtercriteria
         filePath:
@@ -36577,8 +36857,7 @@ components:
           $ref: '#/components/schemas/SmsSourceType'
         filterCriteria:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Filtercriteria
         tenantId:
@@ -36631,14 +36910,12 @@ components:
           title: Name
         companyInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Companyinfo
         settings:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Settings
       type: object
@@ -36716,7 +36993,8 @@ components:
           title: Taxoffice
           description: Tax office
         status:
-          $ref: '#/components/schemas/TenantStatus'
+          allOf:
+          - $ref: '#/components/schemas/TenantStatus'
           description: Tenant status
           default: active
         productCode:
@@ -36753,16 +37031,14 @@ components:
           default: 0
         companyInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Companyinfo
           description: Company Info
           default: {}
         settings:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Settings
           description: Settings
@@ -36775,7 +37051,6 @@ components:
     TenantRatesUpdate:
       properties:
         rates:
-          additionalProperties: true
           type: object
           title: Rates
       type: object
@@ -36865,7 +37140,8 @@ components:
         status:
           $ref: '#/components/schemas/TenantStatus'
         productCode:
-          $ref: '#/components/schemas/ProductCode'
+          allOf:
+          - $ref: '#/components/schemas/ProductCode'
           description: Product Code
         planId:
           anyOf:
@@ -36897,8 +37173,7 @@ components:
           default: 0
         settings:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Settings
           description: Tenant settings
@@ -37037,20 +37312,17 @@ components:
           title: Currentusers
         companyInfo:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Companyinfo
         settings:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Settings
         featureUsage:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Featureusage
         ownerEmail:
@@ -37208,13 +37480,16 @@ components:
           - type: 'null'
           title: Description
         status:
-          $ref: '#/components/schemas/TicketStatus'
+          allOf:
+          - $ref: '#/components/schemas/TicketStatus'
           default: open
         priority:
-          $ref: '#/components/schemas/TicketPriority'
+          allOf:
+          - $ref: '#/components/schemas/TicketPriority'
           default: medium
         category:
-          $ref: '#/components/schemas/TicketCategory'
+          allOf:
+          - $ref: '#/components/schemas/TicketCategory'
           default: general
         tenantId:
           anyOf:
@@ -37285,8 +37560,7 @@ components:
           default: ''
         details:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Details
         timestamp:
@@ -37354,8 +37628,7 @@ components:
           default: ''
         details:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Details
         timestamp:
@@ -37619,7 +37892,6 @@ components:
           description: Unsubscribe rate percentage
         top_scenarios:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Top Scenarios
@@ -38122,7 +38394,6 @@ components:
           type: boolean
           title: Success
         data:
-          additionalProperties: true
           type: object
           title: Data
       type: object
@@ -38140,7 +38411,6 @@ components:
           type: array
           title: Data
         meta:
-          additionalProperties: true
           type: object
           title: Meta
       type: object
@@ -38204,8 +38474,7 @@ components:
           default: false
         emailTemplate:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Emailtemplate
       type: object
@@ -38775,8 +39044,7 @@ components:
           default: true
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         message:
@@ -38868,7 +39136,6 @@ components:
           title: Updated
         errors:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -38903,7 +39170,6 @@ components:
           title: Updated
         errors:
           items:
-            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -38927,8 +39193,7 @@ components:
           title: Message
         data:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Data
         error:
@@ -38938,8 +39203,7 @@ components:
           title: Error
         meta:
           anyOf:
-          - additionalProperties: true
-            type: object
+          - type: object
           - type: 'null'
           title: Meta
         request_id:

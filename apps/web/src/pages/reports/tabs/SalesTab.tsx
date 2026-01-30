@@ -10,7 +10,7 @@ import {
     useListReportFinancial,
     getListReportFinancialQueryKey
 } from '@/api/client/reports.client';
-import { FilterState, ReportFinancial } from '../types';
+import { ReportFinancial, FilterState } from '../types';
 
 interface SalesTabProps {
     filters: FilterState;

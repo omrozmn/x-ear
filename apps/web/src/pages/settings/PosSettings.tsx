@@ -6,6 +6,7 @@ import {
     useListPaymentPoPaytrConfig
 } from '@/api/client/payment-integrations.client';
 import { CreditCard, Check, AlertCircle } from 'lucide-react';
+import { extractErrorMessage } from '@/utils/error-utils';
 
 type PosProvider = 'xear' | 'paytr' | 'iyzico' | 'none';
 
@@ -94,8 +95,8 @@ export const PosSettings = () => {
                     success(t('pos.messages.success'));
                 },
                 onError: (err: unknown) => {
-                    const axiosError = err as { response?: { data?: { error?: string } } };
-                    error(axiosError.response?.data?.error || t('pos.messages.error'));
+                    const errorMessage = extractErrorMessage(err, t('pos.messages.error'));
+                    error(errorMessage);
                 }
             });
         } else {
@@ -119,8 +120,8 @@ export const PosSettings = () => {
                     success(t('pos.messages.success'));
                 },
                 onError: (err: unknown) => {
-                    const axiosError = err as { response?: { data?: { error?: string } } };
-                    error(axiosError.response?.data?.error || t('pos.messages.error'));
+                    const errorMessage = extractErrorMessage(err, t('pos.messages.error'));
+                    error(errorMessage);
                 }
             });
         }

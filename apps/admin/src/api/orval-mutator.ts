@@ -33,8 +33,19 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null;
+        console.log(`[Orval Request] ${config.url} - Token found: ${!!token}`);
+
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            // Use .set() for Axios 1.x compatibility and ensure headers object exists
+            if (config.headers && typeof config.headers.set === 'function') {
+                config.headers.set('Authorization', `Bearer ${token}`);
+            } else {
+                config.headers = config.headers || {};
+                // @ts-ignore
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+        } else {
+            console.warn(`[Orval Request] No token found for ${config.url}`);
         }
 
         // Add Idempotency-Key for write operations (POST, PUT, PATCH)
@@ -49,6 +60,40 @@ axiosInstance.interceptors.request.use(
         return config;
     },
     (error) => Promise.reject(error)
+);
+
+// Response interceptor for global error handling (specifically 401)
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+
+
+
+
+            // Don't logout on login endpoint 401 (invalid credentials)
+            const isLoginRequest = error.config?.url?.includes('/auth/login');
+
+            if (!isLoginRequest) {
+                // Clear auth data
+                // disable auto-logout for debugging
+                /*
+                if (typeof localStorage !== 'undefined') {
+
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('auth-storage'); // Zustand persistence
+
+                    // Redirect to login if not already there
+                    if (!window.location.pathname.includes('/login')) {
+                        window.location.href = '/login';
+                    }
+                }
+                */
+                console.warn("[Orval Mutator] 401 detected but auto-logout disabled for debugging");
+            }
+        }
+        return Promise.reject(error);
+    }
 );
 
 /**
@@ -142,6 +187,7 @@ async function retryRequest<T>(
  * - Automatic retry with exponential backoff
  * - Retries on network errors and 5xx status codes
  * - Configurable retry attempts and delays
+ * - Unwraps ResponseEnvelope (returns response.data.data instead of response.data)
  */
 export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
     // Add /api prefix if missing (for Vite proxy to work)
@@ -151,7 +197,13 @@ export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
 
     // Wrap in retry logic
     return retryRequest(
-        () => axiosInstance(requestConfig).then(response => response.data),
+        () => axiosInstance(requestConfig).then(response => {
+            // Unwrap ResponseEnvelope: {success: true, data: {...}} -> {...}
+            if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+                return response.data.data;
+            }
+            return response.data;
+        }),
         requestConfig
     );
 };

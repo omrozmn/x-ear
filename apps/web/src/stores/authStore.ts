@@ -83,7 +83,7 @@ interface AuthActions {
   sendOtp: (phone: string) => Promise<void>;
   forgotPassword: (phone: string) => Promise<void>;
   verifyResetOtp: (phone: string, otp: string) => Promise<void>;
-  resetPassword: (phone: string, otp: string, newPassword: string) => Promise<void>;
+  resetPassword: (phone: string, otp: string, newPassword: string, captchaToken?: string) => Promise<void>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
   initializeAuth: () => Promise<void>;
@@ -570,7 +570,7 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      resetPassword: async (phone: string, otp: string, newPassword: string) => {
+      resetPassword: async (phone: string, otp: string, newPassword: string, captchaToken?: string) => {
         const { setLoading, setError } = get();
 
         try {
@@ -581,7 +581,8 @@ export const useAuthStore = create<AuthStore>()(
           const data = await resetPasswordApi({
             identifier: phone,
             otp: otp,
-            newPassword: newPassword
+            newPassword: newPassword,
+            ...(captchaToken && { captchaToken })
           });
 
           if (data?.success) {

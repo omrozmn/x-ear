@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import {
     AlertTriangle,
-    RefreshCw,
     Loader2,
-    Filter,
+    Calendar,
     Eye,
-    Download
+    FileText
 } from 'lucide-react';
-import { Button, Input, Select, Pagination } from '@x-ear/ui-web';
+import { Button, Input, Select } from '@x-ear/ui-web';
 import { unwrapObject, unwrapPaginated } from '../../../utils/response-unwrap';
 import {
     useListActivityLogs,
@@ -16,188 +15,193 @@ import {
 import { ActivityLogDetailModal } from '../components/ActivityLogDetailModal';
 import type { ActivityLogRead, ResponseMeta } from '@/api/generated/schemas';
 
-interface ActivityFilters {
-    user_id?: string;
-    action?: string;
-    entity_type?: string;
-    is_critical?: boolean;
-    start_date?: string;
-    end_date?: string;
-}
-
 export function ActivityTab() {
     const [page, setPage] = useState(1);
-    const [filters, setFilters] = useState<ActivityFilters>({});
+    const [perPage, setPerPage] = useState(20);
     const [selectedLog, setSelectedLog] = useState<ActivityLogRead | null>(null);
-
-    // Fetch filter options
-    const { data: filterOptionsData } = useListActivityLogFilterOptions();
-    const filterOptions = unwrapObject<{
-        actions: string[];
-        entity_types: string[];
-        users: { id: string; name: string }[];
-    }>(filterOptionsData);
-
-    // Fetch logs
-    const { data: logsData, isLoading, error, refetch } = useListActivityLogs({
-        page,
-        per_page: 20,
-        ...filters
+    const [activityFilters, setActivityFilters] = useState({
+        action: '',
+        user_id: '',
+        search: ''
     });
 
-    const { data: logs, meta } = unwrapPaginated<ActivityLogRead>(logsData);
-    const typedMeta = meta as ResponseMeta | undefined;
+    const { data: logsResponse, isLoading } = useListActivityLogs({
+        action: activityFilters.action || undefined,
+        user_id: activityFilters.user_id || undefined,
+        search: activityFilters.search || undefined,
+        page,
+        limit: perPage
+    });
 
-    const handleFilterChange = (key: keyof ActivityFilters, value: any) => {
-        setFilters(prev => ({ ...prev, [key]: value || undefined }));
-        setPage(1);
-    };
+    // Replace stub with generated hook
+    const { data: filterOptions } = useListActivityLogFilterOptions();
 
-    if (error) {
-        return (
-            <div className="text-center py-12">
-                <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
-                <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
-                    Tekrar Dene
-                </Button>
-            </div>
-        );
-    }
+    const { data: logs, pagination } = unwrapPaginated<ActivityLogRead>(logsResponse);
+    const typedPagination = pagination as ResponseMeta | undefined;
+    const options = unwrapObject<{ actions?: string[]; users?: Array<{ id: string; name: string }> }>(filterOptions);
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sistem Aktivite Kayıtları</h3>
-                <Button variant="outline" icon={<Download className="w-4 h-4" />}>
-                    Dışa Aktar
-                </Button>
-            </div>
-
-            {/* Filters */}
+            {/* Activity Filters */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                <div className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Filter className="w-4 h-4" />
-                    Filtreler
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Select
-                        label="Kullanıcı"
-                        value={filters.user_id || ''}
-                        onChange={(e) => handleFilterChange('user_id', e.target.value)}
-                        options={[
-                            { value: '', label: 'Tüm Kullanıcılar' },
-                            ...(filterOptions?.users?.map(u => ({ value: u.id, label: u.name })) || [])
-                        ]}
-                    />
-                    <Select
-                        label="İşlem Türü"
-                        value={filters.action || ''}
-                        onChange={(e) => handleFilterChange('action', e.target.value)}
-                        options={[
-                            { value: '', label: 'Tüm İşlemler' },
-                            ...(filterOptions?.actions?.map(a => ({ value: a, label: a })) || [])
-                        ]}
-                    />
-                    <Select
-                        label="Varlık Türü"
-                        value={filters.entity_type || ''}
-                        onChange={(e) => handleFilterChange('entity_type', e.target.value)}
-                        options={[
-                            { value: '', label: 'Tüm Varlıklar' },
-                            ...(filterOptions?.entity_types?.map(t => ({ value: t, label: t })) || [])
-                        ]}
-                    />
-                    <div className="flex gap-2">
-                        <Input
-                            type="date"
-                            label="Başlangıç"
-                            value={filters.start_date || ''}
-                            onChange={(e) => handleFilterChange('start_date', e.target.value)}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kullanıcı</label>
+                        <Select
+                            className="w-full text-sm"
+                            value={activityFilters.user_id}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setActivityFilters({ ...activityFilters, user_id: e.target.value })}
+                            options={[
+                                { value: "", label: "Tüm Kullanıcılar" },
+                                ...(options?.users?.map((u: { id: string; name: string }) => ({ value: u.id, label: u.name })) || [])
+                            ]}
                         />
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Aksiyon</label>
+                        <Select
+                            className="w-full text-sm"
+                            value={activityFilters.action}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setActivityFilters({ ...activityFilters, action: e.target.value })}
+                            options={[
+                                { value: "", label: "Tüm Aksiyonlar" },
+                                ...(options?.actions?.map((action: string) => ({ value: action, label: action })) || [])
+                            ]}
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Arama</label>
                         <Input
-                            type="date"
-                            label="Bitiş"
-                            value={filters.end_date || ''}
-                            onChange={(e) => handleFilterChange('end_date', e.target.value)}
+                            type="text"
+                            className="w-full text-sm"
+                            placeholder="Mesaj veya aksiyon ara..."
+                            value={activityFilters.search}
+                            onChange={(e) => setActivityFilters({ ...activityFilters, search: e.target.value })}
                         />
                     </div>
                 </div>
             </div>
 
-            {/* Logs Table */}
+            {/* Activity Table */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {isLoading ? (
-                    <div className="flex justify-center py-12">
+                    <div className="p-8 flex justify-center">
                         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                     </div>
-                ) : logs.length > 0 ? (
+                ) : (
                     <>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
                                     <tr>
-                                        <th className="px-4 py-3 font-medium text-nowrap">Tarih</th>
+                                        <th className="px-4 py-3 font-medium w-10"></th>
+                                        <th className="px-4 py-3 font-medium">Tarih</th>
                                         <th className="px-4 py-3 font-medium">Kullanıcı</th>
                                         <th className="px-4 py-3 font-medium">Aksiyon</th>
-                                        <th className="px-4 py-3 font-medium">Varlık</th>
                                         <th className="px-4 py-3 font-medium">Mesaj</th>
                                         <th className="px-4 py-3 font-medium w-10"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {logs.map((log) => (
-                                        <tr key={log.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${log.isCritical ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}>
-                                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                                {new Date(log.createdAt).toLocaleString('tr-TR')}
+                                        <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <td className="px-4 py-3">
+                                                {log.isCritical && (
+                                                    <span title="Kritik İşlem">
+                                                        <AlertTriangle className="w-4 h-4 text-red-500" />
+                                                    </span>
+                                                )}
                                             </td>
-                                            <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                                                {log.userName || log.userId}
+                                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {log.createdAt && new Date(log.createdAt).toLocaleString('tr-TR')}
+                                                </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium">
+                                                <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">
+                                                    {log.userName || '-'}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                                                    {log.userEmail}
+                                                </p>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                                                     {log.action}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                                {log.entityType}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-xs truncate" title={log.message || ''}>
+                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-[250px] truncate" title={log.message || undefined}>
                                                 {log.message || '-'}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Button
-                                                    variant="ghost"
-                                                    size="sm"
                                                     onClick={() => setSelectedLog(log)}
-                                                    className="!p-1 h-auto"
+                                                    variant="ghost"
+                                                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors !w-auto !h-auto"
+                                                    title="Detay"
                                                 >
-                                                    <Eye className="w-4 h-4 text-gray-500" />
+                                                    <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                                 </Button>
                                             </td>
                                         </tr>
                                     ))}
+                                    {logs.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                                <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                                                <p>Kayit bulunamadi.</p>
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
 
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                            <Pagination
-                                currentPage={page}
-                                totalPages={typedMeta?.totalPages || 1}
-                                onPageChange={setPage}
-                                itemsPerPage={20}
-                                totalItems={typedMeta?.total || logs.length}
-                            />
-                        </div>
+                        {/* Pagination */}
+                        {typedPagination && typedPagination.total && typedPagination.total > 0 && (
+                            <div className="px-4 py-3 border-t bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    Toplam {typedPagination.total} kayit, Sayfa {page}/{typedPagination.totalPages || 1}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={page === 1}
+                                        variant="outline"
+                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
+                                    >
+                                        Onceki
+                                    </Button>
+                                    <Select
+                                        value={String(perPage)}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                            setPerPage(Number(e.target.value));
+                                            setPage(1);
+                                        }}
+                                        className="px-2 py-1.5 text-sm"
+                                        options={[
+                                            { value: "10", label: "10" },
+                                            { value: "20", label: "20" },
+                                            { value: "50", label: "50" }
+                                        ]}
+                                    />
+                                    <Button
+                                        onClick={() => setPage(p => Math.min(Number(typedPagination.totalPages || 1), p + 1))}
+                                        disabled={page >= Number(typedPagination.totalPages || 1)}
+                                        variant="outline"
+                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
+                                    >
+                                        Sonraki
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </>
-                ) : (
-                    <div className="text-center py-12 text-gray-500">
-                        Aktivite kaydı bulunamadı
-                    </div>
                 )}
             </div>
 
+            {/* Detail Modal */}
             {selectedLog && (
                 <ActivityLogDetailModal
                     log={selectedLog}

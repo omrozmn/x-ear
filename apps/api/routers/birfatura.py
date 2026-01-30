@@ -23,7 +23,8 @@ from middleware.unified_access import UnifiedAccess, require_access, require_adm
 from database import get_db
 from schemas.birfatura import (
     InvoiceSyncRequest, BirfaturaResponse, InvoiceSyncResponse,
-    MockSearchRequest, MockDetailRequest
+    MockSearchRequest, MockDetailRequest,
+    GetOutBoxDocumentsRequest, GetPDFLinkRequest
 )
 
 
@@ -236,6 +237,42 @@ async def send_basic_invoice_from_model(
         return ResponseEnvelope(data=BirfaturaResponse(success=True, data=resp))
     except Exception as e:
         logger.error(f"Send basic invoice v2 error: {e}")
+        return ResponseEnvelope(data=BirfaturaResponse(success=False, message=str(e)))
+
+@router.post("/OutEBelgeV2/GetOutBoxDocuments", operation_id="createOutebelgev2Getoutboxdocuments")
+async def get_outbox_documents(
+    payload: GetOutBoxDocumentsRequest,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get outgoing documents from BirFatura"""
+    if not access.tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context required")
+    
+    try:
+        client = get_configured_client(access.tenant_id, db)
+        resp = client.get_outbox_documents(payload.model_dump(by_alias=True))
+        return ResponseEnvelope(data=BirfaturaResponse(success=True, data=resp))
+    except Exception as e:
+        logger.error(f"Get outbox documents error: {e}")
+        return ResponseEnvelope(data=BirfaturaResponse(success=False, message=str(e)))
+
+@router.post("/OutEBelgeV2/GetPDFLinkByUUID", operation_id="createOutebelgev2Getpdflinkbyuuid")
+async def get_pdf_link_by_uuid(
+    payload: GetPDFLinkRequest,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get PDF link for documents"""
+    if not access.tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context required")
+    
+    try:
+        client = get_configured_client(access.tenant_id, db)
+        resp = client.get_pdf_link_by_uuid(payload.model_dump(by_alias=True))
+        return ResponseEnvelope(data=BirfaturaResponse(success=True, data=resp))
+    except Exception as e:
+        logger.error(f"Get PDF link error: {e}")
         return ResponseEnvelope(data=BirfaturaResponse(success=False, message=str(e)))
 
 # --- Mock Endpoints for Frontend Development ---

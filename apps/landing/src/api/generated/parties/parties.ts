@@ -26,12 +26,16 @@ import type {
 
 import type {
   BodyCreatePartyBulkUpload,
+  BulkEmailRequest,
+  BulkUpdateRequest,
   HTTPValidationError,
   ListPartiesParams,
   ListPartyCountParams,
   ListPartyExportParams,
   PartyCreate,
   PartyUpdate,
+  ResponseEnvelopeBulkEmailResponse,
+  ResponseEnvelopeBulkUpdateResponse,
   ResponseEnvelopeListPartyRead,
   ResponseEnvelopePartyRead,
   SchemasBaseResponseEnvelopeBulkUploadResponse1
@@ -673,6 +677,138 @@ export const useCreatePartyBulkUpload = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getCreatePartyBulkUploadMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Bulk update multiple parties with the same changes.
+Returns success/failure count and individual results.
+ * @summary Bulk Update Parties
+ */
+export const bulkUpdateParties = (
+    bulkUpdateRequest: BulkUpdateRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeBulkUpdateResponse>(
+      {url: `/api/parties/bulk-update`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: bulkUpdateRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getBulkUpdatePartiesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateParties>>, TError,{data: BulkUpdateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateParties>>, TError,{data: BulkUpdateRequest}, TContext> => {
+
+const mutationKey = ['bulkUpdateParties'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkUpdateParties>>, {data: BulkUpdateRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkUpdateParties(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkUpdatePartiesMutationResult = NonNullable<Awaited<ReturnType<typeof bulkUpdateParties>>>
+    export type BulkUpdatePartiesMutationBody = BulkUpdateRequest
+    export type BulkUpdatePartiesMutationError = HTTPValidationError
+
+    /**
+ * @summary Bulk Update Parties
+ */
+export const useBulkUpdateParties = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateParties>>, TError,{data: BulkUpdateRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof bulkUpdateParties>>,
+        TError,
+        {data: BulkUpdateRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getBulkUpdatePartiesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Send email to multiple parties.
+Returns success/failure count and individual results.
+ * @summary Bulk Email Parties
+ */
+export const bulkEmailParties = (
+    bulkEmailRequest: BulkEmailRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeBulkEmailResponse>(
+      {url: `/api/parties/bulk-email`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: bulkEmailRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getBulkEmailPartiesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkEmailParties>>, TError,{data: BulkEmailRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof bulkEmailParties>>, TError,{data: BulkEmailRequest}, TContext> => {
+
+const mutationKey = ['bulkEmailParties'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkEmailParties>>, {data: BulkEmailRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkEmailParties(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkEmailPartiesMutationResult = NonNullable<Awaited<ReturnType<typeof bulkEmailParties>>>
+    export type BulkEmailPartiesMutationBody = BulkEmailRequest
+    export type BulkEmailPartiesMutationError = HTTPValidationError
+
+    /**
+ * @summary Bulk Email Parties
+ */
+export const useBulkEmailParties = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkEmailParties>>, TError,{data: BulkEmailRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof bulkEmailParties>>,
+        TError,
+        {data: BulkEmailRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getBulkEmailPartiesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

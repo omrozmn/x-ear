@@ -185,12 +185,17 @@ def create_payment_record(
 def list_payment_records(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
+    sale_id: Optional[str] = Query(None, alias="saleId"),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """List all payment records for the tenant"""
     try:
         query = tenant_scoped_query(access, PaymentRecord, db_session)
+        
+        if sale_id:
+            query = query.filter_by(sale_id=sale_id)
+            
         total = query.count()
         payment_records = query.order_by(PaymentRecord.payment_date.desc()).offset((page - 1) * per_page).limit(per_page).all()
         

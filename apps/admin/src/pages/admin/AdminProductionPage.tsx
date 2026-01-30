@@ -32,7 +32,7 @@ const AdminProductionPage: React.FC = () => {
     );
     const updateStatusMutation = useUpdateAdminProductionOrderStatus();
 
-    const orders = ordersData?.data || [];
+    const orders = (ordersData as any)?.orders || (ordersData as any)?.data || (Array.isArray(ordersData) ? ordersData : []);
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         try {

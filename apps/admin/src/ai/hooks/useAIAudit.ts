@@ -112,8 +112,11 @@ async function fetchAuditLogs(
     params,
   });
 
+  const actualData = (response as any).data || response;
+  const rawEntries = actualData.entries || (Array.isArray(actualData) ? actualData : []);
+
   // Transform backend response to frontend types
-  const entries: AuditLogEntry[] = response.entries.map((entry) => ({
+  const entries: AuditLogEntry[] = rawEntries.map((entry: any) => ({
     log_id: entry.id,
     timestamp: entry.timestamp,
     event_type: entry.event_type as AuditEventType,
@@ -132,10 +135,10 @@ async function fetchAuditLogs(
 
   return {
     entries,
-    total: response.total,
+    total: actualData.total || entries.length,
     page: Math.floor(offset / pageSize) + 1,
-    page_size: response.page_size,
-    has_more: response.has_more,
+    page_size: actualData.page_size || pageSize,
+    has_more: actualData.has_more ?? false,
   };
 }
 
@@ -191,10 +194,10 @@ export function useAIAudit(options: UseAIAuditOptions = {}): UseAIAuditReturn {
 
   // Flatten all pages into a single entries array
   const entries = infiniteQuery.data?.pages.flatMap((page) => page.entries) ?? [];
-  
+
   // Get total from the first page (it's the same across all pages)
   const total = infiniteQuery.data?.pages[0]?.total ?? 0;
-  
+
   // Check if there are more entries to load
   const hasMore = infiniteQuery.hasNextPage ?? false;
 

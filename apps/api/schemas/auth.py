@@ -45,6 +45,7 @@ class ResetPasswordRequest(AppBaseModel):
     identifier: str = Field(..., description="Phone number")
     otp: str = Field(..., description="OTP code")
     new_password: str = Field(..., alias="newPassword", min_length=6, description="New password")
+    captcha_token: Optional[str] = Field(None, alias="captchaToken", description="reCAPTCHA token for bot protection")
 
 
 class SetPasswordRequest(AppBaseModel):

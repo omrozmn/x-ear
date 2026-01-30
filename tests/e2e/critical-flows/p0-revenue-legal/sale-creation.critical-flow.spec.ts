@@ -15,10 +15,10 @@ import { test, expect } from '../../fixtures/fixtures';
 import { createTestParty, waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-03: Sale Creation', () => {
-  test('should create sale with payment successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should create sale with payment successfully', async ({ tenantPage, request, authTokens }) => {
     // Prerequisites: Create test party
     const timestamp = Date.now();
-    const partyId = await createTestParty(apiContext, authTokens.accessToken, {
+    const partyId = await createTestParty(request, authTokens.accessToken, {
       firstName: 'Ayşe',
       lastName: 'Demir',
       phone: `+90555${timestamp.toString().slice(-7)}`
@@ -96,7 +96,7 @@ test.describe('FLOW-03: Sale Creation', () => {
     
     // STEP 9: Verify sale created via API
     console.log('[FLOW-03] Step 9: Verify sale via API');
-    const response = await apiContext.get('/api/sales?page=1&perPage=10', {
+    const response = await request.get('/api/sales?page=1&perPage=10', {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
     

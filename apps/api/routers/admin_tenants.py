@@ -672,15 +672,14 @@ def update_tenant_sms_document_status(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/{tenant_id}/sms-documents/send-email", operation_id="createAdminTenantSmsDocumentSendEmail")
-def send_tenant_sms_documents_email(
+async def send_tenant_sms_documents_email(
     tenant_id: str,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
     """Send all approved SMS documents via email - Flask parity"""
     try:
-        from models.sms_integration import SMSProviderConfig
-        from services.email_service import email_service
+        from core.models.sms_integration import SMSProviderConfig
         
         tenant = db_session.get(Tenant, tenant_id)
         if not tenant or tenant.deleted_at:
@@ -702,10 +701,40 @@ def send_tenant_sms_documents_email(
         
         # Prepare email body
         subject = f"SMS Başvuru Belgeleri - {tenant.name}"
-        body = f"""
+        body_html = f"""
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <h2>SMS Başvuru Belgeleri</h2>
+    <p>Merhaba,</p>
+    <p><strong>{tenant.name}</strong> firması için SMS başvuru belgelerini aşağıda bulabilirsiniz.</p>
+    
+    <h3>Firma Bilgileri:</h3>
+    <ul>
+        <li><strong>Firma Adı:</strong> {tenant.name}</li>
+        <li><strong>Yönetici Email:</strong> {tenant.owner_email}</li>
+        <li><strong>API Username:</strong> {config.api_username}</li>
+    </ul>
+    
+    <h3>Belgeler:</h3>
+    <ul>
+"""
+        for doc in docs:
+            body_html += f"        <li>{doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})</li>\n"
+        
+        body_html += """
+    </ul>
+    
+    <p>İyi çalışmalar.</p>
+</body>
+</html>
+"""
+        
+        body_text = f"""
+SMS Başvuru Belgeleri
+
 Merhaba,
 
-{tenant.name} firması için SMS başvuru belgelerini ekte bulabilirsiniz.
+{tenant.name} firması için SMS başvuru belgelerini aşağıda bulabilirsiniz.
 
 Firma Bilgileri:
 - Firma Adı: {tenant.name}
@@ -715,11 +744,11 @@ Firma Bilgileri:
 Belgeler:
 """
         for doc in docs:
-            body += f"\n- {doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})"
+            body_text += f"- {doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})\n"
         
-        body += "\n\nİyi çalışmalar."
+        body_text += "\nİyi çalışmalar."
         
-        # Send email
+        # Send email using SMTP directly (simpler for admin operations)
         is_dev = os.getenv('ENVIRONMENT', 'production') == 'development'
         
         if is_dev:
@@ -730,7 +759,7 @@ Belgeler:
             logger.info(f"To: {config.documents_email}")
             logger.info(f"Subject: {subject}")
             logger.info("-" * 80)
-            logger.info(f"Body: {body}")
+            logger.info(f"Body: {body_text}")
             logger.info("=" * 80)
             
             return ResponseEnvelope(data={
@@ -740,24 +769,49 @@ Belgeler:
                 'attachments': len(docs)
             })
         else:
-            # Production mode - send real email
-            success = email_service.send_email(
-                to=config.documents_email,
-                subject=subject,
-                body_html=f"<html><body><pre>{body}</pre></body></html>",
-                body_text=body
-            )
+            # Production mode - send real email via SMTP
+            from services.email_service import get_email_service
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.text import MIMEText
+            from email.utils import formatdate, make_msgid
+            import aiosmtplib
             
-            if success:
-                logger.info(f"SMS documents email sent to {config.documents_email} for tenant {tenant_id}")
-                return ResponseEnvelope(data={
-                    'message': 'E-posta başarıyla gönderildi',
-                    'simulated': False,
-                    'recipient': config.documents_email,
-                    'attachments': len(docs)
-                })
-            else:
-                raise HTTPException(status_code=500, detail={"message": "E-posta gönderilemedi", "code": "MAIL_FAILED"})
+            email_service = get_email_service(db_session)
+            
+            # Get SMTP config for tenant
+            smtp_config = email_service.smtp_config_service.get_config_with_decrypted_password(tenant_id)
+            
+            # Create message
+            message = MIMEMultipart("alternative")
+            message["From"] = f"{smtp_config['from_name']} <{smtp_config['from_email']}>"
+            message["To"] = config.documents_email
+            message["Subject"] = subject
+            message["Date"] = formatdate(localtime=True)
+            message["Message-ID"] = make_msgid()
+            
+            message.attach(MIMEText(body_text, "plain", "utf-8"))
+            message.attach(MIMEText(body_html, "html", "utf-8"))
+            
+            # Send via SMTP
+            async with aiosmtplib.SMTP(
+                hostname=smtp_config["host"],
+                port=smtp_config["port"],
+                use_tls=smtp_config["use_ssl"],
+                timeout=smtp_config["timeout"]
+            ) as smtp:
+                if smtp_config["use_tls"] and not smtp_config["use_ssl"]:
+                    await smtp.starttls()
+                
+                await smtp.login(smtp_config["username"], smtp_config["password"])
+                await smtp.send_message(message)
+            
+            logger.info(f"SMS documents email sent to {config.documents_email} for tenant {tenant_id}")
+            return ResponseEnvelope(data={
+                'message': 'E-posta başarıyla gönderildi',
+                'simulated': False,
+                'recipient': config.documents_email,
+                'attachments': len(docs)
+            })
     except HTTPException:
         raise
     except Exception as e:

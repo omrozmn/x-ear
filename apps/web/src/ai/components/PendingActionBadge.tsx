@@ -27,12 +27,9 @@ import {
   PENDING_BADGE_POSITION_CLASSES,
 } from './constants';
 import { PendingIcon } from './icons';
-import { getPendingActionByType, shouldBlockActionSubmission } from '../utils/pendingActionHelpers';
+// Note: getPendingActionByType removed as it is not used in this component.
 
-// Re-export utilities for backward compatibility
-// Note: This triggers react-refresh warning but is intentional for backward compatibility
-// These utilities are also available from '../utils/pendingActionHelpers'
-export { getPendingActionByType, shouldBlockActionSubmission };
+// Note: Utilities removed for Fast Refresh compatibility.
 
 // =============================================================================
 // Types

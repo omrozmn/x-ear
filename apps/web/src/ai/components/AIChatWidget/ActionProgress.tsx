@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { User, Headphones, Settings, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useComposerStore } from '../../../stores/composerStore';
 
@@ -11,21 +11,11 @@ export const ActionProgress = () => {
         executionError,
         reset,
         updateSlot,
-        mode,
         currentSlot
     } = useComposerStore();
 
-    const [visibleStep, setVisibleStep] = useState<string | null>(null);
-
     // Get current active step
     const currentStep = executionSteps.find(s => s.status === 'running');
-
-    // Effect to handle transitions between steps
-    useEffect(() => {
-        if (currentStep) {
-            setVisibleStep(currentStep.label);
-        }
-    }, [currentStep]);
 
     // Helpers to get label from slots (assuming format stored in selectAction)
     const getSlotLabel = (key: string) => {
@@ -55,10 +45,11 @@ export const ActionProgress = () => {
                         </p>
 
                         <div className="flex gap-2 mt-4">
-                            <button className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors">
+                            <button data-allow-raw="true" className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors">
                                 Hasta Detaylarını Aç
                             </button>
                             <button
+                                data-allow-raw="true"
                                 onClick={reset}
                                 className="px-3 py-1.5 bg-gray-900 hover:bg-black text-white text-xs font-medium rounded transition-colors"
                             >
@@ -89,12 +80,13 @@ export const ActionProgress = () => {
 
                         <div className="flex gap-2 mt-4">
                             <button
+                                data-allow-raw="true"
                                 onClick={reset} // TODO: Add Retry logic?
                                 className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded transition-colors"
                             >
                                 Tekrar Dene
                             </button>
-                            <button className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded transition-colors">
+                            <button data-allow-raw="true" className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded transition-colors">
                                 Detay Gör
                             </button>
                         </div>
@@ -119,6 +111,7 @@ export const ActionProgress = () => {
                             <div className="flex gap-2 flex-wrap">
                                 {currentSlot.enumOptions?.map((opt: string) => (
                                     <button
+                                        data-allow-raw="true"
                                         key={opt}
                                         onClick={() => updateSlot(currentSlot!.name, opt)}
                                         className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-semibold rounded hover:bg-blue-50 transition-colors"
@@ -130,6 +123,7 @@ export const ActionProgress = () => {
                         )}
                         {!['enum'].includes(currentSlot.uiType) && (
                             <input
+                                data-allow-raw="true"
                                 autoFocus
                                 className="w-full border rounded p-1.5 text-sm"
                                 placeholder="Değer yazın..."

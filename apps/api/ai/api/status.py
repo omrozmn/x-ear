@@ -14,6 +14,7 @@ Requirements:
 """
 
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -147,56 +148,18 @@ async def get_status(
         if state:
             kill_switch_reason = state.reason
     
-    kill_switch_status = KillSwitchStatusResponse(
-        global_active=global_active,
-        tenant_active=tenant_active,
-        capabilities_disabled=capabilities_disabled,
-        reason=kill_switch_reason,
-    )
+
     
     # Get usage status
     usage_summary = usage_tracker.get_usage_summary(tenant_id)
     
-    quotas = []
-    for usage_type in UsageType:
-        record = usage_summary.by_type.get(usage_type.value)
-        if record:
-            quotas.append(QuotaStatusResponse(
-                usage_type=usage_type.value,
-                current_usage=record.request_count,
-                quota_limit=record.quota_limit,
-                remaining=record.remaining_quota,
-                exceeded=record.quota_exceeded,
-            ))
-        else:
-            quotas.append(QuotaStatusResponse(
-                usage_type=usage_type.value,
-                current_usage=0,
-                quota_limit=None,
-                remaining=None,
-                exceeded=False,
-            ))
-    
-    usage_status = UsageStatusResponse(
-        total_requests_today=usage_summary.total_requests,
-        quotas=quotas,
-        any_quota_exceeded=usage_summary.any_quota_exceeded,
-    )
+
     
     # Phase status
-    phase_status = PhaseStatusResponse(
-        current_phase=config.phase.name,
-        phase_name=config.phase.value,
-        execution_allowed=config.is_execution_allowed(),
-        proposal_allowed=config.is_proposal_allowed(),
-    )
+
     
     # Model status (simplified - in production, check actual model availability)
-    model_status = ModelStatusResponse(
-        provider=config.model.provider,
-        model_id=config.model.model_id,
-        available=config.enabled,  # Simplified check
-    )
+
     
     # Determine overall availability
     available = (
@@ -216,7 +179,7 @@ async def get_status(
         ai_model_available=config.enabled,
         kill_switch_active=global_active or tenant_active,
         quota_remaining=usage_summary.total_requests, # Simplified for example
-        quota_limit=config.quota_limit,
+        quota_limit=config.quota.default_requests_per_period,
     )
 
 
