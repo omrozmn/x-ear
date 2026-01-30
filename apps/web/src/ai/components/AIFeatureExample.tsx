@@ -13,7 +13,8 @@
  */
 
 import React from 'react';
-import { AIFeatureWrapper, useAIFeatureAvailability } from './AIFeatureWrapper';
+import { AIFeatureWrapper } from './AIFeatureWrapper';
+import { useAIFeatureAvailability } from '../hooks/useAIFeatureAvailability';
 import { AIChatWidget } from './AIChatWidget';
 import { PendingActionBadge } from './PendingActionBadge';
 
@@ -136,8 +137,8 @@ export function AIDynamicFallbackExample(): React.ReactElement {
       capability="ocr"
       fallback={(reason, message) => (
         <div className={`p-4 rounded-lg ${reason === 'quota_exceeded'
-            ? 'bg-yellow-50 border-yellow-300'
-            : 'bg-red-50 border-red-300'
+          ? 'bg-yellow-50 border-yellow-300'
+          : 'bg-red-50 border-red-300'
           } border`}>
           <h3 className="font-semibold">
             {reason === 'quota_exceeded'
