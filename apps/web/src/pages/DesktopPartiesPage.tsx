@@ -458,7 +458,7 @@ export function DesktopPartiesPage() {
           { key: 'gender', label: 'Cinsiyet' }
         ]}
         zodSchema={partiesSchema}
-        uploadEndpoint={'/api/parties/bulk_upload'}
+        uploadEndpoint={'/api/parties/bulk-upload'}
         modalTitle={'Toplu Hasta Yükleme'}
         sampleDownloadUrl={'/import_samples/parties_sample.csv'}
         onComplete={(res) => {

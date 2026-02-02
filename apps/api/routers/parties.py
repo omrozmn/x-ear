@@ -51,7 +51,7 @@ def list_parties(
     city: Optional[str] = None,
     district: Optional[str] = None,
     cursor: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("patient:read")),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
     db: Session = Depends(get_db)
 ):
     """List patients with filtering and pagination"""
@@ -115,7 +115,7 @@ def list_parties(
 @router.post("/parties", operation_id="createParties", response_model=ResponseEnvelope[PartyRead], status_code=201)
 def create_party(
     patient_in: PartyCreate,
-    access: UnifiedAccess = Depends(require_access("patient:write")),
+    access: UnifiedAccess = Depends(require_access("parties.create")),
     db: Session = Depends(get_db)
 ):
     """Create a new patient"""
@@ -145,7 +145,7 @@ def export_parties(
     q: Optional[str] = None,
     status: Optional[str] = None,
     segment: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access("patient:export")),
+    access: UnifiedAccess = Depends(require_access("parties.export")),
     db: Session = Depends(get_db)
 ):
     """Export patients as CSV"""
@@ -223,7 +223,7 @@ def export_parties(
 
 @router.get("/parties/count", operation_id="listPartyCount")
 def count_parties(
-    access: UnifiedAccess = Depends(require_access("patient:read")),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
     db: Session = Depends(get_db),
     status: Optional[str] = None,
     segment: Optional[str] = None
@@ -240,7 +240,7 @@ def count_parties(
 @router.get("/parties/{party_id}", operation_id="getParty", response_model=ResponseEnvelope[PartyRead])
 def get_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("patient:read")),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
     db: Session = Depends(get_db)
 ):
     """Get single patient"""
@@ -253,7 +253,7 @@ def get_party(
 def update_party(
     party_id: str,
     patient_in: PartyUpdate,
-    access: UnifiedAccess = Depends(require_access("patient:write")),
+    access: UnifiedAccess = Depends(require_access("parties.edit")),
     db: Session = Depends(get_db)
 ):
     """Update patient"""
@@ -272,7 +272,7 @@ def update_party(
 @router.delete("/parties/{party_id}", operation_id="deleteParty")
 def delete_party(
     party_id: str,
-    access: UnifiedAccess = Depends(require_access("patient:delete")),
+    access: UnifiedAccess = Depends(require_access("parties.delete")),
     db: Session = Depends(get_db)
 ):
     """Delete patient"""
@@ -290,15 +290,21 @@ def delete_party(
 @router.post("/parties/bulk-upload", operation_id="createPartyBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_parties(
     file: UploadFile = File(...),
-    access: UnifiedAccess = Depends(require_access("patient:write")),
+    access: UnifiedAccess = Depends(require_access("parties.create")),
     db: Session = Depends(get_db)
 ):
     """Bulk upload patients from CSV or XLSX"""
     try:
-        if not access.tenant_id:
+        # Use effective_tenant_id if impersonating, otherwise use tenant_id
+        effective_tenant = access.effective_tenant_id or access.tenant_id
+        
+        logger.info(f"Bulk upload started - tenant_id: {access.tenant_id}, effective_tenant_id: {access.effective_tenant_id}, using: {effective_tenant}, filename: {file.filename}")
+        
+        if not effective_tenant or effective_tenant == 'system':
+            logger.error(f"Bulk upload rejected - invalid tenant. tenant_id: {access.tenant_id}, effective: {effective_tenant}")
             raise HTTPException(
                 status_code=400,
-                detail=ApiError(message="Tenant context required", code="TENANT_REQUIRED").model_dump(mode="json")
+                detail=ApiError(message="Lütfen işlem yapmak için bir klinik (tenant) seçiniz.", code="TENANT_REQUIRED").model_dump(mode="json")
             )
 
         filename = (file.filename or '').lower()
@@ -391,17 +397,24 @@ async def bulk_upload_parties(
                 else:
                     normalized_row = row
                 
-                # Normalize keys (handle variations)
+                # Normalize keys (handle variations) - case-insensitive
                 def get_val(keys):
+                    # First try exact match
                     for k in keys:
                         if k in normalized_row and normalized_row[k]:
                             return normalized_row[k]
+                    # Then try case-insensitive match
+                    normalized_keys = {k.lower(): k for k in normalized_row.keys()}
+                    for k in keys:
+                        lower_k = k.lower()
+                        if lower_k in normalized_keys and normalized_row[normalized_keys[lower_k]]:
+                            return normalized_row[normalized_keys[lower_k]]
                     return None
                     
-                tc_number = get_val(['tcNumber', 'tc_number', 'tc', 'TC', 'tc_no'])
-                first_name = get_val(['firstName', 'first_name', 'first', 'isim', 'ad'])
-                last_name = get_val(['lastName', 'last_name', 'last', 'soyisim', 'soyad'])
-                phone = get_val(['phone', 'phone_number', 'tel', 'telefon', 'cep_telefon', 'cep'])
+                tc_number = get_val(['tcNumber', 'tc_number', 'tc', 'TC', 'tc_no', 'TC Kimlik No', 'tc kimlik no', 'tc_kimlik_no'])
+                first_name = get_val(['firstName', 'first_name', 'first', 'isim', 'ad', 'Ad', 'İsim'])
+                last_name = get_val(['lastName', 'last_name', 'last', 'soyisim', 'soyad', 'Soyad', 'Soyisim'])
+                phone = get_val(['phone', 'phone_number', 'tel', 'telefon', 'cep_telefon', 'cep', 'Telefon', 'Tel'])
                 
                 if not (first_name or phone or tc_number):
                     # Skip empty rows or not enough info
@@ -415,20 +428,42 @@ async def bulk_upload_parties(
                     'first_name': first_name,
                     'last_name': last_name,
                     'phone': phone,
-                    'email': get_val(['email', 'e-mail', 'eposta']),
-                    'birth_date': get_val(['birthDate', 'birth_date', 'dob', 'dogum_tarihi']),
-                    'gender': get_val(['gender', 'cinsiyet']),
-                    'status': get_val(['status', 'durum']),
-                    'segment': get_val(['segment']),
+                    'email': get_val(['email', 'e-mail', 'eposta', 'Email', 'E-posta']),
+                    'birth_date': get_val(['birthDate', 'birth_date', 'dob', 'dogum_tarihi', 'Doğum Tarihi', 'dogum tarihi']),
+                    'gender': get_val(['gender', 'cinsiyet', 'Cinsiyet', 'Gender']),
+                    'status': get_val(['status', 'durum', 'Durum', 'Status']),
+                    'segment': get_val(['segment', 'Segment']),
                 }
+                
+                # Normalize gender values (Turkish → English)
+                if payload.get('gender'):
+                    gender_lower = str(payload['gender']).lower()
+                    if gender_lower in ['erkek', 'male', 'm', 'e']:
+                        payload['gender'] = 'MALE'
+                    elif gender_lower in ['kadın', 'kadın', 'female', 'f', 'k']:
+                        payload['gender'] = 'FEMALE'
+                    else:
+                        # Keep original if not recognized
+                        pass
+                
+                # Normalize status values (Turkish → English)
+                if payload.get('status'):
+                    status_lower = str(payload['status']).lower()
+                    if status_lower in ['aktif', 'active']:
+                        payload['status'] = 'ACTIVE'
+                    elif status_lower in ['pasif', 'passive', 'inactive']:
+                        payload['status'] = 'INACTIVE'
+                    else:
+                        # Keep original if not recognized
+                        pass
                 
                 # Clean up None values
                 payload = {k: v for k, v in payload.items() if v is not None}
                 
                 # Address
-                address_city = get_val(['address_city', 'city', 'il', 'sehir'])
-                address_district = get_val(['address_district', 'district', 'ilce'])
-                address_full = get_val(['address_full', 'fullAddress', 'address', 'adres'])
+                address_city = get_val(['address_city', 'city', 'il', 'sehir', 'Şehir', 'şehir', 'City'])
+                address_district = get_val(['address_district', 'district', 'ilce', 'İlçe', 'ilçe', 'District'])
+                address_full = get_val(['address_full', 'fullAddress', 'address', 'adres', 'Adres', 'Address'])
                 
                 if address_city: payload['address_city'] = address_city
                 if address_district: payload['address_district'] = address_district
@@ -445,7 +480,7 @@ async def bulk_upload_parties(
                 # Check Existing
                 existing = None
                 if tc_number:
-                    existing = db.query(Party).filter(Party.tc_number == tc_number, Party.tenant_id == access.tenant_id).first()
+                    existing = db.query(Party).filter(Party.tc_number == tc_number, Party.tenant_id == effective_tenant).first()
                 
                 if existing:
                     # Update Logic
@@ -496,7 +531,7 @@ async def bulk_upload_parties(
                              except:
                                  del payload['birth_date']
                     
-                    patient = Party(tenant_id=access.tenant_id, **payload)
+                    patient = Party(tenant_id=effective_tenant, **payload)
                     if not patient.status: patient.status = 'ACTIVE'
                     
                     db.add(patient)

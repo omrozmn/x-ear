@@ -122,9 +122,28 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         const normalized = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
         const fileNorm = headers.map(h => ({ h, n: normalized(h) }));
         entityFields.forEach(f => {
-          // try exact or fuzzy match
-          const keyNorm = normalized(f.label || f.key || '');
-          const found = fileNorm.find(x => x.n === keyNorm) || fileNorm.find(x => x.n.includes(keyNorm)) || fileNorm.find(x => keyNorm.includes(x.n));
+          // Try matching both Turkish label AND English key
+          const labelNorm = normalized(f.label || '');
+          const keyNorm = normalized(f.key || '');
+
+          // Priority 1: Exact match on label (Turkish)
+          let found = fileNorm.find(x => x.n === labelNorm);
+
+          // Priority 2: Exact match on key (English)
+          if (!found) {
+            found = fileNorm.find(x => x.n === keyNorm);
+          }
+
+          // Priority 3: Fuzzy match on label
+          if (!found) {
+            found = fileNorm.find(x => x.n.includes(labelNorm)) || fileNorm.find(x => labelNorm.includes(x.n));
+          }
+
+          // Priority 4: Fuzzy match on key
+          if (!found) {
+            found = fileNorm.find(x => x.n.includes(keyNorm)) || fileNorm.find(x => keyNorm.includes(x.n));
+          }
+
           initial[f.key] = found ? found.h : '';
         });
         setMapping(initial);
@@ -216,10 +235,8 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           // Backend expects field name 'file'
           form.append('file', blob, 'import.csv');
 
-          const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk_upload';
-          const resp = await apiClient.post<BulkUploadResponse>(endpoint, form, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
+          const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk-upload';
+          const resp = await apiClient.post<BulkUploadResponse>(endpoint, form);
 
           if (resp?.data) {
             created = resp.data.created || 0;

@@ -391,7 +391,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           { key: 'totalPaidTaxIncluding', label: 'Toplam Tutar (KDV dahil)' }
         ] as FieldDef[]}
         zodSchema={invoicesSchema}
-        uploadEndpoint={'/api/invoices/bulk_upload'}
+        uploadEndpoint={'/api/invoices/bulk-upload'}
         modalTitle={'Toplu Fatura Yükleme'}
         sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
         onComplete={(res: Record<string, unknown>) => {

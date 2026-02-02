@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 1
+      "actualWorkers": 6
     },
     "preserveOutput": "always",
     "reporter": [
@@ -41,7 +41,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "web",
         "name": "web",
@@ -57,7 +57,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "web-firefox",
         "name": "web-firefox",
@@ -73,7 +73,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "admin",
         "name": "admin",
@@ -89,7 +89,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "web-webkit",
         "name": "web-webkit",
@@ -105,7 +105,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "web-mobile-iphone",
         "name": "web-mobile-iphone",
@@ -121,7 +121,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "web-mobile-android",
         "name": "web-mobile-android",
@@ -137,7 +137,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "web-tablet-ipad",
         "name": "web-tablet-ipad",
@@ -153,7 +153,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "landing",
         "name": "landing",
@@ -169,7 +169,7 @@
         "repeatEach": 1,
         "retries": 2,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "critical-flows-p0",
         "name": "critical-flows-p0",
@@ -185,7 +185,7 @@
         "repeatEach": 1,
         "retries": 1,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "critical-flows-p1",
         "name": "critical-flows-p1",
@@ -201,7 +201,7 @@
         "repeatEach": 1,
         "retries": 1,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "critical-flows-p2",
         "name": "critical-flows-p2",
@@ -217,7 +217,7 @@
         "repeatEach": 1,
         "retries": 1,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 6
         },
         "id": "critical-flows-sync",
         "name": "critical-flows-sync",
@@ -267,7 +267,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 16275,
+                      "duration": 18270,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts:26:27",
@@ -410,18 +410,6 @@
                           "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
                         },
                         {
-                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
-                        },
-                        {
-                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
-                        },
-                        {
-                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
-                        },
-                        {
-                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
-                        },
-                        {
                           "text": "BROWSER LOG: [vite] connecting...\n"
                         },
                         {
@@ -512,13 +500,13 @@
                           "text": "BROWSER LOG: XXX DEBUG: Render called XXX\n"
                         },
                         {
-                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28796}\n"
                         },
                         {
                           "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
                         },
                         {
-                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28796}\n"
                         },
                         {
                           "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
@@ -536,7 +524,7 @@
                           "text": "BROWSER LOG: [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
                         },
                         {
-                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
+                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
                         },
                         {
                           "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
@@ -545,28 +533,25 @@
                           "text": "BROWSER LOG: [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
                         },
                         {
-                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
+                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
                         },
                         {
                           "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
-                        },
-                        {
-                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
                           "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/ai/status, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
@@ -587,25 +572,16 @@
                           "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
-                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
-                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T16:29:58.536305, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
-                        },
-                        {
-                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
-                        },
-                        {
-                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
                         },
                         {
                           "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
                         },
                         {
                           "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
-                        },
-                        {
-                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
                           "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - raw response: []\n"
@@ -615,6 +591,18 @@
                         },
                         {
                           "text": "BROWSER LOG: [appointment.service] No appointments found from server\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
                         },
                         {
                           "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - raw response: []\n"
@@ -628,7 +616,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-30T16:29:56.349Z",
+                      "startTime": "2026-01-30T17:09:40.800Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -661,6 +649,588 @@
               "file": "web/deep_qa_suppliers_verify.spec.ts",
               "line": 4,
               "column": 5
+            },
+            {
+              "title": "should Read, Update, and Delete the seeded QA_TEST_SEED SUPPLIER",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-firefox",
+                  "projectName": "web-firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 3,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/firefox-1497/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/firefox-1497/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/firefox-1497/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-30T17:09:40.783Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "31bb5b72ccd7a7f07ef5-3779715f9f48b1af6a59",
+              "file": "web/deep_qa_suppliers_verify.spec.ts",
+              "line": 4,
+              "column": 5
+            },
+            {
+              "title": "should Read, Update, and Delete the seeded QA_TEST_SEED SUPPLIER",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-webkit",
+                  "projectName": "web-webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 4,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-30T17:09:40.787Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "31bb5b72ccd7a7f07ef5-730d4521d7ce3ac89687",
+              "file": "web/deep_qa_suppliers_verify.spec.ts",
+              "line": 4,
+              "column": 5
+            },
+            {
+              "title": "should Read, Update, and Delete the seeded QA_TEST_SEED SUPPLIER",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-iphone",
+                  "projectName": "web-mobile-iphone",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 3,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-30T17:09:40.799Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "31bb5b72ccd7a7f07ef5-e2020e9b1a726eaac45d",
+              "file": "web/deep_qa_suppliers_verify.spec.ts",
+              "line": 4,
+              "column": 5
+            },
+            {
+              "title": "should Read, Update, and Delete the seeded QA_TEST_SEED SUPPLIER",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-android",
+                  "projectName": "web-mobile-android",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 18277,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts:26:27",
+                        "location": {
+                          "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts",
+                          "column": 27,
+                          "line": 26
+                        },
+                        "snippet": "  24 |\n  25 |         const row = page.locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first();\n> 26 |         await expect(row).toBeVisible({ timeout: 10000 });\n     |                           ^\n  27 |         console.log('✅ UI Verification (Read): Supplier found in list.');\n  28 |\n  29 |         // 4. Perform Update (Edit)"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts",
+                            "column": 27,
+                            "line": 26
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first()\u001b[22m\n\n\n  24 |\n  25 |         const row = page.locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first();\n> 26 |         await expect(row).toBeVisible({ timeout: 10000 });\n     |                           ^\n  27 |         console.log('✅ UI Verification (Read): Supplier found in list.');\n  28 |\n  29 |         // 4. Perform Update (Edit)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts:26:27"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "BROWSER LOG: [vite] connecting...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [vite] connected.\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next: languageChanged en-US\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: common, fallbackLng: Array(1)}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] localStorage spy installed\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Hydrated from storage: {hasAccessToken: false, hasRefreshToken: false, isExpired: true, userId: null}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [aiSessionStore] Rehydrating, running cleanup...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: XXX DEBUG: Imports loaded, attempting to render App XXX\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: XXX DEBUG: Render called XXX\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: false, hasRefreshToken: false, isExpired: true, ttl: 0}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: false, hasRefreshToken: false, isExpired: true, ttl: 0}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: LoginForm error state: null\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] İstek için token bulunamadı: /api/auth/login\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [authStore] Login successful, storing tokens via TokenManager: {hasAccessToken: true, hasRefreshToken: true, accessTokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., refreshTokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., user: Object}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Setting tokens: {hasAccessToken: true, hasRefreshToken: true, accessPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Persisted to storage\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [aiSessionStore] Context changed, resetting store: {previousTenant: null, newTenant: tenant-1, previousParty: null, newParty: null}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/ai/status, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {id: usr_QA_ADMIN, tenantId: tenant-1, username: qa_admin, email: qa_admin@x-ear.com, firstName: QA}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [vite] connecting...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [vite] connected.\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next: languageChanged en-US\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: common, fallbackLng: Array(1)}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] localStorage spy installed\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Wrote access token to canonical key\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Verification - token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Wrote refresh token to canonical key\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Verification - refresh token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Hydrated from storage: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [aiSessionStore] Rehydrating, running cleanup...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: XXX DEBUG: Imports loaded, attempting to render App XXX\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: XXX DEBUG: Render called XXX\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28797}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [vite] connecting...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [vite] connected.\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next: languageChanged en-US\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: common, fallbackLng: Array(1)}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] localStorage spy installed\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Wrote access token to canonical key\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Verification - token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Wrote refresh token to canonical key\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Verification - refresh token in localStorage: true eyJhbGciOiJIUzI1NiIsInR5cCI6Ik\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [TokenManager] Hydrated from storage: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, userId: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [aiSessionStore] Rehydrating, running cleanup...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: XXX DEBUG: Imports loaded, attempting to render App XXX\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: XXX DEBUG: Render called XXX\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28796}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] TokenManager state: {hasAccessToken: true, hasRefreshToken: true, isExpired: false, ttl: 28796}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: <GoogleReCaptchaProvider /> recaptcha key not provided\n"
+                        },
+                        {
+                          "text": "Searching for QA_TEST_SEED SUPPLIER...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/users/me, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] API response: {success: true, data: Object, message: null, error: null, meta: null}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [initializeAuth] Transformed user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com} {isAdmin: false}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/subscriptions/current, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/ai/status, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/permissions/my, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: MainLayout render - user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: Auth state restored successfully with user: {createdAt: 2026-01-30T16:24:30.098983, updatedAt: 2026-01-30T17:09:43.752983, id: usr_QA_ADMIN, tenantId: tenant-1, email: qa_admin@x-ear.com}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - calling API...\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/appointments?per_page=100, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [orval-mutator] Request interceptor: {url: /api/suppliers, method: get, tokenSource: TokenManager, tokenPreview: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c..., tokenIdentity: usr_QA_ADMIN}\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - raw response: []\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - items count: 0\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] No appointments found from server\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - raw response: []\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] bootstrapFromServer - items count: 0\n"
+                        },
+                        {
+                          "text": "BROWSER LOG: [appointment.service] No appointments found from server\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-30T17:09:40.786Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/deep_qa_suppliers_verify-D-5e5bf-eeded-QA-TEST-SEED-SUPPLIER-web-mobile-android/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/deep_qa_suppliers_verify-D-5e5bf-eeded-QA-TEST-SEED-SUPPLIER-web-mobile-android/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/deep_qa_suppliers_verify-D-5e5bf-eeded-QA-TEST-SEED-SUPPLIER-web-mobile-android/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/deep_qa_suppliers_verify.spec.ts",
+                        "column": 27,
+                        "line": 26
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "31bb5b72ccd7a7f07ef5-81fc085232dd20d1f712",
+              "file": "web/deep_qa_suppliers_verify.spec.ts",
+              "line": 4,
+              "column": 5
+            },
+            {
+              "title": "should Read, Update, and Delete the seeded QA_TEST_SEED SUPPLIER",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-tablet-ipad",
+                  "projectName": "web-tablet-ipad",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 1,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/omerozmen/Library/Caches/ms-playwright/webkit-2227/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-30T17:09:40.780Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "31bb5b72ccd7a7f07ef5-f2fc230ab96c7a1f2df3",
+              "file": "web/deep_qa_suppliers_verify.spec.ts",
+              "line": 4,
+              "column": 5
             }
           ]
         }
@@ -669,11 +1239,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-01-30T16:29:55.772Z",
-    "duration": 17240.864,
+    "startTime": "2026-01-30T17:09:40.174Z",
+    "duration": 19197.572,
     "expected": 0,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 6,
     "flaky": 0
   }
 }

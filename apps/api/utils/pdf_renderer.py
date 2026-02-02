@@ -1,5 +1,17 @@
 import os
+import sys
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+# MacOS Homebrew Fix: Ensure Pango/Cairo are found
+if sys.platform == 'darwin':
+    # Common homebrew paths
+    paths = [
+        os.environ.get('DYLD_FALLBACK_LIBRARY_PATH', ''),
+        '/opt/homebrew/lib',
+        '/usr/local/lib',
+        os.path.join(os.environ.get('HOME', ''), 'lib')
+    ]
+    os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = ':'.join(filter(None, paths))
 
 try:
     from weasyprint import HTML

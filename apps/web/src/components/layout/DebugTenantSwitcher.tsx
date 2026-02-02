@@ -106,12 +106,35 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
           console.log('[DebugTenantSwitcher] Switched to tenant:', data.tenantName);
           console.log('[DebugTenantSwitcher] Has refresh token:', !!refreshToken);
 
+          // CRITICAL: Verify tokens are saved before reload
+          console.log('[DebugTenantSwitcher] Verifying token persistence...');
+          const savedToken = localStorage.getItem('x-ear.auth.token@v1');
+          const savedRefresh = localStorage.getItem('x-ear.auth.refresh@v1');
+          console.log('[DebugTenantSwitcher] Token saved:', !!savedToken, savedToken?.substring(0, 30));
+          console.log('[DebugTenantSwitcher] Refresh saved:', !!savedRefresh, savedRefresh?.substring(0, 30));
+
           // Clear React Query cache
           queryClient.clear();
           console.log('[DebugTenantSwitcher] Cleared cache');
 
-          // Wait for Zustand persist to complete (it writes to localStorage async)
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Wait longer for Zustand persist to complete (increase from 300ms to 1000ms)
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Verify again after wait
+          const verifyToken = localStorage.getItem('x-ear.auth.token@v1');
+          const verifyRefresh = localStorage.getItem('x-ear.auth.refresh@v1');
+          console.log('[DebugTenantSwitcher] After wait - Token:', !!verifyToken);
+          console.log('[DebugTenantSwitcher] After wait - Refresh:', !!verifyRefresh);
+
+          if (!verifyToken || !verifyRefresh) {
+            console.error('[DebugTenantSwitcher] CRITICAL: Tokens not persisted! Retrying...');
+            // Force write again
+            localStorage.setItem('x-ear.auth.token@v1', data.accessToken);
+            if (refreshToken) {
+              localStorage.setItem('x-ear.auth.refresh@v1', refreshToken);
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
 
           // Now reload
           window.location.href = '/';
@@ -162,12 +185,34 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
           setAuth(updatedUser, data.accessToken, refreshToken);
           console.log('[DebugTenantSwitcher] Has refresh token:', !!refreshToken);
 
+          // CRITICAL: Verify tokens are saved before reload
+          console.log('[DebugTenantSwitcher] Verifying token persistence...');
+          const savedToken = localStorage.getItem('x-ear.auth.token@v1');
+          const savedRefresh = localStorage.getItem('x-ear.auth.refresh@v1');
+          console.log('[DebugTenantSwitcher] Token saved:', !!savedToken);
+          console.log('[DebugTenantSwitcher] Refresh saved:', !!savedRefresh);
+
           // Clear React Query cache
           queryClient.clear();
           console.log('[DebugTenantSwitcher] Exited impersonation, cleared cache');
 
-          // Wait for Zustand persist
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Wait longer for Zustand persist
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Verify again
+          const verifyToken = localStorage.getItem('x-ear.auth.token@v1');
+          const verifyRefresh = localStorage.getItem('x-ear.auth.refresh@v1');
+          console.log('[DebugTenantSwitcher] After wait - Token:', !!verifyToken);
+          console.log('[DebugTenantSwitcher] After wait - Refresh:', !!verifyRefresh);
+
+          if (!verifyToken || !verifyRefresh) {
+            console.error('[DebugTenantSwitcher] CRITICAL: Tokens not persisted! Retrying...');
+            localStorage.setItem('x-ear.auth.token@v1', data.accessToken);
+            if (refreshToken) {
+              localStorage.setItem('x-ear.auth.refresh@v1', refreshToken);
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
 
           window.location.href = '/';
         }

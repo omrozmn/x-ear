@@ -68,6 +68,13 @@ class ApiClient {
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
+
+    // Add X-Tenant-ID header for multi-tenant operations
+    const tenantId = tokenManager.getTenantId();
+    if (tenantId) {
+      headers.set('X-Tenant-ID', tenantId);
+    }
+
     if (!(options.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json');
     }

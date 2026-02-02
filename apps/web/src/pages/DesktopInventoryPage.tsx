@@ -275,7 +275,7 @@ export const DesktopInventoryPage: React.FC = () => {
           { key: 'supplier', label: 'Tedarikçi' }
         ] as FieldDef[]}
         zodSchema={inventorySchema}
-        uploadEndpoint={'/api/inventory/bulk_upload'}
+        uploadEndpoint={'/api/inventory/bulk-upload'}
         modalTitle={'Toplu Envanter Yükleme'}
         sampleDownloadUrl={'/import_samples/inventory_sample.csv'}
         onComplete={(res) => {

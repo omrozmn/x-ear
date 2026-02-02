@@ -798,6 +798,11 @@ export interface SGKInvoiceData {
   paymentDate?: string;
   paymentDescription?: string;
 
+  // Tutarsal Bilgiler (Katılım Payları)
+  kpv10Amount?: number;
+  kpv20Amount?: number;
+  tahsilEdilenKp?: number;
+
   // SGK Özel Alanlar
   sgkInstitutionCode?: string;
   branchCode?: string;

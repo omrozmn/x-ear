@@ -581,11 +581,11 @@ async def bulk_upload_invoices(
 ):
     """Bulk upload invoices from CSV/XLSX"""
     try:
-        if not access.tenant_id:
-             # Allow if super admin sends tenant_id in form? FastAPI UploadFile doesn't mix easily with Form params in same obj usually?
-             # Actually I can add `tenant_id: str = Form(...)`.
-             # But for now, let's assume tenant context is usually present or required.
-             raise HTTPException(status_code=400, detail="Tenant context required")
+        # Use effective_tenant_id if impersonating, otherwise use tenant_id
+        effective_tenant = access.effective_tenant_id or access.tenant_id
+        
+        if not effective_tenant or effective_tenant == 'system':
+            raise HTTPException(status_code=400, detail="Tenant context required")
 
         filename = (file.filename or '').lower()
         content = await file.read()
@@ -667,7 +667,7 @@ async def bulk_upload_invoices(
                 if invoice_number:
                     existing = db_session.query(Invoice).filter(
                         Invoice.invoice_number == invoice_number, 
-                        Invoice.tenant_id == access.tenant_id
+                        Invoice.tenant_id == effective_tenant
                     ).first()
                 
                 # Payload prep
@@ -695,7 +695,7 @@ async def bulk_upload_invoices(
                     existing.patient_name = patient_name or existing.patient_name
                     existing.patient_tc = patient_tc or existing.patient_tc
                     existing.currency = currency or existing.currency
-                    if i_date: existing.invoice_date = i_date
+                    if i_date: existing.issue_date = i_date
                     if d_date: existing.due_date = d_date
                     
                     if grand_total:
@@ -708,11 +708,11 @@ async def bulk_upload_invoices(
                     updated += 1
                 else:
                     new_inv = Invoice(
-                        tenant_id=access.tenant_id,
+                        tenant_id=effective_tenant,
                         invoice_number=invoice_number,
                         patient_name=patient_name,
                         patient_tc=patient_tc,
-                        invoice_date=i_date,
+                        issue_date=i_date,
                         due_date=d_date,
                         currency=currency,
                         created_by=access.user_id,

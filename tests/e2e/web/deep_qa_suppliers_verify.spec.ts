@@ -1,9 +1,13 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Deep QA Audit: Suppliers Verification (Absolute Certainty)', () => {
-    test('should Read, Update, and Delete the seeded QA_TEST_SEED SUPPLIER', async ({ page }) => {
+    test('should Read, Update, and Delete a unique QA supplier', async ({ page }) => {
         // Listen for console logs
         page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+
+        const uniqueId = Math.floor(Math.random() * 1000000);
+        const supplierName = `QA_SUP_${uniqueId}`;
+        const updatedOwner = `QA_OWN_${uniqueId}`;
 
         // 1. Login
         await page.goto('http://localhost:8080/auth/login');
@@ -16,84 +20,87 @@ test.describe('Deep QA Audit: Suppliers Verification (Absolute Certainty)', () =
         await page.goto('http://localhost:8080/suppliers');
         await page.waitForLoadState('networkidle');
 
-        // 3. Search and Verify Read
-        console.log('Searching for QA_TEST_SEED SUPPLIER...');
-        const searchInput = page.getByPlaceholder(/ara/i);
-        await searchInput.fill('QA_TEST_SEED SUPPLIER');
-        await page.waitForTimeout(2000); // Wait for debounce
+        // 3. Create Supplier
+        console.log(`Creating supplier: ${supplierName}`);
+        await page.getByRole('button', { name: 'Yeni Tedarikçi', exact: true }).click();
+        const createModal = page.locator('div[role="dialog"]');
+        await expect(createModal).toBeVisible();
 
-        const row = page.locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' }).first();
-        await expect(row).toBeVisible({ timeout: 10000 });
+        // Fill the form - using nth() to reliably target inputs
+        // Order: Şirket Adı(0), Website(1), Vergi No(2), Kod(3), Vergi Dairesi(4), Yetkili Kişi(5), Email(6), Telefon(7), Mobil(8)
+        const allInputs = createModal.locator('input[type="text"], input:not([type])');
+        await allInputs.nth(0).fill(supplierName); // Şirket Adı
+        await allInputs.nth(5).fill('QA SEED OWNER'); // Yetk ili Kişi
+        await allInputs.nth(7).fill('05001112233'); // Telefon
+
+        await createModal.getByRole('button', { name: /kaydet|save|ekle|create/i }).click();
+        await expect(createModal).not.toBeVisible({ timeout: 15000 });
+        console.log('✅ UI Verification (Create): Supplier created.');
+
+        // Explicitly click Refresh to ensure list is updated
+        await page.getByRole('button', { name: /yenile/i }).click();
+        await page.waitForLoadState('networkidle');
+
+        // 4. Search and Verify Read
+        console.log(`Searching for ${supplierName}...`);
+        const searchInput = page.getByPlaceholder(/ara/i);
+        await searchInput.clear();
+        await searchInput.fill(supplierName);
+        await page.waitForTimeout(3000);
+
+        const row = page.locator('tr').filter({ hasText: supplierName }).first();
+        await expect(row).toBeVisible({ timeout: 15000 });
         console.log('✅ UI Verification (Read): Supplier found in list.');
 
         // 4. Perform Update (Edit)
         console.log('Opening Edit modal...');
         await row.getByRole('button', { name: /düzenle|edit/i }).click();
 
-        const modal = page.locator('div[role="dialog"]');
-        await expect(modal).toBeVisible();
+        const editModal = page.locator('div[role="dialog"]');
+        await expect(editModal).toBeVisible();
 
-        // Audit Shared Components in Modal
-        console.log('--- COMPONENT AUDIT IN MODAL ---');
-        const labels = await modal.locator('label').all();
-        for (const label of labels) {
-            const labelText = await label.textContent();
-            const input = modal.locator(`id=${await label.getAttribute('for')}`).or(label.locator('xpath=following-sibling::input')).or(label.locator('xpath=following-sibling::div//input')).first();
-            if (await input.count() > 0) {
-                const value = await input.inputValue();
-                const placeholder = await input.getAttribute('placeholder') || '';
-                console.log(`Input [${labelText}]: Value="${value}", Placeholder="${placeholder}"`);
-
-                // Audit Issue: Input "0" behavior
-                if (value === '0') {
-                    console.log(`⚠️ AUDIT ISSUE: Input [${labelText}] contains "0" value. This might be a UX bug.`);
-                }
-            }
-        }
-
-        // Fix: Use more specific locators for update
-        const contactPersonInput = modal.locator('div:has-text("Yetkili Kişi") >> input').first();
-        await contactPersonInput.clear();
-        await contactPersonInput.fill('QA UPDATED OWNER');
-
-        const emailInput = modal.locator('div:has-text("E-posta") >> input').first();
-        await emailInput.clear();
-        await emailInput.fill('updated_qa@example.com');
+        // Use nth() to target update fields
+        const editInputs = editModal.locator('input[type="text"], input:not([type])');
+        await editInputs.nth(5).fill(updatedOwner); // Yetkili Kişi
+        await editInputs.nth(6).fill(`qa_${uniqueId}@example.com`); // E-posta
 
         console.log('Saving updates...');
-        const saveButton = modal.getByRole('button', { name: /güncelle|update|kaydet|save/i });
+        const saveButton = editModal.getByRole('button', { name: /güncelle|update|kaydet|save/i });
         await saveButton.click();
 
         // Audit: Modal should close
-        await expect(modal).not.toBeVisible({ timeout: 15000 });
-        console.log('✅ UI Modification (Update): Modal closed SUCCESSFULLY (Backend fix verified).');
+        await expect(editModal).not.toBeVisible({ timeout: 15000 });
+        console.log('✅ UI Modification (Update): Modal closed SUCCESSFULLY.');
+        await page.waitForTimeout(2000);
 
         // 5. Verify Update in List
-        await page.waitForTimeout(1000);
-        await expect(page.locator('tr').filter({ hasText: 'QA UPDATED OWNER' })).toBeVisible({ timeout: 10000 });
+        await searchInput.clear();
+        await searchInput.fill(updatedOwner);
+        await page.waitForTimeout(3000);
+        await expect(page.locator('tr').filter({ hasText: updatedOwner })).toBeVisible({ timeout: 15000 });
         console.log('✅ UI Verification (Persistence): Updated name visible in list.');
 
         // 6. Perform Delete
         console.log('Starting Delete verification...');
-        const rowToDelete = page.locator('tr').filter({ hasText: 'QA UPDATED OWNER' }).first();
+        const rowToDelete = page.locator('tr').filter({ hasText: updatedOwner }).first();
         await rowToDelete.hover();
 
         await rowToDelete.getByRole('button', { name: /sil|delete/i }).click();
 
         // Handle Delete Confirmation Modal
-        const deleteModal = page.locator('div[role="dialog"]');
-        await expect(deleteModal).toBeVisible();
+        const deleteConfirmModal = page.locator('div[role="dialog"]');
+        await expect(deleteConfirmModal).toBeVisible();
         console.log('Confirming Delete...');
-        await deleteModal.getByRole('button', { name: /sil|delete|confirm/i }).click();
+        await deleteConfirmModal.getByRole('button', { name: /sil|delete|confirm/i }).click();
 
-        await expect(deleteModal).not.toBeVisible({ timeout: 15000 });
+        await expect(deleteConfirmModal).not.toBeVisible({ timeout: 15000 });
         console.log('✅ UI Modification (Delete): Modal closed successfully.');
 
         // Verify removal
         await searchInput.clear();
-        await searchInput.fill('QA_TEST_SEED SUPPLIER');
-        await page.waitForTimeout(2000);
-        await expect(page.locator('tr').filter({ hasText: 'QA_TEST_SEED SUPPLIER' })).toHaveCount(0, { timeout: 10000 });
+        await searchInput.fill(supplierName);
+        await page.waitForTimeout(3000);
+        await expect(page.locator('tr').filter({ hasText: supplierName })).toHaveCount(0, { timeout: 10000 });
         console.log('✅ UI Verification (Cleanup): Supplier no longer in table.');
 
         // Final Audit: Input "0" in search field check

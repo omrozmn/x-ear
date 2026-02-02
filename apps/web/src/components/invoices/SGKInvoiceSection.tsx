@@ -370,6 +370,51 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Payment section removed as per UX changes */}
+                {/* SGK Tutarsal Bilgiler */}
+                <div className="border border-green-200 rounded-lg p-4 bg-green-50">
+                    <h4 className="text-md font-medium text-gray-900 mb-4">SGK Tutarsal Bilgiler</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <Input
+                                type="number"
+                                label="%10 Katılım Payı Tutarı"
+                                value={sgkData.kpv10Amount !== undefined ? sgkData.kpv10Amount : ''}
+                                onChange={(e) => handleChange('kpv10Amount', e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                                placeholder="0.00"
+                                error={errors.kpv10Amount}
+                                fullWidth
+                                min={0}
+                                step="0.01"
+                            />
+                        </div>
+                        <div>
+                            <Input
+                                type="number"
+                                label="%20 Katılım Payı Tutarı"
+                                value={sgkData.kpv20Amount !== undefined ? sgkData.kpv20Amount : ''}
+                                onChange={(e) => handleChange('kpv20Amount', e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                                placeholder="0.00"
+                                error={errors.kpv20Amount}
+                                fullWidth
+                                min={0}
+                                step="0.01"
+                            />
+                        </div>
+                        <div>
+                            <Input
+                                type="number"
+                                label="Tahsil Edilen Katılım Payı"
+                                value={sgkData.tahsilEdilenKp !== undefined ? sgkData.tahsilEdilenKp : ''}
+                                onChange={(e) => handleChange('tahsilEdilenKp', e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                                placeholder="0.00"
+                                error={errors.tahsilEdilenKp}
+                                fullWidth
+                                min={0}
+                                step="0.01"
+                            />
+                        </div>
+                    </div>
+                </div>
 
                 {/* Uyarı kaldırıldı per UX isteği */}
             </div>

@@ -116,6 +116,10 @@ export const useAuthStore = create<AuthStore>()(
 
       // Actions
       setAuth: (user: AuthStateUser, token: string, refreshToken?: string | null) => {
+        // CRITICAL: Set tokens in TokenManager FIRST (single source of truth)
+        tokenManager.setTokens(token, refreshToken);
+
+        // Then update Zustand state (which will persist via middleware)
         set({
           user,
           token,
@@ -124,8 +128,17 @@ export const useAuthStore = create<AuthStore>()(
           error: null,
         });
 
-        // Use TokenManager for token storage (single source of truth)
-        tokenManager.setTokens(token, refreshToken);
+        // DEBUG: Verify tokens were written to both storages
+        console.log('[authStore.setAuth] Tokens stored:', {
+          zustandToken: token.substring(0, 30) + '...',
+          zustandRefresh: refreshToken?.substring(0, 30) + '...',
+          tokenManagerHasToken: !!tokenManager.accessToken,
+          tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
+          // Verify localStorage has both keys
+          canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
+          canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
+          zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
+        });
 
         // Check subscription after auth set
         get().checkSubscription();
@@ -136,6 +149,10 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       clearAuth: () => {
+        // CRITICAL: Clear TokenManager FIRST (single source of truth)
+        tokenManager.clearTokens();
+
+        // Then clear Zustand state
         set({
           user: null,
           token: null,
@@ -146,15 +163,21 @@ export const useAuthStore = create<AuthStore>()(
           subscription: null,
         });
 
-        // Use TokenManager to clear all tokens (single source of truth)
-        tokenManager.clearTokens();
-
         // Clear tenant ID separately (not managed by TokenManager)
         try {
           localStorage.removeItem(CURRENT_TENANT_ID);
         } catch (e) {
           // ignore storage errors
         }
+
+        // DEBUG: Verify all tokens were cleared
+        console.log('[authStore.clearAuth] Tokens cleared:', {
+          tokenManagerHasToken: !!tokenManager.accessToken,
+          tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
+          canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
+          canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
+          zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
+        });
       },
 
       setLoading: (loading: boolean) => {

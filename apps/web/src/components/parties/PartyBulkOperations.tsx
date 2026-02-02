@@ -344,6 +344,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
         onClose={importModal.closeModal}
         entityFields={Object.entries(CSV_FIELD_MAPPING).map(([k, v]) => ({ key: k, label: v }))}
         zodSchema={partySchema}
+        uploadEndpoint="/api/parties/bulk-upload"
         onComplete={(res) => {
           if (res.errors && res.errors.length > 0) {
             warning(`${res.created + res.updated} satır işlendi, ${res.errors.length} hata bulundu`);

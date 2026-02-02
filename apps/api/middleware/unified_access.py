@@ -65,6 +65,7 @@ class UnifiedAccess:
     # Tenant context
     tenant_id: Optional[str] = None
     branch_id: Optional[str] = None
+    effective_tenant_id: Optional[str] = None  # For impersonation - which tenant is being acted upon
     
     # Role & Permissions
     role: Optional[str] = None
@@ -298,13 +299,21 @@ def require_access(
     
     def access_dependency(
         token: Optional[str] = Depends(oauth2_scheme),
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        request: Request = None
     ) -> UnifiedAccess:
         # Public endpoints
         if public:
             if token:
                 try:
-                    return _build_access_from_token(token, db)
+                    access = _build_access_from_token(token, db)
+                    # Check for effective tenant header (for impersonation)
+                    if request and access.is_super_admin:
+                        effective_tenant = request.headers.get("X-Effective-Tenant-Id")
+                        if effective_tenant:
+                            access.effective_tenant_id = effective_tenant
+                            set_current_tenant_id(effective_tenant)
+                    return access
                 except HTTPException:
                     return UnifiedAccess()  # Invalid token on public = anonymous
             return UnifiedAccess()
@@ -318,6 +327,13 @@ def require_access(
             )
         
         access = _build_access_from_token(token, db)
+        
+        # Check for effective tenant header (for super admin impersonation)
+        if request and access.is_super_admin:
+            effective_tenant = request.headers.get("X-Effective-Tenant-Id")
+            if effective_tenant:
+                access.effective_tenant_id = effective_tenant
+                set_current_tenant_id(effective_tenant)
         
         # Admin only check
         if admin_only and not access.is_admin:

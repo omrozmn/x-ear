@@ -852,7 +852,7 @@ def generate_sgk_invoice_xml(invoice_data: dict, output_path: str = None) -> str
 <cbc:Note>% 20 KATILIM PAYLI VERİLEN TUTAR : {_format_amount_tr(kpv20 + kpv20_kdv)}-TL (%10 KDV DAHİLDİR)</cbc:Note>
 <cbc:Note>TAHSİL EDİLEN KATILIM PAYI TOPLAM : {_format_amount_tr(tahsil_kp * 1.1)}-TL (%10 KDV DAHİLDİR)</cbc:Note>
 <cbc:DocumentCurrencyCode>TRY</cbc:DocumentCurrencyCode>
-<cbc:AccountingCost>SAGLIK_OPT</cbc:AccountingCost>
+<cbc:AccountingCost>{invoice_data.get('accounting_cost', 'SAGLIK_OPT')}</cbc:AccountingCost>
 <cbc:LineCountNumeric>3</cbc:LineCountNumeric>
 <cac:InvoicePeriod>
 <cbc:StartDate>{invoice_data.get('period_start', issue_date)}</cbc:StartDate>

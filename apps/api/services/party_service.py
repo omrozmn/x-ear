@@ -314,6 +314,13 @@ class PartyService:
                  self.assign_role(party.id, 'CUSTOMER', tenant_id)
 
         if 'segment' in data: party.segment = data['segment']
+        
+        # Handle acquisitionType (kazanım türü)
+        if 'acquisitionType' in data:
+            party.acquisition_type = data['acquisitionType']
+        elif 'acquisition_type' in data:
+            party.acquisition_type = data['acquisition_type']
+        
         if 'branchId' in data: party.branch_id = data['branchId']
         if 'tags' in data:
             party.tags_json = data['tags']
@@ -340,8 +347,8 @@ class PartyService:
         # Update remaining attributes (if any other fields are passed directly)
         skip_fields = [
             'firstName', 'lastName', 'phone', 'email', 'tcNumber', 'birthDate', 
-            'gender', 'status', 'segment', 'branchId', 'tags', 'sgkInfo', 'address',
-            'first_name', 'last_name', 'tc_number', 'birth_date', 'sgk_info', 'branch_id'
+            'gender', 'status', 'segment', 'acquisitionType', 'branchId', 'tags', 'sgkInfo', 'address',
+            'first_name', 'last_name', 'tc_number', 'birth_date', 'acquisition_type', 'sgk_info', 'branch_id'
         ]
         for k, v in data.items():
             # Skip fields already handled or complex objects

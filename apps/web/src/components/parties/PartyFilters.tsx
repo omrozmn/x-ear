@@ -73,9 +73,12 @@ export function PartyFilters({
   const acquisitionOptions: FilterOption[] = [
     { value: 'referral', label: 'Referans' },
     { value: 'online', label: 'Online' },
-    { value: 'walk-in', label: 'Yürüyerek Gelen' },
+    { value: 'walk-in', label: 'Ziyaret' },
     { value: 'social-media', label: 'Sosyal Medya' },
-    { value: 'advertisement', label: 'Reklam' }
+    { value: 'advertisement', label: 'Reklam' },
+    { value: 'visit', label: 'Ziyaret' },
+    { value: 'campaign', label: 'Kampanya' },
+    { value: 'other', label: 'Diğer' }
   ];
 
   const branchOptions: FilterOption[] = branches.map(branch => ({
@@ -238,11 +241,11 @@ export function PartyFilters({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleFilterChange('acquisitionType',
-                  filters.acquisitionType?.includes(option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement")
-                    ? filters.acquisitionType.filter(s => s !== option.value)
-                    : [...(filters.acquisitionType || []), option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement"]
+                  (filters.acquisitionType || []).includes(option.value)
+                    ? (filters.acquisitionType || []).filter(s => s !== option.value)
+                    : [...(filters.acquisitionType || []), option.value]
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${filters.acquisitionType?.includes(option.value as "referral" | "online" | "walk-in" | "social-media" | "advertisement")
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${(filters.acquisitionType || []).includes(option.value)
                   ? 'bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-300'
                   : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
                   }`}

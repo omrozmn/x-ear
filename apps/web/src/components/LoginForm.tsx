@@ -11,26 +11,24 @@ export function LoginForm() {
   const { t } = useTranslation('auth');
   const { setTheme, theme } = useTheme();
 
-  const getInitialCreds = () => {
-    const savedCreds = localStorage.getItem(LAST_LOGIN_CREDENTIALS);
-    if (savedCreds) {
+  const getInitialEmail = () => {
+    const savedEmail = localStorage.getItem(LAST_LOGIN_CREDENTIALS);
+    if (savedEmail) {
       try {
-        const { username, password } = JSON.parse(savedCreds);
-        return {
-          username: username || '',
-          password: password || '',
-        };
+        const { email } = JSON.parse(savedEmail);
+        return email || '';
       } catch {
         // Ignore parse errors for saved credentials
       }
     }
-    return { username: '', password: '' };
+    return '';
   };
 
-  const initialCreds = getInitialCreds();
-  const [username, setUsername] = useState(initialCreds.username);
-  const [password, setPassword] = useState(initialCreds.password);
+  const initialEmail = getInitialEmail();
+  const [username, setUsername] = useState(initialEmail);
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(!!initialEmail);
 
   // OTP state - reserved for future implementation
   // const [otpCode, _setOtpCode] = useState('');
@@ -52,12 +50,15 @@ export function LoginForm() {
     setError(null);
 
     try {
-      // Son giriş yapılan credentials'ı localStorage'a kaydet
-      localStorage.setItem(LAST_LOGIN_CREDENTIALS, JSON.stringify({ username, password }));
       await login({ username: username.trim(), password });
-      // If login successful and no OTP required, redirect
-      // If OTP required, state update will trigger re-render showing OTP form
+
+      // Save email ONLY if login successful and user wants to be remembered
       if (!useAuthStore.getState().requiresOtp) {
+        if (rememberMe) {
+          localStorage.setItem(LAST_LOGIN_CREDENTIALS, JSON.stringify({ email: username.trim() }));
+        } else {
+          localStorage.removeItem(LAST_LOGIN_CREDENTIALS);
+        }
         window.location.replace('/');
       }
     } catch (error: unknown) {
@@ -213,6 +214,23 @@ export function LoginForm() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Remember Me Checkbox */}
+            <div className="flex items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  data-allow-raw="true"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  disabled={isLoading}
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                  Beni Hatırla
+                </span>
+              </label>
             </div>
 
             {error && (

@@ -237,16 +237,28 @@ apiClient.interceptors.request.use(
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
 
-      // DEBUG LOG
+      // Add X-Tenant-ID header for multi-tenant operations
+      const tenantId = tokenManager.getTenantId();
+      if (tenantId) {
+        config.headers['X-Tenant-ID'] = tenantId;
+      }
+
+      // DEBUG LOG - Enhanced for tenant impersonation debugging
       console.log('[orval-mutator] Request interceptor:', {
         url: config.url,
         method: config.method,
         tokenSource: 'TokenManager',
         tokenPreview: token.substring(0, 50) + '...',
         tokenIdentity: tokenManager.getUserId(),
+        tenantId,
         isAdmin,
         tokenTTL: tokenManager.getAccessTokenTTL(),
-        isExpired: tokenManager.isAccessTokenExpired()
+        isExpired: tokenManager.isAccessTokenExpired(),
+        // CRITICAL: Check if tenant ID is in headers
+        hasXTenantIDHeader: !!config.headers['X-Tenant-ID'],
+        xTenantIDValue: config.headers['X-Tenant-ID'],
+        // CRITICAL: Check token payload
+        tokenPayload: tokenManager.payload
       });
     } else {
       console.warn('[orval-mutator] İstek için token bulunamadı:', config.url);
@@ -262,6 +274,9 @@ apiClient.interceptors.request.use(
       console.warn('[orval-mutator] Demo modunda yazma işlemleri engellendi:', config.url);
       return Promise.reject(new Error('Demo modunda sadece okuma yapılabilir.'));
     }
+
+    // CRITICAL: Initialize headers object if not exists (for FormData requests)
+    config.headers = config.headers || {};
 
     // Add idempotency key for non-GET requests
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
@@ -329,7 +344,13 @@ apiClient.interceptors.response.use(
           try {
             if (!createAuthRefresh) {
               console.error('[orval-mutator] Yenileme token\'ı mevcut değil');
-              throw new Error('Yenileme token\'ı mevcut değil');
+              // CRITICAL FIX: Don't throw immediately - let subscribers handle it
+              extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
+              extendedClient._refreshing = false;
+              extendedClient._refreshSubscribers = [];
+              // Clear tokens ONLY if no refresh token
+              tokenManager.clearTokens();
+              return Promise.reject(error);
             }
 
             console.log('[orval-mutator] Attempting token refresh...');
@@ -375,14 +396,23 @@ apiClient.interceptors.response.use(
             } else {
               console.error('[orval-mutator] Refresh failed with status:', refreshResp.status);
               extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
-              // Clear tokens via TokenManager
-              tokenManager.clearTokens();
+              // ONLY clear tokens if refresh explicitly failed (not network error)
+              if (refreshResp.status === 401 || refreshResp.status === 403) {
+                console.error('[orval-mutator] Refresh token invalid, clearing tokens');
+                tokenManager.clearTokens();
+              }
             }
           } catch (e) {
             console.error('[orval-mutator] Token refresh error:', e);
             extendedClient._refreshSubscribers?.forEach((cb) => cb(null));
-            // Clear tokens via TokenManager
-            tokenManager.clearTokens();
+            // ONLY clear tokens if it's an auth error, not network error
+            const err = e as { response?: { status?: number } };
+            if (err.response?.status === 401 || err.response?.status === 403) {
+              console.error('[orval-mutator] Refresh token invalid, clearing tokens');
+              tokenManager.clearTokens();
+            } else {
+              console.warn('[orval-mutator] Refresh failed due to network/server error, keeping tokens');
+            }
           } finally {
             extendedClient._refreshing = false;
             extendedClient._refreshSubscribers = [];

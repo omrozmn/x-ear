@@ -298,6 +298,13 @@ def create_supplier(
             )
         
         data = supplier_in.model_dump(by_alias=False, exclude={'name', 'code', 'contact_name', 'tenant_id'})
+        
+        # Convert empty strings to None for optional unique fields to avoid UNIQUE constraint violations
+        if data.get('company_code') == '':
+            data['company_code'] = None
+        if data.get('tax_number') == '':
+            data['tax_number'] = None
+            
         supplier = Supplier(tenant_id=access.tenant_id, **data)
         
         db_session.add(supplier)
@@ -332,6 +339,12 @@ def update_supplier(
         
         # Exclude read-only aliases and other non-model fields
         exclude_fields = {'name', 'code', 'contact_name', 'tenant_id'}
+        
+        # Convert empty strings to None for optional unique fields to avoid UNIQUE constraint violations
+        if data.get('company_code') == '':
+            data['company_code'] = None
+        if data.get('tax_number') == '':
+            data['tax_number'] = None
         
         # Check for duplicate name
         if 'company_name' in data and data['company_name'] != supplier.company_name:

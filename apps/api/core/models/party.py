@@ -219,7 +219,7 @@ class Party(BaseModel, TenantScopedMixin, JSONMixin):
         
         # CRM fields - use enum with proper conversion, support both cases
         status_value = data.get('status', 'active')
-        party.status = PatientStatus.from_legacy(status_value) if isinstance(status_value, str) else PatientStatus.ACTIVE
+        party.status = PartyStatus.from_legacy(status_value) if isinstance(status_value, str) else PartyStatus.ACTIVE
         party.segment = data.get('segment', 'lead')
         party.acquisition_type = data.get('acquisitionType') or data.get('acquisition_type') or 'walk-in'
         party.conversion_step = data.get('conversionStep') or data.get('conversion_step')

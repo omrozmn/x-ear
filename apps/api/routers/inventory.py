@@ -411,6 +411,155 @@ def delete_inventory(
     db.commit()
     return ResponseEnvelope(message="Item deleted")
 
+@router.post("/inventory/bulk-upload", operation_id="createInventoryBulkUpload", response_model=ResponseEnvelope[Dict[str, Any]])
+async def bulk_upload_inventory(
+    file: UploadFile = File(...),
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Bulk upload inventory items from CSV/XLSX"""
+    try:
+        from fastapi import UploadFile, File
+        import csv
+        import io
+        
+        # Use effective_tenant_id if impersonating, otherwise use tenant_id
+        effective_tenant = access.effective_tenant_id or access.tenant_id
+        
+        if not effective_tenant or effective_tenant == 'system':
+            raise HTTPException(status_code=400, detail="Tenant context required")
+
+        filename = (file.filename or '').lower()
+        content = await file.read()
+        
+        rows = []
+
+        def _sanitize_cell(v):
+            if v is None: return None
+            if not isinstance(v, str): return v
+            v = v.strip()
+            if v.startswith(('=', '+', '-', '@')): return "'" + v
+            return v
+
+        # Parse File
+        if filename.endswith('.xlsx') or filename.endswith('.xls'):
+            if load_workbook is None:
+                raise HTTPException(status_code=500, detail="Server missing openpyxl dependency")
+            try:
+                wb = load_workbook(filename=io.BytesIO(content), read_only=True, data_only=True)
+                sheet = wb[wb.sheetnames[0]] if wb.sheetnames else None
+                if sheet is None: raise HTTPException(status_code=400, detail="XLSX contains no sheets")
+                it = sheet.iter_rows(values_only=True)
+                headers_row = next(it, None)
+                if not headers_row: raise HTTPException(status_code=400, detail="Empty sheet")
+                headers = [str(h).strip() if h is not None else '' for h in headers_row]
+                for r in it:
+                    obj = {}
+                    for idx, h in enumerate(headers):
+                        val = r[idx] if idx < len(r) else None
+                        obj[h] = _sanitize_cell(val)
+                    if any(v not in (None, '') for v in obj.values()):
+                        rows.append(obj)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"XLSX parse error: {e}")
+        else:
+            try:
+                try: text = content.decode('utf-8-sig')
+                except: text = content.decode('utf-8', errors='replace')
+                try: dialect = csv.Sniffer().sniff(text[:4096]); delimiter = dialect.delimiter
+                except: delimiter = ','
+                rows = [r for r in csv.DictReader(io.StringIO(text), delimiter=delimiter)]
+                rows = [{k: _sanitize_cell(v) for k, v in r.items()} for r in rows]
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"CSV parse error: {e}")
+
+        created = 0
+        updated = 0
+        errors = []
+        row_num = 0
+        
+        for row in rows:
+            row_num += 1
+            try:
+                def get_val(keys):
+                    for k in keys:
+                        if k in row and row[k]: return row[k]
+                    return None
+                
+                name = get_val(['name', 'itemName', 'product_name'])
+                barcode = get_val(['barcode', 'sku'])
+                
+                if not name:
+                    errors.append({'row': row_num, 'error': 'Missing name'})
+                    continue
+                
+                # Check existing
+                existing = None
+                if barcode:
+                    existing = db.query(InventoryItem).filter(
+                        InventoryItem.barcode == barcode,
+                        InventoryItem.tenant_id == effective_tenant
+                    ).first()
+                
+                payload = {
+                    'name': name,
+                    'barcode': barcode,
+                    'category': get_val(['category', 'type']),
+                    'brand': get_val(['brand', 'manufacturer']),
+                    'model': get_val(['model']),
+                    'price': get_val(['price', 'unitPrice']),
+                    'available_inventory': get_val(['stock', 'quantity', 'available_inventory']),
+                    'reorder_level': get_val(['reorderLevel', 'reorder_level', 'minStock']),
+                }
+                
+                # Clean None values
+                payload = {k: v for k, v in payload.items() if v is not None}
+                
+                # Convert numeric fields
+                for field in ['price', 'available_inventory', 'reorder_level']:
+                    if field in payload and payload[field]:
+                        try: payload[field] = float(payload[field])
+                        except: pass
+                
+                if existing:
+                    for k, v in payload.items():
+                        if hasattr(existing, k) and v is not None:
+                            setattr(existing, k, v)
+                    updated += 1
+                else:
+                    from uuid import uuid4
+                    from datetime import datetime, timezone
+                    payload['id'] = f"item_{datetime.now(timezone.utc).strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}"
+                    payload['tenant_id'] = effective_tenant
+                    item = InventoryItem(**payload)
+                    db.add(item)
+                    created += 1
+                
+                db.begin_nested()
+                try:
+                    db.flush()
+                    db.commit()
+                except:
+                    db.rollback()
+                    raise
+                    
+            except Exception as e:
+                errors.append({'row': row_num, 'error': str(e)})
+        
+        db.commit()
+        return ResponseEnvelope(data={
+            'success': True,
+            'created': created,
+            'updated': updated,
+            'errors': errors
+        })
+        
+    except HTTPException: raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Bulk inventory upload error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/inventory/{item_id}/serials", operation_id="createInventorySerials")
 def add_serials(
     item_id: str,

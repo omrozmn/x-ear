@@ -240,7 +240,7 @@ export function PurchasesPage() {
         onClose={() => setIsImporterOpen(false)}
         entityFields={invoiceFields}
         zodSchema={invoicesSchema}
-        uploadEndpoint={'/api/invoices/bulk_upload'}
+        uploadEndpoint={'/api/invoices/bulk-upload'}
         modalTitle={'Toplu Fatura Yükleme'}
         sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
         onComplete={(res) => {

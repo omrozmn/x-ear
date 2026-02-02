@@ -71,13 +71,18 @@ export function PartyTagUpdateModal({
 
     setIsSubmitting(true);
     try {
-      // Only send branchId if it's not empty
-      const updates: { status: PartyStatus; segment: PartySegment; acquisitionType: string; branchId?: string } = {
+      // Build updates object - only send non-empty values
+      const updates: { status: PartyStatus; segment: PartySegment; acquisitionType?: string; branchId?: string } = {
         status,
         segment,
-        acquisitionType,
       };
 
+      // Only add acquisitionType if it's not empty
+      if (acquisitionType) {
+        updates.acquisitionType = acquisitionType;
+      }
+
+      // Only add branchId if it's not empty
       if (branchId) {
         updates.branchId = branchId;
       }
@@ -112,7 +117,7 @@ export function PartyTagUpdateModal({
             variant="outline"
             onClick={() => {
               onClose();
-              window.location.href = '/settings/general';
+              window.location.href = '/settings/company';
             }}
             icon={<Settings className="w-4 h-4" />}
             iconPosition="left"
