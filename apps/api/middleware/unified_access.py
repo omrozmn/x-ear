@@ -270,7 +270,7 @@ def _build_access_from_token(
         is_authenticated=True,
         is_admin=False,
         is_super_admin=False,
-        is_tenant_admin=(user.role in ("tenant_admin", "admin")),
+        is_tenant_admin=(user.role.upper() in ("TENANT_ADMIN", "ADMIN")),
         claims=payload
     )
 

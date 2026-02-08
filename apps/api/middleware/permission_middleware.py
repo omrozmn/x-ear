@@ -170,7 +170,12 @@ class FastAPIPermissionMiddleware:
 
         # The tenant_admin/admin bypass:
         # They can bypass permission checks for TENANT routes (non-/api/admin/)
-        if ctx.role in {"tenant_admin", "admin"} and not path.startswith("/api/admin/"):
+        if ctx.role and ctx.role.upper() in {"TENANT_ADMIN", "ADMIN"} and not path.startswith("/api/admin/"):
+            await self.app(scope, receive, send)
+            return
+        
+        # Check for wildcard permission (admin users)
+        if "*" in ctx.permissions:
             await self.app(scope, receive, send)
             return
         

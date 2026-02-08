@@ -16,6 +16,7 @@ export interface ExtendedSaleRead extends SaleRead {
     remainingAmount?: number;
     listPriceTotal?: number;
     productId?: string;
+    invoiceStatus?: string; // NEW: Invoice status field
 
     // Legacy/Snake_case fields that might persist
     total_amount?: number;
@@ -27,6 +28,7 @@ export interface ExtendedSaleRead extends SaleRead {
     patientPayment?: number;
     totalPartyPayment?: number;
     party_payment?: number;
+    invoice_status?: string; // NEW: Snake case version
 }
 
 // Type guard to check if a sale has the extended fields

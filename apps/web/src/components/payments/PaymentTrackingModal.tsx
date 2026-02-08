@@ -302,7 +302,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" data-testid="payment-tracking-modal">
       <div className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-900 flex items-center">
@@ -419,6 +419,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     <div>
                       <Label>Tutar</Label>
                       <Input
+                        data-testid="payment-amount-input"
                         type="number"
                         step="0.01"
                         value={newPayment.amount}
@@ -431,6 +432,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                       <Label>Ödeme Yöntemi</Label>
                       <select
                         data-allow-raw="true"
+                        data-testid="payment-method-select"
                         value={newPayment.paymentMethod}
                         onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -444,6 +446,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     <div>
                       <Label>Ödeme Tarihi</Label>
                       <Input
+                        data-testid="payment-date-input"
                         type="date"
                         value={newPayment.paymentDate}
                         onChange={(e) => setNewPayment(prev => ({ ...prev, paymentDate: e.target.value }))}
@@ -471,7 +474,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     </div>
                   </div>
 
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button type="submit" disabled={isLoading} className="w-full" data-testid="payment-submit-button">
                     {isLoading && <Spinner className="w-4 h-4 mr-2" />}
                     Ödeme Kaydet
                   </Button>

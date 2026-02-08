@@ -294,6 +294,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               {/* Date */}
               <div>
                 <DatePicker
+                  data-testid="appointment-date-input"
                   label={t('form.date')}
                   value={formData.date ? new Date(formData.date) : undefined}
                   onChange={(date) => handleInputChange('date', date ? date.toISOString().split('T')[0] : '')}
@@ -309,6 +310,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   {t('form.time')}
                 </label>
                 <Input
+                  data-testid="appointment-time-input"
                   type="time"
                   value={formData.time}
                   onChange={(e) => handleInputChange('time', e.target.value)}
@@ -326,6 +328,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   {t('form.duration')}
                 </label>
                 <Input
+                  data-testid="appointment-duration-input"
                   type="number"
                   min="15"
                   max="480"
@@ -346,6 +349,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   {t('form.type')}
                 </label>
                 <Select
+                  data-testid="appointment-type-select"
                   value={formData.type}
                   onChange={(e) => handleInputChange('type', e.target.value as AppointmentType)}
                   options={[
@@ -438,6 +442,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   {t('form.notes')}
                 </label>
                 <Textarea
+                  data-testid="appointment-notes-textarea"
                   value={formData.notes}
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   placeholder={t('form.notes_placeholder')}
@@ -453,6 +458,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         <div className="flex items-center justify-end space-x-4 pt-4 pb-2 border-t border-gray-200 bg-white sticky bottom-0 z-10 mt-auto">
           {onCancel && (
             <Button
+              data-testid="appointment-cancel-button"
               type="button"
               onClick={onCancel}
               disabled={isLoading}
@@ -462,6 +468,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             </Button>
           )}
           <Button
+            data-testid="appointment-submit-button"
             type="submit"
             disabled={isLoading}
             variant='primary'>

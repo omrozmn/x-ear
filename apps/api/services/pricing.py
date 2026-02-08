@@ -134,13 +134,13 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
         # Since sale_items_total already has sgk subtracted per item, we don't subtract it again from the total sum
         # party_responsible_amount = sale_items_total + extras
         party_responsible_amount = round(sale_items_total + accessory_total + service_total, 2)
-        sale_price_with_extras = patient_responsible_amount
+        sale_price_with_extras = party_responsible_amount
         
         # Ensure SGK doesn't exceed the list total (safety check)
         sgk_coverage_amount = round(min(sgk_coverage_amount, total_amount), 2)
         
         # Ensure party payment isn't negative
-        patient_responsible_amount = max(0.0, patient_responsible_amount)
+        patient_responsible_amount = max(0.0, party_responsible_amount)
 
         # Per-item SGK list (per-unit for assignment storage)
         per_item_sgk = [round(d['sgk_support'], 2) for d in per_item_details] if per_item_details else [0.0 for _ in device_assignments]

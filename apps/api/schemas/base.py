@@ -61,7 +61,7 @@ class ResponseEnvelope(AppBaseModel, Generic[T]):
     message: Optional[str] = None
     error: Optional[object] = None
     meta: Optional[ResponseMeta] = None
-    request_id: Optional[str] = None
+    request_id: Optional[str] = Field(None, alias="requestId")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @field_serializer('timestamp', when_used='json')

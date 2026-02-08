@@ -278,6 +278,15 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     notes: Optional[str] = None
     
+    # Financial fields
+    list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
+    total_amount: Optional[float] = Field(None, alias="totalAmount")
+    discount_amount: Optional[float] = Field(0.0, alias="discountAmount")
+    final_amount: Optional[float] = Field(None, alias="finalAmount")
+    paid_amount: Optional[float] = Field(0.0, alias="paidAmount")
+    sgk_coverage: Optional[float] = Field(0.0, alias="sgkCoverage")
+    patient_payment: Optional[float] = Field(None, alias="patientPayment")
+    
     remaining_amount: Optional[float] = Field(0.0, alias="remainingAmount")
 
     @model_validator(mode='before')

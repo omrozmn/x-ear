@@ -259,7 +259,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" data-testid="sale-modal">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-900">
@@ -278,6 +278,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                 Hasta Durumu <span className="text-red-500">*</span>
               </label>
               <Select
+                data-testid="sale-party-status-select"
                 value={partyStatus}
                 onChange={(e) => setPartyStatus(e.target.value)}
                 className="w-full"
@@ -297,6 +298,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
+                  data-testid="sale-product-search-input"
                   type="text"
                   placeholder="Ürün ara (marka, model, kategori)..."
                   value={productSearchTerm}
@@ -409,6 +411,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
               </label>
               <div className="flex gap-2">
                 <Input
+                  data-testid="sale-discount-input"
                   type="number"
                   min="0"
                   value={discount}
@@ -417,6 +420,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   className="flex-1"
                 />
                 <Select
+                  data-testid="sale-discount-type-select"
                   value={discountType}
                   onChange={(e) => setDiscountType(e.target.value as 'percentage' | 'fixed')}
                   className="w-24"
@@ -434,6 +438,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button
                   data-allow-raw="true"
+                  data-testid="sale-payment-cash-button"
                   type="button"
                   onClick={() => setPaymentMethod('cash')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'cash'
@@ -446,6 +451,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                 </button>
                 <button
                   data-allow-raw="true"
+                  data-testid="sale-payment-card-button"
                   type="button"
                   onClick={() => setPaymentMethod('card')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'card'
@@ -458,6 +464,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                 </button>
                 <button
                   data-allow-raw="true"
+                  data-testid="sale-payment-transfer-button"
                   type="button"
                   onClick={() => setPaymentMethod('transfer')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'transfer'
@@ -469,6 +476,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                 </button>
                 <button
                   data-allow-raw="true"
+                  data-testid="sale-payment-installment-button"
                   type="button"
                   onClick={() => setPaymentMethod('installment')}
                   className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'installment'
@@ -587,10 +595,10 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
             {/* Butonlar */}
             <div className="flex justify-end space-x-3 pt-4 border-t">
-              <Button variant="outline" onClick={handleClose}>
+              <Button variant="outline" onClick={handleClose} data-testid="sale-cancel-button">
                 İptal
               </Button>
-              <Button onClick={handleSubmit} disabled={loading || !selectedDevice}>
+              <Button onClick={handleSubmit} disabled={loading || !selectedDevice} data-testid="sale-submit-button">
                 {loading ? 'Kaydediliyor...' : 'Satışı Tamamla'}
               </Button>
             </div>

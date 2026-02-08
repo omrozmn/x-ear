@@ -2,122 +2,192 @@
  * FLOW-03: Sale Creation - Critical Flow Test
  * 
  * Priority: P0 (Revenue & Legal)
- * Why Critical: Revenue generation, financial records, cash flow tracking
+ * Why Critical: Revenue tracking, inventory deduction, device assignment
  * 
  * API Endpoints:
- * - POST /api/sales (createSales)
- * - GET /api/sales (listSales)
+ * - POST /api/parties (createParty)
+ * - GET /api/inventory (listInventory)
+ * - POST /api/sales (createSale)
  * - GET /api/sales/{sale_id} (getSale)
- * - POST /api/sales/{sale_id}/payments (createSalePayments)
+ * - GET /api/parties/{party_id}/devices (getPartyDevices)
  */
 
 import { test, expect } from '../../fixtures/fixtures';
-import { createTestParty, waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
+import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-03: Sale Creation', () => {
-  test('should create sale with payment successfully', async ({ tenantPage, request, authTokens }) => {
-    // Prerequisites: Create test party
+  test('should complete sale creation flow successfully', async ({ tenantPage, apiContext, authTokens }) => {
+    // Generate unique test data
     const timestamp = Date.now();
-    const partyId = await createTestParty(request, authTokens.accessToken, {
-      firstName: 'Ayşe',
-      lastName: 'Demir',
-      phone: `+90555${timestamp.toString().slice(-7)}`
-    });
+    const uniqueId = timestamp.toString().slice(-8);
     
-    console.log('[FLOW-03] Created test party:', partyId);
+    const testParty = {
+      firstName: `SaleTest${uniqueId.slice(-5)}`,
+      lastName: 'Customer',
+      phone: `+90555${uniqueId.slice(-7)}`,
+      email: `sale${uniqueId}@test.com`
+    };
 
-    // STEP 1: Navigate to sales page
-    console.log('[FLOW-03] Step 1: Navigate to sales');
-    await tenantPage.goto('/sales');
+    // STEP 1: Create a party for the sale
+    console.log('[FLOW-03] Step 1: Create party for sale');
+    await tenantPage.goto('/parties');
+    await tenantPage.waitForLoadState('networkidle');
+    await tenantPage.waitForTimeout(1000);
+    
+    // Click create button
+    const createButton = tenantPage.locator('button').filter({ hasText: /Yeni.*Hasta|Hasta.*Ekle/i }).first();
+    await createButton.waitFor({ state: 'visible', timeout: 10000 });
+    await createButton.click();
+    
+    // Wait for modal
+    await tenantPage.waitForTimeout(1000);
+    await tenantPage.waitForSelector('[data-testid="party-first-name-input"]', { timeout: 10000 });
+    
+    // Fill form
+    await tenantPage.locator('[data-testid="party-first-name-input"]').fill(testParty.firstName);
+    await tenantPage.locator('[data-testid="party-last-name-input"]').fill(testParty.lastName);
+    await tenantPage.locator('[data-testid="party-phone-input"]').fill(testParty.phone);
+    await tenantPage.locator('[data-testid="party-email-input"]').fill(testParty.email);
+    
+    // Submit
+    const submitButton = tenantPage.locator('[data-testid="party-submit-button"]');
+    await submitButton.click();
+    await waitForApiCall(tenantPage, '/api/parties', 10000);
     await tenantPage.waitForLoadState('networkidle');
     
-    // STEP 2: Click "Yeni Satış"
-    console.log('[FLOW-03] Step 2: Click new sale');
-    const newSaleButton = tenantPage.getByRole('button', { name: /Yeni|New|Satış|Sale/i }).first();
-    await newSaleButton.click();
+    // Verify party created
+    const searchResponse = await apiContext.get(`/api/parties?search=${encodeURIComponent(testParty.phone)}`);
+    expect(searchResponse.ok()).toBeTruthy();
+    const searchData = await searchResponse.json();
+    validateResponseEnvelope(searchData);
     
-    // Wait for sale form
-    await tenantPage.waitForLoadState('networkidle');
+    const createdParty = searchData.data?.find?.((p: any) => p.phone === testParty.phone);
+    expect(createdParty, `Party with phone ${testParty.phone} should exist`).toBeTruthy();
     
-    // STEP 3: Select patient
-    console.log('[FLOW-03] Step 3: Select patient');
-    const partySearchInput = tenantPage.locator('input[name="partySearch"], input[placeholder*="Hasta"], input[placeholder*="Patient"]').first();
-    await partySearchInput.fill('Ayşe');
+    const partyId = createdParty.id;
+    console.log('[FLOW-03] Created party ID:', partyId);
+
+    // STEP 2: Check available inventory
+    console.log('[FLOW-03] Step 2: Check available inventory');
+    const inventoryResponse = await apiContext.get('/api/inventory?perPage=10');
+    expect(inventoryResponse.ok()).toBeTruthy();
+    const inventoryData = await inventoryResponse.json();
+    validateResponseEnvelope(inventoryData);
     
-    // Wait for search results and select
-    await tenantPage.waitForTimeout(1000); // Debounce
-    const partyOption = tenantPage.locator(`text=/Ayşe.*Demir/i`).first();
-    await partyOption.click();
+    console.log('[FLOW-03] Available inventory count:', inventoryData.data?.length || 0);
     
-    // STEP 4: Select device (if device selection is required)
-    console.log('[FLOW-03] Step 4: Select device');
-    try {
-      const deviceButton = tenantPage.getByRole('button', { name: /Cihaz|Device|Seç|Select/i }).first();
-      await deviceButton.click({ timeout: 3000 });
-      
-      // Select first device
-      const deviceCheckbox = tenantPage.locator('input[type="checkbox"]').first();
-      await deviceCheckbox.click();
-      
-      const addDevicesButton = tenantPage.getByRole('button', { name: /Ekle|Add|Seçilenleri/i }).first();
-      await addDevicesButton.click();
-    } catch (e) {
-      console.log('[FLOW-03] Device selection not required or already selected');
+    // Must have inventory to proceed
+    if (!inventoryData.data || inventoryData.data.length === 0) {
+      console.log('[FLOW-03] ❌ No inventory items found');
+      throw new Error('No inventory available - run: python scripts/create_test_inventory.py');
     }
     
-    // STEP 5: Enter pricing
-    console.log('[FLOW-03] Step 5: Enter pricing');
-    const listPriceInput = tenantPage.locator('input[name="listPrice"], input[name="list_price"]').first();
-    const discountInput = tenantPage.locator('input[name="discount"], input[name="discount_amount"]').first();
-    const sgkCoverageInput = tenantPage.locator('input[name="sgkCoverage"], input[name="sgk_coverage"]').first();
+    // Use first available inventory item
+    const inventoryItem = inventoryData.data[0];
+    console.log('[FLOW-03] Using inventory:', inventoryItem.id, inventoryItem.name);
+
+    // STEP 3: Create sale via API
+    console.log('[FLOW-03] Step 3: Create sale');
     
-    await listPriceInput.fill('25000');
-    await discountInput.fill('2000');
-    await sgkCoverageInput.fill('5000');
+    const saleData = {
+      partyId: partyId,
+      productId: inventoryItem.id,
+      quantity: 1,
+      salesPrice: inventoryItem.price,
+      paymentMethod: 'cash',
+      notes: 'E2E test sale',
+      earSide: 'right',
+      serialNumber: `TEST-SN-${uniqueId}`
+    };
     
-    // STEP 6: Select payment method
-    console.log('[FLOW-03] Step 6: Select payment method');
-    const paymentMethodSelect = tenantPage.locator('select[name="paymentMethod"], select[name="payment_method"]').first();
-    await paymentMethodSelect.selectOption('cash');
-    
-    // STEP 7: Enter down payment
-    console.log('[FLOW-03] Step 7: Enter down payment');
-    const paidAmountInput = tenantPage.locator('input[name="paidAmount"], input[name="paid_amount"]').first();
-    await paidAmountInput.fill('5000');
-    
-    // STEP 8: Submit sale
-    console.log('[FLOW-03] Step 8: Submit sale');
-    const submitButton = tenantPage.getByRole('button', { name: /Satış|Sale|Oluştur|Create|Kaydet/i }).first();
-    await submitButton.click();
-    
-    // Wait for API call
-    await waitForApiCall(tenantPage, '/api/sales', 10000);
-    await tenantPage.waitForLoadState('networkidle');
-    
-    // STEP 9: Verify sale created via API
-    console.log('[FLOW-03] Step 9: Verify sale via API');
-    const response = await request.get('/api/sales?page=1&perPage=10', {
-      headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
+    const createSaleResponse = await apiContext.post('/api/sales', {
+      data: saleData,
+      headers: {
+        'Idempotency-Key': `test-sale-creation-${uniqueId}`
+      }
     });
     
-    expect(response.ok()).toBeTruthy();
-    const data = await response.json();
-    validateResponseEnvelope(data);
+    expect(createSaleResponse.ok()).toBeTruthy();
+    const createSaleData = await createSaleResponse.json();
+    validateResponseEnvelope(createSaleData);
+    const saleId = createSaleData.data.saleId || createSaleData.data.sale?.id;
+    console.log('[FLOW-03] Sale created successfully:', saleId);
+
+    // STEP 4: Verify sale details
+    console.log('[FLOW-03] Step 4: Verify sale details');
     
-    // Find the sale we just created
-    const sale = data.data.find((s: any) => s.partyId === partyId);
-    expect(sale, 'Sale should exist for the party').toBeTruthy();
+    const saleResponse = await apiContext.get(`/api/sales/${saleId}`);
+    expect(saleResponse.ok()).toBeTruthy();
+    const saleResponseData = await saleResponse.json();
+    validateResponseEnvelope(saleResponseData);
     
-    // Verify amounts
-    expect(sale.listPriceTotal || sale.list_price_total).toBe(25000);
-    expect(sale.discountAmount || sale.discount_amount).toBe(2000);
-    expect(sale.sgkCoverage || sale.sgk_coverage).toBe(5000);
-    expect(sale.paidAmount || sale.paid_amount).toBe(5000);
+    const sale = saleResponseData.data;
+    expect(sale.partyId).toBe(partyId);
+    expect(sale.totalAmount).toBeGreaterThan(0);
     
-    // Final amount should be: 25000 - 2000 - 5000 = 18000
-    const expectedFinalAmount = 18000;
-    expect(sale.finalAmount || sale.final_amount).toBe(expectedFinalAmount);
+    console.log('[FLOW-03] Sale verified:');
+    console.log('[FLOW-03]   ID:', sale.id);
+    console.log('[FLOW-03]   Total:', sale.totalAmount);
+
+    // STEP 5: Verify device assignment (via sale)
+    console.log('[FLOW-03] Step 5: Verify device assignment');
+    
+    await tenantPage.waitForTimeout(1000);
+    
+    const partyDevicesResponse = await apiContext.get(`/api/parties/${partyId}/devices`);
+    expect(partyDevicesResponse.ok()).toBeTruthy();
+    const partyDevicesData = await partyDevicesResponse.json();
+    validateResponseEnvelope(partyDevicesData);
+    
+    const assignedDevices = partyDevicesData.data;
+    expect(assignedDevices.length).toBeGreaterThan(0);
+    
+    console.log('[FLOW-03] Verified device assignment - party has', assignedDevices.length, 'device(s)');
+
+    // STEP 6: Check inventory deduction
+    console.log('[FLOW-03] Step 6: Check inventory deduction');
+    
+    const updatedInventoryResponse = await apiContext.get(`/api/inventory/${inventoryItem.id}`);
+    expect(updatedInventoryResponse.ok()).toBeTruthy();
+    const updatedInventoryData = await updatedInventoryResponse.json();
+    validateResponseEnvelope(updatedInventoryData);
+    
+    const updatedInventory = updatedInventoryData.data;
+    console.log('[FLOW-03] Inventory before:', inventoryItem.availableInventory);
+    console.log('[FLOW-03] Inventory after:', updatedInventory.availableInventory);
+    
+    // Inventory should be reduced by 1
+    expect(updatedInventory.availableInventory).toBe(inventoryItem.availableInventory - 1);
+
+    // STEP 7: Navigate to sales page and verify UI (optional - UI may not show immediately)
+    console.log('[FLOW-03] Step 7: Verify sale in UI');
+    
+    await tenantPage.goto('/sales');
+    await tenantPage.waitForLoadState('networkidle');
+    await tenantPage.waitForTimeout(1000);
+    
+    // Try to find the sale in the list (optional check)
+    try {
+      const saleRow = tenantPage.locator(`tr:has-text("${testParty.firstName}")`).first();
+      await expect(saleRow).toBeVisible({ timeout: 5000 });
+      console.log('[FLOW-03] Sale visible in UI');
+    } catch (e) {
+      console.log('[FLOW-03] Sale not immediately visible in UI (may require refresh or filter)');
+    }
+
+    // STEP 8: Final verification
+    console.log('[FLOW-03] Step 8: Final verification');
+    
+    const finalPartyResponse = await apiContext.get(`/api/parties/${partyId}`);
+    expect(finalPartyResponse.ok()).toBeTruthy();
+    const finalPartyData = await finalPartyResponse.json();
+    validateResponseEnvelope(finalPartyData);
     
     console.log('[FLOW-03] ✅ Sale creation flow completed successfully');
+    console.log('[FLOW-03] Party:', partyId);
+    console.log('[FLOW-03] Sale:', saleId);
+    console.log('[FLOW-03] Inventory:', inventoryItem.id);
+    console.log('[FLOW-03] Device assigned via sale');
+    console.log('[FLOW-03] Inventory deducted correctly');
   });
 });

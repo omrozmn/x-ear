@@ -399,6 +399,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div className="relative">
                 <Button
                   onClick={toggleUserDropdown}
+                  data-testid="user-menu"
                   className="flex items-center gap-2 p-2 h-auto rounded-md bg-gray-100 dark:bg-gray-700/50 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   variant='ghost'>
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
@@ -452,6 +453,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         }
                         navigate({ to: '/login' as unknown as '/' });
                       }}
+                      data-testid="logout-button"
                       className="flex items-center w-full px-4 py-3 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 transition-colors h-auto"
                       variant='ghost'>
                       <LogOut size={16} className="mr-2" />

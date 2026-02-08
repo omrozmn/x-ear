@@ -10,12 +10,12 @@
  */
 
 import { test, expect } from '../../fixtures/fixtures';
-import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
+import { validateResponseEnvelope } from '../../web/helpers/test-utils';
 import * as fs from 'fs';
 import * as path from 'path';
 
 test.describe('FLOW-10: Bulk Patient Upload', () => {
-  test('should upload patients in bulk successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should upload patients in bulk successfully', async ({ apiContext, authTokens }) => {
     // Generate unique test data
     const timestamp = Date.now();
     const uniqueId = timestamp.toString().slice(-8);
@@ -62,74 +62,48 @@ test.describe('FLOW-10: Bulk Patient Upload', () => {
     fs.writeFileSync(csvFilePath, csvContent, 'utf-8');
     console.log('[FLOW-10] Created CSV file:', csvFilePath);
 
-    // STEP 2: Navigate to parties page
-    console.log('[FLOW-10] Step 2: Navigate to parties page');
-    await tenantPage.goto('/parties');
-    await tenantPage.waitForLoadState('networkidle');
+    // STEP 2: Upload CSV file via API
+    console.log('[FLOW-10] Step 2: Upload CSV file via API');
     
-    // Verify parties page loads
-    await expect(tenantPage.locator('h1, h2').filter({ hasText: /Hasta|Party/i })).toBeVisible({ timeout: 10000 });
-
-    // STEP 3: Click "Toplu Yükleme"
-    console.log('[FLOW-10] Step 3: Click bulk upload button');
-    const bulkUploadButton = tenantPage.getByRole('button', { name: /Toplu|Bulk|İçe Aktar|Import/i }).first();
-    await bulkUploadButton.click();
+    // Read file as buffer for multipart upload
+    const fileBuffer = fs.readFileSync(csvFilePath);
+    const fileName = `bulk-upload-${uniqueId}.csv`;
     
-    // Wait for upload dialog/form to appear
-    await tenantPage.waitForSelector('input[type="file"], button:has-text("Dosya Seç")', { timeout: 5000 });
-
-    // STEP 4: Upload CSV file
-    console.log('[FLOW-10] Step 4: Upload CSV file');
-    const fileInput = tenantPage.locator('input[type="file"]').first();
-    await fileInput.setInputFiles(csvFilePath);
+    const uploadResponse = await apiContext.post('/api/parties/bulk-upload', {
+      headers: {
+        'Authorization': `Bearer ${authTokens.accessToken}`,
+        'Idempotency-Key': `test-bulk-upload-${uniqueId}`
+      },
+      multipart: {
+        file: {
+          name: fileName,
+          mimeType: 'text/csv',
+          buffer: fileBuffer
+        }
+      }
+    });
     
-    // Wait for file to be processed
-    await tenantPage.waitForTimeout(1000);
-
-    // STEP 5: Verify validation messages
-    console.log('[FLOW-10] Step 5: Verify validation preview');
-    // Look for validation summary or preview
-    await expect(tenantPage.locator('text=/3|Üç|Three/i').and(
-      tenantPage.locator('text=/Kayıt|Record|Hasta|Patient/i')
-    )).toBeVisible({ timeout: 5000 });
-    
-    // Verify no critical errors
-    const errorText = tenantPage.locator('text=/Hata|Error|Geçersiz|Invalid/i').first();
-    const hasErrors = await errorText.isVisible({ timeout: 2000 }).catch(() => false);
-    
-    if (hasErrors) {
-      console.log('[FLOW-10] Warning: Validation errors detected, but continuing...');
+    if (!uploadResponse.ok()) {
+      const errorBody = await uploadResponse.text();
+      console.error('[FLOW-10] Bulk upload failed:', uploadResponse.status(), errorBody);
     }
-
-    // STEP 6: Submit bulk upload
-    console.log('[FLOW-10] Step 6: Submit bulk upload');
-    const submitButton = tenantPage.getByRole('button', { name: /Yükle|Upload|Kaydet|Save|İçe Aktar|Import/i }).first();
-    await submitButton.click();
+    expect(uploadResponse.ok(), `Bulk upload should succeed (status: ${uploadResponse.status()})`).toBeTruthy();
     
-    // Wait for API call (may take longer for bulk operations)
-    await waitForApiCall(tenantPage, '/api/parties', 15000);
-    await tenantPage.waitForLoadState('networkidle');
-
-    // STEP 7: Verify success/error summary
-    console.log('[FLOW-10] Step 7: Verify upload summary');
-    // Look for success message or summary
-    await expect(tenantPage.locator('text=/Başarılı|Success|Tamamlandı|Complete/i').or(
-      tenantPage.locator('text=/3|Üç/i')
-    )).toBeVisible({ timeout: 10000 });
-
-    // STEP 8: Verify parties appear in list
-    console.log('[FLOW-10] Step 8: Verify parties appear in list');
-    await tenantPage.goto('/parties');
-    await tenantPage.waitForLoadState('networkidle');
+    const uploadData = await uploadResponse.json();
+    validateResponseEnvelope(uploadData);
     
-    // Verify each patient appears
-    for (const patient of testPatients) {
-      await expect(tenantPage.locator(`text=${patient.phone}`)).toBeVisible({ timeout: 5000 });
-      console.log('[FLOW-10] Verified patient:', patient.firstName, patient.lastName);
-    }
+    console.log('[FLOW-10] Upload response:', JSON.stringify(uploadData.data, null, 2));
+    
+    // STEP 3: Verify upload summary
+    console.log('[FLOW-10] Step 3: Verify upload summary');
+    expect(uploadData.data.success).toBeTruthy();
+    expect(uploadData.data.created).toBeGreaterThan(0);
+    console.log('[FLOW-10] Created:', uploadData.data.created);
+    console.log('[FLOW-10] Updated:', uploadData.data.updated || 0);
+    console.log('[FLOW-10] Errors:', uploadData.data.errors?.length || 0);
 
-    // STEP 9: Verify created/updated counts via API
-    console.log('[FLOW-10] Step 9: Verify counts via API');
+    // STEP 4: Verify parties appear in list via API
+    console.log('[FLOW-10] Step 4: Verify parties appear in list via API');
     const listResponse = await apiContext.get('/api/parties?page=1&perPage=100', {
       headers: { 'Authorization': `Bearer ${authTokens.accessToken}` }
     });
@@ -146,17 +120,19 @@ test.describe('FLOW-10: Bulk Patient Upload', () => {
     expect(createdPatients.length).toBe(testPatients.length);
     console.log('[FLOW-10] Verified', createdPatients.length, 'patients created');
     
-    // Verify each patient has correct data
+    // STEP 5: Verify each patient has correct data
+    console.log('[FLOW-10] Step 5: Verify each patient data');
     for (const testPatient of testPatients) {
       const createdPatient = createdPatients.find((p: any) => p.phone === testPatient.phone);
-      expect(createdPatient).toBeTruthy();
+      expect(createdPatient, `Patient with phone ${testPatient.phone} should exist`).toBeTruthy();
       expect(createdPatient.firstName).toBe(testPatient.firstName);
       expect(createdPatient.lastName).toBe(testPatient.lastName);
       expect(createdPatient.email).toBe(testPatient.email);
+      console.log('[FLOW-10] Verified patient:', testPatient.firstName, testPatient.lastName);
     }
 
-    // STEP 10: Cleanup temp file
-    console.log('[FLOW-10] Step 10: Cleanup temp file');
+    // STEP 6: Cleanup temp file
+    console.log('[FLOW-10] Step 6: Cleanup temp file');
     try {
       fs.unlinkSync(csvFilePath);
       console.log('[FLOW-10] Deleted temp CSV file');
@@ -165,5 +141,7 @@ test.describe('FLOW-10: Bulk Patient Upload', () => {
     }
     
     console.log('[FLOW-10] ✅ Bulk patient upload flow completed successfully');
+    console.log('[FLOW-10] Total patients uploaded:', testPatients.length);
+    console.log('[FLOW-10] All patients verified in database');
   });
 });

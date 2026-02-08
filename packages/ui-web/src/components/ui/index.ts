@@ -16,6 +16,10 @@ export { DatePicker } from './DatePicker';
 export { ToastProvider, useToast, useToastHelpers } from './Toast';
 export type { Toast } from './Toast';
 
+// Loading Spinner components
+export { LoadingSpinner, ButtonLoadingSpinner, PageLoadingSpinner } from './LoadingSpinner';
+export type { LoadingSpinnerProps, LoadingSpinnerSize, LoadingSpinnerVariant } from './LoadingSpinner';
+
 // Tabs components
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
 

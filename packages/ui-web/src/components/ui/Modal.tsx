@@ -16,6 +16,7 @@ interface ModalProps {
   customFooter?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  'data-testid'?: string;
 }
 
 const sizeClasses = {
@@ -40,6 +41,7 @@ export const Modal: React.FC<ModalProps> = ({
   customFooter,
   children,
   className = '',
+  'data-testid': testId,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -163,6 +165,7 @@ export const Modal: React.FC<ModalProps> = ({
             ${className}
           `}
           onKeyDown={handleKeyDown}
+          data-testid={testId}
         >
           {/* Header */}
           {(title || closable) && (

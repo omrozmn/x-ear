@@ -111,7 +111,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden" data-testid="appointment-modal">
       {/* Background overlay */}
       <div
         className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"

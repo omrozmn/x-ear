@@ -188,6 +188,7 @@ export function PartyForm({ party, onSave, onCancel }: PartyFormProps) {
         <div>
           <label className="block text-sm font-medium mb-1">{t('form.first_name')} *</label>
           <Input
+            data-testid="party-first-name-input"
             value={formData.firstName}
             onChange={(e) => handleInputChange('firstName', e.target.value)}
             placeholder={t('form.first_name')}
@@ -198,6 +199,7 @@ export function PartyForm({ party, onSave, onCancel }: PartyFormProps) {
         <div>
           <label className="block text-sm font-medium mb-1">{t('form.last_name')} *</label>
           <Input
+            data-testid="party-last-name-input"
             value={formData.lastName}
             onChange={(e) => handleInputChange('lastName', e.target.value)}
             placeholder={t('form.last_name')}
@@ -208,6 +210,7 @@ export function PartyForm({ party, onSave, onCancel }: PartyFormProps) {
         <div>
           <label className="block text-sm font-medium mb-1">{t('form.phone')} *</label>
           <Input
+            data-testid="party-phone-input"
             value={formData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
             placeholder="0555 123 45 67"
@@ -238,6 +241,7 @@ export function PartyForm({ party, onSave, onCancel }: PartyFormProps) {
         <div>
           <label className="block text-sm font-medium mb-1">{t('form.email')}</label>
           <Input
+            data-testid="party-email-input"
             type="email"
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
@@ -353,6 +357,7 @@ export function PartyForm({ party, onSave, onCancel }: PartyFormProps) {
       <div className="flex justify-end space-x-2 pt-4">
         {onCancel && (
           <Button
+            data-testid="party-cancel-button"
             type="button"
             variant="outline"
             onClick={onCancel}
@@ -362,6 +367,7 @@ export function PartyForm({ party, onSave, onCancel }: PartyFormProps) {
           </Button>
         )}
         <Button
+          data-testid="party-submit-button"
           type="submit"
           variant="primary"
           disabled={isSubmitting}

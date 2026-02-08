@@ -16,7 +16,7 @@ export const PhoneVerificationModal: React.FC = () => {
     useEffect(() => {
         // Show modal if user is authenticated but phone is not verified
         // Skip for admin users (they don't have phone verification)
-        const isAdminUser = user?.role === 'super_admin' || user?.role === 'support' || user?.role === 'finance' || user?.role === 'content';
+        const isAdminUser = user?.role === 'super_admin' || user?.role === 'SUPER_ADMIN' || user?.role === 'admin' || user?.role === 'ADMIN' || user?.role === 'support' || user?.role === 'finance' || user?.role === 'content';
 
         if (isAuthenticated && user && !isAdminUser && !user.isPhoneVerified) {
             setIsOpen(true);

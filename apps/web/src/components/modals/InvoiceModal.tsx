@@ -40,6 +40,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
   const modal = (
     <div
+      data-testid="invoice-modal"
       className="fixed inset-0 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
       style={{ zIndex: 50000 }}
       onClick={handleBackdropClick}

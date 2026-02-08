@@ -168,6 +168,7 @@ export function LoginForm() {
                   type="text"
                   autoComplete="username"
                   required
+                  data-testid="login-identifier-input"
                   className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder={t('username_placeholder')}
                   value={username}
@@ -190,6 +191,7 @@ export function LoginForm() {
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     required
+                    data-testid="login-password-input"
                     className="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder={t('password_placeholder')}
                     value={password}
@@ -234,7 +236,7 @@ export function LoginForm() {
             </div>
 
             {error && (
-              <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 animate-shake">
+              <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 animate-shake" data-testid="login-error-message">
                 <p className="text-sm text-red-700 dark:text-red-300 text-center font-medium">{error}</p>
               </div>
             )}
@@ -242,6 +244,7 @@ export function LoginForm() {
             <button data-allow-raw="true"
               type="submit"
               disabled={isLoading || !username.trim() || !password.trim()}
+              data-testid="login-submit-button"
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg login-button-hover focus-ring-enhanced"
             >
               {isLoading ? (

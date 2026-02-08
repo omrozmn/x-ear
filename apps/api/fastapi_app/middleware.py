@@ -23,6 +23,41 @@ async def request_id_middleware(request: Request, call_next: Callable) -> Respon
     response = await call_next(request)
     duration_ms = int((time.monotonic() - start) * 1000)
 
+    # Inject request_id into ResponseEnvelope JSON responses
+    if response.headers.get("content-type", "").startswith("application/json"):
+        try:
+            import json
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
+            
+            if body:
+                data = json.loads(body)
+                # Only inject if this looks like a ResponseEnvelope (has 'success' field)
+                if isinstance(data, dict) and 'success' in data:
+                    # Inject requestId if not already present
+                    if 'requestId' not in data and 'request_id' not in data:
+                        data['requestId'] = request_id
+                    # Also ensure timestamp is present
+                    if 'timestamp' not in data:
+                        data['timestamp'] = _now_iso_utc()
+                
+                # Create new response with modified body
+                from fastapi.responses import JSONResponse
+                # CRITICAL: Remove Content-Length header to avoid mismatch
+                headers = dict(response.headers)
+                headers.pop('content-length', None)
+                headers.pop('Content-Length', None)
+                response = JSONResponse(
+                    content=data,
+                    status_code=response.status_code,
+                    headers=headers
+                )
+        except Exception as e:
+            # If anything fails, just pass through the original response
+            import logging
+            logging.warning(f"Failed to inject request_id into response: {e}")
+
     response.headers["X-Request-Id"] = request_id
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Response-Time-Ms"] = str(duration_ms)

@@ -120,7 +120,8 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
             brand = inv_item.brand
             model = inv_item.model
             barcode = inv_item.barcode
-            serial_number = inv_item.serial_number
+            # Note: InventoryItem doesn't have a single serial_number field
+            # Serial numbers are managed separately via serial_numbers JSON field
     
     # Fallback for loaner devices
     if not brand:
@@ -137,6 +138,7 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
     
     return {
         'id': assignment.device_id or assignment.inventory_id,
+        'partyId': assignment.party_id,  # Required field
         'name': formatted_name,
         'brand': brand,
         'model': model,
@@ -1209,33 +1211,37 @@ def create_device_assignments(
     """
     from services.pricing import calculate_device_pricing, create_payment_plan
     
-    access.require_permission("sale:write")
-    
-    # Validate party
-    party = db.get(Party, party_id)
-    if not party:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Party not found", code="PARTY_NOT_FOUND").model_dump(mode="json"),
-        )
-    if access.tenant_id and party.tenant_id != access.tenant_id:
-        raise HTTPException(
-            status_code=403,
-            detail=ApiError(message="Access denied", code="FORBIDDEN").model_dump(mode="json"),
-        )
-    
-    device_assignments = data.device_assignments
-    if not device_assignments:
-        raise HTTPException(
-            status_code=400,
-            detail=ApiError(message="At least one device assignment required", code="NO_DEVICES").model_dump(mode="json"),
-        )
-    
-    tenant_id = access.tenant_id or party.tenant_id
-    branch_id = data.branch_id or access.branch_id
-    settings = _get_settings(db, tenant_id)
-    sgk_scheme = data.sgk_scheme or settings.get('sgk', {}).get('default_scheme', 'standard')
-    payment_plan_type = data.payment_plan or 'cash'
+    try:
+        access.require_permission("sale:write")
+        
+        # Validate party
+        party = db.get(Party, party_id)
+        if not party:
+            raise HTTPException(
+                status_code=404,
+                detail="Party not found"
+            )
+        if access.tenant_id and party.tenant_id != access.tenant_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied"
+            )
+        
+        device_assignments = data.device_assignments
+        if not device_assignments:
+            raise HTTPException(
+                status_code=400,
+                detail="At least one device assignment required"
+            )
+        
+        tenant_id = access.tenant_id or party.tenant_id
+        branch_id = data.branch_id or access.branch_id
+        settings = _get_settings(db, tenant_id)
+        sgk_scheme = data.sgk_scheme or settings.get('sgk', {}).get('default_scheme', 'standard')
+        payment_plan_type = data.payment_plan or 'cash'
+    except Exception as e:
+        logger.error(f"Device assignment validation error: {e}")
+        raise
     
     # Build sanitized assignments for pricing calculation
     sanitized_assignments = []

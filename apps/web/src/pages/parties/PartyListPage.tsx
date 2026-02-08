@@ -245,6 +245,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
 
           <Button
             onClick={() => setShowCreateModal(true)}
+            data-testid="party-create-button"
           >
             Yeni Hasta
           </Button>
@@ -313,6 +314,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
           {!searchTerm && Object.keys(filters).length === 0 && (
             <Button
               onClick={() => setShowCreateModal(true)}
+              data-testid="party-create-button"
             >
               Yeni Hasta Ekle
             </Button>

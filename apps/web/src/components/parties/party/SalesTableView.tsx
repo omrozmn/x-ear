@@ -8,7 +8,8 @@ import {
   FileText,
   Banknote,
   FolderOpen,
-  Ban
+  Ban,
+  Send
 } from 'lucide-react';
 import { Button } from '../../ui/Button';
 
@@ -123,6 +124,26 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Bekliyor</span>;
   };
 
+  const renderInvoiceStatusBadge = (sale: SaleRead) => {
+    const hasInvoice = Boolean(sale.invoice);
+    const extendedSale = sale as unknown as ExtendedSaleRead;
+    const invoiceStatus = extendedSale.invoiceStatus || (hasInvoice ? 'issued' : 'none');
+
+    if (invoiceStatus === 'sent') {
+      return <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">📧 Gönderildi</span>;
+    }
+
+    if (invoiceStatus === 'issued' || hasInvoice) {
+      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">📄 Kesildi</span>;
+    }
+
+    if (invoiceStatus === 'cancelled') {
+      return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">🚫 İptal</span>;
+    }
+
+    return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">⚪ Yok</span>;
+  };
+
   const toggleOverflowMenu = (e: React.MouseEvent, saleId: string | number | undefined) => {
     e.stopPropagation();
     setOpenMenuId(openMenuId === String(saleId) ? null : String(saleId));
@@ -170,7 +191,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               Kalan Tutar
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Durum
+              Ödeme Durumu
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Fatura Durumu
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               İşlemler
@@ -180,7 +204,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         <tbody className="bg-white divide-y divide-gray-200">
           {(!sales || sales.length === 0) ? (
             <tr>
-              <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={12} className="px-6 py-8 text-center text-gray-500">
                 Henüz satış kaydı bulunmuyor
               </td>
             </tr>
@@ -240,11 +264,9 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {renderStatusBadge(statusStr ?? undefined, paidAmount, remainingAmount)}
-                    {hasInvoice && (
-                      <span className="block mt-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Fatura Oluşturuldu
-                      </span>
-                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    {renderInvoiceStatusBadge(sale)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm" onClick={(e) => e.stopPropagation()}>
                     <div className="relative">
@@ -284,16 +306,29 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               Düzenle
                             </button>
                             {hasInvoice ? (
-                              <button data-allow-raw="true"
-                                onClick={() => {
-                                  onViewInvoice?.(sale);
-                                  closeOverflowMenu();
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <FileText className="w-4 h-4 mr-2" />
-                                Fatura Önizle
-                              </button>
+                              <>
+                                <button data-allow-raw="true"
+                                  onClick={() => {
+                                    onViewInvoice?.(sale);
+                                    closeOverflowMenu();
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                  <FileText className="w-4 h-4 mr-2" />
+                                  Fatura Görüntüle
+                                </button>
+                                <button data-allow-raw="true"
+                                  onClick={() => {
+                                    // TODO: Implement e-invoice sending
+                                    console.log('E-fatura gönder:', sale.id);
+                                    closeOverflowMenu();
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                  <Send className="w-4 h-4 mr-2" />
+                                  E-Fatura Gönder
+                                </button>
+                              </>
                             ) : (
                               <button data-allow-raw="true"
                                 onClick={() => {
@@ -303,7 +338,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                               >
                                 <FileText className="w-4 h-4 mr-2" />
-                                Fatura Oluştur
+                                Fatura Kes
                               </button>
                             )}
                             <button data-allow-raw="true"

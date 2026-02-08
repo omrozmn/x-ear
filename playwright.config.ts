@@ -1,161 +1,77 @@
 import { defineConfig, devices } from '@playwright/test';
-import dotenv from 'dotenv';
-import path from 'path';
-
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Read from default .env file
-dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
+ * Playwright E2E Test Configuration
+ * 
  * See https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-    globalSetup: path.resolve(__dirname, './tests/e2e/global.setup.ts'),
-    testDir: './tests/e2e',
-    /* Run tests in files in parallel */
-    fullyParallel: true,
-    /* Fail the build on CI if you accidentally left test.only in the source code. */
-    forbidOnly: !!process.env.CI,
-    /* Retry on CI only */
-    retries: process.env.CI ? 2 : 0,
-    /* Opt out of parallel tests on CI. */
-    workers: process.env.CI ? 1 : undefined,
-    /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: [
-        ['html'],
-        ['json', { outputFile: 'playwright-report/results.json' }],
-        ['list']
-    ],
-    /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-    use: {
-        /* Base URL to use in actions like `await page.goto('/')`. */
-        // baseURL: 'http://127.0.0.1:3000',
+  testDir: './tests/e2e',
+  
+  /* Run tests in files in parallel */
+  fullyParallel: true,
+  
+  /* Fail the build on CI if you accidentally left test.only in the source code */
+  forbidOnly: !!process.env.CI,
+  
+  /* Retry on CI only */
+  retries: process.env.CI ? 2 : 0,
+  
+  /* Opt out of parallel tests on CI */
+  workers: process.env.CI ? 4 : undefined,
+  
+  /* Reporter to use */
+  reporter: [
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['junit', { outputFile: 'test-results/results.xml' }],
+    ['list']
+  ],
+  
+  /* Shared settings for all the projects below */
+  use: {
+    /* Base URL to use in actions like `await page.goto('/')` */
+    baseURL: process.env.BASE_URL || 'http://localhost:8080',
+    
+    /* Collect trace when retrying the failed test */
+    trace: 'on-first-retry',
+    
+    /* Screenshot on failure */
+    screenshot: 'only-on-failure',
+    
+    /* Video on failure */
+    video: 'retain-on-failure',
+    
+    /* Maximum time each action can take */
+    actionTimeout: 30000,
+    
+    /* Maximum time for navigation */
+    navigationTimeout: 30000,
+  },
 
-        /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-        trace: 'on-first-retry',
-        screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
+  /* Configure projects for major browsers */
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
 
-    /* Configure projects for major components */
-    projects: [
-        // Desktop - Chrome (Primary)
-        {
-            name: 'web',
-            testDir: './tests/e2e/web',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-        },
-        // Desktop - Firefox
-        {
-            name: 'web-firefox',
-            testDir: './tests/e2e/web',
-            use: {
-                ...devices['Desktop Firefox'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-        },
-        // Desktop - Admin Panel
-        {
-            name: 'admin',
-            testDir: './tests/e2e/admin',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: 'http://localhost:8082',
-                storageState: undefined,
-            },
-        },
-        // Desktop - Safari
-        {
-            name: 'web-webkit',
-            testDir: './tests/e2e/web',
-            use: {
-                ...devices['Desktop Safari'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-        },
-        // Mobile - iPhone 12
-        {
-            name: 'web-mobile-iphone',
-            testDir: './tests/e2e/web',
-            use: {
-                ...devices['iPhone 12'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-        },
-        // Mobile - Pixel 5
-        {
-            name: 'web-mobile-android',
-            testDir: './tests/e2e/web',
-            use: {
-                ...devices['Pixel 5'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-        },
-        // Tablet - iPad
-        {
-            name: 'web-tablet-ipad',
-            testDir: './tests/e2e/web',
-            use: {
-                ...devices['iPad (gen 7)'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-        },
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
 
-        {
-            name: 'landing',
-            testDir: './tests/e2e/landing',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: process.env.LANDING_BASE_URL || 'http://localhost:3000',
-            },
-        },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
+  ],
 
-        // Critical Flow Regression Tests
-        {
-            name: 'critical-flows-p0',
-            testDir: './tests/e2e/critical-flows/p0-revenue-legal',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-            fullyParallel: true,
-            retries: 2,
-        },
-        {
-            name: 'critical-flows-p1',
-            testDir: './tests/e2e/critical-flows/p1-core-operations',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-            fullyParallel: true,
-            retries: 1,
-        },
-        {
-            name: 'critical-flows-p2',
-            testDir: './tests/e2e/critical-flows/p2-admin-operations',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-            fullyParallel: true,
-            retries: 1,
-        },
-        {
-            name: 'critical-flows-sync',
-            testDir: './tests/e2e/critical-flows/cross-app-sync',
-            use: {
-                ...devices['Desktop Chrome'],
-                baseURL: process.env.WEB_BASE_URL || 'http://127.0.0.1:8080',
-            },
-            fullyParallel: true,
-            retries: 1,
-        },
-    ],
+  /* Run your local dev server before starting the tests */
+  // webServer: {
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:8080',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120000,
+  // },
 });

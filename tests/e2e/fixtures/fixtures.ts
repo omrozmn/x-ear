@@ -19,12 +19,19 @@ export type TestFixtures = {
 
 export const test = base.extend<TestFixtures & TestOptions>({
     // Fixture for a standard tenant user
-    tenantPage: async ({ page, request }, use) => {
+    tenantPage: async ({ browser, request }, use) => {
+        // Create new context with baseURL
+        const webUrl = process.env.WEB_BASE_URL || process.env.BASE_URL || 'http://localhost:8080';
+        const context = await browser.newContext({
+            baseURL: webUrl
+        });
+        const page = await context.newPage();
+        
         // 0. Enable Console Logging for Debugging
         page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
 
         // 1. Login via API
-        const tokens = await login(request, process.env.TEST_USER_EMAIL || 'admin@x-ear.com', process.env.TEST_USER_PASSWORD || 'password123');
+        const tokens = await login(request, process.env.TEST_USER_EMAIL || 'admin@xear.com', process.env.TEST_USER_PASSWORD || 'Admin123!');
 
         // 2. Real Backend Mode - No Mocks
         console.log('[Fixture] Running against REAL BACKEND (No Mocks)');
@@ -71,21 +78,24 @@ export const test = base.extend<TestFixtures & TestOptions>({
         }
 
         await use(page);
+        await context.close();
     },
 
     // Fixture for an admin user
     adminPage: async ({ browser, request }, use) => {
-        const context = await browser.newContext();
+        const adminUrl = process.env.ADMIN_BASE_URL || 'http://localhost:8082';
+        const context = await browser.newContext({
+            baseURL: adminUrl
+        });
         const page = await context.newPage();
 
         // Login as admin
-        const tokens = await login(request, process.env.ADMIN_USER_EMAIL || 'admin@example.com', process.env.ADMIN_USER_PASSWORD || 'Password123!');
+        const tokens = await login(request, process.env.ADMIN_USER_EMAIL || 'admin@xear.com', process.env.ADMIN_USER_PASSWORD || 'Admin123!');
         // NOTE: Admin uses email/password. Login helper handles "identifier" which accepts email.
 
         // If admin is on a different port (8082), we should probably respect that in setupAuthenticatedPage or manually do it.
         // For now, let's assume we can set localStorage on the admin origin.
-        const adminUrl = process.env.ADMIN_BASE_URL || 'http://localhost:8082';
-        await page.goto(adminUrl);
+        await page.goto('/');
 
         await page.evaluate((data) => {
             // Set Zustand persistent storage for AuthStore
@@ -129,6 +139,28 @@ export const test = base.extend<TestFixtures & TestOptions>({
     authTokens: async ({ request }, use) => {
         const tokens = await login(request);
         await use(tokens);
+    },
+
+    // API Context with authentication
+    apiContext: async ({ playwright }, use) => {
+        // First create a temporary context for login
+        const tempContext = await playwright.request.newContext({
+            baseURL: process.env.API_BASE_URL || 'http://localhost:5003',
+        });
+        
+        const tokens = await login(tempContext, 'admin@xear.com', 'Admin123!');
+        await tempContext.dispose();
+        
+        // Now create the authenticated context
+        const context = await playwright.request.newContext({
+            baseURL: process.env.API_BASE_URL || 'http://localhost:5003',
+            extraHTTPHeaders: {
+                'Authorization': `Bearer ${tokens.accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        await use(context);
+        await context.dispose();
     },
 });
 

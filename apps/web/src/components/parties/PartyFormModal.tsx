@@ -355,6 +355,7 @@ export function PartyFormModal({
       size="xl"
       showFooter={false}
       className={className}
+      data-testid="party-form-modal"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Personal Information */}
@@ -415,6 +416,7 @@ export function PartyFormModal({
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 placeholder="Hasta adı"
                 className="h-10 w-full"
+                data-testid="party-first-name-input"
               />
               {errors.firstName && (
                 <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
@@ -431,6 +433,7 @@ export function PartyFormModal({
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 placeholder="Hasta soyadı"
                 className="h-10 w-full"
+                data-testid="party-last-name-input"
               />
               {errors.lastName && (
                 <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
@@ -450,6 +453,7 @@ export function PartyFormModal({
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="0555 123 45 67"
                 className="h-10 w-full"
+                data-testid="party-phone-input"
               />
               {errors.phone && (
                 <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
@@ -515,6 +519,7 @@ export function PartyFormModal({
                 placeholder="Mahalle, sokak, bina no"
                 rows={2}
                 className="resize-none w-full"
+                data-testid="party-address-input"
               />
               {errors.address && (
                 <p className="mt-1 text-sm text-red-600">{errors.address}</p>
@@ -531,6 +536,7 @@ export function PartyFormModal({
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 placeholder="ornek@email.com"
                 className="h-10 w-full"
+                data-testid="party-email-input"
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -649,6 +655,7 @@ export function PartyFormModal({
             onClick={handleClose}
             disabled={isSubmitting || externalLoading}
             variant="ghost"
+            data-testid="party-cancel-button"
           >
             İptal
           </Button>
@@ -656,6 +663,7 @@ export function PartyFormModal({
             type="submit"
             disabled={isSubmitting || externalLoading}
             variant="primary"
+            data-testid="party-submit-button"
           >
             {(isSubmitting || externalLoading) ? 'Kaydediliyor...' : (initialData ? 'Güncelle' : 'Kaydet')}
           </Button>

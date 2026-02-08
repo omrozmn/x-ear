@@ -1,0 +1,1431 @@
+{
+  "config": {
+    "configFile": "/Users/omerozmen/Desktop/x-ear web app/x-ear/playwright.config.ts",
+    "rootDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 6
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.1",
+    "workers": 6,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth/login.spec.ts",
+      "file": "auth/login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login Flow",
+          "file": "auth/login.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "AUTH-001: Should display login form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7057,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:48.995Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-bf6be156998ca845d5b6",
+              "file": "auth/login.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "AUTH-002: Should login with valid credentials",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 18978,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:49.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-7d68186d424403758c84",
+              "file": "auth/login.spec.ts",
+              "line": 22,
+              "column": 3
+            },
+            {
+              "title": "AUTH-003: Should show error with invalid credentials",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 7281,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:49.057Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-4c04fff97763754bc3d9",
+              "file": "auth/login.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "AUTH-004: Should show validation error for empty fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6961,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:49.021Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-f846ea83da7b1ae4e920",
+              "file": "auth/login.spec.ts",
+              "line": 46,
+              "column": 3
+            },
+            {
+              "title": "AUTH-005: Should logout successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                        "line": 52,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:48.433Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                            "line": 52,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-ca241eae17c4817d7774",
+              "file": "auth/login.spec.ts",
+              "line": 52,
+              "column": 8
+            },
+            {
+              "title": "AUTH-006: Should remember credentials when \"Remember Me\" is checked",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                        "line": 69,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:48.433Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                            "line": 69,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-f8dc7366410aca7475a0",
+              "file": "auth/login.spec.ts",
+              "line": 69,
+              "column": 8
+            },
+            {
+              "title": "AUTH-007: Should toggle password visibility",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 6884,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:49.054Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-332cef1d473c20ea6d70",
+              "file": "auth/login.spec.ts",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "AUTH-008: Should handle session timeout",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                        "line": 116,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:48.433Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                            "line": 116,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-ca69f77e9ee9661352c9",
+              "file": "auth/login.spec.ts",
+              "line": 116,
+              "column": 8
+            },
+            {
+              "title": "AUTH-009: Should prevent access to protected routes when not logged in",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                        "line": 132,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:48.433Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                            "line": 132,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-669bcd043748c543d41b",
+              "file": "auth/login.spec.ts",
+              "line": 132,
+              "column": 8
+            },
+            {
+              "title": "AUTH-010: Should login with different user roles",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                        "line": 141,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:48.434Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/auth/login.spec.ts",
+                            "line": 141,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "231ca1f0f4db3e4958c3-1235ccfc997630f99861",
+              "file": "auth/login.spec.ts",
+              "line": 141,
+              "column": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "party/party-crud.spec.ts",
+      "file": "party/party-crud.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Party CRUD Operations",
+          "file": "party/party-crud.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PARTY-001: Should display parties list page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 20843,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:48.998Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-850936b88259aa9742f5",
+              "file": "party/party-crud.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "PARTY-002: Should open party creation modal",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 23918,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n    at expectModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts:39:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:40:11",
+                        "location": {
+                          "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts",
+                          "column": 64,
+                          "line": 39
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m../helpers/assertions.ts:39\n\n  37 |   modalTestId: string\n  38 | ): Promise<void> {\n> 39 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  40 | }\n  41 |\n  42 | /**"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts",
+                            "column": 64,
+                            "line": 39
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n\n   at ../helpers/assertions.ts:39\n\n  37 |   modalTestId: string\n  38 | ): Promise<void> {\n> 39 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  40 | }\n  41 |\n  42 | /**\n    at expectModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts:39:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:40:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:56.242Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-308c6-d-open-party-creation-modal-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-308c6-d-open-party-creation-modal-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-308c6-d-open-party-creation-modal-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/assertions.ts",
+                        "column": 64,
+                        "line": 39
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-ab0cb5caa0d2c5189cbc",
+              "file": "party/party-crud.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "PARTY-003: Should create a new party with valid data",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "timedOut",
+                      "duration": 30955,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts",
+                            "column": 61,
+                            "line": 34
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"party-create-button\"]')\u001b[22m\n\n\n   at ../helpers/party.ts:34\n\n  32 |   \n  33 |   // Click create button\n> 34 |   await page.locator('[data-testid=\"party-create-button\"]').click();\n     |                                                             ^\n  35 |   \n  36 |   // Wait for modal to open\n  37 |   await waitForModalOpen(page, 'party-form-modal');\n    at createParty (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts:34:61)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:52:21"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:56.341Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-f9b8c-a-new-party-with-valid-data-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-f9b8c-a-new-party-with-valid-data-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-f9b8c-a-new-party-with-valid-data-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-5eda2ef5dc9174116110",
+              "file": "party/party-crud.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "PARTY-004: Should show validation errors for required fields",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 24508,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:71:11",
+                        "location": {
+                          "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                          "column": 64,
+                          "line": 74
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                            "column": 64,
+                            "line": 74
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n\n   at ../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:71:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:56.369Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-6e4ee--errors-for-required-fields-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-6e4ee--errors-for-required-fields-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-6e4ee--errors-for-required-fields-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                        "column": 64,
+                        "line": 74
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-3260b3f401d3d66d94b7",
+              "file": "party/party-crud.spec.ts",
+              "line": 67,
+              "column": 3
+            },
+            {
+              "title": "PARTY-005: Should validate phone number format",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 23954,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:85:11",
+                        "location": {
+                          "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                          "column": 64,
+                          "line": 74
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                            "column": 64,
+                            "line": 74
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n\n   at ../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:85:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:47:57.366Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-1f4b2-alidate-phone-number-format-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-1f4b2-alidate-phone-number-format-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-1f4b2-alidate-phone-number-format-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                        "column": 64,
+                        "line": 74
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-e36d9d53fc7940d2198f",
+              "file": "party/party-crud.spec.ts",
+              "line": 81,
+              "column": 3
+            },
+            {
+              "title": "PARTY-006: Should validate email format",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 19632,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:103:11",
+                        "location": {
+                          "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                          "column": 64,
+                          "line": 74
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                            "column": 64,
+                            "line": 74
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n\n   at ../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:103:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:08.359Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-edc19-hould-validate-email-format-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-edc19-hould-validate-email-format-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-edc19-hould-validate-email-format-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                        "column": 64,
+                        "line": 74
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-fb9acae7010d1663b989",
+              "file": "party/party-crud.spec.ts",
+              "line": 99,
+              "column": 3
+            },
+            {
+              "title": "PARTY-007: Should search parties by name",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "timedOut",
+                      "duration": 32725,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts",
+                            "column": 61,
+                            "line": 34
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"party-create-button\"]')\u001b[22m\n\n\n   at ../helpers/party.ts:34\n\n  32 |   \n  33 |   // Click create button\n> 34 |   await page.locator('[data-testid=\"party-create-button\"]').click();\n     |                                                             ^\n  35 |   \n  36 |   // Wait for modal to open\n  37 |   await waitForModalOpen(page, 'party-form-modal');\n    at createParty (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts:34:61)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:121:21"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:10.261Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-c3f5a-ould-search-parties-by-name-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-c3f5a-ould-search-parties-by-name-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-c3f5a-ould-search-parties-by-name-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-5ff6936f85d872ae3efa",
+              "file": "party/party-crud.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "PARTY-008: Should search parties by phone",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 4,
+                      "status": "timedOut",
+                      "duration": 30719,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts",
+                            "column": 61,
+                            "line": 34
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"party-create-button\"]')\u001b[22m\n\n\n   at ../helpers/party.ts:34\n\n  32 |   \n  33 |   // Click create button\n> 34 |   await page.locator('[data-testid=\"party-create-button\"]').click();\n     |                                                             ^\n  35 |   \n  36 |   // Wait for modal to open\n  37 |   await waitForModalOpen(page, 'party-form-modal');\n    at createParty (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts:34:61)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:138:21"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:23.123Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-418f8-uld-search-parties-by-phone-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-418f8-uld-search-parties-by-phone-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-418f8-uld-search-parties-by-phone-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-cbf9e4ac1e9be0a0e6c9",
+              "file": "party/party-crud.spec.ts",
+              "line": 135,
+              "column": 3
+            },
+            {
+              "title": "PARTY-009: Should update party information",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 30693,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts",
+                            "column": 61,
+                            "line": 34
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"party-create-button\"]')\u001b[22m\n\n\n   at ../helpers/party.ts:34\n\n  32 |   \n  33 |   // Click create button\n> 34 |   await page.locator('[data-testid=\"party-create-button\"]').click();\n     |                                                             ^\n  35 |   \n  36 |   // Wait for modal to open\n  37 |   await waitForModalOpen(page, 'party-form-modal');\n    at createParty (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts:34:61)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:155:21"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:23.121Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-70ac1-ld-update-party-information-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-70ac1-ld-update-party-information-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-70ac1-ld-update-party-information-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-d6f9658fc9735c42daa5",
+              "file": "party/party-crud.spec.ts",
+              "line": 152,
+              "column": 3
+            },
+            {
+              "title": "PARTY-010: Should delete party",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "timedOut",
+                      "duration": 30295,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts",
+                            "column": 61,
+                            "line": 34
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"party-create-button\"]')\u001b[22m\n\n\n   at ../helpers/party.ts:34\n\n  32 |   \n  33 |   // Click create button\n> 34 |   await page.locator('[data-testid=\"party-create-button\"]').click();\n     |                                                             ^\n  35 |   \n  36 |   // Wait for modal to open\n  37 |   await waitForModalOpen(page, 'party-form-modal');\n    at createParty (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts:34:61)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:180:21"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:23.458Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-16179-RTY-010-Should-delete-party-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-16179-RTY-010-Should-delete-party-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-16179-RTY-010-Should-delete-party-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-f5a82d3e11d801bd5829",
+              "file": "party/party-crud.spec.ts",
+              "line": 177,
+              "column": 3
+            },
+            {
+              "title": "PARTY-011: Should cancel party creation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 17650,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:199:11",
+                        "location": {
+                          "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                          "column": 64,
+                          "line": 74
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                            "column": 64,
+                            "line": 74
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"party-form-modal\"]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"party-form-modal\"]')\u001b[22m\n\n\n   at ../helpers/wait.ts:74\n\n  72 |   modalTestId: string\n  73 | ): Promise<void> {\n> 74 |   await expect(page.locator(`[data-testid=\"${modalTestId}\"]`)).toBeVisible({ timeout: 5000 });\n     |                                                                ^\n  75 | }\n  76 |\n  77 | /**\n    at waitForModalOpen (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts:74:64)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:199:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:30.835Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-48c2c-hould-cancel-party-creation-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-48c2c-hould-cancel-party-creation-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-48c2c-hould-cancel-party-creation-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/wait.ts",
+                        "column": 64,
+                        "line": 74
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-5311bae26bf68a7bc7d2",
+              "file": "party/party-crud.spec.ts",
+              "line": 195,
+              "column": 3
+            },
+            {
+              "title": "PARTY-012: Should display party details",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 30308,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts",
+                            "column": 61,
+                            "line": 34
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"party-create-button\"]')\u001b[22m\n\n\n   at ../helpers/party.ts:34\n\n  32 |   \n  33 |   // Click create button\n> 34 |   await page.locator('[data-testid=\"party-create-button\"]').click();\n     |                                                             ^\n  35 |   \n  36 |   // Wait for modal to open\n  37 |   await waitForModalOpen(page, 'party-form-modal');\n    at createParty (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/helpers/party.ts:34:61)\n    at /Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/party/party-crud.spec.ts:214:21"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:32.034Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-e4716-hould-display-party-details-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-e4716-hould-display-party-details-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/omerozmen/Desktop/x-ear web app/x-ear/test-results/party-party-crud-Party-CRU-e4716-hould-display-party-details-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-8274e3c79b8052c670f6",
+              "file": "party/party-crud.spec.ts",
+              "line": 211,
+              "column": 3
+            },
+            {
+              "title": "PARTY-013: Should filter parties by status",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 8328,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:45.676Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-6026c882c8b1c679979d",
+              "file": "party/party-crud.spec.ts",
+              "line": 229,
+              "column": 3
+            },
+            {
+              "title": "PARTY-014: Should paginate through parties list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6371,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:50.147Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-85c1354c4d01fd34202c",
+              "file": "party/party-crud.spec.ts",
+              "line": 244,
+              "column": 3
+            },
+            {
+              "title": "PARTY-015: Should export parties list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4697,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-03T19:48:54.727Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6be68c019f40e29fdc03-dac0bbb4879e63486b82",
+              "file": "party/party-crud.spec.ts",
+              "line": 260,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-03T19:47:48.402Z",
+    "duration": 74418.346,
+    "expected": 9,
+    "skipped": 5,
+    "unexpected": 11,
+    "flaky": 0
+  }
+}

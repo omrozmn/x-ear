@@ -151,6 +151,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
 
   return (
     <div
+      data-testid={`${toast.type}-toast`}
       className={cn(
         'transform transition-all duration-300 ease-in-out',
         isVisible && !isLeaving ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0',

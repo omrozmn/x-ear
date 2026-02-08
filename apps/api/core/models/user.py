@@ -45,12 +45,19 @@ class User(BaseModel, TenantScopedMixin):
     affiliate_code = db.Column(db.String(50), nullable=True, index=True)
 
     def set_password(self, password):
-        """Hash and set password"""
-        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
+        """Hash and set password using passlib bcrypt"""
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self.password_hash = pwd_context.hash(password)
 
     def check_password(self, password):
-        """Check password against hash"""
-        return check_password_hash(self.password_hash, password)
+        """Check password against hash using passlib"""
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        try:
+            return pwd_context.verify(password, self.password_hash)
+        except Exception:
+            return False
 
     @property
     def full_name(self):

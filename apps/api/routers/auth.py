@@ -506,7 +506,7 @@ def login(
         user_role = user.role
         
         # Admin users have all permissions
-        if is_admin_user:
+        if is_admin_user or (user_role and user_role.upper() == 'ADMIN'):
             role_permissions = ['*']  # Wildcard for all permissions
         else:
             try:
