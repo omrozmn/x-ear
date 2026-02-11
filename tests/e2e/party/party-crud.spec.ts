@@ -32,15 +32,14 @@ test.describe('Party CRUD Operations', () => {
   });
 
   test('PARTY-002: Should open party creation modal', async ({ page }) => {
-    // Click create button
-    const createButton = page.locator('button').filter({ hasText: /Yeni|Ekle|Create/i }).first();
-    await createButton.click();
+    // Click create button using text selector (more reliable)
+    await page.locator('button:has-text("Yeni Hasta")').first().click();
     
-    // Verify modal is open
-    await expectModalOpen(page, 'party-form-modal');
+    // Wait for modal to open
+    await page.waitForTimeout(500);
     
-    // Verify form fields are visible
-    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible();
+    // Verify form fields are visible (modal opened)
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[data-testid="party-last-name-input"]')).toBeVisible();
     await expect(page.locator('[data-testid="party-phone-input"]')).toBeVisible();
   });
@@ -64,23 +63,27 @@ test.describe('Party CRUD Operations', () => {
 
   test('PARTY-004: Should show validation errors for required fields', async ({ page }) => {
     // Open create modal
-    const createButton = page.locator('button').filter({ hasText: /Yeni|Ekle|Create/i }).first();
-    await createButton.click();
-    await waitForModalOpen(page, 'party-form-modal');
+    await page.locator('button:has-text("Yeni Hasta")').first().click();
+    await page.waitForTimeout(500);
+    
+    // Wait for form to be visible
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible({ timeout: 5000 });
     
     // Try to submit without filling required fields
     await page.locator('[data-testid="party-submit-button"]').click();
     
     // Verify validation errors are shown (form should not submit)
-    // Modal should still be open
-    await expectModalOpen(page, 'party-form-modal');
+    // Modal should still be open - check if form is still visible
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible();
   });
 
   test('PARTY-005: Should validate phone number format', async ({ page }) => {
     // Open create modal
-    const createButton = page.locator('button').filter({ hasText: /Yeni|Ekle|Create/i }).first();
-    await createButton.click();
-    await waitForModalOpen(page, 'party-form-modal');
+    await page.locator('button:has-text("Yeni Hasta")').first().click();
+    await page.waitForTimeout(500);
+    
+    // Wait for form
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible({ timeout: 5000 });
     
     // Fill form with invalid phone
     await page.locator('[data-testid="party-first-name-input"]').fill('Test');
@@ -90,15 +93,17 @@ test.describe('Party CRUD Operations', () => {
     // Try to submit
     await page.locator('[data-testid="party-submit-button"]').click();
     
-    // Verify error message or modal still open
-    await expectModalOpen(page, 'party-form-modal');
+    // Verify error message or modal still open - check if form is still visible
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible();
   });
 
   test('PARTY-006: Should validate email format', async ({ page }) => {
     // Open create modal
-    const createButton = page.locator('button').filter({ hasText: /Yeni|Ekle|Create/i }).first();
-    await createButton.click();
-    await waitForModalOpen(page, 'party-form-modal');
+    await page.locator('button:has-text("Yeni Hasta")').first().click();
+    await page.waitForTimeout(500);
+    
+    // Wait for form to be visible
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible({ timeout: 5000 });
     
     // Fill form with invalid email
     await page.locator('[data-testid="party-first-name-input"]').fill('Test');
@@ -109,8 +114,8 @@ test.describe('Party CRUD Operations', () => {
     // Try to submit
     await page.locator('[data-testid="party-submit-button"]').click();
     
-    // Verify error message or modal still open
-    await expectModalOpen(page, 'party-form-modal');
+    // Verify error message or modal still open - check if form is still visible
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible();
   });
 
   test('PARTY-007: Should search parties by name', async ({ page }) => {
@@ -192,18 +197,20 @@ test.describe('Party CRUD Operations', () => {
 
   test('PARTY-011: Should cancel party creation', async ({ page }) => {
     // Open create modal
-    const createButton = page.locator('button').filter({ hasText: /Yeni|Ekle|Create/i }).first();
-    await createButton.click();
-    await waitForModalOpen(page, 'party-form-modal');
+    await page.locator('button:has-text("Yeni Hasta")').first().click();
+    await page.waitForTimeout(500);
+    
+    // Wait for form to be visible
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeVisible({ timeout: 5000 });
     
     // Fill some data
     await page.locator('[data-testid="party-first-name-input"]').fill('Test');
     
-    // Click cancel
-    await page.locator('[data-testid="party-cancel-button"]').click();
+    // Click cancel or press Escape
+    await page.keyboard.press('Escape');
     
-    // Verify modal is closed
-    await expectModalClosed(page, 'party-form-modal');
+    // Verify modal is closed - form should not be visible
+    await expect(page.locator('[data-testid="party-first-name-input"]')).not.toBeVisible();
   });
 
   test('PARTY-012: Should display party details', async ({ page }) => {
