@@ -86,8 +86,8 @@ class TenantUpdate(AppBaseModel):
 
 class TenantRead(TenantBase, IDMixin, TimestampMixin):
     """Schema for reading a tenant"""
-    # Product Identification (Strict)
-    product_code: ProductCode = Field(..., description="Product Code")
+    # Product Identification (Optional - some old tenants may not have it)
+    product_code: Optional[ProductCode] = Field(None, description="Product Code")
 
     # Subscription info
     plan_id: Optional[str] = Field(None, alias="planId")
@@ -101,8 +101,8 @@ class TenantRead(TenantBase, IDMixin, TimestampMixin):
     
     # Settings
     settings: Optional[Dict[str, Any]] = Field(None, description="Tenant settings")
-    max_users: int = Field(..., alias="maxUsers")
-    current_users: int = Field(..., alias="currentUsers")
+    max_users: Optional[int] = Field(None, alias="maxUsers")
+    current_users: Optional[int] = Field(None, alias="currentUsers")
     owner_email: Optional[str] = Field(None, alias="ownerEmail")
     billing_email: Optional[str] = Field(None, alias="billingEmail")
     status: TenantStatus = Field(...)

@@ -314,7 +314,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
           {!searchTerm && Object.keys(filters).length === 0 && (
             <Button
               onClick={() => setShowCreateModal(true)}
-              data-testid="party-create-button"
+              data-testid="party-create-button-empty-state"
             >
               Yeni Hasta Ekle
             </Button>

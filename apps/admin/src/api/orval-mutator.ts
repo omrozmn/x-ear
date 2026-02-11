@@ -51,9 +51,23 @@ axiosInstance.interceptors.request.use(
         // Add Idempotency-Key for write operations (POST, PUT, PATCH)
         const method = config.method?.toUpperCase() || 'GET';
         if (['POST', 'PUT', 'PATCH'].includes(method)) {
-            const existingKey = config.headers['Idempotency-Key'];
+            // Ensure headers object exists
+            config.headers = config.headers || {};
+            
+            // Check if Idempotency-Key already exists
+            const existingKey = config.headers['Idempotency-Key'] || 
+                               (config.headers.get && config.headers.get('Idempotency-Key'));
+            
             if (!existingKey) {
-                config.headers['Idempotency-Key'] = generateIdempotencyKey();
+                const idempotencyKey = generateIdempotencyKey();
+                // Try both methods for Axios compatibility
+                if (config.headers.set && typeof config.headers.set === 'function') {
+                    config.headers.set('Idempotency-Key', idempotencyKey);
+                } else {
+                    // @ts-ignore
+                    config.headers['Idempotency-Key'] = idempotencyKey;
+                }
+                console.log(`[Orval Request] Added Idempotency-Key: ${idempotencyKey}`);
             }
         }
 

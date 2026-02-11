@@ -25,7 +25,7 @@ import { useGlobalError } from '../hooks/useGlobalError';
 import { PARTY_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
-import { useUpdateParty } from '../hooks/useParties';
+import { useUpdateParty, useDeleteParty } from '../hooks/useParties';
 import { partyApiService } from '../services/party/party-api.service';
 // import type { Party } from '../types/party'; // Type inferred from useParty hook
 
@@ -48,6 +48,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
   const { party, isLoading, error, refetch } = useParty(partyId);
   const updatePartyMutation = useUpdateParty();
+  const deletePartyMutation = useDeleteParty();
   const { devices } = usePartyDevices(partyId ?? '');
   const { sales } = usePartySales(partyId);
   const { timeline } = usePartyTimeline(partyId);
@@ -110,6 +111,35 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     navigate({ to: '/parties' });
   };
 
+  const handleDelete = async () => {
+    if (!partyId || !party) {
+      console.log('[DELETE] No partyId or party');
+      return;
+    }
+    
+    console.log('[DELETE] Starting delete for party:', partyId);
+    
+    const confirmed = window.confirm(
+      `${party.firstName} ${party.lastName} isimli hastayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`
+    );
+    
+    if (!confirmed) {
+      console.log('[DELETE] User cancelled');
+      return;
+    }
+    
+    console.log('[DELETE] User confirmed, calling mutation');
+    
+    try {
+      await deletePartyMutation.mutateAsync(partyId);
+      console.log('[DELETE] Mutation successful, navigating to /parties');
+      navigate({ to: '/parties' });
+    } catch (err) {
+      console.error('[DELETE] Error during deletion:', err);
+      showError('Hasta silinirken bir hata oluştu');
+    }
+  };
+
   const renderContent = () => {
     if (!partyId) {
       return <NotFoundError resource="hasta ID" />;
@@ -160,6 +190,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
           onTagUpdate={() => setShowTagModal(true)}
           onAddNote={() => setShowNoteModal(true)}
           onGenerateReport={() => setShowReportModal(true)}
+          onDelete={handleDelete}
         />
 
         {/* Quick Stats */}

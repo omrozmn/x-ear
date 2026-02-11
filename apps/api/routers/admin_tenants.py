@@ -71,7 +71,8 @@ class UpdateDocumentStatusRequest(BaseModel):
 @router.get("", operation_id="listAdminTenants")
 def list_tenants(
     page: int = 1,
-    limit: int = 20,
+    perPage: int = 20,  # Changed from 'limit' to match frontend convention
+    limit: Optional[int] = None,  # Keep for backward compatibility
     status: str = "",
     search: str = "",
     product_code: Optional[ProductCode] = None,
@@ -80,6 +81,9 @@ def list_tenants(
 ):
     """List all tenants"""
     try:
+        # Use perPage if provided, otherwise fall back to limit
+        page_size = perPage if perPage else (limit if limit else 20)
+        
         query = db_session.query(Tenant).filter(Tenant.deleted_at.is_(None))
         
         if status:
@@ -94,7 +98,7 @@ def list_tenants(
         
         query = query.order_by(Tenant.created_at.desc())
         total = query.count()
-        tenants = query.offset((page - 1) * limit).limit(limit).all()
+        tenants = query.offset((page - 1) * page_size).limit(page_size).all()
         
         # Get user counts
         tenant_ids = [t.id for t in tenants]
@@ -114,7 +118,7 @@ def list_tenants(
         
         return ResponseEnvelope(data={
             "tenants": tenants_list,
-            "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
+            "pagination": {"page": page, "perPage": page_size, "total": total, "totalPages": (total + page_size - 1) // page_size}
         })
     except Exception as e:
         logger.error(f"List tenants error: {e}")
@@ -124,7 +128,7 @@ def list_tenants(
 def create_tenant(
     request_data: TenantCreate,
     db_session: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_admin())
+    access: UnifiedAccess = Depends(require_access("admin.tenants.create"))
 ):
     """Create tenant"""
     try:
@@ -154,7 +158,7 @@ def create_tenant(
         logger.error(f"Create tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{tenant_id}", operation_id="getAdminTenant")
+@router.get("/{tenant_id}", operation_id="getAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def get_tenant(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -165,7 +169,7 @@ def get_tenant(
     if not tenant or tenant.deleted_at:
         raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
     # Use Pydantic schema for type-safe serialization (NO to_dict())
-    return ResponseEnvelope(data={"tenant": TenantRead.model_validate(tenant).model_dump(by_alias=True)})
+    return ResponseEnvelope(data=TenantRead.model_validate(tenant).model_dump(by_alias=True))
 
 @router.put("/{tenant_id}", operation_id="updateAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def update_tenant(
@@ -232,7 +236,7 @@ def get_tenant_users(
     
     users = db_session.query(User).filter_by(tenant_id=tenant_id).all()
     
-    return ResponseEnvelope(data=UserListResponse(users=users))
+    return ResponseEnvelope(data=UserListResponse(users=users, total=len(users)))
 
 @router.post("/{tenant_id}/users", operation_id="createAdminTenantUsers", response_model=ResponseEnvelope[UserResponse])
 def create_tenant_user(
@@ -817,3 +821,86 @@ Belgeler:
     except Exception as e:
         logger.error(f"Send SMS documents email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Party Management (Tenant-specific) ---
+
+@router.get("/{tenant_id}/parties", operation_id="listAdminTenantParties")
+def list_tenant_parties(
+    tenant_id: str,
+    page: int = 1,
+    per_page: int = 50,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """List parties for a specific tenant (admin operation)"""
+    try:
+        logger.info(f"[ADMIN_TENANTS] list_tenant_parties called: tenant_id={tenant_id}, page={page}, per_page={per_page}")
+        from schemas.parties import PartyRead
+        from core.models.party import Party
+        
+        # Verify tenant exists
+        tenant = db_session.get(Tenant, tenant_id)
+        if not tenant or tenant.deleted_at:
+            logger.warning(f"[ADMIN_TENANTS] Tenant not found: {tenant_id}")
+            raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
+        
+        logger.info(f"[ADMIN_TENANTS] Tenant found: {tenant.name}")
+        query = db_session.query(Party).filter_by(tenant_id=tenant_id).order_by(Party.created_at.desc())
+        total = query.count()
+        logger.info(f"[ADMIN_TENANTS] Found {total} parties for tenant {tenant_id}")
+        parties = query.offset((page - 1) * per_page).limit(per_page).all()
+        
+        parties_data = [PartyRead.model_validate(p).model_dump(by_alias=True) for p in parties]
+        
+        logger.info(f"[ADMIN_TENANTS] Returning {len(parties_data)} parties")
+        return ResponseEnvelope(data={
+            "parties": parties_data,
+            "pagination": {
+                "page": page,
+                "perPage": per_page,
+                "total": total,
+                "totalPages": (total + per_page - 1) // per_page
+            }
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[ADMIN_TENANTS] Error in list_tenant_parties: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Sales Management (Tenant-specific) ---
+
+@router.get("/{tenant_id}/sales", operation_id="listAdminTenantSales")
+def list_tenant_sales(
+    tenant_id: str,
+    page: int = 1,
+    per_page: int = 50,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """List sales for a specific tenant (admin operation)"""
+    from schemas.sales import SaleRead
+    from core.models.sales import Sale
+    
+    # Verify tenant exists
+    tenant = db_session.get(Tenant, tenant_id)
+    if not tenant or tenant.deleted_at:
+        raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
+    
+    query = db_session.query(Sale).filter_by(tenant_id=tenant_id).order_by(Sale.created_at.desc())
+    total = query.count()
+    sales = query.offset((page - 1) * per_page).limit(per_page).all()
+    
+    sales_data = [SaleRead.model_validate(s).model_dump(by_alias=True) for s in sales]
+    
+    return ResponseEnvelope(data={
+        "sales": sales_data,
+        "pagination": {
+            "page": page,
+            "perPage": per_page,
+            "total": total,
+            "totalPages": (total + per_page - 1) // per_page
+        }
+    })

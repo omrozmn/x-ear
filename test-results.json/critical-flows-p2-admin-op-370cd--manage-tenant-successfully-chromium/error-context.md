@@ -1,0 +1,117 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - button [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - generic [ref=e8]:
+          - img "X-Ear Logo" [ref=e9]
+          - heading "X-EAR CRM" [level=2] [ref=e10]
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - generic [ref=e13] [cursor=pointer]:
+            - img [ref=e15]
+            - generic [ref=e17]: Dashboard
+        - listitem [ref=e18]:
+          - generic [ref=e19] [cursor=pointer]:
+            - img [ref=e21]
+            - generic [ref=e26]: Patients
+        - listitem [ref=e27]:
+          - generic [ref=e28] [cursor=pointer]:
+            - img [ref=e30]
+            - generic [ref=e32]: Appointments
+        - listitem [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e39]: Invoices
+            - img [ref=e41]
+        - listitem [ref=e43]:
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e46]
+            - generic [ref=e50]: Inventory
+        - listitem [ref=e51]:
+          - generic [ref=e52] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e58]: Suppliers
+        - listitem [ref=e59]:
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e64]: POS
+        - listitem [ref=e65]:
+          - generic [ref=e66] [cursor=pointer]:
+            - img [ref=e68]
+            - generic [ref=e72]: Cashflow
+        - listitem [ref=e73]:
+          - generic [ref=e74] [cursor=pointer]:
+            - img [ref=e76]
+            - generic [ref=e78]: SMS Campaign
+        - listitem [ref=e79]:
+          - generic [ref=e80] [cursor=pointer]:
+            - img [ref=e82]
+            - generic [ref=e85]: Reports
+        - listitem [ref=e86]:
+          - generic [ref=e87] [cursor=pointer]:
+            - img [ref=e89]
+            - generic [ref=e92]: Automation
+        - listitem [ref=e93]:
+          - generic [ref=e94] [cursor=pointer]:
+            - img [ref=e96]
+            - generic [ref=e99]: Settings
+            - img [ref=e101]
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - generic [ref=e105]:
+          - heading "Dashboard" [level=1] [ref=e106]
+          - generic [ref=e108] [cursor=pointer]:
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - img [ref=e113]
+              - generic [ref=e116]: Search or start action with AI...
+            - generic [ref=e118]:
+              - generic [ref=e119]: ⌘
+              - text: K
+          - generic [ref=e120]:
+            - button "Koyu Tema" [ref=e121] [cursor=pointer]:
+              - img [ref=e122]
+            - button "TR" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e129]: TR
+            - button "Notifications" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+            - button "No Tenant" [ref=e136] [cursor=pointer]:
+              - img [ref=e137]
+              - generic [ref=e141]: No Tenant
+              - img [ref=e142]
+            - 'button "Debug: super_admin" [ref=e145] [cursor=pointer]':
+              - img [ref=e146]
+              - generic [ref=e155]: "Debug: super_admin"
+              - img [ref=e156]
+            - button "admin super_admin" [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e164]:
+                - generic [ref=e165]: admin
+                - generic [ref=e166]: super_admin
+              - img [ref=e167]
+      - main [ref=e169]:
+        - generic [ref=e171]:
+          - img [ref=e173]
+          - heading "Sayfa Bulunamadı" [level=2] [ref=e175]
+          - paragraph [ref=e176]: Aradığınız sayfa mevcut değil veya taşınmış olabilir.
+          - link "Ana Sayfaya Dön" [ref=e177] [cursor=pointer]:
+            - /url: /
+  - generic:
+    - contentinfo:
+      - button "Open TanStack Router Devtools" [ref=e178] [cursor=pointer]:
+        - generic [ref=e179]:
+          - img [ref=e181]
+          - img [ref=e216]
+        - generic [ref=e250]: "-"
+        - generic [ref=e251]: TanStack Router
+  - generic [ref=e252]:
+    - img [ref=e254]
+    - button "Open Tanstack query devtools" [ref=e302] [cursor=pointer]:
+      - img [ref=e303]
+```

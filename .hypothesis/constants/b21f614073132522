@@ -1,4 +1,0 @@
-# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/routers/hearing_profiles.py
-# hypothesis_version: 6.150.2
-
-[201, 500, 'HearingProfiles', 'createHearingTest', 'deleteHearingTest', 'listHearingEReceipts', 'listHearingTests', 'pending', 'total', 'updateHearingTest']

@@ -8,10 +8,20 @@ export function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false);
     const userId = 'system'; // In a real app, this would come from auth context
 
-    const { data: notificationsData, refetch } = useListNotifications({
+    // Gracefully handle missing notifications endpoint (404)
+    const { data: notificationsData, refetch, isError } = useListNotifications({
         user_id: userId,
         page: 1
-    } as any);
+    } as any, {
+        query: {
+            retry: false,
+            refetchOnWindowFocus: false,
+            // Suppress errors - notifications are optional
+            onError: (error: any) => {
+                console.warn('[NotificationCenter] Notifications endpoint not available:', error?.response?.status);
+            }
+        }
+    });
 
     const markReadMutation = useUpdateNotificationRead();
 
@@ -20,11 +30,12 @@ export function NotificationCenter() {
             await markReadMutation.mutateAsync({ notificationId: id } as any);
             refetch();
         } catch (error) {
-            console.error(error);
+            console.error('[NotificationCenter] Mark read failed:', error);
         }
     };
 
-    const unreadCount = (notificationsData as any)?.data?.notifications?.filter((n: any) => !n.read).length || 0;
+    // If endpoint returns error, show 0 notifications
+    const unreadCount = isError ? 0 : ((notificationsData as any)?.data?.notifications?.filter((n: any) => !n.read).length || 0);
 
     return (
         <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -49,7 +60,11 @@ export function NotificationCenter() {
                         )}
                     </div>
                     <div className="max-h-[400px] overflow-y-auto">
-                        {(notificationsData as any)?.data?.notifications && (notificationsData as any).data.notifications.length > 0 ? (
+                        {isError ? (
+                            <div className="p-8 text-center text-gray-500 text-sm">
+                                Bildirim servisi şu anda kullanılamıyor.
+                            </div>
+                        ) : (notificationsData as any)?.data?.notifications && (notificationsData as any).data.notifications.length > 0 ? (
                             <div className="divide-y">
                                 {(notificationsData as any).data.notifications.map((notif: any) => (
                                     <div key={notif.id} className={`p-4 hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-indigo-50/50' : ''}`}>

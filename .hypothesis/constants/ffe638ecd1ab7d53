@@ -1,4 +1,0 @@
-# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/ai/runtime/prompt_registry.py
-# hypothesis_version: 6.150.2
-
-['*.txt', '.json', 'PromptTemplate', 'author', 'category', 'contentHash', 'createdAt', 'description', 'execution', 'intent', 'planning', 'prompts', 'r', 'system', 'templateId', 'utf-8', 'validation', 'variables', 'version']

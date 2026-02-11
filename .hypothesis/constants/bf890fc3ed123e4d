@@ -1,4 +1,0 @@
-# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/utils/rate_limit.py
-# hypothesis_version: 6.150.2
-
-[429, 3600, 'Rate limit exceeded', 'error', 'identifier', 'otp_store', 'phone', 'rl', 'success', 'time', 'unknown']

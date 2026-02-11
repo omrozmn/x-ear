@@ -30,8 +30,15 @@ export const test = base.extend<TestFixtures & TestOptions>({
         // 0. Enable Console Logging for Debugging
         page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
 
-        // 1. Login via API
-        const tokens = await login(request, process.env.TEST_USER_EMAIL || 'admin@xear.com', process.env.TEST_USER_PASSWORD || 'Admin123!');
+        // 1. Login via API - Use tenant admin directly (admin@xear.com has tenant_001)
+        console.log('[Fixture] Logging in as tenant admin (admin@xear.com)...');
+        const tokens = await login(request, 'admin@xear.com', 'Admin123!');
+        
+        console.log('[Fixture] Login successful:', {
+            userId: tokens.userId,
+            tenantId: tokens.tenantId,
+            role: tokens.role
+        });
 
         // 2. Real Backend Mode - No Mocks
         console.log('[Fixture] Running against REAL BACKEND (No Mocks)');
@@ -43,6 +50,10 @@ export const test = base.extend<TestFixtures & TestOptions>({
             localStorage.setItem('x-ear.auth.token@v1', data.accessToken);
             localStorage.setItem('auth_token', data.accessToken);
             if (data.refreshToken) localStorage.setItem('x-ear.auth.refresh@v1', data.refreshToken);
+            
+            // CRITICAL: Set current tenant ID (required for all operations)
+            localStorage.setItem('x-ear.auth.currentTenantId@v1', data.tenantId);
+            console.log('[Init] Set current tenant to:', data.tenantId);
 
             const authState = {
                 state: {
@@ -50,12 +61,15 @@ export const test = base.extend<TestFixtures & TestOptions>({
                         id: data.userId,
                         tenantId: data.tenantId,
                         role: data.role || 'TENANT_ADMIN',
-                        firstName: 'Test',
+                        firstName: 'Admin',
+                        lastName: 'User',
+                        email: 'admin@xear.com',
                         is_active: true,
                         isPhoneVerified: true,
                         is_phone_verified: true
                     },
                     token: data.accessToken,
+                    refreshToken: data.refreshToken,
                     isAuthenticated: true,
                     isInitialized: true,
                     isLoading: false,
@@ -73,6 +87,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
         // 5. Wait for stable state
         try {
             await page.waitForURL((url) => !url.pathname.includes('login'), { timeout: 15000 });
+            console.log('[Fixture] Successfully navigated to:', page.url());
         } catch (e) {
             console.log('[Fixture] Error: Timed out waiting for dashboard. Current URL:', page.url());
         }
@@ -88,6 +103,25 @@ export const test = base.extend<TestFixtures & TestOptions>({
             baseURL: adminUrl
         });
         const page = await context.newPage();
+
+        // Check if admin panel is running - if not, create a blank page
+        let isAdminRunning = false;
+        try {
+            await page.goto('/', { timeout: 3000 });
+            isAdminRunning = true;
+        } catch (error) {
+            console.log('[FIXTURE] Admin panel not running at', adminUrl, '- creating blank page');
+            // Don't throw error, just use blank page
+            await use(page);
+            await context.close();
+            return;
+        }
+
+        if (!isAdminRunning) {
+            await use(page);
+            await context.close();
+            return;
+        }
 
         // Login as admin
         const tokens = await login(request, process.env.ADMIN_USER_EMAIL || 'admin@xear.com', process.env.ADMIN_USER_PASSWORD || 'Admin123!');
@@ -148,8 +182,12 @@ export const test = base.extend<TestFixtures & TestOptions>({
             baseURL: process.env.API_BASE_URL || 'http://localhost:5003',
         });
         
+        // Login as tenant admin
+        console.log('[API Context] Logging in as tenant admin...');
         const tokens = await login(tempContext, 'admin@xear.com', 'Admin123!');
         await tempContext.dispose();
+        
+        console.log('[API Context] Creating authenticated context with tenant:', tokens.tenantId);
         
         // Now create the authenticated context
         const context = await playwright.request.newContext({

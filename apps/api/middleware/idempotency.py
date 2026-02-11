@@ -198,6 +198,7 @@ class IdempotencyMiddleware:
         response_body = []
         response_status = [200]
         response_headers = [{}]
+        response_complete = [False]
         
         async def send_wrapper(message):
             if message["type"] == "http.response.start":
@@ -206,26 +207,33 @@ class IdempotencyMiddleware:
                     k.decode() if isinstance(k, bytes) else k: v.decode() if isinstance(v, bytes) else v
                     for k, v in message.get("headers", [])
                 }
+                await send(message)
             elif message["type"] == "http.response.body":
                 body = message.get("body", b"")
                 if body:
                     response_body.append(body)
-            await send(message)
+                response_complete[0] = not message.get("more_body", False)
+                await send(message)
+            else:
+                await send(message)
         
         # Process request with replayed body
         await self.app(scope, receive_replay, send_wrapper)
         
-        # Cache successful responses (2xx)
-        if 200 <= response_status[0] < 300:
+        # Cache successful responses (2xx) only if response is complete
+        if 200 <= response_status[0] < 300 and response_complete[0]:
             full_body = b"".join(response_body)
-            _idempotency_cache[full_cache_key] = {
-                "body": full_body,
-                "status_code": response_status[0],
-                "headers": response_headers[0],
-                "expires_at": datetime.utcnow() + timedelta(seconds=CACHE_TTL_SECONDS),
-                "created_at": datetime.utcnow()
-            }
-            logger.debug(f"Cached response for idempotency key: {idempotency_key}")
+            if full_body:  # Only cache if body is not empty
+                _idempotency_cache[full_cache_key] = {
+                    "body": full_body,
+                    "status_code": response_status[0],
+                    "headers": response_headers[0],
+                    "expires_at": datetime.utcnow() + timedelta(seconds=CACHE_TTL_SECONDS),
+                    "created_at": datetime.utcnow()
+                }
+                logger.debug(f"Cached response for idempotency key: {idempotency_key}, body_len={len(full_body)}")
+            else:
+                logger.warning(f"Response body empty for idempotency key: {idempotency_key}, not caching")
     
     async def _send_error(self, send: Send, status_code: int, payload: dict):
         """Send JSON error response directly via ASGI"""
@@ -245,10 +253,23 @@ class IdempotencyMiddleware:
     
     async def _send_cached_response(self, send: Send, cached: dict):
         """Send cached response directly via ASGI"""
-        headers = [
-            [k.encode() if isinstance(k, str) else k, v.encode() if isinstance(v, str) else v]
-            for k, v in cached.get("headers", {}).items()
-        ]
+        body = cached.get("body", b"")
+        
+        logger.debug(f"Sending cached response: status={cached['status_code']}, body_len={len(body)}")
+        
+        # Build headers from cached response
+        headers = []
+        for k, v in cached.get("headers", {}).items():
+            # Skip content-length as we'll recalculate it
+            if k.lower() != "content-length":
+                headers.append([
+                    k.encode() if isinstance(k, str) else k,
+                    v.encode() if isinstance(v, str) else v
+                ])
+        
+        # Add/update content-length
+        headers.append([b"content-length", str(len(body)).encode()])
+        
         # Add the idempotency replayed header
         headers.append([b"X-Idempotency-Replayed", b"true"])
         
@@ -259,5 +280,6 @@ class IdempotencyMiddleware:
         })
         await send({
             "type": "http.response.body",
-            "body": cached["body"],
+            "body": body,
+            "more_body": False,
         })

@@ -59,6 +59,9 @@ class UserCreate(AppBaseModel):
     last_name: Optional[str] = Field(None, alias="lastName")
     phone: Optional[str] = None
     role: Optional[str] = None
+    tenant_id: Optional[str] = Field(None, alias="tenantId")
+    username: Optional[str] = None
+    is_active: Optional[bool] = Field(True, alias="isActive")
 
 
 class UserUpdate(AppBaseModel):

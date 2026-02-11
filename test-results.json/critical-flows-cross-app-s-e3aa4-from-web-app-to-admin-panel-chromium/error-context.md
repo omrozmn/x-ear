@@ -1,0 +1,311 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img "X-Ear Logo" [ref=e6]
+        - generic [ref=e7]: X-Ear Admin
+      - navigation [ref=e9]:
+        - link "Dashboard" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=e11]
+          - text: Dashboard
+        - link "Raporlar" [ref=e14] [cursor=pointer]:
+          - /url: /analytics
+          - img [ref=e15]
+          - text: Raporlar
+        - link "Aboneler" [ref=e17] [cursor=pointer]:
+          - /url: /tenants
+          - img [ref=e18]
+          - text: Aboneler
+        - link "Kullanıcılar" [ref=e22] [cursor=pointer]:
+          - /url: /users
+          - img [ref=e23]
+          - text: Kullanıcılar
+        - link "Hastalar" [active] [ref=e28] [cursor=pointer]:
+          - /url: /patients
+          - img [ref=e29]
+          - text: Hastalar
+        - link "Randevular" [ref=e32] [cursor=pointer]:
+          - /url: /appointments
+          - img [ref=e33]
+          - text: Randevular
+        - link "Cihaz & Stok" [ref=e35] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e36]
+          - text: Cihaz & Stok
+        - link "Tedarikçiler" [ref=e39] [cursor=pointer]:
+          - /url: /suppliers
+          - img [ref=e40]
+          - text: Tedarikçiler
+        - link "Kampanyalar" [ref=e45] [cursor=pointer]:
+          - /url: /campaigns
+          - img [ref=e46]
+          - text: Kampanyalar
+        - link "Üretim Takibi" [ref=e49] [cursor=pointer]:
+          - /url: /production
+          - img [ref=e50]
+          - text: Üretim Takibi
+        - link "Pazaryerleri" [ref=e54] [cursor=pointer]:
+          - /url: /marketplaces
+          - img [ref=e55]
+          - text: Pazaryerleri
+        - link "Bildirimler" [ref=e58] [cursor=pointer]:
+          - /url: /notifications
+          - img [ref=e59]
+          - text: Bildirimler
+        - link "API Anahtarları" [ref=e62] [cursor=pointer]:
+          - /url: /api-keys
+          - img [ref=e63]
+          - text: API Anahtarları
+        - link "Roller" [ref=e67] [cursor=pointer]:
+          - /url: /roles
+          - img [ref=e68]
+          - text: Roller
+        - link "Planlar" [ref=e70] [cursor=pointer]:
+          - /url: /plans
+          - img [ref=e71]
+          - text: Planlar
+        - link "Affiliateler" [ref=e73] [cursor=pointer]:
+          - /url: /affiliates
+          - img [ref=e74]
+          - text: Affiliateler
+        - link "Eklentiler" [ref=e79] [cursor=pointer]:
+          - /url: /addons
+          - img [ref=e80]
+          - text: Eklentiler
+        - link "SMS Başlıkları" [ref=e82] [cursor=pointer]:
+          - /url: /sms/headers
+          - img [ref=e83]
+          - text: SMS Başlıkları
+        - link "SMS Paketleri" [ref=e85] [cursor=pointer]:
+          - /url: /sms/packages
+          - img [ref=e86]
+          - text: SMS Paketleri
+        - link "AI Yönetimi" [ref=e90] [cursor=pointer]:
+          - /url: /ai
+          - img [ref=e91]
+          - text: AI Yönetimi
+        - link "Aktivite Logları" [ref=e94] [cursor=pointer]:
+          - /url: /activity-logs
+          - img [ref=e95]
+          - text: Aktivite Logları
+        - link "Dosyalar" [ref=e97] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e98]
+          - text: Dosyalar
+        - link "OCR Kuyruğu" [ref=e100] [cursor=pointer]:
+          - /url: /ocr-queue
+          - img [ref=e101]
+          - text: OCR Kuyruğu
+        - link "Faturalar" [ref=e104] [cursor=pointer]:
+          - /url: /billing
+          - img [ref=e105]
+          - text: Faturalar
+        - link "Ödemeler" [ref=e107] [cursor=pointer]:
+          - /url: /payments
+          - img [ref=e108]
+          - text: Ödemeler
+        - link "Destek" [ref=e112] [cursor=pointer]:
+          - /url: /support
+          - img [ref=e113]
+          - text: Destek
+        - link "Entegrasyonlar" [ref=e120] [cursor=pointer]:
+          - /url: /integrations
+          - img [ref=e121]
+          - text: Entegrasyonlar
+        - link "Ayarlar" [ref=e123] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e124]
+          - text: Ayarlar
+    - generic [ref=e127]:
+      - banner [ref=e128]:
+        - heading "Super Admin Panel" [level=1] [ref=e129]
+        - generic [ref=e131] [cursor=pointer]:
+          - generic [ref=e132]:
+            - img [ref=e133]
+            - img [ref=e136]
+            - generic [ref=e139]: AI ile arama yap veya işlem başlat...
+          - generic [ref=e141]:
+            - generic [ref=e142]: ⌘
+            - text: K
+        - generic [ref=e143]:
+          - button [ref=e144] [cursor=pointer]:
+            - img [ref=e145]
+          - button "Admin User" [ref=e149] [cursor=pointer]:
+            - generic [ref=e150]: Admin User
+            - img [ref=e151]
+      - main [ref=e153]:
+        - generic [ref=e154]:
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - heading "Global Hasta Yönetimi" [level=1] [ref=e157]
+              - paragraph [ref=e158]: Tüm abonelerdeki hastaları görüntüleyin ve yönetin
+            - button "Listeyi Yenile" [ref=e159] [cursor=pointer]:
+              - img [ref=e160]
+          - generic [ref=e163]:
+            - generic:
+              - img
+            - textbox "Ad, Soyad, TC veya Telefon ile ara..." [ref=e164]
+          - generic [ref=e165]:
+            - table [ref=e167]:
+              - rowgroup [ref=e168]:
+                - row "Hasta TC Kimlik Telefon Şube / Tenant Kayıt Tarihi" [ref=e169]:
+                  - columnheader "Hasta" [ref=e170]
+                  - columnheader "TC Kimlik" [ref=e171]
+                  - columnheader "Telefon" [ref=e172]
+                  - columnheader "Şube / Tenant" [ref=e173]
+                  - columnheader "Kayıt Tarihi" [ref=e174]
+              - rowgroup [ref=e175]:
+                - row "AD Ayşe80931 Demir test56680931@example.com - +905556680931 - 9 Şubat 2026 17:04" [ref=e176]:
+                  - cell "AD Ayşe80931 Demir test56680931@example.com" [ref=e177]:
+                    - generic [ref=e178]:
+                      - generic [ref=e180]: AD
+                      - generic [ref=e181]:
+                        - generic [ref=e182]: Ayşe80931 Demir
+                        - generic [ref=e183]: test56680931@example.com
+                  - cell "-" [ref=e184]
+                  - cell "+905556680931" [ref=e185]
+                  - cell "-" [ref=e186]:
+                    - generic [ref=e188]: "-"
+                  - cell "9 Şubat 2026 17:04" [ref=e189]
+                - row "SW SyncTest71466 WebToAdmin sync56671466@example.com - +905556671466 - 9 Şubat 2026 17:04" [ref=e190]:
+                  - cell "SW SyncTest71466 WebToAdmin sync56671466@example.com" [ref=e191]:
+                    - generic [ref=e192]:
+                      - generic [ref=e194]: SW
+                      - generic [ref=e195]:
+                        - generic [ref=e196]: SyncTest71466 WebToAdmin
+                        - generic [ref=e197]: sync56671466@example.com
+                  - cell "-" [ref=e198]
+                  - cell "+905556671466" [ref=e199]
+                  - cell "-" [ref=e200]:
+                    - generic [ref=e202]: "-"
+                  - cell "9 Şubat 2026 17:04" [ref=e203]
+                - row "SC SaleTest68402 Customer sale56668402@test.com - +905556668402 - 9 Şubat 2026 17:04" [ref=e204]:
+                  - cell "SC SaleTest68402 Customer sale56668402@test.com" [ref=e205]:
+                    - generic [ref=e206]:
+                      - generic [ref=e208]: SC
+                      - generic [ref=e209]:
+                        - generic [ref=e210]: SaleTest68402 Customer
+                        - generic [ref=e211]: sale56668402@test.com
+                  - cell "-" [ref=e212]
+                  - cell "+905556668402" [ref=e213]
+                  - cell "-" [ref=e214]:
+                    - generic [ref=e216]: "-"
+                  - cell "9 Şubat 2026 17:04" [ref=e217]
+                - row "AY Ahmet67151 Yılmaz test56667151@example.com - +905556667151 - 9 Şubat 2026 17:04" [ref=e218]:
+                  - cell "AY Ahmet67151 Yılmaz test56667151@example.com" [ref=e219]:
+                    - generic [ref=e220]:
+                      - generic [ref=e222]: AY
+                      - generic [ref=e223]:
+                        - generic [ref=e224]: Ahmet67151 Yılmaz
+                        - generic [ref=e225]: test56667151@example.com
+                  - cell "-" [ref=e226]
+                  - cell "+905556667151" [ref=e227]
+                  - cell "-" [ref=e228]:
+                    - generic [ref=e230]: "-"
+                  - cell "9 Şubat 2026 17:04" [ref=e231]
+                - row "DP DeviceTest67929 Patient device56667929@test.com - +905556667929 - 9 Şubat 2026 17:04" [ref=e232]:
+                  - cell "DP DeviceTest67929 Patient device56667929@test.com" [ref=e233]:
+                    - generic [ref=e234]:
+                      - generic [ref=e236]: DP
+                      - generic [ref=e237]:
+                        - generic [ref=e238]: DeviceTest67929 Patient
+                        - generic [ref=e239]: device56667929@test.com
+                  - cell "-" [ref=e240]
+                  - cell "+905556667929" [ref=e241]
+                  - cell "-" [ref=e242]:
+                    - generic [ref=e244]: "-"
+                  - cell "9 Şubat 2026 17:04" [ref=e245]
+                - row "MK Mehmet72380 Kaya test56672380@example.com - +905556672380 - 9 Şubat 2026 17:04" [ref=e246]:
+                  - cell "MK Mehmet72380 Kaya test56672380@example.com" [ref=e247]:
+                    - generic [ref=e248]:
+                      - generic [ref=e250]: MK
+                      - generic [ref=e251]:
+                        - generic [ref=e252]: Mehmet72380 Kaya
+                        - generic [ref=e253]: test56672380@example.com
+                  - cell "-" [ref=e254]
+                  - cell "+905556672380" [ref=e255]
+                  - cell "-" [ref=e256]:
+                    - generic [ref=e258]: "-"
+                  - cell "9 Şubat 2026 17:04" [ref=e259]
+                - row "IC InvoiceTest67866 Customer invoice56667866@test.com 10056667866 +905556667866 - 9 Şubat 2026 17:04" [ref=e260]:
+                  - cell "IC InvoiceTest67866 Customer invoice56667866@test.com" [ref=e261]:
+                    - generic [ref=e262]:
+                      - generic [ref=e264]: IC
+                      - generic [ref=e265]:
+                        - generic [ref=e266]: InvoiceTest67866 Customer
+                        - generic [ref=e267]: invoice56667866@test.com
+                  - cell "10056667866" [ref=e268]
+                  - cell "+905556667866" [ref=e269]
+                  - cell "-" [ref=e270]:
+                    - generic [ref=e272]: "-"
+                  - cell "9 Şubat 2026 17:04" [ref=e273]
+                - row "FŞ Fatma19657 Şahin test56619657@example.com 56619657123 +905556619657 - 9 Şubat 2026 17:03" [ref=e274]:
+                  - cell "FŞ Fatma19657 Şahin test56619657@example.com" [ref=e275]:
+                    - generic [ref=e276]:
+                      - generic [ref=e278]: FŞ
+                      - generic [ref=e279]:
+                        - generic [ref=e280]: Fatma19657 Şahin
+                        - generic [ref=e281]: test56619657@example.com
+                  - cell "56619657123" [ref=e282]
+                  - cell "+905556619657" [ref=e283]
+                  - cell "-" [ref=e284]:
+                    - generic [ref=e286]: "-"
+                  - cell "9 Şubat 2026 17:03" [ref=e287]
+                - row "AD Ayşe19119 Demir test56619119@example.com - +905556619119 - 9 Şubat 2026 17:03" [ref=e288]:
+                  - cell "AD Ayşe19119 Demir test56619119@example.com" [ref=e289]:
+                    - generic [ref=e290]:
+                      - generic [ref=e292]: AD
+                      - generic [ref=e293]:
+                        - generic [ref=e294]: Ayşe19119 Demir
+                        - generic [ref=e295]: test56619119@example.com
+                  - cell "-" [ref=e296]
+                  - cell "+905556619119" [ref=e297]
+                  - cell "-" [ref=e298]:
+                    - generic [ref=e300]: "-"
+                  - cell "9 Şubat 2026 17:03" [ref=e301]
+                - row "SW SyncTest10568 WebToAdmin sync56610568@example.com - +905556610568 - 9 Şubat 2026 17:03" [ref=e302]:
+                  - cell "SW SyncTest10568 WebToAdmin sync56610568@example.com" [ref=e303]:
+                    - generic [ref=e304]:
+                      - generic [ref=e306]: SW
+                      - generic [ref=e307]:
+                        - generic [ref=e308]: SyncTest10568 WebToAdmin
+                        - generic [ref=e309]: sync56610568@example.com
+                  - cell "-" [ref=e310]
+                  - cell "+905556610568" [ref=e311]
+                  - cell "-" [ref=e312]:
+                    - generic [ref=e314]: "-"
+                  - cell "9 Şubat 2026 17:03" [ref=e315]
+            - generic [ref=e318]:
+              - generic [ref=e319]:
+                - paragraph [ref=e320]: Toplam 342 kayıttan 1 - 10 arası gösteriliyor
+                - combobox [ref=e321]:
+                  - option "10 / sayfa" [selected]
+                  - option "20 / sayfa"
+                  - option "50 / sayfa"
+                  - option "100 / sayfa"
+              - navigation "Pagination" [ref=e323]:
+                - button "Önceki" [disabled] [ref=e324]:
+                  - generic [ref=e325]: Önceki
+                  - img [ref=e326]
+                - button "1" [ref=e328] [cursor=pointer]
+                - button "2" [ref=e329] [cursor=pointer]
+                - generic [ref=e330]: ...
+                - button "35" [ref=e331] [cursor=pointer]
+                - button "Sonraki" [ref=e332] [cursor=pointer]:
+                  - generic [ref=e333]: Sonraki
+                  - img [ref=e334]
+  - button "AI Asistan'ı aç" [ref=e336] [cursor=pointer]:
+    - img [ref=e337]
+  - generic:
+    - contentinfo:
+      - button "Open TanStack Router Devtools" [ref=e339] [cursor=pointer]:
+        - generic [ref=e340]:
+          - img [ref=e342]
+          - img [ref=e377]
+        - generic [ref=e411]: "-"
+        - generic [ref=e412]: TanStack Router
+```

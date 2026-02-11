@@ -1,4 +1,0 @@
-# file: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/party_role.py
-# hypothesis_version: 6.150.2
-
-['parties.id', 'party_roles', 'prol', 'tenants.id']

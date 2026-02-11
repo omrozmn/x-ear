@@ -66,6 +66,11 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                             </button>
                         </Dialog.Close>
                     </div>
+                    
+                    {/* Add Description to fix Radix UI warning */}
+                    <Dialog.Description className="sr-only">
+                        Yeni bir abone (klinik/organizasyon) oluşturmak için formu doldurun.
+                    </Dialog.Description>
 
                     <div className="p-6">
                         <form onSubmit={handleSubmit} className="space-y-4">

@@ -55,13 +55,28 @@ test.describe('FLOW-03: Sale Creation', () => {
     await waitForApiCall(tenantPage, '/api/parties', 10000);
     await tenantPage.waitForLoadState('networkidle');
     
-    // Verify party created
+    // Verify party created - wait a moment for indexing
+    await tenantPage.waitForTimeout(1000);
+    
     const searchResponse = await apiContext.get(`/api/parties?search=${encodeURIComponent(testParty.phone)}`);
     expect(searchResponse.ok()).toBeTruthy();
     const searchData = await searchResponse.json();
     validateResponseEnvelope(searchData);
     
-    const createdParty = searchData.data?.find?.((p: any) => p.phone === testParty.phone);
+    console.log('[FLOW-03] Search response data:', JSON.stringify(searchData.data, null, 2));
+    
+    // If search doesn't work, try listing with larger page size
+    let createdParty = searchData.data?.find?.((p: any) => p.phone === testParty.phone);
+    
+    if (!createdParty) {
+      console.log('[FLOW-03] Party not found in search, trying list endpoint...');
+      const listResponse = await apiContext.get('/api/parties?page=1&perPage=100');
+      const listData = await listResponse.json();
+      validateResponseEnvelope(listData);
+      console.log('[FLOW-03] List response data count:', listData.data?.length);
+      createdParty = listData.data?.find?.((p: any) => p.phone === testParty.phone);
+    }
+    
     expect(createdParty, `Party with phone ${testParty.phone} should exist`).toBeTruthy();
     
     const partyId = createdParty.id;

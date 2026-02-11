@@ -280,6 +280,10 @@ app.include_router(parties.router, prefix="/api")
 app.include_router(inventory.router, prefix="/api")
 app.include_router(sales.router, prefix="/api")
 
+# Hearing profiles (Party-related)
+from routers import hearing_profiles
+app.include_router(hearing_profiles.router, prefix="/api")
+
 # New migrated routers
 app.include_router(auth.router, prefix="/api")
 app.include_router(appointments.router, prefix="/api")

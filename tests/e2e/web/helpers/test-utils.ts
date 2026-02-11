@@ -113,6 +113,10 @@ export async function setupAuthenticatedPage(
     }
     // Legacy
     localStorage.setItem('auth_token', data.accessToken);
+    
+    // CRITICAL: Set current tenant ID (required for all operations)
+    localStorage.setItem('x-ear.auth.currentTenantId@v1', data.tenantId);
+    console.log('[Test Setup] Set current tenant to:', data.tenantId);
 
     const user = {
       id: data.userId,

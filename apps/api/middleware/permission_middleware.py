@@ -141,6 +141,18 @@ class FastAPIPermissionMiddleware:
             scope["state"] = {}
         scope["state"]["access_context"] = ctx
 
+        # DEBUG: Log token context for admin routes
+        if path.startswith("/api/admin/"):
+            logger.info(
+                "DEBUG [MIDDLEWARE]: path=%s role=%s role_upper=%s is_admin=%s is_super_admin=%s perms=%s",
+                path,
+                ctx.role,
+                ctx.role.upper() if ctx.role else None,
+                ctx.is_admin,
+                ctx.is_super_admin,
+                ctx.permissions[:5] if ctx.permissions else []
+            )
+
         # If endpoint needs only auth (no specific permission)
         if required_permission is None:
             await self.app(scope, receive, send)
@@ -148,29 +160,14 @@ class FastAPIPermissionMiddleware:
 
         # Super admins bypass everything
         if ctx.is_super_admin:
+            logger.info("DEBUG [MIDDLEWARE]: Super admin bypass for path=%s", path)
             await self.app(scope, receive, send)
             return
 
-        # Admin panel endpoints: allow ONLY platform admin contexts
-        if path.startswith("/api/admin/"):
-            if ctx.is_admin:
-                await self.app(scope, receive, send)
-                return
-
-            await self._send_json_error(
-                scope, receive, send,
-                401,
-                {
-                    "error": "Bu sayfaya erişim için platform yöneticisi yetkisi gereklidir.",
-                    "code": "ADMIN_AUTH_REQUIRED",
-                    "path": path,
-                },
-            )
-            return
-
         # The tenant_admin/admin bypass:
-        # They can bypass permission checks for TENANT routes (non-/api/admin/)
-        if ctx.role and ctx.role.upper() in {"TENANT_ADMIN", "ADMIN"} and not path.startswith("/api/admin/"):
+        # They can bypass permission checks for ALL routes (including /api/admin/)
+        if ctx.role and ctx.role.upper() in {"TENANT_ADMIN", "ADMIN"}:
+            logger.info("DEBUG [MIDDLEWARE]: Admin/TenantAdmin bypass for path=%s role=%s", path, ctx.role)
             await self.app(scope, receive, send)
             return
         

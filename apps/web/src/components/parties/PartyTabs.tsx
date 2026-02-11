@@ -63,13 +63,15 @@ const TabsTrigger: React.FC<{
   children: React.ReactNode;
   activeValue?: string;
   onValueChange?: (value: string) => void;
-}> = ({ value, disabled, className, children, activeValue, onValueChange }) => {
+  'data-testid'?: string;
+}> = ({ value, disabled, className, children, activeValue, onValueChange, 'data-testid': dataTestId }) => {
   const isActive = activeValue === value;
 
   return (
     <Button
       onClick={() => !disabled && onValueChange?.(value)}
       disabled={disabled}
+      data-testid={dataTestId}
       className={`
         group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
         ${isActive
@@ -194,6 +196,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
             value={tab.id}
             disabled={tab.disabled}
             className="flex items-center space-x-2 text-sm"
+            data-testid={`${tab.id}-tab`}
           >
             {tab.icon}
             <span className="hidden sm:inline">{tab.label}</span>

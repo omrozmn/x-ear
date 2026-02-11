@@ -20,6 +20,9 @@ export default defineConfig({
   /* Opt out of parallel tests on CI */
   workers: process.env.CI ? 4 : undefined,
   
+  /* Global timeout for each test */
+  timeout: 60000,
+  
   /* Reporter to use */
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
@@ -34,19 +37,22 @@ export default defineConfig({
     baseURL: process.env.BASE_URL || 'http://localhost:8080',
     
     /* Collect trace when retrying the failed test */
-    trace: 'on-first-retry',
+    trace: 'on',
     
     /* Screenshot on failure */
-    screenshot: 'only-on-failure',
+    screenshot: 'on',
     
     /* Video on failure */
-    video: 'retain-on-failure',
+    video: 'on',
     
     /* Maximum time each action can take */
     actionTimeout: 30000,
     
     /* Maximum time for navigation */
     navigationTimeout: 30000,
+    
+    /* Run in headless mode for speed */
+    headless: true,
   },
 
   /* Configure projects for major browsers */

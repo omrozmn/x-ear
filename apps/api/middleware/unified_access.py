@@ -88,10 +88,11 @@ class UnifiedAccess:
     
     def has_permission(self, permission: str) -> bool:
         """Check if user has specific permission"""
+        # Super admins bypass ALL permission checks
         if self.is_super_admin:
             return True
-        # Platform admins and Tenant admins bypass non-platform permissions
-        if (self.is_admin or self.is_tenant_admin) and not permission.startswith("admin."):
+        # Platform admins and Tenant admins bypass ALL permission checks
+        if self.is_admin or self.is_tenant_admin:
             return True
         return permission in self.permissions
     
@@ -268,9 +269,9 @@ def _build_access_from_token(
         role=user.role,
         permissions=permissions,
         is_authenticated=True,
-        is_admin=False,
-        is_super_admin=False,
-        is_tenant_admin=(user.role.upper() in ("TENANT_ADMIN", "ADMIN")),
+        is_admin=(user.role.upper() in ("ADMIN", "SUPER_ADMIN")),
+        is_super_admin=(user.role.upper() == "SUPER_ADMIN"),
+        is_tenant_admin=(user.role.upper() in ("TENANT_ADMIN", "ADMIN", "SUPER_ADMIN")),
         claims=payload
     )
 
@@ -343,11 +344,21 @@ def require_access(
             )
         
         # Tenant context check (skip for admins without impersonation)
-        if tenant_required and not access.is_admin and not access.tenant_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"message": "Tenant context required", "code": "TENANT_REQUIRED"}
-            )
+        if tenant_required:
+            # Super admins need tenant context (either from user.tenant_id or impersonation)
+            if access.is_super_admin:
+                # Super admin can use their own tenant_id OR impersonate
+                if not access.tenant_id and not access.effective_tenant_id:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail={"message": "Tenant context required. Please select a tenant or use impersonation.", "code": "TENANT_REQUIRED"}
+                    )
+            # Regular users must have tenant_id
+            elif not access.is_admin and not access.tenant_id:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail={"message": "Tenant context required", "code": "TENANT_REQUIRED"}
+                )
         
         # Permission check
         if permission:

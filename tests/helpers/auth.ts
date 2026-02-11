@@ -60,6 +60,11 @@ export async function login(
   
   // Verify user menu is visible
   await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+  
+  // CRITICAL: Ensure tenant context is set
+  // The JWT token should contain tenant_id which gets extracted by authStore
+  // Wait a moment for auth store to process
+  await page.waitForTimeout(500);
 }
 
 /**

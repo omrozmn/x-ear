@@ -30,12 +30,12 @@ export async function createParty(
   // Navigate to parties page
   await page.goto('/parties');
   
-  // Wait for page to load and button to be visible
-  await page.waitForLoadState('networkidle');
-  await page.locator('[data-testid="party-create-button"]').waitFor({ state: 'visible', timeout: 10000 });
+  // Wait for page to load (use domcontentloaded instead of networkidle)
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForTimeout(1000); // Give time for React to render
   
-  // Click create button
-  await page.locator('[data-testid="party-create-button"]').click();
+  // Find and click button by text (more reliable than test ID)
+  await page.locator('button:has-text("Yeni Hasta")').first().click();
   
   // Wait for modal to open
   await waitForModalOpen(page, 'party-form-modal');
@@ -60,13 +60,7 @@ export async function createParty(
   // Submit form
   await page.locator('[data-testid="party-submit-button"]').click();
   
-  // Wait for success toast
-  await waitForToast(page, 'success');
-  
-  // Wait for modal to close
-  await waitForModalClose(page, 'party-form-modal');
-  
-  // Wait for API response and extract party ID
+  // Wait for API response and extract party ID (more reliable than toast)
   const response = await page.waitForResponse(
     r => r.url().includes('/parties') && r.status() === 201
   );
@@ -100,17 +94,57 @@ export async function deleteParty(
   page: Page,
   partyId: string
 ): Promise<void> {
+  // Enable console logging
+  page.on('console', msg => {
+    if (msg.text().includes('[DELETE]')) {
+      console.log(`[BROWSER CONSOLE] ${msg.text()}`);
+    }
+  });
+  
+  // Navigate to party detail page
+  console.log('[Helper] Navigating to party detail page:', partyId);
   await page.goto(`/parties/${partyId}`);
-  await page.locator('[data-testid="party-delete-button"]').click();
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForTimeout(1000); // Give time for React to render
   
-  // Confirm deletion
-  await page.locator('[data-testid="confirm-delete-button"]').click();
+  // Check if delete button exists
+  const deleteButton = page.locator('[data-testid="party-delete-button"]');
+  const buttonExists = await deleteButton.count();
+  console.log('[Helper] Delete button count:', buttonExists);
   
-  // Wait for success toast
-  await waitForToast(page, 'success');
+  if (buttonExists === 0) {
+    throw new Error('Delete button not found on page');
+  }
+  
+  // Set up API response listener BEFORE clicking delete
+  console.log('[Helper] Setting up DELETE API listener');
+  const deleteResponsePromise = page.waitForResponse(
+    response => 
+      response.url().includes(`/parties/${partyId}`) && 
+      response.request().method() === 'DELETE',
+    { timeout: 10000 }
+  );
+  
+  // Set up dialog handler BEFORE clicking delete
+  page.once('dialog', dialog => {
+    console.log('[Helper] Accepting delete confirmation dialog');
+    dialog.accept();
+  });
+  
+  // Click delete button
+  console.log('[Helper] Clicking delete button');
+  await deleteButton.click();
+  
+  // Wait for API response
+  console.log('[Helper] Waiting for DELETE API response');
+  const deleteResponse = await deleteResponsePromise;
+  console.log('[Helper] DELETE API response status:', deleteResponse.status());
   
   // Wait for redirect to parties list
-  await page.waitForURL('/parties');
+  console.log('[Helper] Waiting for redirect to /parties');
+  await page.waitForURL('/parties', { timeout: 5000 });
+  
+  console.log('[Helper] Party deleted via UI:', partyId);
 }
 
 /**

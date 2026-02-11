@@ -76,25 +76,26 @@ def db_session(db_engine):
     transaction.rollback()
     connection.close()
 
-@pytest.fixture(scope="module")
-def client():
-    """FastAPI TestClient with dependency overrides"""
-    # Create a generator that yields the session for the dependency
-    # Note: We can't access the function-scoped db_session here easily if client is module-scoped.
-    # To fix this, we should make client function-scoped OR use a session-scoped DB session?
-    # Better: Override per test using the 'db_session' fixture values?
-    # Actually, the standard way is to override globally or per request.
-    # Since db_session is function-scoped (good for isolation), client should probably be function-scoped 
-    # to override dependency with the CURRENT test session.
-    # But usually TestClient is expensive to create? No, it's fast.
-    return TestClient(app)
-
-@pytest.fixture(scope="function", autouse=True)
-def override_db_dependency(client, db_session):
-    """Override get_db to use the test session"""
-    from database import get_db
-    app.dependency_overrides[get_db] = lambda: db_session
-    yield
+@pytest.fixture(scope="function")
+def client(db_session):
+    """FastAPI TestClient - function scoped for proper db_session override"""
+    # Override get_db dependency BEFORE creating TestClient
+    from core.database import get_db
+    
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+    
+    app.dependency_overrides[get_db] = override_get_db
+    
+    # Create TestClient
+    test_client = TestClient(app)
+    
+    yield test_client
+    
+    # Cleanup
     app.dependency_overrides.clear()
 
 @pytest.fixture(scope="function")

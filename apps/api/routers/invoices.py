@@ -250,7 +250,7 @@ def batch_generate_invoices(
                     continue
                 
                 # Generate invoice number using Gapless Sequence
-                from models.sequence import Sequence
+                from core.models.sequence import Sequence
                 year = now_utc().year
                 next_val = Sequence.next_number(db_session, sale.tenant_id, 'invoice', year, 'INV')
                 invoice_number = f"INV{year}{next_val:05d}"
@@ -355,7 +355,7 @@ def create_invoice(
                 raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         
         # Generate invoice number using Gapless Sequence
-        from models.sequence import Sequence
+        from core.models.sequence import Sequence
         year = datetime.utcnow().year
         next_val = Sequence.next_number(db_session, access.tenant_id, 'invoice', year, 'INV')
         invoice_number = f"INV{year}{next_val:05d}"

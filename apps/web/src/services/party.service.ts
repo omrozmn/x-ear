@@ -298,33 +298,24 @@ export class PartyService {
         throw new Error('Party ID is required');
       }
 
-      const index = this.parties.findIndex(p => p.id === id);
-      if (index === -1) {
-        throw new Error('Party not found');
-        // Check for success (ResponseEnvelope usually has success field, or check status if full response)
-        // Assuming response has success field or we treat absence of error as success
-        // const success = response?.success ?? true;
-
-        // if (!success) {
-        //   throw new Error('Failed to delete party from server');
-        // }
-      }
-
-      const party = this.parties[index];
-
       // **CRITICAL: DELETE from backend API first!**
+      // Don't check local cache - party might not be in cache yet
       // Function returns unknown/void on success (204 or empty 200)
       // Axios will throw if status is 4xx or 5xx
       await deleteParty(id);
 
-      // Remove from local cache
-      this.parties.splice(index, 1);
-      this.saveParties();
+      // Remove from local cache if exists
+      const index = this.parties.findIndex(p => p.id === id);
+      if (index !== -1) {
+        const party = this.parties[index];
+        this.parties.splice(index, 1);
+        this.saveParties();
 
-      // Dispatch events for UI update
-      window.dispatchEvent(new CustomEvent('party:deleted', {
-        detail: { id, party }
-      }));
+        // Dispatch events for UI update
+        window.dispatchEvent(new CustomEvent('party:deleted', {
+          detail: { id, party }
+        }));
+      }
 
       return true;
     } catch (error) {

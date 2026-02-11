@@ -9,7 +9,8 @@ import {
   User,
   Edit,
   MessageSquare,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 
 // Badge component
@@ -57,7 +58,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
   onEdit,
   onTagUpdate,
   onCall,
-  // onDelete, // Currently unused
+  onDelete,
   // onPrint, // Currently unused
   // onExport, // Currently unused
   onSendSMS,
@@ -307,6 +308,20 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
               iconPosition="left"
             >
               Etiket Güncelle
+            </Button>
+          )}
+
+          {onDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDelete}
+              data-testid="party-delete-button"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
+              icon={<Trash2 className="w-4 h-4" />}
+              iconPosition="left"
+            >
+              Sil
             </Button>
           )}
         </div>
