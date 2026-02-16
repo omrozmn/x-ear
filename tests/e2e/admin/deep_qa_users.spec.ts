@@ -68,7 +68,7 @@ test.describe('Deep QA Audit: Users Module', () => {
 
         // Verify Success Toast
         await expect(page.getByText('Kullanıcı başarıyla oluşturuldu')).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Yeni Kullanıcı Ekle' })).not.toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Yeni Kullanıcı Ekle' })).toBeHidden();
 
         console.log('Step 4: Verify Creation via Login');
         // Clear storage/cookies to ensure logout

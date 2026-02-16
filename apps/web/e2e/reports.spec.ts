@@ -15,7 +15,6 @@ test.describe('Reports Tests', () => {
     // Try multiple possible routes
     const reportRoutes = ['/reports', '/raporlar', '/analytics', '/analizler'];
     
-    let pageLoaded = false;
     for (const route of reportRoutes) {
       try {
         await page.goto(route);
@@ -23,7 +22,6 @@ test.describe('Reports Tests', () => {
         
         const url = page.url();
         if (url.includes('report') || url.includes('rapor') || url.includes('analytic')) {
-          pageLoaded = true;
           break;
         }
       } catch (e) {

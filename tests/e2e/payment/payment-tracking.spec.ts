@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
 import { createParty } from '../../helpers/party';
-import { openPaymentTrackingModal, addPayment, addPartialPayments } from '../../helpers/payment';
-import { waitForToast, waitForModalOpen, waitForModalClose } from '../../helpers/wait';
-import { expectToastVisible, expectModalOpen, expectModalClosed } from '../../helpers/assertions';
+import { waitForToast, waitForModalOpen } from '../../helpers/wait';
+import { expectToastVisible, expectModalOpen } from '../../helpers/assertions';
 import { testUsers, generateRandomParty } from '../../fixtures';
 
 test.describe('Payment Tracking', () => {

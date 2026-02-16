@@ -111,7 +111,7 @@ export async function addPartialPayments(
 export async function getPaymentHistory(
   page: Page,
   saleId: string
-): Promise<any[]> {
+): Promise<Array<Record<string, unknown>>> {
   await openPaymentTrackingModal(page, saleId);
   
   const response = await page.waitForResponse(

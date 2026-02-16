@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { login, logout } from '../../helpers/auth';
-import { waitForToast, waitForModalOpen, waitForModalClose } from '../../helpers/wait';
-import { expectToastVisible, expectModalOpen, expectModalClosed } from '../../helpers/assertions';
+import { expectToastVisible, expectModalOpen } from '../../helpers/assertions';
 import { testUsers } from '../../fixtures';
 
 test.describe('User Management', () => {

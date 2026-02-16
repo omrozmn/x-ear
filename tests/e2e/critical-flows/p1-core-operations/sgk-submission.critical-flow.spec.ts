@@ -11,7 +11,7 @@
  */
 
 import { test, expect } from '../../fixtures/fixtures';
-import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
+import { validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-09: SGK Submission', () => {
   test('should submit SGK claim successfully', async ({ tenantPage, apiContext, authTokens }) => {
@@ -81,9 +81,11 @@ test.describe('FLOW-09: SGK Submission', () => {
     
     // Look for SGK number or scheme info
     const sgkSection = tenantPage.locator('text=/SGK|Sosyal Güvenlik/i').first();
-    await expect(sgkSection).toBeVisible({ timeout: 5000 }).catch(() => {
+    try {
+      await expect(sgkSection).toBeVisible({ timeout: 5000 });
+    } catch {
       console.log('[FLOW-09] SGK section not found, but party has SGK info in backend');
-    });
+    }
     
     // STEP 5: Verify SGK info via API
     console.log('[FLOW-09] Step 5: Verify SGK info via API');

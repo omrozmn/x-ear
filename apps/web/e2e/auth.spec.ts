@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, logout } from './helpers/auth.helpers';
+import { login } from './helpers/auth.helpers';
 
 const WEB_URL = process.env.WEB_BASE_URL || 'http://localhost:8080';
 

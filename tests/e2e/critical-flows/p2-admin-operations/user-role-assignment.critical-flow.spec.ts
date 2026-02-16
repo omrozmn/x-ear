@@ -11,10 +11,9 @@
  */
 
 import { test, expect } from '../../fixtures/fixtures';
-import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-12: User Role Assignment (Admin)', () => {
-  test('should assign user role successfully', async ({ adminPage, tenantPage, apiContext, authTokens }) => {
+  test('should assign user role successfully', async ({ adminPage, tenantPage: _tenantPage, apiContext, authTokens }) => {
     // Generate unique test data
     const timestamp = Date.now();
     const uniqueId = timestamp.toString().slice(-8);

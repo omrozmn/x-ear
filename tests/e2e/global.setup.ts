@@ -1,4 +1,4 @@
-import { chromium, FullConfig, request } from '@playwright/test';
+import { FullConfig, request } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 // Load env vars
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-async function globalSetup(config: FullConfig) {
+async function globalSetup(_config: FullConfig) {
     const apiBase = process.env.API_BASE_URL || 'http://127.0.0.1:5003';
     console.log(`\n🚀 GLOBAL SETUP: Seeding Data to ${apiBase}...\n`);
 
@@ -79,7 +79,9 @@ async function globalSetup(config: FullConfig) {
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             });
             console.log('✅ Seeding: E2E Supplier Created');
-        } catch (e) { }
+        } catch (e) {
+            console.warn('⚠️ Supplier Seeding Failed', e);
+        }
 
     } else {
         console.warn('🚨 SKIP SEEDING: Authentication failed. Tests rely on existing data.');

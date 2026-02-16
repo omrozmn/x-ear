@@ -50,7 +50,7 @@ test.describe('Deep QA Audit: Roles Module', () => {
         await roleCard.locator('button').filter({ has: page.locator('svg.w-5.h-5') }).click(); // The trash icon
 
         await expect(page.locator('text=Rol silindi')).toBeVisible();
-        await expect(page.locator(`h3:has-text("${roleName}")`)).not.toBeVisible();
+        await expect(page.locator(`h3:has-text("${roleName}")`)).toBeHidden();
         console.log('✅ Role Deleted');
     });
 });

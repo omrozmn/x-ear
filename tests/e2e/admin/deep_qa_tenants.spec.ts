@@ -46,7 +46,7 @@ test.describe('Deep QA Audit: Tenants Module', () => {
 
         // Check for error messages (Red text or specific class)
         // Assuming standard form validation showing "Required" or "Gerekli"
-        const errorMsg = page.locator('text=Gerekli alanı doldurunuz').first().or(page.locator('.text-red-500').first());
+        page.locator('text=Gerekli alanı doldurunuz').first().or(page.locator('.text-red-500').first());
         // Note: This assertion might need tuning based on actual error text
         // await expect(errorMsg).toBeVisible(); 
         console.log('✅ Validation Triggered (Standard check)');
@@ -69,7 +69,7 @@ test.describe('Deep QA Audit: Tenants Module', () => {
         await saveBtn.click();
 
         // Wait for modal to close
-        await expect(page.locator('div[role="dialog"]')).not.toBeVisible();
+        await expect(page.locator('div[role="dialog"]')).toBeHidden();
         console.log('✅ Create Form Submitted');
 
         // 5. Persistence Check
@@ -86,7 +86,7 @@ test.describe('Deep QA Audit: Tenants Module', () => {
         // Fix: Wait for loading to finish and correct input selector
         const editModal = page.locator('div[role="dialog"]');
         await expect(editModal).toBeVisible();
-        await expect(editModal.getByText('Yükleniyor...')).not.toBeVisible();
+        await expect(editModal.getByText('Yükleniyor...')).toBeHidden();
 
         // Fix: Wait for loading to finish by checking Title content
         // Wait for title to include the tenant name (confirms data loaded)
@@ -109,7 +109,7 @@ test.describe('Deep QA Audit: Tenants Module', () => {
         await editModal.locator('button:has(svg)').first().click(); // Usually the X icon in header
 
         // Verify Update in List
-        await expect(editModal).not.toBeVisible();
+        await expect(editModal).toBeHidden();
         await expect(page.locator(`text=${updateName}`)).toBeVisible();
         console.log('✅ Tenant Updated Successfully');
 

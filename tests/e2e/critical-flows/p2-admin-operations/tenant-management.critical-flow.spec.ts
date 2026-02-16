@@ -11,7 +11,19 @@
  */
 
 import { test, expect } from '../../fixtures/fixtures';
-import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
+import { validateResponseEnvelope } from '../../web/helpers/test-utils';
+
+type TenantRecord = {
+  id: string;
+  name: string;
+  ownerEmail: string;
+};
+
+type TenantUserRecord = {
+  id: string;
+  email: string;
+  role: string;
+};
 
 test.describe('FLOW-11: Tenant Management (Admin)', () => {
   test('should create and manage tenant successfully', async ({ apiContext, authTokens }) => {
@@ -66,9 +78,12 @@ test.describe('FLOW-11: Tenant Management (Admin)', () => {
     const listData = await listResponse.json();
     validateResponseEnvelope(listData);
     
-    const tenants = listData.data?.tenants || listData.data || [];
-    const createdTenant = tenants.find((t: any) => t.id === tenantId);
+    const tenants = (listData.data?.tenants || listData.data || []) as TenantRecord[];
+    const createdTenant = tenants.find((t: TenantRecord) => t.id === tenantId);
     expect(createdTenant, `Tenant with ID ${tenantId} should exist in list`).toBeTruthy();
+    if (!createdTenant) {
+      throw new Error(`Tenant with ID ${tenantId} should exist in list`);
+    }
     expect(createdTenant.name).toBe(testTenant.name);
     expect(createdTenant.ownerEmail).toBe(testTenant.contactEmail);
     console.log('[FLOW-11] Tenant verified in list');
@@ -128,9 +143,12 @@ test.describe('FLOW-11: Tenant Management (Admin)', () => {
     const usersData = await usersResponse.json();
     validateResponseEnvelope(usersData);
     
-    const users = usersData.data?.users || usersData.data || [];
-    const createdUser = users.find((u: any) => u.id === userId);
+    const users = (usersData.data?.users || usersData.data || []) as TenantUserRecord[];
+    const createdUser = users.find((u: TenantUserRecord) => u.id === userId);
     expect(createdUser, `User with ID ${userId} should exist in tenant users`).toBeTruthy();
+    if (!createdUser) {
+      throw new Error(`User with ID ${userId} should exist in tenant users`);
+    }
     expect(createdUser.email).toBe(testUser.email);
     expect(createdUser.role).toBe('TENANT_ADMIN');
     console.log('[FLOW-11] User verified in tenant users list');

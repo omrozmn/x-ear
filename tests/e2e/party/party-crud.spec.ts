@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
 import { createParty, searchParty, deleteParty, updateParty } from '../../helpers/party';
-import { waitForToast, waitForModalOpen, waitForModalClose } from '../../helpers/wait';
-import { expectToastVisible, expectModalOpen, expectModalClosed } from '../../helpers/assertions';
+import { expectToastVisible } from '../../helpers/assertions';
 import { testUsers } from '../../fixtures/users';
 import { testParties, generateRandomParty } from '../../fixtures/parties';
 
@@ -192,7 +191,7 @@ test.describe('Party CRUD Operations', () => {
     await expectToastVisible(page, 'success');
     
     // Verify party is removed from list
-    await expect(page.locator('text=' + testParty.firstName)).not.toBeVisible();
+    await expect(page.locator('text=' + testParty.firstName)).toBeHidden();
   });
 
   test('PARTY-011: Should cancel party creation', async ({ page }) => {
@@ -210,7 +209,7 @@ test.describe('Party CRUD Operations', () => {
     await page.keyboard.press('Escape');
     
     // Verify modal is closed - form should not be visible
-    await expect(page.locator('[data-testid="party-first-name-input"]')).not.toBeVisible();
+    await expect(page.locator('[data-testid="party-first-name-input"]')).toBeHidden();
   });
 
   test('PARTY-012: Should display party details', async ({ page }) => {

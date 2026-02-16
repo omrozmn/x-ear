@@ -15,7 +15,7 @@ export interface AuthTokens {
   tenantId: string;
   userId: string;
   role?: string;
-  user?: any; // Full user object for admin auth hydration
+  user?: Record<string, unknown>; // Full user object for admin auth hydration
 }
 
 /**
@@ -30,7 +30,7 @@ export async function login(
   otp: string = 'Admin123!' // Password for seeded test user
 ): Promise<AuthTokens> {
   let endpoint = `${API_BASE_URL}/api/auth/login`;
-  let payload: any = {
+  let payload: Record<string, string> = {
     identifier: phone,
     password: otp
   };
@@ -95,14 +95,14 @@ export async function setupAuthenticatedPage(
 
     // Install Spy Immediately
     const originalRemove = localStorage.removeItem;
-    localStorage.removeItem = function (key) {
+    localStorage.removeItem = function (key: string): void {
       console.warn('[Test Spy] removeItem called for:', key);
-      return originalRemove.apply(this, arguments as any);
+      return originalRemove.call(this, key);
     };
     const originalClear = localStorage.clear;
-    localStorage.clear = function () {
+    localStorage.clear = function (): void {
       console.warn('[Test Spy] clear called');
-      return originalClear.apply(this, arguments as any);
+      return originalClear.call(this);
     };
 
     // Set Keys
@@ -266,7 +266,7 @@ export async function assignRole(
 /**
  * Validate ResponseEnvelope format
  */
-export function validateResponseEnvelope(data: any): void {
+export function validateResponseEnvelope(data: Record<string, unknown>): void {
   expect(data).toHaveProperty('success');
   expect(data).toHaveProperty('data');
   expect(data).toHaveProperty('timestamp');
@@ -279,19 +279,19 @@ export function validateResponseEnvelope(data: any): void {
 /**
  * Validate no snake_case in response
  */
-export function validateNoCamelCase(obj: any, path: string = 'root'): void {
+export function validateNoCamelCase(obj: unknown, path: string = 'root'): void {
   if (typeof obj !== 'object' || obj === null) {
     return;
   }
 
-  for (const key in obj) {
+  for (const key in obj as Record<string, unknown>) {
     // Check for snake_case keys
     if (key.includes('_')) {
       throw new Error(`Found snake_case key "${key}" at path: ${path}`);
     }
 
     // Recursively check nested objects
-    validateNoCamelCase(obj[key], `${path}.${key}`);
+    validateNoCamelCase((obj as Record<string, unknown>)[key], `${path}.${key}`);
   }
 }
 

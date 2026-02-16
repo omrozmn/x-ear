@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
-import { waitForToast } from '../../helpers/wait';
 import { expectToastVisible } from '../../helpers/assertions';
 import { testUsers } from '../../fixtures';
 
@@ -113,7 +112,7 @@ test.describe('In-App Notifications', () => {
             expect(parseInt(count || '0')).toBe(0);
           } else {
             // Badge should not be visible
-            await expect(notificationBadge).not.toBeVisible();
+            await expect(notificationBadge).toBeHidden();
           }
         }
       }

@@ -1,5 +1,5 @@
 import { test as base, Page, APIRequestContext } from '@playwright/test';
-import { login, setupAuthenticatedPage, AuthTokens } from '../web/helpers/test-utils';
+import { login, AuthTokens } from '../web/helpers/test-utils';
 
 /**
  * Extended test fixtures
@@ -161,7 +161,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
     },
 
     // Fixture for affiliate
-    affiliatePage: async ({ browser, request }, use) => {
+    affiliatePage: async ({ browser, request: _request }, use) => {
         // TODO: Implement affiliate login flow
         const context = await browser.newContext();
         const page = await context.newPage();

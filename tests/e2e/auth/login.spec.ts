@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { login, logout, isLoggedIn } from '../../helpers/auth';
-import { expectToastVisible } from '../../helpers/assertions';
 import { testUsers } from '../../fixtures/users';
 
 test.describe('Login Flow', () => {

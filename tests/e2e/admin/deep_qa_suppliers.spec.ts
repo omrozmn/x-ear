@@ -87,7 +87,7 @@ test.describe('Deep QA Audit: Suppliers Module', () => {
 
         console.log('Step 3: Verify Creation');
         await expect(page.getByText('Tedarikçi başarıyla oluşturuldu')).toBeVisible();
-        await expect(modal).not.toBeVisible();
+        await expect(modal).toBeHidden();
 
         // Verify in list
         const searchInput = page.getByPlaceholder('Tedarikçi ara...');
@@ -118,7 +118,7 @@ test.describe('Deep QA Audit: Suppliers Module', () => {
         page.on('dialog', dialog => dialog.accept());
         await page.locator('button.text-red-600').first().click(); // Delete button
         await expect(page.locator('text=Tedarikçi silindi')).toBeVisible();
-        await expect(page.getByRole('cell', { name: updatedName })).not.toBeVisible();
+        await expect(page.getByRole('cell', { name: updatedName })).toBeHidden();
         console.log('✅ Delete Successful');
         await searchInput.fill(updatedName);
         await page.waitForTimeout(1000);

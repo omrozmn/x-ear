@@ -19,6 +19,10 @@
 import { test, expect } from '../../fixtures/fixtures';
 import { validateResponseEnvelope } from '../../web/helpers/test-utils';
 
+type InventoryRecord = {
+  id: string;
+};
+
 test.describe('FLOW-07: Inventory Management', () => {
   test('should create, read, update, and delete inventory item via API', async ({ apiContext, authTokens }) => {
     test.setTimeout(60000);
@@ -92,7 +96,7 @@ test.describe('FLOW-07: Inventory Management', () => {
     expect(listResponse.ok()).toBeTruthy();
     const listData = await listResponse.json();
     validateResponseEnvelope(listData);
-    const foundItem = listData.data.find((item: any) => item.id === itemId);
+    const foundItem = (listData.data as InventoryRecord[]).find((item: InventoryRecord) => item.id === itemId);
     expect(foundItem, 'Item should exist in list').toBeTruthy();
     console.log('[FLOW-07] ✓ Item found in list');
     

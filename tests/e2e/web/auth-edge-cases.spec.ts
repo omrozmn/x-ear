@@ -2,7 +2,7 @@ import { test, expect } from '../fixtures/fixtures';
 
 test.describe('Auth Flow Edge Cases', () => {
 
-    test('should gate access for unverified phone users', async ({ page, request }) => {
+    test('should gate access for unverified phone users', async ({ page }) => {
         // Edge Case: user authenticated but requiresPhoneVerification = true
         // We can't easily mock the *backend* response here without network interception or a specific user fixture
 

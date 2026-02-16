@@ -17,6 +17,14 @@ import { waitForApiCall } from '../../helpers/wait';
 import { generateRandomParty } from '../../fixtures/parties';
 import { testDevices } from '../../fixtures/devices';
 
+function getRequiredDeviceId(deviceKey: keyof typeof testDevices): string {
+  const deviceId = testDevices[deviceKey].id;
+  if (!deviceId) {
+    throw new Error(`Missing fixture id for ${String(deviceKey)}`);
+  }
+  return deviceId;
+}
+
 test.describe('Device Management Tests', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
@@ -26,7 +34,7 @@ test.describe('Device Management Tests', () => {
     // Arrange: Create party
     const partyData = generateRandomParty();
     const partyId = await createParty(page, partyData);
-    const deviceId = testDevices.device1.id;
+    const deviceId = getRequiredDeviceId('device1');
 
     // Act: Assign device for sale
     const assignmentId = await assignDevice(page, {
@@ -46,7 +54,7 @@ test.describe('Device Management Tests', () => {
     // Arrange: Create party
     const partyData = generateRandomParty();
     const partyId = await createParty(page, partyData);
-    const deviceId = testDevices.device2.id;
+    const deviceId = getRequiredDeviceId('device2');
     const returnDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 7 days from now
 
     // Act: Assign device for trial
@@ -68,7 +76,7 @@ test.describe('Device Management Tests', () => {
     // Arrange: Create party
     const partyData = generateRandomParty();
     const partyId = await createParty(page, partyData);
-    const deviceId = testDevices.device3.id;
+    const deviceId = getRequiredDeviceId('device3');
 
     // Act: Assign device as loaner
     const assignmentId = await assignDevice(page, {
@@ -88,7 +96,7 @@ test.describe('Device Management Tests', () => {
     // Arrange: Create party
     const partyData = generateRandomParty();
     const partyId = await createParty(page, partyData);
-    const deviceId = testDevices.device1.id;
+    const deviceId = getRequiredDeviceId('device1');
 
     // Act: Assign device for repair
     const assignmentId = await assignDevice(page, {
@@ -108,7 +116,7 @@ test.describe('Device Management Tests', () => {
     // Arrange: Create party
     const partyData = generateRandomParty();
     const partyId = await createParty(page, partyData);
-    const deviceId = testDevices.device2.id;
+    const deviceId = getRequiredDeviceId('device2');
 
     // Act: Assign device as replacement
     const assignmentId = await assignDevice(page, {
@@ -128,7 +136,7 @@ test.describe('Device Management Tests', () => {
     // Arrange: Assign device for trial
     const partyData = generateRandomParty();
     const partyId = await createParty(page, partyData);
-    const deviceId = testDevices.device3.id;
+    const deviceId = getRequiredDeviceId('device3');
     const assignmentId = await assignDevice(page, {
       partyId,
       deviceId,
@@ -147,7 +155,7 @@ test.describe('Device Management Tests', () => {
     // Arrange: Assign device
     const partyData = generateRandomParty();
     const partyId = await createParty(page, partyData);
-    const deviceId = testDevices.device1.id;
+    const deviceId = getRequiredDeviceId('device1');
     const assignmentId = await assignDevice(page, {
       partyId,
       deviceId,
@@ -155,7 +163,7 @@ test.describe('Device Management Tests', () => {
     });
 
     // Act: Replace with new device
-    const newDeviceId = testDevices.device2.id;
+    const newDeviceId = getRequiredDeviceId('device2');
     const newAssignmentId = await replaceDevice(page, assignmentId, newDeviceId);
 
     // Assert: Device replaced
@@ -166,7 +174,7 @@ test.describe('Device Management Tests', () => {
 
   test('DEVICE-008: View device history', async ({ page }) => {
     // Arrange: Device with history
-    const deviceId = testDevices.device1.id;
+    const deviceId = getRequiredDeviceId('device1');
 
     // Act: View history
     await viewDeviceHistory(page, deviceId);
@@ -225,7 +233,7 @@ test.describe('Device Management Tests', () => {
 
   test('DEVICE-014: Device warranty tracking', async ({ page }) => {
     // Arrange: Device with warranty
-    const deviceId = testDevices.device1.id;
+    const deviceId = getRequiredDeviceId('device1');
 
     // Act: View warranty info
     await viewDeviceWarranty(page, deviceId);

@@ -166,7 +166,7 @@ export async function createSaleFromCashRegister(
 export async function getSaleDetails(
   page: Page,
   saleId: string
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   await page.goto(`/sales/${saleId}`);
   
   const response = await page.waitForResponse(

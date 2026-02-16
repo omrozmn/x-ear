@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
 import { createParty } from '../../helpers/party';
-import { waitForToast, waitForModalOpen, waitForModalClose } from '../../helpers/wait';
-import { expectToastVisible, expectModalOpen, expectModalClosed } from '../../helpers/assertions';
+import { waitForToast, waitForModalOpen } from '../../helpers/wait';
+import { expectToastVisible, expectModalOpen } from '../../helpers/assertions';
 import { testUsers, generateRandomParty } from '../../fixtures';
 
 test.describe('Appointment CRUD Operations', () => {
@@ -225,7 +225,7 @@ test.describe('Appointment CRUD Operations', () => {
     await page.locator('[data-testid="appointment-type-select"]').click();
     await page.locator('text=Kontrol').first().click();
     await page.locator('[data-testid="appointment-doctor-select"]').click();
-    const firstDoctor = await page.locator('[data-testid="appointment-doctor-select"] option').first().textContent();
+    await page.locator('[data-testid="appointment-doctor-select"] option').first().textContent();
     await page.locator('[data-testid="appointment-doctor-select"] option').first().click();
     await page.locator('[data-testid="appointment-submit-button"]').click();
     await waitForToast(page, 'success');

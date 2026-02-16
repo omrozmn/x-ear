@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
-import { waitForToast } from '../../helpers/wait';
 import { expectToastVisible } from '../../helpers/assertions';
 import { testUsers } from '../../fixtures';
 

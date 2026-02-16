@@ -20,10 +20,10 @@
  */
 
 import { test, expect } from '../../fixtures/fixtures';
-import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
+import { validateResponseEnvelope } from '../../web/helpers/test-utils';
 
 test.describe('FLOW-04: E-Invoice Generation & BirFatura Integration', () => {
-  test('should generate e-invoice and integrate with BirFatura successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should generate e-invoice and integrate with BirFatura successfully', async ({ tenantPage: _tenantPage, apiContext, authTokens: _authTokens }) => {
     test.setTimeout(90000); // E-invoice flow can take time
     
     const timestamp = Date.now();

@@ -80,7 +80,7 @@ test.describe('Deep QA Audit: Dashboard', () => {
 
         // Wait for spinner or simple wait to ensure no crash
         await page.waitForTimeout(1000);
-        await expect(page.getByText('Veri Yükleme Hatası')).not.toBeVisible();
+        await expect(page.getByText('Veri Yükleme Hatası')).toBeHidden();
 
         console.log('✅ Dashboard Refresh Successful');
     });

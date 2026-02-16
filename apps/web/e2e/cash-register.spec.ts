@@ -15,7 +15,6 @@ test.describe('Cash Register Tests', () => {
     // Try multiple possible routes
     const cashRoutes = ['/cash-register', '/kasa', '/cash', '/kasalar'];
     
-    let pageLoaded = false;
     for (const route of cashRoutes) {
       try {
         await page.goto(route);
@@ -23,7 +22,6 @@ test.describe('Cash Register Tests', () => {
         
         const url = page.url();
         if (url.includes('cash') || url.includes('kasa')) {
-          pageLoaded = true;
           break;
         }
       } catch (e) {

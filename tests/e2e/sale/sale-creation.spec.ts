@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
 import { createParty } from '../../helpers/party';
-import { createSaleFromModal, createSaleFromDeviceAssignment, createSaleFromCashRegister } from '../../helpers/sale';
-import { waitForToast, waitForModalOpen, waitForModalClose } from '../../helpers/wait';
+import { waitForModalOpen } from '../../helpers/wait';
 import { expectToastVisible, expectModalOpen, expectModalClosed } from '../../helpers/assertions';
-import { testUsers, generateRandomParty, testDevices } from '../../fixtures';
+import { testUsers, generateRandomParty } from '../../fixtures';
 
 test.describe('Sale Creation', () => {
   test.beforeEach(async ({ page }) => {

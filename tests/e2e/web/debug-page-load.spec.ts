@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('Debug: Check page content', async ({ page }) => {
   const consoleMessages: string[] = [];
@@ -73,9 +73,14 @@ test('Debug: Check page content', async ({ page }) => {
   
   // Check for any script errors by evaluating in browser
   const hasReact = await page.evaluate(() => {
+    const browserWindow = window as Window & {
+      React?: unknown;
+      ReactDOM?: unknown;
+    };
+
     return {
-      hasReact: typeof (window as any).React !== 'undefined',
-      hasReactDOM: typeof (window as any).ReactDOM !== 'undefined',
+      hasReact: typeof browserWindow.React !== 'undefined',
+      hasReactDOM: typeof browserWindow.ReactDOM !== 'undefined',
       rootChildren: document.getElementById('root')?.children.length || 0
     };
   });

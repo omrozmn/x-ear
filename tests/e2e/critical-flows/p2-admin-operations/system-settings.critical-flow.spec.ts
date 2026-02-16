@@ -12,6 +12,11 @@
 import { test, expect } from '../../fixtures/fixtures';
 import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
+type SettingsEntry = {
+  key: string;
+  value: string | number | boolean | null;
+};
+
 test.describe('FLOW-13: System Settings (Admin)', () => {
   test('should update system settings successfully', async ({ adminPage, tenantPage, apiContext, authTokens }) => {
     // Generate unique test data
@@ -57,9 +62,9 @@ test.describe('FLOW-13: System Settings (Admin)', () => {
     validateResponseEnvelope(settingsData);
     
     // Settings come as array, convert to object
-    const settingsArray = settingsData.data || [];
-    const settingsObj: any = {};
-    settingsArray.forEach((setting: any) => {
+    const settingsArray = (settingsData.data || []) as SettingsEntry[];
+    const settingsObj: Record<string, string | number | boolean | null> = {};
+    settingsArray.forEach((setting: SettingsEntry) => {
       settingsObj[setting.key] = setting.value;
     });
     
@@ -94,9 +99,9 @@ test.describe('FLOW-13: System Settings (Admin)', () => {
       validateResponseEnvelope(updatedSettingsData);
       
       // Convert array to object
-      const updatedSettingsArray = updatedSettingsData.data || [];
-      const updatedSettingsObj: any = {};
-      updatedSettingsArray.forEach((setting: any) => {
+      const updatedSettingsArray = (updatedSettingsData.data || []) as SettingsEntry[];
+      const updatedSettingsObj: Record<string, string | number | boolean | null> = {};
+      updatedSettingsArray.forEach((setting: SettingsEntry) => {
         updatedSettingsObj[setting.key] = setting.value;
       });
       
@@ -119,11 +124,13 @@ test.describe('FLOW-13: System Settings (Admin)', () => {
     await tenantPage.waitForLoadState('networkidle');
     
     // Look for tax rate display or calculation
-    await expect(tenantPage.locator(`text=/%${newTaxRate}/`).or(
-      tenantPage.locator(`text=/KDV.*${newTaxRate}/i`)
-    )).toBeVisible({ timeout: 10000 }).catch(() => {
+    try {
+      await expect(tenantPage.locator(`text=/%${newTaxRate}/`).or(
+        tenantPage.locator(`text=/KDV.*${newTaxRate}/i`)
+      )).toBeVisible({ timeout: 10000 });
+    } catch {
       console.log('[FLOW-13] Tax rate not visible in UI, but API confirmed update');
-    });
+    }
     
     // STEP 8: Restore original tax rate (cleanup)
     console.log('[FLOW-13] Step 8: Restore original tax rate');

@@ -37,7 +37,9 @@
       ]
     }
   },
-  "include": [],
+  "include": [
+    "tests/**/*"
+  ],
   "exclude": [
     "node_modules",
     "dist",

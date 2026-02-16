@@ -6,13 +6,14 @@ import { test, expect } from '../fixtures/fixtures';
 import {
     createTestParty,
     deleteTestParty,
+    AuthTokens,
     login,
     setupAuthenticatedPage
 } from './helpers/test-utils';
 
 test.describe('Party Devices Module', () => {
     let partyId: string;
-    let authTokens: any;
+    let authTokens: AuthTokens;
 
     test.beforeAll(async ({ request }) => {
         authTokens = await login(request);

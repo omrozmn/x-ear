@@ -15,7 +15,6 @@ test.describe('Inventory Tests', () => {
     // Try multiple possible routes
     const inventoryRoutes = ['/inventory', '/envanter', '/stock', '/stok'];
     
-    let pageLoaded = false;
     for (const route of inventoryRoutes) {
       try {
         await page.goto(route);
@@ -23,7 +22,6 @@ test.describe('Inventory Tests', () => {
         
         const url = page.url();
         if (url.includes('inventory') || url.includes('envanter') || url.includes('stock') || url.includes('stok')) {
-          pageLoaded = true;
           break;
         }
       } catch (e) {

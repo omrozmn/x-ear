@@ -30,7 +30,7 @@ test.describe('Deep QA Audit: Patients Module', () => {
         console.log('Step 3: Verify Content (Table or Empty State)');
 
         // Wait for loading to finish (spinner gone)
-        await expect(page.locator('.animate-spin')).not.toBeVisible();
+        await expect(page.locator('.animate-spin')).toBeHidden();
 
         const emptyState = page.getByText('Hasta bulunamadı');
 

@@ -13,6 +13,10 @@
 import { test, expect } from '../../fixtures/fixtures';
 import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
+type PaymentRecord = {
+  amount?: number;
+};
+
 test.describe('FLOW-08: Payment Recording', () => {
   test('should record payment successfully', async ({ tenantPage, apiContext, authTokens }) => {
     // Generate unique test data
@@ -205,7 +209,7 @@ test.describe('FLOW-08: Payment Recording', () => {
     validateResponseEnvelope(paymentsData);
     
     const payments = paymentsData.data;
-    const totalPaid = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+    const totalPaid = (payments as PaymentRecord[]).reduce((sum: number, p: PaymentRecord) => sum + (p.amount || 0), 0);
     expect(totalPaid).toBeGreaterThanOrEqual(downPayment + paymentAmount);
     
     console.log('[FLOW-08] Total paid:', totalPaid);

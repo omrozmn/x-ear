@@ -94,7 +94,6 @@ test.describe('API Health Check', () => {
 
   test('should have CORS headers', async ({ request }) => {
     const response = await request.get(`${API_BASE_URL}/health`);
-    const headers = response.headers();
     
     // CORS headers may not be present in all environments
     // Just check that response is successful

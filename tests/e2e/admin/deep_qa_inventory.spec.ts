@@ -36,7 +36,7 @@ test.describe('Deep QA Audit: Inventory Module', () => {
 
         console.log('Step 3: Verify Content (Table or Empty State)');
         // Wait for loading spinner to disappear
-        await expect(page.locator('.animate-spin')).not.toBeVisible();
+        await expect(page.locator('.animate-spin')).toBeHidden();
 
         const emptyState = page.getByText('Kayıt bulunamadı');
 

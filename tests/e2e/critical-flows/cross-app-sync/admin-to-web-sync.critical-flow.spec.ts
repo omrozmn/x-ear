@@ -14,7 +14,18 @@
  */
 
 import { test, expect } from '../../fixtures/fixtures';
-import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
+import { validateResponseEnvelope } from '../../web/helpers/test-utils';
+
+type TenantUser = {
+  id: string;
+  email: string;
+  tenantId: string;
+};
+
+type Party = {
+  id: string;
+  tenantId: string;
+};
 
 test.describe('FLOW-16: Admin → Web Data Sync', () => {
   test('should sync data from admin panel to web app', async ({ apiContext, authTokens }) => {
@@ -89,9 +100,12 @@ test.describe('FLOW-16: Admin → Web Data Sync', () => {
     const usersData = await usersResponse.json();
     validateResponseEnvelope(usersData);
     
-    const users = usersData.data?.users || usersData.data || [];
-    const createdUser = users.find((u: any) => u.id === userId);
+    const users = (usersData.data?.users || usersData.data || []) as TenantUser[];
+    const createdUser = users.find((u: TenantUser) => u.id === userId);
     expect(createdUser).toBeTruthy();
+    if (!createdUser) {
+      throw new Error(`Created user ${userId} not found in tenant ${tenantId}`);
+    }
     expect(createdUser.email).toBe(testUser.email);
     expect(createdUser.tenantId).toBe(tenantId);
     console.log('[FLOW-16] Verified user tenant assignment');
@@ -143,13 +157,16 @@ test.describe('FLOW-16: Admin → Web Data Sync', () => {
     const partiesData = await partiesResponse.json();
     validateResponseEnvelope(partiesData);
     
-    const parties = partiesData.data;
-    const createdParty = parties.find((p: any) => p.id === partyId);
+    const parties = (partiesData.data || []) as Party[];
+    const createdParty = parties.find((p: Party) => p.id === partyId);
     expect(createdParty).toBeTruthy();
+    if (!createdParty) {
+      throw new Error(`Created party ${partyId} not found in tenant party list`);
+    }
     expect(createdParty.tenantId).toBe(tenantId);
     
     // Verify all parties belong to this tenant
-    parties.forEach((party: any) => {
+    parties.forEach((party: Party) => {
       expect(party.tenantId, `Party ${party.id} should belong to tenant ${tenantId}`).toBe(tenantId);
     });
     

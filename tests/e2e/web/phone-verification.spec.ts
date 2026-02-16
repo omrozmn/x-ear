@@ -263,7 +263,7 @@ test.describe('Phone Verification Flow', () => {
 
     // Modal should not have close button (closeOnOverlayClick=false, showCloseButton=false)
     const closeButton = page.locator('button[aria-label="Close"], button:has-text("×")');
-    await expect(closeButton).not.toBeVisible();
+    await expect(closeButton).toBeHidden();
 
     // Clicking overlay should not close modal
     await page.click('body', { position: { x: 10, y: 10 } });
@@ -301,6 +301,7 @@ test.describe('Phone Verification Flow', () => {
       expect(true).toBeTruthy();
     }
   });
+
   test.describe('API Integration', () => {
 
     test('should call correct API endpoints', async ({ page }) => {

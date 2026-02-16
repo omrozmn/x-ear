@@ -20,7 +20,7 @@ test.describe('Deep QA Audit: Analytics', () => {
 
     test('Analytics Page Load & Crash Protection', async ({ page }) => {
         console.log('Step 1: Navigating to Analytics...');
-        const responsePromise = page.waitForResponse(response =>
+        page.waitForResponse(response =>
             response.url().includes('/api/admin/analytics') && response.status() === 200
             , { timeout: 10000 }).catch(() => null); // Catch if no API call or timeout
 
@@ -43,9 +43,11 @@ test.describe('Deep QA Audit: Analytics', () => {
         console.log('Step 3: Verifying Charts are rendered...');
         // Look for canvas elements usually used by Chart.js/Recharts
         // Or container titles
-        await expect(page.locator('canvas').first()).toBeVisible({ timeout: 5000 }).catch(() => {
+        try {
+            await expect(page.locator('canvas').first()).toBeVisible({ timeout: 5000 });
+        } catch {
             console.log('⚠️ Warning: No canvas found, checking for empty state or error message');
-        });
+        }
 
         const chartTitles = ['Gelir Dağılımı', 'Abonelik Trendi'];
         for (const title of chartTitles) {

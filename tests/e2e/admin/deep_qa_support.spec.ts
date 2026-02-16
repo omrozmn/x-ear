@@ -38,8 +38,6 @@ test.describe('Deep QA Audit: Support Module', () => {
 
         // Check for empty state OR list items
         const emptyState = page.locator('text=Destek talebi bulunamadı');
-        const ticketList = page.locator('.space-y-4'); // Adjust based on actual UI structure (often a list of cards)
-
         const isEmpty = await emptyState.isVisible();
         if (isEmpty) {
             console.log('ℹ️ No support tickets found (Empty State Verified)');

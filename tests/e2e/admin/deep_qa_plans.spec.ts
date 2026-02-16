@@ -60,7 +60,7 @@ test.describe('Deep QA Audit: Plans Module', () => {
         await page.click('button:has-text("Sil")');
 
         await expect(page.locator('text=Plan silindi')).toBeVisible();
-        await expect(page.locator(`div:has-text("${updatedName}")`)).not.toBeVisible();
+        await expect(page.locator(`div:has-text("${updatedName}")`)).toBeHidden();
         console.log('✅ Plan Deleted');
     });
 });

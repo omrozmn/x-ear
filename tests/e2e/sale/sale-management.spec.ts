@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
 import { createParty } from '../../helpers/party';
-import { createSaleFromModal } from '../../helpers/sale';
-import { waitForToast, waitForModalOpen, waitForModalClose } from '../../helpers/wait';
-import { expectToastVisible, expectModalOpen, expectModalClosed } from '../../helpers/assertions';
+import { waitForToast, waitForModalOpen } from '../../helpers/wait';
+import { expectToastVisible, expectModalOpen } from '../../helpers/assertions';
 import { testUsers, generateRandomParty } from '../../fixtures';
 
 test.describe('Sale Management', () => {
@@ -85,7 +84,7 @@ test.describe('Sale Management', () => {
     
     // Verify sale removed from list
     if (saleText) {
-      await expect(page.locator('text=' + saleText)).not.toBeVisible();
+      await expect(page.locator('text=' + saleText)).toBeHidden();
     }
   });
 

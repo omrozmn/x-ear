@@ -24,8 +24,9 @@ test.describe('Web App Login Flow', () => {
       localStorage.clear();
       sessionStorage.clear();
       // Also clear any auth tokens
+      const browserWindow = window as Window & { __AUTH_TOKEN__?: unknown };
       if (typeof window !== 'undefined') {
-        delete (window as any).__AUTH_TOKEN__;
+        delete browserWindow.__AUTH_TOKEN__;
       }
     });
     // Reload to ensure clean state
@@ -44,7 +45,7 @@ test.describe('Web App Login Flow', () => {
 
     // Debug: Check if JavaScript is running
     const jsEnabled = await page.evaluate(() => {
-      return typeof React !== 'undefined' || document.querySelector('input') !== null;
+      return document.querySelector('input') !== null;
     });
     console.log('JavaScript/React running:', jsEnabled);
 
@@ -348,7 +349,7 @@ test.describe('Phone Verification Flow', () => {
 
     // Modal should not have close button
     const closeButton = page.locator('button[aria-label="Close"], button:has-text("×")');
-    await expect(closeButton).not.toBeVisible();
+    await expect(closeButton).toBeHidden();
 
     // Clicking overlay should not close modal
     await page.click('body', { position: { x: 10, y: 10 } });

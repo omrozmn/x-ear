@@ -1,394 +1,824 @@
 # Design: Playwright E2E Testing Infrastructure
 
-**Feature**: Playwright E2E Testing  
-**Status**: APPROVED  
-**Related**: requirements.md  
-**Created**: 2026-02-03
+**Feature**: Full-Coverage E2E Testing (Web + Admin + Landing)  
+**Status**: IN PROGRESS  
+**Related**: requirements.md, tasks.md  
+**Created**: 2026-02-03  
+**Updated**: 2026-02-16
 
 ---
 
 ## 1. Architecture Overview
 
-### 1.1 System Architecture
+### 1.1 Multi-App System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     CI/CD Pipeline (GitHub Actions)              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │  P0 Tests    │  │  P1 Tests    │  │  P2-P3 Tests │          │
-│  │  (55 tests)  │  │  (85 tests)  │  │  (60 tests)  │          │
-│  │  ~35 min     │  │  ~50 min     │  │  ~35 min     │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                     Playwright Test Runner                       │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  Test Execution (4 parallel workers)                     │  │
-│  │  - Browser automation (Chromium/Firefox/WebKit)          │  │
-│  │  - Screenshot/Video/Trace capture                        │  │
-│  │  - Network interception                                  │  │
-│  └──────────────────────────────────────────────────────────┘  │
+┌──────────────────────────────────────────────────────────────────────┐
+│                    CI/CD Pipeline (GitHub Actions)                     │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐         │
+│  │ Critical Flows  │  │  Full Suite    │  │  Weekly Full   │         │
+│  │ (p0-revenue)   │  │  (per PR)      │  │  (3 browsers)  │         │
+│  │ ~35 min        │  │  ~90 min       │  │  ~2 hours      │         │
+│  └────────────────┘  └────────────────┘  └────────────────┘         │
+└──────────────────────────────────────────────────────────────────────┘
+                                ↓
+┌──────────────────────────────────────────────────────────────────────┐
+│                    Playwright Test Runner                              │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │  3 Projects × 4 Workers = Parallel Execution                  │  │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐                    │  │
+│  │  │ web      │  │ admin    │  │ landing  │                    │  │
+│  │  │ :8080    │  │ :8082    │  │ :3000    │                    │  │
+│  │  └──────────┘  └──────────┘  └──────────┘                    │  │
+│  │  Screenshot / Video / Trace on failure                        │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────┘
+                                ↓
+┌──────────────────────────────────────────────────────────────────────┐
+│                    Page Object Model (POM)                            │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │ BasePage │  │ WebPages │  │AdminPages│  │LandPages │           │
+│  │ (shared) │  │ (31 POM) │  │ (37 POM) │  │ (11 POM) │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+└──────────────────────────────────────────────────────────────────────┘
+                                ↓
+┌──────────────────────────────────────────────────────────────────────┐
+│                    Consolidated Helpers & Fixtures                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
+│  │  Auth    │  │  Wait    │  │  CRUD    │  │ Assert   │           │
+│  │ Helpers  │  │ Helpers  │  │ Helpers  │  │ Helpers  │           │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘           │
+└──────────────────────────────────────────────────────────────────────┘
+                                ↓
+┌──────────────────────────────────────────────────────────────────────┐
+│                    Applications Under Test                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │
+│  │ Web App      │  │ Admin Panel  │  │ Landing Page │              │
+│  │ React/Vite   │  │ React/Vite   │  │ Next.js 16   │              │
+│  │ :8080        │  │ :8082        │  │ :3000        │              │
+│  └──────────────┘  └──────────────┘  └──────────────┘              │
+│                    ┌──────────────┐                                   │
+│                    │ Backend API  │                                   │
+│                    │ FastAPI :5003│                                   │
+│                    └──────────────┘                                   │
+└──────────────────────────────────────────────────────────────────────┘
+```
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │                     Test Helpers & Utilities                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │   Auth   │  │   Wait   │  │  Party   │  │   Sale   │       │
-│  │ Helpers  │  │ Helpers  │  │ Helpers  │  │ Helpers  │       │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                     Application Under Test                       │
-│  ┌──────────────────────┐  ┌──────────────────────┐            │
-│  │  Frontend (React)    │  │  Backend (FastAPI)   │            │
-│  │  localhost:8080      │  │  localhost:5003      │            │
-│  └──────────────────────┘  └──────────────────────┘            │
-└─────────────────────────────────────────────────────────────────┘
-```
-
 ### 1.2 Test Execution Flow
 
 ```
 Test Start
     ↓
-Setup (beforeEach)
-    ├─ Start browser
-    ├─ Navigate to app
-    ├─ Login (if needed)
-    └─ Setup test data
+Global Setup
+    ├─ Start backend (FastAPI :5003) if not running
+    ├─ Start web (:8080), admin (:8082), landing (:3000) if not running
+    ├─ Health check all 4 services
+    └─ Seed test database
+    ↓
+Per-Project Setup (web | admin | landing)
+    ├─ Launch browser (Chromium default, Firefox/WebKit weekly)
+    ├─ Set baseURL for target app
+    ├─ Login via storageState (if auth required)
+    └─ Select test tenant
+    ↓
+beforeEach
+    ├─ Navigate to page
+    ├─ Wait for network idle
+    └─ Verify page loaded (key TestID visible)
     ↓
 Test Execution
-    ├─ User interactions
-    ├─ Wait for responses
-    ├─ Assertions
-    └─ Capture artifacts
+    ├─ User interactions via POM methods
+    ├─ Wait for API responses (waitForResponse)
+    ├─ Assertions (visible, text, count, URL)
+    └─ Capture trace on failure
     ↓
-Cleanup (afterEach)
-    ├─ Delete test data
-    ├─ Clear cookies
-    ├─ Close browser
-    └─ Save artifacts (if failed)
+afterEach
+    ├─ Clean test data (API delete, not UI)
+    ├─ Screenshot on failure (full page)
+    └─ Console error collection
     ↓
 Test End
 ```
 
 ---
 
-## 2. Directory Structure
+## 2. Directory Structure (Target)
 
 ```
 x-ear/
+├── playwright.config.ts                   # UNIFIED — 3 projects: web, admin, landing
 ├── tests/
-│   └── e2e/
-│       ├── auth/
-│       │   ├── login.spec.ts
-│       │   ├── logout.spec.ts
-│       │   ├── token-refresh.spec.ts
-│       │   └── permissions.spec.ts
-│       ├── party/
-│       │   ├── party-create.spec.ts
-│       │   ├── party-update.spec.ts
-│       │   ├── party-delete.spec.ts
-│       │   ├── party-search.spec.ts
-│       │   └── party-bulk.spec.ts
-│       ├── sale/
-│       │   ├── sale-modal.spec.ts
-│       │   ├── sale-device-assignment.spec.ts
-│       │   └── sale-cash-register.spec.ts
-│       ├── payment/
-│       ├── appointment/
-│       ├── communication/
-│       ├── settings/
-│       ├── invoice/
-│       ├── device/
-│       ├── inventory/
-│       ├── cash/
-│       ├── report/
-│       └── admin/
-├── tests/
-│   ├── helpers/
-│   │   ├── auth.ts
-│   │   ├── wait.ts
-│   │   ├── party.ts
-│   │   ├── sale.ts
-│   │   ├── payment.ts
-│   │   └── assertions.ts
+│   ├── e2e/
+│   │   ├── web/                           # Web App tests (31 routes)
+│   │   │   ├── auth/
+│   │   │   │   ├── login.spec.ts
+│   │   │   │   ├── logout.spec.ts
+│   │   │   │   ├── forgot-password.spec.ts
+│   │   │   │   └── token-refresh.spec.ts
+│   │   │   ├── dashboard/
+│   │   │   │   └── dashboard.spec.ts
+│   │   │   ├── party/
+│   │   │   │   ├── party-list.spec.ts
+│   │   │   │   ├── party-create.spec.ts
+│   │   │   │   ├── party-detail.spec.ts
+│   │   │   │   ├── party-update.spec.ts
+│   │   │   │   ├── party-delete.spec.ts
+│   │   │   │   ├── party-search.spec.ts
+│   │   │   │   ├── party-bulk-import.spec.ts
+│   │   │   │   └── party-modals.spec.ts
+│   │   │   ├── sale/
+│   │   │   │   ├── sale-list.spec.ts
+│   │   │   │   ├── sale-create.spec.ts
+│   │   │   │   ├── sale-detail.spec.ts
+│   │   │   │   ├── sale-modal.spec.ts
+│   │   │   │   ├── sale-device-assignment.spec.ts
+│   │   │   │   └── sale-cash-register.spec.ts
+│   │   │   ├── payment/
+│   │   │   ├── appointment/
+│   │   │   ├── communication/
+│   │   │   ├── settings/
+│   │   │   ├── invoice/
+│   │   │   ├── device/
+│   │   │   ├── inventory/
+│   │   │   ├── cash-register/
+│   │   │   ├── report/
+│   │   │   └── profile/
+│   │   ├── admin/                         # Admin Panel tests (37 routes)
+│   │   │   ├── auth/
+│   │   │   │   ├── admin-login.spec.ts
+│   │   │   │   └── admin-logout.spec.ts
+│   │   │   ├── dashboard/
+│   │   │   │   └── admin-dashboard.spec.ts
+│   │   │   ├── tenants/
+│   │   │   │   ├── tenant-list.spec.ts
+│   │   │   │   ├── tenant-create.spec.ts
+│   │   │   │   └── tenant-detail.spec.ts
+│   │   │   ├── users/
+│   │   │   │   ├── user-list.spec.ts
+│   │   │   │   ├── user-create.spec.ts
+│   │   │   │   └── user-detail.spec.ts
+│   │   │   ├── subscriptions/
+│   │   │   ├── activity-logs/
+│   │   │   ├── devices/
+│   │   │   ├── settings/
+│   │   │   └── reports/
+│   │   └── landing/                       # Landing Page tests (11 routes)
+│   │       ├── home/
+│   │       │   └── home.spec.ts
+│   │       ├── about/
+│   │       │   └── about.spec.ts
+│   │       ├── pricing/
+│   │       │   └── pricing.spec.ts
+│   │       ├── contact/
+│   │       │   └── contact.spec.ts
+│   │       ├── blog/
+│   │       │   ├── blog-list.spec.ts
+│   │       │   └── blog-detail.spec.ts
+│   │       ├── navigation/
+│   │       │   └── nav-footer.spec.ts
+│   │       └── seo/
+│   │           └── meta-og.spec.ts
+│   ├── helpers/                           # CONSOLIDATED (single system)
+│   │   ├── auth.helper.ts                 # Login/logout/token for all 3 apps
+│   │   ├── wait.helper.ts                 # Toast, modal, API, network idle
+│   │   ├── crud.helper.ts                 # Generic CRUD via API (not UI)
+│   │   ├── assert.helper.ts              # Custom assertion matchers
+│   │   ├── navigation.helper.ts          # Route helpers per app
+│   │   ├── modal.helper.ts               # Open/close/fill modal patterns
+│   │   ├── table.helper.ts              # Pagination, sort, filter, search
+│   │   ├── form.helper.ts              # Fill, validate, submit, error check
+│   │   └── debug.helper.ts             # Console log capture, network audit
 │   ├── fixtures/
-│   │   ├── users.ts
-│   │   ├── parties.ts
-│   │   ├── devices.ts
-│   │   └── settings.ts
+│   │   ├── users.fixture.ts
+│   │   ├── parties.fixture.ts
+│   │   ├── devices.fixture.ts
+│   │   ├── tenants.fixture.ts
+│   │   └── settings.fixture.ts
+│   ├── pom/                               # Page Object Models
+│   │   ├── base.page.ts                   # Abstract base page
+│   │   ├── web/                           # Web POM classes
+│   │   │   ├── login.page.ts
+│   │   │   ├── dashboard.page.ts
+│   │   │   ├── party-list.page.ts
+│   │   │   ├── party-detail.page.ts
+│   │   │   ├── sale-list.page.ts
+│   │   │   ├── sale-detail.page.ts
+│   │   │   ├── appointment-list.page.ts
+│   │   │   ├── payment-list.page.ts
+│   │   │   ├── settings.page.ts
+│   │   │   └── ...                        # 1 POM per route (31 total)
+│   │   ├── admin/                         # Admin POM classes
+│   │   │   ├── admin-login.page.ts
+│   │   │   ├── admin-dashboard.page.ts
+│   │   │   ├── tenant-list.page.ts
+│   │   │   ├── user-list.page.ts
+│   │   │   └── ...                        # 1 POM per route (37 total)
+│   │   └── landing/                       # Landing POM classes
+│   │       ├── home.page.ts
+│   │       ├── pricing.page.ts
+│   │       ├── contact.page.ts
+│   │       └── ...                        # 1 POM per route (11 total)
 │   └── config/
-│       └── playwright.config.ts
+│       ├── test-data.ts                   # Shared test data constants
+│       └── env.ts                         # Environment config loader
 ├── .github/
 │   └── workflows/
-│       ├── e2e-p0.yml
-│       ├── e2e-p1.yml
-│       └── e2e-full.yml
+│       ├── e2e-critical.yml               # Revenue-critical flows (on push)
+│       ├── e2e-pr.yml                     # Full suite (on PR)
+│       └── e2e-weekly.yml                 # 3-browser matrix (weekly)
 └── playwright-report/
 ```
 
+**Key Differences from Current State**:
+- Old: 3 separate helper systems → New: 1 consolidated `tests/helpers/`
+- Old: No POM → New: `tests/pom/` with `BasePage` + per-route classes
+- Old: Tests only for web → New: `tests/e2e/{web,admin,landing}/`
+- Old: 3 broken CI workflows → New: 3 working workflows with proper tagging
+- Old: 2 `playwright.config.ts` files → New: 1 unified config with 3 projects
+
 ---
 
-## 3. Component Design
+## 3. Page Object Model (POM) Design
 
-### 3.1 Test Helpers
-
-#### 3.1.1 Auth Helpers (`tests/helpers/auth.ts`)
+### 3.1 BasePage (Abstract)
 
 ```typescript
-export async function login(
+// tests/pom/base.page.ts
+import { Page, Locator, expect } from '@playwright/test';
+
+export abstract class BasePage {
+  constructor(protected readonly page: Page) {}
+
+  /** App identifier — override in subclass */
+  abstract readonly app: 'web' | 'admin' | 'landing';
+  
+  /** Route path relative to app baseURL */
+  abstract readonly path: string;
+  
+  /** TestID of a key element that confirms page loaded */
+  abstract readonly loadedIndicator: string;
+
+  // ── Navigation ─────────────────────────────────
+
+  async goto(): Promise<void> {
+    await this.page.goto(this.path);
+    await this.waitForPageLoad();
+  }
+
+  async waitForPageLoad(): Promise<void> {
+    await this.page.waitForLoadState('networkidle');
+    await expect(
+      this.page.locator(`[data-testid="${this.loadedIndicator}"]`)
+    ).toBeVisible({ timeout: 15_000 });
+  }
+
+  // ── Common Selectors ──────────────────────────
+
+  testId(id: string): Locator {
+    return this.page.locator(`[data-testid="${id}"]`);
+  }
+
+  // ── Toast ─────────────────────────────────────
+
+  async expectSuccessToast(message?: string): Promise<void> {
+    const toast = this.testId('success-toast');
+    await expect(toast).toBeVisible({ timeout: 10_000 });
+    if (message) await expect(toast).toContainText(message);
+  }
+
+  async expectErrorToast(message?: string): Promise<void> {
+    const toast = this.testId('error-toast');
+    await expect(toast).toBeVisible({ timeout: 10_000 });
+    if (message) await expect(toast).toContainText(message);
+  }
+
+  // ── Modal ─────────────────────────────────────
+
+  async waitForModalOpen(modalTestId: string): Promise<void> {
+    await expect(this.testId(modalTestId)).toBeVisible({ timeout: 5_000 });
+  }
+
+  async waitForModalClose(modalTestId: string): Promise<void> {
+    await expect(this.testId(modalTestId)).not.toBeVisible({ timeout: 5_000 });
+  }
+
+  // ── Table ─────────────────────────────────────
+
+  async getTableRowCount(tableTestId: string): Promise<number> {
+    return this.page.locator(`[data-testid="${tableTestId}"] tbody tr`).count();
+  }
+
+  async clickTableRow(tableTestId: string, rowIndex: number): Promise<void> {
+    await this.page
+      .locator(`[data-testid="${tableTestId}"] tbody tr`)
+      .nth(rowIndex)
+      .click();
+  }
+
+  // ── Wait Helpers ──────────────────────────────
+
+  async waitForApiResponse(
+    urlPattern: string,
+    method = 'GET',
+    status = 200
+  ): Promise<void> {
+    await this.page.waitForResponse(
+      (r) =>
+        r.url().includes(urlPattern) &&
+        r.request().method() === method &&
+        r.status() === status,
+      { timeout: 30_000 }
+    );
+  }
+
+  // ── Debug ─────────────────────────────────────
+
+  async captureConsoleErrors(): Promise<string[]> {
+    const errors: string[] = [];
+    this.page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    return errors;
+  }
+
+  async captureNetworkFailures(): Promise<string[]> {
+    const failures: string[] = [];
+    this.page.on('response', (response) => {
+      if (response.status() >= 400) {
+        failures.push(`${response.status()} ${response.url()}`);
+      }
+    });
+    return failures;
+  }
+}
+```
+
+### 3.2 Concrete POM Example — Web Login
+
+```typescript
+// tests/pom/web/login.page.ts
+import { BasePage } from '../base.page';
+
+export class WebLoginPage extends BasePage {
+  readonly app = 'web' as const;
+  readonly path = '/login';
+  readonly loadedIndicator = 'login-submit-button';
+
+  // ── Locators ──────────────────────────────────
+
+  get identifierInput() { return this.testId('login-identifier-input'); }
+  get passwordInput()   { return this.testId('login-password-input'); }
+  get submitButton()    { return this.testId('login-submit-button'); }
+  get errorMessage()    { return this.testId('login-error-message'); }
+  get forgotPassLink()  { return this.testId('login-forgot-password-link'); }
+
+  // ── Actions ───────────────────────────────────
+
+  async login(identifier: string, password: string): Promise<void> {
+    await this.identifierInput.fill(identifier);
+    await this.passwordInput.fill(password);
+    await this.submitButton.click();
+    await this.page.waitForURL('/dashboard', { timeout: 15_000 });
+  }
+
+  async loginExpectError(identifier: string, password: string): Promise<void> {
+    await this.identifierInput.fill(identifier);
+    await this.passwordInput.fill(password);
+    await this.submitButton.click();
+    await this.errorMessage.waitFor({ state: 'visible' });
+  }
+}
+```
+
+### 3.3 Concrete POM Example — Admin Tenant List
+
+```typescript
+// tests/pom/admin/tenant-list.page.ts
+import { BasePage } from '../base.page';
+
+export class AdminTenantListPage extends BasePage {
+  readonly app = 'admin' as const;
+  readonly path = '/tenants';
+  readonly loadedIndicator = 'tenant-list-table';
+
+  get searchInput()    { return this.testId('tenant-search-input'); }
+  get createButton()   { return this.testId('tenant-create-button'); }
+  get tableBody()      { return this.testId('tenant-list-table'); }
+  get paginationNext() { return this.testId('pagination-next'); }
+  get paginationPrev() { return this.testId('pagination-prev'); }
+
+  async search(query: string): Promise<void> {
+    await this.searchInput.fill(query);
+    await this.waitForApiResponse('/tenants', 'GET');
+  }
+
+  async openCreateModal(): Promise<void> {
+    await this.createButton.click();
+    await this.waitForModalOpen('tenant-form-modal');
+  }
+
+  async getTenantCount(): Promise<number> {
+    return this.getTableRowCount('tenant-list-table');
+  }
+}
+```
+
+### 3.4 POM Coverage Target
+
+| App     | Routes | POM Classes | Priority |
+|---------|--------|-------------|----------|
+| Web     | 31     | 31          | Phase 3-4 |
+| Admin   | 37     | 37          | Phase 4-5 |
+| Landing | 11     | 11          | Phase 5   |
+| **Total** | **79** | **79**    |          |
+
+---
+
+## 4. Consolidated Helpers Design
+
+### 4.1 Auth Helper (Multi-App)
+
+```typescript
+// tests/helpers/auth.helper.ts
+import { Page, BrowserContext } from '@playwright/test';
+
+type AppTarget = 'web' | 'admin';
+
+interface Credentials {
+  identifier: string;
+  password: string;
+}
+
+const defaultCredentials: Record<AppTarget, Credentials> = {
+  web: {
+    identifier: process.env.WEB_TEST_USER || 'test@xear.com',
+    password: process.env.WEB_TEST_PASS || 'Test123!'
+  },
+  admin: {
+    identifier: process.env.ADMIN_TEST_USER || 'admin@xear.com',
+    password: process.env.ADMIN_TEST_PASS || 'Admin123!'
+  }
+};
+
+/**
+ * Login via UI — use only for login tests.
+ * For other tests, prefer storageState auth.
+ */
+export async function loginViaUI(
   page: Page,
-  credentials?: { identifier: string; password: string }
+  app: AppTarget,
+  credentials?: Credentials
 ): Promise<void> {
-  const defaultCreds = {
-    identifier: process.env.TEST_USER_EMAIL || 'test@example.com',
-    password: process.env.TEST_USER_PASSWORD || 'password123'
-  };
-  
-  const creds = credentials || defaultCreds;
-  
+  const creds = credentials || defaultCredentials[app];
   await page.goto('/login');
   await page.locator('[data-testid="login-identifier-input"]').fill(creds.identifier);
   await page.locator('[data-testid="login-password-input"]').fill(creds.password);
   await page.locator('[data-testid="login-submit-button"]').click();
-  
-  // Wait for redirect to dashboard
-  await page.waitForURL('/dashboard');
-  await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+  await page.waitForURL('/dashboard', { timeout: 15_000 });
 }
 
+/**
+ * Save auth state to file for reuse — called in global setup.
+ */
+export async function saveAuthState(
+  page: Page,
+  app: AppTarget,
+  outputPath: string
+): Promise<void> {
+  await loginViaUI(page, app);
+  await page.context().storageState({ path: outputPath });
+}
+
+/**
+ * Logout via UI
+ */
 export async function logout(page: Page): Promise<void> {
   await page.locator('[data-testid="user-menu"]').click();
   await page.locator('[data-testid="logout-button"]').click();
   await page.waitForURL('/login');
 }
-
-export async function getAuthToken(page: Page): Promise<string> {
-  const cookies = await page.context().cookies();
-  const tokenCookie = cookies.find(c => c.name === 'access_token');
-  return tokenCookie?.value || '';
-}
 ```
 
-#### 3.1.2 Wait Helpers (`tests/helpers/wait.ts`)
+### 4.2 Form Helper
 
 ```typescript
-export async function waitForToast(
+// tests/helpers/form.helper.ts
+import { Page, Locator, expect } from '@playwright/test';
+
+/**
+ * Fill a form by mapping TestID → value.
+ * Supports input, select, checkbox, radio.
+ */
+export async function fillForm(
   page: Page,
-  type: 'success' | 'error' | 'warning' | 'info',
-  message?: string
+  fields: Record<string, string | boolean>
 ): Promise<void> {
-  const toast = page.locator(`[data-testid="${type}-toast"]`);
-  await expect(toast).toBeVisible({ timeout: 10000 });
-  
-  if (message) {
-    await expect(toast).toContainText(message);
+  for (const [testId, value] of Object.entries(fields)) {
+    const locator = page.locator(`[data-testid="${testId}"]`);
+    const tagName = await locator.evaluate((el) => el.tagName.toLowerCase());
+    const inputType = await locator.getAttribute('type');
+
+    if (tagName === 'select') {
+      await locator.selectOption(String(value));
+    } else if (inputType === 'checkbox') {
+      if (value) await locator.check();
+      else await locator.uncheck();
+    } else if (inputType === 'radio') {
+      await locator.check();
+    } else {
+      await locator.fill(String(value));
+    }
   }
-  
-  // Wait for toast to disappear (5 seconds duration)
-  await expect(toast).not.toBeVisible({ timeout: 6000 });
 }
 
-export async function waitForApiCall(
+/**
+ * Submit form and wait for API response.
+ */
+export async function submitForm(
   page: Page,
-  endpoint: string,
-  method: string = 'GET',
-  status: number = 200
+  submitTestId: string,
+  apiUrl: string,
+  method = 'POST'
 ): Promise<void> {
-  await page.waitForResponse(
-    response =>
-      response.url().includes(endpoint) &&
-      response.request().method() === method &&
-      response.status() === status,
-    { timeout: 30000 }
-  );
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.url().includes(apiUrl) && r.request().method() === method,
+      { timeout: 30_000 }
+    ),
+    page.locator(`[data-testid="${submitTestId}"]`).click()
+  ]);
 }
 
-export async function waitForModalOpen(
+/**
+ * Validate form field errors are displayed.
+ */
+export async function expectFieldErrors(
   page: Page,
-  modalTestId: string
+  fieldTestIds: string[]
 ): Promise<void> {
-  await expect(page.locator(`[data-testid="${modalTestId}"]`)).toBeVisible();
-}
-
-export async function waitForModalClose(
-  page: Page,
-  modalTestId: string
-): Promise<void> {
-  await expect(page.locator(`[data-testid="${modalTestId}"]`)).not.toBeVisible();
+  for (const testId of fieldTestIds) {
+    await expect(
+      page.locator(`[data-testid="${testId}-error"]`)
+    ).toBeVisible();
+  }
 }
 ```
 
-#### 3.1.3 Party Helpers (`tests/helpers/party.ts`)
+### 4.3 Debug Helper
 
 ```typescript
-export async function createParty(
-  page: Page,
-  data: {
-    firstName: string;
-    lastName: string;
-    phone: string;
-    email?: string;
-  }
-): Promise<string> {
-  await page.goto('/parties');
-  await page.locator('[data-testid="party-create-button"]').click();
-  await waitForModalOpen(page, 'party-form-modal');
-  
-  await page.locator('[data-testid="party-first-name-input"]').fill(data.firstName);
-  await page.locator('[data-testid="party-last-name-input"]').fill(data.lastName);
-  await page.locator('[data-testid="party-phone-input"]').fill(data.phone);
-  
-  if (data.email) {
-    await page.locator('[data-testid="party-email-input"]').fill(data.email);
-  }
-  
-  await page.locator('[data-testid="party-submit-button"]').click();
-  await waitForToast(page, 'success');
-  await waitForModalClose(page, 'party-form-modal');
-  
-  // Extract party ID from URL or response
-  const response = await page.waitForResponse(r => r.url().includes('/parties') && r.status() === 201);
-  const body = await response.json();
-  return body.data.id;
+// tests/helpers/debug.helper.ts
+import { Page, TestInfo } from '@playwright/test';
+
+interface DebugReport {
+  consoleErrors: string[];
+  networkFailures: { status: number; url: string; method: string }[];
+  jsExceptions: string[];
+  brokenImages: string[];
 }
 
-export async function searchParty(
-  page: Page,
-  query: string
+/**
+ * Attach to page and collect all errors during test execution.
+ * Call in beforeEach, retrieve in afterEach.
+ */
+export function attachDebugListeners(page: Page): DebugReport {
+  const report: DebugReport = {
+    consoleErrors: [],
+    networkFailures: [],
+    jsExceptions: [],
+    brokenImages: []
+  };
+
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') report.consoleErrors.push(msg.text());
+  });
+
+  page.on('pageerror', (err) => {
+    report.jsExceptions.push(err.message);
+  });
+
+  page.on('response', (response) => {
+    if (response.status() >= 400) {
+      report.networkFailures.push({
+        status: response.status(),
+        url: response.url(),
+        method: response.request().method()
+      });
+    }
+  });
+
+  return report;
+}
+
+/**
+ * Scan page for broken images after load.
+ */
+export async function scanBrokenImages(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const images = document.querySelectorAll('img');
+    return Array.from(images)
+      .filter((img) => !img.complete || img.naturalWidth === 0)
+      .map((img) => img.src);
+  });
+}
+
+/**
+ * Attach debug report to test artifacts on failure.
+ */
+export async function attachDebugReport(
+  report: DebugReport,
+  testInfo: TestInfo
 ): Promise<void> {
-  await page.goto('/parties');
-  await page.locator('[data-testid="party-search-input"]').fill(query);
-  await page.locator('[data-testid="party-search-button"]').click();
-  await waitForApiCall(page, '/parties', 'GET');
-}
-
-export async function deleteParty(
-  page: Page,
-  partyId: string
-): Promise<void> {
-  await page.goto(`/parties/${partyId}`);
-  await page.locator('[data-testid="party-delete-button"]').click();
-  await page.locator('[data-testid="confirm-delete-button"]').click();
-  await waitForToast(page, 'success');
+  if (testInfo.status !== testInfo.expectedStatus) {
+    await testInfo.attach('debug-report', {
+      body: JSON.stringify(report, null, 2),
+      contentType: 'application/json'
+    });
+  }
 }
 ```
 
-### 3.2 Test Fixtures
+### 4.4 Helper Migration Map
 
-#### 3.2.1 User Fixtures (`tests/fixtures/users.ts`)
-
-```typescript
-export const testUsers = {
-  admin: {
-    identifier: 'admin@xear.com',
-    password: 'Admin123!',
-    role: 'ADMIN'
-  },
-  audiologist: {
-    identifier: 'audiologist@xear.com',
-    password: 'Audio123!',
-    role: 'AUDIOLOGIST'
-  },
-  receptionist: {
-    identifier: 'receptionist@xear.com',
-    password: 'Recep123!',
-    role: 'RECEPTIONIST'
-  }
-};
-```
-
-#### 3.2.2 Party Fixtures (`tests/fixtures/parties.ts`)
-
-```typescript
-export const testParties = {
-  customer1: {
-    firstName: 'Ahmet',
-    lastName: 'Yılmaz',
-    phone: '+905551234567',
-    email: 'ahmet@example.com'
-  },
-  customer2: {
-    firstName: 'Ayşe',
-    lastName: 'Demir',
-    phone: '+905559876543',
-    email: 'ayse@example.com'
-  }
-};
-```
+| Old Location | File Count | New Location | Status |
+|---|---|---|---|
+| `tests/helpers/` | 12 files | `tests/helpers/*.helper.ts` | Consolidate & rename |
+| `apps/web/e2e/helpers/` | 7 files | Merge into above | Delete after merge |
+| `tests/e2e/web/helpers/` | 1 file | Merge into above | Delete after merge |
+| **Total** | **20 files** | **9 files** | |
 
 ---
 
-## 4. Configuration
+## 5. Unified Playwright Configuration
 
-### 4.1 Playwright Config (`playwright.config.ts`)
+### 5.1 Root Config (`playwright.config.ts`)
 
 ```typescript
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : undefined,
-  reporter: [
-    ['html'],
-    ['json', { outputFile: 'test-results.json' }],
-    ['junit', { outputFile: 'test-results.xml' }]
-  ],
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 4 : undefined,
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
+
+  reporter: isCI
+    ? [
+        ['github'],
+        ['html', { open: 'never' }],
+        ['json', { outputFile: 'test-results/results.json' }],
+        ['junit', { outputFile: 'test-results/results.xml' }]
+      ]
+    : [['html', { open: 'on-failure' }]],
+
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:8080',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    actionTimeout: 30000,
-    navigationTimeout: 30000
+    actionTimeout: 30_000,
+    navigationTimeout: 30_000,
+    locale: 'tr-TR',
+    timezoneId: 'Europe/Istanbul'
   },
+
   projects: [
+    // ── Auth Setup ────────────────────────────────
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      name: 'web-auth-setup',
+      testMatch: /web\/.*\.setup\.ts/,
+      use: {
+        baseURL: 'http://localhost:8080',
+        ...devices['Desktop Chrome']
+      }
     },
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      name: 'admin-auth-setup',
+      testMatch: /admin\/.*\.setup\.ts/,
+      use: {
+        baseURL: 'http://localhost:8082',
+        ...devices['Desktop Chrome']
+      }
+    },
+
+    // ── Web App ───────────────────────────────────
+    {
+      name: 'web',
+      testDir: './tests/e2e/web',
+      dependencies: ['web-auth-setup'],
+      use: {
+        baseURL: 'http://localhost:8080',
+        storageState: path.join(__dirname, 'tests/.auth/web.json'),
+        ...devices['Desktop Chrome']
+      }
+    },
+
+    // ── Admin Panel ───────────────────────────────
+    {
+      name: 'admin',
+      testDir: './tests/e2e/admin',
+      dependencies: ['admin-auth-setup'],
+      use: {
+        baseURL: 'http://localhost:8082',
+        storageState: path.join(__dirname, 'tests/.auth/admin.json'),
+        ...devices['Desktop Chrome']
+      }
+    },
+
+    // ── Landing Page ──────────────────────────────
+    {
+      name: 'landing',
+      testDir: './tests/e2e/landing',
+      use: {
+        baseURL: 'http://localhost:3000',
+        ...devices['Desktop Chrome']
+      }
+      // No auth dependency — landing is public
+    },
+
+    // ── Cross-Browser (Weekly) ────────────────────
+    {
+      name: 'web-firefox',
+      testDir: './tests/e2e/web',
+      dependencies: ['web-auth-setup'],
+      use: {
+        baseURL: 'http://localhost:8080',
+        storageState: path.join(__dirname, 'tests/.auth/web.json'),
+        ...devices['Desktop Firefox']
+      }
     },
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      name: 'web-webkit',
+      testDir: './tests/e2e/web',
+      dependencies: ['web-auth-setup'],
+      use: {
+        baseURL: 'http://localhost:8080',
+        storageState: path.join(__dirname, 'tests/.auth/web.json'),
+        ...devices['Desktop Safari']
+      }
     }
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:8080',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000
-  }
+
+  webServer: [
+    {
+      command: 'cd apps/web && npm run dev',
+      url: 'http://localhost:8080',
+      reuseExistingServer: !isCI,
+      timeout: 120_000
+    },
+    {
+      command: 'cd apps/admin && npm run dev',
+      url: 'http://localhost:8082',
+      reuseExistingServer: !isCI,
+      timeout: 120_000
+    },
+    {
+      command: 'cd apps/landing && npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !isCI,
+      timeout: 120_000
+    }
+  ]
 });
 ```
 
+### 5.2 Config Migration Plan
+
+| Current Config | Location | Action |
+|---|---|---|
+| Root `playwright.config.ts` | `x-ear/playwright.config.ts` | **REPLACE** with unified above |
+| Web-specific config | `apps/web/playwright.config.ts` | **DELETE** after migration |
+| Any other configs | Search codebase | **DELETE** |
+
 ---
 
-## 5. CI/CD Integration
+## 6. CI/CD Integration
 
-### 5.1 GitHub Actions Workflow (`.github/workflows/e2e-p0.yml`)
+### 6.1 Workflow: Critical (On Push)
 
 ```yaml
-name: E2E Tests (P0)
+# .github/workflows/e2e-critical.yml
+name: E2E Critical Flows
 
 on:
   push:
     branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+
+concurrency:
+  group: e2e-critical-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     
     services:
@@ -396,6 +826,8 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: xear_test
+        ports: ['5432:5432']
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -403,249 +835,414 @@ jobs:
           --health-retries 5
     
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       
       - name: Install dependencies
         run: npm ci
       
-      - name: Install Playwright Browsers
+      - name: Install Playwright
         run: npx playwright install --with-deps chromium
       
-      - name: Setup test database
+      - name: Setup backend
         run: |
-          npm run db:migrate
-          npm run db:seed:test
-      
-      - name: Start backend
-        run: npm run dev:backend &
+          pip install -r requirements.txt
+          alembic upgrade head
+          python -m seed.test_seed
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
-          JWT_SECRET: test-secret
       
-      - name: Start frontend
-        run: npm run dev:web &
+      - name: Run critical tests
+        run: npx playwright test --project=web --project=admin --grep @critical
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
       
-      - name: Wait for services
-        run: |
-          npx wait-on http://localhost:5003/health
-          npx wait-on http://localhost:8080
-      
-      - name: Run P0 tests
-        run: npx playwright test --grep @p0
-      
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: critical-report
           path: playwright-report/
-          retention-days: 30
+          retention-days: 14
+```
+
+### 6.2 Workflow: PR Full Suite
+
+```yaml
+# .github/workflows/e2e-pr.yml  
+name: E2E Full Suite
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: e2e-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    timeout-minutes: 90
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [web, admin, landing]
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
       
-      - uses: actions/upload-artifact@v3
+      - name: Run ${{ matrix.project }} tests
+        run: npx playwright test --project=${{ matrix.project }}
+      
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
-          path: test-results/
-          retention-days: 30
+          name: report-${{ matrix.project }}
+          path: playwright-report/
+          retention-days: 14
+```
+
+### 6.3 CI Fix — Current Issues
+
+| Issue | Root Cause | Fix |
+|---|---|---|
+| `e2e-p0.yml` always passes (0 tests) | `--grep @p0` but no tests tagged `@p0` | Replace with `--grep @critical` + tag tests |
+| `e2e-p1.yml` always passes (0 tests) | Same — `--grep @p1` with no tagged tests | Replace with project-based filtering |
+| Version mismatch | Root uses v1.58.1, web uses v1.57.0 | Pin single version in root `package.json` |
+| Node version outdated | CI uses Node 18, project uses 20 | Update to Node 20 |
+| actions/checkout@v3 | Deprecated | Update to v4 |
+
+---
+
+## 7. Test Strategy (8-Phase)
+
+### 7.1 Phase Overview
+
+```
+Phase 0: Zero Tech Debt          (Week 1)     — 0 lint, 0 type errors
+Phase 1: Infrastructure          (Week 1-2)   — Config, POM, helpers, TestIDs
+Phase 2: Debug-First Scan        (Week 2-3)   — Exploratory pass, all 79 routes
+Phase 3: Web Full Coverage       (Week 3-6)   — 31 routes, ~310 tests
+Phase 4: Admin Full Coverage     (Week 6-8)   — 37 routes, ~220 tests
+Phase 5: Landing Full Coverage   (Week 8-9)   — 11 routes, ~55 tests
+Phase 6: Cross-App + Hardening   (Week 9-10)  — Sync tests, visual regression
+Phase 7: Stabilization           (Week 10)    — Flaky fix, CI green, docs
+```
+
+### 7.2 Debug-First Strategy (Phase 2)
+
+The debug-first approach scans EVERY route before writing detailed tests:
+
+```
+For each route in {web, admin, landing}:
+  1. Navigate to route
+  2. Screenshot (page loaded? or error?)
+  3. Collect console errors
+  4. Collect network 4xx/5xx
+  5. Scan for broken images
+  6. Check key interactive elements exist
+  7. Record: PASS / FAIL / PARTIAL
+  8. Output: debug-scan-report.json
+```
+
+**Expected Output** (JSON per route):
+```json
+{
+  "route": "/parties",
+  "app": "web",
+  "status": "PARTIAL",
+  "pageLoads": true,
+  "consoleErrors": ["TypeError: Cannot read property 'map' of undefined"],
+  "networkFailures": [{"status": 404, "url": "/api/v1/parties?limit=10"}],
+  "brokenImages": [],
+  "missingTestIds": ["party-create-button", "party-search-input"],
+  "screenshot": "debug-screenshots/web-parties.png"
+}
+```
+
+### 7.3 Test Prioritization
+
+| Tag | Count | Trigger | Timeout | Scope |
+|-----|-------|---------|---------|-------|
+| `@critical` | ~60 | Every push | 35 min | Revenue flows (Sale, Payment, Party CRUD) |
+| `@smoke` | ~120 | Every PR | 45 min | All routes load + basic CRUD |
+| `@full` | ~600+ | PR (matrix) | 90 min | Complete coverage |
+| `@visual` | ~30 | Weekly | 20 min | Screenshot comparison |
+| `@a11y` | ~40 | Weekly | 15 min | Accessibility audit |
+
+### 7.4 Test Naming Convention
+
+```
+{app}/{module}/{feature}.spec.ts
+```
+
+**Test Block Naming**:
+```typescript
+test.describe('Web > Parties > Create Party Modal', () => {
+  test('should open modal when create button clicked', ...);
+  test('should show validation errors for empty required fields', ...);
+  test('should create party with valid data', ...);
+  test('should close modal on cancel', ...);
+  test('should close modal on backdrop click', ...);
+});
 ```
 
 ---
 
-## 6. Test Strategy
+## 8. TestID Implementation Strategy
 
-### 6.1 4-Phase Approach
-
-**Phase 1: Exploratory Pass (Week 1)**
-- Goal: Scan system, find breaking points
-- Assertion: Minimal (page loads?)
-- Output: Fail patterns + trace/video/log
-- Tests: ~130 tests
-
-**Phase 2: Pattern Analysis (Week 2)**
-- Goal: Identify common issues
-- Output: Root cause list (selector, state, timing)
-- Tests: ~50 tests
-
-**Phase 3: Fix Common Issues (Week 3)** ⭐ MOST CRITICAL
-- Goal: Fix 60-70% of failures in one go
-- Examples: TestID standard, auth helper, toast handler, API wait helper
-- Tests: ~15 tests
-
-**Phase 4: Flow-by-Flow Hardening (Week 4-7)**
-- Goal: Make each flow production-ready
-- Assertion: Detailed (state, visual, backend)
-- Tests: ~5 tests
-
-### 6.2 Test Prioritization
-
-**P0 (CI Blocker)** - 55 tests (~35 min)
-- Run on every commit
-- Must pass before merge
-- Examples: Login, Party CRUD, Sale creation
-
-**P1 (High)** - 85 tests (~50 min)
-- Run on every PR
-- Should pass before merge
-- Examples: Payment tracking, Appointments, Settings
-
-**P2 (Medium)** - 45 tests (~35 min)
-- Run daily
-- Can be fixed later
-- Examples: Bulk operations, Export, Reports
-
-**P3 (Low)** - 15 tests (~20 min)
-- Run weekly
-- Nice to have
-- Examples: Theme settings, Language settings
-
----
-
-## 7. TestID Implementation
-
-### 7.1 Naming Convention
+### 8.1 Naming Convention
 
 ```
-{component}-{element}-{action}
+{module}-{element}-{variant?}-{action?}
 ```
+
+**Rules**:
+- kebab-case only
+- Max 4 segments
+- Module = page/feature name
+- Element = semantic element name
+- Variant = optional differentiator
+- Action = optional verb
 
 **Examples**:
-- `party-create-button`
-- `party-form-modal`
-- `party-first-name-input`
-- `party-submit-button`
-- `success-toast`
-- `error-toast`
+```
+party-list-table
+party-create-button
+party-form-modal
+party-firstname-input
+party-submit-button
+party-delete-confirm-button
+sale-device-assignment-modal
+payment-amount-input
+settings-theme-toggle
+admin-tenant-search-input
+```
 
-### 7.2 Priority Components (P0)
+### 8.2 Current TestID Inventory
 
-1. **Login Form**
-   - `login-identifier-input`
-   - `login-password-input`
-   - `login-submit-button`
-   - `login-error-message`
+| App | Current TestIDs | Target TestIDs | Coverage |
+|-----|----------------|----------------|----------|
+| Web | 94 unique | ~800 | 12% |
+| Admin | 8 unique | ~400 | 2% |
+| Landing | 0 | ~100 | 0% |
+| **Total** | **102** | **~1300** | **8%** |
 
-2. **Party Form**
-   - `party-create-button`
-   - `party-form-modal`
-   - `party-first-name-input`
-   - `party-last-name-input`
-   - `party-phone-input`
-   - `party-email-input`
-   - `party-submit-button`
-   - `party-cancel-button`
+### 8.3 TestID Sprint Plan
 
-3. **Toast Notifications**
-   - `success-toast`
-   - `error-toast`
-   - `warning-toast`
-   - `info-toast`
+**Priority 1** (Critical flows — Week 1-2):
+- Login/Logout forms (both apps)
+- Party CRUD (list, create modal, detail, edit, delete confirm)
+- Sale flow (list, create modal, device assignment)
+- Payment (list, create, tracking)
+- Toast notifications (success, error, warning, info)
+- Loading spinners
+- Navigation elements (sidebar, topbar)
 
-4. **Loading States**
-   - `loading-spinner`
-   - `button-loading-spinner`
+**Priority 2** (High-usage pages — Week 3-4):
+- Appointment scheduling
+- Device management
+- Cash register
+- Invoice
+- Settings pages
+- All modals
 
-5. **Modals**
-   - `{modal-name}-modal`
-   - `{modal-name}-close-button`
-
----
-
-## 8. Error Handling & Debugging
-
-### 8.1 Artifact Capture
-
-**On Test Failure**:
-- Screenshot (full page)
-- Video recording (entire test)
-- Trace file (timeline + network + console)
-- Console logs
-- Network logs
-
-**Storage**:
-- Local: `playwright-report/`
-- CI: GitHub Actions artifacts (30 days retention)
-
-### 8.2 Debugging Checklist
-
-1. **TestID Missing?**
-   - Check component has `data-testid`
-   - Verify TestID spelling
-
-2. **Timing Issue?**
-   - API call not finished?
-   - Modal not opened yet?
-   - Toast disappeared?
-
-3. **State Issue?**
-   - Previous test state not cleaned?
-   - Auth token expired?
-   - Tenant not selected?
-
-4. **Selector Issue?**
-   - Element in DOM?
-   - Element visible?
-   - Element not disabled?
-
-5. **Backend Issue?**
-   - API endpoint working?
-   - Database seed data exists?
-   - Permissions correct?
+**Priority 3** (Complete coverage — Week 5+):
+- Reports
+- Communication (SMS/Email)
+- Profile
+- Bulk operations
+- Admin-only pages
+- Landing page
 
 ---
 
-## 9. Performance Optimization
+## 9. Test Data Management
 
-### 9.1 Parallel Execution
+### 9.1 Strategy
 
-- 4 workers in CI
-- Unlimited workers locally
-- Test isolation (no shared state)
+```
+Production DB ──────────── NEVER touched by tests
+                           
+Test DB (xear_test) ────── Seeded before test suite
+                           Cleaned after each test file
+                           Reset between CI runs
 
-### 9.2 Test Data Management
+Test Data Creation:
+  ✅ API calls in beforeAll (fast, reliable)
+  ❌ UI interactions (slow, flaky)
+  ✅ Direct DB seed scripts (for complex state)
+```
 
-- Seed data once (before all tests)
-- Cleanup after each test
-- Reuse fixtures
+### 9.2 Fixture Design
 
-### 9.3 Smart Waiting
-
-- Use `waitForResponse` instead of `waitForTimeout`
-- Use `waitForSelector` with proper timeout
-- Avoid unnecessary waits
+```typescript
+// tests/fixtures/users.fixture.ts
+export const TEST_USERS = {
+  webAdmin: {
+    identifier: 'e2e-admin@xear-test.com',
+    password: 'E2eTest123!',
+    role: 'ADMIN',
+    tenantId: 'e2e-test-tenant'
+  },
+  webAudiologist: {
+    identifier: 'e2e-audio@xear-test.com',
+    password: 'E2eTest123!',
+    role: 'AUDIOLOGIST',
+    tenantId: 'e2e-test-tenant'
+  },
+  superAdmin: {
+    identifier: 'e2e-super@xear-test.com',
+    password: 'E2eSuper123!',
+    role: 'SUPER_ADMIN'
+  }
+};
+```
 
 ---
 
-## 10. Maintenance Strategy
+## 10. Error Handling & Debugging
 
-### 10.1 Test Updates
+### 10.1 Artifact Matrix
 
-- Update tests when features change
-- Keep test helpers DRY
-- Refactor common patterns
+| Artifact | When Captured | Storage | Retention |
+|----------|--------------|---------|-----------|
+| Screenshot (full page) | On failure | `test-results/` | 14 days CI |
+| Video (entire test) | On failure | `test-results/` | 14 days CI |
+| Trace (timeline+network) | First retry | `test-results/` | 14 days CI |
+| Console logs | Always | `test-results/` | 14 days CI |
+| Debug report (JSON) | On failure | `test-results/` | 14 days CI |
+| HTML report | Always | `playwright-report/` | 30 days CI |
 
-### 10.2 Flaky Test Handling
+### 10.2 Debugging Workflow
 
-- Identify flaky tests (< 95% success rate)
-- Add retry logic
-- Fix root cause (timing, state, selector)
+```
+Test Fails
+    ↓
+1. Check HTML report → see screenshot + error message
+    ↓
+2. Open trace viewer → see timeline + network + DOM snapshot
+    ↓
+3. Check debug-report.json → console errors + network failures
+    ↓
+4. Classify failure:
+    ├─ TestID missing → Add data-testid to component
+    ├─ Timing issue → Add proper waitFor (never waitForTimeout)
+    ├─ State issue → Fix beforeEach / cleanup
+    ├─ Selector issue → Use POM locator
+    ├─ Backend issue → Check API + DB
+    └─ Flaky → Add retry OR fix root cause
+    ↓
+5. Fix + re-run locally → `npx playwright test --project=web --grep "test name"`
+    ↓
+6. Push → CI verifies
+```
 
-### 10.3 Documentation
+### 10.3 Flaky Test Protocol
 
-- Keep test inventory updated
-- Document new patterns
-- Update debugging guide
+1. Test fails intermittently (< 95% pass rate over 10 runs)
+2. Tag with `@flaky` annotation
+3. Investigate root cause (timing, race condition, test isolation)
+4. Fix root cause — do NOT just add retries
+5. Run 10x locally: `for i in {1..10}; do npx playwright test <file>; done`
+6. If 10/10 pass, remove `@flaky` tag
+7. If still flaky, isolate to dedicated CI job with `--repeat-each=5`
 
 ---
 
-## 11. Related Documents
+## 11. Performance Optimization
 
-- [Requirements](./requirements.md)
-- [Tasks](./tasks.md)
-- [Test Inventory](../../docs/playwright/tests/00-TEST-INVENTORY-INDEX.md)
-- [Testing Guide](../../docs/playwright/03-TESTING-GUIDE.md)
-- [Debugging Guide](../../docs/playwright/04-DEBUGGING-GUIDE.md)
+### 11.1 Parallel Execution
+
+- **CI**: 4 workers per project × 3 projects (matrix) = 12 parallel
+- **Local**: Unlimited workers (CPU count)
+- **Isolation**: Each test has own browser context (no shared cookies/state)
+
+### 11.2 Auth Optimization
+
+- Login once per project in setup → save `storageState`
+- All tests reuse `storageState` (no repeated login)
+- Estimated savings: ~3 min per 100 tests (vs login per test)
+
+### 11.3 Smart Waiting Rules
+
+```
+✅ DO:
+  await page.waitForResponse(urlPattern)
+  await expect(locator).toBeVisible()
+  await page.waitForLoadState('networkidle')
+  await page.waitForURL(pattern)
+
+❌ DON'T:
+  await page.waitForTimeout(3000)    // NEVER hardcode waits
+  await new Promise(r => setTimeout(r, 1000))  // NEVER
+```
+
+---
+
+## 12. Quality Gates
+
+### 12.1 Merge Blockers
+
+All PRs must pass before merge:
+- [ ] `npx playwright test --project=web` — 100% pass
+- [ ] `npx playwright test --project=admin` — 100% pass
+- [ ] `npx playwright test --project=landing` — 100% pass
+- [ ] `npx tsc --noEmit` — 0 errors (test files included)
+- [ ] `npx eslint tests/` — 0 warnings, 0 errors
+- [ ] No `test.skip()` without linked issue
+- [ ] No `waitForTimeout()` calls
+- [ ] All new tests use POM pattern
+- [ ] All selectors use `data-testid` (no CSS/XPath)
+
+### 12.2 Weekly Health Check
+
+- Run 3-browser matrix (Chromium + Firefox + WebKit)
+- Check flaky test rate (target: < 2%)
+- Review test execution time (target: < 90 min full suite)
+- Audit new routes without test coverage
+- Verify TestID coverage trending up
+
+---
+
+## 13. Maintenance Strategy
+
+### 13.1 When to Update Tests
+
+- New feature added → Write tests before merge
+- Feature changed → Update affected POM + tests
+- Bug fixed → Add regression test
+- Route added → POM class + route test required
+- Modal added → Modal test required
+- Component TestID changed → Update POM locator
+
+### 13.2 Code Review Checklist for Tests
+
+- [ ] Uses POM (not raw selectors)
+- [ ] Data-testid selectors (no CSS class/XPath)
+- [ ] No `waitForTimeout` calls
+- [ ] Proper cleanup in afterEach
+- [ ] Test isolated (no dependency on other tests)
+- [ ] Named descriptively (reads like specification)
+- [ ] Tagged appropriately (@critical, @smoke, etc.)
+- [ ] TypeScript strict — zero errors
+
+---
+
+## 14. Related Documents
+
+- [Requirements](./requirements.md) — User stories, acceptance criteria
+- [Tasks](./tasks.md) — Phase-by-phase implementation plan
+- [README](./README.md) — Spec overview and golden rules
+- [Test Inventory](../../docs/playwright/tests/00-TEST-INVENTORY-INDEX.md) — Current test catalog
+- [Testing Guide](../../docs/playwright/03-TESTING-GUIDE.md) — Developer onboarding
+- [Debugging Guide](../../docs/playwright/04-DEBUGGING-GUIDE.md) — Troubleshooting reference

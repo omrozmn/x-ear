@@ -14,6 +14,13 @@ import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test
 import * as fs from 'fs';
 import * as path from 'path';
 
+type PartyRecord = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+};
+
 test.describe('FLOW-10: Bulk Patient Upload', () => {
   test('should upload patients in bulk successfully', async ({ tenantPage, apiContext, authTokens }) => {
     // Generate unique test data
@@ -181,7 +188,7 @@ test.describe('FLOW-10: Bulk Patient Upload', () => {
     validateResponseEnvelope(listData);
     
     // Count how many of our test patients were created
-    const createdPatients = listData.data.filter((p: any) => 
+    const createdPatients = (listData.data as PartyRecord[]).filter((p: PartyRecord) => 
       testPatients.some(tp => tp.phone === p.phone)
     );
     
@@ -190,8 +197,11 @@ test.describe('FLOW-10: Bulk Patient Upload', () => {
     
     // Verify each patient has correct data
     for (const testPatient of testPatients) {
-      const createdPatient = createdPatients.find((p: any) => p.phone === testPatient.phone);
+      const createdPatient = createdPatients.find((p: PartyRecord) => p.phone === testPatient.phone);
       expect(createdPatient).toBeTruthy();
+      if (!createdPatient) {
+        throw new Error(`Created patient with phone ${testPatient.phone} not found`);
+      }
       expect(createdPatient.firstName).toBe(testPatient.firstName);
       expect(createdPatient.lastName).toBe(testPatient.lastName);
       expect(createdPatient.email).toBe(testPatient.email);

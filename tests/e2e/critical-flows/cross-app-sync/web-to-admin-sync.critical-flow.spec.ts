@@ -14,6 +14,17 @@
 import { test, expect } from '../../fixtures/fixtures';
 import { validateResponseEnvelope } from '../../web/helpers/test-utils';
 
+type PartyRecord = {
+  id: string;
+  firstName: string;
+  phone: string;
+};
+
+type SaleRecord = {
+  id?: string;
+  saleId?: string;
+};
+
 test.describe('FLOW-15: Web → Admin Data Sync', () => {
   test('should sync data from web app to admin panel', async ({ apiContext, authTokens }) => {
     test.setTimeout(60000);
@@ -58,9 +69,12 @@ test.describe('FLOW-15: Web → Admin Data Sync', () => {
     const adminPartiesData = await adminPartiesResponse.json();
     validateResponseEnvelope(adminPartiesData);
     
-    const parties = adminPartiesData.data?.parties || adminPartiesData.data || [];
-    const createdParty = parties.find((p: any) => p.id === partyId);
+    const parties = (adminPartiesData.data?.parties || adminPartiesData.data || []) as PartyRecord[];
+    const createdParty = parties.find((p: PartyRecord) => p.id === partyId);
     expect(createdParty, `Party ${partyId} should be visible in admin panel`).toBeTruthy();
+    if (!createdParty) {
+      throw new Error(`Party ${partyId} should be visible in admin panel`);
+    }
     expect(createdParty.firstName).toBe(testParty.firstName);
     expect(createdParty.phone).toBe(testParty.phone);
     console.log('[FLOW-15] Party verified in admin panel');
@@ -146,8 +160,8 @@ test.describe('FLOW-15: Web → Admin Data Sync', () => {
     const adminSalesData = await adminSalesResponse.json();
     validateResponseEnvelope(adminSalesData);
     
-    const sales = adminSalesData.data?.sales || adminSalesData.data || [];
-    const createdSale = sales.find((s: any) => s.id === saleId || s.saleId === saleId);
+    const sales = (adminSalesData.data?.sales || adminSalesData.data || []) as SaleRecord[];
+    const createdSale = sales.find((s: SaleRecord) => s.id === saleId || s.saleId === saleId);
     expect(createdSale, `Sale ${saleId} should be visible in admin panel`).toBeTruthy();
     console.log('[FLOW-15] Sale verified in admin panel');
     

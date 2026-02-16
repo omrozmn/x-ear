@@ -14,6 +14,13 @@
 import { test, expect } from '../../fixtures/fixtures';
 import { validateResponseEnvelope } from '../../web/helpers/test-utils';
 
+type InvoiceRecord = {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  sentToGib?: boolean;
+};
+
 test.describe('FLOW-05: E-Invoice System Verification', () => {
   test('should verify e-invoice system is functional', async ({ apiContext }) => {
     test.setTimeout(30000);
@@ -49,7 +56,7 @@ test.describe('FLOW-05: E-Invoice System Verification', () => {
       expect(firstInvoice.status, 'Invoice should have status').toBeTruthy();
       
       // Check if any invoices have been sent to GIB (from Flow-04)
-      const sentInvoices = invoicesData.data.filter((inv: any) => inv.sentToGib === true);
+      const sentInvoices = (invoicesData.data as InvoiceRecord[]).filter((inv: InvoiceRecord) => inv.sentToGib === true);
       
       if (sentInvoices.length > 0) {
         console.log('[FLOW-05] Found', sentInvoices.length, 'invoice(s) sent to GIB');

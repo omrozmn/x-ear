@@ -13,6 +13,12 @@
 import { test, expect } from '../../fixtures/fixtures';
 import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
+type AppointmentRecord = {
+  id: string;
+  partyId: string;
+  date: string;
+};
+
 test.describe('FLOW-06: Appointment Scheduling', () => {
   test('should schedule appointment successfully', async ({ tenantPage, apiContext, authTokens }) => {
     // Generate unique test data
@@ -148,8 +154,11 @@ test.describe('FLOW-06: Appointment Scheduling', () => {
     const listData = await listResponse.json();
     validateResponseEnvelope(listData);
     
-    const createdAppointment = listData.data.find((a: any) => a.partyId === partyId);
+    const createdAppointment = (listData.data as AppointmentRecord[]).find((a: AppointmentRecord) => a.partyId === partyId);
     expect(createdAppointment, `Appointment for party ${partyId} should exist`).toBeTruthy();
+    if (!createdAppointment) {
+      throw new Error(`Appointment for party ${partyId} should exist`);
+    }
     expect(createdAppointment.date).toContain(dateString);
     
     console.log('[FLOW-06] Created appointment ID:', createdAppointment.id);

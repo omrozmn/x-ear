@@ -15,8 +15,13 @@
 import { test, expect } from '../../fixtures/fixtures';
 import { waitForApiCall, validateResponseEnvelope } from '../../web/helpers/test-utils';
 
+type PartySummary = {
+  id: string;
+  phone: string;
+};
+
 test.describe('FLOW-03: Sale Creation', () => {
-  test('should complete sale creation flow successfully', async ({ tenantPage, apiContext, authTokens }) => {
+  test('should complete sale creation flow successfully', async ({ tenantPage, apiContext, authTokens: _authTokens }) => {
     // Generate unique test data
     const timestamp = Date.now();
     const uniqueId = timestamp.toString().slice(-8);
@@ -66,7 +71,7 @@ test.describe('FLOW-03: Sale Creation', () => {
     console.log('[FLOW-03] Search response data:', JSON.stringify(searchData.data, null, 2));
     
     // If search doesn't work, try listing with larger page size
-    let createdParty = searchData.data?.find?.((p: any) => p.phone === testParty.phone);
+    let createdParty = (searchData.data as PartySummary[] | undefined)?.find?.((p: PartySummary) => p.phone === testParty.phone);
     
     if (!createdParty) {
       console.log('[FLOW-03] Party not found in search, trying list endpoint...');
@@ -74,10 +79,13 @@ test.describe('FLOW-03: Sale Creation', () => {
       const listData = await listResponse.json();
       validateResponseEnvelope(listData);
       console.log('[FLOW-03] List response data count:', listData.data?.length);
-      createdParty = listData.data?.find?.((p: any) => p.phone === testParty.phone);
+      createdParty = (listData.data as PartySummary[] | undefined)?.find?.((p: PartySummary) => p.phone === testParty.phone);
     }
     
     expect(createdParty, `Party with phone ${testParty.phone} should exist`).toBeTruthy();
+    if (!createdParty) {
+      throw new Error(`Party with phone ${testParty.phone} should exist`);
+    }
     
     const partyId = createdParty.id;
     console.log('[FLOW-03] Created party ID:', partyId);
