@@ -1,4 +1,7 @@
 # Communication Models (formerly Patient communication models)
+from sqlalchemy import Column, Boolean, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text, Time, Index
+from sqlalchemy.orm import relationship
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
 from datetime import datetime, timezone
@@ -8,48 +11,48 @@ class EmailLog(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'email_logs'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("email"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("email"))
     
     # Foreign keys
-    campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
-    template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
+    campaign_id = Column(String(50), ForeignKey('campaigns.id'), nullable=True)
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=True)
+    template_id = Column(String(50), ForeignKey('communication_templates.id'), nullable=True)
     # tenant_id is now inherited from TenantScopedMixin
     
     # Email details
-    to_email = db.Column(db.String(255), nullable=False)
-    from_email = db.Column(db.String(255), nullable=False)
-    cc_emails = db.Column(db.Text)  # JSON array of CC emails
-    bcc_emails = db.Column(db.Text)  # JSON array of BCC emails
-    subject = db.Column(db.String(500), nullable=False)
-    body_text = db.Column(db.Text)  # Plain text version
-    body_html = db.Column(db.Text)  # HTML version
+    to_email = Column(String(255), nullable=False)
+    from_email = Column(String(255), nullable=False)
+    cc_emails = Column(Text)  # JSON array of CC emails
+    bcc_emails = Column(Text)  # JSON array of BCC emails
+    subject = Column(String(500), nullable=False)
+    body_text = Column(Text)  # Plain text version
+    body_html = Column(Text)  # HTML version
     
     # Attachments
-    attachments = db.Column(db.Text)  # JSON array of attachment info
+    attachments = Column(Text)  # JSON array of attachment info
     
     # Status tracking
-    status = db.Column(db.String(20), default='pending')  # pending, sent, delivered, failed, bounced
-    provider_response = db.Column(db.Text)  # JSON string
-    provider_message_id = db.Column(db.String(255))  # Provider's message ID for tracking
+    status = Column(String(20), default='pending')  # pending, sent, delivered, failed, bounced
+    provider_response = Column(Text)  # JSON string
+    provider_message_id = Column(String(255))  # Provider's message ID for tracking
     
     # Timestamps
-    sent_at = db.Column(db.DateTime)
-    delivered_at = db.Column(db.DateTime)
-    opened_at = db.Column(db.DateTime)
-    clicked_at = db.Column(db.DateTime)
-    bounced_at = db.Column(db.DateTime)
+    sent_at = Column(DateTime)
+    delivered_at = Column(DateTime)
+    opened_at = Column(DateTime)
+    clicked_at = Column(DateTime)
+    bounced_at = Column(DateTime)
     
     # Error handling
-    error_message = db.Column(db.Text)
-    retry_count = db.Column(db.Integer, default=0)
+    error_message = Column(Text)
+    retry_count = Column(Integer, default=0)
     
     # Cost tracking
-    cost = db.Column(db.Float)
+    cost = Column(Float)
 
     # Relationships
-    party = db.relationship('Party', backref='email_logs', lazy=True)
-    template = db.relationship('CommunicationTemplate', backref='email_logs', lazy=True)
+    party = relationship('Party', backref='email_logs', lazy=True)
+    template = relationship('CommunicationTemplate', backref='email_logs', lazy=True)
 
     @property
     def cc_emails_json(self):
@@ -115,12 +118,12 @@ class EmailLog(BaseModel, JSONMixin, TenantScopedMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_email_campaign', 'campaign_id'),
-        db.Index('ix_email_patient', 'party_id'),
-        db.Index('ix_email_template', 'template_id'),
-        db.Index('ix_email_status', 'status'),
-        db.Index('ix_email_sent_at', 'sent_at'),
-        db.Index('ix_email_to_email', 'to_email'),
+        Index('ix_email_campaign', 'campaign_id'),
+        Index('ix_email_patient', 'party_id'),
+        Index('ix_email_template', 'template_id'),
+        Index('ix_email_status', 'status'),
+        Index('ix_email_sent_at', 'sent_at'),
+        Index('ix_email_to_email', 'to_email'),
     )
 
 
@@ -129,30 +132,30 @@ class CommunicationTemplate(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'communication_templates'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("tmpl"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("tmpl"))
     
     # Template details
-    name = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text)
-    template_type = db.Column(db.String(20), nullable=False)  # sms, email
-    category = db.Column(db.String(50))  # appointment_reminder, payment_due, welcome, etc.
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    template_type = Column(String(20), nullable=False)  # sms, email
+    category = Column(String(50))  # appointment_reminder, payment_due, welcome, etc.
     # tenant_id is now inherited from TenantScopedMixin
     
     # Content
-    subject = db.Column(db.String(500))  # For email templates
-    body_text = db.Column(db.Text, nullable=False)  # Plain text version
-    body_html = db.Column(db.Text)  # HTML version for emails
+    subject = Column(String(500))  # For email templates
+    body_text = Column(Text, nullable=False)  # Plain text version
+    body_html = Column(Text)  # HTML version for emails
     
     # Template variables
-    variables = db.Column(db.Text)  # JSON array of available variables
+    variables = Column(Text)  # JSON array of available variables
     
     # Settings
-    is_active = db.Column(db.Boolean, default=True)
-    is_system = db.Column(db.Boolean, default=False)  # System templates cannot be deleted
+    is_active = Column(Boolean, default=True)
+    is_system = Column(Boolean, default=False)  # System templates cannot be deleted
     
     # Usage tracking
-    usage_count = db.Column(db.Integer, default=0)
-    last_used_at = db.Column(db.DateTime)
+    usage_count = Column(Integer, default=0)
+    last_used_at = Column(DateTime)
 
     @property
     def variables_json(self):
@@ -189,10 +192,10 @@ class CommunicationTemplate(BaseModel, JSONMixin, TenantScopedMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_template_type', 'template_type'),
-        db.Index('ix_template_category', 'category'),
-        db.Index('ix_template_active', 'is_active'),
-        db.Index('ix_template_system', 'is_system'),
+        Index('ix_template_type', 'template_type'),
+        Index('ix_template_category', 'category'),
+        Index('ix_template_active', 'is_active'),
+        Index('ix_template_system', 'is_system'),
     )
 
 
@@ -201,42 +204,42 @@ class CommunicationHistory(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'communication_history'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("comm"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("comm"))
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
-    template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
+    campaign_id = Column(String(50), ForeignKey('campaigns.id'), nullable=True)
+    template_id = Column(String(50), ForeignKey('communication_templates.id'), nullable=True)
     # tenant_id is now inherited from TenantScopedMixin
     
     # Reference to specific communication log
-    sms_log_id = db.Column(db.String(50), db.ForeignKey('sms_logs.id'), nullable=True)
-    email_log_id = db.Column(db.String(50), db.ForeignKey('email_logs.id'), nullable=True)
+    sms_log_id = Column(String(50), ForeignKey('sms_logs.id'), nullable=True)
+    email_log_id = Column(String(50), ForeignKey('email_logs.id'), nullable=True)
     
     # Communication details
-    communication_type = db.Column(db.String(20), nullable=False)  # sms, email, call, in_person
-    direction = db.Column(db.String(10), nullable=False)  # inbound, outbound
-    subject = db.Column(db.String(500))
-    content = db.Column(db.Text)
+    communication_type = Column(String(20), nullable=False)  # sms, email, call, in_person
+    direction = Column(String(10), nullable=False)  # inbound, outbound
+    subject = Column(String(500))
+    content = Column(Text)
     
     # Contact information
-    contact_method = db.Column(db.String(255))  # phone number, email address, etc.
+    contact_method = Column(String(255))  # phone number, email address, etc.
     
     # Status and metadata
-    status = db.Column(db.String(20), default='completed')  # pending, completed, failed
-    priority = db.Column(db.String(20), default='normal')  # low, normal, high, urgent
+    status = Column(String(20), default='completed')  # pending, completed, failed
+    priority = Column(String(20), default='normal')  # low, normal, high, urgent
     
     # Additional data
-    comm_metadata = db.Column(db.Text)  # JSON for additional data
+    comm_metadata = Column(Text)  # JSON for additional data
     
     # User who initiated (for manual communications)
-    initiated_by = db.Column(db.String(50))  # user_id
+    initiated_by = Column(String(50))  # user_id
 
     # Relationships
-    party = db.relationship('Party', backref='communication_history', lazy=True)
-    sms_log = db.relationship('SmsLog', backref='communication_history', lazy=True)
-    email_log = db.relationship('EmailLog', backref='communication_history', lazy=True)
-    template = db.relationship('CommunicationTemplate', backref='communication_history', lazy=True)
+    party = relationship('Party', backref='communication_history', lazy=True)
+    sms_log = relationship('SmsLog', backref='communication_history', lazy=True)
+    email_log = relationship('EmailLog', backref='communication_history', lazy=True)
+    template = relationship('CommunicationTemplate', backref='communication_history', lazy=True)
 
     @property
     def metadata_json(self):
@@ -270,11 +273,11 @@ class CommunicationHistory(BaseModel, JSONMixin, TenantScopedMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_comm_history_patient', 'party_id'),
-        db.Index('ix_comm_history_type', 'communication_type'),
-        db.Index('ix_comm_history_direction', 'direction'),
-        db.Index('ix_comm_history_status', 'status'),
-        db.Index('ix_comm_history_created', 'created_at'),
+        Index('ix_comm_history_patient', 'party_id'),
+        Index('ix_comm_history_type', 'communication_type'),
+        Index('ix_comm_history_direction', 'direction'),
+        Index('ix_comm_history_status', 'status'),
+        Index('ix_comm_history_created', 'created_at'),
     )
 
 Communication = CommunicationHistory

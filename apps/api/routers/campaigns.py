@@ -17,8 +17,8 @@ from services.sms_service import VatanSMSService
 from core.models.party import Party
 
 from middleware.unified_access import UnifiedAccess, require_access
+from core.dependencies import get_current_admin_user
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Campaigns"])
@@ -70,14 +70,12 @@ def create_campaign(
 ):
     """Create a new campaign"""
     try:
-        if not access.tenant_id:
-            raise HTTPException(
-                status_code=400,
-                detail=ApiError(message="Tenant context required", code="TENANT_REQUIRED").model_dump(mode="json"),
-            )
+        from core.tenant_utils import get_effective_tenant_id
+        
+        tenant_id = get_effective_tenant_id(access)
 
         camp = CampaignModel(
-            tenant_id=access.tenant_id,
+            tenant_id=tenant_id,
             name=campaign_in.name,
             description=campaign_in.description,
             campaign_type=campaign_in.campaign_type,
@@ -88,7 +86,7 @@ def create_campaign(
 
         # Calculate recipients
         if camp.target_segment == 'all':
-            camp.total_recipients = db.query(Party).filter_by(tenant_id=access.tenant_id).count()
+            camp.total_recipients = db.query(Party).filter_by(tenant_id=tenant_id).count()
         else:
             camp.total_recipients = 0
 
@@ -114,6 +112,9 @@ def get_campaign(
 ):
     """Get a single campaign"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        tenant_id = get_effective_tenant_id(access)
+        
         camp = db.get(CampaignModel, campaign_id)
         if not camp:
             raise HTTPException(
@@ -121,7 +122,7 @@ def get_campaign(
                 detail=ApiError(message="Campaign not found", code="CAMPAIGN_NOT_FOUND").model_dump(mode="json"),
             )
         
-        if access.tenant_id and camp.tenant_id != access.tenant_id:
+        if tenant_id and camp.tenant_id != tenant_id:
             raise HTTPException(
                 status_code=403,
                 detail=ApiError(message="Unauthorized", code="AUTH_FORBIDDEN").model_dump(mode="json"),
@@ -145,6 +146,9 @@ def update_campaign(
 ):
     """Update a campaign"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        tenant_id = get_effective_tenant_id(access)
+        
         camp = db.get(CampaignModel, campaign_id)
         if not camp:
             raise HTTPException(
@@ -152,7 +156,7 @@ def update_campaign(
                 detail=ApiError(message="Campaign not found", code="CAMPAIGN_NOT_FOUND").model_dump(mode="json"),
             )
         
-        if access.tenant_id and camp.tenant_id != access.tenant_id:
+        if tenant_id and camp.tenant_id != tenant_id:
             raise HTTPException(
                 status_code=403,
                 detail=ApiError(message="Unauthorized", code="AUTH_FORBIDDEN").model_dump(mode="json"),
@@ -188,6 +192,9 @@ def delete_campaign(
 ):
     """Delete a campaign"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        tenant_id = get_effective_tenant_id(access)
+        
         camp = db.get(CampaignModel, campaign_id)
         if not camp:
             raise HTTPException(
@@ -195,7 +202,7 @@ def delete_campaign(
                 detail=ApiError(message="Campaign not found", code="CAMPAIGN_NOT_FOUND").model_dump(mode="json"),
             )
         
-        if access.tenant_id and camp.tenant_id != access.tenant_id:
+        if tenant_id and camp.tenant_id != tenant_id:
             raise HTTPException(
                 status_code=403,
                 detail=ApiError(message="Unauthorized", code="AUTH_FORBIDDEN").model_dump(mode="json"),
@@ -221,26 +228,27 @@ def send_campaign(
 ):
     """Send a campaign via SMS"""
     try:
-        if not access.tenant_id:
+        tenant_id = access.tenant_id
+        if not tenant_id:
              raise HTTPException(status_code=400, detail="Tenant context required")
              
         camp = db.get(CampaignModel, campaign_id)
         if not camp:
             raise HTTPException(status_code=404, detail="Campaign not found")
             
-        if camp.tenant_id != access.tenant_id:
+        if camp.tenant_id != tenant_id:
             raise HTTPException(status_code=403, detail="Unauthorized")
             
         if camp.status in ['sending', 'sent']:
             raise HTTPException(status_code=400, detail="Campaign already sent")
             
         # Check SMS Config
-        config = db.query(SMSProviderConfig).filter_by(tenant_id=access.tenant_id).first()
+        config = db.query(SMSProviderConfig).filter_by(tenant_id=tenant_id).first()
         if not config or not config.api_username or not config.api_password:
              raise HTTPException(status_code=400, detail="SMS configuration missing")
              
         # Check Credit (Pre-check)
-        credit = db.query(TenantSMSCredit).filter_by(tenant_id=access.tenant_id).first()
+        credit = db.query(TenantSMSCredit).filter_by(tenant_id=tenant_id).first()
         if not credit:
              raise HTTPException(status_code=400, detail="No SMS credit account found")
              
@@ -248,11 +256,11 @@ def send_campaign(
         recipients = [] # List of {phone, name, id}
         
         if camp.target_segment == 'all':
-            patients = db.query(Party).filter_by(tenant_id=access.tenant_id).all()
+            patients = db.query(Party).filter_by(tenant_id=tenant_id).all()
             recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
         elif camp.target_segment == 'filter':
             # TODO: Implement complex filtering
-             patients = db.query(Party).filter_by(tenant_id=access.tenant_id).all()
+             patients = db.query(Party).filter_by(tenant_id=tenant_id).all()
              recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
         elif camp.target_segment == 'excel':
              criteria = camp.target_criteria_json or {}
@@ -297,7 +305,7 @@ def send_campaign(
                  log = SMSLog(
                      campaign_id=camp.id,
                      party_id=r['id'],
-                     tenant_id=access.tenant_id,
+                     tenant_id=tenant_id,
                      phone_number=r['phone'],
                      message=message,
                      status='sent',
@@ -344,7 +352,7 @@ def admin_get_campaigns(
     limit: int = 10,
     search: str = "",
     status: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """List all campaigns (Admin)"""

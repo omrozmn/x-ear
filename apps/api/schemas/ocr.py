@@ -23,7 +23,7 @@ class OcrJobRead(AppBaseModel, IDMixin, TimestampMixin):
     document_type: str = Field(..., alias="documentType")
     status: JobStatus
     result: Optional[Any] = None
-    patient_name: Optional[str] = Field(None, alias="patientName")
+    party_name: Optional[str] = Field(None, alias="patientName")
     error_message: Optional[str] = Field(None, alias="errorMessage")
 
 # --- Request Schemas ---

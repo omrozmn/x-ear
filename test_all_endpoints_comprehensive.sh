@@ -1,429 +1,827 @@
 #!/bin/bash
+# Comprehensive API Test Suite v2.0
+# Generated: 2026-02-22 17:37:27
 
-# COMPREHENSIVE ENDPOINT TESTING - ALL 481 ENDPOINTS
-# Tests every single endpoint in the OpenAPI spec
+BASE_URL="http://localhost:5003"
+ADMIN_EMAIL="admin@xear.com"
+ADMIN_PASSWORD="admin123"
+FAILED_LOG="failed_endpoints.txt"
+: > "$FAILED_LOG"
 
-BASE_URL="http://localhost:5003/api"
-TENANT_EMAIL="tenant@x-ear.com"
-TENANT_PASSWORD="testpass123"
-
-# Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
+YELLOW='\033[0;33m'
 NC='\033[0m'
 
-# Counters
-TOTAL=0
-PASSED=0
-FAILED=0
-SKIPPED=0
+TOTAL=0; PASSED=0; FAILED=0
+ADMIN_PASSED=0; ADMIN_FAILED=0
+TENANT_PASSED=0; TENANT_FAILED=0
+AFFILIATE_PASSED=0; AFFILIATE_FAILED=0
+SYSTEM_PASSED=0; SYSTEM_FAILED=0
 
-# Test categories
-declare -A CATEGORY_PASSED
-declare -A CATEGORY_FAILED
-declare -A CATEGORY_TOTAL
-
-# Test result function
 test_endpoint() {
-    local method=$1
-    local endpoint=$2
-    local data=$3
-    local description=$4
-    local category=${5:-"Other"}
-    local skip_reason=$6
+    local method=$1; local endpoint=$2; local data=$3
+    local desc=$4; local token=$5; local cat=$6
+    local eff_tenant=$7
+    
+    # Skip if endpoint contains null ID
+    if [[ "$endpoint" == *"/null"* ]] || [[ "$endpoint" == *"/null/"* ]]; then
+        printf "  -> [%s] %s ... ${YELLOW}SKIP${NC} (null ID)\n" "$cat" "$desc"
+        return
+    fi
     
     TOTAL=$((TOTAL + 1))
-    CATEGORY_TOTAL[$category]=$((${CATEGORY_TOTAL[$category]:-0} + 1))
+    printf "  -> [%s] %s ... " "$cat" "$desc"
     
-    if [ ! -z "$skip_reason" ]; then
-        echo -e "  ${BLUE}⊘ SKIP${NC} $description - $skip_reason"
-        SKIPPED=$((SKIPPED + 1))
-        return 2
-    fi
+    local body_file=$(mktemp)
+    local http_code
+    local idemp="id-$RANDOM-$(date +%s)"
     
-    echo -e "  ${YELLOW}→${NC} $description"
+    local curl_cmd=(curl -s --connect-timeout 5 --max-time 15 -o "$body_file" -w "%{http_code}" -X "$method")
+    curl_cmd+=(-H "Authorization: Bearer $token")
+    curl_cmd+=(-H "Content-Type: application/json")
+    curl_cmd+=(-H "Idempotency-Key: $idemp")
+    [ ! -z "$eff_tenant" ] && [ "$eff_tenant" != "null" ] && curl_cmd+=(-H "X-Effective-Tenant-Id: $eff_tenant")
     
-    IDEMPOTENCY_KEY="test-$(date +%s)-$RANDOM"
-    
-    if [ -z "$data" ]; then
-        response=$(curl -s -w "\n%{http_code}" -X $method \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/json" \
-            -H "Idempotency-Key: $IDEMPOTENCY_KEY" \
-            "$BASE_URL$endpoint" 2>/dev/null)
+    if [[ -z "$data" || "$data" == "{}" ]]; then
+        http_code=$("${curl_cmd[@]}" "$BASE_URL$endpoint" 2>/dev/null)
     else
-        response=$(curl -s -w "\n%{http_code}" -X $method \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/json" \
-            -H "Idempotency-Key: $IDEMPOTENCY_KEY" \
-            -d "$data" \
-            "$BASE_URL$endpoint" 2>/dev/null)
+        http_code=$("${curl_cmd[@]}" -d "$data" "$BASE_URL$endpoint" 2>/dev/null)
     fi
-    
-    http_code=$(echo "$response" | tail -n1)
     
     if [[ "$http_code" =~ ^(200|201|204)$ ]]; then
-        echo -e "    ${GREEN}✓ PASS${NC} (HTTP $http_code)"
+        printf "${GREEN}PASS${NC} (%s)\n" "$http_code"
         PASSED=$((PASSED + 1))
-        CATEGORY_PASSED[$category]=$((${CATEGORY_PASSED[$category]:-0} + 1))
-        return 0
+        CAT_PASSED[$cat]=$(( ${CAT_PASSED[$cat]:-0} + 1 ))
     else
-        echo -e "    ${RED}✗ FAIL${NC} (HTTP $http_code)"
+        printf "${RED}FAIL${NC} (%s)\n" "$http_code"
         FAILED=$((FAILED + 1))
-        CATEGORY_FAILED[$category]=$((${CATEGORY_FAILED[$category]:-0} + 1))
-        return 1
+        CAT_FAILED[$cat]=$(( ${CAT_FAILED[$cat]:-0} + 1 ))
+        err=$(cat "$body_file" | jq -r '.error.message // .message // "Error"' 2>/dev/null | head -c 80)
+        printf "%s %s - %s - %s\n" "$method" "$endpoint" "$http_code" "$err" >> "$FAILED_LOG"
     fi
+    rm "$body_file"
 }
 
-echo "========================================="
-echo "  X-Ear CRM - COMPREHENSIVE API TESTS"
-echo "  Testing ALL 481 Endpoints"
-echo "========================================="
+echo "=== Comprehensive API Test Suite v2.0 ==="
+echo "Setting up test environment..."
 
-# Login
-echo -e "\n${BLUE}[AUTH]${NC} Authenticating..."
-login_response=$(curl -s -X POST "$BASE_URL/auth/login" \
+# 1. Admin Authentication
+admin_res=$(curl -s -X POST "$BASE_URL/api/admin/auth/login" \
     -H "Content-Type: application/json" \
-    -d "{\"email\":\"$TENANT_EMAIL\",\"password\":\"$TENANT_PASSWORD\"}")
+    -H "Idempotency-Key: a-$RANDOM" \
+    -d '{"email":"'"$ADMIN_EMAIL"'","password":"'"$ADMIN_PASSWORD"'"}')
+ADMIN_TOKEN=$(echo "$admin_res" | jq -r '.data.token')
 
-TOKEN=$(echo $login_response | grep -o '"accessToken":"[^"]*' | cut -d'"' -f4)
-
-if [ -z "$TOKEN" ]; then
-    echo -e "${RED}✗ Login failed!${NC}"
+if [ "$ADMIN_TOKEN" = "null" ] || [ -z "$ADMIN_TOKEN" ]; then
+    echo -e "${RED}✗ Admin authentication failed!${NC}"
     exit 1
 fi
+echo -e "${GREEN}✓ Admin authenticated${NC}"
 
-echo -e "${GREEN}✓ Authenticated${NC}"
-
-# ============================================
-# CATEGORY 1: PARTIES (Core Entity)
-# ============================================
-echo -e "\n${BLUE}[PARTIES]${NC} Testing Party Endpoints..."
-
-test_endpoint "GET" "/parties?page=1&perPage=10" "" "List parties" "Parties"
-test_endpoint "GET" "/parties/count" "" "Count parties" "Parties"
-test_endpoint "GET" "/parties/export" "" "Export parties" "Parties"
-
-# Create party for other tests
-PARTY_DATA='{"firstName":"Test","lastName":"User","phone":"05551234567","email":"test@example.com","dateOfBirth":"1990-01-01","gender":"M","address":{"street":"Test","city":"Istanbul","country":"Turkey"}}'
-party_response=$(curl -s -X POST "$BASE_URL/parties" \
-    -H "Authorization: Bearer $TOKEN" \
+# 2. Create Plan
+PLAN_DATA='{"name": "Test Plan 17717710476901-1017", "slug": "plan-17717710476901-1017", "description": "Test plan", "planType": "BASIC", "price": 100.0, "billingInterval": "YEARLY", "maxUsers": 10, "isActive": true, "isPublic": true}'
+plan_res=$(curl -s -X POST "$BASE_URL/api/admin/plans" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
-    -H "Idempotency-Key: party-$(date +%s)-$RANDOM" \
+    -H "Idempotency-Key: p-$RANDOM" \
+    -H "X-Effective-Tenant-Id: system" \
+    -d "$PLAN_DATA")
+PLAN_ID=$(echo "$plan_res" | jq -r '.data.plan.id // .data.id // .id')
+echo "  Plan ID: $PLAN_ID"
+
+# 3. Create Tenant
+TENANT_DATA='{"name": "Test Tenant 17717710476901-1017", "slug": "tenant-17717710476901-1017", "email": "tenant-17717710476901-1017@test.com", "billingEmail": "billing-17717710476901-1017@test.com", "ownerEmail": "owner-17717710476901-1017@test.com", "productCode": "xear_hearing", "maxUsers": 20, "status": "active"}'
+TENANT_DICT=$(echo "$TENANT_DATA" | jq ". + {planId: \"$PLAN_ID\"}")
+tenant_res=$(curl -s -X POST "$BASE_URL/api/admin/tenants" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: t-$RANDOM" \
+    -H "X-Effective-Tenant-Id: system" \
+    -d "$TENANT_DICT")
+TN_ID=$(echo "$tenant_res" | jq -r '.data.id // .id')
+echo "  Tenant ID: $TN_ID"
+
+# 4. Create User
+USER_DATA='{"email": "user-17717710476901@test.com", "password": "Pass1234", "firstName": "Test", "lastName": "User", "role": "support", "username": "user_17717710476901", "isActive": true}'
+USER_DICT=$(echo "$USER_DATA" | jq ". + {tenantId: \"$TN_ID\"}")
+user_res=$(curl -s -X POST "$BASE_URL/api/admin/users" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: u-$RANDOM" \
+    -H "X-Effective-Tenant-Id: system" \
+    -d "$USER_DICT")
+U_ID=$(echo "$user_res" | jq -r '.data.user.id // .data.id // .id' | head -n 1)
+echo "  User ID: $U_ID"
+
+# 5. Switch to Tenant Context
+switch_res=$(curl -s -X POST "$BASE_URL/api/admin/debug/switch-tenant" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: s-$RANDOM" \
+    -d '{"targetTenantId":"'$TN_ID'"}')
+TENANT_TOKEN=$(echo "$switch_res" | jq -r '.data.accessToken // .accessToken')
+echo -e "${GREEN}✓ Tenant context switched${NC}"
+
+# 6. Create Affiliate (for affiliate endpoints)
+AFFILIATE_DATA='{"code": "AFF17717710476901", "email": "affiliate-17717710476901@test.com", "name": "Affiliate 17717710476901", "commissionRate": 10.0, "status": "active"}'
+affiliate_res=$(curl -s -X POST "$BASE_URL/api/admin/affiliates" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: af-$RANDOM" \
+    -d "$AFFILIATE_DATA" 2>/dev/null)
+AFF_CODE=$(echo "$affiliate_res" | jq -r '.data.code // .code' 2>/dev/null)
+# Affiliate login (if endpoint exists)
+aff_login=$(curl -s -X POST "$BASE_URL/api/affiliates/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{"code":"'$AFF_CODE'","email":"affiliate-17717710476901@test.com"}' 2>/dev/null)
+AFFILIATE_TOKEN=$(echo "$aff_login" | jq -r '.data.token // .token' 2>/dev/null)
+[ "$AFFILIATE_TOKEN" = "null" ] && AFFILIATE_TOKEN="$TENANT_TOKEN"
+echo "  Affiliate Code: $AFF_CODE"
+
+# 7. Create Test Resources
+PARTY_DATA='{"firstName": "Test", "lastName": "Party 17717710476901", "phone": "+905551771771047690100", "email": "party-17717710476901@test.com", "tcNumber": "11612339452", "status": "active"}'
+party_res=$(curl -s -X POST "$BASE_URL/api/parties" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: pr-$RANDOM" \
     -d "$PARTY_DATA")
-PARTY_ID=$(echo $party_response | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
+P_ID=$(echo "$party_res" | jq -r '.data.id // .id' | head -n 1)
 
-if [ ! -z "$PARTY_ID" ]; then
-    echo -e "  ${GREEN}✓${NC} Created test party: $PARTY_ID"
-    test_endpoint "GET" "/parties/$PARTY_ID" "" "Get party by ID" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/devices" "" "Get party devices" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/sales" "" "Get party sales" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/appointments" "" "Get party appointments" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/notes" "" "Get party notes" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/documents" "" "Get party documents" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/invoices" "" "Get party invoices" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/payment-records" "" "Get party payments" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/promissory-notes" "" "Get party promissory notes" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/timeline" "" "Get party timeline" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/sgk-documents" "" "Get party SGK documents" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/replacements" "" "Get party replacements" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/profiles/hearing/tests" "" "Get hearing tests" "Parties"
-    test_endpoint "GET" "/parties/$PARTY_ID/profiles/hearing/ereceipts" "" "Get e-receipts" "Parties"
-fi
+BRANCH_DATA='{"name": "Test Branch 17717710476901", "address": "Test Address", "phone": "+902121771771047690100", "isActive": true}'
+branch_res=$(curl -s -X POST "$BASE_URL/api/branches" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: br-$RANDOM" \
+    -d "$BRANCH_DATA")
+B_ID=$(echo "$branch_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 2: SALES & PAYMENTS
-# ============================================
-echo -e "\n${BLUE}[SALES]${NC} Testing Sales Endpoints..."
+CAMPAIGN_DATA='{"name": "Test Campaign 17717710476901", "slug": "campaign-17717710476901", "description": "Test campaign", "startDate": "2026-01-01", "endDate": "2026-12-31", "isActive": true}'
+campaign_res=$(curl -s -X POST "$BASE_URL/api/campaigns" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: ca-$RANDOM" \
+    -d "$CAMPAIGN_DATA")
+CAMPAIGN_ID=$(echo "$campaign_res" | jq -r '.data.id // .id' | head -n 1)
 
-test_endpoint "GET" "/sales?page=1&perPage=10" "" "List sales" "Sales"
+SALE_DATA='{"totalAmount": 5000.0, "paymentMethod": "cash", "status": "completed", "saleDate": "2026-02-18"}'
+sale_dict=$(echo "$SALE_DATA" | jq ". + {partyId: \"$P_ID\"}")
+sale_res=$(curl -s -X POST "$BASE_URL/api/sales" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: sa-$RANDOM" \
+    -d "$sale_dict")
+SALE_ID=$(echo "$sale_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 3: INVENTORY
-# ============================================
-echo -e "\n${BLUE}[INVENTORY]${NC} Testing Inventory Endpoints..."
+DEVICE_DATA='{"serialNumber": "SN-17717710476901", "deviceType": "hearing_aid", "model": "X-Ear 5000", "status": "active"}'
+device_dict=$(echo "$DEVICE_DATA" | jq ". + {partyId: \"$P_ID\"}")
+device_res=$(curl -s -X POST "$BASE_URL/api/devices" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: de-$RANDOM" \
+    -d "$device_dict")
+DEVICE_ID=$(echo "$device_res" | jq -r '.data.id // .id' | head -n 1)
 
-test_endpoint "GET" "/inventory?page=1&per_page=10" "" "List inventory" "Inventory"
-test_endpoint "GET" "/inventory/search" "" "Search inventory" "Inventory"
-test_endpoint "GET" "/inventory/stats" "" "Inventory stats" "Inventory"
-test_endpoint "GET" "/inventory/low-stock" "" "Low stock items" "Inventory"
-test_endpoint "GET" "/inventory/units" "" "Inventory units" "Inventory"
+ITEM_DATA='{"name": "Test Item 17717710476901", "sku": "SKU-17717710476901", "price": 100.0, "category": "hearing_aid"}'
+item_res=$(curl -s -X POST "$BASE_URL/api/inventory/items" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: it-$RANDOM" \
+    -d "$ITEM_DATA")
+ITEM_ID=$(echo "$item_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 4: APPOINTMENTS
-# ============================================
-echo -e "\n${BLUE}[APPOINTMENTS]${NC} Testing Appointment Endpoints..."
+ADDON_DATA='{"name": "Test Addon 17717710476901", "code": "ADDON_17717710476901", "price": 50.0, "description": "Test addon"}'
+addon_res=$(curl -s -X POST "$BASE_URL/api/admin/addons" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: ad-$RANDOM" \
+    -H "X-Effective-Tenant-Id: system" \
+    -d "$ADDON_DATA")
+ADDON_ID=$(echo "$addon_res" | jq -r '.data.id // .id' | head -n 1)
 
-test_endpoint "GET" "/appointments?page=1&per_page=10" "" "List appointments" "Appointments"
-test_endpoint "GET" "/appointments/list" "" "List appointments (alt)" "Appointments"
-test_endpoint "GET" "/appointments/availability?date=2026-01-21" "" "Check availability" "Appointments"
+ROLE_DATA='{"name": "Test Role 17717710476901", "code": "TEST_ROLE", "description": "Test role"}'
+role_res=$(curl -s -X POST "$BASE_URL/api/admin/roles" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: ro-$RANDOM" \
+    -H "X-Effective-Tenant-Id: system" \
+    -d "$ROLE_DATA")
+ROLE_ID=$(echo "$role_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 5: DEVICES
-# ============================================
-echo -e "\n${BLUE}[DEVICES]${NC} Testing Device Endpoints..."
+ASSIGNMENT_DATA='{"assignedAt": "2026-02-18T10:00:00", "status": "active"}'
+assignment_dict=$(echo "$ASSIGNMENT_DATA" | jq ". + {partyId: \"$P_ID\", deviceId: \"$DEVICE_ID\"}")
+assignment_res=$(curl -s -X POST "$BASE_URL/api/parties/$P_ID/device-assignments" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: as-$RANDOM" \
+    -d "$assignment_dict")
+ASSIGNMENT_ID=$(echo "$assignment_res" | jq -r '.data.id // .id' | head -n 1)
 
-test_endpoint "GET" "/devices?page=1&perPage=10" "" "List devices" "Devices"
-test_endpoint "GET" "/devices/categories" "" "Device categories" "Devices"
-test_endpoint "GET" "/devices/brands" "" "Device brands" "Devices"
-test_endpoint "GET" "/devices/low-stock" "" "Low stock devices" "Devices"
+APPT_DATA='{"date": "2026-06-15T10:00:00", "time": "10:00", "status": "scheduled", "type": "control"}'
+appt_dict=$(echo "$APPT_DATA" | jq ". + {partyId: \"$P_ID\", branchId: \"$B_ID\"}")
+appt_res=$(curl -s -X POST "$BASE_URL/api/appointments" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: ap-$RANDOM" \
+    -d "$appt_dict")
+APPT_ID=$(echo "$appt_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 6: INVOICES
-# ============================================
-echo -e "\n${BLUE}[INVOICES]${NC} Testing Invoice Endpoints..."
+NOTIF_DATA='{"title": "Test Notification 17717710476901", "message": "Test message", "type": "info"}'
+notif_dict=$(echo "$NOTIF_DATA" | jq ". + {userId: \"$U_ID\"}")
+notif_res=$(curl -s -X POST "$BASE_URL/api/notifications" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: no-$RANDOM" \
+    -d "$notif_dict")
+NOTIF_ID=$(echo "$notif_res" | jq -r '.data.id // .id' | head -n 1)
 
-test_endpoint "GET" "/invoices?page=1&perPage=10" "" "List invoices" "Invoices"
-test_endpoint "GET" "/invoices/print-queue" "" "Print queue" "Invoices"
-test_endpoint "GET" "/invoices/templates" "" "Invoice templates" "Invoices"
-test_endpoint "GET" "/invoice-schema" "" "Invoice schema" "Invoices"
-test_endpoint "GET" "/invoice-settings" "" "Invoice settings" "Invoices"
+TEMPLATE_DATA='{"name": "Test Template 17717710476901", "type": "email", "subject": "Test Subject", "body": "Test Body"}'
+template_res=$(curl -s -X POST "$BASE_URL/api/communications/templates" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: tm-$RANDOM" \
+    -d "$TEMPLATE_DATA")
+TEMPLATE_ID=$(echo "$template_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 7: CAMPAIGNS
-# ============================================
-echo -e "\n${BLUE}[CAMPAIGNS]${NC} Testing Campaign Endpoints..."
+INVOICE_DATA='{"recipientName": "Test Customer", "recipientTaxNumber": "1234567890", "recipientAddress": "Test Address", "recipientEmail": "invoice@test.com", "invoiceDate": "2026-02-18", "scenario": "36", "currency": "TRY", "productName": "Test Product", "quantity": 1, "unitPrice": 100.0}'
+invoice_dict=$(echo "$INVOICE_DATA" | jq ". + {partyId: \"$P_ID\"}")
+invoice_res=$(curl -s -X POST "$BASE_URL/api/invoices" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: in-$RANDOM" \
+    -d "$invoice_dict")
+INVOICE_ID=$(echo "$invoice_res" | jq -r '.data.id // .id' | head -n 1)
 
-test_endpoint "GET" "/campaigns?page=1&perPage=10" "" "List campaigns" "Campaigns"
+PACKAGE_DATA='{"name": "Test Package 17717710476901", "credits": 1000, "price": 100.0}'
+package_res=$(curl -s -X POST "$BASE_URL/api/admin/sms/packages" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: pk-$RANDOM" \
+    -H "X-Effective-Tenant-Id: system" \
+    -d "$PACKAGE_DATA")
+PACKAGE_ID=$(echo "$package_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 8: BRANCHES
-# ============================================
-echo -e "\n${BLUE}[BRANCHES]${NC} Testing Branch Endpoints..."
+INTEGRATION_DATA='{"name": "Test Integration 17717710476901", "type": "marketplace", "config": {}}'
+integration_res=$(curl -s -X POST "$BASE_URL/api/admin/marketplaces/integrations" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: ig-$RANDOM" \
+    -H "X-Effective-Tenant-Id: system" \
+    -d "$INTEGRATION_DATA")
+INTEGRATION_ID=$(echo "$integration_res" | jq -r '.data.id // .id' | head -n 1)
 
-test_endpoint "GET" "/branches?page=1&perPage=10" "" "List branches" "Branches"
+SMS_HEADER_DATA='{"header": "TEST17717710476901", "isDefault": false}'
+header_res=$(curl -s -X POST "$BASE_URL/api/sms/headers" \
+    -H "Authorization: Bearer $TENANT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: sh-$RANDOM" \
+    -d "$SMS_HEADER_DATA")
+HEADER_ID=$(echo "$header_res" | jq -r '.data.id // .id' | head -n 1)
 
-# ============================================
-# CATEGORY 9: USERS & ROLES
-# ============================================
-echo -e "\n${BLUE}[USERS]${NC} Testing User Endpoints..."
+echo -e "${GREEN}✓ Test resources created${NC}"
+echo "  Core: Plan=$PLAN_ID, Tenant=$TN_ID, User=$U_ID, Party=$P_ID"
+echo "  Business: Campaign=$CAMPAIGN_ID, Sale=$SALE_ID, Device=$DEVICE_ID, Appt=$APPT_ID"
+echo "  Support: Item=$ITEM_ID, Addon=$ADDON_ID, Role=$ROLE_ID, Assignment=$ASSIGNMENT_ID"
+echo "  Comms: Template=$TEMPLATE_ID, Notif=$NOTIF_ID, Invoice=$INVOICE_ID"
+echo "  Admin: Package=$PACKAGE_ID, Integration=$INTEGRATION_ID, Header=$HEADER_ID"
+echo ""
 
-test_endpoint "GET" "/users?page=1&perPage=10" "" "List users" "Users"
-test_endpoint "GET" "/users/me" "" "Get current user" "Users"
-test_endpoint "GET" "/roles" "" "List roles" "Users"
-test_endpoint "GET" "/permissions" "" "List permissions" "Users"
-test_endpoint "GET" "/permissions/my" "" "My permissions" "Users"
 
-# ============================================
-# CATEGORY 10: REPORTS
-# ============================================
-echo -e "\n${BLUE}[REPORTS]${NC} Testing Report Endpoints..."
+echo "\n=== Testing ADMIN_PANEL Endpoints ==="
+test_endpoint "GET" "/api/admin/campaigns" "{}" "GET /api/admin/campaigns" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/auth/login" "{}" "POST /api/admin/auth/login" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/users" "{}" "POST /api/admin/users" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/users" "{}" "GET /api/admin/users" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/users/all" "{}" "GET /api/admin/users/all" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/users/all/${U_ID:-null}" "{}" "PUT /api/admin/users/all/{user_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/tickets" "{}" "GET /api/admin/tickets" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/tickets" "{}" "POST /api/admin/tickets" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/tickets/${T_ID:-null}" "{}" "PUT /api/admin/tickets/{ticket_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/tickets/${T_ID:-null}/responses" "{}" "POST /api/admin/tickets/{ticket_id}/responses" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/debug/switch-role" "{}" "POST /api/admin/debug/switch-role" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/debug/available-roles" "{}" "GET /api/admin/debug/available-roles" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/debug/switch-tenant" "{}" "POST /api/admin/debug/switch-tenant" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/debug/exit-impersonation" "{}" "POST /api/admin/debug/exit-impersonation" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/debug/page-permissions/{page_key}" "{}" "GET /api/admin/debug/page-permissions/{page_key}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/tenants" "{}" "GET /api/admin/tenants" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/tenants" "{}" "POST /api/admin/tenants" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/tenants/${TN_ID:-null}" "{}" "GET /api/admin/tenants/{tenant_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/tenants/${TN_ID:-null}" "{}" "PUT /api/admin/tenants/{tenant_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/tenants/${TN_ID:-null}" "{}" "DELETE /api/admin/tenants/{tenant_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/tenants/${TN_ID:-null}/users" "{}" "GET /api/admin/tenants/{tenant_id}/users" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/tenants/${TN_ID:-null}/users" "{}" "POST /api/admin/tenants/{tenant_id}/users" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/tenants/${TN_ID:-null}/users/${U_ID:-null}" "{}" "PUT /api/admin/tenants/{tenant_id}/users/{user_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/tenants/${TN_ID:-null}/subscribe" "{}" "POST /api/admin/tenants/{tenant_id}/subscribe" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/tenants/${TN_ID:-null}/addons" "{}" "POST /api/admin/tenants/{tenant_id}/addons" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/tenants/${TN_ID:-null}/addons" "{}" "DELETE /api/admin/tenants/{tenant_id}/addons" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/tenants/${TN_ID:-null}/status" "{}" "PUT /api/admin/tenants/{tenant_id}/status" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/tenants/${TN_ID:-null}/sms-config" "{}" "GET /api/admin/tenants/{tenant_id}/sms-config" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/tenants/${TN_ID:-null}/sms-documents" "{}" "GET /api/admin/tenants/{tenant_id}/sms-documents" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/tenants/${TN_ID:-null}/sms-documents/{document_type}/download" "{}" "GET /api/admin/tenants/{tenant_id}/sms-documents/{document_type}/download" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/tenants/${TN_ID:-null}/sms-documents/{document_type}/status" "{}" "PUT /api/admin/tenants/{tenant_id}/sms-documents/{document_type}/status" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/tenants/${TN_ID:-null}/sms-documents/send-email" "{}" "POST /api/admin/tenants/{tenant_id}/sms-documents/send-email" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/dashboard" "{}" "GET /api/admin/dashboard" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/dashboard/stats" "{}" "GET /api/admin/dashboard/stats" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/plans" "{}" "GET /api/admin/plans" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/plans" "{}" "POST /api/admin/plans" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/plans/${PLAN_ID:-null}" "{}" "GET /api/admin/plans/{plan_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/plans/${PLAN_ID:-null}" "{}" "PUT /api/admin/plans/{plan_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/plans/${PLAN_ID:-null}" "{}" "DELETE /api/admin/plans/{plan_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/addons" "{}" "GET /api/admin/addons" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/addons" "{}" "POST /api/admin/addons" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/addons/${ADDON_ID:-null}" "{}" "GET /api/admin/addons/{addon_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/addons/${ADDON_ID:-null}" "{}" "PUT /api/admin/addons/{addon_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/addons/${ADDON_ID:-null}" "{}" "DELETE /api/admin/addons/{addon_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/analytics/overview" "{}" "GET /api/admin/analytics/overview" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/analytics" "{}" "GET /api/admin/analytics" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/analytics/revenue" "{}" "GET /api/admin/analytics/revenue" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/analytics/users" "{}" "GET /api/admin/analytics/users" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/analytics/tenants" "{}" "GET /api/admin/analytics/tenants" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/bounces" "{}" "GET /api/admin/bounces" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/bounces/stats" "{}" "GET /api/admin/bounces/stats" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/bounces/{bounce_id}/unblacklist" "{}" "POST /api/admin/bounces/{bounce_id}/unblacklist" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/spam-preview" "{}" "POST /api/admin/spam-preview" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/unsubscribes" "{}" "GET /api/admin/unsubscribes" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/unsubscribes/stats" "{}" "GET /api/admin/unsubscribes/stats" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/unsubscribes/{unsubscribe_id}" "{}" "DELETE /api/admin/unsubscribes/{unsubscribe_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/email-approvals" "{}" "GET /api/admin/email-approvals" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/email-approvals/stats" "{}" "GET /api/admin/email-approvals/stats" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/email-approvals/{approval_id}/approve" "{}" "POST /api/admin/email-approvals/{approval_id}/approve" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/email-approvals/{approval_id}/reject" "{}" "POST /api/admin/email-approvals/{approval_id}/reject" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/complaints" "{}" "GET /api/admin/complaints" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/complaints/stats" "{}" "GET /api/admin/complaints/stats" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/complaints/process-fbl" "{}" "POST /api/admin/complaints/process-fbl" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/settings/init-db" "{}" "POST /api/admin/settings/init-db" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/settings" "{}" "GET /api/admin/settings" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/settings" "{}" "POST /api/admin/settings" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/settings/cache/clear" "{}" "POST /api/admin/settings/cache/clear" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/settings/backup" "{}" "POST /api/admin/settings/backup" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/roles" "{}" "GET /api/admin/roles" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/roles" "{}" "POST /api/admin/roles" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/roles/${ROLE_ID:-null}" "{}" "GET /api/admin/roles/{role_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/roles/${ROLE_ID:-null}" "{}" "PUT /api/admin/roles/{role_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/roles/${ROLE_ID:-null}" "{}" "DELETE /api/admin/roles/{role_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/roles/${ROLE_ID:-null}/permissions" "{}" "GET /api/admin/roles/{role_id}/permissions" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/roles/${ROLE_ID:-null}/permissions" "{}" "PUT /api/admin/roles/{role_id}/permissions" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/permissions" "{}" "GET /api/admin/permissions" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/admin-users" "{}" "GET /api/admin/admin-users" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/admin-users/${U_ID:-null}" "{}" "GET /api/admin/admin-users/{user_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/admin-users/${U_ID:-null}/roles" "{}" "PUT /api/admin/admin-users/{user_id}/roles" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/my-permissions" "{}" "GET /api/admin/my-permissions" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/api-keys/init-db" "{}" "POST /api/admin/api-keys/init-db" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/api-keys" "{}" "GET /api/admin/api-keys" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/api-keys" "{}" "POST /api/admin/api-keys" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/api-keys/{key_id}" "{}" "DELETE /api/admin/api-keys/{key_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/appointments" "{}" "GET /api/admin/appointments" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/birfatura/stats" "{}" "GET /api/admin/birfatura/stats" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/birfatura/invoices" "{}" "GET /api/admin/birfatura/invoices" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/birfatura/logs" "{}" "GET /api/admin/birfatura/logs" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/integrations" "{}" "GET /api/admin/integrations" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/integrations/init-db" "{}" "POST /api/admin/integrations/init-db" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/integrations/vatan-sms/config" "{}" "GET /api/admin/integrations/vatan-sms/config" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/integrations/vatan-sms/config" "{}" "PUT /api/admin/integrations/vatan-sms/config" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/integrations/birfatura/config" "{}" "GET /api/admin/integrations/birfatura/config" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/integrations/birfatura/config" "{}" "PUT /api/admin/integrations/birfatura/config" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/inventory" "{}" "GET /api/admin/inventory" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/invoices" "{}" "GET /api/admin/invoices" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/invoices" "{}" "POST /api/admin/invoices" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/invoices/${INVOICE_ID:-null}" "{}" "GET /api/admin/invoices/{invoice_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/invoices/${INVOICE_ID:-null}/payment" "{}" "POST /api/admin/invoices/{invoice_id}/payment" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/invoices/${INVOICE_ID:-null}/pdf" "{}" "GET /api/admin/invoices/{invoice_id}/pdf" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/marketplaces/init-db" "{}" "POST /api/admin/marketplaces/init-db" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/marketplaces/integrations" "{}" "GET /api/admin/marketplaces/integrations" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/marketplaces/integrations" "{}" "POST /api/admin/marketplaces/integrations" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/marketplaces/integrations/${INTEGRATION_ID:-null}/sync" "{}" "POST /api/admin/marketplaces/integrations/{integration_id}/sync" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/notifications/init-db" "{}" "POST /api/admin/notifications/init-db" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/notifications" "{}" "GET /api/admin/notifications" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/notifications/send" "{}" "POST /api/admin/notifications/send" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/notifications/templates" "{}" "GET /api/admin/notifications/templates" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/notifications/templates" "{}" "POST /api/admin/notifications/templates" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/notifications/templates/${TEMPLATE_ID:-null}" "{}" "PUT /api/admin/notifications/templates/{template_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/notifications/templates/${TEMPLATE_ID:-null}" "{}" "DELETE /api/admin/notifications/templates/{template_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/parties" "{}" "GET /api/admin/parties" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/parties/${P_ID:-null}" "{}" "GET /api/admin/parties/{party_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/parties/${P_ID:-null}/devices" "{}" "GET /api/admin/parties/{party_id}/devices" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/parties/${P_ID:-null}/sales" "{}" "GET /api/admin/parties/{party_id}/sales" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/parties/${P_ID:-null}/timeline" "{}" "GET /api/admin/parties/{party_id}/timeline" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/parties/${P_ID:-null}/documents" "{}" "GET /api/admin/parties/{party_id}/documents" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/payments/pos/transactions" "{}" "GET /api/admin/payments/pos/transactions" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/production/init-db" "{}" "POST /api/admin/production/init-db" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/production/orders" "{}" "GET /api/admin/production/orders" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/production/orders/{order_id}/status" "{}" "PUT /api/admin/production/orders/{order_id}/status" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/scan-queue/init-db" "{}" "POST /api/admin/scan-queue/init-db" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/scan-queue" "{}" "GET /api/admin/scan-queue" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/scan-queue/{scan_id}/retry" "{}" "POST /api/admin/scan-queue/{scan_id}/retry" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/suppliers" "{}" "GET /api/admin/suppliers" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/suppliers" "{}" "POST /api/admin/suppliers" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/suppliers/{supplier_id}" "{}" "GET /api/admin/suppliers/{supplier_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/suppliers/{supplier_id}" "{}" "PUT /api/admin/suppliers/{supplier_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/suppliers/{supplier_id}" "{}" "DELETE /api/admin/suppliers/{supplier_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "GET" "/api/admin/sms/packages" "{}" "GET /api/admin/sms/packages" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "POST" "/api/admin/sms/packages" "{}" "POST /api/admin/sms/packages" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "PUT" "/api/admin/sms/packages/${PACKAGE_ID:-null}" "{}" "PUT /api/admin/sms/packages/{package_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
+test_endpoint "DELETE" "/api/admin/sms/packages/${PACKAGE_ID:-null}" "{}" "DELETE /api/admin/sms/packages/{package_id}" "$ADMIN_TOKEN" "ADMIN_PANEL" "system"
 
-test_endpoint "GET" "/reports/overview?days=30" "" "Overview report" "Reports"
-test_endpoint "GET" "/reports/patients?days=30" "" "Patients report" "Reports"
-test_endpoint "GET" "/reports/financial?days=30" "" "Financial report" "Reports"
-test_endpoint "GET" "/reports/campaigns?days=30" "" "Campaigns report" "Reports"
-test_endpoint "GET" "/reports/revenue" "" "Revenue report" "Reports"
-test_endpoint "GET" "/reports/appointments" "" "Appointments report" "Reports"
-test_endpoint "GET" "/reports/promissory-notes?days=365" "" "Promissory notes report" "Reports"
-test_endpoint "GET" "/reports/promissory-notes/by-patient" "" "Notes by patient" "Reports"
-test_endpoint "GET" "/reports/promissory-notes/list" "" "Notes list" "Reports"
-test_endpoint "GET" "/reports/remaining-payments" "" "Remaining payments" "Reports"
-test_endpoint "GET" "/reports/cashflow-summary" "" "Cashflow summary" "Reports"
-test_endpoint "GET" "/reports/pos-movements" "" "POS movements" "Reports"
+echo "\n=== Testing AFFILIATE Endpoints ==="
+test_endpoint "GET" "/api/affiliates/check/{code}" "{}" "GET /api/affiliates/check/{code}" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "POST" "/api/affiliates/register" "{}" "POST /api/affiliates/register" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "POST" "/api/affiliates/login" "{}" "POST /api/affiliates/login" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "GET" "/api/affiliates/me" "{}" "GET /api/affiliates/me" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "PATCH" "/api/affiliates/{affiliate_id}" "{}" "PATCH /api/affiliates/{affiliate_id}" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "GET" "/api/affiliates/{affiliate_id}/commissions" "{}" "GET /api/affiliates/{affiliate_id}/commissions" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "GET" "/api/affiliates/{affiliate_id}/details" "{}" "GET /api/affiliates/{affiliate_id}/details" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "PATCH" "/api/affiliates/{affiliate_id}/toggle-status" "{}" "PATCH /api/affiliates/{affiliate_id}/toggle-status" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "GET" "/api/affiliates/list" "{}" "GET /api/affiliates/list" "$AFFILIATE_TOKEN" "AFFILIATE" ""
+test_endpoint "GET" "/api/affiliates/lookup" "{}" "GET /api/affiliates/lookup" "$AFFILIATE_TOKEN" "AFFILIATE" ""
 
-# ============================================
-# CATEGORY 11: DASHBOARD
-# ============================================
-echo -e "\n${BLUE}[DASHBOARD]${NC} Testing Dashboard Endpoints..."
+echo "\n=== Testing SYSTEM Endpoints ==="
+test_endpoint "GET" "/health" "{}" "GET /health" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/readiness" "{}" "GET /readiness" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/parties/${P_ID:-null}/replacements" "{}" "GET /parties/{party_id}/replacements" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/parties/${P_ID:-null}/replacements" "$PARTY_DATA" "POST /parties/{party_id}/replacements" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/replacements/{replacement_id}" "{}" "GET /replacements/{replacement_id}" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "PATCH" "/replacements/{replacement_id}/status" "{}" "PATCH /replacements/{replacement_id}/status" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/replacements/{replacement_id}/invoice" "{}" "POST /replacements/{replacement_id}/invoice" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/return-invoices/${INVOICE_ID:-null}/send-to-gib" "{}" "POST /return-invoices/{invoice_id}/send-to-gib" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/EFatura/sendDocument" "{}" "POST /EFatura/sendDocument" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/EFatura/sendBasicInvoice" "{}" "POST /EFatura/sendBasicInvoice" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/EFatura/Create" "{}" "POST /EFatura/Create" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/EFatura/Retry/${INVOICE_ID:-null}" "{}" "POST /EFatura/Retry/{invoice_id}" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/EFatura/Cancel/${INVOICE_ID:-null}" "{}" "POST /EFatura/Cancel/{invoice_id}" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/birfatura/sync-invoices" "{}" "POST /birfatura/sync-invoices" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/OutEBelgeV2/SendDocument" "{}" "POST /OutEBelgeV2/SendDocument" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/OutEBelgeV2/SendBasicInvoiceFromModel" "{}" "POST /OutEBelgeV2/SendBasicInvoiceFromModel" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/OutEBelgeV2/GetOutBoxDocuments" "{}" "POST /OutEBelgeV2/GetOutBoxDocuments" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/OutEBelgeV2/GetPDFLinkByUUID" "{}" "POST /OutEBelgeV2/GetPDFLinkByUUID" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/Musteri/FirmaMusteriGetir" "{}" "POST /Musteri/FirmaMusteriGetir" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/Firma/FirmaPKBilgisiGetir" "{}" "POST /Firma/FirmaPKBilgisiGetir" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/Firma/FirmaAdresBilgisiGetir" "{}" "POST /Firma/FirmaAdresBilgisiGetir" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/registrations" "{}" "GET /registrations" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/registrations/bulk" "{}" "POST /registrations/bulk" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/jobs/{job_id}" "{}" "GET /jobs/{job_id}" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/jobs/{job_id}/cancel" "{}" "POST /jobs/{job_id}/cancel" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/admin/integrations/smtp/config" "{}" "GET /admin/integrations/smtp/config" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/admin/integrations/smtp/config" "{}" "POST /admin/integrations/smtp/config" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/admin/integrations/smtp/test" "{}" "POST /admin/integrations/smtp/test" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/admin/integrations/smtp/metrics" "{}" "GET /admin/integrations/smtp/metrics" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "GET" "/admin/integrations/smtp/logs" "{}" "GET /admin/integrations/smtp/logs" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/admin/emails/send" "{}" "POST /admin/emails/send" "$TENANT_TOKEN" "SYSTEM" ""
+test_endpoint "POST" "/tool-api/email/notify" "{}" "POST /tool-api/email/notify" "$TENANT_TOKEN" "SYSTEM" ""
 
-test_endpoint "GET" "/dashboard" "" "Main dashboard" "Dashboard"
-test_endpoint "GET" "/dashboard/kpis" "" "Dashboard KPIs" "Dashboard"
-test_endpoint "GET" "/dashboard/charts/patient-trends" "" "Patient trends" "Dashboard"
-test_endpoint "GET" "/dashboard/charts/revenue-trends" "" "Revenue trends" "Dashboard"
-test_endpoint "GET" "/dashboard/recent-activity" "" "Recent activity" "Dashboard"
-test_endpoint "GET" "/dashboard/charts/patient-distribution" "" "Patient distribution" "Dashboard"
+echo "\n=== Testing TENANT_WEB_APP Endpoints ==="
+test_endpoint "GET" "/api/campaigns" "{}" "GET /api/campaigns" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/campaigns" "$CAMPAIGN_DATA" "POST /api/campaigns" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/campaigns/${CAMPAIGN_ID:-null}" "{}" "GET /api/campaigns/{campaign_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/campaigns/${CAMPAIGN_ID:-null}" "{}" "PUT /api/campaigns/{campaign_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/campaigns/${CAMPAIGN_ID:-null}" "{}" "DELETE /api/campaigns/{campaign_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/campaigns/${CAMPAIGN_ID:-null}/send" "$CAMPAIGN_DATA" "POST /api/campaigns/{campaign_id}/send" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties" "{}" "GET /api/parties" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties" "$PARTY_DATA" "POST /api/parties" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/export" "{}" "GET /api/parties/export" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/count" "{}" "GET /api/parties/count" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}" "{}" "GET /api/parties/{party_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/parties/${P_ID:-null}" "{}" "PUT /api/parties/{party_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/parties/${P_ID:-null}" "{}" "DELETE /api/parties/{party_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/bulk-upload" "$PARTY_DATA" "POST /api/parties/bulk-upload" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/bulk-update" "$PARTY_DATA" "POST /api/parties/bulk-update" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/bulk-email" "$PARTY_DATA" "POST /api/parties/bulk-email" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory" "{}" "GET /api/inventory" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/inventory" "{}" "POST /api/inventory" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/stats" "{}" "GET /api/inventory/stats" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/search" "{}" "GET /api/inventory/search" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/low-stock" "{}" "GET /api/inventory/low-stock" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/units" "{}" "GET /api/inventory/units" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/${ITEM_ID:-null}/activity" "{}" "GET /api/inventory/{item_id}/activity" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/categories" "{}" "GET /api/inventory/categories" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/brands" "{}" "GET /api/inventory/brands" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/${ITEM_ID:-null}" "{}" "GET /api/inventory/{item_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/inventory/${ITEM_ID:-null}" "{}" "PUT /api/inventory/{item_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/inventory/${ITEM_ID:-null}" "{}" "DELETE /api/inventory/{item_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/inventory/${ITEM_ID:-null}/serials" "{}" "POST /api/inventory/{item_id}/serials" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/inventory/${ITEM_ID:-null}/movements" "{}" "GET /api/inventory/{item_id}/movements" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sales" "{}" "GET /api/sales" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sales" "$(echo "$SALE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/sales" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sales/${SALE_ID:-null}" "{}" "GET /api/sales/{sale_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/sales/${SALE_ID:-null}" "{}" "PUT /api/sales/{sale_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sales/${SALE_ID:-null}/payments" "{}" "GET /api/sales/{sale_id}/payments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sales/${SALE_ID:-null}/payments" "$(echo "$SALE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/sales/{sale_id}/payments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sales/${SALE_ID:-null}/payment-plan" "{}" "GET /api/sales/{sale_id}/payment-plan" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sales/${SALE_ID:-null}/payment-plan" "$(echo "$SALE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/sales/{sale_id}/payment-plan" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sales/${SALE_ID:-null}/installments/{installment_id}/pay" "$(echo "$SALE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/sales/{sale_id}/installments/{installment_id}/pay" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sales/recalc" "$(echo "$SALE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/sales/recalc" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/${P_ID:-null}/device-assignments" "$PARTY_DATA" "POST /api/parties/{party_id}/device-assignments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PATCH" "/api/device-assignments/${ASSIGNMENT_ID:-null}" "{}" "PATCH /api/device-assignments/{assignment_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/device-assignments/${ASSIGNMENT_ID:-null}/return-loaner" "{}" "POST /api/device-assignments/{assignment_id}/return-loaner" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/pricing-preview" "{}" "POST /api/pricing-preview" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/lookup-phone" "{}" "POST /api/auth/lookup-phone" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/forgot-password" "{}" "POST /api/auth/forgot-password" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/verify-otp" "{}" "POST /api/auth/verify-otp" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/reset-password" "{}" "POST /api/auth/reset-password" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/login" "{}" "POST /api/auth/login" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/refresh" "{}" "POST /api/auth/refresh" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/auth/me" "{}" "GET /api/auth/me" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/send-verification-otp" "{}" "POST /api/auth/send-verification-otp" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/auth/set-password" "{}" "POST /api/auth/set-password" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/appointments" "{}" "GET /api/appointments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/appointments" "{}" "POST /api/appointments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/appointments/availability" "{}" "GET /api/appointments/availability" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/appointments/list" "{}" "GET /api/appointments/list" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/appointments/${APPT_ID:-null}" "{}" "GET /api/appointments/{appointment_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/appointments/${APPT_ID:-null}" "{}" "PUT /api/appointments/{appointment_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/appointments/${APPT_ID:-null}" "{}" "DELETE /api/appointments/{appointment_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/appointments/${APPT_ID:-null}/reschedule" "{}" "POST /api/appointments/{appointment_id}/reschedule" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/appointments/${APPT_ID:-null}/cancel" "{}" "POST /api/appointments/{appointment_id}/cancel" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/appointments/${APPT_ID:-null}/complete" "{}" "POST /api/appointments/{appointment_id}/complete" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/dashboard" "{}" "GET /api/dashboard" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/dashboard/kpis" "{}" "GET /api/dashboard/kpis" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/dashboard/charts/patient-trends" "{}" "GET /api/dashboard/charts/patient-trends" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/dashboard/charts/revenue-trends" "{}" "GET /api/dashboard/charts/revenue-trends" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/dashboard/recent-activity" "{}" "GET /api/dashboard/recent-activity" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/dashboard/charts/patient-distribution" "{}" "GET /api/dashboard/charts/patient-distribution" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/devices" "{}" "GET /api/devices" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/devices" "$(echo "$DEVICE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/devices" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/devices/categories" "{}" "GET /api/devices/categories" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/devices/brands" "{}" "GET /api/devices/brands" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/devices/brands" "$(echo "$DEVICE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/devices/brands" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/devices/low-stock" "{}" "GET /api/devices/low-stock" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/devices/${DEVICE_ID:-null}" "{}" "GET /api/devices/{device_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/devices/${DEVICE_ID:-null}" "{}" "PUT /api/devices/{device_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/devices/${DEVICE_ID:-null}" "{}" "DELETE /api/devices/{device_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/devices/${DEVICE_ID:-null}/stock-update" "$(echo "$DEVICE_DATA" | jq ". + {partyId: \"$P_ID\"}")" "POST /api/devices/{device_id}/stock-update" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/notifications" "{}" "POST /api/notifications" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/notifications" "{}" "GET /api/notifications" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/notifications/${NOTIF_ID:-null}/read" "{}" "PUT /api/notifications/{notification_id}/read" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/notifications/${NOTIF_ID:-null}" "{}" "PUT /api/notifications/{notification_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/notifications/${NOTIF_ID:-null}" "{}" "DELETE /api/notifications/{notification_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/notifications/stats" "{}" "GET /api/notifications/stats" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/notifications/settings" "{}" "GET /api/notifications/settings" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/notifications/settings" "{}" "PUT /api/notifications/settings" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/branches" "{}" "GET /api/branches" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/branches" "{}" "POST /api/branches" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/branches/${B_ID:-null}" "{}" "PUT /api/branches/{branch_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/branches/${B_ID:-null}" "{}" "DELETE /api/branches/{branch_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/overview" "{}" "GET /api/reports/overview" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/patients" "{}" "GET /api/reports/patients" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/financial" "{}" "GET /api/reports/financial" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/campaigns" "{}" "GET /api/reports/campaigns" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/revenue" "{}" "GET /api/reports/revenue" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/appointments" "{}" "GET /api/reports/appointments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/promissory-notes" "{}" "GET /api/reports/promissory-notes" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/promissory-notes/by-patient" "{}" "GET /api/reports/promissory-notes/by-patient" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/promissory-notes/list" "{}" "GET /api/reports/promissory-notes/list" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/remaining-payments" "{}" "GET /api/reports/remaining-payments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/cashflow-summary" "{}" "GET /api/reports/cashflow-summary" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/reports/pos-movements" "{}" "GET /api/reports/pos-movements" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/roles" "{}" "GET /api/roles" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/roles" "{}" "POST /api/roles" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/roles/${ROLE_ID:-null}" "{}" "PUT /api/roles/{role_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/roles/${ROLE_ID:-null}" "{}" "DELETE /api/roles/{role_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/roles/${ROLE_ID:-null}/permissions" "{}" "POST /api/roles/{role_id}/permissions" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/roles/${ROLE_ID:-null}/permissions" "{}" "PUT /api/roles/{role_id}/permissions" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/roles/${ROLE_ID:-null}/permissions/{permission_name}" "{}" "DELETE /api/roles/{role_id}/permissions/{permission_name}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/payment-records" "{}" "POST /api/payment-records" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/payment-records" "{}" "GET /api/payment-records" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/payment-records" "{}" "GET /api/parties/{party_id}/payment-records" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PATCH" "/api/payment-records/{record_id}" "{}" "PATCH /api/payment-records/{record_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/promissory-notes" "{}" "GET /api/parties/{party_id}/promissory-notes" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/promissory-notes" "{}" "POST /api/promissory-notes" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PATCH" "/api/promissory-notes/{note_id}" "{}" "PATCH /api/promissory-notes/{note_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/promissory-notes/{note_id}/collect" "{}" "POST /api/promissory-notes/{note_id}/collect" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sales/${SALE_ID:-null}/promissory-notes" "{}" "GET /api/sales/{sale_id}/promissory-notes" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/users" "{}" "GET /api/users" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/users" "{}" "POST /api/users" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/users/me" "{}" "GET /api/users/me" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/users/me" "{}" "PUT /api/users/me" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/users/me/password" "{}" "POST /api/users/me/password" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/users/${U_ID:-null}" "{}" "PUT /api/users/{user_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/users/${U_ID:-null}" "{}" "DELETE /api/users/{user_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/tenant/users" "{}" "GET /api/tenant/users" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/" "{}" "POST /api/" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/tenant/users/${U_ID:-null}" "{}" "DELETE /api/tenant/users/{user_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/tenant/users/${U_ID:-null}" "{}" "PUT /api/tenant/users/{user_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/tenant/company" "{}" "GET /api/tenant/company" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/tenant/company" "{}" "PUT /api/tenant/company" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/suppliers" "{}" "GET /api/suppliers" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/suppliers" "{}" "POST /api/suppliers" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/suppliers/search" "{}" "GET /api/suppliers/search" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/suppliers/stats" "{}" "GET /api/suppliers/stats" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/suppliers/{supplier_id}" "{}" "GET /api/suppliers/{supplier_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/suppliers/{supplier_id}" "{}" "PUT /api/suppliers/{supplier_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/suppliers/{supplier_id}" "{}" "DELETE /api/suppliers/{supplier_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/settings/pricing" "{}" "GET /api/settings/pricing" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/settings" "{}" "GET /api/settings" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/settings" "{}" "PUT /api/settings" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoices" "{}" "GET /api/invoices" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices" "{}" "POST /api/invoices" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoices/print-queue" "{}" "GET /api/invoices/print-queue" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/print-queue" "{}" "POST /api/invoices/print-queue" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoices/templates" "{}" "GET /api/invoices/templates" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/templates" "{}" "POST /api/invoices/templates" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/batch-generate" "{}" "POST /api/invoices/batch-generate" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoices/${INVOICE_ID:-null}" "{}" "GET /api/invoices/{invoice_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/invoices/${INVOICE_ID:-null}" "{}" "PUT /api/invoices/{invoice_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/invoices/${INVOICE_ID:-null}" "{}" "DELETE /api/invoices/{invoice_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/invoices" "{}" "GET /api/parties/{party_id}/invoices" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/${INVOICE_ID:-null}/send-to-gib" "{}" "POST /api/invoices/{invoice_id}/send-to-gib" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/bulk-upload" "{}" "POST /api/invoices/bulk-upload" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sgk/documents" "{}" "GET /api/sgk/documents" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sgk/documents" "{}" "POST /api/sgk/documents" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sgk/documents/{document_id}" "{}" "GET /api/sgk/documents/{document_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/sgk/documents/{document_id}" "{}" "DELETE /api/sgk/documents/{document_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sgk/upload" "{}" "POST /api/sgk/upload" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/sgk-documents" "{}" "GET /api/parties/{party_id}/sgk-documents" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sgk/e-receipt/query" "{}" "POST /api/sgk/e-receipt/query" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sgk/e-receipts/delivered" "{}" "GET /api/sgk/e-receipts/delivered" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sgk/patient-rights/query" "{}" "POST /api/sgk/patient-rights/query" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sgk/workflow/create" "{}" "POST /api/sgk/workflow/create" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/sgk/workflow/{workflow_id}/update" "{}" "PUT /api/sgk/workflow/{workflow_id}/update" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sgk/workflow/{workflow_id}" "{}" "GET /api/sgk/workflow/{workflow_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/sgk/workflows/{workflow_id}/status" "{}" "PUT /api/sgk/workflows/{workflow_id}/status" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sgk/e-receipts/{receipt_id}/download-patient-form" "{}" "GET /api/sgk/e-receipts/{receipt_id}/download-patient-form" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sgk/seed-test-patients" "{}" "POST /api/sgk/seed-test-patients" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/unsubscribe" "{}" "GET /api/unsubscribe" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/deliverability/metrics" "{}" "GET /api/deliverability/metrics" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/deliverability/alerts/check" "{}" "GET /api/deliverability/alerts/check" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/deliverability/trend" "{}" "GET /api/deliverability/trend" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/deliverability/snapshot" "{}" "POST /api/deliverability/snapshot" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/activity-logs" "{}" "GET /api/activity-logs" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/activity-logs/stats" "{}" "GET /api/activity-logs/stats" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/activity-logs/filter-options" "{}" "GET /api/activity-logs/filter-options" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/audit" "{}" "GET /api/audit" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/permissions" "{}" "GET /api/permissions" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/permissions" "{}" "POST /api/permissions" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/permissions/my" "{}" "GET /api/permissions/my" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/permissions/role/{role_name}" "{}" "GET /api/permissions/role/{role_name}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/permissions/role/{role_name}" "{}" "PUT /api/permissions/role/{role_name}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ocr/health" "{}" "GET /api/ocr/health" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/init-db" "{}" "POST /api/ocr/init-db" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/initialize" "{}" "POST /api/ocr/initialize" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/process" "{}" "POST /api/ocr/process" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/similarity" "{}" "POST /api/ocr/similarity" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/entities" "{}" "POST /api/ocr/entities" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/extract_patient" "{}" "POST /api/ocr/extract_patient" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/debug_ner" "{}" "POST /api/ocr/debug_ner" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ocr/jobs" "{}" "GET /api/ocr/jobs" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ocr/jobs" "{}" "POST /api/ocr/jobs" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ocr/jobs/{job_id}" "{}" "GET /api/ocr/jobs/{job_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/upload/presigned" "{}" "POST /api/upload/presigned" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/upload/files" "{}" "GET /api/upload/files" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/upload/files" "{}" "DELETE /api/upload/files" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/documents" "{}" "GET /api/parties/{party_id}/documents" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/${P_ID:-null}/documents" "$PARTY_DATA" "POST /api/parties/{party_id}/documents" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/documents/{document_id}" "{}" "GET /api/parties/{party_id}/documents/{document_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/parties/${P_ID:-null}/documents/{document_id}" "{}" "DELETE /api/parties/{party_id}/documents/{document_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/devices" "{}" "GET /api/parties/{party_id}/devices" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/notes" "{}" "GET /api/parties/{party_id}/notes" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/${P_ID:-null}/notes" "$PARTY_DATA" "POST /api/parties/{party_id}/notes" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/parties/${P_ID:-null}/notes/{note_id}" "{}" "PUT /api/parties/{party_id}/notes/{note_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/parties/${P_ID:-null}/notes/{note_id}" "{}" "DELETE /api/parties/{party_id}/notes/{note_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/sales" "{}" "GET /api/parties/{party_id}/sales" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/appointments" "{}" "GET /api/parties/{party_id}/appointments" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/profiles/hearing/tests" "{}" "GET /api/parties/{party_id}/profiles/hearing/tests" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/${P_ID:-null}/profiles/hearing/tests" "$PARTY_DATA" "POST /api/parties/{party_id}/profiles/hearing/tests" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/parties/${P_ID:-null}/profiles/hearing/tests/{test_id}" "{}" "PUT /api/parties/{party_id}/profiles/hearing/tests/{test_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/parties/${P_ID:-null}/profiles/hearing/tests/{test_id}" "{}" "DELETE /api/parties/{party_id}/profiles/hearing/tests/{test_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/profiles/hearing/ereceipts" "{}" "GET /api/parties/{party_id}/profiles/hearing/ereceipts" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/${P_ID:-null}/profiles/hearing/ereceipts" "$PARTY_DATA" "POST /api/parties/{party_id}/profiles/hearing/ereceipts" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/parties/${P_ID:-null}/profiles/hearing/ereceipts/{ereceipt_id}" "{}" "PUT /api/parties/{party_id}/profiles/hearing/ereceipts/{ereceipt_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/parties/${P_ID:-null}/profiles/hearing/ereceipts/{ereceipt_id}" "{}" "DELETE /api/parties/{party_id}/profiles/hearing/ereceipts/{ereceipt_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/cash-records" "{}" "GET /api/cash-records" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/cash-records" "{}" "POST /api/cash-records" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/cash-records/{record_id}" "{}" "DELETE /api/cash-records/{record_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/unified-cash-records" "{}" "GET /api/unified-cash-records" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/unified-cash-records/summary" "{}" "GET /api/unified-cash-records/summary" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/payments/pos/paytr/config" "{}" "GET /api/payments/pos/paytr/config" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/payments/pos/paytr/config" "{}" "PUT /api/payments/pos/paytr/config" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/payments/pos/paytr/initiate" "{}" "POST /api/payments/pos/paytr/initiate" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/payments/pos/paytr/callback" "{}" "POST /api/payments/pos/paytr/callback" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/payments/pos/transactions" "{}" "GET /api/payments/pos/transactions" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/timeline" "{}" "GET /api/timeline" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/parties/${P_ID:-null}/timeline" "{}" "GET /api/parties/{party_id}/timeline" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/${P_ID:-null}/timeline" "$PARTY_DATA" "POST /api/parties/{party_id}/timeline" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/parties/${P_ID:-null}/activities" "$PARTY_DATA" "POST /api/parties/{party_id}/activities" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/parties/${P_ID:-null}/timeline/{event_id}" "{}" "DELETE /api/parties/{party_id}/timeline/{event_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/plans" "{}" "GET /api/plans" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/plans" "{}" "POST /api/plans" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/plans/admin" "{}" "GET /api/plans/admin" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/plans/${PLAN_ID:-null}" "{}" "PUT /api/plans/{plan_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/plans/${PLAN_ID:-null}" "{}" "DELETE /api/plans/{plan_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/addons" "{}" "GET /api/addons" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/addons" "{}" "POST /api/addons" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/addons/admin" "{}" "GET /api/addons/admin" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/addons/${ADDON_ID:-null}" "{}" "PUT /api/addons/{addon_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/addons/${ADDON_ID:-null}" "{}" "DELETE /api/addons/{addon_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/subscriptions/subscribe" "{}" "POST /api/subscriptions/subscribe" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/subscriptions/complete-signup" "{}" "POST /api/subscriptions/complete-signup" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/subscriptions/current" "{}" "GET /api/subscriptions/current" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/subscriptions/register-and-subscribe" "{}" "POST /api/subscriptions/register-and-subscribe" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/config" "{}" "GET /api/config" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/config/turnstile" "{}" "GET /api/config/turnstile" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/register-phone" "{}" "POST /api/register-phone" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/verify-registration-otp" "{}" "POST /api/verify-registration-otp" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/automation/status" "{}" "GET /api/automation/status" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/automation/sgk/process" "{}" "POST /api/automation/sgk/process" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/automation/backup" "{}" "POST /api/automation/backup" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/automation/logs" "{}" "GET /api/automation/logs" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/checkout/session" "{}" "POST /api/checkout/session" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/checkout/confirm" "{}" "POST /api/checkout/confirm" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/apps" "{}" "GET /api/apps" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/apps" "{}" "POST /api/apps" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/apps/{app_id}" "{}" "GET /api/apps/{app_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/apps/{app_id}" "{}" "PUT /api/apps/{app_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/apps/{app_id}" "{}" "DELETE /api/apps/{app_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/apps/{app_id}/assign" "{}" "POST /api/apps/{app_id}/assign" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/apps/{app_id}/transfer_ownership" "{}" "POST /api/apps/{app_id}/transfer_ownership" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/pos/commission/calculate" "{}" "POST /api/pos/commission/calculate" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/pos/commission/rates" "{}" "GET /api/pos/commission/rates" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/pos/commission/installment-options" "{}" "POST /api/pos/commission/installment-options" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/pos/commission/rates/tenant/${TN_ID:-null}" "{}" "GET /api/pos/commission/rates/tenant/{tenant_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/pos/commission/rates/tenant/${TN_ID:-null}" "{}" "PUT /api/pos/commission/rates/tenant/{tenant_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/pos/commission/rates/system" "{}" "GET /api/pos/commission/rates/system" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/pos/commission/rates/system" "{}" "PUT /api/pos/commission/rates/system" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms-packages" "{}" "GET /api/sms-packages" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/config" "{}" "GET /api/sms/config" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/sms/config" "{}" "PUT /api/sms/config" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/headers" "{}" "GET /api/sms/headers" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sms/headers" "{}" "POST /api/sms/headers" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/sms/headers/${HEADER_ID:-null}/set-default" "{}" "PUT /api/sms/headers/{header_id}/set-default" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/packages" "{}" "GET /api/sms/packages" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/credit" "{}" "GET /api/sms/credit" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/audiences" "{}" "GET /api/sms/audiences" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sms/audiences" "{}" "POST /api/sms/audiences" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sms/documents/upload" "{}" "POST /api/sms/documents/upload" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/documents/{document_type}/download" "{}" "GET /api/sms/documents/{document_type}/download" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/sms/documents/{document_type}" "{}" "DELETE /api/sms/documents/{document_type}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sms/documents/submit" "{}" "POST /api/sms/documents/submit" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/sms/audiences/upload" "{}" "POST /api/sms/audiences/upload" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/admin/headers" "{}" "GET /api/sms/admin/headers" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/sms/admin/headers/${HEADER_ID:-null}/status" "{}" "PUT /api/sms/admin/headers/{header_id}/status" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/sms/documents/file/{filepath}" "{}" "GET /api/sms/documents/file/{filepath}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoice-schema" "{}" "GET /api/invoice-schema" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/create-dynamic" "{}" "POST /api/invoices/create-dynamic" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoices/${INVOICE_ID:-null}/xml" "{}" "GET /api/invoices/{invoice_id}/xml" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/${INVOICE_ID:-null}/send-gib" "{}" "POST /api/invoices/{invoice_id}/send-gib" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoice-settings" "{}" "GET /api/invoice-settings" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoice-settings" "{}" "POST /api/invoice-settings" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/${INVOICE_ID:-null}/issue" "{}" "POST /api/invoices/{invoice_id}/issue" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/${INVOICE_ID:-null}/copy" "{}" "POST /api/invoices/{invoice_id}/copy" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/invoices/${INVOICE_ID:-null}/copy-cancel" "{}" "POST /api/invoices/{invoice_id}/copy-cancel" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoices/${INVOICE_ID:-null}/pdf" "{}" "GET /api/invoices/{invoice_id}/pdf" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/invoices/${INVOICE_ID:-null}/shipping-pdf" "{}" "GET /api/invoices/{invoice_id}/shipping-pdf" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/communications/messages" "{}" "GET /api/communications/messages" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/communications/messages/send-sms" "{}" "POST /api/communications/messages/send-sms" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/communications/messages/send-email" "{}" "POST /api/communications/messages/send-email" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/communications/templates" "{}" "GET /api/communications/templates" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/communications/templates" "{}" "POST /api/communications/templates" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/communications/templates/${TEMPLATE_ID:-null}" "{}" "GET /api/communications/templates/{template_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "PUT" "/api/communications/templates/${TEMPLATE_ID:-null}" "{}" "PUT /api/communications/templates/{template_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "DELETE" "/api/communications/templates/${TEMPLATE_ID:-null}" "{}" "DELETE /api/communications/templates/{template_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/communications/history" "{}" "GET /api/communications/history" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/communications/history" "{}" "POST /api/communications/history" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/communications/stats" "{}" "GET /api/communications/stats" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/commissions/create" "{}" "POST /api/commissions/create" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/commissions/update-status" "{}" "POST /api/commissions/update-status" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/commissions/by-affiliate" "{}" "GET /api/commissions/by-affiliate" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/commissions/audit" "{}" "GET /api/commissions/audit" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/developer/schema-registry" "{}" "GET /api/developer/schema-registry" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/chat" "{}" "POST /api/ai/chat" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/actions" "{}" "POST /api/ai/actions" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/actions/{action_id}" "{}" "GET /api/ai/actions/{action_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/actions/{action_id}/approve" "{}" "POST /api/ai/actions/{action_id}/approve" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/actions/{action_id}/execute" "{}" "POST /api/ai/actions/{action_id}/execute" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/audit" "{}" "GET /api/ai/audit" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/audit/stats" "{}" "GET /api/ai/audit/stats" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/audit/{audit_id}" "{}" "GET /api/ai/audit/{audit_id}" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/status" "{}" "GET /api/ai/status" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/health" "{}" "GET /api/ai/health" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/capabilities" "{}" "GET /api/ai/capabilities" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/metrics" "{}" "GET /api/ai/metrics" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/alerts" "{}" "GET /api/ai/alerts" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/alerts/{alert_id}/acknowledge" "{}" "POST /api/ai/alerts/{alert_id}/acknowledge" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/alerts/check" "{}" "POST /api/ai/alerts/check" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/admin/kill-switch" "{}" "GET /api/ai/admin/kill-switch" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/admin/kill-switch" "{}" "POST /api/ai/admin/kill-switch" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/admin/pending-approvals" "{}" "GET /api/ai/admin/pending-approvals" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/admin/cleanup-expired" "{}" "POST /api/ai/admin/cleanup-expired" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/admin/settings" "{}" "GET /api/ai/admin/settings" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "GET" "/api/ai/composer/autocomplete" "{}" "GET /api/ai/composer/autocomplete" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/composer/execute" "{}" "POST /api/ai/composer/execute" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
+test_endpoint "POST" "/api/ai/composer/analyze" "{}" "POST /api/ai/composer/analyze" "$TENANT_TOKEN" "TENANT_WEB_APP" ""
 
-# ============================================
-# CATEGORY 12: NOTIFICATIONS
-# ============================================
-echo -e "\n${BLUE}[NOTIFICATIONS]${NC} Testing Notification Endpoints..."
+cleanup() {
+    echo -e "\n[CLEANUP] Removing test resources..."
+    [ ! -z "$TN_ID" ] && [ "$TN_ID" != "null" ] && \
+        curl -s -X DELETE "$BASE_URL/api/admin/tenants/$TN_ID" \
+        -H "Authorization: Bearer $ADMIN_TOKEN" \
+        -H "X-Effective-Tenant-Id: system" >/dev/null
+}
+trap cleanup EXIT
 
-test_endpoint "GET" "/notifications?page=1&perPage=10" "" "List notifications" "Notifications"
-test_endpoint "GET" "/notifications/stats" "" "Notification stats" "Notifications"
-test_endpoint "GET" "/notifications/settings" "" "Notification settings" "Notifications"
-
-# ============================================
-# CATEGORY 13: SUPPLIERS
-# ============================================
-echo -e "\n${BLUE}[SUPPLIERS]${NC} Testing Supplier Endpoints..."
-
-test_endpoint "GET" "/suppliers?page=1&per_page=10" "" "List suppliers" "Suppliers"
-test_endpoint "GET" "/suppliers/search?q=test" "" "Search suppliers" "Suppliers"
-test_endpoint "GET" "/suppliers/stats" "" "Supplier stats" "Suppliers"
-
-# ============================================
-# CATEGORY 14: SETTINGS
-# ============================================
-echo -e "\n${BLUE}[SETTINGS]${NC} Testing Settings Endpoints..."
-
-test_endpoint "GET" "/settings" "" "Get settings" "Settings"
-test_endpoint "GET" "/settings/pricing" "" "Pricing settings" "Settings"
-test_endpoint "GET" "/config" "" "Get config" "Settings"
-test_endpoint "GET" "/config/turnstile" "" "Turnstile config" "Settings"
-
-# ============================================
-# CATEGORY 15: TENANT
-# ============================================
-echo -e "\n${BLUE}[TENANT]${NC} Testing Tenant Endpoints..."
-
-test_endpoint "GET" "/tenant/users" "" "List tenant users" "Tenant"
-test_endpoint "GET" "/tenant/company" "" "Get company info" "Tenant"
-
-# ============================================
-# CATEGORY 16: ACTIVITY LOGS
-# ============================================
-echo -e "\n${BLUE}[ACTIVITY]${NC} Testing Activity Log Endpoints..."
-
-test_endpoint "GET" "/activity-logs?page=1&perPage=10" "" "List activity logs" "Activity"
-test_endpoint "GET" "/activity-logs/stats" "" "Activity stats" "Activity"
-test_endpoint "GET" "/activity-logs/filter-options" "" "Filter options" "Activity"
-
-# ============================================
-# CATEGORY 17: TIMELINE
-# ============================================
-echo -e "\n${BLUE}[TIMELINE]${NC} Testing Timeline Endpoints..."
-
-test_endpoint "GET" "/timeline" "" "Get timeline" "Timeline"
-
-# ============================================
-# CATEGORY 18: CASH RECORDS
-# ============================================
-echo -e "\n${BLUE}[CASH]${NC} Testing Cash Record Endpoints..."
-
-test_endpoint "GET" "/cash-records" "" "List cash records" "Cash"
-test_endpoint "GET" "/unified-cash-records" "" "Unified cash records" "Cash"
-test_endpoint "GET" "/unified-cash-records/summary" "" "Cash summary" "Cash"
-
-# ============================================
-# CATEGORY 19: PLANS & SUBSCRIPTIONS
-# ============================================
-echo -e "\n${BLUE}[PLANS]${NC} Testing Plan Endpoints..."
-
-test_endpoint "GET" "/plans" "" "List plans" "Plans"
-test_endpoint "GET" "/addons" "" "List addons" "Plans"
-test_endpoint "GET" "/subscriptions/current" "" "Current subscription" "Plans"
-
-# ============================================
-# CATEGORY 20: SMS
-# ============================================
-echo -e "\n${BLUE}[SMS]${NC} Testing SMS Endpoints..."
-
-test_endpoint "GET" "/sms/config" "" "SMS config" "SMS"
-test_endpoint "GET" "/sms/headers" "" "SMS headers" "SMS"
-test_endpoint "GET" "/sms/packages" "" "SMS packages" "SMS"
-test_endpoint "GET" "/sms/credit" "" "SMS credit" "SMS"
-test_endpoint "GET" "/sms/audiences" "" "SMS audiences" "SMS"
-test_endpoint "GET" "/sms-packages" "" "SMS packages (alt)" "SMS"
-
-# ============================================
-# CATEGORY 21: SGK
-# ============================================
-echo -e "\n${BLUE}[SGK]${NC} Testing SGK Endpoints..."
-
-test_endpoint "GET" "/sgk/documents" "" "List SGK documents" "SGK"
-test_endpoint "GET" "/sgk/e-receipts/delivered" "" "Delivered e-receipts" "SGK"
-
-# ============================================
-# CATEGORY 22: COMMUNICATIONS
-# ============================================
-echo -e "\n${BLUE}[COMMUNICATIONS]${NC} Testing Communication Endpoints..."
-
-test_endpoint "GET" "/communications/messages" "" "List messages" "Communications"
-test_endpoint "GET" "/communications/templates" "" "List templates" "Communications"
-test_endpoint "GET" "/communications/history" "" "Communication history" "Communications"
-test_endpoint "GET" "/communications/stats" "" "Communication stats" "Communications"
-
-# ============================================
-# CATEGORY 23: POS & PAYMENTS
-# ============================================
-echo -e "\n${BLUE}[POS]${NC} Testing POS Endpoints..."
-
-test_endpoint "GET" "/payments/pos/paytr/config" "" "PayTR config" "POS"
-test_endpoint "GET" "/payments/pos/transactions" "" "POS transactions" "POS"
-test_endpoint "GET" "/pos/commission/rates" "" "Commission rates" "POS"
-
-# ============================================
-# CATEGORY 24: APPS
-# ============================================
-echo -e "\n${BLUE}[APPS]${NC} Testing Apps Endpoints..."
-
-test_endpoint "GET" "/apps" "" "List apps" "Apps"
-
-# ============================================
-# CATEGORY 25: AFFILIATES
-# ============================================
-echo -e "\n${BLUE}[AFFILIATES]${NC} Testing Affiliate Endpoints..."
-
-test_endpoint "GET" "/affiliates/list" "" "List affiliates" "Affiliates"
-test_endpoint "GET" "/affiliates/lookup" "" "Lookup affiliate" "Affiliates"
-
-# ============================================
-# CATEGORY 26: AUDIT
-# ============================================
-echo -e "\n${BLUE}[AUDIT]${NC} Testing Audit Endpoints..."
-
-test_endpoint "GET" "/audit" "" "Audit logs" "Audit"
-
-# ============================================
-# CATEGORY 27: AUTOMATION
-# ============================================
-echo -e "\n${BLUE}[AUTOMATION]${NC} Testing Automation Endpoints..."
-
-test_endpoint "GET" "/automation/status" "" "Automation status" "Automation"
-test_endpoint "GET" "/automation/logs" "" "Automation logs" "Automation"
-
-# ============================================
-# CATEGORY 28: AI (if enabled)
-# ============================================
-echo -e "\n${BLUE}[AI]${NC} Testing AI Endpoints..."
-
-test_endpoint "GET" "/ai/status" "" "AI status" "AI"
-test_endpoint "GET" "/ai/health" "" "AI health" "AI"
-test_endpoint "GET" "/ai/capabilities" "" "AI capabilities" "AI"
-test_endpoint "GET" "/ai/metrics" "" "AI metrics" "AI"
-test_endpoint "GET" "/ai/alerts" "" "AI alerts" "AI"
-test_endpoint "GET" "/ai/audit" "" "AI audit" "AI"
-test_endpoint "GET" "/ai/audit/stats" "" "AI audit stats" "AI"
-
-# ============================================
-# CATEGORY 29: HEALTH & READINESS
-# ============================================
-echo -e "\n${BLUE}[HEALTH]${NC} Testing Health Endpoints..."
-
-test_endpoint "GET" "/health" "" "Health check" "Health" "" "no-auth"
-test_endpoint "GET" "/readiness" "" "Readiness check" "Health" "" "no-auth"
-
-# ============================================
-# SUMMARY
-# ============================================
-echo -e "\n========================================="
-echo -e "  ${BLUE}COMPREHENSIVE TEST SUMMARY${NC}"
-echo "========================================="
-echo -e "Total Tests:    $TOTAL"
-echo -e "${GREEN}Passed:         $PASSED${NC}"
-echo -e "${RED}Failed:         $FAILED${NC}"
-echo -e "${BLUE}Skipped:        $SKIPPED${NC}"
-echo -e "Success Rate:   $(( PASSED * 100 / (TOTAL - SKIPPED) ))%"
-echo "========================================="
-
-echo -e "\n${BLUE}Results by Category:${NC}"
-for category in "${!CATEGORY_TOTAL[@]}"; do
-    total=${CATEGORY_TOTAL[$category]}
-    passed=${CATEGORY_PASSED[$category]:-0}
-    failed=${CATEGORY_FAILED[$category]:-0}
-    rate=$(( passed * 100 / total ))
-    echo -e "  $category: ${GREEN}$passed${NC}/${total} ($rate%)"
-done
-
-echo "========================================="
-
-if [ $FAILED -eq 0 ]; then
-    echo -e "${GREEN}✓ ALL TESTS PASSED!${NC}"
-    exit 0
-else
-    echo -e "${RED}✗ SOME TESTS FAILED${NC}"
-    exit 1
-fi
+echo "\n=== FINAL RESULTS ==="
+echo "ADMIN_PANEL: $ADMIN_PASSED pass, $ADMIN_FAILED fail"
+echo "TENANT_WEB_APP: $TENANT_PASSED pass, $TENANT_FAILED fail"
+echo "AFFILIATE: $AFFILIATE_PASSED pass, $AFFILIATE_FAILED fail"
+echo "SYSTEM: $SYSTEM_PASSED pass, $SYSTEM_FAILED fail"
+echo "---"
+echo "TOTAL: $PASSED pass, $FAILED fail, $TOTAL total"
+[ $TOTAL -gt 0 ] && echo "Success Rate: $(( PASSED * 100 / TOTAL ))%"

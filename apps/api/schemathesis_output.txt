@@ -1,0 +1,4 @@
+Usage: schemathesis run [OPTIONS] LOCATION
+Try 'schemathesis run -h' for help.
+
+Error: No such option: --hypothesis-max-examples Did you mean --max-examples?

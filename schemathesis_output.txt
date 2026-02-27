@@ -1,0 +1,230 @@
+Schemathesis v4.10.2
+━━━━━━━━━━━━━━━━━━━━
+
+
+ ✅  Loaded specification from http://localhost:5003/openapi.json  
+ (in 1.43s)                                                        
+
+     Base URL:         http://localhost:5003                       
+     Specification:    Open API 3.1.0                              
+     Operations:       509 selected / 509 total                    
+
+
+ ✅  API capabilities:                                             
+
+     Supports NULL byte in headers:    ✘                           
+
+ ⏭   Examples (in 0.47s)                                           
+                                                                   
+     ⏭  509 skipped                                                
+
+ ❌  Coverage (in 0.46s)                                           
+                                                                   
+     ❌  10 failed                                                 
+
+ 🕛  Fuzzing (in 0.00s)                                            
+                                                                   
+     No tests were run                                             
+
+ 🕛  Stateful (in 0.00s)                                           
+
+     Scenarios:    0                                               
+     API Links:    0 covered / 579 selected / 579 total (579       
+                   inferred)                                       
+
+     No tests were run                                             
+
+=================================== FAILURES ===================================
+______________________ TRACE /EFatura/Cancel/{invoice_id} ______________________
+1. Test Case ID: zCA1wj
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"b712129c-eeb5-4218-b4e7-0527873ba155","timestamp":"2026-02-18T09:39:30.161474+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE http://localhost:5003/EFatura/Cancel/0
+
+____________________________ TRACE /EFatura/Create _____________________________
+1. Test Case ID: KnWY7I
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"217fcadb-efe8-45b4-9391-4a77c2c33a8a","timestamp":"2026-02-18T09:39:30.166230+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE http://localhost:5003/EFatura/Create
+
+______________________ TRACE /EFatura/Retry/{invoice_id} _______________________
+1. Test Case ID: cqDlo9
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"f70c425b-7012-41ad-a72e-5cc3a3ecebd9","timestamp":"2026-02-18T09:39:30.340182+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE http://localhost:5003/EFatura/Retry/0
+
+_______________________ TRACE /EFatura/sendBasicInvoice ________________________
+1. Test Case ID: Z0wdfE
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"d356da7e-01cc-4325-b9fb-36d5b77e1f1d","timestamp":"2026-02-18T09:39:30.343261+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE http://localhost:5003/EFatura/sendBasicInvoice
+
+_________________________ TRACE /EFatura/sendDocument __________________________
+1. Test Case ID: 49Hu4R
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"6f14c68d-f278-485a-b168-91daccbb3c35","timestamp":"2026-02-18T09:39:30.346353+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE http://localhost:5003/EFatura/sendDocument
+
+_____________________ TRACE /Firma/FirmaAdresBilgisiGetir ______________________
+1. Test Case ID: lbekNt
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"b6100f88-645a-47a2-b143-3eed68a8e27e","timestamp":"2026-02-18T09:39:30.362221+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE -H 'Content-Type: application/json' -d '{"customer_id": null}' http://localhost:5003/Firma/FirmaAdresBilgisiGetir
+
+_______________________ TRACE /Firma/FirmaPKBilgisiGetir _______________________
+1. Test Case ID: fypHan
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"1e7917f0-6f95-44d1-ab39-be45ddfa1c73","timestamp":"2026-02-18T09:39:30.368153+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE -H 'Content-Type: application/json' -d '{"customer_id": null}' http://localhost:5003/Firma/FirmaPKBilgisiGetir
+
+_______________________ TRACE /Musteri/FirmaMusteriGetir _______________________
+1. Test Case ID: p9gLc1
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"40207a41-ae1c-4bf6-8b4c-65fa3f9e7c23","timestamp":"2026-02-18T09:39:30.373883+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE -H 'Content-Type: application/json' -d '{"search": null}' http://localhost:5003/Musteri/FirmaMusteriGetir
+
+____________________ TRACE /OutEBelgeV2/GetOutBoxDocuments _____________________
+1. Test Case ID: pzAWWz
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"d962a599-bc24-40cc-8285-0b7f52ad633e","timestamp":"2026-02-18T09:39:30.386491+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE -H 'Content-Type: application/json' -d '{"documentType": "", "endDateTime": "", "invoiceNo": null, "pageNumber": 0, "pageSize": 20, "startDateTime": "", "systemType": ""}' http://localhost:5003/OutEBelgeV2/GetOutBoxDocuments
+
+_____________________ TRACE /OutEBelgeV2/GetPDFLinkByUUID ______________________
+1. Test Case ID: f4Ge3w
+
+- Unsupported methods
+
+    TRACE returned 405 without required `Allow` header
+
+    Add `Allow` header listing supported methods (required by RFC 9110)
+
+[405] Method Not Allowed:
+
+    `{"success":false,"data":null,"message":null,"error":{"success":false,"message":"Method Not Allowed","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"ed2bce65-4cc5-45ce-b0ad-ce4a2232cbaa","timestamp":"2026-02-18T09:39:30.393449+00:00"}`
+
+Reproduce with:
+
+    curl -X TRACE -H 'Content-Type: application/json' -d '{"systemType": "", "uuids": []}' http://localhost:5003/OutEBelgeV2/GetPDFLinkByUUID
+
+=================================== SUMMARY ====================================
+
+API Operations:
+  Selected: 509/509
+  Tested: 10
+  Skipped: 499
+    - No examples in schema
+
+Test Phases:
+  ⏭  Examples
+  ❌ Coverage
+  ⏭  Fuzzing (failure limit reached)
+  ⏭  Stateful (failure limit reached)
+
+Failures:
+  ❌ Unsupported methods: 10
+
+Test cases:
+  10 generated, 10 found 10 unique failures
+
+Seed: 12261204897457903262183676240764002196
+
+============================= 10 failures in 1.23s =============================

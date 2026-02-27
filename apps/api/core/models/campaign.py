@@ -1,4 +1,7 @@
 # Campaign and SMS Models
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text, Time, Index
+from sqlalchemy.orm import relationship
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
 import json
@@ -7,35 +10,35 @@ class Campaign(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'campaigns'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("camp"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("camp"))
     
     # Campaign details
-    name = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text)
-    campaign_type = db.Column(db.String(50), default='sms')  # sms, email, notification
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    campaign_type = Column(String(50), default='sms')  # sms, email, notification
     # tenant_id is now inherited from TenantScopedMixin
     
     # Target audience
-    target_segment = db.Column(db.String(50))  # lead, customer, trial, etc.
-    target_criteria = db.Column(db.Text)  # JSON for complex filtering
+    target_segment = Column(String(50))  # lead, customer, trial, etc.
+    target_criteria = Column(Text)  # JSON for complex filtering
     
     # Content
-    message_template = db.Column(db.Text, nullable=False)
-    subject = db.Column(db.String(200))  # For email campaigns
+    message_template = Column(Text, nullable=False)
+    subject = Column(String(200))  # For email campaigns
     
     # Scheduling
-    scheduled_at = db.Column(db.DateTime)
-    sent_at = db.Column(db.DateTime)
+    scheduled_at = Column(DateTime)
+    sent_at = Column(DateTime)
     
     # Status and metrics
-    status = db.Column(db.String(20), default='draft')  # draft, scheduled, sending, sent, cancelled
-    total_recipients = db.Column(db.Integer, default=0)
-    successful_sends = db.Column(db.Integer, default=0)
-    failed_sends = db.Column(db.Integer, default=0)
+    status = Column(String(20), default='draft')  # draft, scheduled, sending, sent, cancelled
+    total_recipients = Column(Integer, default=0)
+    successful_sends = Column(Integer, default=0)
+    failed_sends = Column(Integer, default=0)
     
     # Cost tracking
-    estimated_cost = db.Column(db.Float, default=0.0)
-    actual_cost = db.Column(db.Float, default=0.0)
+    estimated_cost = Column(Float, default=0.0)
+    actual_cost = Column(Float, default=0.0)
 
     @property
     def target_criteria_json(self):
@@ -72,36 +75,36 @@ class SmsLog(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'sms_logs'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("sms"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("sms"))
     
     # Foreign keys
-    campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
+    campaign_id = Column(String(50), ForeignKey('campaigns.id'), nullable=True)
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=True)
     # tenant_id is now inherited from TenantScopedMixin
     
     # SMS details
-    phone_number = db.Column(db.String(20), nullable=False)
-    message = db.Column(db.Text, nullable=False)
+    phone_number = Column(String(20), nullable=False)
+    message = Column(Text, nullable=False)
     
     # Status tracking
-    status = db.Column(db.String(20), default='pending')  # pending, sent, delivered, failed
-    provider_response = db.Column(db.Text)  # JSON string
+    status = Column(String(20), default='pending')  # pending, sent, delivered, failed
+    provider_response = Column(Text)  # JSON string
     
     # Timestamps
-    sent_at = db.Column(db.DateTime)
-    delivered_at = db.Column(db.DateTime)
-    opened_at = db.Column(db.DateTime)  # For tracking links
-    clicked_at = db.Column(db.DateTime)  # For tracking links
+    sent_at = Column(DateTime)
+    delivered_at = Column(DateTime)
+    opened_at = Column(DateTime)  # For tracking links
+    clicked_at = Column(DateTime)  # For tracking links
     
     # Error handling
-    error_message = db.Column(db.Text)
-    retry_count = db.Column(db.Integer, default=0)
+    error_message = Column(Text)
+    retry_count = Column(Integer, default=0)
     
     # Cost tracking
-    cost = db.Column(db.Float)
+    cost = Column(Float)
 
     # Relationships
-    party = db.relationship('Party', backref='sms_logs', lazy=True)
+    party = relationship('Party', backref='sms_logs', lazy=True)
 
     @property
     def provider_response_json(self):
@@ -134,8 +137,8 @@ class SmsLog(BaseModel, JSONMixin, TenantScopedMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_sms_campaign', 'campaign_id'),
-        db.Index('ix_sms_patient', 'party_id'),
-        db.Index('ix_sms_status', 'status'),
-        db.Index('ix_sms_sent_at', 'sent_at'),
+        Index('ix_sms_campaign', 'campaign_id'),
+        Index('ix_sms_patient', 'party_id'),
+        Index('ix_sms_status', 'status'),
+        Index('ix_sms_sent_at', 'sent_at'),
     )

@@ -12,10 +12,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
 from database import get_db
+from core.database import gen_id
 from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["CashRecords"])
@@ -32,6 +31,13 @@ class CashRecordCreate(BaseModel):
     date: Optional[str] = None
     id: Optional[str] = None
     tenant_id: Optional[str] = None
+    
+    class Config:
+        populate_by_name = True
+        
+    @property
+    def party_id(self):
+        return self.partyId
 
 class CashRecordResponse(BaseModel):
     id: str
@@ -123,7 +129,7 @@ def get_cash_records(
                     'transactionType': 'income' if (r.amount or 0) >= 0 else 'expense',
                     'recordType': derive_record_type(r.notes or ''),
                     'partyId': r.party_id,
-                    'partyName': patient_name,
+                    'partyName': party_name,
                     'amount': float(r.amount or 0),
                     'description': r.notes or ''
                 }
@@ -155,7 +161,7 @@ def create_cash_record(
     try:
         from models.sales import PaymentRecord
         from core.models.party import Party
-        from database import gen_id
+        from core.database import gen_id
         
         if not request_data.transactionType:
             raise HTTPException(status_code=400, detail="Transaction type is required")
@@ -173,7 +179,7 @@ def create_cash_record(
                 raise HTTPException(status_code=400, detail="access.tenant_id is required")
         
         # Find patient by name if provided
-        party_id = request_data.partyId
+        party_id = request_data.party_id
         if not party_id and request_data.partyName and request_data.partyName.strip():
             party_name = request_data.partyName.strip()
             patient_query = db.query(Party)
@@ -220,7 +226,7 @@ def create_cash_record(
         
         # Get party name for response
         patient = db.get(Party, payment.party_id) if payment.party_id else None
-        patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
+        party_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
         
         record = {
             'id': payment.id,
@@ -228,7 +234,7 @@ def create_cash_record(
             'transactionType': request_data.transactionType,
             'recordType': request_data.recordType,
             'partyId': payment.party_id,
-            'partyName': patient_name,
+            'partyName': party_name,
             'amount': float(payment.amount),
             'description': request_data.description or ''
         }

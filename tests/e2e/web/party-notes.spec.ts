@@ -6,7 +6,7 @@ import {
     deleteTestParty,
     login,
     setupAuthenticatedPage
-} from './helpers/test-utils';
+} from '../../helpers/auth.helper';
 
 test.describe('Party Notes Module', () => {
     let partyId: string;

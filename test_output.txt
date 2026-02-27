@@ -1,140 +1,52 @@
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
-[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
-
-🚀 GLOBAL SETUP: Seeding Data to http://localhost:5003...
-
-⚠️ Could not acquire Admin Token. Seeding might be limited.
-🚨 SKIP SEEDING: Authentication failed. Tests rely on existing data.
-
-✅ Global Setup Complete.
-
-
-Running 4 tests using 4 workers
-
-[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
-[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
-[dotenv@17.2.3] injecting env (0) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
-[LOGIN FAILURE] Step 1: Lookup Phone Failed
-URL: http://localhost:5003/api/auth/lookup-phone
-Status: [33m400[39m
-Body: {"success": false, "error": {"code": "IDEMPOTENCY_KEY_MISSING", "message": "Idempotency-Key header is required for write operations"}}
-[LOGIN FAILURE] Step 1: Lookup Phone Failed
-URL: http://localhost:5003/api/auth/lookup-phone
-Status: [33m400[39m
-Body: {"success": false, "error": {"code": "IDEMPOTENCY_KEY_MISSING", "message": "Idempotency-Key header is required for write operations"}}
-[LOGIN FAILURE] Step 1: Lookup Phone Failed
-URL: http://localhost:5003/api/auth/lookup-phone
-Status: [33m400[39m
-[LOGIN FAILURE] Step 1: Lookup Phone Failed
-URL: http://localhost:5003/api/auth/lookup-phone
-Status: [33m400[39m
-Body: {"success": false, "error": {"code": "IDEMPOTENCY_KEY_MISSING", "message": "Idempotency-Key header is required for write operations"}}
-Body: {"success": false, "error": {"code": "IDEMPOTENCY_KEY_MISSING", "message": "Idempotency-Key header is required for write operations"}}
-  ✘  2 [web] › tests/e2e/web/inventory.spec.ts:53:5 › Inventory Management › should persist KDV preferences (665ms)
-  ✘  1 [web] › tests/e2e/web/inventory.spec.ts:5:5 › Inventory Management › should list inventory items (667ms)
-  ✘  3 [web] › tests/e2e/web/inventory.spec.ts:34:5 › Inventory Management › should manage serial numbers via modal (666ms)
-  ✘  4 [web] › tests/e2e/web/inventory.spec.ts:19:5 › Inventory Management › should calculate tax vs vatIncludedPrice correctly (667ms)
-
-
-  1) [web] › tests/e2e/web/inventory.spec.ts:5:5 › Inventory Management › should list inventory items 
-
-    Error: Login Step 1 Failed: 400
-
-       at web/helpers/test-utils.ts:38
-
-      36 |     console.error('Status:', lookupResponse.status());
-      37 |     console.error('Body:', await lookupResponse.text());
-    > 38 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
-         |           ^
-      39 |   }
-      40 |   expect(lookupResponse.ok()).toBeTruthy();
-      41 |
-        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:38:11)
-        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Management-should-list-inventory-items-web/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Management-should-list-inventory-items-web/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  2) [web] › tests/e2e/web/inventory.spec.ts:19:5 › Inventory Management › should calculate tax vs vatIncludedPrice correctly 
-
-    Error: Login Step 1 Failed: 400
-
-       at web/helpers/test-utils.ts:38
-
-      36 |     console.error('Status:', lookupResponse.status());
-      37 |     console.error('Body:', await lookupResponse.text());
-    > 38 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
-         |           ^
-      39 |   }
-      40 |   expect(lookupResponse.ok()).toBeTruthy();
-      41 |
-        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:38:11)
-        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Manage-97861--vatIncludedPrice-correctly-web/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Manage-97861--vatIncludedPrice-correctly-web/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  3) [web] › tests/e2e/web/inventory.spec.ts:34:5 › Inventory Management › should manage serial numbers via modal 
-
-    Error: Login Step 1 Failed: 400
-
-       at web/helpers/test-utils.ts:38
-
-      36 |     console.error('Status:', lookupResponse.status());
-      37 |     console.error('Body:', await lookupResponse.text());
-    > 38 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
-         |           ^
-      39 |   }
-      40 |   expect(lookupResponse.ok()).toBeTruthy();
-      41 |
-        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:38:11)
-        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Manage-4b1d7-ge-serial-numbers-via-modal-web/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Manage-4b1d7-ge-serial-numbers-via-modal-web/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  4) [web] › tests/e2e/web/inventory.spec.ts:53:5 › Inventory Management › should persist KDV preferences 
-
-    Error: Login Step 1 Failed: 400
-
-       at web/helpers/test-utils.ts:38
-
-      36 |     console.error('Status:', lookupResponse.status());
-      37 |     console.error('Body:', await lookupResponse.text());
-    > 38 |     throw new Error(`Login Step 1 Failed: ${lookupResponse.status()}`);
-         |           ^
-      39 |   }
-      40 |   expect(lookupResponse.ok()).toBeTruthy();
-      41 |
-        at login (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/web/helpers/test-utils.ts:38:11)
-        at Object.tenantPage (/Users/omerozmen/Desktop/x-ear web app/x-ear/tests/e2e/fixtures/fixtures.ts:27:24)
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Manage-09356-uld-persist-KDV-preferences-web/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results/inventory-Inventory-Manage-09356-uld-persist-KDV-preferences-web/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-  4 failed
-    [web] › tests/e2e/web/inventory.spec.ts:5:5 › Inventory Management › should list inventory items 
-    [web] › tests/e2e/web/inventory.spec.ts:19:5 › Inventory Management › should calculate tax vs vatIncludedPrice correctly 
-    [web] › tests/e2e/web/inventory.spec.ts:34:5 › Inventory Management › should manage serial numbers via modal 
-    [web] › tests/e2e/web/inventory.spec.ts:53:5 › Inventory Management › should persist KDV preferences 
+2026-02-21 17:32:21 - __main__ - INFO - Starting Automated API Testing System
+2026-02-21 17:32:21 - __main__ - INFO - Backend URL: http://localhost:5003
+2026-02-21 17:32:21 - __main__ - INFO - OpenAPI file: openapi.yaml
+2026-02-21 17:32:21 - tests.api_testing.test_runner - INFO - ================================================================================
+2026-02-21 17:32:21 - tests.api_testing.test_runner - INFO - Starting Automated API Testing System
+2026-02-21 17:32:21 - tests.api_testing.test_runner - INFO - ================================================================================
+2026-02-21 17:32:21 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:32:21 - tests.api_testing.test_runner - INFO - Step 1: Loading OpenAPI schema
+2026-02-21 17:32:21 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:32:21 - tests.api_testing.logging_config - INFO - Loading OpenAPI schema from openapi.yaml
+2026-02-21 17:32:23 - tests.api_testing.logging_config - INFO - Successfully loaded OpenAPI schema (version: 3.1.0)
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - ✓ Loaded OpenAPI schema version 1.0.0
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - Step 2: Extracting endpoints
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:32:23 - tests.api_testing.logging_config - INFO - Extracting endpoints from OpenAPI schema
+2026-02-21 17:32:23 - tests.api_testing.logging_config - INFO - Extracted 513 endpoints
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - ✓ Extracted 513 endpoints
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - Step 3: Authenticating
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - Authenticating as admin...
+2026-02-21 17:32:23 - tests.api_testing.logging_config - INFO - Admin login: admin@xear.com
+2026-02-21 17:32:23 - tests.api_testing.test_runner - ERROR - Test run failed: 401 Client Error: Unauthorized for url: http://localhost:5003/api/admin/auth/login
+Traceback (most recent call last):
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/test_runner.py", line 122, in run_tests
+    self._authenticate()
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/test_runner.py", line 171, in _authenticate
+    self.auth_manager.admin_login(
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/auth_manager.py", line 56, in admin_login
+    response.raise_for_status()
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/.venv/lib/python3.11/site-packages/requests/models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: http://localhost:5003/api/admin/auth/login
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - Cleaning up resources...
+2026-02-21 17:32:23 - tests.api_testing.logging_config - INFO - Starting cleanup of test resources...
+2026-02-21 17:32:23 - tests.api_testing.logging_config - INFO - Cleanup complete: 0 deleted, 0 failed
+2026-02-21 17:32:23 - tests.api_testing.test_runner - INFO - ✓ Cleanup completed
+2026-02-21 17:32:23 - __main__ - ERROR - Test run failed with error: 401 Client Error: Unauthorized for url: http://localhost:5003/api/admin/auth/login
+Traceback (most recent call last):
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/cli.py", line 262, in main
+    stats, report = runner.run_tests()
+                    ^^^^^^^^^^^^^^^^^^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/test_runner.py", line 122, in run_tests
+    self._authenticate()
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/test_runner.py", line 171, in _authenticate
+    self.auth_manager.admin_login(
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/auth_manager.py", line 56, in admin_login
+    response.raise_for_status()
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/.venv/lib/python3.11/site-packages/requests/models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: http://localhost:5003/api/admin/auth/login

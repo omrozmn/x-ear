@@ -18,7 +18,6 @@ from schemas.notifications import NotificationCreate as NotificationCreateSchema
 from schemas.notifications import NotificationRead, NotificationUpdate, NotificationStats, NotificationSettings
 from models.notification import Notification
 from models.system import Settings
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Notifications"])
@@ -41,12 +40,17 @@ def create_notification(
 ):
     """Create a new notification"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        
+        tenant_id = get_effective_tenant_id(access)
+        
         data = notif_in.model_dump(by_alias=False)
         
         notif = Notification.from_dict(data)
         if not notif.id:
             notif.id = f"notif_{now_utc().strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}"
         notif.user_id = notif.user_id or data.get('user_id') or 'system'
+        notif.tenant_id = tenant_id
         
         db_session.add(notif)
         db_session.commit()
@@ -60,7 +64,7 @@ def create_notification(
 @router.get("/notifications", operation_id="listNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 def list_notifications(
     user_id: Optional[str] = Query(None, alias="user_id"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)

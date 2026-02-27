@@ -9,6 +9,7 @@ import type { PlanCreateDescription } from './planCreateDescription';
 import type { PlanCreateFeatures } from './planCreateFeatures';
 import type { PlanCreateMaxUsers } from './planCreateMaxUsers';
 import type { PlanCreateMaxStorageGb } from './planCreateMaxStorageGb';
+import type { PlanCreateSlug } from './planCreateSlug';
 
 /**
  * Schema for creating a plan
@@ -34,4 +35,6 @@ export interface PlanCreate {
   isActive?: boolean;
   /** Is plan public */
   isPublic?: boolean;
+  /** URL slug for the plan */
+  slug?: PlanCreateSlug;
 }

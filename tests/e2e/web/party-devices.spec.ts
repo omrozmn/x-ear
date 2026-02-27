@@ -9,7 +9,7 @@ import {
     AuthTokens,
     login,
     setupAuthenticatedPage
-} from './helpers/test-utils';
+} from '../../helpers/auth.helper';
 
 test.describe('Party Devices Module', () => {
     let partyId: string;

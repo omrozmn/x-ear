@@ -13,7 +13,7 @@ class ActivityLogBase(AppBaseModel):
     entity_type: Optional[str] = Field(None, alias="entityType", description="Entity type")
     entity_id: Optional[str] = Field(None, alias="entityId", description="Entity ID")
     message: Optional[str] = Field(None, description="Log message")
-    details: Optional[Dict[str, Any]] = Field(None, description="Additional details")
+    details: Optional[Dict[str, Any] | str] = Field(None, description="Additional details (dict or string)")
     is_critical: bool = Field(False, alias="isCritical", description="Is critical action")
 
 

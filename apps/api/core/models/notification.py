@@ -1,4 +1,6 @@
 # Notification Model
+from sqlalchemy import Column, Boolean, Date, DateTime, JSON, String, Text, Time, Index
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
 
@@ -6,7 +8,7 @@ class Notification(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'notifications'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -14,28 +16,28 @@ class Notification(BaseModel, JSONMixin, TenantScopedMixin):
             self.id = gen_id("notif")
     
     # Target user
-    user_id = db.Column(db.String(50), nullable=False)
+    user_id = Column(String(50), nullable=False)
     # tenant_id is now inherited from TenantScopedMixin
     
     # Notification content
-    title = db.Column(db.String(200), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    notification_type = db.Column(db.String(50), default='info')  # info, warning, error, success
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    notification_type = Column(String(50), default='info')  # info, warning, error, success
     
     # Status and interaction
-    is_read = db.Column(db.Boolean, default=False)
-    read_at = db.Column(db.DateTime)
+    is_read = Column(Boolean, default=False)
+    read_at = Column(DateTime)
     
     # Optional action
-    action_url = db.Column(db.String(500))
-    action_label = db.Column(db.String(100))
+    action_url = Column(String(500))
+    action_label = Column(String(100))
     
     # Priority and expiration
-    priority = db.Column(db.String(20), default='normal')  # low, normal, high, urgent
-    expires_at = db.Column(db.DateTime)
+    priority = Column(String(20), default='normal')  # low, normal, high, urgent
+    expires_at = Column(DateTime)
     
     # Additional data (JSON)
-    extra_data = db.Column(db.Text)  # JSON for extra data
+    extra_data = Column(Text)  # JSON for extra data
 
     @property
     def extra_data_json(self):
@@ -112,8 +114,8 @@ class Notification(BaseModel, JSONMixin, TenantScopedMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_notification_user', 'user_id'),
-        db.Index('ix_notification_read', 'is_read'),
-        db.Index('ix_notification_type', 'notification_type'),
-        db.Index('ix_notification_priority', 'priority'),
+        Index('ix_notification_user', 'user_id'),
+        Index('ix_notification_read', 'is_read'),
+        Index('ix_notification_type', 'notification_type'),
+        Index('ix_notification_priority', 'priority'),
     )

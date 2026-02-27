@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BodyCreateInventoryBulkUpload,
   CreateInventorySerialsBody,
   HTTPValidationError,
   InventoryItemCreate,
@@ -32,6 +33,7 @@ import type {
   ListInventoryMovementsParams,
   ListInventoryParams,
   ListInventorySearchParams,
+  ResponseEnvelopeDictStrAny,
   ResponseEnvelopeDictStrListStr,
   ResponseEnvelopeInventoryItemRead,
   ResponseEnvelopeInventorySearchResponse,
@@ -1066,6 +1068,73 @@ export const useDeleteInventory = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getDeleteInventoryMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Bulk upload inventory items from CSV/XLSX
+ * @summary Bulk Upload Inventory
+ */
+export const createInventoryBulkUpload = (
+    bodyCreateInventoryBulkUpload: BodyCreateInventoryBulkUpload,
+ signal?: AbortSignal
+) => {
+      
+      const formData = new FormData();
+formData.append(`file`, bodyCreateInventoryBulkUpload.file)
+
+      return customInstance<ResponseEnvelopeDictStrAny>(
+      {url: `/api/inventory/bulk-upload`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateInventoryBulkUploadMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInventoryBulkUpload>>, TError,{data: BodyCreateInventoryBulkUpload}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInventoryBulkUpload>>, TError,{data: BodyCreateInventoryBulkUpload}, TContext> => {
+
+const mutationKey = ['createInventoryBulkUpload'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInventoryBulkUpload>>, {data: BodyCreateInventoryBulkUpload}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createInventoryBulkUpload(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateInventoryBulkUploadMutationResult = NonNullable<Awaited<ReturnType<typeof createInventoryBulkUpload>>>
+    export type CreateInventoryBulkUploadMutationBody = BodyCreateInventoryBulkUpload
+    export type CreateInventoryBulkUploadMutationError = HTTPValidationError
+
+    /**
+ * @summary Bulk Upload Inventory
+ */
+export const useCreateInventoryBulkUpload = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInventoryBulkUpload>>, TError,{data: BodyCreateInventoryBulkUpload}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createInventoryBulkUpload>>,
+        TError,
+        {data: BodyCreateInventoryBulkUpload},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateInventoryBulkUploadMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -20,7 +20,7 @@ router = APIRouter(tags=["UTS"])
 @router.get("/registrations", operation_id="listUtRegistrations", response_model=ResponseEnvelope[UtsRegistrationListResponse])
 async def list_registrations(
     status: Optional[str] = None,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())

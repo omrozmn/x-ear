@@ -17,11 +17,13 @@ import type { TenantReadDescription } from './tenantReadDescription';
 import type { TenantReadTaxNumber } from './tenantReadTaxNumber';
 import type { TenantReadTaxOffice } from './tenantReadTaxOffice';
 import type { TenantStatus } from './tenantStatus';
-import type { ProductCode } from './productCode';
+import type { TenantReadProductCode } from './tenantReadProductCode';
 import type { TenantReadPlanId } from './tenantReadPlanId';
 import type { TenantReadPlanName } from './tenantReadPlanName';
 import type { TenantReadSubscriptionEnd } from './tenantReadSubscriptionEnd';
 import type { TenantReadSettings } from './tenantReadSettings';
+import type { TenantReadMaxUsers } from './tenantReadMaxUsers';
+import type { TenantReadCurrentUsers } from './tenantReadCurrentUsers';
 
 /**
  * Schema for reading a tenant
@@ -54,7 +56,7 @@ export interface TenantRead {
   taxOffice?: TenantReadTaxOffice;
   status: TenantStatus;
   /** Product Code */
-  productCode: ProductCode;
+  productCode?: TenantReadProductCode;
   planId?: TenantReadPlanId;
   planName?: TenantReadPlanName;
   subscriptionEnd?: TenantReadSubscriptionEnd;
@@ -63,6 +65,6 @@ export interface TenantRead {
   branchCount?: number;
   /** Tenant settings */
   settings?: TenantReadSettings;
-  maxUsers: number;
-  currentUsers: number;
+  maxUsers?: TenantReadMaxUsers;
+  currentUsers?: TenantReadCurrentUsers;
 }

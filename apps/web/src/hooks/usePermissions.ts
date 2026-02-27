@@ -58,33 +58,45 @@ export function usePermissions() {
 
   /**
    * Check if user has a specific permission
+   * Supports wildcard (*) permission which grants all permissions
    */
   const hasPermission = useCallback((permission: string): boolean => {
     if (isSuperAdmin) return true;
+    // Check for wildcard permission
+    if (permissions.includes('*')) return true;
     return permissions.includes(permission);
   }, [permissions, isSuperAdmin]);
 
   /**
    * Check if user has any of the specified permissions
+   * Supports wildcard (*) permission which grants all permissions
    */
   const hasAnyPermission = useCallback((perms: string[]): boolean => {
     if (isSuperAdmin) return true;
+    // Check for wildcard permission
+    if (permissions.includes('*')) return true;
     return perms.some(p => permissions.includes(p));
   }, [permissions, isSuperAdmin]);
 
   /**
    * Check if user has all of the specified permissions
+   * Supports wildcard (*) permission which grants all permissions
    */
   const hasAllPermissions = useCallback((perms: string[]): boolean => {
     if (isSuperAdmin) return true;
+    // Check for wildcard permission
+    if (permissions.includes('*')) return true;
     return perms.every(p => permissions.includes(p));
   }, [permissions, isSuperAdmin]);
 
   /**
    * Check if user can access a specific category (has at least view permission)
+   * Supports wildcard (*) permission which grants all permissions
    */
   const canAccessCategory = useCallback((category: PermissionCategory): boolean => {
     if (isSuperAdmin) return true;
+    // Check for wildcard permission
+    if (permissions.includes('*')) return true;
     return permissions.some(p => p.startsWith(`${category}.`));
   }, [permissions, isSuperAdmin]);
 

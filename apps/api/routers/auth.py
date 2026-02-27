@@ -523,8 +523,12 @@ def login(
         # Use 'system' tenant for admin users
         tenant_id = 'system' if is_admin_user else getattr(user, 'tenant_id', None)
         
-        # CRITICAL: Admin users need admin_ prefix in token identity for UnifiedAccess middleware
-        token_identity = f'admin_{user.id}' if is_admin_user else user.id
+        # CRITICAL: Admin users need admin_ or adm_ prefix in token identity for UnifiedAccess middleware
+        # If ID already has adm_ prefix, don't add admin_ again
+        if is_admin_user:
+            token_identity = user.id if user.id.startswith('adm_') else f'admin_{user.id}'
+        else:
+            token_identity = user.id
         
         access_token = create_access_token(
             identity=token_identity,

@@ -2,15 +2,15 @@
 Plan model for subscription plans
 """
 
+from core.models.base import Base
 import uuid
 from datetime import datetime
-from enum import Enum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer
+from enum import Enum as PyEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer, Date, Time, Index, Enum as SQLEnum
 from sqlalchemy.orm import relationship
-from models.base import db
 
 
-class PlanType(Enum):
+class PlanType(PyEnum):
     """Plan type enumeration"""
     BASIC = "BASIC"
     PRO = "PRO"
@@ -18,14 +18,14 @@ class PlanType(Enum):
     CUSTOM = "CUSTOM"
 
 
-class BillingInterval(Enum):
+class BillingInterval(PyEnum):
     """Billing interval enumeration"""
     MONTHLY = "MONTHLY"
     YEARLY = "YEARLY"
     QUARTERLY = "QUARTERLY"
 
 
-class Plan(db.Model):
+class Plan(Base):
     """Plan model for subscription plans"""
     
     __tablename__ = 'plans'
@@ -39,9 +39,9 @@ class Plan(db.Model):
     description = Column(Text, nullable=True)
     
     # Plan type and pricing
-    plan_type = Column(db.Enum(PlanType), nullable=False, index=True)
+    plan_type = Column(SQLEnum(PlanType), nullable=False, index=True)
     price = Column(Numeric(10, 2), nullable=False)
-    billing_interval = Column(db.Enum(BillingInterval), default=BillingInterval.MONTHLY, nullable=False)
+    billing_interval = Column(SQLEnum(BillingInterval), default=BillingInterval.MONTHLY, nullable=False)
     
     # Features and limits
     features = Column(JSON, nullable=True)  # Feature list and limits
@@ -62,11 +62,11 @@ class Plan(db.Model):
     
     # Indexes
     __table_args__ = (
-        db.Index('idx_plans_name', 'name'),
-        db.Index('idx_plans_slug', 'slug'),
-        db.Index('idx_plans_plan_type', 'plan_type'),
-        db.Index('idx_plans_is_active', 'is_active'),
-        db.Index('idx_plans_is_public', 'is_public'),
+        Index('idx_plans_name', 'name'),
+        Index('idx_plans_slug', 'slug'),
+        Index('idx_plans_plan_type', 'plan_type'),
+        Index('idx_plans_is_active', 'is_active'),
+        Index('idx_plans_is_public', 'is_public'),
     )
     
     def __init__(self, **kwargs):

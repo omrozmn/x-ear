@@ -43,6 +43,7 @@ from ai.services.conversation_memory import (
     ConversationMemory,
     get_conversation_memory,
 )
+from ai.services.request_logger import get_request_logger
 from ai.models.ai_usage import UsageType
 from ai.middleware.rate_limiter import check_rate_limit, RateLimitExceededError
 from ai.api.errors import (

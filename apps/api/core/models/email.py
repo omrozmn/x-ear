@@ -6,9 +6,11 @@ This module contains the database models for the SMTP Email Integration feature:
 - SMTPEmailLog: Audit trail of all email sending attempts
 - EmailTemplate: Email templates with Jinja2 syntax (Phase 2 - admin-editable)
 """
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, now_utc
 from .mixins import TenantScopedMixin
-from sqlalchemy import Index
+from sqlalchemy import Column, Index, Boolean, Date, DateTime, Integer, JSON, String, Text, Time
+from sqlalchemy.orm import relationship
 
 
 class TenantSMTPConfig(BaseModel, TenantScopedMixin):
@@ -20,33 +22,33 @@ class TenantSMTPConfig(BaseModel, TenantScopedMixin):
     """
     __tablename__ = "tenant_smtp_config"
 
-    id = db.Column(db.String(36), primary_key=True)
+    id = Column(String(36), primary_key=True)
     # tenant_id is now inherited from TenantScopedMixin
 
     # SMTP server configuration
-    host = db.Column(db.String(255), nullable=False)
-    port = db.Column(db.Integer, nullable=False)
-    username = db.Column(db.String(255), nullable=False)
-    encrypted_password = db.Column(db.Text, nullable=False)  # AES-256-GCM encrypted
+    host = Column(String(255), nullable=False)
+    port = Column(Integer, nullable=False)
+    username = Column(String(255), nullable=False)
+    encrypted_password = Column(Text, nullable=False)  # AES-256-GCM encrypted
 
     # Email sender configuration
-    from_email = db.Column(db.String(255), nullable=False)
-    from_name = db.Column(db.String(255), nullable=False)
+    from_email = Column(String(255), nullable=False)
+    from_name = Column(String(255), nullable=False)
 
     # Connection settings
-    use_tls = db.Column(db.Boolean, default=False)
-    use_ssl = db.Column(db.Boolean, default=True)
-    timeout = db.Column(db.Integer, default=30)
+    use_tls = Column(Boolean, default=False)
+    use_ssl = Column(Boolean, default=True)
+    timeout = Column(Integer, default=30)
 
     # Status
-    is_active = db.Column(db.Boolean, default=True, index=True)
+    is_active = Column(Boolean, default=True, index=True)
 
     # Timestamps
-    created_at = db.Column(db.DateTime(timezone=True), default=now_utc)
-    updated_at = db.Column(db.DateTime(timezone=True), default=now_utc, onupdate=now_utc)
+    created_at = Column(DateTime(timezone=True), default=now_utc)
+    updated_at = Column(DateTime(timezone=True), default=now_utc, onupdate=now_utc)
 
     # Relationships
-    tenant = db.relationship("Tenant", back_populates="smtp_configs")
+    tenant = relationship("Tenant", back_populates="smtp_configs")
 
     # Indexes
     __table_args__ = (
@@ -73,33 +75,33 @@ class SMTPEmailLog(BaseModel, TenantScopedMixin):
     """
     __tablename__ = "smtp_email_log"
 
-    id = db.Column(db.String(36), primary_key=True)
+    id = Column(String(36), primary_key=True)
     # tenant_id is now inherited from TenantScopedMixin
 
     # Email details
-    recipient = db.Column(db.String(255), nullable=False, index=True)
-    subject = db.Column(db.String(500), nullable=False)
-    body_preview = db.Column(db.Text, nullable=True)  # First 500 chars
+    recipient = Column(String(255), nullable=False, index=True)
+    subject = Column(String(500), nullable=False)
+    body_preview = Column(Text, nullable=True)  # First 500 chars
 
     # Status tracking
-    status = db.Column(db.String(20), nullable=False, index=True)  # sent, failed, bounced, pending
-    sent_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
-    error_message = db.Column(db.Text, nullable=True)
-    retry_count = db.Column(db.Integer, default=0)
+    status = Column(String(20), nullable=False, index=True)  # sent, failed, bounced, pending
+    sent_at = Column(DateTime(timezone=True), nullable=True, index=True)
+    error_message = Column(Text, nullable=True)
+    retry_count = Column(Integer, default=0)
 
     # Template information
-    template_name = db.Column(db.String(100), nullable=True)
-    scenario = db.Column(db.String(100), nullable=True)  # password_reset, user_invite, etc.
+    template_name = Column(String(100), nullable=True)
+    scenario = Column(String(100), nullable=True)  # password_reset, user_invite, etc.
 
     # Idempotency
-    idempotency_key = db.Column(db.String(128), nullable=True, index=True)
+    idempotency_key = Column(String(128), nullable=True, index=True)
 
     # Timestamps
-    created_at = db.Column(db.DateTime(timezone=True), default=now_utc)
-    updated_at = db.Column(db.DateTime(timezone=True), default=now_utc, onupdate=now_utc)
+    created_at = Column(DateTime(timezone=True), default=now_utc)
+    updated_at = Column(DateTime(timezone=True), default=now_utc, onupdate=now_utc)
 
     # Relationships
-    tenant = db.relationship("Tenant")
+    tenant = relationship("Tenant")
 
     # Indexes
     __table_args__ = (
@@ -124,23 +126,23 @@ class EmailTemplate(BaseModel):
     """
     __tablename__ = "email_template"
 
-    id = db.Column(db.String(36), primary_key=True)
+    id = Column(String(36), primary_key=True)
 
     # Template identification
-    name = db.Column(db.String(100), nullable=False, index=True)  # password_reset, user_invite
-    language_code = db.Column(db.String(5), nullable=False, index=True)  # tr, en
+    name = Column(String(100), nullable=False, index=True)  # password_reset, user_invite
+    language_code = Column(String(5), nullable=False, index=True)  # tr, en
 
     # Template content
-    subject_template = db.Column(db.String(500), nullable=False)
-    html_template = db.Column(db.Text, nullable=False)
-    text_template = db.Column(db.Text, nullable=False)
+    subject_template = Column(String(500), nullable=False)
+    html_template = Column(Text, nullable=False)
+    text_template = Column(Text, nullable=False)
 
     # Variable schema for validation
-    variables_schema = db.Column(db.JSON, nullable=False)  # JSON schema for validation
+    variables_schema = Column(JSON, nullable=False)  # JSON schema for validation
 
     # Timestamps
-    created_at = db.Column(db.DateTime(timezone=True), default=now_utc)
-    updated_at = db.Column(db.DateTime(timezone=True), default=now_utc, onupdate=now_utc)
+    created_at = Column(DateTime(timezone=True), default=now_utc)
+    updated_at = Column(DateTime(timezone=True), default=now_utc, onupdate=now_utc)
 
     # Indexes
     __table_args__ = (

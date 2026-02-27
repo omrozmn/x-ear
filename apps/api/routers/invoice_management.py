@@ -16,7 +16,6 @@ from models.invoice import Invoice
 from models.system_setting import SystemSetting
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["Invoice Management"])
@@ -102,14 +101,14 @@ async def create_dynamic_invoice(
         invoice_number = f"DYN{year_month}{new_num:04d}"
         
         invoice = Invoice(
+            tenant_id=access.tenant_id,  # Add tenant_id
             invoice_number=invoice_number,
             patient_name=data.recipient_name,
             patient_tc=data.recipient_tax_number,
-            patient_address=data.recipient_address,
             device_name=data.product_name,
             device_price=data.unit_price * data.quantity,
             status="active",
-            created_by=access.user.get("id", "system")
+            created_by=access.user.id if access.user else "system"
         )
         
         db.add(invoice)

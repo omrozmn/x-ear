@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, event, literal, bindparam
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base, Session
 from sqlalchemy.pool import QueuePool
 from contextvars import ContextVar
+from typing import Optional
 from datetime import datetime, timezone
 from uuid import uuid4
 import json
@@ -37,7 +38,15 @@ if DATABASE_URL.startswith('sqlite'):
         echo=False
     )
 else:
-    engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
+    # PostgreSQL with increased connection pool for testing
+    engine = create_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=20,  # Increased from default 5 to 20
+        max_overflow=40,  # Increased from default 10 to 40
+        pool_recycle=3600  # Recycle connections after 1 hour
+    )
 
 # Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -63,21 +72,29 @@ class RollbackSession(SessionLocal.class_):
 Base = declarative_base()
 
 # Context variables for tenant isolation
-_current_tenant_id: ContextVar[str | None] = ContextVar('tenant_id', default=None)
+_current_tenant_id: ContextVar[Optional[str]] = ContextVar('tenant_id', default=None)
 _skip_tenant_filter: ContextVar[bool] = ContextVar('skip_filter', default=False)
 
 # Type alias for context token
 from contextvars import Token
-TenantContextToken = Token[str | None]
+TenantContextToken = Token[Optional[str]]
 SkipFilterToken = Token[bool]
 
 
-def get_current_tenant_id() -> str | None:
-    """Get current tenant ID from context"""
+def get_current_tenant_id() -> Optional[str]:
+    """
+    Get current tenant ID from context.
+    
+    Tries ContextVar first (fastest), but ContextVar doesn't propagate
+    across async contexts in FastAPI, so this often returns None.
+    
+    For proper tenant isolation in FastAPI, use request.state.tenant_id
+    which is set by unified_access middleware.
+    """
     return _current_tenant_id.get()
 
 
-def set_current_tenant_id(tenant_id: str | None):
+def set_current_tenant_id(tenant_id: Optional[str]):
     """
     Set current tenant ID in context.
     
@@ -313,7 +330,7 @@ def gen_sale_id(db_session=None) -> str:
     return f"{today_prefix}{nn}"
 
 
-def format_datetime_utc(dt: datetime | None) -> str | None:
+def format_datetime_utc(dt: Optional[datetime]) -> Optional[str]:
     """Format datetime as ISO-8601 with UTC timezone"""
     if dt is None:
         return None
@@ -324,9 +341,82 @@ def format_datetime_utc(dt: datetime | None) -> str | None:
 
 # Dependency for FastAPI
 def get_db():
-    """FastAPI dependency for database session"""
+    """
+    FastAPI dependency for database session.
+    
+    CRITICAL: Tries multiple sources for tenant_id:
+    1. ContextVar (fastest, but may not propagate across async contexts)
+    2. Thread-local storage (fallback for async context issues)
+    
+    The tenant_id is set by access_dependency() in unified_access.py.
+    """
+    from middleware.unified_access import _thread_local
+    
     db = SessionLocal()
     try:
+        # PRIORITY 1: Try ContextVar first (fastest)
+        tenant_id = get_current_tenant_id()
+        
+        # PRIORITY 2: Fallback to thread-local if ContextVar is None
+        if not tenant_id and hasattr(_thread_local, 'tenant_id'):
+            tenant_id = _thread_local.tenant_id
+            logger.info(f"🔑 [GET_DB] Using tenant_id from thread-local: {tenant_id}")
+        
+        # Set in session.info for SQLAlchemy event listener
+        if tenant_id:
+            db.info['tenant_id'] = tenant_id
+            logger.info(f"🔑 [GET_DB] Set session.info['tenant_id']: {tenant_id}")
+        else:
+            logger.debug(f"⚠️ [GET_DB] No tenant_id available from any source")
+        
+        yield db
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def get_db_with_context(access: "UnifiedAccess" = None):
+    """
+    FastAPI dependency for database session with guaranteed tenant context.
+    
+    This dependency explicitly depends on UnifiedAccess, ensuring it's
+    called AFTER access_dependency() has set the tenant context.
+    
+    Usage:
+        from middleware.unified_access import UnifiedAccess, require_access
+        from core.database import get_db_with_context
+        
+        @router.get("/parties")
+        def list_parties(
+            access: UnifiedAccess = Depends(require_access("parties.view")),
+            db: Session = Depends(get_db_with_context)
+        ):
+            # db queries will be automatically filtered by tenant_id
+            parties = db.query(Party).all()
+    
+    Args:
+        access: UnifiedAccess object from require_access() dependency
+    
+    Yields:
+        Database session with tenant_id set in session.info
+    """
+    db = SessionLocal()
+    try:
+        # CRITICAL: Set tenant_id in session.info for SQLAlchemy event listener
+        if access and access.tenant_id:
+            db.info['tenant_id'] = access.tenant_id
+            logger.info(f"🔑 [GET_DB_WITH_CONTEXT] Set session.info['tenant_id'] = {access.tenant_id}")
+        else:
+            # Also try ContextVar as fallback
+            tenant_id = get_current_tenant_id()
+            if tenant_id:
+                db.info['tenant_id'] = tenant_id
+                logger.info(f"🔑 [GET_DB_WITH_CONTEXT] Set session.info['tenant_id'] from ContextVar: {tenant_id}")
+            else:
+                logger.warning(f"⚠️ [GET_DB_WITH_CONTEXT] No tenant_id available")
+        
         yield db
     except Exception:
         db.rollback()
@@ -364,12 +454,29 @@ from config.tenant_config import get_tenant_strict_mode, TenantBehavior
 def receive_do_orm_execute(execute_state):
     """
     Automatically apply tenant filter to all SELECT queries on TenantScopedMixin models.
+    
+    CRITICAL: In FastAPI, ContextVar doesn't propagate across async contexts,
+    so we prioritize session.info['tenant_id'] which is set by get_db() dependency.
     """
     if should_skip_tenant_filter() or not execute_state.is_select:
         return
 
-    tenant_id = get_current_tenant_id()
+    # PRIORITY 1: Get tenant_id from session.info (set by get_db() dependency)
+    tenant_id = None
+    if hasattr(execute_state.session, 'info'):
+        tenant_id = execute_state.session.info.get('tenant_id')
+        if tenant_id:
+            logger.debug(f"🔍 [TENANT FILTER] Using tenant_id from session.info: {tenant_id}")
+    
+    # PRIORITY 2: Fallback to ContextVar (for same-context access)
     if not tenant_id:
+        tenant_id = get_current_tenant_id()
+        if tenant_id:
+            logger.debug(f"🔍 [TENANT FILTER] Using tenant_id from ContextVar: {tenant_id}")
+    
+    # DEBUG: Log tenant filter application
+    if not tenant_id:
+        logger.warning(f"⚠️ [TENANT FILTER] No tenant_id in context for SELECT query!")
         return
 
     from core.models.mixins import TenantScopedMixin

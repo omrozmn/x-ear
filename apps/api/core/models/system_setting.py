@@ -1,14 +1,16 @@
 # System Settings Model
+from sqlalchemy import Column, Boolean, JSON, String, Text
+from core.models.base import Base
 from .base import db, BaseModel
 
 class SystemSetting(BaseModel):
     __tablename__ = 'system_settings'
     
-    key = db.Column(db.String(100), primary_key=True)
-    value = db.Column(db.Text) # JSON or string
-    description = db.Column(db.String(255))
-    category = db.Column(db.String(50)) # general, mail, sms, maintenance
-    is_public = db.Column(db.Boolean, default=False) # exposed to frontend?
+    key = Column(String(100), primary_key=True)
+    value = Column(Text) # JSON or string
+    description = Column(String(255))
+    category = Column(String(50)) # general, mail, sms, maintenance
+    is_public = Column(Boolean, default=False) # exposed to frontend?
     
     def to_dict(self):
         base_dict = self.to_dict_base()

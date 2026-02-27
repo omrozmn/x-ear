@@ -1,4 +1,6 @@
 # Medical Models (formerly Patient medical models)
+from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, JSON, String, Text, Time, Index
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
 import json
@@ -7,19 +9,19 @@ class PatientNote(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'patient_notes'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("note"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("note"))
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    author_id = db.Column(db.String(50), nullable=False)
-    appointment_id = db.Column(db.String(50))
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
+    author_id = Column(String(50), nullable=False)
+    appointment_id = Column(String(50))
     
     # Note details
-    note_type = db.Column(db.String(20), default='clinical')
-    category = db.Column(db.String(20), default='general')
-    title = db.Column(db.String(200))
-    content = db.Column(db.Text, nullable=False)
-    is_private = db.Column(db.Boolean, default=False)
+    note_type = Column(String(20), default='clinical')
+    category = Column(String(20), default='general')
+    title = Column(String(200))
+    content = Column(Text, nullable=False)
+    is_private = Column(Boolean, default=False)
 
     def to_dict(self):
         base_dict = self.to_dict_base()
@@ -41,26 +43,26 @@ class EReceipt(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'ereceipts'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("ercp"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("ercp"))
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
     # tenant_id is now inherited from TenantScopedMixin
     
     # Receipt details
-    receipt_number = db.Column(db.String(50), unique=True, nullable=False)
-    receipt_date = db.Column(db.DateTime, nullable=False)
-    doctor_name = db.Column(db.String(100))
-    hospital_name = db.Column(db.String(200))
+    receipt_number = Column(String(50), unique=True, nullable=False)
+    receipt_date = Column(DateTime, nullable=False)
+    doctor_name = Column(String(100))
+    hospital_name = Column(String(200))
     
     # JSON fields for structured data
-    materials = db.Column(db.Text)  # JSON: [{type, productCode, serial}]
-    documents = db.Column(db.Text)  # JSON: [{type, url, uploadedAt}]
+    materials = Column(Text)  # JSON: [{type, productCode, serial}]
+    documents = Column(Text)  # JSON: [{type, url, uploadedAt}]
     
     # Status and processing
-    status = db.Column(db.String(20), default='pending')
-    processed_at = db.Column(db.DateTime)
-    notes = db.Column(db.Text)
+    status = Column(String(20), default='pending')
+    processed_at = Column(DateTime)
+    notes = Column(Text)
 
     @property
     def materials_json(self):
@@ -100,20 +102,20 @@ class HearingTest(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'hearing_tests'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("test"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("test"))
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
     # tenant_id is now inherited from TenantScopedMixin
     
     # Test details
-    test_date = db.Column(db.DateTime, nullable=False)
-    test_type = db.Column(db.String(50), default='audiometry')
-    conducted_by = db.Column(db.String(100))
+    test_date = Column(DateTime, nullable=False)
+    test_type = Column(String(50), default='audiometry')
+    conducted_by = Column(String(100))
     
     # Test results (JSON)
-    results = db.Column(db.Text)  # JSON: {leftEar: {}, rightEar: {}, recommendations: []}
-    notes = db.Column(db.Text)
+    results = Column(Text)  # JSON: {leftEar: {}, rightEar: {}, recommendations: []}
+    notes = Column(Text)
 
     @property
     def results_json(self):
@@ -139,6 +141,6 @@ class HearingTest(BaseModel, TenantScopedMixin, JSONMixin):
 
     # Index suggestions
     __table_args__ = (
-        db.Index('ix_hearing_test_patient', 'party_id'),
-        db.Index('ix_hearing_test_date', 'test_date'),
+        Index('ix_hearing_test_patient', 'party_id'),
+        Index('ix_hearing_test_date', 'test_date'),
     )

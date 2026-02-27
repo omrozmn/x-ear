@@ -9,6 +9,7 @@ import logging
 
 from sqlalchemy.orm import Session
 
+from core.dependencies import get_current_admin_user
 from database import get_db
 from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -33,14 +34,11 @@ class SettingsUpdate(BaseModel):
 
 @router.post("/init-db", operation_id="createAdminSettingInitDb", response_model=ResponseEnvelope)
 def init_db(
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Initialize System Settings table"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
-        
         from models.system_setting import SystemSetting
         from database import engine
         
@@ -70,14 +68,11 @@ def init_db(
 
 @router.get("", operation_id="listAdminSettings", response_model=ResponseEnvelope[List[SystemSettingRead]])
 def get_settings(
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Get all system settings"""
     try:
-        if not access.is_super_admin and (not access.user or access.user.role not in ['admin', 'super_admin']):
-            raise HTTPException(status_code=403, detail="Admin access required")
-        
         from models.system_setting import SystemSetting
         
         settings = db.query(SystemSetting).all()
@@ -96,14 +91,11 @@ def get_settings(
 @router.post("", operation_id="updateAdminSettings", response_model=ResponseEnvelope)
 def update_settings(
     request_data: List[SettingItem],
-    access: UnifiedAccess = Depends(require_access()),
+    admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
     """Update system settings"""
     try:
-        if not access.is_super_admin:
-            raise HTTPException(status_code=403, detail="Super admin access required")
-        
         from models.system_setting import SystemSetting
         
         for item in request_data:
@@ -132,22 +124,14 @@ def update_settings(
 
 @router.post("/cache/clear", operation_id="createAdminSettingCacheClear", response_model=ResponseEnvelope)
 def clear_cache(
-    access: UnifiedAccess = Depends(require_access())
+    admin_user=Depends(get_current_admin_user)
 ):
     """Clear system cache (Mock)"""
-    if not access.is_super_admin:
-        raise HTTPException(status_code=403, detail="Super admin access required")
-    
-    # In a real app, this would clear Redis or other cache
     return ResponseEnvelope(message='Cache cleared successfully')
 
 @router.post("/backup", operation_id="createAdminSettingBackup", response_model=ResponseEnvelope)
 def trigger_backup(
-    access: UnifiedAccess = Depends(require_access())
+    admin_user=Depends(get_current_admin_user)
 ):
     """Trigger database backup (Mock)"""
-    if not access.is_super_admin:
-        raise HTTPException(status_code=403, detail="Super admin access required")
-    
-    # In a real app, this would trigger a backup job
     return ResponseEnvelope(message='Backup job started')

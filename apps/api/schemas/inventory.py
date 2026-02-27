@@ -39,9 +39,33 @@ class InventoryItemCreate(InventoryItemBase):
 class InventoryItemUpdate(AppBaseModel):
     name: Optional[str] = None
     brand: Optional[str] = None
+    model: Optional[str] = None
+    category: Optional[str] = None
+    barcode: Optional[str] = None
+    stock_code: Optional[str] = Field(None, alias="stockCode")
+    supplier: Optional[str] = None
+    unit: Optional[str] = None
+    description: Optional[str] = None
+    
+    # Inventory Counts
     available_inventory: Optional[int] = Field(None, alias="availableInventory")
+    total_inventory: Optional[int] = Field(None, alias="totalInventory")
+    reorder_level: Optional[int] = Field(None, alias="reorderLevel")
+    used_inventory: Optional[int] = Field(None, alias="usedInventory")
+    on_trial: Optional[int] = Field(None, alias="onTrial")
+    
+    # Pricing
     price: Optional[float] = None
-    # ... allow other updates
+    cost: Optional[float] = None
+    kdv_rate: Optional[float] = Field(None, alias="vatRate")
+    price_includes_kdv: Optional[bool] = Field(None, alias="priceIncludesKdv")
+    cost_includes_kdv: Optional[bool] = Field(None, alias="costIncludesKdv")
+    
+    # Attributes
+    features: Optional[List[str]] = None
+    direction: Optional[str] = None
+    ear: Optional[str] = None
+    warranty: Optional[int] = None
     
 class InventoryItemRead(InventoryItemBase, IDMixin, TimestampMixin):
     tenant_id: str = Field(..., alias="tenantId")

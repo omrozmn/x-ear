@@ -16,11 +16,15 @@ class MarketplaceIntegrationRead(AppBaseModel, IDMixin, TimestampMixin):
     api_key: Optional[str] = Field(None, alias="apiKey")
     api_secret: Optional[str] = Field(None, alias="apiSecret")
     seller_id: Optional[str] = Field(None, alias="sellerId")
+    is_active: Optional[bool] = Field(None, alias="isActive")
     sync_stock: Optional[bool] = Field(None, alias="syncStock")
     sync_prices: Optional[bool] = Field(None, alias="syncPrices")
     sync_orders: Optional[bool] = Field(None, alias="syncOrders")
     status: Optional[str] = None
     last_sync_at: Optional[datetime] = Field(None, alias="lastSyncAt")
+    error_message: Optional[str] = Field(None, alias="errorMessage")
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MarketplaceIntegrationCreate(AppBaseModel):

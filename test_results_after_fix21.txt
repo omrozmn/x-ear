@@ -1,0 +1,1395 @@
+2026-02-21 17:48:13 - __main__ - INFO - Starting Automated API Testing System
+2026-02-21 17:48:13 - __main__ - INFO - Backend URL: http://localhost:5003
+2026-02-21 17:48:13 - __main__ - INFO - OpenAPI file: openapi.yaml
+2026-02-21 17:48:13 - tests.api_testing.test_runner - INFO - ================================================================================
+2026-02-21 17:48:13 - tests.api_testing.test_runner - INFO - Starting Automated API Testing System
+2026-02-21 17:48:13 - tests.api_testing.test_runner - INFO - ================================================================================
+2026-02-21 17:48:13 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:48:13 - tests.api_testing.test_runner - INFO - Step 1: Loading OpenAPI schema
+2026-02-21 17:48:13 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:48:13 - tests.api_testing.logging_config - INFO - Loading OpenAPI schema from openapi.yaml
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Successfully loaded OpenAPI schema (version: 3.1.0)
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - ✓ Loaded OpenAPI schema version 1.0.0
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - Step 2: Extracting endpoints
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Extracting endpoints from OpenAPI schema
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Extracted 513 endpoints
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - ✓ Extracted 513 endpoints
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - Step 3: Authenticating
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - Authenticating as admin...
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Admin login: admin@xear.com
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - ✓ Admin authenticated
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - ✓ Admin authenticated
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - Admin authentication successful
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - ✓ Authentication completed
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - Step 4: Creating prerequisite resources
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:48:14 - tests.api_testing.test_runner - INFO - Creating prerequisite resources...
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Creating prerequisite resources...
+2026-02-21 17:48:14 - tests.api_testing.logging_config - DEBUG - Generating test data with suffix: 17716852941902-3410
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Fetching existing tenants...
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - ✓ Using existing tenant: 64848974-9d61-404b-9f8f-955c233fc1ba
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Switching to tenant: 64848974-9d61-404b-9f8f-955c233fc1ba
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Switching to tenant: 64848974-9d61-404b-9f8f-955c233fc1ba
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - ✓ Tenant context switched
+2026-02-21 17:48:14 - tests.api_testing.logging_config - INFO - Creating Admin User for tenant...
+2026-02-21 17:48:14 - tests.api_testing.logging_config - DEBUG - Creating USER: POST /api/admin/users
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered USER: usr_1d8d81ea
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created USER: usr_1d8d81ea
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Party...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating PARTY: POST /api/parties
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered PARTY: pat_5e30f8b4
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created PARTY: pat_5e30f8b4
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Device...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating DEVICE: POST /api/devices
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered DEVICE: dev_20260221_174815_155974_483501
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created DEVICE: dev_20260221_174815_155974_483501
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Sale...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating SALE: POST /api/sales
+2026-02-21 17:48:15 - tests.api_testing.logging_config - ERROR - ✗ Failed to create SALE: 422 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Validation error","code":"VALIDATION_ERROR","details":[{"type":"missing","loc":["body","productId"],"msg":"Field require
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - ✗ Sale creation returned None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - Skipping Invoice creation (no sale_id)
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Attempting to create Product...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating PRODUCT: POST /api/products
+2026-02-21 17:48:15 - tests.api_testing.logging_config - ERROR - ✗ Failed to create PRODUCT: 404 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Not Found","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"c0423cd5-f4a1-41fc-b953-51781c5a8cfb","timestamp
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - ✗ Product creation returned None (endpoint may not exist)
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Role...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating ROLE: POST /api/admin/roles
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered ROLE: 1169dfb5-cb71-4a9f-8d9a-2e3c5c671b92
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created ROLE: 1169dfb5-cb71-4a9f-8d9a-2e3c5c671b92
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Campaign...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating CAMPAIGN: POST /api/campaigns
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered CAMPAIGN: camp_98565c8c
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created CAMPAIGN: camp_98565c8c
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Inventory Item...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating ITEM: POST /api/inventory
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered ITEM: item_21022026144815_6436e0
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created ITEM: item_21022026144815_6436e0
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Appointment...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating APPOINTMENT: POST /api/appointments
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered APPOINTMENT: apt_21022026_174815_866069
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created APPOINTMENT: apt_21022026_174815_866069
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created APPOINTMENT: apt_21022026_174815_866069
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Branch...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating BRANCH: POST /api/branches
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered BRANCH: br_00c02852
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created BRANCH: br_00c02852
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Notification...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating NOTIFICATION: POST /api/notifications
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered NOTIFICATION: notif_80d0c290
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created NOTIFICATION: notif_80d0c290
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created NOTIFICATION: notif_80d0c290
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Device Assignment...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating ASSIGNMENT: POST /api/parties/pat_5e30f8b4/device-assignments
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - ✗ Failed to extract ID for ASSIGNMENT
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - ✗ Assignment creation returned None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Communication Template...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating TEMPLATE: POST /api/communications/templates
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Registered TEMPLATE: tmpl_2f545a5f
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created TEMPLATE: tmpl_2f545a5f
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Created TEMPLATE: tmpl_2f545a5f
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Resource creation summary:
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Plan ID: None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Tenant ID: 64848974-9d61-404b-9f8f-955c233fc1ba
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Admin User ID: usr_1d8d81ea
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Party ID: pat_5e30f8b4
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Device ID: dev_20260221_174815_155974_483501
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Sale ID: None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Invoice ID: None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Role ID: 1169dfb5-cb71-4a9f-8d9a-2e3c5c671b92
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Campaign ID: camp_98565c8c
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Item ID: item_21022026144815_6436e0
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Appointment ID: apt_21022026_174815_866069
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Branch ID: br_00c02852
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Notification ID: notif_80d0c290
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Template ID: tmpl_2f545a5f
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Assignment ID: None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - Creating Ticket...
+2026-02-21 17:48:15 - tests.api_testing.logging_config - DEBUG - Creating TICKET: POST /api/tickets
+2026-02-21 17:48:15 - tests.api_testing.logging_config - ERROR - ✗ Failed to create TICKET: 404 - {"success":false,"data":null,"message":null,"error":{"success":false,"message":"Not Found","code":"HTTP_ERROR","details":null},"meta":null,"requestId":"668de54a-e4c0-42fa-8e84-224ce6823ea5","timestamp
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - ✗ Ticket creation returned None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - Skipping Payment Record creation (no sale_id)
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - Skipping Promissory Note creation (no sale_id)
+2026-02-21 17:48:15 - tests.api_testing.logging_config - WARNING - Skipping Installment creation (no sale_id)
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO - ✓ Resource creation complete!
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Ticket ID: None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Payment Record ID: None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Promissory Note ID: None
+2026-02-21 17:48:15 - tests.api_testing.logging_config - INFO -   Installment ID: None
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ All resources created successfully
+2026-02-21 17:48:15 - tests.api_testing.test_runner - DEBUG - Created resources: plan_id=None, tenant_id=64848974-9d61-404b-9f8f-955c233fc1ba, admin_user_id=usr_1d8d81ea, party_id=pat_5e30f8b4
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Resources created
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - Step 5: Executing tests for 513 endpoints
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - Executing tests for 513 endpoints...
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [1/513] Testing GET /health
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [2/513] Testing GET /readiness
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [3/513] Testing GET /api/campaigns
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [4/513] Testing POST /api/campaigns
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [5/513] Testing GET /api/campaigns/{campaign_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [6/513] Testing PUT /api/campaigns/{campaign_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [7/513] Testing DELETE /api/campaigns/{campaign_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [8/513] Testing POST /api/campaigns/{campaign_id}/send
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Campaign not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [9/513] Testing GET /api/admin/campaigns
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [10/513] Testing GET /api/parties
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [11/513] Testing POST /api/parties
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [12/513] Testing GET /api/parties/export
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [13/513] Testing GET /api/parties/count
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [14/513] Testing GET /api/parties/{party_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [15/513] Testing PUT /api/parties/{party_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [16/513] Testing DELETE /api/parties/{party_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [17/513] Testing POST /api/parties/bulk-upload
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [18/513] Testing POST /api/parties/bulk-update
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [19/513] Testing POST /api/parties/bulk-email
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [20/513] Testing GET /api/inventory
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [21/513] Testing POST /api/inventory
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [22/513] Testing GET /api/inventory/stats
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [23/513] Testing GET /api/inventory/search
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [24/513] Testing GET /api/inventory/low-stock
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [25/513] Testing GET /api/inventory/units
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [26/513] Testing GET /api/inventory/{item_id}/activity
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [27/513] Testing GET /api/inventory/categories
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [28/513] Testing GET /api/inventory/brands
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [29/513] Testing GET /api/inventory/{item_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [30/513] Testing PUT /api/inventory/{item_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [31/513] Testing DELETE /api/inventory/{item_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [32/513] Testing POST /api/inventory/bulk-upload
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [33/513] Testing POST /api/inventory/{item_id}/serials
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Item not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [34/513] Testing GET /api/inventory/{item_id}/movements
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Item not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [35/513] Testing GET /api/sales
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [36/513] Testing POST /api/sales
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [37/513] Testing GET /api/sales/{sale_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [38/513] Testing PUT /api/sales/{sale_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [39/513] Testing GET /api/sales/{sale_id}/payments
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [40/513] Testing POST /api/sales/{sale_id}/payments
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [41/513] Testing GET /api/sales/{sale_id}/payment-plan
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [42/513] Testing POST /api/sales/{sale_id}/payment-plan
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [43/513] Testing POST /api/sales/{sale_id}/installments/{installment_id}/pay
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [44/513] Testing POST /api/sales/recalc
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [45/513] Testing POST /api/parties/{party_id}/device-assignments
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [46/513] Testing PATCH /api/device-assignments/{assignment_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [47/513] Testing POST /api/device-assignments/{assignment_id}/return-loaner
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [48/513] Testing POST /api/pricing-preview
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [49/513] Testing POST /api/hearing-profiles
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Patient not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [50/513] Testing GET /api/hearing-profiles/{party_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Hearing profile not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [51/513] Testing PUT /api/hearing-profiles/{party_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Patient not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [52/513] Testing POST /api/auth/lookup-phone
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): User not found or no phone registered
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [53/513] Testing POST /api/auth/forgot-password
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): User not found with this phone number
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [54/513] Testing POST /api/auth/verify-otp
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Invalid or expired OTP
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [55/513] Testing POST /api/auth/reset-password
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Invalid or expired OTP
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [56/513] Testing POST /api/auth/login
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Kullanıcı adı/e-posta/telefon ve şifre gereklidir
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [57/513] Testing POST /api/auth/refresh
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (401): Invalid token type
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [58/513] Testing GET /api/auth/me
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [59/513] Testing POST /api/auth/send-verification-otp
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (401): User context required
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [60/513] Testing POST /api/auth/set-password
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (401): User context required
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [61/513] Testing GET /api/appointments
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [62/513] Testing POST /api/appointments
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [63/513] Testing GET /api/appointments/availability
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [64/513] Testing GET /api/appointments/list
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [65/513] Testing GET /api/appointments/{appointment_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Appointment not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [66/513] Testing PUT /api/appointments/{appointment_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Appointment not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [67/513] Testing DELETE /api/appointments/{appointment_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Appointment not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [68/513] Testing POST /api/appointments/{appointment_id}/reschedule
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Appointment not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [69/513] Testing POST /api/appointments/{appointment_id}/cancel
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Appointment not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [70/513] Testing POST /api/appointments/{appointment_id}/complete
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Appointment not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [71/513] Testing GET /api/dashboard
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [72/513] Testing GET /api/dashboard/kpis
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [73/513] Testing GET /api/dashboard/charts/patient-trends
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [74/513] Testing GET /api/dashboard/charts/revenue-trends
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [75/513] Testing GET /api/dashboard/recent-activity
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [76/513] Testing GET /api/dashboard/charts/patient-distribution
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [77/513] Testing GET /api/devices
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [78/513] Testing POST /api/devices
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [79/513] Testing GET /api/devices/categories
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [80/513] Testing GET /api/devices/brands
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [81/513] Testing POST /api/devices/brands
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [82/513] Testing GET /api/devices/low-stock
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [83/513] Testing GET /api/devices/{device_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Device not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [84/513] Testing PUT /api/devices/{device_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Device not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [85/513] Testing DELETE /api/devices/{device_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Device not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [86/513] Testing POST /api/devices/{device_id}/stock-update
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Device not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [87/513] Testing GET /api/notifications
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [88/513] Testing POST /api/notifications
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [89/513] Testing PUT /api/notifications/{notification_id}/read
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [90/513] Testing PUT /api/notifications/{notification_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [91/513] Testing DELETE /api/notifications/{notification_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [92/513] Testing GET /api/notifications/stats
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [93/513] Testing GET /api/notifications/settings
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [94/513] Testing PUT /api/notifications/settings
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Notification not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [95/513] Testing GET /api/branches
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [96/513] Testing POST /api/branches
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (403): Branch limit reached. Your plan allows 1 branches.
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [97/513] Testing PUT /api/branches/{branch_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [98/513] Testing DELETE /api/branches/{branch_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [99/513] Testing GET /api/reports/overview
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [100/513] Testing GET /api/reports/patients
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [101/513] Testing GET /api/reports/financial
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [102/513] Testing GET /api/reports/campaigns
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [103/513] Testing GET /api/reports/revenue
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [104/513] Testing GET /api/reports/appointments
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [105/513] Testing GET /api/reports/promissory-notes
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [106/513] Testing GET /api/reports/promissory-notes/by-patient
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [107/513] Testing GET /api/reports/promissory-notes/list
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [108/513] Testing GET /api/reports/remaining-payments
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [109/513] Testing GET /api/reports/cashflow-summary
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [110/513] Testing GET /api/reports/pos-movements
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [111/513] Testing GET /api/roles
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [112/513] Testing POST /api/roles
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [113/513] Testing PUT /api/roles/{role_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): role not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [114/513] Testing DELETE /api/roles/{role_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): role not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [115/513] Testing POST /api/roles/{role_id}/permissions
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): role not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [116/513] Testing PUT /api/roles/{role_id}/permissions
+2026-02-21 17:48:15 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): role not found
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [117/513] Testing DELETE /api/roles/{role_id}/permissions/{permission_name}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [118/513] Testing GET /api/payment-records
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [119/513] Testing POST /api/payment-records
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [120/513] Testing GET /api/parties/{party_id}/payment-records
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [121/513] Testing PATCH /api/payment-records/{record_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [122/513] Testing GET /api/parties/{party_id}/promissory-notes
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [123/513] Testing POST /api/promissory-notes
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [124/513] Testing PATCH /api/promissory-notes/{note_id}
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [125/513] Testing POST /api/promissory-notes/{note_id}/collect
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [126/513] Testing GET /api/sales/{sale_id}/promissory-notes
+2026-02-21 17:48:15 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [127/513] Testing GET /api/users
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:15 - tests.api_testing.test_runner - INFO - [128/513] Testing POST /api/users
+2026-02-21 17:48:16 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/users
+2026-02-21 17:48:16 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/users
+2026-02-21 17:48:16 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/users
+2026-02-21 17:48:18 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/users
+2026-02-21 17:48:19 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Internal server error
+2026-02-21 17:48:19 - tests.api_testing.test_runner - INFO - [129/513] Testing GET /api/users/me
+2026-02-21 17:48:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:19 - tests.api_testing.test_runner - INFO - [130/513] Testing PUT /api/users/me
+2026-02-21 17:48:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:19 - tests.api_testing.test_runner - INFO - [131/513] Testing POST /api/users/me/password
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (403): Invalid current password
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [132/513] Testing PUT /api/users/{user_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [133/513] Testing DELETE /api/users/{user_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [134/513] Testing GET /api/tenant/users
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [135/513] Testing POST /api/
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [136/513] Testing PUT /api/tenant/users/{user_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): User not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [137/513] Testing DELETE /api/tenant/users/{user_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): User not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [138/513] Testing GET /api/tenant/company
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [139/513] Testing PUT /api/tenant/company
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [140/513] Testing GET /api/suppliers
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [141/513] Testing POST /api/suppliers
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [142/513] Testing GET /api/suppliers/search
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [143/513] Testing GET /api/suppliers/stats
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [144/513] Testing GET /api/suppliers/{supplier_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [145/513] Testing PUT /api/suppliers/{supplier_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [146/513] Testing DELETE /api/suppliers/{supplier_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [147/513] Testing GET /api/settings/pricing
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [148/513] Testing GET /api/settings
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [149/513] Testing PUT /api/settings
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [150/513] Testing POST /api/admin/auth/login
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (401): Invalid credentials
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [151/513] Testing GET /api/admin/users
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [152/513] Testing POST /api/admin/users
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [153/513] Testing GET /api/admin/users/{user_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): User not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [154/513] Testing GET /api/admin/parties/{party_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [155/513] Testing POST /api/admin/impersonate
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [156/513] Testing POST /api/admin/debug/switch-tenant
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Target tenant ID is required
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [157/513] Testing POST /api/admin/debug/exit-impersonation
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [158/513] Testing GET /api/admin/sales/{sale_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [159/513] Testing GET /api/admin/tenants
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [160/513] Testing POST /api/admin/tenants
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [161/513] Testing GET /api/admin/tenants/{tenant_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [162/513] Testing PUT /api/admin/tenants/{tenant_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [163/513] Testing DELETE /api/admin/tenants/{tenant_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [164/513] Testing GET /api/admin/tenants/{tenant_id}/users
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [165/513] Testing POST /api/admin/tenants/{tenant_id}/users
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [166/513] Testing PUT /api/admin/tenants/{tenant_id}/users/{user_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [167/513] Testing POST /api/admin/tenants/{tenant_id}/subscribe
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [168/513] Testing POST /api/admin/tenants/{tenant_id}/addons
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [169/513] Testing DELETE /api/admin/tenants/{tenant_id}/addons
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [170/513] Testing PUT /api/admin/tenants/{tenant_id}/status
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [171/513] Testing GET /api/admin/tenants/{tenant_id}/sms-config
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [172/513] Testing GET /api/admin/tenants/{tenant_id}/sms-documents
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [173/513] Testing GET /api/admin/tenants/{tenant_id}/sms-documents/{document_type}/download
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [174/513] Testing PUT /api/admin/tenants/{tenant_id}/sms-documents/{document_type}/status
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [175/513] Testing POST /api/admin/tenants/{tenant_id}/sms-documents/send-email
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [176/513] Testing GET /api/admin/tenants/{tenant_id}/parties
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [177/513] Testing GET /api/admin/tenants/{tenant_id}/sales
+2026-02-21 17:48:20 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Tenant not found
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [178/513] Testing GET /api/admin/dashboard
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [179/513] Testing GET /api/admin/dashboard/stats
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [180/513] Testing GET /api/admin/plans
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [181/513] Testing POST /api/admin/plans
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [182/513] Testing GET /api/admin/plans/{plan_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [183/513] Testing PUT /api/admin/plans/{plan_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [184/513] Testing DELETE /api/admin/plans/{plan_id}
+2026-02-21 17:48:20 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:20 - tests.api_testing.test_runner - INFO - [185/513] Testing GET /api/admin/addons
+2026-02-21 17:48:20 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for GET /api/admin/addons
+2026-02-21 17:48:20 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for GET /api/admin/addons
+2026-02-21 17:48:20 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for GET /api/admin/addons
+2026-02-21 17:48:21 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for GET /api/admin/addons
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): 'FEATURE' is not among the defined enum values. Enum name: addontype. Possible values: PER_USER, FLAT_FEE, USAGE_BASED
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [186/513] Testing POST /api/admin/addons
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): 'FEATURE'
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [187/513] Testing GET /api/admin/addons/{addon_id}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [188/513] Testing PUT /api/admin/addons/{addon_id}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [189/513] Testing DELETE /api/admin/addons/{addon_id}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [190/513] Testing GET /api/admin/analytics/overview
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [191/513] Testing GET /api/admin/analytics
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [192/513] Testing GET /api/admin/analytics/revenue
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [193/513] Testing GET /api/admin/analytics/users
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [194/513] Testing GET /api/admin/analytics/tenants
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [195/513] Testing GET /api/admin/example-documents
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [196/513] Testing POST /api/admin/example-documents/upload
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [197/513] Testing DELETE /api/admin/example-documents/{document_type}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [198/513] Testing GET /api/admin/example-documents/{document_type}/download
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [199/513] Testing GET /api/invoices
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [200/513] Testing POST /api/invoices
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [201/513] Testing GET /api/invoices/print-queue
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [202/513] Testing POST /api/invoices/print-queue
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [203/513] Testing GET /api/invoices/templates
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [204/513] Testing POST /api/invoices/templates
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [205/513] Testing POST /api/invoices/batch-generate
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [206/513] Testing GET /api/invoices/{invoice_id}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [207/513] Testing PUT /api/invoices/{invoice_id}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [208/513] Testing DELETE /api/invoices/{invoice_id}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [209/513] Testing GET /api/parties/{party_id}/invoices
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [210/513] Testing POST /api/invoices/{invoice_id}/send-to-gib
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [211/513] Testing POST /api/invoices/bulk-upload
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [212/513] Testing GET /api/sgk/documents
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [213/513] Testing POST /api/sgk/documents
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [214/513] Testing POST /api/sgk/upload
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [215/513] Testing GET /api/parties/{party_id}/sgk-documents
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [216/513] Testing POST /api/sgk/e-receipt/query
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [217/513] Testing GET /api/sgk/e-receipts/delivered
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [218/513] Testing POST /api/sgk/patient-rights/query
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [219/513] Testing POST /api/sgk/workflow/create
+2026-02-21 17:48:23 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Grup bulunamadı
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [220/513] Testing PUT /api/sgk/workflow/{workflow_id}/update
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [221/513] Testing GET /api/sgk/workflow/{workflow_id}
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [222/513] Testing PUT /api/sgk/workflows/{workflow_id}/status
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [223/513] Testing GET /api/sgk/e-receipts/{receipt_id}/download-patient-form
+2026-02-21 17:48:23 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:23 - tests.api_testing.test_runner - INFO - [224/513] Testing POST /api/sgk/seed-test-patients
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [225/513] Testing GET /api/unsubscribe
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [226/513] Testing GET /api/deliverability/metrics
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [227/513] Testing GET /api/deliverability/alerts/check
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [228/513] Testing GET /api/deliverability/trend
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [229/513] Testing POST /api/deliverability/snapshot
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [230/513] Testing GET /api/admin/bounces
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [231/513] Testing GET /api/admin/bounces/stats
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [232/513] Testing POST /api/admin/bounces/{bounce_id}/unblacklist
+2026-02-21 17:48:28 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:28 - tests.api_testing.test_runner - INFO - [233/513] Testing POST /api/admin/spam-preview
+2026-02-21 17:48:28 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/admin/spam-preview
+2026-02-21 17:48:28 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/admin/spam-preview
+2026-02-21 17:48:29 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/admin/spam-preview
+2026-02-21 17:48:30 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/admin/spam-preview
+2026-02-21 17:48:31 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Internal server error
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [234/513] Testing GET /api/admin/unsubscribes
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [235/513] Testing GET /api/admin/unsubscribes/stats
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [236/513] Testing DELETE /api/admin/unsubscribes/{unsubscribe_id}
+2026-02-21 17:48:31 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [237/513] Testing GET /api/admin/email-approvals
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [238/513] Testing GET /api/admin/email-approvals/stats
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [239/513] Testing POST /api/admin/email-approvals/{approval_id}/approve
+2026-02-21 17:48:31 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [240/513] Testing POST /api/admin/email-approvals/{approval_id}/reject
+2026-02-21 17:48:31 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [241/513] Testing GET /api/admin/complaints
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [242/513] Testing GET /api/admin/complaints/stats
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [243/513] Testing POST /api/admin/complaints/process-fbl
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [244/513] Testing GET /api/activity-logs
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [245/513] Testing GET /api/activity-logs/stats
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [246/513] Testing GET /api/activity-logs/filter-options
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [247/513] Testing GET /api/audit
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [248/513] Testing GET /api/permissions
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [249/513] Testing POST /api/permissions
+2026-02-21 17:48:31 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Invalid permission name format (use category.action)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [250/513] Testing GET /api/permissions/my
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [251/513] Testing GET /api/permissions/role/{role_name}
+2026-02-21 17:48:31 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [252/513] Testing PUT /api/permissions/role/{role_name}
+2026-02-21 17:48:31 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [253/513] Testing GET /api/ocr/health
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [254/513] Testing POST /api/ocr/init-db
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [255/513] Testing POST /api/ocr/initialize
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [256/513] Testing POST /api/ocr/process
+2026-02-21 17:48:31 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): No image path or text provided
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [257/513] Testing POST /api/ocr/similarity
+2026-02-21 17:48:31 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Provide either both image paths or both text1 and text2
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [258/513] Testing POST /api/ocr/entities
+2026-02-21 17:48:31 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): No image path or text provided
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [259/513] Testing POST /api/ocr/extract_patient
+2026-02-21 17:48:31 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): No image path or text provided
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [260/513] Testing POST /api/ocr/debug_ner
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [261/513] Testing GET /api/ocr/jobs
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [262/513] Testing POST /api/ocr/jobs
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [263/513] Testing GET /api/ocr/jobs/{job_id}
+2026-02-21 17:48:31 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:31 - tests.api_testing.test_runner - INFO - [264/513] Testing POST /api/upload/presigned
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [265/513] Testing GET /api/upload/files
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [266/513] Testing DELETE /api/upload/files
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [267/513] Testing GET /api/parties/{party_id}/documents
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [268/513] Testing POST /api/parties/{party_id}/documents
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [269/513] Testing GET /api/parties/{party_id}/documents/{document_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [270/513] Testing DELETE /api/parties/{party_id}/documents/{document_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [271/513] Testing GET /api/parties/{party_id}/devices
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Patient not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [272/513] Testing GET /api/parties/{party_id}/notes
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Patient not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [273/513] Testing POST /api/parties/{party_id}/notes
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Patient not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [274/513] Testing PUT /api/parties/{party_id}/notes/{note_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [275/513] Testing DELETE /api/parties/{party_id}/notes/{note_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [276/513] Testing GET /api/parties/{party_id}/sales
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [277/513] Testing GET /api/parties/{party_id}/appointments
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [278/513] Testing GET /api/cash-records
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [279/513] Testing POST /api/cash-records
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [280/513] Testing DELETE /api/cash-records/{record_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [281/513] Testing GET /api/unified-cash-records
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [282/513] Testing GET /api/unified-cash-records/summary
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [283/513] Testing GET /api/payments/pos/paytr/config
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [284/513] Testing PUT /api/payments/pos/paytr/config
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (403): Admin permissions required
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [285/513] Testing POST /api/payments/pos/paytr/initiate
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): PayTR integration not configured
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [286/513] Testing POST /api/payments/pos/paytr/callback
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [287/513] Testing GET /api/payments/pos/transactions
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [288/513] Testing GET /api/timeline
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [289/513] Testing GET /api/parties/{party_id}/timeline
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [290/513] Testing POST /api/parties/{party_id}/timeline
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [291/513] Testing POST /api/parties/{party_id}/activities
+2026-02-21 17:48:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [292/513] Testing DELETE /api/parties/{party_id}/timeline/{event_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [293/513] Testing GET /api/plans
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [294/513] Testing POST /api/plans
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [295/513] Testing GET /api/plans/admin
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [296/513] Testing PUT /api/plans/{plan_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [297/513] Testing DELETE /api/plans/{plan_id}
+2026-02-21 17:48:32 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:32 - tests.api_testing.test_runner - INFO - [298/513] Testing GET /api/addons
+2026-02-21 17:48:32 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for GET /api/addons
+2026-02-21 17:48:32 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for GET /api/addons
+2026-02-21 17:48:32 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for GET /api/addons
+2026-02-21 17:48:33 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for GET /api/addons
+2026-02-21 17:48:35 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): 'FEATURE' is not among the defined enum values. Enum name: addontype. Possible values: PER_USER, FLAT_FEE, USAGE_BASED
+2026-02-21 17:48:35 - tests.api_testing.test_runner - INFO - [299/513] Testing POST /api/addons
+2026-02-21 17:48:35 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): 'FEATURE' is not among the defined enum values. Enum name: addontype. Possible values: PER_USER, FLAT_FEE, USAGE_BASED
+2026-02-21 17:48:35 - tests.api_testing.test_runner - INFO - [300/513] Testing GET /api/addons/admin
+2026-02-21 17:48:35 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for GET /api/addons/admin
+2026-02-21 17:48:35 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for GET /api/addons/admin
+2026-02-21 17:48:35 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for GET /api/addons/admin
+2026-02-21 17:48:36 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for GET /api/addons/admin
+2026-02-21 17:48:38 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): 'FEATURE' is not among the defined enum values. Enum name: addontype. Possible values: PER_USER, FLAT_FEE, USAGE_BASED
+2026-02-21 17:48:38 - tests.api_testing.test_runner - INFO - [301/513] Testing PUT /api/addons/{addon_id}
+2026-02-21 17:48:38 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:38 - tests.api_testing.test_runner - INFO - [302/513] Testing DELETE /api/addons/{addon_id}
+2026-02-21 17:48:38 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:38 - tests.api_testing.test_runner - INFO - [303/513] Testing POST /api/subscriptions/subscribe
+2026-02-21 17:48:38 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Plan not found
+2026-02-21 17:48:38 - tests.api_testing.test_runner - INFO - [304/513] Testing POST /api/subscriptions/complete-signup
+2026-02-21 17:48:38 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/subscriptions/complete-signup
+2026-02-21 17:48:38 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/subscriptions/complete-signup
+2026-02-21 17:48:38 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/subscriptions/complete-signup
+2026-02-21 17:48:39 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/subscriptions/complete-signup
+2026-02-21 17:48:41 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Internal server error
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [305/513] Testing GET /api/subscriptions/current
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [306/513] Testing POST /api/subscriptions/register-and-subscribe
+2026-02-21 17:48:41 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Plan not found
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [307/513] Testing POST /api/admin/settings/init-db
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [308/513] Testing GET /api/admin/settings
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [309/513] Testing POST /api/admin/settings
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [310/513] Testing POST /api/admin/settings/cache/clear
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [311/513] Testing POST /api/admin/settings/backup
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [312/513] Testing GET /api/admin/roles
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [313/513] Testing POST /api/admin/roles
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [314/513] Testing GET /api/admin/roles/{role_id}
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [315/513] Testing PUT /api/admin/roles/{role_id}
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [316/513] Testing DELETE /api/admin/roles/{role_id}
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [317/513] Testing GET /api/admin/roles/{role_id}/permissions
+2026-02-21 17:48:41 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Rol bulunamadı
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [318/513] Testing PUT /api/admin/roles/{role_id}/permissions
+2026-02-21 17:48:41 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Rol bulunamadı
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [319/513] Testing GET /api/admin/permissions
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [320/513] Testing GET /api/admin/admin-users
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [321/513] Testing GET /api/admin/admin-users/{user_id}
+2026-02-21 17:48:41 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Kullanıcı bulunamadı
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [322/513] Testing PUT /api/admin/admin-users/{user_id}/roles
+2026-02-21 17:48:41 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Kullanıcı bulunamadı
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [323/513] Testing GET /api/admin/my-permissions
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [324/513] Testing GET /api/config
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [325/513] Testing GET /api/config/turnstile
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:41 - tests.api_testing.test_runner - INFO - [326/513] Testing POST /api/register-phone
+2026-02-21 17:48:41 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/register-phone
+2026-02-21 17:48:41 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/register-phone
+2026-02-21 17:48:42 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/register-phone
+2026-02-21 17:48:43 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/register-phone
+2026-02-21 17:48:45 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): SMS gönderilemedi: 400 Client Error: Bad Request for url: https://api.vatansms.net/api/v1/1toN
+2026-02-21 17:48:45 - tests.api_testing.test_runner - INFO - [327/513] Testing POST /api/verify-registration-otp
+2026-02-21 17:48:45 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Phone and OTP required
+2026-02-21 17:48:45 - tests.api_testing.test_runner - INFO - [328/513] Testing POST /api/admin/api-keys/init-db
+2026-02-21 17:48:45 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:45 - tests.api_testing.test_runner - INFO - [329/513] Testing GET /api/admin/api-keys
+2026-02-21 17:48:45 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for GET /api/admin/api-keys
+2026-02-21 17:48:45 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for GET /api/admin/api-keys
+2026-02-21 17:48:46 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for GET /api/admin/api-keys
+2026-02-21 17:48:47 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for GET /api/admin/api-keys
+2026-02-21 17:48:48 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): 1 validation error for ApiKeyRead
+  Input should be a valid dictionary or instance of ApiKeyRead [type=model_type, input_value=<core.models.api_key.ApiKey object at 0x16f1ca810>, input_type=ApiKey]
+    For further information visit https://errors.pydantic.dev/2.12/v/model_type
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [330/513] Testing POST /api/admin/api-keys
+2026-02-21 17:48:48 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): 1 validation error for ApiKeyRead
+  Input should be a valid dictionary or instance of ApiKeyRead [type=model_type, input_value=<core.models.api_key.ApiKey object at 0x16f1c3450>, input_type=ApiKey]
+    For further information visit https://errors.pydantic.dev/2.12/v/model_type
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [331/513] Testing DELETE /api/admin/api-keys/{key_id}
+2026-02-21 17:48:48 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [332/513] Testing GET /api/admin/appointments
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [333/513] Testing GET /api/admin/birfatura/stats
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [334/513] Testing GET /api/admin/birfatura/invoices
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [335/513] Testing GET /api/admin/birfatura/logs
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [336/513] Testing GET /api/admin/integrations
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [337/513] Testing POST /api/admin/integrations/init-db
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [338/513] Testing GET /api/admin/integrations/vatan-sms/config
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:48 - tests.api_testing.test_runner - INFO - [339/513] Testing PUT /api/admin/integrations/vatan-sms/config
+2026-02-21 17:48:48 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for PUT /api/admin/integrations/vatan-sms/config
+2026-02-21 17:48:48 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for PUT /api/admin/integrations/vatan-sms/config
+2026-02-21 17:48:49 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for PUT /api/admin/integrations/vatan-sms/config
+2026-02-21 17:48:50 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for PUT /api/admin/integrations/vatan-sms/config
+2026-02-21 17:48:51 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): name 'gen_id' is not defined
+2026-02-21 17:48:51 - tests.api_testing.test_runner - INFO - [340/513] Testing GET /api/admin/integrations/birfatura/config
+2026-02-21 17:48:51 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:51 - tests.api_testing.test_runner - INFO - [341/513] Testing PUT /api/admin/integrations/birfatura/config
+2026-02-21 17:48:51 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for PUT /api/admin/integrations/birfatura/config
+2026-02-21 17:48:51 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for PUT /api/admin/integrations/birfatura/config
+2026-02-21 17:48:52 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for PUT /api/admin/integrations/birfatura/config
+2026-02-21 17:48:53 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for PUT /api/admin/integrations/birfatura/config
+2026-02-21 17:48:54 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): name 'gen_id' is not defined
+2026-02-21 17:48:54 - tests.api_testing.test_runner - INFO - [342/513] Testing GET /api/admin/integrations/telegram/config
+2026-02-21 17:48:54 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:54 - tests.api_testing.test_runner - INFO - [343/513] Testing PUT /api/admin/integrations/telegram/config
+2026-02-21 17:48:54 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for PUT /api/admin/integrations/telegram/config
+2026-02-21 17:48:54 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for PUT /api/admin/integrations/telegram/config
+2026-02-21 17:48:55 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for PUT /api/admin/integrations/telegram/config
+2026-02-21 17:48:56 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for PUT /api/admin/integrations/telegram/config
+2026-02-21 17:48:57 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): name 'gen_id' is not defined
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [344/513] Testing GET /api/admin/inventory
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [345/513] Testing GET /api/admin/invoices
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [346/513] Testing POST /api/admin/invoices
+2026-02-21 17:48:57 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Tenant ID and amount are required
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [347/513] Testing GET /api/admin/invoices/{invoice_id}
+2026-02-21 17:48:57 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [348/513] Testing POST /api/admin/invoices/{invoice_id}/payment
+2026-02-21 17:48:57 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [349/513] Testing GET /api/admin/invoices/{invoice_id}/pdf
+2026-02-21 17:48:57 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [350/513] Testing POST /api/admin/marketplaces/init-db
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [351/513] Testing GET /api/admin/marketplaces/integrations
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [352/513] Testing POST /api/admin/marketplaces/integrations
+2026-02-21 17:48:57 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): (sqlite3.IntegrityError) NOT NULL constraint failed: marketplace_integrations.tenant_id
+[SQL: INSERT INTO marketplace_integrations (id, platform, name, api_key, api_secret, seller_id, other_params, is_active, sync_stock, sync_prices, sync_orders, last_sync_at, status, error_message, created_at, updated_at, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('mkt_f7647561', 'RitH6Fn5izvn01by6p3cS', None, None, None, None, None, 1, 1, 1, 1, None, 'connected', None, '2026-02-21 14:48:57.989047', '2026-02-21 14:48:57.989048', None)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [353/513] Testing POST /api/admin/marketplaces/integrations/{integration_id}/sync
+2026-02-21 17:48:57 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [354/513] Testing POST /api/admin/notifications/init-db
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [355/513] Testing GET /api/admin/notifications
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:57 - tests.api_testing.test_runner - INFO - [356/513] Testing POST /api/admin/notifications/send
+2026-02-21 17:48:58 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:58 - tests.api_testing.test_runner - INFO - [357/513] Testing GET /api/admin/notifications/templates
+2026-02-21 17:48:58 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:48:58 - tests.api_testing.test_runner - INFO - [358/513] Testing POST /api/admin/notifications/templates
+2026-02-21 17:48:58 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/admin/notifications/templates
+2026-02-21 17:48:58 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/admin/notifications/templates
+2026-02-21 17:48:58 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/admin/notifications/templates
+2026-02-21 17:48:59 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/admin/notifications/templates
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): (sqlite3.ProgrammingError) Error binding parameter 7: type 'list' is not supported
+[SQL: INSERT INTO notification_templates (id, name, description, title_template, body_template, channel, variables, email_from_name, email_from_address, email_to_type, email_to_addresses, email_subject, email_body_html, email_body_text, trigger_event, trigger_conditions, template_category, is_active, created_at, updated_at, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('ntpl_d52d4f35', None, None, None, None, 'push', [], None, None, None, None, None, None, None, 'manual', None, 'platform_announcement', 1, '2026-02-21 14:49:01.060498', '2026-02-21 14:49:01.060504', None)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [359/513] Testing PUT /api/admin/notifications/templates/{template_id}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Template not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [360/513] Testing DELETE /api/admin/notifications/templates/{template_id}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Template not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [361/513] Testing GET /api/admin/parties
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [362/513] Testing GET /api/admin/parties/{party_id}/devices
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [363/513] Testing GET /api/admin/parties/{party_id}/sales
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [364/513] Testing GET /api/admin/parties/{party_id}/timeline
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [365/513] Testing GET /api/admin/parties/{party_id}/documents
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [366/513] Testing GET /api/admin/payments/pos/transactions
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [367/513] Testing POST /api/admin/production/init-db
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [368/513] Testing GET /api/admin/production/orders
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [369/513] Testing PUT /api/admin/production/orders/{order_id}/status
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [370/513] Testing POST /api/admin/scan-queue/init-db
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [371/513] Testing GET /api/admin/scan-queue
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [372/513] Testing POST /api/admin/scan-queue/{scan_id}/retry
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [373/513] Testing GET /api/admin/suppliers
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [374/513] Testing POST /api/admin/suppliers
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [375/513] Testing GET /api/admin/suppliers/{supplier_id}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [376/513] Testing PUT /api/admin/suppliers/{supplier_id}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [377/513] Testing DELETE /api/admin/suppliers/{supplier_id}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [378/513] Testing GET /api/admin/tickets
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [379/513] Testing POST /api/admin/tickets
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [380/513] Testing PUT /api/admin/tickets/{ticket_id}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [381/513] Testing POST /api/admin/tickets/{ticket_id}/responses
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [382/513] Testing GET /api/automation/status
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [383/513] Testing POST /api/automation/sgk/process
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [384/513] Testing POST /api/automation/backup
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [385/513] Testing GET /api/automation/logs
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [386/513] Testing GET /api/affiliates/check/{code}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [387/513] Testing POST /api/affiliates/register
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Exception: Affiliate token not available
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [388/513] Testing POST /api/affiliates/login
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Exception: Affiliate token not available
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [389/513] Testing GET /api/affiliates/me
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Exception: Affiliate token not available
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [390/513] Testing PATCH /api/affiliates/{affiliate_id}
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [391/513] Testing GET /api/affiliates/{affiliate_id}/commissions
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [392/513] Testing GET /api/affiliates/{affiliate_id}/details
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [393/513] Testing PATCH /api/affiliates/{affiliate_id}/toggle-status
+2026-02-21 17:49:01 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [394/513] Testing GET /api/affiliates/list
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Exception: Affiliate token not available
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [395/513] Testing GET /api/affiliates/lookup
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Exception: Affiliate token not available
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [396/513] Testing POST /api/checkout/session
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Plan not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [397/513] Testing POST /api/checkout/confirm
+2026-02-21 17:49:01 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Payment not found
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [398/513] Testing GET /parties/{party_id}/replacements
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:01 - tests.api_testing.test_runner - INFO - [399/513] Testing POST /parties/{party_id}/replacements
+2026-02-21 17:49:01 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /parties/pat_5e30f8b4/replacements
+2026-02-21 17:49:01 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /parties/pat_5e30f8b4/replacements
+2026-02-21 17:49:01 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /parties/pat_5e30f8b4/replacements
+2026-02-21 17:49:02 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /parties/pat_5e30f8b4/replacements
+2026-02-21 17:49:04 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Internal server error
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [400/513] Testing GET /replacements/{replacement_id}
+2026-02-21 17:49:04 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [401/513] Testing PATCH /replacements/{replacement_id}/status
+2026-02-21 17:49:04 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [402/513] Testing POST /replacements/{replacement_id}/invoice
+2026-02-21 17:49:04 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [403/513] Testing POST /return-invoices/{invoice_id}/send-to-gib
+2026-02-21 17:49:04 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [404/513] Testing POST /EFatura/sendDocument
+2026-02-21 17:49:04 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Missing xml or base64 field
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [405/513] Testing POST /EFatura/sendBasicInvoice
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [406/513] Testing POST /EFatura/Create
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [407/513] Testing POST /EFatura/Retry/{invoice_id}
+2026-02-21 17:49:04 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [408/513] Testing POST /EFatura/Cancel/{invoice_id}
+2026-02-21 17:49:04 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:04 - tests.api_testing.test_runner - INFO - [409/513] Testing POST /birfatura/sync-invoices
+2026-02-21 17:49:04 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /birfatura/sync-invoices
+2026-02-21 17:49:04 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /birfatura/sync-invoices
+2026-02-21 17:49:04 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /birfatura/sync-invoices
+2026-02-21 17:49:05 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /birfatura/sync-invoices
+2026-02-21 17:49:07 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Internal server error
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [410/513] Testing POST /OutEBelgeV2/SendDocument
+2026-02-21 17:49:07 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Missing xml or base64 field
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [411/513] Testing POST /OutEBelgeV2/SendBasicInvoiceFromModel
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [412/513] Testing POST /OutEBelgeV2/GetOutBoxDocuments
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [413/513] Testing POST /OutEBelgeV2/GetPDFLinkByUUID
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [414/513] Testing POST /Musteri/FirmaMusteriGetir
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [415/513] Testing POST /Firma/FirmaPKBilgisiGetir
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [416/513] Testing POST /Firma/FirmaAdresBilgisiGetir
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [417/513] Testing GET /api/apps
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [418/513] Testing POST /api/apps
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [419/513] Testing GET /api/apps/{app_id}
+2026-02-21 17:49:07 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [420/513] Testing PUT /api/apps/{app_id}
+2026-02-21 17:49:07 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [421/513] Testing DELETE /api/apps/{app_id}
+2026-02-21 17:49:07 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [422/513] Testing POST /api/apps/{app_id}/assign
+2026-02-21 17:49:07 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [423/513] Testing POST /api/apps/{app_id}/transfer_ownership
+2026-02-21 17:49:07 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [424/513] Testing POST /api/pos/commission/calculate
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [425/513] Testing GET /api/pos/commission/rates
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [426/513] Testing POST /api/pos/commission/installment-options
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [427/513] Testing GET /api/pos/commission/rates/tenant/{tenant_id}
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [428/513] Testing PUT /api/pos/commission/rates/tenant/{tenant_id}
+2026-02-21 17:49:07 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Rates required
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [429/513] Testing GET /api/pos/commission/rates/system
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:07 - tests.api_testing.test_runner - INFO - [430/513] Testing PUT /api/pos/commission/rates/system
+2026-02-21 17:49:07 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for PUT /api/pos/commission/rates/system
+2026-02-21 17:49:07 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for PUT /api/pos/commission/rates/system
+2026-02-21 17:49:07 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for PUT /api/pos/commission/rates/system
+2026-02-21 17:49:08 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for PUT /api/pos/commission/rates/system
+2026-02-21 17:49:10 - tests.api_testing.test_runner - ERROR - ✗ Failed (501): System-level rates update not yet implemented. Use tenant-level rates.
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [431/513] Testing GET /registrations
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [432/513] Testing POST /registrations/bulk
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [433/513] Testing GET /jobs/{job_id}
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [434/513] Testing POST /jobs/{job_id}/cancel
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [435/513] Testing GET /api/sms-packages
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [436/513] Testing GET /api/admin/sms/packages
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [437/513] Testing POST /api/admin/sms/packages
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (201)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [438/513] Testing PUT /api/admin/sms/packages/{package_id}
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [439/513] Testing DELETE /api/admin/sms/packages/{package_id}
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [440/513] Testing GET /api/sms/config
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [441/513] Testing PUT /api/sms/config
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [442/513] Testing GET /api/sms/headers
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [443/513] Testing POST /api/sms/headers
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [444/513] Testing PUT /api/sms/headers/{header_id}/set-default
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [445/513] Testing GET /api/sms/packages
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [446/513] Testing GET /api/sms/credit
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [447/513] Testing GET /api/sms/audiences
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [448/513] Testing POST /api/sms/audiences
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [449/513] Testing POST /api/sms/documents/upload
+2026-02-21 17:49:10 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [450/513] Testing GET /api/sms/documents/{document_type}/download
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [451/513] Testing DELETE /api/sms/documents/{document_type}
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [452/513] Testing POST /api/sms/documents/submit
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [453/513] Testing POST /api/sms/audiences/upload
+2026-02-21 17:49:10 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [454/513] Testing GET /api/sms/admin/headers
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [455/513] Testing PUT /api/sms/admin/headers/{header_id}/status
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [456/513] Testing GET /api/sms/documents/file/{filepath}
+2026-02-21 17:49:10 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [457/513] Testing GET /api/invoice-schema
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:10 - tests.api_testing.test_runner - INFO - [458/513] Testing POST /api/invoices/create-dynamic
+2026-02-21 17:49:10 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/invoices/create-dynamic
+2026-02-21 17:49:10 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/invoices/create-dynamic
+2026-02-21 17:49:11 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/invoices/create-dynamic
+2026-02-21 17:49:12 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/invoices/create-dynamic
+2026-02-21 17:49:13 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): 'party_name' is an invalid keyword argument for Invoice
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [459/513] Testing GET /api/invoices/{invoice_id}/xml
+2026-02-21 17:49:13 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [460/513] Testing POST /api/invoices/{invoice_id}/send-gib
+2026-02-21 17:49:13 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [461/513] Testing GET /api/invoice-settings
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [462/513] Testing POST /api/invoice-settings
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [463/513] Testing POST /api/invoices/{invoice_id}/issue
+2026-02-21 17:49:13 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [464/513] Testing POST /api/invoices/{invoice_id}/copy
+2026-02-21 17:49:13 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [465/513] Testing POST /api/invoices/{invoice_id}/copy-cancel
+2026-02-21 17:49:13 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [466/513] Testing GET /api/invoices/{invoice_id}/pdf
+2026-02-21 17:49:13 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [467/513] Testing GET /api/invoices/{invoice_id}/shipping-pdf
+2026-02-21 17:49:13 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:13 - tests.api_testing.test_runner - INFO - [468/513] Testing GET /api/communications/messages
+2026-02-21 17:49:13 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for GET /api/communications/messages
+2026-02-21 17:49:13 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for GET /api/communications/messages
+2026-02-21 17:49:14 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for GET /api/communications/messages
+2026-02-21 17:49:15 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for GET /api/communications/messages
+2026-02-21 17:49:16 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): 1 validation error for SmsLogRead
+  Input should be a valid dictionary or instance of SmsLogRead [type=model_type, input_value=<core.models.campaign.Sms...g object at 0x16f566010>, input_type=SmsLog]
+    For further information visit https://errors.pydantic.dev/2.12/v/model_type
+2026-02-21 17:49:16 - tests.api_testing.test_runner - INFO - [469/513] Testing POST /api/communications/messages/send-sms
+2026-02-21 17:49:16 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/communications/messages/send-sms
+2026-02-21 17:49:16 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/communications/messages/send-sms
+2026-02-21 17:49:17 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/communications/messages/send-sms
+2026-02-21 17:49:18 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/communications/messages/send-sms
+2026-02-21 17:49:19 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): 1 validation error for SmsLogRead
+  Input should be a valid dictionary or instance of SmsLogRead [type=model_type, input_value=<core.models.campaign.Sms...g object at 0x16f5bf990>, input_type=SmsLog]
+    For further information visit https://errors.pydantic.dev/2.12/v/model_type
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [470/513] Testing POST /api/communications/messages/send-email
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [471/513] Testing GET /api/communications/templates
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [472/513] Testing POST /api/communications/templates
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [473/513] Testing GET /api/communications/templates/{template_id}
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [474/513] Testing PUT /api/communications/templates/{template_id}
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [475/513] Testing DELETE /api/communications/templates/{template_id}
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [476/513] Testing GET /api/communications/history
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [477/513] Testing POST /api/communications/history
+2026-02-21 17:49:19 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): Party not found
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [478/513] Testing GET /api/communications/stats
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:19 - tests.api_testing.test_runner - INFO - [479/513] Testing GET /admin/integrations/smtp/config
+2026-02-21 17:49:19 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for GET /admin/integrations/smtp/config
+2026-02-21 17:49:19 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for GET /admin/integrations/smtp/config
+2026-02-21 17:49:20 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for GET /admin/integrations/smtp/config
+2026-02-21 17:49:21 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for GET /admin/integrations/smtp/config
+2026-02-21 17:49:22 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Failed to retrieve SMTP configuration: success
+2026-02-21 17:49:22 - tests.api_testing.test_runner - INFO - [480/513] Testing POST /admin/integrations/smtp/config
+2026-02-21 17:49:22 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /admin/integrations/smtp/config
+2026-02-21 17:49:22 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /admin/integrations/smtp/config
+2026-02-21 17:49:23 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /admin/integrations/smtp/config
+2026-02-21 17:49:24 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /admin/integrations/smtp/config
+2026-02-21 17:49:25 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Failed to save SMTP configuration: SPF validation failed: SPF record found but does not authorize 0.0.0.0. Add 'ip4:0.0.0.0' to SPF record.
+2026-02-21 17:49:25 - tests.api_testing.test_runner - INFO - [481/513] Testing POST /admin/integrations/smtp/test
+2026-02-21 17:49:25 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /admin/integrations/smtp/test
+2026-02-21 17:49:26 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /admin/integrations/smtp/test
+2026-02-21 17:49:26 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /admin/integrations/smtp/test
+2026-02-21 17:49:27 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /admin/integrations/smtp/test
+2026-02-21 17:49:29 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Failed to send test email: error
+2026-02-21 17:49:29 - tests.api_testing.test_runner - INFO - [482/513] Testing GET /admin/integrations/smtp/metrics
+2026-02-21 17:49:29 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for GET /admin/integrations/smtp/metrics
+2026-02-21 17:49:29 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for GET /admin/integrations/smtp/metrics
+2026-02-21 17:49:29 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for GET /admin/integrations/smtp/metrics
+2026-02-21 17:49:30 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for GET /admin/integrations/smtp/metrics
+2026-02-21 17:49:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Failed to retrieve email metrics: success
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [483/513] Testing GET /admin/integrations/smtp/logs
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [484/513] Testing POST /admin/emails/send
+2026-02-21 17:49:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (404): No SMTP configuration found. Please configure SMTP first.
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [485/513] Testing POST /tool-api/email/notify
+2026-02-21 17:49:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Scenario 'd62EDalIWTNQ57xpuRfoL6tYtWMRDbOGnQzaHSiccBd5fXq2' not in AI email allowlist. Allowed scenarios: ai_action_completed, ai_error_notification, ai_execution_approval, ai_proposal_created, ai_quota_exceeded
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [486/513] Testing POST /api/commissions/create
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [487/513] Testing POST /api/commissions/update-status
+2026-02-21 17:49:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (422): Validation error
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [488/513] Testing GET /api/commissions/by-affiliate
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [489/513] Testing GET /api/commissions/audit
+2026-02-21 17:49:32 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): commission_id is required
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [490/513] Testing GET /api/developer/schema-registry
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:32 - tests.api_testing.test_runner - INFO - [491/513] Testing POST /api/ai/chat
+2026-02-21 17:49:32 - tests.api_testing.logging_config - DEBUG - Retry 1/5 for POST /api/ai/chat
+2026-02-21 17:49:32 - tests.api_testing.logging_config - DEBUG - Retry 2/5 for POST /api/ai/chat
+2026-02-21 17:49:32 - tests.api_testing.logging_config - DEBUG - Retry 3/5 for POST /api/ai/chat
+2026-02-21 17:49:33 - tests.api_testing.logging_config - DEBUG - Retry 4/5 for POST /api/ai/chat
+2026-02-21 17:49:35 - tests.api_testing.test_runner - ERROR - ✗ Failed (500): Internal server error
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [492/513] Testing POST /api/ai/actions
+2026-02-21 17:49:35 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): Invalid intent type: xIpEn
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [493/513] Testing GET /api/ai/actions/{action_id}
+2026-02-21 17:49:35 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [494/513] Testing POST /api/ai/actions/{action_id}/approve
+2026-02-21 17:49:35 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [495/513] Testing POST /api/ai/actions/{action_id}/execute
+2026-02-21 17:49:35 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [496/513] Testing GET /api/ai/audit
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [497/513] Testing GET /api/ai/audit/stats
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [498/513] Testing GET /api/ai/audit/{audit_id}
+2026-02-21 17:49:35 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [499/513] Testing GET /api/ai/status
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [500/513] Testing GET /api/ai/health
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [501/513] Testing GET /api/ai/capabilities
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [502/513] Testing GET /api/ai/metrics
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [503/513] Testing GET /api/ai/alerts
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [504/513] Testing POST /api/ai/alerts/{alert_id}/acknowledge
+2026-02-21 17:49:35 - tests.api_testing.test_runner - WARNING - ⊘ Skipped (missing resource ID)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [505/513] Testing POST /api/ai/alerts/check
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [506/513] Testing GET /api/ai/admin/kill-switch
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [507/513] Testing POST /api/ai/admin/kill-switch
+2026-02-21 17:49:35 - tests.api_testing.test_runner - ERROR - ✗ Failed (400): target_id is required for tenant scope
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [508/513] Testing GET /api/ai/admin/pending-approvals
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [509/513] Testing POST /api/ai/admin/cleanup-expired
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [510/513] Testing GET /api/ai/admin/settings
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [511/513] Testing GET /api/ai/composer/autocomplete
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [512/513] Testing POST /api/ai/composer/execute
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - [513/513] Testing POST /api/ai/composer/analyze
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Passed (200)
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Tests completed: 272 passed, 139 failed, 102 skipped
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Step 6: Analyzing failures
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Failure analysis completed
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Step 7: Generating report
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Report generated
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Step 8: Cleaning up resources
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - --------------------------------------------------------------------------------
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Cleaning up resources...
+2026-02-21 17:49:35 - tests.api_testing.logging_config - INFO - Starting cleanup of test resources...
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete TEMPLATE: 401
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete NOTIFICATION: 401
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete APPOINTMENT: 401
+2026-02-21 17:49:35 - tests.api_testing.logging_config - DEBUG - ✓ Deleted ROLE
+2026-02-21 17:49:35 - tests.api_testing.logging_config - DEBUG - ✓ Deleted ITEM
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete DEVICE: 401
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete CAMPAIGN: 401
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete BRANCH: 401
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete PARTY: 401
+2026-02-21 17:49:35 - tests.api_testing.logging_config - WARNING - ✗ Failed to delete USER: 405
+2026-02-21 17:49:35 - tests.api_testing.logging_config - DEBUG - ✓ Deleted TENANT
+2026-02-21 17:49:35 - tests.api_testing.logging_config - INFO - Cleanup complete: 3 deleted, 8 failed
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Cleanup completed
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ✓ Cleanup completed
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - 
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ================================================================================
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - TEST RUN SUMMARY
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ================================================================================
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Total endpoints:  513
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Passed:          272
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Failed:          139
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Skipped:         102
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Success rate:     53.02%
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - Duration:         82.17s
+2026-02-21 17:49:35 - tests.api_testing.test_runner - INFO - ================================================================================
+2026-02-21 17:49:35 - tests.api_testing.test_runner - WARNING - ✗ GOAL NOT MET: Success rate 53.02% < 95%
+
+================================================================================
+TEST REPORT
+================================================================================
+================================================================================
+API TEST EXECUTION REPORT
+================================================================================
+Generated: 2026-02-21 17:49:35
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Tests:    513
+Passed:         272
+Failed:         241
+Success Rate:   53.0%
+
+CATEGORY STATISTICS
+--------------------------------------------------------------------------------
+ADMIN_PANEL          | Passed:  71 | Failed:  68 | Total: 139 | Success:  51.1%
+AFFILIATE            | Passed:   0 | Failed:   5 | Total:   5 | Success:   0.0%
+SYSTEM               | Passed:  14 | Failed:  23 | Total:  37 | Success:  37.8%
+TENANT_WEB_APP       | Passed: 187 | Failed: 145 | Total: 332 | Success:  56.3%
+
+FAILURE PATTERNS
+--------------------------------------------------------------------------------
+Connection/Timeout Error                 | Count: 107
+Not Found (Missing resource or unimplemented) | Count: 70
+HTTP 400                                 | Count: 23
+Internal Server Error (Backend bug)      | Count: 23
+Validation Error (Invalid request data)  | Count: 11
+Unauthorized (Auth issue)                | Count: 4
+HTTP 403                                 | Count: 3
+
+FAILED TESTS DETAIL
+--------------------------------------------------------------------------------
+POST   /api/campaigns/camp_98565c8c/send                  | 404 | Campaign not found
+POST   /api/parties/bulk-upload                           | 422 | Validation error
+POST   /api/inventory/bulk-upload                         | 422 | Validation error
+POST   /api/inventory/item_21022026144815_6436e0/serials  | 404 | Item not found
+GET    /api/inventory/item_21022026144815_6436e0/movements | 404 | Item not found
+POST   /api/sales                                         | 404 | Party not found
+GET    /api/sales/{sale_id}                               | 0 | Missing required resource ID
+PUT    /api/sales/{sale_id}                               | 0 | Missing required resource ID
+GET    /api/sales/{sale_id}/payments                      | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/payments                      | 0 | Missing required resource ID
+GET    /api/sales/{sale_id}/payment-plan                  | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/payment-plan                  | 0 | Missing required resource ID
+POST   /api/sales/{sale_id}/installments/{installment_id}/pay | 0 | Missing required resource ID
+POST   /api/parties/pat_5e30f8b4/device-assignments       | 404 | Party not found
+PATCH  /api/device-assignments/{assignment_id}            | 0 | Missing required resource ID
+POST   /api/device-assignments/{assignment_id}/return-loaner | 0 | Missing required resource ID
+POST   /api/hearing-profiles                              | 404 | Patient not found
+GET    /api/hearing-profiles/pat_5e30f8b4                 | 404 | Hearing profile not found
+PUT    /api/hearing-profiles/pat_5e30f8b4                 | 404 | Patient not found
+POST   /api/auth/lookup-phone                             | 404 | User not found or no phone registered
+POST   /api/auth/forgot-password                          | 404 | User not found with this phone number
+POST   /api/auth/verify-otp                               | 400 | Invalid or expired OTP
+POST   /api/auth/reset-password                           | 400 | Invalid or expired OTP
+POST   /api/auth/login                                    | 400 | Kullanıcı adı/e-posta/telefon ve şifre gereklidir
+POST   /api/auth/refresh                                  | 401 | Invalid token type
+POST   /api/auth/send-verification-otp                    | 401 | User context required
+POST   /api/auth/set-password                             | 401 | User context required
+GET    /api/appointments/apt_21022026_174815_866069       | 404 | Appointment not found
+PUT    /api/appointments/apt_21022026_174815_866069       | 404 | Appointment not found
+DELETE /api/appointments/apt_21022026_174815_866069       | 404 | Appointment not found
+POST   /api/appointments/apt_21022026_174815_866069/reschedule | 404 | Appointment not found
+POST   /api/appointments/apt_21022026_174815_866069/cancel | 404 | Appointment not found
+POST   /api/appointments/apt_21022026_174815_866069/complete | 404 | Appointment not found
+GET    /api/devices/dev_20260221_174815_155974_483501     | 404 | Device not found
+PUT    /api/devices/dev_20260221_174815_155974_483501     | 404 | Device not found
+DELETE /api/devices/dev_20260221_174815_155974_483501     | 404 | Device not found
+POST   /api/devices/dev_20260221_174815_155974_483501/stock-update | 404 | Device not found
+PUT    /api/notifications/settings                        | 404 | Notification not found
+POST   /api/branches                                      | 403 | Branch limit reached. Your plan allows 1 branches.
+PUT    /api/roles/1169dfb5-cb71-4a9f-8d9a-2e3c5c671b92    | 404 | role not found
+DELETE /api/roles/1169dfb5-cb71-4a9f-8d9a-2e3c5c671b92    | 404 | role not found
+POST   /api/roles/1169dfb5-cb71-4a9f-8d9a-2e3c5c671b92/permissions | 404 | role not found
+PUT    /api/roles/1169dfb5-cb71-4a9f-8d9a-2e3c5c671b92/permissions | 404 | role not found
+DELETE /api/roles/{role_id}/permissions/{permission_name} | 0 | Missing required resource ID
+PATCH  /api/payment-records/{record_id}                   | 0 | Missing required resource ID
+PATCH  /api/promissory-notes/{note_id}                    | 0 | Missing required resource ID
+POST   /api/promissory-notes/{note_id}/collect            | 0 | Missing required resource ID
+GET    /api/sales/{sale_id}/promissory-notes              | 0 | Missing required resource ID
+POST   /api/users                                         | 500 | Internal server error
+POST   /api/users/me/password                             | 403 | Invalid current password
+... and 191 more failures
+
+EXECUTION TIME STATISTICS
+--------------------------------------------------------------------------------
+Average:  0.16s
+Maximum:  5.10s
+
+================================================================================
+2026-02-21 17:49:35 - __main__ - WARNING - ✗ Test run failed (53.02% success rate < 95%)

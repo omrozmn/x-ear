@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer, Numeric, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from models.base import db, BaseModel
 from models.mixins import TenantScopedMixin
 
@@ -59,7 +59,7 @@ class Subscription(BaseModel, TenantScopedMixin):
     # Timestamps inherited from BaseModel
 
     # Relationships
-    tenant = relationship("Tenant", backref=db.backref("subscription", uselist=False))
+    tenant = relationship("Tenant", backref=backref("subscription", uselist=False))
     plan = relationship("Plan")
     payments = relationship("PaymentHistory", backref="subscription", lazy="dynamic")
 

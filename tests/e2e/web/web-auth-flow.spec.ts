@@ -11,7 +11,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { setPhoneVerified } from './helpers/test-utils';
+import { setPhoneVerified } from '../../helpers/auth.helper';
 
 const WEB_URL = process.env.WEB_BASE_URL || 'http://localhost:8080';
 

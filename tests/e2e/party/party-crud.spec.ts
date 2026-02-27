@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
 import { createParty, searchParty, deleteParty, updateParty } from '../../helpers/party';
 import { expectToastVisible } from '../../helpers/assertions';
-import { testUsers } from '../../fixtures/users';
+import { testUsers } from '../fixtures/users';
 import { testParties, generateRandomParty } from '../../fixtures/parties';
 
 test.describe('Party CRUD Operations', () => {

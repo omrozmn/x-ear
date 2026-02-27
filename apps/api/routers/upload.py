@@ -122,7 +122,14 @@ def list_files(
         folder (str): Folder name (default: 'uploads')
     """
     try:
-        from services.s3_service import s3_service
+        try:
+            from services.s3_service import s3_service
+        except ImportError as e:
+            logger.error(f"S3 service not available: {e}")
+            raise HTTPException(
+                status_code=503, 
+                detail="File storage service not configured. Please install boto3 or configure S3."
+            )
         
         # Determine access.tenant_id for file listing
         if access.tenant_id:
@@ -137,6 +144,8 @@ def list_files(
         
         return ResponseEnvelope(data=FileListResponse(files=files))
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing files: {e}")
         raise HTTPException(status_code=500, detail=str(e))

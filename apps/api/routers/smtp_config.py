@@ -35,7 +35,6 @@ from services.email_service import EmailService
 from services.email_template_service import EmailTemplateService
 from services.encryption_service import EncryptionService
 from services.smtp_config_service import SMTPConfigService
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/integrations/smtp", tags=["SMTP Configuration"])
@@ -131,7 +130,7 @@ async def create_or_update_smtp_config(
             logger.warning(
                 f"SMTP config validation failed for tenant {tenant_id}: {error_msg}"
             )
-            return ResponseEnvelope.error(error_msg, status_code=400)
+            return ResponseEnvelope.create_error(error_msg)
 
         # Create/update config (password will be encrypted)
         config_model = smtp_config_service.create_or_update_config(
@@ -148,9 +147,8 @@ async def create_or_update_smtp_config(
             logger.error(
                 f"SMTP connection test failed for tenant {tenant_id}: {message}"
             )
-            return ResponseEnvelope.error(
-                f"Configuration test failed: {message}",
-                status_code=400
+            return ResponseEnvelope.create_error(
+                f"Configuration test failed: {message}"
             )
 
         # Commit transaction
@@ -165,7 +163,7 @@ async def create_or_update_smtp_config(
             extra={"tenant_id": tenant_id, "config_id": config_model.id}
         )
 
-        return ResponseEnvelope.success(
+        return ResponseEnvelope.create_success(
             response_data.model_dump(by_alias=True),
             message="SMTP configuration saved successfully"
         )
@@ -240,7 +238,7 @@ async def get_smtp_config(
 
         if not config:
             logger.debug(f"No SMTP configuration found for tenant {tenant_id}")
-            return ResponseEnvelope.success(
+            return ResponseEnvelope.create_success(
                 None,
                 message="No SMTP configuration found. Using global fallback."
             )
@@ -253,7 +251,7 @@ async def get_smtp_config(
             extra={"tenant_id": tenant_id, "config_id": config.id}
         )
 
-        return ResponseEnvelope.success(response_data.model_dump(by_alias=True))
+        return ResponseEnvelope.create_success(response_data.model_dump(by_alias=True))
 
     except HTTPException:
         raise
@@ -327,9 +325,8 @@ async def send_test_email(
         config = smtp_config_service.get_active_config(tenant_id)
         if not config:
             logger.warning(f"No SMTP configuration found for tenant {tenant_id}")
-            return ResponseEnvelope.error(
-                "No SMTP configuration found. Please configure SMTP first.",
-                status_code=404
+            return ResponseEnvelope.create_error(
+                "No SMTP configuration found. Please configure SMTP first."
             )
 
         # Get user information for template variables
@@ -382,7 +379,7 @@ async def send_test_email(
             sent_at=datetime.now(timezone.utc)
         )
 
-        return ResponseEnvelope.success(
+        return ResponseEnvelope.create_success(
             response_data.model_dump(by_alias=True),
             message="Test email queued successfully"
         )
@@ -452,7 +449,7 @@ async def get_email_metrics(
             }
         )
         
-        return ResponseEnvelope.success(metrics)
+        return ResponseEnvelope.create_success(metrics)
     
     except Exception as e:
         logger.exception(f"Error retrieving email metrics: {e}")

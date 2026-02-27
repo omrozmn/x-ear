@@ -19,8 +19,13 @@ interface ExtendedAxiosInstance extends AxiosInstance {
 }
 
 interface RefreshResponse {
-  accessToken?: string;
-  access_token?: string;
+  // ResponseEnvelope<RefreshTokenResponse> structure from backend
+  success?: boolean;
+  data?: {
+    accessToken?: string;
+    access_token?: string;
+  };
+  error?: unknown;
 }
 
 // Hybrid Converter: Adds CamelCase keys while preserving SnakeCase keys
@@ -243,6 +248,16 @@ apiClient.interceptors.request.use(
         config.headers['X-Tenant-ID'] = tenantId;
       }
 
+      // CRITICAL: Add X-Effective-Tenant-Id header for admin impersonation
+      // Backend middleware checks this header for tenant context
+      const payload = tokenManager.payload;
+      const effectiveTenantId = payload?.effective_tenant_id;
+      const isImpersonatingTenant = payload?.is_impersonating_tenant === true;
+      
+      if (effectiveTenantId && (isAdmin || isImpersonatingTenant)) {
+        config.headers['X-Effective-Tenant-Id'] = effectiveTenantId;
+      }
+
       // DEBUG LOG - Enhanced for tenant impersonation debugging
       console.log('[orval-mutator] Request interceptor:', {
         url: config.url,
@@ -257,6 +272,10 @@ apiClient.interceptors.request.use(
         // CRITICAL: Check if tenant ID is in headers
         hasXTenantIDHeader: !!config.headers['X-Tenant-ID'],
         xTenantIDValue: config.headers['X-Tenant-ID'],
+        // CRITICAL: Check effective tenant header for impersonation
+        hasXEffectiveTenantIdHeader: !!config.headers['X-Effective-Tenant-Id'],
+        xEffectiveTenantIdValue: config.headers['X-Effective-Tenant-Id'],
+        isImpersonatingTenant,
         // CRITICAL: Check token payload
         tokenPayload: tokenManager.payload
       });
@@ -379,11 +398,12 @@ apiClient.interceptors.response.use(
 
             console.log('[orval-mutator] Refresh response:', {
               status: refreshResp.status,
-              hasAccessToken: !!refreshResp.data?.access_token || !!refreshResp.data?.accessToken
+              hasAccessToken: !!refreshResp.data?.data?.accessToken || !!refreshResp.data?.data?.access_token
             });
 
             if (refreshResp.status === 200 && refreshResp.data) {
-              const newToken = refreshResp.data.access_token || refreshResp.data.accessToken || null;
+              // Backend returns ResponseEnvelope<RefreshTokenResponse>, so accessToken is in data.data
+              const newToken = refreshResp.data?.data?.accessToken || refreshResp.data?.data?.access_token || null;
               if (newToken) {
                 console.log('[orval-mutator] Token refresh successful, updating via TokenManager...');
                 // Use TokenManager to update token (single source of truth)

@@ -4,7 +4,7 @@ Handles appointment CRUD, scheduling, availability
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, Field
 import logging
 
@@ -25,8 +25,6 @@ from core.models.party import Party
 from models.tenant import Tenant
 from services.event_service import event_service
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Appointments"])
@@ -66,7 +64,7 @@ def get_appointments(
     end_date: Optional[str] = None,
     party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=1000),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -227,14 +225,21 @@ def create_appointment(
 
 @router.get("/appointments/availability", operation_id="listAppointmentAvailability", response_model=ResponseEnvelope[AppointmentAvailability])
 def get_availability(
-    date: str,
+    date: str = Query(None),  # Made optional
     duration: int = Query(30, ge=15, le=120),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get available time slots for a date"""
     try:
-        target_date = datetime.fromisoformat(date).date()
+        # If no date provided, use today
+        if not date:
+            from datetime import date as date_module
+            target_date = date_module.today()
+            date_str = target_date.isoformat()
+        else:
+            target_date = datetime.fromisoformat(date).date()
+            date_str = date
         
         query = db_session.query(Appointment).filter(
             func.date(Appointment.date) == target_date,
@@ -271,7 +276,7 @@ def get_availability(
             data={
                 "availableSlots": available_slots,
                 "occupiedSlots": list(occupied_slots),
-                "date": date
+                "date": date_str
             }
         )
     except Exception as e:
@@ -281,7 +286,7 @@ def get_availability(
 
 @router.get("/appointments/list", operation_id="listAppointmentList", response_model=ResponseEnvelope[List[AppointmentRead]])
 def list_appointments(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     party_id: Optional[str] = Query(None, alias="party_id"),
     status: Optional[str] = None,

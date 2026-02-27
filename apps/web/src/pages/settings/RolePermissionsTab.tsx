@@ -33,9 +33,24 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
   team: { label: 'Ekip Yönetimi', icon: <Users className="w-5 h-5" /> },
   reports: { label: 'Raporlar', icon: <BarChart className="w-5 h-5" /> },
   dashboard: { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-  // Newly added categories
   appointments: { label: 'Randevular', icon: <Calendar className="w-5 h-5" /> },
   activity_logs: { label: 'Aktivite Logları', icon: <ClipboardList className="w-5 h-5" /> },
+  // Additional categories
+  patient: { label: 'Hasta (Legacy)', icon: <Users className="w-5 h-5" /> },
+  sale: { label: 'Satış (Legacy)', icon: <ShoppingCart className="w-5 h-5" /> },
+  invoice: { label: 'Fatura (Legacy)', icon: <FileText className="w-5 h-5" /> },
+  appointment: { label: 'Randevu (Legacy)', icon: <Calendar className="w-5 h-5" /> },
+  supplier: { label: 'Tedarikçi', icon: <Package className="w-5 h-5" /> },
+  tenant: { label: 'Tenant', icon: <Settings className="w-5 h-5" /> },
+  user: { label: 'Kullanıcı', icon: <Users className="w-5 h-5" /> },
+  users: { label: 'Kullanıcılar', icon: <Users className="w-5 h-5" /> },
+  branches: { label: 'Şubeler', icon: <Settings className="w-5 h-5" /> },
+  payments: { label: 'Ödemeler', icon: <DollarSign className="w-5 h-5" /> },
+  cash_records: { label: 'Kasa Kayıtları', icon: <DollarSign className="w-5 h-5" /> },
+  campaign: { label: 'Kampanya (Legacy)', icon: <Megaphone className="w-5 h-5" /> },
+  ocr: { label: 'OCR', icon: <FileText className="w-5 h-5" /> },
+  role: { label: 'Rol', icon: <Shield className="w-5 h-5" /> },
+  sms: { label: 'SMS', icon: <Megaphone className="w-5 h-5" /> },
 };
 
 // Role display names

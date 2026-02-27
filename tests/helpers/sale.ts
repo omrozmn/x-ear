@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { waitForModalOpen, waitForModalClose, waitForToast } from './wait';
+import { waitForModalOpen, waitForModalClose, waitForToast } from './wait.helper';
 
 /**
  * Sale Helper Functions

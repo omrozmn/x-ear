@@ -19,7 +19,8 @@ export function ComposerOverlay() {
     const {
         isOpen, setOpen,
         mode, query, context, selectedAction, currentSlot, slots, executionResult,
-        setQuery, selectAction, updateSlot, nextSlot, reset, setExecutionResult
+        setQuery, selectAction, updateSlot, nextSlot, reset, setExecutionResult,
+        startWithCommand
     } = useComposerStore();
 
     const {
@@ -38,8 +39,11 @@ export function ComposerOverlay() {
     const [previewEntity, setPreviewEntity] = useState<EntityItem | null>(null);
 
     // Autocomplete query hook
+    const contextLabel = context && context.length > 0 ? context[0].label : '';
+    const contextType = context && context.length > 0 ? context[0].type : '';
+    const contextId = context && context.length > 0 ? context[0].id : '';
     const { data: autocompleteData, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(
-        { q: query, context_entity_type: context?.type, context_entity_id: context?.id },
+        { q: query, context_entity_type: contextType, context_entity_id: contextId },
         { query: { enabled: query.length > 1 && isOpen } }
     );
 
@@ -190,7 +194,15 @@ export function ComposerOverlay() {
     }, [isOpen, setOpen, onClose]);
 
     const handleSelectEntity = (entity: EntityItem) => {
-        setPreviewEntity(entity);
+        // Default action: Navigate to detail page
+        const path = entity.type === 'patient' ? `/parties/${entity.id}` : `/inventory/${entity.id}`;
+        window.location.href = path; // Using window.location for simplicity, or navigate if available
+        onClose();
+    };
+
+    const handleStageEntity = (entity: EntityItem) => {
+        addStagedEntity(entity);
+        setQuery(''); // Clear search to allow next one
     };
 
     const handleSelectAction = (action: Capability) => {
@@ -256,7 +268,7 @@ export function ComposerOverlay() {
 
     return (
         <div
-            className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-[10vh]"
+            className="fixed inset-0 z-[9999] bg-black/50 flex items-start justify-center pt-[10vh]"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <div className="w-[600px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col min-h-[100px] max-h-[80vh]">
@@ -290,8 +302,14 @@ export function ComposerOverlay() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter' && query.length > 0) {
-                                // If there is a clear action in autocomplete, handoff
+                            if (e.key === 'Enter') {
+                                if (stagedEntities.length > 0 && query.trim().length > 0) {
+                                    // SMART HANDOFF
+                                    startWithCommand(query, stagedEntities);
+                                    setChatVisible(true);
+                                    return;
+                                }
+
                                 if (autocompleteData?.intentType === 'action' && permittedActions.length > 0) {
                                     handleSelectAction(permittedActions[0]);
                                 }
@@ -326,7 +344,7 @@ export function ComposerOverlay() {
                                         <div
                                             key={e.id}
                                             onClick={() => handleSelectEntity(e)}
-                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors group"
                                         >
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600 relative">
                                                 {e.type === 'patient' ? <User size={18} /> : <Box size={18} />}
@@ -348,6 +366,19 @@ export function ComposerOverlay() {
                                                 </div>
                                                 <div className="text-xs text-gray-500 truncate">{e.subLabel || ''}</div>
                                             </div>
+
+                                            <Button
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    handleStageEntity(e);
+                                                }}
+                                                variant="ghost"
+                                                size="sm"
+                                                className="opacity-0 group-hover:opacity-100 bg-blue-50 text-blue-600 hover:bg-blue-100 p-2 h-auto"
+                                                title="AI İşlemine Ekle (Cmd+Enter)"
+                                            >
+                                                <Zap size={16} />
+                                            </Button>
                                         </div>
                                     ))}
                                 </div>
@@ -355,7 +386,7 @@ export function ComposerOverlay() {
 
                             {/* Actions (Filtered by permissions) */}
                             {permittedActions.length > 0 && (
-                                <div>
+                                <div className="mb-3">
                                     <div className="text-xs font-semibold text-gray-500 mb-1 px-2 uppercase tracking-wider">İşlemler</div>
                                     {permittedActions.map((a: Capability) => (
                                         <div
@@ -538,6 +569,38 @@ export function ComposerOverlay() {
                                 </div>
                             )}
 
+                            {/* File Upload Slot Specialty */}
+                            {(currentSlot.uiType as string) === 'file' && (
+                                <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors">
+                                    <label className="cursor-pointer w-full flex flex-col items-center">
+                                        <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
+                                            <Box size={24} />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">Dosya Seçin veya Sürükleyin</span>
+                                        <span className="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max 10MB)</span>
+
+                                        <Input
+                                            type="file"
+                                            className="hidden"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const toastId = toast.loading('Yükleniyor...');
+                                                try {
+                                                    handleFileUpload(file);
+                                                } catch (error) {
+                                                    console.error(error);
+                                                    toast.error('Dosya yüklenemedi');
+                                                } finally {
+                                                    toast.dismiss(toastId);
+                                                }
+                                            }}
+                                        />
+                                    </label>
+                                </div>
+                            )}
+
                             <div className="mt-4 text-xs text-gray-400">
                                 {currentSlot.uiType === 'entity_search' ? 'Listeden seçin' : 'Enter ile onaylayın'}
                             </div>
@@ -550,48 +613,10 @@ export function ComposerOverlay() {
                             entity={previewEntity}
                             onClose={() => setPreviewEntity(null)}
                             onAdd={(e) => {
-                                addStagedEntity(e);
-                                setQuery('');
+                                handleStageEntity(e);
                                 setPreviewEntity(null);
                             }}
                         />
-                    )}
-
-                    {/* File Upload Mode */}
-                    {mode === 'slot_filling' && currentSlot && (currentSlot.uiType as string) === 'file' && (
-                        <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-                            <h3 className="text-lg font-medium mb-3 text-gray-900">{currentSlot.prompt}</h3>
-
-                            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors">
-                                <label className="cursor-pointer w-full flex flex-col items-center">
-                                    <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
-                                        <Box size={24} />
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-700">Dosya Seçin veya Sürükleyin</span>
-                                    <span className="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max 10MB)</span>
-
-                                    <Input
-                                        type="file"
-                                        className="hidden"
-                                        onChange={async (e) => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
-
-                                            const toastId = toast.loading('Yükleniyor...');
-
-                                            try {
-                                                handleFileUpload(file);
-                                            } catch (error) {
-                                                console.error(error);
-                                                toast.error('Dosya yüklenemedi');
-                                            } finally {
-                                                toast.dismiss(toastId);
-                                            }
-                                        }}
-                                    />
-                                </label>
-                            </div>
-                        </div>
                     )}
 
                     {/* Confirmation Mode */}
@@ -606,7 +631,11 @@ export function ComposerOverlay() {
                                 </div>
                                 <div className="flex justify-between items-center mb-3 pb-3 border-b">
                                     <span className="text-gray-500 text-sm">Hedef</span>
-                                    <span className="font-medium">{context?.label || '-'}</span>
+                                    <span className="font-medium">
+                                        {context && context.length > 0
+                                            ? context.map(c => c.label).join(', ')
+                                            : '-'}
+                                    </span>
                                 </div>
                                 {Object.entries(slots)
                                     .filter(([k]) => !k.startsWith('_')) // Hide internal fields

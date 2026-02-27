@@ -10,7 +10,6 @@ from schemas.affiliates import AffiliateRead, AffiliateCreate, AffiliateUpdate, 
 from models.affiliate_user import AffiliateUser
 from services.affiliate_service import AffiliateService
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/affiliates", tags=["Affiliates"])
@@ -57,9 +56,26 @@ async def login_affiliate(data: AffiliateLoginRequest, db: Session = Depends(get
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/me", operation_id="listAffiliateMe", response_model=ResponseEnvelope[AffiliateRead])
-async def get_me(affiliate_id: int, db: Session = Depends(get_db)):
+async def get_me(
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
     """Get current affiliate info"""
     try:
+        # Get affiliate_id from access context (from JWT token)
+        if not hasattr(access, 'user_id') or not access.user_id:
+            raise HTTPException(status_code=401, detail="Not authenticated as affiliate")
+        
+        # user_id might be UUID string or int, handle both
+        try:
+            affiliate_id = int(access.user_id)
+        except (ValueError, TypeError):
+            # If it's a UUID string, query by UUID instead
+            user = db.query(AffiliateUser).filter(AffiliateUser.id == access.user_id).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="Affiliate not found")
+            return ResponseEnvelope(data=user)
+        
         user = AffiliateService.get_affiliate_by_id(db, affiliate_id)
         if not user:
             raise HTTPException(status_code=404, detail="Affiliate not found")

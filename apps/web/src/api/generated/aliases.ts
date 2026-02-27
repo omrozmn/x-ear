@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-27T14:45:58.546Z
+ * Generated: 2026-02-26T10:11:48.773Z
  */
 
 // ACTIVITY_LOGS
@@ -69,6 +69,14 @@ export {
   useListAdminDashboardStats,
 } from './admin-dashboard/admin-dashboard';
 
+// ADMIN_EXAMPLE_DOCUMENTS
+export {
+  useListAdminExampleDocuments,
+  useCreateAdminExampleDocumentUpload,
+  useDeleteAdminExampleDocument,
+  useGetAdminExampleDocumentDownload,
+} from './admin-example-documents/admin-example-documents';
+
 // ADMIN_INTEGRATIONS
 export {
   useListAdminIntegrations,
@@ -77,6 +85,8 @@ export {
   useUpdateAdminIntegrationVatanSmConfig,
   useListAdminIntegrationBirfaturaConfig,
   useUpdateAdminIntegrationBirfaturaConfig,
+  useListAdminIntegrationTelegramConfig,
+  useUpdateAdminIntegrationTelegramConfig,
 } from './admin-integrations/admin-integrations';
 
 // ADMIN_INVENTORY
@@ -114,8 +124,8 @@ export {
 
 // ADMIN_PARTIES
 export {
-  useListAdminParties,
   useGetAdminParty,
+  useListAdminParties,
   useListAdminPartyDevices,
   useListAdminPartySales,
   useListAdminPartyTimeline,
@@ -203,24 +213,28 @@ export {
   useListAdminTenantSmsDocumentDownload,
   useUpdateAdminTenantSmsDocumentStatus,
   useCreateAdminTenantSmsDocumentSendEmail,
+  useListAdminTenantParties,
+  useListAdminTenantSales,
 } from './admin-tenants/admin-tenants';
+
+// ADMIN_TICKETS
+export {
+  useListAdminTickets,
+  useCreateAdminTicket,
+  useUpdateAdminTicket,
+  useCreateAdminTicketResponse,
+} from './admin-tickets/admin-tickets';
 
 // ADMIN
 export {
   useCreateAdminAuthLogin,
-  useCreateAdminUsers,
+  useCreateAdminUser,
   useListAdminUsers,
-  useListAdminUserAll,
-  useUpdateAdminUserAll,
-  useListAdminTickets,
-  useCreateAdminTickets,
-  useUpdateAdminTicket,
-  useCreateAdminTicketResponses,
-  useCreateAdminDebugSwitchRole,
-  useListAdminDebugAvailableRoles,
+  useGetAdminUser,
+  useCreateAdminImpersonate,
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
-  useGetAdminDebugPagePermission,
+  useGetAdminSale,
   useGetDeliverabilityMetrics,
   useCheckDeliverabilityAlerts,
   useGetDeliverabilityTrend,
@@ -481,14 +495,9 @@ export {
 
 // HEARING_PROFILES
 export {
-  useListHearingTests,
-  useCreateHearingTest,
-  useUpdateHearingTest,
-  useDeleteHearingTest,
-  useListHearingEReceipts,
-  useCreateHearingEReceipt,
-  useUpdateHearingEReceipt,
-  useDeleteHearingEReceipt,
+  useCreateHearingProfile,
+  useGetHearingProfile,
+  useUpdateHearingProfile,
 } from './hearing-profiles/hearing-profiles';
 
 // INVENTORY
@@ -505,6 +514,7 @@ export {
   useGetInventory,
   useUpdateInventory as useUpdateInventoryApiInventoryItemIdPut,
   useDeleteInventory as useDeleteInventoryApiInventoryItemIdDelete,
+  useCreateInventoryBulkUpload,
   useCreateInventorySerials,
   useListInventoryMovements,
 } from './inventory/inventory';
@@ -726,8 +736,6 @@ export {
 export {
   useListSgkDocuments,
   useCreateSgkDocuments,
-  useGetSgkDocument,
-  useDeleteSgkDocument,
   useCreateSgkUpload,
   useListPartySgkDocuments,
   useCreateSgkEReceiptQuery,

@@ -31,7 +31,6 @@ import type {
   HTTPValidationError,
   ListAffiliateListParams,
   ListAffiliateLookupParams,
-  ListAffiliateMeParams,
   ResponseEnvelopeAffiliateRead,
   ResponseEnvelopeListAffiliateRead,
   ResponseEnvelopeListCommissionRead
@@ -269,14 +268,13 @@ export const useCreateAffiliateLogin = <TError = HTTPValidationError,
  * @summary Get Me
  */
 export const listAffiliateMe = (
-    params: ListAffiliateMeParams,
+    
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<ResponseEnvelopeAffiliateRead>(
-      {url: `/api/affiliates/me`, method: 'GET',
-        params, signal
+      {url: `/api/affiliates/me`, method: 'GET', signal
     },
       );
     }
@@ -284,23 +282,23 @@ export const listAffiliateMe = (
 
 
 
-export const getListAffiliateMeQueryKey = (params?: ListAffiliateMeParams,) => {
+export const getListAffiliateMeQueryKey = () => {
     return [
-    `/api/affiliates/me`, ...(params ? [params]: [])
+    `/api/affiliates/me`
     ] as const;
     }
 
     
-export const getListAffiliateMeQueryOptions = <TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = HTTPValidationError>(params: ListAffiliateMeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>>, }
+export const getListAffiliateMeQueryOptions = <TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAffiliateMeQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAffiliateMeQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAffiliateMe>>> = ({ signal }) => listAffiliateMe(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAffiliateMe>>> = ({ signal }) => listAffiliateMe(signal);
 
       
 
@@ -310,11 +308,11 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type ListAffiliateMeQueryResult = NonNullable<Awaited<ReturnType<typeof listAffiliateMe>>>
-export type ListAffiliateMeQueryError = HTTPValidationError
+export type ListAffiliateMeQueryError = unknown
 
 
-export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = HTTPValidationError>(
- params: ListAffiliateMeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>> & Pick<
+export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAffiliateMe>>,
           TError,
@@ -323,8 +321,8 @@ export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffilia
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = HTTPValidationError>(
- params: ListAffiliateMeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>> & Pick<
+export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAffiliateMe>>,
           TError,
@@ -333,20 +331,20 @@ export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffilia
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = HTTPValidationError>(
- params: ListAffiliateMeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>>, }
+export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Me
  */
 
-export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = HTTPValidationError>(
- params: ListAffiliateMeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>>, }
+export function useListAffiliateMe<TData = Awaited<ReturnType<typeof listAffiliateMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateMe>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListAffiliateMeQueryOptions(params,options)
+  const queryOptions = getListAffiliateMeQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

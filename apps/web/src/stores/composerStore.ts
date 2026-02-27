@@ -19,7 +19,7 @@ interface ComposerState {
     query: string;
 
     // Context State
-    context: EntityItem | null;
+    context: EntityItem[] | null;
 
     // Action State
     availableActions: Capability[];
@@ -38,9 +38,10 @@ interface ComposerState {
     toggleOpen: () => void;
 
     setQuery: (q: string) => void;
-    setContext: (entity: EntityItem | null) => void;
+    setContext: (entities: EntityItem[] | null) => void;
     setAvailableActions: (actions: Capability[]) => void;
     selectAction: (action: Capability, entities?: EntityItem[]) => void;
+    startWithCommand: (prompt: string, entities: EntityItem[]) => void;
 
     updateSlot: (key: string, value: unknown) => void;
     nextSlot: () => void; // Advances to next slot or confirmation
@@ -87,10 +88,10 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
 
     setQuery: (q) => set({ query: q }),
 
-    setContext: (entity) => set({
-        context: entity,
-        mode: entity ? 'context_locked' : 'idle',
-        query: '', // Clear query when context locked
+    setContext: (entities) => set({
+        context: entities,
+        mode: (entities && entities.length > 0) ? 'context_locked' : 'idle',
+        query: '',
         selectedAction: null,
         slots: {}
     }),
@@ -101,8 +102,8 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         const currentState = get();
         const initialSlots: Record<string, unknown> = {};
 
-        // Unified source for entities (either passed or from single context)
-        const sourceEntities = entities || (currentState.context ? [currentState.context] : []);
+        // Unified source for entities (either passed or from context)
+        const sourceEntities = entities || currentState.context || [];
 
         // Map all source entities to available slots
         sourceEntities.forEach(entity => {
@@ -184,5 +185,14 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         executionSteps: state.executionSteps.map(s => s.id === id ? { ...s, ...updates } : s)
     })),
 
-    setExecutionError: (error) => set({ executionError: error })
+    setExecutionError: (error) => set({ executionError: error }),
+
+    startWithCommand: (prompt, entities) => {
+        set({
+            context: entities,
+            query: prompt,
+            mode: 'idle', // Chat will handle the rest
+            isOpen: false
+        });
+    }
 }));

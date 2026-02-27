@@ -46,9 +46,9 @@ export const SalesList: React.FC<SalesListProps> = ({
   }, []);
   if (filteredSales.length === 0) {
     return (
-      <div className="text-center py-12" role="status">
+      <div className="text-center py-12" role="status" data-testid="sales-empty-state">
         <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-gray-900 mb-2" data-testid="sales-empty-title">
           {sales.length === 0
             ? 'Henüz satış yapılmamış'
             : hasActiveFilters
@@ -56,7 +56,7 @@ export const SalesList: React.FC<SalesListProps> = ({
               : 'Henüz satış kaydı bulunmuyor'
           }
         </h3>
-        <p className="text-gray-500">
+        <p className="text-gray-500" data-testid="sales-empty-description">
           {sales.length === 0
             ? 'Bu hastaya henüz satış işlemi gerçekleştirilmemiş.'
             : hasActiveFilters
@@ -222,47 +222,47 @@ export const SalesList: React.FC<SalesListProps> = ({
   };
 
   return (
-    <div className="relative">
-      <div className="overflow-x-auto" role="table" aria-label="Hasta satışları tablosu">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+    <div className="relative" data-testid="sales-list-container">
+      <div className="overflow-x-auto" role="table" aria-label="Hasta satışları tablosu" data-testid="sales-table-container">
+        <table className="min-w-full divide-y divide-gray-200" data-testid="sales-table">
+          <thead className="bg-gray-50" data-testid="sales-table-head">
+            <tr data-testid="sales-table-header-row">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-date">
                 Satış ID/Tarih
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-product">
                 Ürün/Hizmet
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-barcode">
                 Barkod/Seri No
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-listprice">
                 Liste Fiyatı
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-discount">
                 İndirim
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-sgk">
                 SGK Desteği
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-total">
                 Toplam Tutar
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-paid">
                 Alınan Ödeme
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-remaining">
                 Kalan Tutar
               </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-status">
                 Durum
               </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-actions">
                 İşlemler
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-200" data-testid="sales-table-body">
             {filteredSales.map((sale) => {
               const paid = calculatePaidAmount(sale);
               const remaining = calculateRemaining(sale);
@@ -274,44 +274,46 @@ export const SalesList: React.FC<SalesListProps> = ({
                   className={`hover:bg-gray-50 ${paid > 0 && remaining > 0 ? 'bg-yellow-50' : ''} ${cancelledClass} cursor-pointer transition-colors`}
                   onClick={() => onSaleClick(sale)}
                   role="row"
+                  data-testid={`sales-row-${sale.id}`}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="font-medium">{sale.id}</div>
-                    <div className="text-xs text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-testid="sales-cell-date">
+                    <div className="font-medium" data-testid="sales-id">{sale.id}</div>
+                    <div className="text-xs text-gray-600" data-testid="sales-date">
                       {new Date(sale.saleDate || sale.createdAt || '').toLocaleDateString('tr-TR')}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600" data-testid="sales-cell-product">
                     {renderDevicesSummary(sale)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-testid="sales-cell-barcode">
                     {renderBarcodeSerialInfo(sale)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900" data-testid="sales-cell-listprice">
                     {formatCurrency((sale as unknown as ExtendedSaleRead).totalAmount || 0)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600" data-testid="sales-cell-discount">
                     {(sale as unknown as ExtendedSaleRead).discountAmount ? `-${formatCurrency((sale as unknown as ExtendedSaleRead).discountAmount)}` : formatCurrency(0)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600" data-testid="sales-cell-sgk">
                     {(sale as unknown as ExtendedSaleRead).sgkCoverage ? `-${formatCurrency((sale as unknown as ExtendedSaleRead).sgkCoverage)}` : formatCurrency(0)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900" data-testid="sales-cell-total">
                     {formatCurrency(calculateTotalWithVat(sale))}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-green-700">
-                    <div>{formatCurrency(paid)}</div>
-                    <div className="text-xs text-gray-600">{renderPaymentMethods(sale)}</div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-green-700" data-testid="sales-cell-paid">
+                    <div data-testid="sales-paid-amount">{formatCurrency(paid)}</div>
+                    <div className="text-xs text-gray-600" data-testid="sales-payment-method">{renderPaymentMethods(sale)}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-orange-700">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-orange-700" data-testid="sales-cell-remaining">
                     {formatCurrency(remaining)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-center" data-testid="sales-cell-status">
                     {renderStatusBadge(sale.status || '', paid, remaining)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center relative" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-6 py-4 whitespace-nowrap text-center relative" onClick={(e) => e.stopPropagation()} data-testid="sales-cell-actions">
                     <button
                       data-allow-raw="true"
+                      data-testid={`sales-action-menu-button-${sale.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setOpenMenuSaleId(prev => prev === sale.id ? null : (sale.id as string));
@@ -329,6 +331,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           <li>
                             <button
                               data-allow-raw="true"
+                              data-testid={`sales-action-view-invoice-${sale.id}`}
                               onClick={(e) => { e.stopPropagation(); onViewInvoice(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -338,6 +341,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           <li>
                             <button
                               data-allow-raw="true"
+                              data-testid={`sales-action-create-invoice-${sale.id}`}
                               onClick={(e) => { e.stopPropagation(); onCreateInvoice(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -347,6 +351,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           <li>
                             <button
                               data-allow-raw="true"
+                              data-testid={`sales-action-collect-payment-${sale.id}`}
                               onClick={(e) => { e.stopPropagation(); onCollectPayment(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -356,6 +361,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           <li>
                             <button
                               data-allow-raw="true"
+                              data-testid={`sales-action-promissory-notes-${sale.id}`}
                               onClick={(e) => { e.stopPropagation(); onManagePromissoryNotes(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
@@ -365,6 +371,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                           <li>
                             <button
                               data-allow-raw="true"
+                              data-testid={`sales-action-installments-${sale.id}`}
                               onClick={(e) => { e.stopPropagation(); onManageInstallments(sale); setOpenMenuSaleId(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >

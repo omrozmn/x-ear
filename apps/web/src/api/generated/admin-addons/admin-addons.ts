@@ -31,7 +31,7 @@ import type {
   AddonUpdate,
   HTTPValidationError,
   ListAdminAddonsParams,
-  ResponseEnvelope
+  SchemasBaseResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -363,7 +363,7 @@ export const deleteAdminAddon = (
  ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/addons/${addonId}`, method: 'DELETE'
     },
       );

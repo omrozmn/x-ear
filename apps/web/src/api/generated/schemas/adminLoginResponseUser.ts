@@ -5,7 +5,5 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { AdminUserRead } from './adminUserRead';
-import type { AdminLoginResponseUserAnyOf } from './adminLoginResponseUserAnyOf';
 
-export type AdminLoginResponseUser = AdminUserRead | AdminLoginResponseUserAnyOf | null;
+export type AdminLoginResponseUser = { [key: string]: unknown };

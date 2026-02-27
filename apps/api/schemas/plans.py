@@ -9,6 +9,7 @@ from .base import AppBaseModel, IDMixin, TimestampMixin
 class PlanBase(AppBaseModel):
     """Base plan schema"""
     name: str = Field(..., description="Plan name")
+    slug: Optional[str] = Field(None, description="Plan slug (auto-generated if not provided)")
     description: Optional[str] = Field(None, description="Plan description")
     plan_type: str = Field("BASIC", alias="planType", description="Plan type")
     price: float = Field(..., description="Plan price")

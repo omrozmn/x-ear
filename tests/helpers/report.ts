@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { waitForApiCall } from './wait';
+import { waitForApiCall } from './wait.helper';
 
 /**
  * Report Helper Functions

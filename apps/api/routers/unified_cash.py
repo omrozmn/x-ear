@@ -15,7 +15,6 @@ from database import get_db
 from schemas.base import ResponseEnvelope
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["UnifiedCash"])
@@ -101,7 +100,7 @@ def get_unified_cash_records(
             
             for sale in sales:
                 patient = db.get(Party, sale.party_id) if sale.party_id else None
-                patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
+                party_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
                 
                 record = {
                     'id': f"sale_{sale.id}",
@@ -110,7 +109,7 @@ def get_unified_cash_records(
                     'date': sale.created_at.isoformat() if sale.created_at else datetime.now(timezone.utc).isoformat(),
                     'transactionType': 'income',
                     'partyId': sale.party_id,
-                    'patientName': patient_name,
+                    'patientName': party_name,
                     'amount': float(sale.total_amount or 0),
                     'status': sale.status or 'pending',
                     'description': f"Satış - {sale.notes or ''}",
@@ -139,7 +138,7 @@ def get_unified_cash_records(
             
             for payment in payments:
                 patient = db.get(Party, payment.party_id) if payment.party_id else None
-                patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
+                party_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
                 
                 transaction_type = 'income' if (payment.amount or 0) >= 0 else 'expense'
                 
@@ -150,7 +149,7 @@ def get_unified_cash_records(
                     'date': payment.payment_date.isoformat() if payment.payment_date else datetime.now(timezone.utc).isoformat(),
                     'transactionType': transaction_type,
                     'partyId': payment.party_id,
-                    'patientName': patient_name,
+                    'patientName': party_name,
                     'amount': float(payment.amount or 0),
                     'status': payment.status or 'paid',
                     'description': payment.notes or f"{payment.payment_type or 'Ödeme'} - {payment.payment_method or ''}",
@@ -184,7 +183,7 @@ def get_unified_cash_records(
                     continue
                 
                 patient = db.get(Party, cash_record.party_id) if cash_record.party_id else None
-                patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
+                party_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
                 
                 transaction_type = 'income' if (cash_record.amount or 0) >= 0 else 'expense'
                 
@@ -195,7 +194,7 @@ def get_unified_cash_records(
                     'date': cash_record.payment_date.isoformat() if cash_record.payment_date else datetime.now(timezone.utc).isoformat(),
                     'transactionType': transaction_type,
                     'partyId': cash_record.party_id,
-                    'patientName': patient_name,
+                    'patientName': party_name,
                     'amount': float(cash_record.amount or 0),
                     'status': cash_record.status or 'paid',
                     'description': cash_record.notes or 'Nakit işlem',

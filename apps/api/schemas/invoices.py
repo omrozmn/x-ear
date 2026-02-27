@@ -4,7 +4,7 @@ Invoice Schemas - Pydantic models for Invoice domain
 from typing import Optional, List, Any, Dict
 from datetime import datetime
 from enum import Enum
-from pydantic import Field
+from pydantic import Field, field_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
@@ -67,6 +67,7 @@ class InvoiceBase(AppBaseModel):
 
 class InvoiceCreate(InvoiceBase):
     """Schema for creating an invoice"""
+    tenant_id: str = Field(..., alias="tenantId")  # Required for admin
     party_id: Optional[str] = Field(None, alias="partyId")
     sale_id: Optional[str] = Field(None, alias="saleId")
     items: List[InvoiceItemBase] = Field(default=[], description="Invoice items")
@@ -76,6 +77,14 @@ class InvoiceCreate(InvoiceBase):
     return_reference_number: Optional[str] = Field(None, alias="returnReferenceNumber")
     return_reference_date: Optional[datetime] = Field(None, alias="returnReferenceDate")
     metadata: Optional[Dict[str, Any]] = Field(None, alias="metadata")
+    
+    class Config:
+        populate_by_name = True
+        
+    @property
+    def tenant_id(self):
+        """Provide tenant_id access for backward compatibility"""
+        return getattr(self, 'tenantId', None)
 
 
 class InvoiceUpdate(AppBaseModel):
@@ -112,6 +121,18 @@ class InvoiceRead(AppBaseModel, TimestampMixin):
     notes: Optional[str] = None
     created_by: Optional[str] = Field(None, alias="createdBy")
     
+    @field_validator('sent_to_gib_at', mode='before')
+    @classmethod
+    def serialize_sent_to_gib_at(cls, v):
+        """Convert datetime to ISO string"""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            return v
+        if hasattr(v, 'isoformat'):
+            return v.isoformat()
+        return str(v)
+    
     # E-Document fields
     edocument_status: Optional[str] = Field(None, alias="edocumentStatus")
     edocument_type: Optional[str] = Field(None, alias="edocumentType")
@@ -124,12 +145,41 @@ class InvoiceRead(AppBaseModel, TimestampMixin):
     birfatura_sent_at: Optional[str] = Field(None, alias="birfaturaSentAt")
     birfatura_approved_at: Optional[str] = Field(None, alias="birfaturaApprovedAt")
     
+    @field_validator('birfatura_sent_at', 'birfatura_approved_at', mode='before')
+    @classmethod
+    def serialize_datetime_fields(cls, v):
+        """Convert datetime to ISO string"""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            return v
+        if hasattr(v, 'isoformat'):
+            return v.isoformat()
+        return str(v)
+    
     # New fields
     tax_office: Optional[str] = Field(None, alias="taxOffice")
     return_reference_number: Optional[str] = Field(None, alias="returnReferenceNumber")
     return_reference_date: Optional[str] = Field(None, alias="returnReferenceDate")
     remote_message: Optional[str] = Field(None, alias="remoteMessage")
     metadata_json: Optional[Dict[str, Any]] = Field(None, alias="metadata")
+    
+    @field_validator('metadata_json', mode='before')
+    @classmethod
+    def parse_metadata(cls, v):
+        """Convert string '{}' or None to empty dict, parse JSON strings"""
+        if v is None or v == '':
+            return {}
+        if isinstance(v, str):
+            if v in ('{}', '[]', ''):
+                return {}
+            try:
+                import json
+                parsed = json.loads(v)
+                return parsed if isinstance(parsed, dict) else {}
+            except:
+                return {}
+        return v if isinstance(v, dict) else {}
 
 
 

@@ -226,7 +226,7 @@ export const useCreateInvoiceCopyCancel = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Serve invoice PDF
+ * Serve dynamically generated invoice PDF
  * @summary Serve Invoice Pdf
  */
 export const listInvoicePdf = (

@@ -103,12 +103,14 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
           <PartyAppointmentsTab party={party} onPartyUpdate={onPartyUpdate || (() => { })} />
         </ErrorBoundary>
       );
+    /* İşitme Testleri Tab - Geçici olarak devre dışı
     case 'hearing-tests':
       return (
         <ErrorBoundary>
           <PartyHearingTestsTab />
         </ErrorBoundary>
       );
+    */
     case 'sgk':
       return (
         <ErrorBoundary>

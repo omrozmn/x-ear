@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers/auth.helpers';
-import { createTestParty, deleteTestParty, updateParty } from './helpers/party.helpers';
+import { login } from '../../../tests/helpers/auth.helpers';
+import { createTestParty, deleteTestParty, updateParty } from '../../../tests/helpers/party.helpers';
 
 test.describe('Party CRUD Tests', () => {
   

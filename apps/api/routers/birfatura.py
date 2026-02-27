@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import logging
 
@@ -166,6 +166,9 @@ async def sync_invoices(
     """Sync invoices from BirFatura API"""
     if not access.tenant_id:
         raise HTTPException(status_code=400, detail="Tenant context required")
+    
+    # Initialize sync service
+    sync_service = InvoiceSyncService(db)
     
     start_date = None
     end_date = None

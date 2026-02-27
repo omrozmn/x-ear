@@ -1,12 +1,30 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E Test Configuration
+ * Unified Playwright E2E Test Configuration
  * 
- * See https://playwright.dev/docs/test-configuration
+ * Supports 3 applications:
+ * - Web App (localhost:8080)
+ * - Admin Panel (localhost:8082)
+ * - Landing Page (localhost:3000)
+ * 
+ * Also requires Backend API (localhost:5003)
+ * 
+ * Usage:
+ *   npx playwright test                    # Run all projects
+ *   npx playwright test --project=web       # Run web tests only
+ *   npx playwright test --project=admin     # Run admin tests only
+ *   npx playwright test --project=landing  # Run landing tests only
+ *   npx playwright test --list --project=web # List web tests
  */
+
+// Storage state paths for authentication reuse
+const webStorageState = 'test-results/.auth-web.json';
+const adminStorageState = 'test-results/.auth-admin.json';
+
 export default defineConfig({
-  testDir: './apps/web/e2e',
+  // Root test directory
+  testDir: './tests/e2e',
   
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -33,17 +51,14 @@ export default defineConfig({
   
   /* Shared settings for all the projects below */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')` */
-    baseURL: process.env.BASE_URL || 'http://localhost:8080',
-    
     /* Collect trace when retrying the failed test */
-    trace: 'on',
+    trace: 'on-first-retry',
     
     /* Screenshot on failure */
-    screenshot: 'on',
+    screenshot: 'only-on-failure',
     
     /* Video on failure */
-    video: 'on',
+    video: 'retain-on-failure',
     
     /* Maximum time each action can take */
     actionTimeout: 30000,
@@ -55,19 +70,115 @@ export default defineConfig({
     headless: true,
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects for all 3 apps */
   projects: [
+    // ================== WEB APP ==================
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'web-auth-setup',
+      testDir: './tests/e2e/auth',
+      use: {
+        baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+        /* Store auth state for reuse by web tests - will be created on first run */
+        storageState: { cookies: [], origins: [] },
+      },
+      fullyParallel: false,
+      retries: 0,
+      /* This project sets up auth state - must run first */
+    },
+    {
+      name: 'web',
+      testDir: './tests/e2e/web',
+      use: {
+        baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+        ...devices['Desktop Chrome'],
+        /* Reuse auth state from web-auth-setup */
+        storageState: webStorageState,
+      },
+      dependencies: ['web-auth-setup'],
+    },
+    
+    // ================== ADMIN PANEL ==================
+    {
+      name: 'admin-auth-setup',
+      testDir: './tests/e2e/auth',
+      use: {
+        baseURL: process.env.ADMIN_BASE_URL || 'http://localhost:8082',
+        /* Do not pre-load storageState for auth setup; tests will create it */
+        storageState: undefined,
+      },
+      fullyParallel: false,
+      retries: 0,
+      /* This project sets up auth state - must run first */
+    },
+    {
+      name: 'admin',
+      testDir: './tests/e2e/admin',
+      use: {
+        baseURL: process.env.ADMIN_BASE_URL || 'http://localhost:8082',
+        ...devices['Desktop Chrome'],
+        /* Do not preload storage state here; auth setup will login programmatically when needed */
+        storageState: undefined,
+      },
+      dependencies: ['admin-auth-setup'],
+    },
+    
+    // ================== LANDING PAGE ==================
+    {
+      name: 'landing',
+      testDir: './tests/e2e/landing',
+      use: {
+        baseURL: process.env.LANDING_BASE_URL || 'http://localhost:3000',
+        ...devices['Desktop Chrome'],
+      },
+      /* Landing page typically doesn't need auth */
+    },
+
+    // ================== PUBLIC WEB (No Auth Required) ==================
+    {
+      name: 'web-public',
+      testDir: './tests/e2e/web/auth',
+      use: {
+        baseURL: process.env.WEB_BASE_URL || 'http://localhost:8080',
+        ...devices['Desktop Chrome'],
+        /* No auth state needed for public pages */
+        storageState: undefined,
+      },
+      /* Independent - no auth setup needed */
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run dev',
-  //   url: 'http://localhost:8080',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120000,
-  // },
+  /* Run local dev servers before starting the tests */
+  webServer: [
+    // Backend API
+    {
+      command: 'cd apps/api && .venv/bin/python main.py',
+      url: 'http://localhost:5003/health',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+    // Web App
+    {
+      command: 'cd apps/web && npm run dev',
+      url: 'http://localhost:8080',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+    // Admin Panel
+    {
+      command: 'cd apps/admin && npm run dev',
+      url: 'http://localhost:8082',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+    // Landing Page
+    {
+      command: 'cd apps/landing && npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+  ],
+  
+  /* Output directory for test artifacts */
+  outputDir: 'test-results',
 });

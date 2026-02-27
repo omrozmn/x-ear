@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import time
 import logging
@@ -20,6 +20,7 @@ from schemas.replacements import (
 )
 
 router = APIRouter(tags=["Replacements"])
+logger = logging.getLogger(__name__)
 
 @router.get("/parties/{party_id}/replacements", operation_id="listPatientReplacements", response_model=ResponseEnvelope[list[ReplacementRead]])
 async def get_patient_replacements(
@@ -56,8 +57,8 @@ async def create_patient_replacement(
         
         replacement_id = f"REPL-{int(time.time() * 1000)}"
         
-        old_info = json.dumps(data.oldDeviceInfo, ensure_ascii=False) if data.oldDeviceInfo else None
-        new_info = json.dumps(data.newDeviceInfo, ensure_ascii=False) if data.newDeviceInfo else None
+        old_info = json.dumps(data.old_device_info, ensure_ascii=False) if data.old_device_info else None
+        new_info = json.dumps(data.new_device_info, ensure_ascii=False) if data.new_device_info else None
         
         r = Replacement(
             id=replacement_id,
@@ -72,7 +73,7 @@ async def create_patient_replacement(
             status="pending",
             price_difference=data.price_difference,
             notes=data.notes,
-            created_by=data.created_by or access.user.get("id", "system")
+            created_by=data.created_by or (access.user.id if access.user else "system")
         )
         db.add(r)
         db.commit()

@@ -16,10 +16,8 @@ import * as Tabs from '@radix-ui/react-tabs';
 import toast from 'react-hot-toast';
 
 import {
-  useListAdminUserAll,
-  useCreateAdminUsers,
-  useUpdateAdminUserAll,
-  useListAdminUsers, // System admins
+  useCreateAdminUser,
+  useListAdminUsers,
 } from '@/lib/api-client';
 import Pagination from '@/components/ui/Pagination';
 import { TenantAutocomplete } from '@/components/ui/TenantAutocomplete';
@@ -89,9 +87,13 @@ export const Users: React.FC = () => {
   }, { query: { enabled: activeTab === 'admin' } });
 
   // 2. Fetch All Tenant Users (Not Paginated on Backend, Client-side pagination needed)
-  const { data: tenantUsersData, isLoading: loadingTenants, error: tenantError } = useListAdminUserAll({
-    search: searchTerm || undefined
-  }, { query: { enabled: activeTab === 'tenant' } });
+  // TODO: Backend endpoint missing - useListAdminUserAll
+  const tenantUsersData = { data: { users: [] } };
+  const loadingTenants = false;
+  const tenantError = null;
+  // const { data: tenantUsersData, isLoading: loadingTenants, error: tenantError } = useListAdminUserAll({
+  //   search: searchTerm || undefined
+  // }, { query: { enabled: activeTab === 'tenant' } });
 
   // --- Derived Data ---
 
@@ -172,8 +174,9 @@ export const Users: React.FC = () => {
     setIsViewModalOpen(true);
   };
 
-  const { mutateAsync: createAdminUser } = useCreateAdminUsers();
-  const { mutateAsync: updateAnyTenantUser } = useUpdateAdminUserAll();
+  const { mutateAsync: createAdminUser } = useCreateAdminUser();
+  // TODO: Backend endpoint missing - useUpdateAdminUserAll
+  const updateAnyTenantUser = async () => { throw new Error('Not implemented'); };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

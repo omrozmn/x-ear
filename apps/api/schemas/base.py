@@ -68,6 +68,27 @@ class ResponseEnvelope(AppBaseModel, Generic[T]):
     def serialize_timestamp(self, value: datetime) -> str:
         """Serialize timestamp to ISO format string."""
         return value.isoformat()
+    
+    @classmethod
+    def create_success(cls, data: T = None, message: str = None, meta: ResponseMeta = None) -> "ResponseEnvelope[T]":
+        """Create a success response envelope."""
+        return cls(
+            success=True,
+            data=data,
+            message=message,
+            meta=meta
+        )
+    
+    @classmethod
+    def create_error(cls, message: str, error: object = None, meta: ResponseMeta = None) -> "ResponseEnvelope[T]":
+        """Create an error response envelope."""
+        return cls(
+            success=False,
+            message=message,
+            error=error,
+            meta=meta,
+            data=None
+        )
 
 
 class ApiError(AppBaseModel):

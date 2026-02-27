@@ -1,0 +1,223 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - button [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - generic [ref=e8]:
+          - img "X-Ear Logo" [ref=e9]
+          - heading "X-EAR CRM" [level=2] [ref=e10]
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - generic [ref=e13] [cursor=pointer]:
+            - img [ref=e15]
+            - generic [ref=e17]: Dashboard
+        - listitem [ref=e18]:
+          - generic [ref=e19] [cursor=pointer]:
+            - img [ref=e21]
+            - generic [ref=e26]: Patients
+        - listitem [ref=e27]:
+          - generic [ref=e28] [cursor=pointer]:
+            - img [ref=e30]
+            - generic [ref=e32]: Appointments
+        - listitem [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e39]: Invoices
+            - img [ref=e41]
+        - listitem [ref=e43]:
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e46]
+            - generic [ref=e50]: Inventory
+        - listitem [ref=e51]:
+          - generic [ref=e52] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e58]: Suppliers
+        - listitem [ref=e59]:
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e62]
+            - generic [ref=e64]: POS
+        - listitem [ref=e65]:
+          - generic [ref=e66] [cursor=pointer]:
+            - img [ref=e68]
+            - generic [ref=e72]: Cashflow
+        - listitem [ref=e73]:
+          - generic [ref=e74] [cursor=pointer]:
+            - img [ref=e76]
+            - generic [ref=e78]: SMS Campaign
+        - listitem [ref=e79]:
+          - generic [ref=e80] [cursor=pointer]:
+            - img [ref=e82]
+            - generic [ref=e85]: Reports
+        - listitem [ref=e86]:
+          - generic [ref=e87] [cursor=pointer]:
+            - img [ref=e89]
+            - generic [ref=e92]: Automation
+        - listitem [ref=e93]:
+          - generic [ref=e94] [cursor=pointer]:
+            - img [ref=e96]
+            - generic [ref=e99]: Settings
+            - img [ref=e101]
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - generic [ref=e105]:
+          - heading "Dashboard" [level=1] [ref=e106]
+          - generic [ref=e108] [cursor=pointer]:
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - img [ref=e113]
+              - generic [ref=e116]: Search or start action with AI...
+            - generic [ref=e118]:
+              - generic [ref=e119]: ⌘
+              - text: K
+          - generic [ref=e120]:
+            - button "Koyu Tema" [ref=e121] [cursor=pointer]:
+              - img [ref=e122]
+            - button "TR" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e129]: TR
+            - button "Notifications" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+            - 'button "Tenant: tenant_0..." [ref=e136] [cursor=pointer]':
+              - img [ref=e137]
+              - generic [ref=e141]: "Tenant: tenant_0..."
+              - img [ref=e142]
+            - 'button "Debug: super_admin" [ref=e145] [cursor=pointer]':
+              - img [ref=e146]
+              - generic [ref=e155]: "Debug: super_admin"
+              - img [ref=e156]
+            - button "e2etest super_admin" [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e164]:
+                - generic [ref=e165]: e2etest
+                - generic [ref=e166]: super_admin
+              - img [ref=e167]
+      - main [ref=e169]:
+        - generic [ref=e171]:
+          - generic [ref=e173]:
+            - generic [ref=e174]:
+              - heading "Appointments" [level=1] [ref=e175]
+              - paragraph [ref=e176]: Manage and track patient appointments
+            - button "New Appointment" [ref=e177] [cursor=pointer]:
+              - img [ref=e178]
+              - text: New Appointment
+          - generic [ref=e180]:
+            - generic [ref=e182]:
+              - img [ref=e185]
+              - generic [ref=e187]:
+                - paragraph [ref=e188]: Total Appointments
+                - paragraph [ref=e189]: "0"
+            - generic [ref=e191]:
+              - img [ref=e194]
+              - generic [ref=e196]:
+                - paragraph [ref=e197]: Completed
+                - paragraph [ref=e198]: "0"
+            - generic [ref=e200]:
+              - img [ref=e203]
+              - generic [ref=e205]:
+                - paragraph [ref=e206]: Pending
+                - paragraph [ref=e207]: "0"
+            - generic [ref=e209]:
+              - img [ref=e212]
+              - generic [ref=e214]:
+                - paragraph [ref=e215]: Cancelled/No Show
+                - paragraph [ref=e216]: "0"
+          - generic [ref=e218]:
+            - generic [ref=e221]:
+              - button "Day" [ref=e222] [cursor=pointer]
+              - button "Week" [ref=e223] [cursor=pointer]
+              - button "Month" [ref=e224] [cursor=pointer]
+              - button "List" [ref=e225] [cursor=pointer]
+            - generic [ref=e226]:
+              - generic [ref=e228]:
+                - combobox [ref=e229]:
+                  - option "All" [selected]
+                  - option "Beklemede"
+                  - option "Confirmed"
+                  - option "Completed"
+                  - option "Cancelled"
+                  - option "No Show"
+                  - option "Rescheduled"
+                - generic:
+                  - img
+              - generic [ref=e231]:
+                - combobox [active] [ref=e232]:
+                  - option "Tümü" [selected]
+                  - option "Bugün"
+                  - option "Bu Hafta"
+                  - option "Bu Ay"
+                - generic:
+                  - img
+              - generic [ref=e233]:
+                - textbox "Patient name, doctor, notes..." [ref=e236]
+                - button "Search" [ref=e237] [cursor=pointer]
+            - generic [ref=e239]:
+              - generic [ref=e240]:
+                - generic [ref=e241]:
+                  - button "←" [ref=e242] [cursor=pointer]
+                  - paragraph [ref=e243]: Şubat 2026
+                  - button "→" [ref=e244] [cursor=pointer]
+                - button "Bu Ay" [ref=e245] [cursor=pointer]
+              - generic [ref=e246]:
+                - generic [ref=e247]:
+                  - paragraph [ref=e249]: Pzt
+                  - paragraph [ref=e251]: Sal
+                  - paragraph [ref=e253]: Çar
+                  - paragraph [ref=e255]: Per
+                  - paragraph [ref=e257]: Cum
+                  - paragraph [ref=e259]: Cmt
+                  - paragraph [ref=e261]: Paz
+                - generic [ref=e262]:
+                  - paragraph [ref=e266] [cursor=pointer]: "26"
+                  - paragraph [ref=e271] [cursor=pointer]: "27"
+                  - paragraph [ref=e276] [cursor=pointer]: "28"
+                  - paragraph [ref=e281] [cursor=pointer]: "29"
+                  - paragraph [ref=e286] [cursor=pointer]: "30"
+                  - paragraph [ref=e291] [cursor=pointer]: "31"
+                  - paragraph [ref=e296] [cursor=pointer]: "1"
+                  - paragraph [ref=e301] [cursor=pointer]: "2"
+                  - paragraph [ref=e306] [cursor=pointer]: "3"
+                  - paragraph [ref=e311] [cursor=pointer]: "4"
+                  - paragraph [ref=e316] [cursor=pointer]: "5"
+                  - paragraph [ref=e321] [cursor=pointer]: "6"
+                  - paragraph [ref=e326] [cursor=pointer]: "7"
+                  - paragraph [ref=e331] [cursor=pointer]: "8"
+                  - paragraph [ref=e336] [cursor=pointer]: "9"
+                  - paragraph [ref=e341] [cursor=pointer]: "10"
+                  - paragraph [ref=e346] [cursor=pointer]: "11"
+                  - paragraph [ref=e351] [cursor=pointer]: "12"
+                  - paragraph [ref=e356] [cursor=pointer]: "13"
+                  - paragraph [ref=e361] [cursor=pointer]: "14"
+                  - paragraph [ref=e366] [cursor=pointer]: "15"
+                  - paragraph [ref=e371] [cursor=pointer]: "16"
+                  - paragraph [ref=e376] [cursor=pointer]: "17"
+                  - paragraph [ref=e381] [cursor=pointer]: "18"
+                  - paragraph [ref=e386] [cursor=pointer]: "19"
+                  - paragraph [ref=e391] [cursor=pointer]: "20"
+                  - paragraph [ref=e396] [cursor=pointer]: "21"
+                  - paragraph [ref=e401] [cursor=pointer]: "22"
+                  - paragraph [ref=e406] [cursor=pointer]: "23"
+                  - paragraph [ref=e411] [cursor=pointer]: "24"
+                  - paragraph [ref=e416] [cursor=pointer]: "25"
+                  - paragraph [ref=e421] [cursor=pointer]: "26"
+                  - paragraph [ref=e426] [cursor=pointer]: "27"
+                  - paragraph [ref=e431] [cursor=pointer]: "28"
+                  - paragraph [ref=e436] [cursor=pointer]: "1"
+        - button "Sayfa İzinlerini Görüntüle" [ref=e438] [cursor=pointer]:
+          - img [ref=e439]
+  - generic:
+    - contentinfo:
+      - button "Open TanStack Router Devtools" [ref=e442] [cursor=pointer]:
+        - generic [ref=e443]:
+          - img [ref=e445]
+          - img [ref=e480]
+        - generic [ref=e514]: "-"
+        - generic [ref=e515]: TanStack Router
+  - generic [ref=e516]:
+    - img [ref=e518]
+    - button "Open Tanstack query devtools" [ref=e566] [cursor=pointer]:
+      - img [ref=e567]
+```

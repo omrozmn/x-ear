@@ -21,6 +21,7 @@ init(autoreset=True)
 BASE_URL = "http://localhost:5003"
 ADMIN_EMAIL = "admin@x-ear.com"
 ADMIN_PASSWORD = "admin123"
+TARGET_TENANT_ID = "938ab3ec-192a-4f89-8a63-6941212e2f2a"
 
 # Test results storage
 test_results = {
@@ -36,6 +37,7 @@ class EndpointTester:
         self.base_url = base_url
         self.session = requests.Session()
         self.admin_token = None
+        self.impersonation_token = None
         # Add Idempotency-Key required by server for write operations
         self.headers = {"Content-Type": "application/json", "Idempotency-Key": "test-run-key"}
         
@@ -132,14 +134,54 @@ class EndpointTester:
             
             if token:
                 self.admin_token = token
-                self.headers["Authorization"] = f"Bearer {token}"
                 self.log_test("Admin Login", "PASS", f"Token: {token[:20]}...")
-                return True
+                
+                # Now switch to target tenant (impersonation)
+                return self.switch_tenant()
             else:
                 self.log_test("Admin Login", "FAIL", f"No token in response: {data}")
                 return False
         else:
             self.log_test("Admin Login", "FAIL", 
+                         f"Status: {response.get('status_code')}, Data: {response.get('data')}")
+            return False
+    
+    def switch_tenant(self) -> bool:
+        """Switch to target tenant using impersonation"""
+        self.log_test("Tenant Impersonation", "INFO", f"Switching to tenant {TARGET_TENANT_ID}...")
+        
+        # Temporarily use admin token for switch request
+        temp_headers = self.headers.copy()
+        temp_headers["Authorization"] = f"Bearer {self.admin_token}"
+        
+        success, response = self.test_endpoint(
+            "POST",
+            "/api/admin/debug/switch-tenant",
+            json={"targetTenantId": TARGET_TENANT_ID},
+            headers=temp_headers
+        )
+        
+        if success and response["status_code"] == 200:
+            data = response.get("data", {})
+            if isinstance(data, dict):
+                inner_data = data.get("data", data)
+                if isinstance(inner_data, dict):
+                    token = inner_data.get("accessToken") or inner_data.get("access_token")
+                else:
+                    token = None
+            else:
+                token = None
+            
+            if token:
+                self.impersonation_token = token
+                self.headers["Authorization"] = f"Bearer {token}"
+                self.log_test("Tenant Switch", "PASS", f"Impersonating tenant {TARGET_TENANT_ID}")
+                return True
+            else:
+                self.log_test("Tenant Switch", "FAIL", f"No token in response: {data}")
+                return False
+        else:
+            self.log_test("Tenant Switch", "FAIL", 
                          f"Status: {response.get('status_code')}, Data: {response.get('data')}")
             return False
     

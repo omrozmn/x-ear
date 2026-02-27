@@ -205,7 +205,9 @@ export default function CompanySettings() {
   const [formData, setFormData] = useState<CompanyInfo>({});
   const [hasChanges, setHasChanges] = useState(false);
 
-  const isTenantAdmin = user?.role === 'tenant_admin';
+  // CRITICAL FIX: Check if user can edit (tenant_admin OR impersonating tenant)
+  // When admin impersonates tenant, they should have full edit rights
+  const isTenantAdmin = user?.role === 'tenant_admin' || user?.isImpersonatingTenant === true;
 
   useEffect(() => {
     loadCompanyInfo();

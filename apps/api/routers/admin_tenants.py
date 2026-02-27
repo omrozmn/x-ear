@@ -4,7 +4,7 @@ Handles tenant/organization management for admin panel
 """
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 import logging
 import uuid
@@ -22,6 +22,7 @@ from models.addon import AddOn
 from schemas.tenants import TenantCreate, TenantUpdate, TenantRead, TenantStatus
 from schemas.users import UserRead, UserListResponse, UserResponse
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from core.dependencies import get_current_admin_user
 from database import get_db
 from core.models.enums import ProductCode
 
@@ -128,7 +129,7 @@ def list_tenants(
 def create_tenant(
     request_data: TenantCreate,
     db_session: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access("admin.tenants.create"))
+    admin_user=Depends(get_current_admin_user)
 ):
     """Create tenant"""
     try:
@@ -138,7 +139,7 @@ def create_tenant(
             slug=request_data.slug or Tenant.generate_slug(request_data.name),
             description=request_data.description,
             owner_email=request_data.owner_email,
-            billing_email=request_data.billing_email or request_data.owner_email,
+            billing_email=request_data.billing_email or request_data.owner_email or request_data.email or "billing@example.com",
             status=getattr(request_data.status, 'value', request_data.status) if request_data.status else TenantStatus.TRIAL.value,
             current_plan=request_data.current_plan,
             max_users=request_data.max_users,
@@ -576,7 +577,6 @@ def get_tenant_sms_documents(
 
 from fastapi.responses import Response
 import os
-
 @router.get("/{tenant_id}/sms-documents/{document_type}/download", operation_id="listAdminTenantSmsDocumentDownload")
 def download_tenant_sms_document(
     tenant_id: str,

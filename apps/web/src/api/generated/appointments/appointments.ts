@@ -205,7 +205,7 @@ export const useCreateAppointments = <TError = HTTPValidationError,
  * @summary Get Availability
  */
 export const listAppointmentAvailability = (
-    params: ListAppointmentAvailabilityParams,
+    params?: ListAppointmentAvailabilityParams,
  signal?: AbortSignal
 ) => {
       
@@ -227,7 +227,7 @@ export const getListAppointmentAvailabilityQueryKey = (params?: ListAppointmentA
     }
 
     
-export const getListAppointmentAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
+export const getListAppointmentAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(params?: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -250,7 +250,7 @@ export type ListAppointmentAvailabilityQueryError = HTTPValidationError
 
 
 export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
+ params: undefined |  ListAppointmentAvailabilityParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAppointmentAvailability>>,
           TError,
@@ -260,7 +260,7 @@ export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
+ params?: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAppointmentAvailability>>,
           TError,
@@ -270,7 +270,7 @@ export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
+ params?: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
@@ -278,7 +278,7 @@ export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof
  */
 
 export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
- params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
+ params?: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 

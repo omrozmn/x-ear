@@ -65,6 +65,13 @@ class TenantPermissions:
     CASH_RECORDS_READ = "cash_records:read"
     CASH_RECORDS_WRITE = "cash_records:write"
     CASH_RECORDS_DELETE = "cash_records:delete"
+    
+    # Finance Permissions (aliases for frontend compatibility)
+    FINANCE_VIEW = "finance.view"
+    FINANCE_CASH_REGISTER = "finance.cash_register"
+    
+    # Sales Permissions (aliases for frontend compatibility)
+    SALES_VIEW = "sales.view"
 
     # Campaign Permissions
     CAMPAIGN_READ = "campaign:read"
@@ -80,12 +87,20 @@ class TenantPermissions:
 
     # Activity Logs
     ACTIVITY_LOGS_READ = "activity_logs:read"
+    ACTIVITY_LOGS_VIEW = "activity_logs.view"
+    
+    # Dashboard Analytics
+    DASHBOARD_ANALYTICS = "dashboard.analytics"
     
     # SMS Permissions (both formats for compatibility)
     SMS_READ = "sms:read"
     SMS_WRITE = "sms:write"
     SMS_VIEW = "sms.view"
     SMS_EDIT = "sms.edit"
+    
+    # Reports Permissions
+    REPORTS_VIEW = "reports.view"
+    REPORTS_EXPORT = "reports.export"
 
 
 # Full admin permissions set
@@ -128,10 +143,19 @@ _FULL_ADMIN_PERMISSIONS = {
     TenantPermissions.ROLE_READ,
     TenantPermissions.ROLE_WRITE,
     TenantPermissions.ACTIVITY_LOGS_READ,
+    TenantPermissions.ACTIVITY_LOGS_VIEW,
+    TenantPermissions.DASHBOARD_ANALYTICS,
     TenantPermissions.SMS_READ,
     TenantPermissions.SMS_WRITE,
     TenantPermissions.SMS_VIEW,
     TenantPermissions.SMS_EDIT,
+    # Frontend compatibility aliases
+    TenantPermissions.FINANCE_VIEW,
+    TenantPermissions.FINANCE_CASH_REGISTER,
+    TenantPermissions.SALES_VIEW,
+    # Reports
+    TenantPermissions.REPORTS_VIEW,
+    TenantPermissions.REPORTS_EXPORT,
 }
 
 # Role-to-Permission Mapping

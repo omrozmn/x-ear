@@ -1,23 +1,25 @@
+from core.models.base import Base
 from .base import db, BaseModel, gen_id
-from sqlalchemy import Table, Column, String, ForeignKey
+from sqlalchemy import Table, Column, String, ForeignKey, Boolean, Text
 from sqlalchemy.orm import relationship, joinedload
 from .permission import Permission
 
 # Association table for role <-> permission
-role_permissions = db.Table(
+role_permissions = Table(
     'role_permissions',
-    db.Column('role_id', db.String(50), db.ForeignKey('roles.id'), primary_key=True),
-    db.Column('permission_id', db.String(50), db.ForeignKey('permissions.id'), primary_key=True)
+    Base.metadata,
+    Column('role_id', String(50), ForeignKey('roles.id'), primary_key=True),
+    Column('permission_id', String(50), ForeignKey('permissions.id'), primary_key=True)
 )
 
 
 class Role(BaseModel):
     __tablename__ = 'roles'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('role'))
-    name = db.Column(db.String(100), nullable=False, unique=True)
-    description = db.Column(db.Text, nullable=True)
-    is_system = db.Column(db.Boolean, default=False)
+    id = Column(String(50), primary_key=True, default=lambda: gen_id('role'))
+    name = Column(String(100), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
+    is_system = Column(Boolean, default=False)
 
     # Eager loading with subqueryload for better performance on permission fetching
     permissions = relationship(

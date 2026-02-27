@@ -79,8 +79,10 @@ class VatanSMSProvider(SMSProvider):
             from models.integration_config import IntegrationConfig
             
             # Helper to get config
+            from core.database import SessionLocal
+            db_session = SessionLocal()
             def get_config(key):
-                config = IntegrationConfig.query.filter_by(
+                config = db_session.query(IntegrationConfig).filter_by(
                     integration_type='vatan_sms',
                     config_key=key
                 ).first()
@@ -88,6 +90,7 @@ class VatanSMSProvider(SMSProvider):
 
             username = get_config('username') or os.getenv('VATANSMS_USERNAME')
             password = get_config('password') or os.getenv('VATANSMS_PASSWORD')
+            db_session.close()
             sender = get_config('sender_id') or os.getenv('VATANSMS_SENDER')
             
             return username, password, sender

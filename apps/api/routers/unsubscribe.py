@@ -42,24 +42,20 @@ class UnsubscribeResponse(BaseModel):
     }
 )
 async def process_unsubscribe(
-    token: str = Query(..., description="Unsubscribe token from email link"),
+    token: str = Query(None, description="Unsubscribe token from email link"),
     request: Request = None,
     db: Session = Depends(get_db)
 ) -> ResponseEnvelope[UnsubscribeResponse]:
     """
     Process unsubscribe request using cryptographic token.
     
-    This endpoint is called when user clicks unsubscribe link in email.
-    No authentication required - security via cryptographic token.
-    
-    Args:
-        token: Unsubscribe token from email link
-        request: FastAPI request object (for IP/user-agent)
-        db: Database session
-        
-    Returns:
-        ResponseEnvelope[UnsubscribeResponse]: Success/failure response
+    If no token provided, returns error message.
     """
+    if not token:
+        return ResponseEnvelope(
+            success=False,
+            error={"message": "Token is required", "code": "MISSING_TOKEN"}
+        )
     unsubscribe_service = get_unsubscribe_service(db)
     
     # Get client info
@@ -139,7 +135,7 @@ async def get_unsubscribe_page(
     
     if existing:
         # Already unsubscribed
-        html_content = f"""
+        html_content = """
         <!DOCTYPE html>
         <html lang="tr">
         <head>
@@ -147,7 +143,7 @@ async def get_unsubscribe_page(
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Abonelikten Çıkıldı - X-Ear CRM</title>
             <style>
-                body {{
+                body {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     display: flex;
@@ -156,44 +152,44 @@ async def get_unsubscribe_page(
                     min-height: 100vh;
                     margin: 0;
                     padding: 20px;
-                }}
-                .container {{
+                }
+                .container {
                     background: white;
                     border-radius: 12px;
                     box-shadow: 0 10px 40px rgba(0,0,0,0.1);
                     padding: 40px;
                     max-width: 500px;
                     text-align: center;
-                }}
-                .icon {{
+                }
+                .icon {
                     font-size: 64px;
                     margin-bottom: 20px;
-                }}
-                h1 {{
+                }
+                h1 {
                     color: #2d3748;
                     margin-bottom: 16px;
                     font-size: 28px;
-                }}
-                p {{
+                }
+                p {
                     color: #4a5568;
                     line-height: 1.6;
                     margin-bottom: 12px;
-                }}
-                .email {{
+                }
+                .email {
                     background: #f7fafc;
                     padding: 12px;
                     border-radius: 6px;
                     font-family: monospace;
                     color: #2d3748;
                     margin: 20px 0;
-                }}
-                .footer {{
+                }
+                .footer {
                     margin-top: 30px;
                     padding-top: 20px;
                     border-top: 1px solid #e2e8f0;
                     font-size: 14px;
                     color: #718096;
-                }}
+                }
             </style>
         </head>
         <body>
@@ -201,7 +197,7 @@ async def get_unsubscribe_page(
                 <div class="icon">✅</div>
                 <h1>Zaten Abonelikten Çıktınız</h1>
                 <p>Bu e-posta türünden zaten abonelikten çıkmışsınız.</p>
-                <div class="email">{existing.scenario}</div>
+                <div class="email">BILGI</div>
                 <p>Bu e-posta türünden artık bildirim almayacaksınız.</p>
                 <div class="footer">
                     <p>Sorularınız için: <a href="mailto:destek@x-ear.com">destek@x-ear.com</a></p>

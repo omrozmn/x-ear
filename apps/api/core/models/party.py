@@ -1,4 +1,7 @@
 # Party Model (formerly Patient)
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, JSON, String, Text, Time
+from sqlalchemy.orm import relationship
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, JSONMixin, now_utc, LowercaseEnum
 from .mixins import TenantScopedMixin
 from schemas.enums import PartyStatus
@@ -10,7 +13,7 @@ class Party(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'parties'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -18,47 +21,47 @@ class Party(BaseModel, TenantScopedMixin, JSONMixin):
             self.id = gen_id("pat")
     
     # Identity fields
-    tc_number = db.Column(db.String(11), unique=True, nullable=True)
-    identity_number = db.Column(db.String(20), unique=False, nullable=True)
+    tc_number = Column(String(11), unique=True, nullable=True)
+    identity_number = Column(String(20), unique=False, nullable=True)
     
     # Personal information
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), nullable=False, unique=True)
-    email = db.Column(db.String(120))
-    birth_date = db.Column(db.DateTime)
-    gender = db.Column(db.String(1))
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100), nullable=False)
+    phone = Column(String(20), nullable=False, unique=True)
+    email = Column(String(120))
+    birth_date = Column(DateTime)
+    gender = Column(String(1))
     
     # Address information
-    address_city = db.Column(db.String(100))
-    address_district = db.Column(db.String(100))
-    address_full = db.Column(db.Text)
+    address_city = Column(String(100))
+    address_district = Column(String(100))
+    address_full = Column(Text)
     
     # CRM fields - Custom type for case-insensitive enum handling
-    status = db.Column(LowercaseEnum(PartyStatus), default=PartyStatus.ACTIVE)
-    segment = db.Column(db.String(20), default='lead')
-    acquisition_type = db.Column(db.String(50), default='walk-in')
-    conversion_step = db.Column(db.String(50))
-    referred_by = db.Column(db.String(100))
-    priority_score = db.Column(db.Integer, default=0)
-    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
+    status = Column(LowercaseEnum(PartyStatus), default=PartyStatus.ACTIVE)
+    segment = Column(String(20), default='lead')
+    acquisition_type = Column(String(50), default='walk-in')
+    conversion_step = Column(String(50))
+    referred_by = Column(String(100))
+    priority_score = Column(Integer, default=0)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # JSON fields (stored as Text, accessed via properties)
-    tags = db.Column(db.Text)  # JSON string
-    sgk_info = db.Column(db.Text)  # JSON string
-    custom_data = db.Column(db.Text)  # JSON string for documents, timeline, etc.
+    tags = Column(Text)  # JSON string
+    sgk_info = Column(Text)  # JSON string
+    custom_data = Column(Text)  # JSON string for documents, timeline, etc.
 
     # Relationships
-    devices = db.relationship('Device', backref='party', lazy=True, cascade='all, delete-orphan')
-    appointments = db.relationship('Appointment', backref='party', lazy=True, cascade='all, delete-orphan')
-    notes = db.relationship('PatientNote', backref='party', lazy=True, cascade='all, delete-orphan')
-    ereceipts = db.relationship('EReceipt', backref='party', lazy=True, cascade='all, delete-orphan')
-    hearing_tests = db.relationship('HearingTest', backref='party', lazy=True, cascade='all, delete-orphan')
-    proformas = db.relationship('Proforma', back_populates='party', lazy=True, cascade='all, delete-orphan')
-    branch = db.relationship('Branch', backref='parties', lazy=True)
+    devices = relationship('Device', backref='party', lazy=True, cascade='all, delete-orphan')
+    appointments = relationship('Appointment', backref='party', lazy=True, cascade='all, delete-orphan')
+    notes = relationship('PatientNote', backref='party', lazy=True, cascade='all, delete-orphan')
+    ereceipts = relationship('EReceipt', backref='party', lazy=True, cascade='all, delete-orphan')
+    hearing_tests = relationship('HearingTest', backref='party', lazy=True, cascade='all, delete-orphan')
+    proformas = relationship('Proforma', back_populates='party', lazy=True, cascade='all, delete-orphan')
+    branch = relationship('Branch', backref='parties', lazy=True)
     
     # N:N Role Relationship (Remediation Phase 5.1)
-    roles = db.relationship(
+    roles = relationship(
         'PartyRole', 
         backref='party', 
         lazy=True, 
@@ -67,7 +70,7 @@ class Party(BaseModel, TenantScopedMixin, JSONMixin):
     )
 
     # Remediation 5.2: Hearing Profile (1:1)
-    hearing_profile = db.relationship(
+    hearing_profile = relationship(
         'HearingProfile',
         uselist=False,
         backref='party',

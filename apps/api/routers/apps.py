@@ -128,20 +128,20 @@ async def assign_user_to_app(
     if not app:
         raise HTTPException(status_code=404, detail="App not found")
     
-    user = db.get(User, data.userId)
+    user = db.get(User, data.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     # Check if assignment already exists
     existing = db.query(UserAppRole).filter(
-        UserAppRole.user_id == data.userId,
+        UserAppRole.user_id == data.user_id,
         UserAppRole.app_id == app_id
     ).first()
     
     if existing:
         existing.role = data.role
     else:
-        assignment = UserAppRole(user_id=data.userId, app_id=app_id, role=data.role)
+        assignment = UserAppRole(user_id=data.user_id, app_id=app_id, role=data.role)
         db.add(assignment)
     
     db.commit()

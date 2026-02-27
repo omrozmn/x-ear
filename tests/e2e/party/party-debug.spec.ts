@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../../helpers/auth';
-import { testUsers } from '../../fixtures/users';
+import { testUsers } from '../fixtures/users';
 
 test.describe('Party Debug', () => {
   test('Debug party page', async ({ page }) => {

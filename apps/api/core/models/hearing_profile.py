@@ -1,3 +1,5 @@
+from sqlalchemy import Column, Date, DateTime, JSON, String, Text, Time
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, JSONMixin, now_utc
 from .mixins import TenantScopedMixin
 import sqlalchemy as sa
@@ -5,11 +7,11 @@ import sqlalchemy as sa
 class HearingProfile(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'hearing_profiles'
 
-    id = db.Column(db.String(50), primary_key=True)
-    party_id = db.Column(db.String(50), nullable=False, unique=True, index=True)
-    sgk_info = db.Column(db.Text) # JSON string
-    created_at = db.Column(db.DateTime, default=now_utc)
-    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+    id = Column(String(50), primary_key=True)
+    party_id = Column(String(50), nullable=False, unique=True, index=True)
+    sgk_info = Column(Text) # JSON string
+    created_at = Column(DateTime, default=now_utc)
+    updated_at = Column(DateTime, default=now_utc, onupdate=now_utc)
     
     # tenant_id is now inherited from TenantScopedMixin
 

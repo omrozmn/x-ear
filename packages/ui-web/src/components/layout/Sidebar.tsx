@@ -200,6 +200,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return (
       <div key={item.id}>
         <div
+          data-testid={`sidebar-menu-${item.id}`}
           className={`
             flex items-center px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors
             ${level > 0 ? 'ml-6' : ''}
@@ -217,15 +218,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }
           }}
         >
-          <div className="flex items-center flex-1 min-w-0">
-            <div className="flex-shrink-0">
+          <div className="flex items-center flex-1 min-w-0" data-testid={`sidebar-menu-item-${item.id}`}>
+            <div className="flex-shrink-0" data-testid={`sidebar-icon-${item.id}`}>
               {item.icon}
             </div>
             {!collapsed && (
               <>
-                <span className="ml-3 truncate">{item.label}</span>
+                <span className="ml-3 truncate" data-testid={`sidebar-label-${item.id}`}>{item.label}</span>
                 {item.badge && (
-                  <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" data-testid={`sidebar-badge-${item.id}`}>
                     {item.badge}
                   </span>
                 )}
@@ -233,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
           {hasChildren && !collapsed && (
-            <div className="flex-shrink-0 ml-2">
+            <div className="flex-shrink-0 ml-2" data-testid={`sidebar-expand-${item.id}`}>
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
               ) : (
@@ -265,6 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div
+        data-testid="sidebar-container"
         className={`
           fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out
           ${collapsed ? 'w-16' : 'w-64'}
@@ -274,7 +276,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
           {!collapsed && (
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -292,6 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onClose}
             className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
+            data-testid="sidebar-close-button"
           >
             <X className="w-5 h-5" />
           </button>
@@ -300,6 +303,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={toggleCollapsed}
             className="hidden lg:block p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            data-testid="sidebar-collapse-button"
           >
             <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
           </button>

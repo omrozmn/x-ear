@@ -1,48 +1,51 @@
+from sqlalchemy import Table, Column, Boolean, Date, DateTime, ForeignKey, Integer, JSON, String, Text, Time, Index
+from sqlalchemy.orm import relationship, backref
 # User and Activity Models
+from core.models.base import Base
 from .base import db, BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 
 # Association table for User-Branch many-to-many relationship
-user_branches = db.Table('user_branches',
-    db.Column('user_id', db.String(50), db.ForeignKey('users.id'), primary_key=True),
-    db.Column('branch_id', db.String(50), db.ForeignKey('branches.id'), primary_key=True)
+user_branches = Table('user_branches', Base.metadata,
+    Column('user_id', String(50), ForeignKey('users.id'), primary_key=True),
+    Column('branch_id', String(50), ForeignKey('branches.id'), primary_key=True)
 )
 
 class User(BaseModel, TenantScopedMixin):
     __tablename__ = 'users'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("usr"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("usr"))
     
     # Authentication
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20), unique=True, nullable=True)
-    phone = db.Column(db.String(20), unique=True, nullable=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    username = Column(String(80), unique=True, nullable=False)
+    email = Column(String(120), unique=True, nullable=False)
+    phone = Column(String(20), unique=True, nullable=True)
+    phone = Column(String(20), unique=True, nullable=True)
+    password_hash = Column(String(255), nullable=False)
     
     # User details
-    first_name = db.Column(db.String(100))
-    last_name = db.Column(db.String(100))
-    role = db.Column(db.String(20), default='user')
-    is_active = db.Column(db.Boolean, default=True)
-    is_phone_verified = db.Column(db.Boolean, default=False)
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    role = Column(String(20), default='user')
+    is_active = Column(Boolean, default=True)
+    is_phone_verified = Column(Boolean, default=False)
     
     # Permission versioning - incremented when role permissions change
     # Token contains this version, if mismatch -> force re-login
-    permissions_version = db.Column(db.Integer, default=1, nullable=False)
+    permissions_version = Column(Integer, default=1, nullable=False)
     
     # Relationships
-    branches = db.relationship('Branch', secondary=user_branches, lazy='subquery',
-        backref=db.backref('users', lazy=True))
+    branches = relationship('Branch', secondary=user_branches, lazy='subquery',
+        backref=backref('users', lazy=True))
     
     # Future fields for enhancement
-    last_login = db.Column(db.DateTime)
-    password_reset_token = db.Column(db.String(100))
-    password_reset_expires = db.Column(db.DateTime)
-    affiliate_code = db.Column(db.String(50), nullable=True, index=True)
+    last_login = Column(DateTime)
+    password_reset_token = Column(String(100))
+    password_reset_expires = Column(DateTime)
+    affiliate_code = Column(String(50), nullable=True, index=True)
 
     def set_password(self, password):
         """Hash and set password using passlib bcrypt"""
@@ -96,38 +99,38 @@ class ActivityLog(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'activity_logs'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("log"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("log"))
     
     # tenant_id is now inherited from TenantScopedMixin
-    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True)
     
     # User tracking
-    user_id = db.Column(db.String(50), nullable=True)  # Nullable for system actions
-    real_user_id = db.Column(db.String(50), nullable=True)  # For impersonation tracking
-    role = db.Column(db.String(50), nullable=True)  # User's role at action time
+    user_id = Column(String(50), nullable=True)  # Nullable for system actions
+    real_user_id = Column(String(50), nullable=True)  # For impersonation tracking
+    role = Column(String(50), nullable=True)  # User's role at action time
     
     # Action details
-    action = db.Column(db.String(100), nullable=False)  # e.g., "patient.created", "invoice.sent"
-    message = db.Column(db.String(500), nullable=True)  # Human-readable action description
-    entity_type = db.Column(db.String(50), nullable=True)  # Legacy field, now derived from action
-    entity_id = db.Column(db.String(50), nullable=True)
+    action = Column(String(100), nullable=False)  # e.g., "patient.created", "invoice.sent"
+    message = Column(String(500), nullable=True)  # Human-readable action description
+    entity_type = Column(String(50), nullable=True)  # Legacy field, now derived from action
+    entity_id = Column(String(50), nullable=True)
     
     # Structured data (JSON)
-    data = db.Column(db.Text, nullable=True)  # JSON - target IDs, file names, etc.
+    data = Column(Text, nullable=True)  # JSON - target IDs, file names, etc.
     
     # Request metadata
-    ip_address = db.Column(db.String(45), nullable=True)  # IPv6 support
-    user_agent = db.Column(db.Text, nullable=True)
+    ip_address = Column(String(45), nullable=True)  # IPv6 support
+    user_agent = Column(Text, nullable=True)
     
     # Legacy field for backward compatibility
-    details = db.Column(db.Text, nullable=True)  # Deprecated, use 'data' instead
+    details = Column(Text, nullable=True)  # Deprecated, use 'data' instead
     
     # Critical action flag for filtering
-    is_critical = db.Column(db.Boolean, default=False, index=True)
+    is_critical = Column(Boolean, default=False, index=True)
     
     # Relationships for joined queries
-    tenant = db.relationship('Tenant', backref=db.backref('activity_logs', lazy='dynamic'))
-    branch = db.relationship('Branch', backref=db.backref('activity_logs', lazy='dynamic'))
+    tenant = relationship('Tenant', backref=backref('activity_logs', lazy='dynamic'))
+    branch = relationship('Branch', backref=backref('activity_logs', lazy='dynamic'))
 
     @property
     def data_json(self):
@@ -221,10 +224,10 @@ class ActivityLog(BaseModel, TenantScopedMixin, JSONMixin):
 
     # Composite indexes for performance
     __table_args__ = (
-        db.Index('ix_activity_user', 'user_id'),
-        db.Index('ix_activity_entity', 'entity_type', 'entity_id'),
-        db.Index('ix_activity_created', 'created_at'),
-        db.Index('ix_activity_tenant_created', 'tenant_id', 'created_at'),  # Main query index
-        db.Index('ix_activity_action', 'action'),
-        db.Index('ix_activity_tenant_action', 'tenant_id', 'action'),
+        Index('ix_activity_user', 'user_id'),
+        Index('ix_activity_entity', 'entity_type', 'entity_id'),
+        Index('ix_activity_created', 'created_at'),
+        Index('ix_activity_tenant_created', 'tenant_id', 'created_at'),  # Main query index
+        Index('ix_activity_action', 'action'),
+        Index('ix_activity_tenant_action', 'tenant_id', 'action'),
     )

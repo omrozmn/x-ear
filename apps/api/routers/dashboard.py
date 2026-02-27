@@ -4,7 +4,7 @@ Dashboard KPIs and analytics
 """
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from sqlalchemy.orm import Session
@@ -38,8 +38,19 @@ router = APIRouter(tags=["Dashboard"])
 def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
     """Apply tenant scoping to query"""
     query = session.query(model)
-    if access.tenant_id:
-        query = query.filter_by(tenant_id=access.tenant_id)
+    # CRITICAL: Use access.tenant_id from JWT token (supports impersonation)
+    # Fallback to user.tenant_id only if access.tenant_id is None
+    tenant_id = access.tenant_id
+    if not tenant_id and access.user:
+        tenant_id = access.user.tenant_id
+        logger.warning(f"tenant_scoped_query: access.tenant_id is None, using user.tenant_id={tenant_id}")
+    
+    if tenant_id:
+        logger.debug(f"tenant_scoped_query: Filtering {model.__name__} by tenant_id={tenant_id}")
+        query = query.filter_by(tenant_id=tenant_id)
+    else:
+        logger.error(f"tenant_scoped_query: No tenant_id available for {model.__name__}")
+    
     return query
 
 def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict[str, Any]]:
@@ -81,7 +92,7 @@ def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict
 
 @router.get("/dashboard", operation_id="listDashboard", response_model=ResponseEnvelope[DashboardData])
 def get_dashboard(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("dashboard:read")),
     db_session: Session = Depends(get_db)
 ):
     """Main dashboard endpoint with KPIs and recent activity"""

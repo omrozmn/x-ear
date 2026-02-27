@@ -4,7 +4,7 @@ Device CRUD, categories, brands, stock management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List, Union
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 import logging
 import random
@@ -36,7 +36,6 @@ from models.tenant import Tenant
 from constants import CANONICAL_CATEGORY_HEARING_AID
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Devices"])
@@ -125,7 +124,7 @@ def get_devices(
     search: Optional[str] = None,
     brand: Optional[str] = None,
     inventory_only: bool = Query(False, alias="inventory_only"),
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -200,8 +199,10 @@ def create_device(
 ):
     """Create a new device"""
     try:
-        if access.tenant_id:
-            ensure_hearing_product(db_session, access.tenant_id)
+        from core.tenant_utils import get_effective_tenant_id
+        
+        tenant_id = get_effective_tenant_id(access)
+        ensure_hearing_product(db_session, tenant_id)
 
         data = device_in.model_dump(by_alias=False)
         logger.info(f"CREATE_DEVICE REQUEST: {data}")
@@ -246,7 +247,7 @@ def create_device(
         
         device = Device()
         device.id = device_id
-        device.tenant_id = access.tenant_id
+        device.tenant_id = tenant_id
         device.party_id = data['party_id']
         device.inventory_id = inventory_id
         

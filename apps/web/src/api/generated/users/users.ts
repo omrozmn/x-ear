@@ -31,7 +31,7 @@ import type {
   ResponseEnvelopeListUserRead,
   ResponseEnvelopeUserMeRead,
   ResponseEnvelopeUserRead,
-  UserCreate,
+  RoutersUsersUserCreate,
   UserUpdate
 } from '.././schemas';
 
@@ -138,7 +138,7 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
  * @summary Create User
  */
 export const createUsers = (
-    userCreate: UserCreate,
+    routersUsersUserCreate: RoutersUsersUserCreate,
  signal?: AbortSignal
 ) => {
       
@@ -146,7 +146,7 @@ export const createUsers = (
       return customInstance<ResponseEnvelopeUserRead>(
       {url: `/api/users`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: userCreate, signal
+      data: routersUsersUserCreate, signal
     },
       );
     }
@@ -154,8 +154,8 @@ export const createUsers = (
 
 
 export const getCreateUsersMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: RoutersUsersUserCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: RoutersUsersUserCreate}, TContext> => {
 
 const mutationKey = ['createUsers'];
 const {mutation: mutationOptions} = options ?
@@ -167,7 +167,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUsers>>, {data: UserCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUsers>>, {data: RoutersUsersUserCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createUsers(data,)
@@ -179,18 +179,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateUsersMutationResult = NonNullable<Awaited<ReturnType<typeof createUsers>>>
-    export type CreateUsersMutationBody = UserCreate
+    export type CreateUsersMutationBody = RoutersUsersUserCreate
     export type CreateUsersMutationError = HTTPValidationError
 
     /**
  * @summary Create User
  */
 export const useCreateUsers = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: RoutersUsersUserCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createUsers>>,
         TError,
-        {data: UserCreate},
+        {data: RoutersUsersUserCreate},
         TContext
       > => {
 

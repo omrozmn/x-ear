@@ -1,4 +1,6 @@
 # Device Model with Enhanced Type Safety
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Numeric, String, Text, Time, Index
+from core.models.base import Base
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
 from .enums import DeviceSide, DeviceStatus, DeviceCategory
@@ -9,7 +11,7 @@ class Device(BaseModel, TenantScopedMixin):
     __tablename__ = 'devices'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -20,44 +22,44 @@ class Device(BaseModel, TenantScopedMixin):
     def name(self):
         return f"{self.brand} {self.model}".strip()
     
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=True)
-    inventory_id = db.Column(db.String(50))
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=True)
+    inventory_id = Column(String(50))
     
     # Device identification
-    serial_number = db.Column(db.String(100))  # General serial number (for single ear devices)
-    serial_number_left = db.Column(db.String(100))  # Left ear serial number
-    serial_number_right = db.Column(db.String(100))  # Right ear serial number
-    brand = db.Column(db.String(50))
-    model = db.Column(db.String(100))
-    device_type = db.Column(db.String(20))  # BTE, ITE, etc.
+    serial_number = Column(String(100))  # General serial number (for single ear devices)
+    serial_number_left = Column(String(100))  # Left ear serial number
+    serial_number_right = Column(String(100))  # Right ear serial number
+    brand = Column(String(50))
+    model = Column(String(100))
+    device_type = Column(String(20))  # BTE, ITE, etc.
     
     # Semantic category (enum)
     # Changed to String to handle legacy data with lowercase values
-    category = db.Column(db.String(50), default='HEARING_AID')
+    category = Column(String(50), default='HEARING_AID')
     
     # Device placement (enum)
     # Changed to String to handle legacy data
-    ear = db.Column(db.String(20), default='LEFT')
+    ear = Column(String(20), default='LEFT')
     
     # Status (enum)
     # Changed to String to handle legacy data
-    status = db.Column(db.String(20), default='IN_STOCK')
+    status = Column(String(20), default='IN_STOCK')
     
     # Trial period
-    trial_start_date = db.Column(db.DateTime)
-    trial_end_date = db.Column(db.DateTime)
-    trial_extended_until = db.Column(db.DateTime)
+    trial_start_date = Column(DateTime)
+    trial_end_date = Column(DateTime)
+    trial_extended_until = Column(DateTime)
     
     # Warranty information
-    warranty_start_date = db.Column(db.DateTime)
-    warranty_end_date = db.Column(db.DateTime)
-    warranty_terms = db.Column(db.Text)
+    warranty_start_date = Column(DateTime)
+    warranty_end_date = Column(DateTime)
+    warranty_terms = Column(Text)
     
     # Financial (precise decimal)
-    price = db.Column(sa.Numeric(12,2))  # Precise money handling
+    price = Column(sa.Numeric(12,2))  # Precise money handling
     
     # Additional information
-    notes = db.Column(db.Text)
+    notes = Column(Text)
 
     def to_dict(self):
         base_dict = self.to_dict_base()
@@ -103,10 +105,10 @@ class Device(BaseModel, TenantScopedMixin):
 
     # Index suggestions for future migration
     __table_args__ = (
-        db.Index('ix_device_serial', 'serial_number'),
-        db.Index('ix_device_serial_left', 'serial_number_left'),
-        db.Index('ix_device_serial_right', 'serial_number_right'),
-        db.Index('ix_device_category', 'category'),
-        db.Index('ix_device_status', 'status'),
-        db.Index('ix_device_patient', 'party_id'),
+        Index('ix_device_serial', 'serial_number'),
+        Index('ix_device_serial_left', 'serial_number_left'),
+        Index('ix_device_serial_right', 'serial_number_right'),
+        Index('ix_device_category', 'category'),
+        Index('ix_device_status', 'status'),
+        Index('ix_device_patient', 'party_id'),
     )

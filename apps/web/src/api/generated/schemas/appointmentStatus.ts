@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Appointment status - lowercase for API consistency
+ */
 export type AppointmentStatus = typeof AppointmentStatus[keyof typeof AppointmentStatus];
 
 
@@ -13,6 +16,7 @@ export type AppointmentStatus = typeof AppointmentStatus[keyof typeof Appointmen
 export const AppointmentStatus = {
   scheduled: 'scheduled',
   confirmed: 'confirmed',
+  in_progress: 'in_progress',
   completed: 'completed',
   cancelled: 'cancelled',
   no_show: 'no_show',

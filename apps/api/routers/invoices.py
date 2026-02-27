@@ -4,7 +4,7 @@ Handles invoice CRUD operations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import uuid
 import csv
@@ -17,6 +17,7 @@ except ImportError:
 
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from sqlalchemy.exc import IntegrityError
 
 from schemas.base import ResponseEnvelope
 from schemas.invoices import (
@@ -33,7 +34,6 @@ from utils.efatura import build_return_invoice_xml, write_outbox_file
 import os
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Invoices"])
@@ -96,10 +96,17 @@ def get_print_queue(
         
         items = []
         for inv in invoices:
+            # Get party name from relationship or use patient_name field
+            party_name = inv.patient_name
+            if inv.party and hasattr(inv.party, 'full_name'):
+                party_name = inv.party.full_name
+            elif inv.party and hasattr(inv.party, 'first_name'):
+                party_name = f"{inv.party.first_name or ''} {inv.party.last_name or ''}".strip()
+            
             items.append({
                 'id': inv.id,
                 'invoiceNumber': inv.invoice_number,
-                'partyName': inv.patient_name or (inv.patient.full_name if inv.patient else 'Unknown'),
+                'partyName': party_name or 'Unknown',
                 'amount': inv.device_price,
                 'queuedAt': inv.updated_at.isoformat() if inv.updated_at else inv.created_at.isoformat(),
                 'priority': 'normal',
@@ -355,11 +362,16 @@ def create_invoice(
                 raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
         
         # Generate invoice number using Gapless Sequence
+        # CRITICAL FIX: Commit sequence BEFORE creating invoice
+        # This prevents sequence rollback when invoice creation fails
+        # Trade-off: May create gaps in sequence if invoice fails, but prevents UNIQUE constraint errors
         from core.models.sequence import Sequence
         year = datetime.utcnow().year
         next_val = Sequence.next_number(db_session, access.tenant_id, 'invoice', year, 'INV')
+        db_session.commit()  # Commit sequence immediately
         invoice_number = f"INV{year}{next_val:05d}"
         
+        # Now create invoice with the committed sequence number
         invoice = Invoice(
             # id is auto-generated (Integer primary key)
             tenant_id=access.tenant_id,
@@ -380,11 +392,26 @@ def create_invoice(
         invoice_dict = invoice.to_dict()
         return ResponseEnvelope(data=InvoiceRead.model_validate(invoice_dict))
     except HTTPException:
+        db_session.rollback()  # Explicitly rollback on HTTP exceptions
         raise
+    except IntegrityError as e:
+        db_session.rollback()
+        logger.warning(f"Invoice creation failed - integrity error: {e}")
+        # Check if it's an invoice_number duplicate
+        if 'invoice_number' in str(e):
+            raise HTTPException(
+                status_code=409,
+                detail={"message": "Invoice number already exists", "code": "DUPLICATE_INVOICE_NUMBER"}
+            )
+        # Other integrity errors
+        raise HTTPException(
+            status_code=409,
+            detail={"message": "Duplicate entry", "code": "DUPLICATE"}
+        )
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create invoice error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/invoices/{invoice_id}", operation_id="updateInvoice", response_model=ResponseEnvelope[InvoiceRead])
 def update_invoice(
@@ -663,9 +690,9 @@ async def bulk_upload_invoices(
                     return None
                 
                 invoice_number = get_val(['invoiceNumber', 'invoice_number', 'no', 'fatura_no'])
-                patient_name = get_val(['patientName', 'patient_name', 'hasta', 'isim'])
+                party_name = get_val(['patientName', 'party_name', 'hasta', 'isim'])
                 
-                if not (invoice_number or patient_name):
+                if not (invoice_number or party_name):
                     errors.append({'row': row_num, 'error': 'Missing invoice number or patient name'})
                     continue
                 
@@ -699,7 +726,7 @@ async def bulk_upload_invoices(
                 d_date = parse_date(due_date)
 
                 if existing:
-                    existing.patient_name = patient_name or existing.patient_name
+                    existing.patient_name = party_name or existing.patient_name
                     existing.patient_tc = patient_tc or existing.patient_tc
                     existing.currency = currency or existing.currency
                     if i_date: existing.issue_date = i_date
@@ -717,7 +744,7 @@ async def bulk_upload_invoices(
                     new_inv = Invoice(
                         tenant_id=effective_tenant,
                         invoice_number=invoice_number,
-                        patient_name=patient_name,
+                        patient_name=party_name,
                         patient_tc=patient_tc,
                         issue_date=i_date,
                         due_date=d_date,

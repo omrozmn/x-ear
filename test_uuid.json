@@ -1,0 +1,91 @@
+================================================================================
+API TEST EXECUTION REPORT
+================================================================================
+Generated: 2026-02-23 14:53:18
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Tests:    513
+Passed:         291
+Failed:         222
+Success Rate:   56.7%
+
+CATEGORY STATISTICS
+--------------------------------------------------------------------------------
+ADMIN_PANEL          | Passed:  80 | Failed:  59 | Total: 139 | Success:  57.6%
+AFFILIATE            | Passed:   0 | Failed:   5 | Total:   5 | Success:   0.0%
+SYSTEM               | Passed:  18 | Failed:  19 | Total:  37 | Success:  48.6%
+TENANT_WEB_APP       | Passed: 193 | Failed: 139 | Total: 332 | Success:  58.1%
+
+FAILURE PATTERNS
+--------------------------------------------------------------------------------
+Connection/Timeout Error                 | Count: 99
+Not Found (Missing resource or unimplemented) | Count: 78
+HTTP 400                                 | Count: 19
+Validation Error (Invalid request data)  | Count: 14
+Unauthorized (Auth issue)                | Count: 4
+HTTP 403                                 | Count: 3
+Internal Server Error (Backend bug)      | Count: 3
+HTTP 409                                 | Count: 1
+HTTP 202                                 | Count: 1
+
+FAILED TESTS DETAIL
+--------------------------------------------------------------------------------
+POST   /api/campaigns/camp_830ba309/send                  | 404 | Campaign not found
+POST   /api/parties/bulk-upload                           | 422 | Validation error
+POST   /api/inventory/bulk-upload                         | 422 | Validation error
+POST   /api/inventory/item_23022026115305_7c77d2/serials  | 404 | Item not found
+GET    /api/inventory/item_23022026115305_7c77d2/movements | 404 | Item not found
+POST   /api/sales                                         | 404 | Party not found
+GET    /api/sales/2602230103                              | 404 | Sale not found
+PUT    /api/sales/2602230103                              | 404 | Sale not found
+GET    /api/sales/2602230103/payments                     | 404 | Sale not found
+POST   /api/sales/2602230103/payments                     | 404 | Sale not found
+GET    /api/sales/2602230103/payment-plan                 | 404 | Sale not found
+POST   /api/sales/2602230103/payment-plan                 | 404 | Sale not found
+POST   /api/sales/2602230103/installments/ppi_42faa4b0_1/pay | 404 | Sale not found
+POST   /api/parties/pat_9fdcf46f/device-assignments       | 404 | Party not found
+PATCH  /api/device-assignments/{assignment_id}            | 0 | Missing required resource ID
+POST   /api/device-assignments/{assignment_id}/return-loaner | 0 | Missing required resource ID
+POST   /api/hearing-profiles                              | 404 | Patient not found
+GET    /api/hearing-profiles/pat_9fdcf46f                 | 404 | Hearing profile not found
+PUT    /api/hearing-profiles/pat_9fdcf46f                 | 404 | Patient not found
+POST   /api/auth/lookup-phone                             | 404 | User not found or no phone registered
+POST   /api/auth/forgot-password                          | 404 | User not found with this phone number
+POST   /api/auth/verify-otp                               | 400 | Invalid or expired OTP
+POST   /api/auth/reset-password                           | 400 | Invalid or expired OTP
+POST   /api/auth/login                                    | 400 | Kullanıcı adı/e-posta/telefon ve şifre gereklidir
+POST   /api/auth/refresh                                  | 401 | Invalid token type
+GET    /api/auth/me                                       | 404 | User not found
+POST   /api/auth/send-verification-otp                    | 401 | User context required
+POST   /api/auth/set-password                             | 401 | User context required
+GET    /api/appointments/apt_23022026_145305_226807       | 404 | Appointment not found
+PUT    /api/appointments/apt_23022026_145305_226807       | 404 | Appointment not found
+DELETE /api/appointments/apt_23022026_145305_226807       | 404 | Appointment not found
+POST   /api/appointments/apt_23022026_145305_226807/reschedule | 404 | Appointment not found
+POST   /api/appointments/apt_23022026_145305_226807/cancel | 404 | Appointment not found
+POST   /api/appointments/apt_23022026_145305_226807/complete | 404 | Appointment not found
+GET    /api/devices/dev_20260223_145305_047277_663755     | 404 | Device not found
+PUT    /api/devices/dev_20260223_145305_047277_663755     | 404 | Device not found
+DELETE /api/devices/dev_20260223_145305_047277_663755     | 404 | Device not found
+POST   /api/devices/dev_20260223_145305_047277_663755/stock-update | 404 | Device not found
+PUT    /api/notifications/settings                        | 404 | Notification not found
+POST   /api/branches                                      | 403 | Branch limit reached. Your plan allows 1 branches.
+PUT    /api/roles/6e9e2def-e374-46fd-b643-7726a691ba61    | 404 | role not found
+DELETE /api/roles/6e9e2def-e374-46fd-b643-7726a691ba61    | 404 | role not found
+POST   /api/roles/6e9e2def-e374-46fd-b643-7726a691ba61/permissions | 404 | role not found
+PUT    /api/roles/6e9e2def-e374-46fd-b643-7726a691ba61/permissions | 404 | role not found
+DELETE /api/roles/{role_id}/permissions/{permission_name} | 0 | Missing required resource ID
+PATCH  /api/payment-records/{record_id}                   | 0 | Missing required resource ID
+PATCH  /api/promissory-notes/{note_id}                    | 0 | Missing required resource ID
+POST   /api/promissory-notes/{note_id}/collect            | 0 | Missing required resource ID
+POST   /api/users                                         | 500 | Internal server error
+POST   /api/users/me/password                             | 403 | Invalid current password
+... and 172 more failures
+
+EXECUTION TIME STATISTICS
+--------------------------------------------------------------------------------
+Average:  0.03s
+Maximum:  4.10s
+
+================================================================================

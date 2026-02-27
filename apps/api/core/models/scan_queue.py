@@ -1,4 +1,6 @@
 # Scan Queue Model (formerly Patient scan queue)
+from sqlalchemy import Column, Date, DateTime, Integer, String, Text, Time
+from core.models.base import Base
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
 from datetime import datetime
@@ -6,23 +8,23 @@ from datetime import datetime
 class ScanQueue(BaseModel, TenantScopedMixin):
     __tablename__ = 'scan_queue'
     
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('scan'))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id('scan'))
     # tenant_id is now inherited from TenantScopedMixin
-    party_id = db.Column(db.String(50), nullable=False)
+    party_id = Column(String(50), nullable=False)
     
-    status = db.Column(db.String(20), default='pending') # pending, processing, completed, failed
-    priority = db.Column(db.String(10), default='normal') # low, normal, high
+    status = Column(String(20), default='pending') # pending, processing, completed, failed
+    priority = Column(String(10), default='normal') # low, normal, high
     
-    file_path = db.Column(db.String(255))
-    model_path = db.Column(db.String(255))
+    file_path = Column(String(255))
+    model_path = Column(String(255))
     
-    polygon_count = db.Column(db.Integer)
-    render_time_ms = db.Column(db.Integer)
+    polygon_count = Column(Integer)
+    render_time_ms = Column(Integer)
     
-    error_message = db.Column(db.Text)
+    error_message = Column(Text)
     
-    started_at = db.Column(db.DateTime)
-    completed_at = db.Column(db.DateTime)
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
     
     def to_dict(self):
         base = self.to_dict_base()

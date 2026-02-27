@@ -13,6 +13,8 @@ class TenantStatus(str, Enum):
     INACTIVE = "inactive"
     SUSPENDED = "suspended"
     TRIAL = "trial"
+    CANCELLED = "cancelled"
+    PENDING = "pending"
 
     @classmethod
     def _missing_(cls, value):

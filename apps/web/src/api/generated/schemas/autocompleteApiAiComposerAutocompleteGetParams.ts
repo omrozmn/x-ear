@@ -8,9 +8,9 @@
 
 export type AutocompleteApiAiComposerAutocompleteGetParams = {
 /**
- * @minLength 1
+ * @minLength 0
  */
-q: string;
+q?: string;
 context_entity_type?: string | null;
 context_entity_id?: string | null;
 };

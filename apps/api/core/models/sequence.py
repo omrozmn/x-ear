@@ -1,23 +1,25 @@
 # Sequence Model for auto-incrementing numbers (invoices, etc.)
+from sqlalchemy import Column, Integer, String
+from core.models.base import Base
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
 
 class Sequence(BaseModel, TenantScopedMixin):
     __tablename__ = 'sequences'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("seq"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("seq"))
     
     # Sequence type (invoice, sale, etc.)
-    seq_type = db.Column(db.String(50), nullable=False)
+    seq_type = Column(String(50), nullable=False)
     
     # Year for yearly reset
-    year = db.Column(db.Integer, nullable=False)
+    year = Column(Integer, nullable=False)
     
     # Prefix (e.g., "INV", "SALE")
-    prefix = db.Column(db.String(20), nullable=False)
+    prefix = Column(String(20), nullable=False)
     
     # Last used number
-    last_number = db.Column(db.Integer, default=0, nullable=False)
+    last_number = Column(Integer, default=0, nullable=False)
     
     # Unique constraint per tenant/type/year/prefix
     __table_args__ = (
@@ -34,6 +36,8 @@ class Sequence(BaseModel, TenantScopedMixin):
         """
         Get next number for a sequence. Creates sequence if it doesn't exist.
         Thread-safe with database-level locking.
+        
+        NOTE: Does NOT commit - caller must commit the transaction.
         """
         # Try to get existing sequence with FOR UPDATE lock
         sequence = db_session.query(Sequence).filter(
@@ -57,7 +61,7 @@ class Sequence(BaseModel, TenantScopedMixin):
         
         # Increment and return
         next_num = sequence.get_next_number()
-        db_session.commit()  # Commit to release lock
+        db_session.flush()  # Flush to update sequence, but don't commit yet
         return next_num
     
     def to_dict(self):

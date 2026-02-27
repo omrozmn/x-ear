@@ -19,7 +19,6 @@ from schemas.timeline import TimelineEventCreate, TimelineEventRead, TimelineLis
 from schemas.base import ResponseEnvelope, ResponseMeta
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 router = APIRouter(tags=["Timeline"])
 
 # --- Schemas ---
@@ -30,7 +29,7 @@ router = APIRouter(tags=["Timeline"])
 
 @router.get("/timeline", operation_id="listTimeline", response_model=ResponseEnvelope[TimelineListResponse])
 def get_timeline(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -96,7 +95,7 @@ def get_party_timeline(
         
         patient = db.get(Party, party_id)
         if not patient:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
         if access.tenant_id and patient.tenant_id != access.tenant_id:
@@ -170,7 +169,7 @@ def add_timeline_event(
         
         patient = db.get(Party, party_id)
         if not patient:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
         if access.tenant_id and patient.tenant_id != access.tenant_id:
@@ -258,7 +257,7 @@ def delete_timeline_event(
         
         patient = db.get(Party, party_id)
         if not patient:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
         if access.tenant_id and patient.tenant_id != access.tenant_id:

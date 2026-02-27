@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from database import get_db
@@ -11,7 +11,6 @@ from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.invoices import InvoiceCreate, InvoiceRead
 from schemas.base import ResponseEnvelope
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/invoices", tags=["Admin Invoices"])
@@ -25,7 +24,7 @@ class InvoiceDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminInvoices", response_model=InvoiceListResponse)
 async def get_admin_invoices(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     tenant_id: Optional[str] = None,
     status: Optional[str] = None,
@@ -73,14 +72,24 @@ async def create_admin_invoice(
 ):
     """Create a new invoice"""
     try:
-        if not data.tenant_id or not data.amount:
-            raise HTTPException(status_code=400, detail="Tenant ID and amount are required")
+        # Calculate total if not provided
+        total = data.total_amount or (data.subtotal + data.vat_amount - data.discount_amount)
         
         new_invoice = Invoice(
             tenant_id=data.tenant_id,
-            invoice_number=f"INV-{int(datetime.utcnow().timestamp())}",
-            device_price=data.amount,
-            status="active",
+            invoice_number=data.invoice_number or f"INV-{int(datetime.utcnow().timestamp())}",
+            invoice_type=data.invoice_type,
+            invoice_date=data.invoice_date,
+            due_date=data.due_date,
+            customer_name=data.customer_name,
+            customer_tax_number=data.customer_tax_number,
+            customer_address=data.customer_address,
+            subtotal=data.subtotal,
+            vat_amount=data.vat_amount,
+            discount_amount=data.discount_amount,
+            total_amount=total,
+            status=data.status,
+            notes=data.notes,
             created_at=datetime.utcnow()
         )
         db.add(new_invoice)

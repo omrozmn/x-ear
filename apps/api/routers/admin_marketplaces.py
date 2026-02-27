@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from database import get_db
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/admin/marketplaces", tags=["Admin Marketplaces"]
 
 # Response models
 class MarketplaceListResponse(ResponseEnvelope):
-    data: Optional[dict] = None
+    data: Optional[list] = None
 
 class MarketplaceDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
@@ -61,7 +61,7 @@ async def get_integrations(
             query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
         integrations = query.all()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i) for i in integrations]}
+        return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i).model_dump(by_alias=True) for i in integrations]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -73,8 +73,14 @@ async def create_integration(
 ):
     """Create a new marketplace integration"""
     try:
+        # Use tenant_id from data if provided, otherwise from access context
+        tenant_id = data.tenantId or access.effective_tenant_id or access.tenant_id
+        
+        if not tenant_id:
+            raise HTTPException(status_code=400, detail="Tenant ID is required")
+        
         integration = MarketplaceIntegration(
-            tenant_id=data.tenantId,
+            tenant_id=tenant_id,
             platform=data.platform,
             name=data.name,
             api_key=data.apiKey,
@@ -88,7 +94,9 @@ async def create_integration(
         db.commit()
         db.refresh(integration)
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return {"success": True, "data": MarketplaceIntegrationRead.model_validate(integration)}
+        return {"success": True, "data": MarketplaceIntegrationRead.model_validate(integration).model_dump(by_alias=True)}
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))

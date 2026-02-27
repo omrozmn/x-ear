@@ -4,8 +4,8 @@ Handles SGK document management and OCR processing
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from typing import Optional, List, Dict, Any
-from datetime import datetime
-from pydantic import BaseModel
+from datetime import datetime, timezone
+from pydantic import BaseModel, Field
 import logging
 import os
 import tempfile
@@ -75,7 +75,7 @@ def list_sgk_documents(
         docs = []
         # Try to get from SGKDocument model if available
         try:
-            from models.sgk import SGKDocument
+            from core.models.sgk import SGKDocument
             docs = db_session.query(SGKDocument).filter(
                 SGKDocument.tenant_id == access.tenant_id
             ).all()
@@ -104,7 +104,7 @@ def upload_sgk_document(
         doc_data['created_at'] = datetime.now().isoformat()
         
         try:
-            from models.sgk import SGKDocument
+            from core.models.sgk import SGKDocument
             doc = SGKDocument.from_dict(doc_data)
             db_session.add(doc)
             db_session.commit()
@@ -115,46 +115,47 @@ def upload_sgk_document(
         logger.error(f"Upload SGK doc error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/sgk/documents/{document_id}", operation_id="getSgkDocument")
-def get_sgk_document(
-    document_id: str,
-    db_session: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
-):
-    """Get SGK document"""
-    try:
-        from models.sgk import SGKDocument
-        doc = db_session.get(SGKDocument, document_id)
-        if not doc:
-            raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
-        return ResponseEnvelope(data=SgkDocumentResponse(document=SgkDocumentRead.model_validate(doc).model_dump(by_alias=True)))
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Get SGK doc error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# TODO: SGK model not implemented yet - endpoints disabled
+# @router.get("/sgk/documents/{document_id}", operation_id="getSgkDocument")
+# def get_sgk_document(
+#     document_id: str,
+#     db_session: Session = Depends(get_db),
+#     access: UnifiedAccess = Depends(require_access())
+# ):
+#     """Get SGK document"""
+#     try:
+#         from core.models.sgk import SGKDocument
+#         doc = db_session.get(SGKDocument, document_id)
+#         if not doc:
+#             raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
+#         return ResponseEnvelope(data=SgkDocumentResponse(document=SgkDocumentRead.model_validate(doc).model_dump(by_alias=True)))
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"Get SGK doc error: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/sgk/documents/{document_id}", operation_id="deleteSgkDocument")
-def delete_sgk_document(
-    document_id: str,
-    db_session: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
-):
-    """Delete SGK document"""
-    try:
-        from models.sgk import SGKDocument
-        doc = db_session.get(SGKDocument, document_id)
-        if not doc:
-            raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
-        db_session.delete(doc)
-        db_session.commit()
-        return ResponseEnvelope(message="Document deleted")
-    except HTTPException:
-        raise
-    except Exception as e:
-        db_session.rollback()
-        logger.error(f"Delete SGK doc error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.delete("/sgk/documents/{document_id}", operation_id="deleteSgkDocument")
+# def delete_sgk_document(
+#     document_id: str,
+#     db_session: Session = Depends(get_db),
+#     access: UnifiedAccess = Depends(require_access())
+# ):
+#     """Delete SGK document"""
+#     try:
+#         from core.models.sgk import SGKDocument
+#         doc = db_session.get(SGKDocument, document_id)
+#         if not doc:
+#             raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
+#         db_session.delete(doc)
+#         db_session.commit()
+#         return ResponseEnvelope(message="Document deleted")
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         db_session.rollback()
+#         logger.error(f"Delete SGK doc error: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 # Note: /ocr/process endpoint moved to ocr.py to avoid duplication
 
@@ -424,7 +425,14 @@ def list_delivered_ereceipts(
 
 class PatientRightsQueryRequest(BaseModel):
     tcNumber: str
-    partyId: Optional[str] = None
+    partyId: Optional[str] = Field(None, alias="partyId")
+    
+    class Config:
+        populate_by_name = True
+        
+    @property
+    def party_id(self):
+        return self.partyId
 
 @router.post("/sgk/patient-rights/query", operation_id="createSgkPatientRightQuery")
 def query_patient_rights(
@@ -435,7 +443,7 @@ def query_patient_rights(
     """SGK hasta hakları sorgulama endpoint'i"""
     try:
         tc_number = request_data.tcNumber
-        party_id = request_data.partyId
+        party_id = request_data.party_id
         
         if not tc_number:
             raise HTTPException(status_code=400, detail={"message": "TC numarası gerekli", "code": "MISSING_TC"})
@@ -489,6 +497,13 @@ class WorkflowCreateRequest(BaseModel):
     partyId: str
     documentId: Optional[str] = None
     workflowType: Optional[str] = "approval"
+    
+    class Config:
+        populate_by_name = True
+        
+    @property
+    def party_id(self):
+        return self.partyId
 
 @router.post("/sgk/workflow/create", operation_id="createSgkWorkflowCreate")
 def create_sgk_workflow(
@@ -498,7 +513,7 @@ def create_sgk_workflow(
 ):
     """SGK workflow oluşturma endpoint'i"""
     try:
-        party_id = request_data.partyId
+        party_id = request_data.party_id
         
         if not party_id:
             raise HTTPException(status_code=400, detail={"message": "Grup ID gerekli", "code": "MISSING_PARTY"})
@@ -632,7 +647,6 @@ def update_workflow_status(
 # This duplicate was causing OpenAPI conflicts
 
 from fastapi.responses import Response
-
 @router.get("/sgk/e-receipts/{receipt_id}/download-patient-form", operation_id="listSgkEReceiptDownloadPatientForm")
 def download_patient_form(
     receipt_id: str,

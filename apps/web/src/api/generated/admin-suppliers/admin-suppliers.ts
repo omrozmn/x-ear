@@ -27,7 +27,7 @@ import type {
 import type {
   HTTPValidationError,
   ListAdminSuppliersParams,
-  ResponseEnvelope,
+  SchemasBaseResponseEnvelope,
   SupplierCreate,
   SupplierDetailResponse,
   SupplierListResponse,
@@ -363,7 +363,7 @@ export const deleteAdminSupplier = (
  ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/suppliers/${supplierId}`, method: 'DELETE'
     },
       );

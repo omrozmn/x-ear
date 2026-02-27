@@ -64,7 +64,7 @@ async def request_id_middleware(request: Request, call_next: Callable) -> Respon
     return response
 
 
-def envelope_success(data=None, *, request_id: str | None = None, meta: dict | None = None, status_code: int = 200) -> JSONResponse:
+def envelope_success(data=None, *, request_id: Optional[str] = None, meta: dict | None = None, status_code: int = 200) -> JSONResponse:
     payload = ResponseEnvelope(
         data=data,
         meta=meta,
@@ -73,7 +73,7 @@ def envelope_success(data=None, *, request_id: str | None = None, meta: dict | N
     return JSONResponse(payload, status_code=status_code)
 
 
-def envelope_error(message: str, *, request_id: str | None = None, code: str = "INTERNAL_ERROR", status_code: int = 500, details=None) -> JSONResponse:
+def envelope_error(message: str, *, request_id: Optional[str] = None, code: str = "INTERNAL_ERROR", status_code: int = 500, details=None) -> JSONResponse:
     payload = ResponseEnvelope(
         success=False,
         error=ApiError(message=message, code=code, details=details).model_dump(by_alias=True),

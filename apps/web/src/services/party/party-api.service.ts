@@ -24,9 +24,9 @@ import { createSales, updateSale } from '@/api/client/sales.client';
 import { listPartyTimeline } from '@/api/client/parties.client';
 import { listSgkDocuments as listPartySgkDocuments } from '@/api/client/sgk.client';
 import { listPatientDocuments as listPartyDocuments } from '@/api/client/parties.client';
-import {
-  listHearingTests as listPartyHearingTests
-} from '@/api/client/parties.client';
+// import {
+//   listHearingTests as listPartyHearingTests
+// } from '@/api/client/parties.client'; // Endpoint removed/renamed in backend
 import {
   listPartyAppointments
 } from '@/api/client/parties.client';
@@ -419,20 +419,13 @@ export class PartyApiService {
   }
 
   async getHearingTests(partyId: string): Promise<ApiEnvelope<unknown[]>> {
-    try {
-      const response = await listPartyHearingTests(partyId);
-      return {
-        data: unwrapArray<unknown>(response),
-        success: true
-      };
-    } catch (error) {
-      console.error('Failed to fetch party hearing tests:', error);
-      return {
-        data: [],
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch hearing tests'
-      };
-    }
+    // Endpoint removed/renamed in backend - returning empty array
+    console.warn(`getHearingTests called for party ${partyId} but endpoint is not available`);
+    return {
+      data: [],
+      success: true,
+      message: 'Hearing tests endpoint not available'
+    };
   }
 
   async getNotes(partyId: string): Promise<ApiEnvelope<unknown[]>> {

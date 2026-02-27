@@ -1,16 +1,40 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRoute, Outlet, redirect } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { MainLayout } from '../components/layout/MainLayout'
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = ['/login', '/forgot-password', '/reset-password', '/register']
+
+// Auth check function
+function isAuthenticated(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  try {
+    const authStorage = localStorage.getItem('x-ear.auth.auth-storage-persist@v1');
+    if (!authStorage) return false;
+    
+    const parsed = JSON.parse(authStorage);
+    // Check for token (not accessToken) and isAuthenticated
+    return !!(parsed?.state?.token && parsed?.state?.isAuthenticated);
+  } catch {
+    return false;
+  }
+}
+
 export const Route = createRootRoute({
-  component: () => (
-    <>
-      <MainLayout>
-        <Outlet />
-      </MainLayout>
-      <TanStackRouterDevtools />
-    </>
-  ),
+  beforeLoad: ({ location }) => {
+    // Skip auth check for public routes
+    const isPublicRoute = PUBLIC_ROUTES.some(route => location.pathname.startsWith(route));
+    if (isPublicRoute) return;
+    
+    // Check authentication
+    if (!isAuthenticated()) {
+      throw redirect({
+        to: '/login',
+      });
+    }
+  },
+  component: RootComponent,
   notFoundComponent: () => (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 max-w-md w-full text-center">
@@ -33,3 +57,28 @@ export const Route = createRootRoute({
     </div>
   )
 })
+
+function RootComponent() {
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+
+  // Public routes render without MainLayout
+  if (isPublicRoute) {
+    return (
+      <>
+        <Outlet />
+        <TanStackRouterDevtools />
+      </>
+    )
+  }
+
+  // Protected routes render with MainLayout
+  return (
+    <>
+      <MainLayout>
+        <Outlet />
+      </MainLayout>
+      <TanStackRouterDevtools />
+    </>
+  )
+}

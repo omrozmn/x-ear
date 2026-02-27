@@ -28,12 +28,12 @@ import type {
   HTTPValidationError,
   PatientNoteCreate,
   PatientNoteUpdate,
-  ResponseEnvelope,
   ResponseEnvelopeListAppointmentRead,
   ResponseEnvelopeListDeviceAssignmentRead,
   ResponseEnvelopeListPartyNoteRead,
   ResponseEnvelopeListSaleRead,
-  ResponseEnvelopePartyNoteRead
+  ResponseEnvelopePartyNoteRead,
+  SchemasBaseResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -367,7 +367,7 @@ export const deletePartyNote = (
  ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/parties/${partyId}/notes/${noteId}`, method: 'DELETE'
     },
       );

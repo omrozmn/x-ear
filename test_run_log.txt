@@ -1,0 +1,56 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-9.0.2, pluggy-1.6.0 -- /Users/ozmen/.local/python/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /Users/ozmen/Desktop/x-ear web app/x-ear
+plugins: anyio-4.12.1, hypothesis-6.151.6, schemathesis-4.10.2
+collecting ... collected 1 item
+
+tests/api_testing/test_runner.py::test_all_endpoints FAILED
+
+=================================== FAILURES ===================================
+______________________________ test_all_endpoints ______________________________
+
+    def test_all_endpoints():
+        """Pytest entry point for running all endpoint tests."""
+        config = Config()
+        runner = TestRunner(config)
+>       stats, report = runner.run_tests()
+                        ^^^^^^^^^^^^^^^^^^
+
+tests/api_testing/test_runner.py:815: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.api_testing.test_runner.TestRunner object at 0x105cb9a00>
+
+    def run_tests(self) -> Tuple[TestRunStats, str]:
+        """
+        Run all tests and return statistics and report.
+    
+        Returns:
+            Tuple of (stats, report_text)
+        """
+        logger.info("=" * 80)
+        logger.info("Starting Automated API Testing System")
+        logger.info("=" * 80)
+    
+        try:
+            # Step 1: Load OpenAPI schema
+            self._log_step(1, "Loading OpenAPI schema")
+            schema = self.parser.load_openapi_schema()
+            logger.info(f"✓ Loaded OpenAPI schema version {schema.get('info', {}).get('version', 'unknown')}")
+    
+            # Initialize schema data generator
+>           from schema_data_generator import SchemaDataGenerator
+E           ModuleNotFoundError: No module named 'schema_data_generator'
+
+tests/api_testing/test_runner.py:111: ModuleNotFoundError
+------------------------------ Captured log call -------------------------------
+ERROR    tests.api_testing.test_runner:test_runner.py:159 Test run failed: No module named 'schema_data_generator'
+Traceback (most recent call last):
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/tests/api_testing/test_runner.py", line 111, in run_tests
+    from schema_data_generator import SchemaDataGenerator
+ModuleNotFoundError: No module named 'schema_data_generator'
+=========================== short test summary info ============================
+FAILED tests/api_testing/test_runner.py::test_all_endpoints - ModuleNotFoundE...
+============================== 1 failed in 1.06s ===============================

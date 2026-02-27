@@ -5,21 +5,21 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { GetOutBoxDocumentsRequestInvoiceno } from './getOutBoxDocumentsRequestInvoiceno';
+import type { GetOutBoxDocumentsRequestInvoiceNo } from './getOutBoxDocumentsRequestInvoiceNo';
 
 /**
  * Request schema for GetOutBoxDocuments
  */
 export interface GetOutBoxDocumentsRequest {
   /** EFATURA, EARSIV, etc. */
-  systemtype: string;
+  systemType: string;
   /** INVOICE, DESPATCHADVICE, etc. */
-  documenttype: string;
+  documentType: string;
   /** ISO 8601 string */
-  startdatetime: string;
+  startDateTime: string;
   /** ISO 8601 string */
-  enddatetime: string;
-  invoiceno?: GetOutBoxDocumentsRequestInvoiceno;
-  pagenumber?: number;
-  pagesize?: number;
+  endDateTime: string;
+  invoiceNo?: GetOutBoxDocumentsRequestInvoiceNo;
+  pageNumber?: number;
+  pageSize?: number;
 }

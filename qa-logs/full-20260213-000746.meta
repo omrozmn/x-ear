@@ -1,0 +1,5 @@
+TIMESTAMP=20260213-000746
+OUT_DIR=test-results/full-20260213-000746
+JSON_FILE=test-results/full-20260213-000746-results.json
+HTML_DIR=playwright-report/full-20260213-000746
+LOG_FILE=qa-logs/full-20260213-000746.log

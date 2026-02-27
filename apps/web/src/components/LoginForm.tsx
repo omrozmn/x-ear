@@ -50,20 +50,38 @@ export function LoginForm() {
     setError(null);
 
     try {
+      console.log('[LoginForm] Attempting login...');
       await login({ username: username.trim(), password });
 
+      console.log('[LoginForm] Login completed, checking state...');
+      const state = useAuthStore.getState();
+      console.log('[LoginForm] Auth state:', {
+        isAuthenticated: state.isAuthenticated,
+        requiresOtp: state.requiresOtp,
+        hasUser: !!state.user,
+        hasToken: !!state.token
+      });
+
       // Save email ONLY if login successful and user wants to be remembered
-      if (!useAuthStore.getState().requiresOtp) {
+      if (!state.requiresOtp) {
+        console.log('[LoginForm] No OTP required, proceeding with redirect...');
         if (rememberMe) {
           localStorage.setItem(LAST_LOGIN_CREDENTIALS, JSON.stringify({ email: username.trim() }));
         } else {
           localStorage.removeItem(LAST_LOGIN_CREDENTIALS);
         }
-        window.location.replace('/');
+        
+        // Check for return URL in query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('redirect') || '/';
+        console.log('[LoginForm] Redirecting to:', returnUrl);
+        window.location.replace(returnUrl);
+      } else {
+        console.log('[LoginForm] OTP required, not redirecting');
       }
     } catch (error: unknown) {
       // Error is already set by the store, but ensure it's displayed
-      console.error('Login failed:', error);
+      console.error('[LoginForm] Login failed:', error);
 
       // If store didn't set an error, set a generic one
       const currentError = useAuthStore.getState().error;
@@ -248,7 +266,7 @@ export function LoginForm() {
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg login-button-hover focus-ring-enhanced"
             >
               {isLoading ? (
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center" data-testid="login-loading-spinner">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
                   {t('logging_in')}
                 </div>

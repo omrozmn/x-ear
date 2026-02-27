@@ -86,6 +86,11 @@ def create_role(
 ):
     """Create a new role"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        
+        # Roles are typically system-wide, but we validate tenant context exists
+        _ = get_effective_tenant_id(access, allow_system=True)
+        
         if not role_in.name:
             raise HTTPException(
                 status_code=400,

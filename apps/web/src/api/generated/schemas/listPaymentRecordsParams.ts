@@ -7,14 +7,15 @@
  */
 
 export type ListPaymentRecordsParams = {
-    /**
-     * @minimum 1
-     */
-    page?: number;
-    /**
-     * @minimum 1
-     * @maximum 100
-     */
-    per_page?: number;
-    saleId?: string;
+/**
+ * @minimum 1
+ * @maximum 1000000
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+per_page?: number;
+saleId?: string | null;
 };

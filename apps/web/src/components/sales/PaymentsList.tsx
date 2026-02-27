@@ -20,7 +20,7 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="flex items-center justify-center py-8" data-testid="loading-spinner">
         <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
         <span className="ml-2 text-gray-600">Ödemeler yükleniyor...</span>
       </div>

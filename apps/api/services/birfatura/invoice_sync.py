@@ -25,8 +25,9 @@ import os
 class InvoiceSyncService:
     """Service for syncing invoices from BirFatura"""
     
-    def __init__(self):
+    def __init__(self, db=None):
         self.client = None
+        self.db = db
     
     def sync_invoices(self, tenant_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict[str, int]:
         """
@@ -40,7 +41,11 @@ class InvoiceSyncService:
             Dictionary with counts of imported invoices
         """
         # Configure client with tenant credentials
-        tenant = db.session.get(Tenant, tenant_id)
+        if not self.db:
+            from core.database import SessionLocal
+            self.db = SessionLocal()
+            
+        tenant = self.db.get(Tenant, tenant_id)
         if not tenant:
             raise ValueError(f"Tenant {tenant_id} not found")
 
@@ -49,10 +54,13 @@ class InvoiceSyncService:
         tenant_secret_key = tenant_invoice_settings.get('secret_key')
         
         # Get Global Settings (Integration Key)
-        integration_key_config = IntegrationConfig.query.filter_by(
+        from core.database import SessionLocal
+        db = SessionLocal()
+        integration_key_config = db.query(IntegrationConfig).filter_by(
             integration_type='birfatura', 
             config_key='integration_key'
         ).first()
+        db.close()
         global_integration_key = integration_key_config.config_value if integration_key_config else None
 
         # Check credentials in non-mock env

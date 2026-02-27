@@ -988,8 +988,5 @@ def get_endpoints_for_permission(permission: str) -> list:
     endpoints = []
     for (method, path), perm in ENDPOINT_PERMISSIONS.items():
         if perm == permission:
-            endpoints.append(f"{method} {path
-    # Auto-added missing entries
-
-}")
+            endpoints.append(f"{method} {path}")
     return endpoints

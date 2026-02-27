@@ -58,6 +58,7 @@ export const KPICard: React.FC<KPICardProps> = ({
       className={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-none border dark:border border-transparent dark:border-gray-700 p-6 hover:shadow-lg transition-shadow ${onClick ? 'cursor-pointer' : ''
         } ${className}`}
       onClick={onClick}
+      data-testid="kpi-card"
     >
       <div className="flex items-center justify-between">
         <div>

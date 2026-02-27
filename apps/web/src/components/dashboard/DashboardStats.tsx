@@ -51,12 +51,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" data-testid="dashboard-stats-container">
       {cards.map((card) => (
         <div
           key={card.key}
           onClick={() => onCardClick?.(card.key)}
           className={`${card.color} rounded-2xl p-6 shadow-lg shadow-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer relative overflow-hidden group`}
+          data-testid={`dashboard-widget-${card.key}`}
         >
           {/* Decorative background circle */}
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>

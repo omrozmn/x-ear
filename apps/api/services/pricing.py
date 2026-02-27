@@ -12,7 +12,7 @@ def now_utc():
 logger = logging.getLogger(__name__)
 
 
-def calculate_device_pricing(device_assignments, accessories, services, sgk_scheme, settings):
+def calculate_device_pricing(device_assignments, accessories, services, sgk_scheme, settings, db=None):
     try:
         base_total = 0.0  # List price toplamı (indirim öncesi)
         accessory_total = 0.0
@@ -30,7 +30,7 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
             inventory_item = None
             if inventory_id:
                 from models.inventory import InventoryItem
-                inventory_item = db.session.get(InventoryItem, inventory_id)
+                inventory_item = db.get(InventoryItem, inventory_id)
 
             if assignment.get('base_price') is not None:
                 list_price = float(assignment.get('base_price') or 0)
@@ -197,7 +197,7 @@ def calculate_payment_plan(principal, installments, interest_rate):
         raise
 
 
-def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_id=None):
+def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_id=None, db=None):
     try:
         plans = settings.get('payment', {}).get('plans', {})
         plan_conf = plans.get(plan_type, {}) if plans else {}
@@ -221,18 +221,20 @@ def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_
             status='active'
         )
 
-        for i in range(preview['installments']):
-            inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
-            due_date = now_utc() + timedelta(days=30 * (i + 1))
-            installment = PaymentInstallment(
-                id=inst_id,
-                payment_plan_id=plan_id,
-                installment_number=i + 1,
-                amount=preview['installment_amount'],
-                due_date=due_date,
-                status='pending'
-            )
-            db.session.add(installment)
+        if db:
+            for i in range(preview['installments']):
+                inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
+                due_date = now_utc() + timedelta(days=30 * (i + 1))
+                installment = PaymentInstallment(
+                    id=inst_id,
+                    payment_plan_id=plan_id,
+                    tenant_id=tenant_id,
+                    installment_number=i + 1,
+                    amount=preview['installment_amount'],
+                    due_date=due_date,
+                    status='pending'
+                )
+                db.add(installment)
 
         return payment_plan
 
@@ -241,7 +243,7 @@ def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_
         raise
 
 
-def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rate, principal_amount, tenant_id, branch_id=None):
+def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rate, principal_amount, tenant_id, branch_id=None, db=None):
     try:
         preview = calculate_payment_plan(principal_amount, custom_installments, custom_interest_rate)
         plan_id = f"pp_{uuid4().hex[:8]}_{now_utc().strftime('%d%m%Y%H%M%S') }"
@@ -259,18 +261,20 @@ def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rat
             status='active'
         )
 
-        for i in range(preview['installments']):
-            inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
-            due_date = now_utc() + timedelta(days=30 * (i + 1))
-            installment = PaymentInstallment(
-                id=inst_id,
-                payment_plan_id=plan_id,
-                installment_number=i + 1,
-                amount=preview['installment_amount'],
-                due_date=due_date,
-                status='pending'
-            )
-            db.session.add(installment)
+        if db:
+            for i in range(preview['installments']):
+                inst_id = f"ppi_{uuid4().hex[:8]}_{i+1}"
+                due_date = now_utc() + timedelta(days=30 * (i + 1))
+                installment = PaymentInstallment(
+                    id=inst_id,
+                    payment_plan_id=plan_id,
+                    tenant_id=tenant_id,
+                    installment_number=i + 1,
+                    amount=preview['installment_amount'],
+                    due_date=due_date,
+                    status='pending'
+                )
+                db.add(installment)
 
         return payment_plan
 

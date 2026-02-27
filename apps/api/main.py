@@ -3,7 +3,7 @@ import logging
 import json
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import JSONResponse as DefaultJSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -78,7 +78,7 @@ app = FastAPI(
     version="1.0.0",
     openapi_url="/openapi.json",
     separate_input_output_schemas=False,  # Critical: Orval compatibility
-    default_response_class=ORJSONResponse
+    default_response_class=DefaultJSONResponse  # Fixed: orjson can't handle large integers
 )
 
 import schemas.parties
@@ -378,7 +378,8 @@ from routers import (
     admin_scan_queue, admin_suppliers
 )
 # Pending Future Implementation:
-# from routers import admin_campaigns, admin_tickets, orders
+# from routers import admin_campaigns, orders
+from routers import admin_tickets
 
 app.include_router(admin_api_keys.router)
 app.include_router(admin_appointments.router)
@@ -393,8 +394,8 @@ app.include_router(admin_payments.router)
 app.include_router(admin_production.router)
 app.include_router(admin_scan_queue.router)
 app.include_router(admin_suppliers.router)
+app.include_router(admin_tickets.router)  # ✅ NOW ACTIVE
 # app.include_router(admin_campaigns.router) # Pending - Redundant with campaigns.py?
-# app.include_router(admin_tickets.router) # Pending
 
 # Phase 6 migrated routers - Other modules
 from routers import audit, automation, affiliates, checkout, replacements, birfatura

@@ -7,7 +7,7 @@ from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 import uuid
 from jose import jwt
@@ -22,7 +22,6 @@ from core.models.sales import Sale
 from core.models.tenant import Tenant
 from core.models.admin_user import AdminUser
 import os
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -167,7 +166,7 @@ def create_admin_user(
 
 @router.get("/users", operation_id="listAdminUsers")
 def list_admin_users(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     tenant_id: Optional[str] = None,
     search: Optional[str] = None,
@@ -290,6 +289,142 @@ def impersonate_tenant(
         raise
     except Exception as e:
         logger.error(f"Impersonate error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- Debug Tenant Switch ---
+
+class SwitchTenantRequest(BaseModel):
+    target_tenant_id: str = None
+    targetTenantId: str = None  # Support both snake_case and camelCase
+
+class SwitchTenantResponse(BaseModel):
+    access_token: str
+    accessToken: str  # Alias for frontend compatibility
+    refresh_token: str
+    refreshToken: str  # Alias for frontend compatibility
+    tenant_id: str
+    tenantId: str  # Alias for frontend compatibility
+    tenant_name: str
+    tenantName: str  # Alias for frontend compatibility
+
+@router.post("/debug/switch-tenant", operation_id="createAdminDebugSwitchTenant", response_model=ResponseEnvelope[SwitchTenantResponse])
+def debug_switch_tenant(
+    request_data: SwitchTenantRequest,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Switch to a different tenant context (admin impersonation)"""
+    try:
+        # Get target tenant ID (support both formats)
+        target_tenant_id = request_data.target_tenant_id or request_data.targetTenantId
+        
+        if not target_tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail={"message": "Target tenant ID is required", "code": "MISSING_TENANT_ID"}
+            )
+        
+        # Verify tenant exists
+        tenant = db_session.get(Tenant, target_tenant_id)
+        if not tenant or tenant.deleted_at:
+            raise HTTPException(
+                status_code=404,
+                detail={"message": "Tenant not found", "code": "TENANT_NOT_FOUND"}
+            )
+        
+        # Get admin user
+        admin_id = access.user_id
+        admin_email = access.user.email if access.user else 'unknown'
+        
+        # Create new token with tenant impersonation
+        # CRITICAL: Set tenant_id to target tenant for proper isolation
+        access_token = create_access_token(
+            admin_id,
+            {
+                'tenant_id': target_tenant_id,  # Set to target tenant for isolation
+                'effective_tenant_id': target_tenant_id,  # Backward compatibility
+                'role': 'tenant_admin',
+                'role_permissions': ['*'],
+                'is_admin': True,
+                'is_impersonating_tenant': True,
+                'real_tenant_id': 'system',  # Original admin tenant
+                'perm_ver': 1
+            }
+        )
+        
+        refresh_token = create_refresh_token(
+            admin_id,
+            {
+                'tenant_id': target_tenant_id,  # Set to target tenant for isolation
+                'effective_tenant_id': target_tenant_id,  # Backward compatibility
+                'role': 'tenant_admin',
+                'role_permissions': ['*'],
+                'is_admin': True,
+                'is_impersonating_tenant': True,
+                'real_tenant_id': 'system',  # Original admin tenant
+                'perm_ver': 1
+            }
+        )
+        
+        logger.info(f"Tenant switch: {admin_email} -> {tenant.name} ({target_tenant_id})")
+        
+        response_data = SwitchTenantResponse(
+            access_token=access_token,
+            accessToken=access_token,
+            refresh_token=refresh_token,
+            refreshToken=refresh_token,
+            tenant_id=target_tenant_id,
+            tenantId=target_tenant_id,
+            tenant_name=tenant.name,
+            tenantName=tenant.name
+        )
+        
+        return ResponseEnvelope(data=response_data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Tenant switch error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/debug/exit-impersonation", operation_id="createAdminDebugExitImpersonation")
+def debug_exit_impersonation(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Exit tenant impersonation and return to normal admin mode"""
+    try:
+        admin_id = access.user_id
+        
+        # Create normal admin token without impersonation
+        access_token = create_access_token(
+            f'admin_{admin_id}' if not str(admin_id).startswith('admin_') else admin_id,
+            {
+                'tenant_id': 'system',
+                'role': 'tenant_admin',
+                'role_permissions': ['*'],
+                'is_admin': True,
+                'perm_ver': 1
+            }
+        )
+        
+        refresh_token = create_refresh_token(
+            f'admin_{admin_id}' if not str(admin_id).startswith('admin_') else admin_id,
+            {
+                'tenant_id': 'system',
+                'role': 'tenant_admin',
+                'role_permissions': ['*'],
+                'is_admin': True,
+                'perm_ver': 1
+            }
+        )
+        
+        return ResponseEnvelope(data={
+            'accessToken': access_token,
+            'refreshToken': refresh_token,
+            'message': 'Exited impersonation mode'
+        })
+    except Exception as e:
+        logger.error(f"Exit impersonation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- Sales Management (Cross-tenant) ---

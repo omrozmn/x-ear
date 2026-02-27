@@ -132,6 +132,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       disabled: false,
       hidden: false,
     },
+    /* İşitme Testleri Tab - Geçici olarak devre dışı
     {
       id: 'hearing-tests',
       label: 'İşitme Testleri',
@@ -140,6 +141,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       disabled: false,
       hidden: !party.hearingProfile && !party.hearing_profile // Hide if no hearing profile
     },
+    */
     {
       id: 'sales',
       label: 'Satışlar',

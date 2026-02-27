@@ -86,8 +86,12 @@ async def get_vatan_sms_config(
 ):
     """Get VatanSMS integration configuration"""
     try:
+        # For platform-level configs, use "system" tenant_id if admin has no tenant
+        config_tenant_id = access.tenant_id or "system"
+        
         def get_config(key):
             return db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="vatan_sms", config_key=key
             ).first()
         
@@ -121,14 +125,19 @@ async def update_vatan_sms_config(
 ):
     """Update VatanSMS integration configuration"""
     try:
+        # For platform-level configs, use "system" tenant_id if admin has no tenant
+        config_tenant_id = access.tenant_id or "system"
+        
         def update_or_create(key, value, description):
             config = db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="vatan_sms", config_key=key
             ).first()
             if config:
                 config.config_value = value
             else:
                 config = IntegrationConfig(
+                    tenant_id=config_tenant_id,
                     integration_type="vatan_sms",
                     config_key=key,
                     config_value=value,
@@ -156,8 +165,12 @@ async def get_birfatura_config(
 ):
     """Get BirFatura integration configuration"""
     try:
+        # For platform-level configs, use "system" tenant_id if admin has no tenant
+        config_tenant_id = access.tenant_id or "system"
+        
         def get_config(key):
             return db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="birfatura", config_key=key
             ).first()
         
@@ -189,14 +202,19 @@ async def update_birfatura_config(
 ):
     """Update BirFatura integration configuration"""
     try:
+        # For platform-level configs, use "system" tenant_id if admin has no tenant
+        config_tenant_id = access.tenant_id or "system"
+        
         def update_or_create(key, value, description):
             config = db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="birfatura", config_key=key
             ).first()
             if config:
                 config.config_value = value
             else:
                 config = IntegrationConfig(
+                    tenant_id=config_tenant_id,
                     integration_type="birfatura",
                     config_key=key,
                     config_value=value,
@@ -223,8 +241,12 @@ async def get_telegram_config(
 ):
     """Get Telegram integration configuration"""
     try:
+        # For platform-level configs, use "system" tenant_id if admin has no tenant
+        config_tenant_id = access.tenant_id or "system"
+        
         def get_config(key):
             return db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="telegram", config_key=key
             ).first()
         
@@ -249,14 +271,19 @@ async def update_telegram_config(
 ):
     """Update Telegram integration configuration"""
     try:
+        # For platform-level configs, use "system" tenant_id if admin has no tenant
+        config_tenant_id = access.tenant_id or "system"
+        
         def update_or_create(key, value, description):
             config = db.query(IntegrationConfig).filter_by(
+                tenant_id=config_tenant_id,
                 integration_type="telegram", config_key=key
             ).first()
             if config:
                 config.config_value = value
             else:
                 config = IntegrationConfig(
+                    tenant_id=config_tenant_id,
                     integration_type="telegram",
                     config_key=key,
                     config_value=value,

@@ -4,7 +4,7 @@ Report endpoints for analytics and statistics
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from sqlalchemy.orm import Session
@@ -31,7 +31,6 @@ from models.promissory_note import PromissoryNote
 from models.enums import AppointmentStatus
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Reports"])
@@ -383,7 +382,7 @@ def report_revenue(
 
 @router.get("/reports/appointments", operation_id="listReportAppointments")
 def report_appointments(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -510,7 +509,7 @@ def report_promissory_notes(
 
 @router.get("/reports/promissory-notes/by-patient", operation_id="listReportPromissoryNoteByPatient", response_model=ResponseEnvelope[List[PromissoryNotePatientItem]])
 def report_promissory_notes_by_patient(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     status: Optional[str] = Query(None),
     access: UnifiedAccess = Depends(require_access()),
@@ -598,7 +597,7 @@ def report_promissory_notes_by_patient(
 
 @router.get("/reports/promissory-notes/list", operation_id="listReportPromissoryNoteList", response_model=ResponseEnvelope[List[PromissoryNoteListItem]])
 def report_promissory_notes_list(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     status: Optional[str] = Query(None),
     start_date: Optional[str] = Query(None, alias="startDate"),
@@ -641,28 +640,37 @@ def report_promissory_notes_list(
         
         results = []
         for note in notes:
-            results.append({
+            # Eager load party relationship to avoid lazy loading issues
+            party_data = None
+            if note.party_id:
+                party = db_session.query(Party).filter_by(id=note.party_id).first()
+                if party:
+                    party_data = {
+                        "id": party.id,
+                        "name": f"{party.first_name} {party.last_name}",
+                        "phone": party.phone
+                    }
+            
+            # Build dict manually to avoid Pydantic validation issues with lazy-loaded relationships
+            note_dict = {
                 "id": note.id,
-                "note_number": note.note_number,
-                "amount": float(note.amount),
-                "paid_amount": float(note.paid_amount),
-                "remaining_amount": float(note.amount - note.paid_amount),
-                "due_date": note.due_date.isoformat(),
-                "status": note.status.value if hasattr(note.status, 'value') else note.status,
-                "party": {
-                    "id": note.party.id,
-                    "name": f"{note.party.first_name} {note.party.last_name}",
-                    "phone": note.party.phone
-                } if note.party else None
-            })
+                "noteNumber": note.note_number,
+                "amount": float(note.amount) if note.amount else 0.0,
+                "paidAmount": float(note.paid_amount) if note.paid_amount else 0.0,
+                "remainingAmount": float(note.amount - note.paid_amount) if note.amount and note.paid_amount else float(note.amount or 0),
+                "dueDate": note.due_date.isoformat() if note.due_date else None,
+                "status": note.status.value if hasattr(note.status, 'value') else str(note.status),
+                "party": party_data
+            }
+            results.append(note_dict)
             
         return ResponseEnvelope(
-            data=[PromissoryNoteListItem(**r) for r in results],
+            data=results,
             meta={
                 "total": total,
                 "page": page,
-                "per_page": per_page,
-                "total_pages": (total + per_page - 1) // per_page
+                "perPage": per_page,
+                "totalPages": (total + per_page - 1) // per_page
             }
         )
     except Exception as e:
@@ -671,7 +679,7 @@ def report_promissory_notes_list(
 
 @router.get("/reports/remaining-payments", operation_id="listReportRemainingPayments", response_model=ResponseEnvelope[List[RemainingPaymentItem]])
 def report_remaining_payments(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     min_amount: float = Query(0, ge=0, alias="min_amount"),
@@ -835,7 +843,7 @@ def report_cashflow_summary(
 
 @router.get("/reports/pos-movements", operation_id="listReportPosMovements", response_model=ResponseEnvelope[List[PosMovementItem]])
 def report_pos_movements(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     days: int = Query(30, ge=1, le=365),
     access: UnifiedAccess = Depends(require_access()),
@@ -887,7 +895,7 @@ def report_pos_movements(
                 'installment': payment.installment_count,
                 'error_message': payment.error_message,
                 'sale_id': sale.id if sale else None,
-                'patient_name': f"{party.first_name} {party.last_name}" if party else "Bilinmiyor"
+                'party_name': f"{party.first_name} {party.last_name}" if party else "Bilinmiyor"
             })
             
         # Summary

@@ -1,0 +1,90 @@
+================================================================================
+API TEST EXECUTION REPORT
+================================================================================
+Generated: 2026-02-24 01:46:14
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Tests:    513
+Passed:         369
+Failed:         144
+Success Rate:   71.9%
+
+CATEGORY STATISTICS
+--------------------------------------------------------------------------------
+ADMIN_PANEL          | Passed: 112 | Failed:  27 | Total: 139 | Success:  80.6%
+AFFILIATE            | Passed:   0 | Failed:   5 | Total:   5 | Success:   0.0%
+SYSTEM               | Passed:  23 | Failed:  14 | Total:  37 | Success:  62.2%
+TENANT_WEB_APP       | Passed: 234 | Failed:  98 | Total: 332 | Success:  70.5%
+
+FAILURE PATTERNS
+--------------------------------------------------------------------------------
+Not Found (Missing resource or unimplemented) | Count: 55
+Connection/Timeout Error                 | Count: 24
+Validation Error (Invalid request data)  | Count: 21
+HTTP 400                                 | Count: 20
+Internal Server Error (Backend bug)      | Count: 14
+Unauthorized (Auth issue)                | Count: 5
+HTTP 403                                 | Count: 4
+HTTP 202                                 | Count: 1
+
+FAILED TESTS DETAIL
+--------------------------------------------------------------------------------
+POST   /api/campaigns/camp_29881306/send                  | 400 | SMS configuration missing
+POST   /api/parties/bulk-upload                           | 0 | Bulk-upload endpoint requires file upload (not JSO
+POST   /api/inventory/bulk-upload                         | 0 | Bulk-upload endpoint requires file upload (not JSO
+POST   /api/sales                                         | 500 | Internal server error
+GET    /api/sales/26022301100                             | 500 | Internal server error
+POST   /api/sales/26022301100/payments                    | 400 | Amount 802.49 exceeds remaining 0.0
+GET    /api/sales/26022301100/payment-plan                | 500 | Internal server error
+POST   /api/sales/26022301100/installments/ppi_341d9732_1/pay | 500 | Internal server error
+POST   /api/parties/pat_00215934/device-assignments       | 500 | Internal server error
+PATCH  /api/device-assignments/assign_default             | 404 | Assignment not found
+POST   /api/device-assignments/assign_default/return-loaner | 404 | Assignment not found
+POST   /api/auth/lookup-phone                             | 404 | User not found or no phone registered
+POST   /api/auth/forgot-password                          | 404 | User not found with this phone number
+POST   /api/auth/verify-otp                               | 400 | Invalid or expired OTP
+POST   /api/auth/reset-password                           | 400 | Invalid or expired OTP
+POST   /api/auth/login                                    | 401 | Geçersiz kullanıcı adı veya şifre
+POST   /api/auth/refresh                                  | 401 | Invalid token type
+GET    /api/auth/me                                       | 404 | User not found
+POST   /api/auth/send-verification-otp                    | 401 | User context required
+POST   /api/auth/set-password                             | 401 | User context required
+POST   /api/devices                                       | 422 | brand, model, and type are required (or provide a 
+PUT    /api/notifications/settings                        | 404 | Notification not found
+POST   /api/branches                                      | 403 | Branch limit reached. Your plan allows 1 branches.
+PUT    /api/branches/branch_default                       | 404 | Branch not found
+GET    /api/reports/promissory-notes/list                 | 500 | Internal server error
+PUT    /api/roles/51e85645-db32-4a09-8bd5-b1a9f6bbc565    | 404 | role not found
+POST   /api/roles/51e85645-db32-4a09-8bd5-b1a9f6bbc565/permissions | 404 | role not found
+PUT    /api/roles/51e85645-db32-4a09-8bd5-b1a9f6bbc565/permissions | 404 | role not found
+PATCH  /api/payment-records/rec_default                   | 404 | Payment record not found
+PATCH  /api/promissory-notes/6471a350-8cff-4fe5-a3b2-a6146dc8ee8e | 404 | Promissory note not found
+POST   /api/promissory-notes/6471a350-8cff-4fe5-a3b2-a6146dc8ee8e/collect | 404 | Promissory note not found
+POST   /api/users                                         | 403 | User limit reached. Your plan allows 5 users.
+POST   /api/users/me/password                             | 403 | Invalid current password
+POST   /api/admin/auth/login                              | 401 | Invalid credentials
+POST   /api/admin/users                                   | 422 | Validation error
+PUT    /api/admin/tenants/1c1cca77-8de8-405b-b9e7-5aace7aded72/users/usr_36200dd6 | 404 | User not found in this tenant
+POST   /api/admin/tenants/1c1cca77-8de8-405b-b9e7-5aace7aded72/subscribe | 404 | Plan not found
+POST   /api/admin/tenants/1c1cca77-8de8-405b-b9e7-5aace7aded72/addons | 404 | Addon not found
+GET    /api/admin/tenants/1c1cca77-8de8-405b-b9e7-5aace7aded72/sms-documents/invoice/download | 404 | No SMS configuration found
+PUT    /api/admin/tenants/1c1cca77-8de8-405b-b9e7-5aace7aded72/sms-documents/invoice/status | 404 | No SMS configuration found
+POST   /api/admin/tenants/1c1cca77-8de8-405b-b9e7-5aace7aded72/sms-documents/send-email | 404 | No SMS configuration found
+POST   /api/admin/example-documents/upload                | 422 | Validation error
+GET    /api/admin/example-documents/invoice/download      | 400 | Invalid document type. Must be one of: contract, e
+GET    /api/invoices/2056884b-72a5-412a-83d3-5e2de8660e50 | 422 | Validation error
+PUT    /api/invoices/2056884b-72a5-412a-83d3-5e2de8660e50 | 422 | Validation error
+POST   /api/invoices/2056884b-72a5-412a-83d3-5e2de8660e50/send-to-gib | 422 | Validation error
+POST   /api/invoices/bulk-upload                          | 0 | Bulk-upload endpoint requires file upload (not JSO
+POST   /api/sgk/upload                                    | 422 | Validation error
+POST   /api/deliverability/snapshot                       | 500 | Internal server error
+POST   /api/permissions                                   | 400 | Invalid permission name format (use category.actio
+... and 94 more failures
+
+EXECUTION TIME STATISTICS
+--------------------------------------------------------------------------------
+Average:  0.09s
+Maximum:  4.02s
+
+================================================================================

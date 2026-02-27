@@ -46,9 +46,9 @@ class PaymentPlanBase(AppBaseModel):
 
 class PaymentPlanRead(IDMixin, TimestampMixin, PaymentPlanBase):
     sale_id: str = Field(..., alias="saleId")
-    plan_type: str = Field(..., alias="planType")
+    plan_type: Optional[str] = Field(None, alias="planType")  # Optional - not in DB model
     status: str = "active"
-    installments: List[PaymentInstallmentRead] = []
+    installments: Optional[List[PaymentInstallmentRead]] = []  # Optional - can be int in some responses
 
 class PaymentPlanCreate(AppBaseModel):
     plan_type: str = Field("installment", alias="planType") # 'installment' or 'custom'

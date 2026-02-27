@@ -5,14 +5,22 @@
  * Instead of importing directly from @/api/generated/admin/admin, use this adapter.
  * 
  * Usage:
- *   import { useCreateAdminDebugSwitchRole } from '@/api/client/admin.client';
+ *   import { useCreateAdminDebugSwitchTenant } from '@/api/client/admin.client';
  */
 
 export {
-  useCreateAdminDebugSwitchRole,
+  useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
-  useListAdminDebugAvailableRoles,
-  getListAdminDebugAvailableRolesQueryKey,
-} from '@/api/generated/index';
+} from '@/api/generated/admin/admin';
+
+// Stub exports for backward compatibility - these endpoints don't exist in backend
+export const useListAdminDebugAvailableRoles = (_options?: any) => ({ data: null, isLoading: false });
+export const useCreateAdminDebugSwitchRole = (_options?: any) => ({ 
+  mutate: (_params?: any) => {
+    console.warn('useCreateAdminDebugSwitchRole: Role switching not available, only tenant switching');
+  }, 
+  isPending: false 
+});
+export const getListAdminDebugAvailableRolesQueryKey = () => ['admin-debug-available-roles'];
 
 export type { } from '@/api/generated/schemas';

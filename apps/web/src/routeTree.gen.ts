@@ -12,20 +12,24 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UtsRouteImport } from './routes/uts'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CashflowRouteImport } from './routes/cashflow'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
+import { Route as AutomationRouteImport } from './routes/automation'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers/index'
 import { Route as SgkIndexRouteImport } from './routes/sgk/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as ReportsIndexRouteImport } from './routes/reports/index'
 import { Route as PosIndexRouteImport } from './routes/pos/index'
 import { Route as PartiesIndexRouteImport } from './routes/parties/index'
 import { Route as InvoicesIndexRouteImport } from './routes/invoices/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
+import { Route as CashflowIndexRouteImport } from './routes/cashflow/index'
 import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers/$supplierId'
 import { Route as SgkDownloadsRouteImport } from './routes/sgk/downloads'
 import { Route as SettingsTeamRouteImport } from './routes/settings/team'
@@ -38,8 +42,10 @@ import { Route as PosSuccessRouteImport } from './routes/pos/success'
 import { Route as PosFailRouteImport } from './routes/pos/fail'
 import { Route as PartiesPartyIdRouteImport } from './routes/parties/$partyId'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
+import { Route as InvoicesPaymentsRouteImport } from './routes/invoices/payments'
 import { Route as InvoicesNewRouteImport } from './routes/invoices/new'
 import { Route as InventoryIdRouteImport } from './routes/inventory/$id'
+import { Route as CashflowIdRouteImport } from './routes/cashflow/$id'
 
 const UtsRoute = UtsRouteImport.update({
   id: '/uts',
@@ -54,6 +60,11 @@ const TestRoute = TestRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesRoute = InvoicesRouteImport.update({
@@ -81,6 +92,11 @@ const CampaignsRoute = CampaignsRouteImport.update({
   path: '/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AutomationRoute = AutomationRouteImport.update({
+  id: '/automation',
+  path: '/automation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppointmentsRoute = AppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -99,6 +115,11 @@ const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
 const SgkIndexRoute = SgkIndexRouteImport.update({
   id: '/sgk/',
   path: '/sgk/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsIndexRoute = ReportsIndexRouteImport.update({
@@ -125,6 +146,11 @@ const InventoryIndexRoute = InventoryIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => InventoryRoute,
+} as any)
+const CashflowIndexRoute = CashflowIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CashflowRoute,
 } as any)
 const SuppliersSupplierIdRoute = SuppliersSupplierIdRouteImport.update({
   id: '/suppliers/$supplierId',
@@ -186,6 +212,11 @@ const InvoicesPurchasesRoute = InvoicesPurchasesRouteImport.update({
   path: '/purchases',
   getParentRoute: () => InvoicesRoute,
 } as any)
+const InvoicesPaymentsRoute = InvoicesPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => InvoicesRoute,
+} as any)
 const InvoicesNewRoute = InvoicesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -196,20 +227,29 @@ const InventoryIdRoute = InventoryIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => InventoryRoute,
 } as any)
+const CashflowIdRoute = CashflowIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CashflowRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
-  '/cashflow': typeof CashflowRoute
+  '/cashflow': typeof CashflowRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/invoices/new': typeof InvoicesNewRoute
+  '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
@@ -222,25 +262,30 @@ export interface FileRoutesByFullPath {
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/cashflow/': typeof CashflowIndexRoute
   '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
-  '/parties': typeof PartiesIndexRoute
-  '/pos': typeof PosIndexRoute
-  '/reports': typeof ReportsIndexRoute
-  '/sgk': typeof SgkIndexRoute
-  '/suppliers': typeof SuppliersIndexRoute
+  '/parties/': typeof PartiesIndexRoute
+  '/pos/': typeof PosIndexRoute
+  '/reports/': typeof ReportsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/sgk/': typeof SgkIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
-  '/cashflow': typeof CashflowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/invoices/new': typeof InvoicesNewRoute
+  '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
@@ -253,11 +298,13 @@ export interface FileRoutesByTo {
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/cashflow': typeof CashflowIndexRoute
   '/inventory': typeof InventoryIndexRoute
   '/invoices': typeof InvoicesIndexRoute
   '/parties': typeof PartiesIndexRoute
   '/pos': typeof PosIndexRoute
   '/reports': typeof ReportsIndexRoute
+  '/settings': typeof SettingsIndexRoute
   '/sgk': typeof SgkIndexRoute
   '/suppliers': typeof SuppliersIndexRoute
 }
@@ -265,16 +312,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
-  '/cashflow': typeof CashflowRoute
+  '/cashflow': typeof CashflowRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/invoices/new': typeof InvoicesNewRoute
+  '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
@@ -287,11 +338,13 @@ export interface FileRoutesById {
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/cashflow/': typeof CashflowIndexRoute
   '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/parties/': typeof PartiesIndexRoute
   '/pos/': typeof PosIndexRoute
   '/reports/': typeof ReportsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
   '/sgk/': typeof SgkIndexRoute
   '/suppliers/': typeof SuppliersIndexRoute
 }
@@ -300,16 +353,20 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/appointments'
+    | '/automation'
     | '/campaigns'
     | '/cashflow'
     | '/forgot-password'
     | '/inventory'
     | '/invoices'
+    | '/login'
     | '/profile'
     | '/test'
     | '/uts'
+    | '/cashflow/$id'
     | '/inventory/$id'
     | '/invoices/new'
+    | '/invoices/payments'
     | '/invoices/purchases'
     | '/parties/$partyId'
     | '/pos/fail'
@@ -322,25 +379,30 @@ export interface FileRouteTypes {
     | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
+    | '/cashflow/'
     | '/inventory/'
     | '/invoices/'
-    | '/parties'
-    | '/pos'
-    | '/reports'
-    | '/sgk'
-    | '/suppliers'
+    | '/parties/'
+    | '/pos/'
+    | '/reports/'
+    | '/settings/'
+    | '/sgk/'
+    | '/suppliers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/appointments'
+    | '/automation'
     | '/campaigns'
-    | '/cashflow'
     | '/forgot-password'
+    | '/login'
     | '/profile'
     | '/test'
     | '/uts'
+    | '/cashflow/$id'
     | '/inventory/$id'
     | '/invoices/new'
+    | '/invoices/payments'
     | '/invoices/purchases'
     | '/parties/$partyId'
     | '/pos/fail'
@@ -353,27 +415,33 @@ export interface FileRouteTypes {
     | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
+    | '/cashflow'
     | '/inventory'
     | '/invoices'
     | '/parties'
     | '/pos'
     | '/reports'
+    | '/settings'
     | '/sgk'
     | '/suppliers'
   id:
     | '__root__'
     | '/'
     | '/appointments'
+    | '/automation'
     | '/campaigns'
     | '/cashflow'
     | '/forgot-password'
     | '/inventory'
     | '/invoices'
+    | '/login'
     | '/profile'
     | '/test'
     | '/uts'
+    | '/cashflow/$id'
     | '/inventory/$id'
     | '/invoices/new'
+    | '/invoices/payments'
     | '/invoices/purchases'
     | '/parties/$partyId'
     | '/pos/fail'
@@ -386,11 +454,13 @@ export interface FileRouteTypes {
     | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
+    | '/cashflow/'
     | '/inventory/'
     | '/invoices/'
     | '/parties/'
     | '/pos/'
     | '/reports/'
+    | '/settings/'
     | '/sgk/'
     | '/suppliers/'
   fileRoutesById: FileRoutesById
@@ -398,11 +468,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
+  AutomationRoute: typeof AutomationRoute
   CampaignsRoute: typeof CampaignsRoute
-  CashflowRoute: typeof CashflowRoute
+  CashflowRoute: typeof CashflowRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   InventoryRoute: typeof InventoryRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
@@ -420,6 +492,7 @@ export interface RootRouteChildren {
   PartiesIndexRoute: typeof PartiesIndexRoute
   PosIndexRoute: typeof PosIndexRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
   SgkIndexRoute: typeof SgkIndexRoute
   SuppliersIndexRoute: typeof SuppliersIndexRoute
 }
@@ -445,6 +518,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices': {
@@ -482,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/automation': {
+      id: '/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AutomationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/appointments': {
       id: '/appointments'
       path: '/appointments'
@@ -499,35 +586,42 @@ declare module '@tanstack/react-router' {
     '/suppliers/': {
       id: '/suppliers/'
       path: '/suppliers'
-      fullPath: '/suppliers'
+      fullPath: '/suppliers/'
       preLoaderRoute: typeof SuppliersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sgk/': {
       id: '/sgk/'
       path: '/sgk'
-      fullPath: '/sgk'
+      fullPath: '/sgk/'
       preLoaderRoute: typeof SgkIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports/': {
       id: '/reports/'
       path: '/reports'
-      fullPath: '/reports'
+      fullPath: '/reports/'
       preLoaderRoute: typeof ReportsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos/': {
       id: '/pos/'
       path: '/pos'
-      fullPath: '/pos'
+      fullPath: '/pos/'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parties/': {
       id: '/parties/'
       path: '/parties'
-      fullPath: '/parties'
+      fullPath: '/parties/'
       preLoaderRoute: typeof PartiesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -544,6 +638,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/inventory/'
       preLoaderRoute: typeof InventoryIndexRouteImport
       parentRoute: typeof InventoryRoute
+    }
+    '/cashflow/': {
+      id: '/cashflow/'
+      path: '/'
+      fullPath: '/cashflow/'
+      preLoaderRoute: typeof CashflowIndexRouteImport
+      parentRoute: typeof CashflowRoute
     }
     '/suppliers/$supplierId': {
       id: '/suppliers/$supplierId'
@@ -629,6 +730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvoicesPurchasesRouteImport
       parentRoute: typeof InvoicesRoute
     }
+    '/invoices/payments': {
+      id: '/invoices/payments'
+      path: '/payments'
+      fullPath: '/invoices/payments'
+      preLoaderRoute: typeof InvoicesPaymentsRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
     '/invoices/new': {
       id: '/invoices/new'
       path: '/new'
@@ -643,8 +751,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InventoryIdRouteImport
       parentRoute: typeof InventoryRoute
     }
+    '/cashflow/$id': {
+      id: '/cashflow/$id'
+      path: '/$id'
+      fullPath: '/cashflow/$id'
+      preLoaderRoute: typeof CashflowIdRouteImport
+      parentRoute: typeof CashflowRoute
+    }
   }
 }
+
+interface CashflowRouteChildren {
+  CashflowIdRoute: typeof CashflowIdRoute
+  CashflowIndexRoute: typeof CashflowIndexRoute
+}
+
+const CashflowRouteChildren: CashflowRouteChildren = {
+  CashflowIdRoute: CashflowIdRoute,
+  CashflowIndexRoute: CashflowIndexRoute,
+}
+
+const CashflowRouteWithChildren = CashflowRoute._addFileChildren(
+  CashflowRouteChildren,
+)
 
 interface InventoryRouteChildren {
   InventoryIdRoute: typeof InventoryIdRoute
@@ -662,12 +791,14 @@ const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
 
 interface InvoicesRouteChildren {
   InvoicesNewRoute: typeof InvoicesNewRoute
+  InvoicesPaymentsRoute: typeof InvoicesPaymentsRoute
   InvoicesPurchasesRoute: typeof InvoicesPurchasesRoute
   InvoicesIndexRoute: typeof InvoicesIndexRoute
 }
 
 const InvoicesRouteChildren: InvoicesRouteChildren = {
   InvoicesNewRoute: InvoicesNewRoute,
+  InvoicesPaymentsRoute: InvoicesPaymentsRoute,
   InvoicesPurchasesRoute: InvoicesPurchasesRoute,
   InvoicesIndexRoute: InvoicesIndexRoute,
 }
@@ -679,11 +810,13 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
+  AutomationRoute: AutomationRoute,
   CampaignsRoute: CampaignsRoute,
-  CashflowRoute: CashflowRoute,
+  CashflowRoute: CashflowRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   InventoryRoute: InventoryRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
+  LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
@@ -701,6 +834,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartiesIndexRoute: PartiesIndexRoute,
   PosIndexRoute: PosIndexRoute,
   ReportsIndexRoute: ReportsIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
   SgkIndexRoute: SgkIndexRoute,
   SuppliersIndexRoute: SuppliersIndexRoute,
 }

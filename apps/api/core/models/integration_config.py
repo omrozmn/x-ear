@@ -1,26 +1,29 @@
-from models.base import db, BaseModel, gen_id
+from sqlalchemy import Column, Boolean, String, Text
+from core.models.base import Base
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 from datetime import datetime
+from core.database import gen_id
 
 class IntegrationConfig(BaseModel, TenantScopedMixin):
     """Platform-level integration configuration"""
     __tablename__ = 'integration_configs'
     
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.id:
             self.id = gen_id("intcfg")
     
-    integration_type = db.Column(db.String(50), nullable=False)  # 'vatan_sms', 'birfatura', etc.
-    config_key = db.Column(db.String(100), nullable=False)
-    config_value = db.Column(db.Text)
+    integration_type = Column(String(50), nullable=False)  # 'vatan_sms', 'birfatura', etc.
+    config_key = Column(String(100), nullable=False)
+    config_value = Column(Text)
     # tenant_id is now inherited from TenantScopedMixin
-    is_active = db.Column(db.Boolean, default=True)
+    is_active = Column(Boolean, default=True)
     
     # Metadata
-    description = db.Column(db.String(255))
+    description = Column(String(255))
     
     def to_dict(self):
         base_dict = self.to_dict_base()

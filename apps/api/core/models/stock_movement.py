@@ -1,3 +1,6 @@
+from sqlalchemy import Column, ForeignKey, Integer, String, Time
+from sqlalchemy.orm import relationship
+from core.models.base import Base
 from datetime import datetime, timezone
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
@@ -8,24 +11,24 @@ class StockMovement(BaseModel, TenantScopedMixin):
     """
     __tablename__ = 'stock_movements'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("mvmt"))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id("mvmt"))
     # tenant_id is now inherited from TenantScopedMixin
-    inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=False, index=True)
-    transaction_id = db.Column(db.String(50), index=True) # ID of Sale, Refund, or other related entity
+    inventory_id = Column(String(50), ForeignKey('inventory.id'), nullable=False, index=True)
+    transaction_id = Column(String(50), index=True) # ID of Sale, Refund, or other related entity
     
     # sale, return, adjustment, manual, production
-    movement_type = db.Column(db.String(20), nullable=False, index=True)
+    movement_type = Column(String(20), nullable=False, index=True)
     
-    quantity = db.Column(db.Integer, nullable=False) # Negative for output, Positive for input
-    serial_number = db.Column(db.String(100)) # For serialized items
+    quantity = Column(Integer, nullable=False) # Negative for output, Positive for input
+    serial_number = Column(String(100)) # For serialized items
     
-    created_by = db.Column(db.String(50)) # User ID
+    created_by = Column(String(50)) # User ID
     
     # Timestamps inherited from BaseModel, but explicit created_at provided for clarity in requirements
     # We will rely on BaseModel's created_at or override if needed. BaseModel usually has it.
     
     # Relationships
-    inventory = db.relationship('InventoryItem', back_populates='movements')
+    inventory = relationship('InventoryItem', back_populates='movements')
 
     def to_dict(self):
         base_dict = self.to_dict_base()

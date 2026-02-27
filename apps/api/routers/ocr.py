@@ -99,11 +99,15 @@ def init_database(
         if not access.is_super_admin:
             raise HTTPException(status_code=403, detail="Only super admin can initialize database")
         
-        from database import Base, engine
-        Base.metadata.create_all(bind=engine)
+        from core.database import Base, engine
+        # Only create OCR-related tables, not AI tables
+        from core.models.ocr_job import OCRJob
+        
+        # Create only OCR tables
+        OCRJob.__table__.create(bind=engine, checkfirst=True)
         
         return ResponseEnvelope(data=OcrInitResponse(
-            message="Database initialized successfully",
+            message="OCR database tables initialized successfully",
             timestamp=datetime.now(timezone.utc).isoformat()
         ))
     except HTTPException:
@@ -506,7 +510,7 @@ def create_job(
                 job.status = OCRJobStatus.COMPLETED
                 
                 if 'patient_info' in result and result['patient_info']:
-                    job.patient_name = result['patient_info'].get('name')
+                    job.party_name = result['patient_info'].get('name')
                     
             except Exception as e:
                 logger.error(f"Job processing failed: {e}")

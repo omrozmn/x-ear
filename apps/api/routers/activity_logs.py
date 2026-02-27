@@ -16,7 +16,6 @@ from database import get_db
 from schemas.base import ResponseEnvelope
 from schemas.activity_logs import ActivityLogRead, ActivityLogStats
 from middleware.unified_access import UnifiedAccess, require_access
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["ActivityLogs"])
@@ -24,7 +23,7 @@ router = APIRouter(tags=["ActivityLogs"])
 
 @router.get("/activity-logs", operation_id="listActivityLogs", response_model=ResponseEnvelope[List[ActivityLogRead]])
 def get_activity_logs(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     page_size: int = Query(20, ge=1, le=100, alias="limit"),
     tenant_id: Optional[str] = None,
     user_id: Optional[str] = None,
@@ -200,7 +199,7 @@ def get_activity_log_filter_options(
 # Alias endpoint for /audit (backward compatibility)
 @router.get("/audit", operation_id="listAudit", response_model=ResponseEnvelope[List[ActivityLogRead]])
 def get_audit_logs_alias(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100, alias="perPage"),
     entity_type: Optional[str] = Query(None, alias="entityType"),
     entity_id: Optional[str] = Query(None, alias="entityId"),

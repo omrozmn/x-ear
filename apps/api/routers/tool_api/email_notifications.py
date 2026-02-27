@@ -249,14 +249,19 @@ async def send_ai_email_notification(
         approval_service = get_email_approval_service(db)
         
         # Render template to get email content for AI safety check
-        template = template_service.get_template(request.scenario, request.language)
-        if not template:
-            error_msg = f"Email template not found for scenario: {request.scenario}"
+        try:
+            html_content, text_content = template_service.render_template(
+                scenario=request.scenario,
+                language=request.language,
+                variables=request.variables or {}
+            )
+        except Exception as e:
+            error_msg = f"Failed to render email template: {str(e)}"
             logger.error(error_msg, extra={"tenant_id": tenant_id, "scenario": request.scenario})
-            response.status_code = 404
+            response.status_code = 500
             return ResponseEnvelope(
                 success=False,
-                error={"message": error_msg, "code": "TEMPLATE_NOT_FOUND"},
+                error={"message": error_msg, "code": "TEMPLATE_RENDER_ERROR"},
                 message=error_msg
             )
         

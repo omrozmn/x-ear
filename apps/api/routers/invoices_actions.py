@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import logging
 
@@ -24,7 +24,7 @@ from models.tenant import Tenant
 from utils.ubl_utils import generate_ubl_xml, map_unit_code
 from services.birfatura.service import BirfaturaClient
 import base64
-
+from typing import Optional
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/invoices", tags=["Invoice Actions"])
@@ -136,7 +136,7 @@ async def issue_invoice(
         
         try:
             log = ActivityLog(
-                user_id=access.user.get("id", "system"),
+                user_id=access.user.id if access.user else "system",
                 action="invoice_issued",
                 entity_type="invoice",
                 entity_id=str(invoice.id)
@@ -170,6 +170,7 @@ async def copy_invoice(
             raise HTTPException(status_code=404, detail="Invoice not found")
         
         new_inv = Invoice()
+        new_inv.tenant_id = invoice.tenant_id  # Copy tenant_id from original
         new_inv.invoice_number = f"{getattr(invoice, 'invoice_number', 'COPY')}-COPY-{int(datetime.utcnow().timestamp())}"
         new_inv.party_id = invoice.party_id
         new_inv.patient_name = getattr(invoice, "patient_name", None)
@@ -203,6 +204,7 @@ async def copy_invoice_cancel(
             raise HTTPException(status_code=404, detail="Invoice not found")
         
         copy_inv = Invoice()
+        copy_inv.tenant_id = invoice.tenant_id  # Copy tenant_id from original
         copy_inv.invoice_number = f"{getattr(invoice, 'invoice_number', 'COPY')}-COPY-{int(datetime.utcnow().timestamp())}"
         copy_inv.party_id = invoice.party_id
         copy_inv.status = "draft"
@@ -212,6 +214,7 @@ async def copy_invoice_cancel(
         db.flush()
         
         cancel_inv = Invoice()
+        cancel_inv.tenant_id = invoice.tenant_id  # Copy tenant_id from original
         cancel_inv.invoice_number = f"CNL-{copy_inv.invoice_number}"
         cancel_inv.party_id = copy_inv.party_id
         cancel_inv.status = "draft"
@@ -255,7 +258,7 @@ async def serve_invoice_pdf(
             'invoice_type': 'SGK' if (invoice.notes and 'SGK' in invoice.notes) else 'SATIS', # Heuristic
             'document_title': 'E-FATURA',
             'customer': {
-                'name': invoice.patient_name or (invoice.patient.full_name if invoice.patient else 'Unknown'),
+                'name': invoice.patient_name or (invoice.party.full_name if invoice.party else 'Unknown'),
                 'tax_id': invoice.patient_tc,
                 'address': invoice.customer_address
             },

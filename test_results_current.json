@@ -1,0 +1,90 @@
+================================================================================
+API TEST EXECUTION REPORT
+================================================================================
+Generated: 2026-02-23 14:35:56
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Tests:    513
+Passed:         302
+Failed:         211
+Success Rate:   58.9%
+
+CATEGORY STATISTICS
+--------------------------------------------------------------------------------
+ADMIN_PANEL          | Passed:  82 | Failed:  57 | Total: 139 | Success:  59.0%
+AFFILIATE            | Passed:   0 | Failed:   5 | Total:   5 | Success:   0.0%
+SYSTEM               | Passed:  21 | Failed:  16 | Total:  37 | Success:  56.8%
+TENANT_WEB_APP       | Passed: 199 | Failed: 133 | Total: 332 | Success:  59.9%
+
+FAILURE PATTERNS
+--------------------------------------------------------------------------------
+Connection/Timeout Error                 | Count: 82
+Not Found (Missing resource or unimplemented) | Count: 80
+HTTP 400                                 | Count: 21
+Validation Error (Invalid request data)  | Count: 14
+Internal Server Error (Backend bug)      | Count: 6
+Unauthorized (Auth issue)                | Count: 4
+HTTP 403                                 | Count: 3
+HTTP 202                                 | Count: 1
+
+FAILED TESTS DETAIL
+--------------------------------------------------------------------------------
+POST   /api/campaigns/camp_7c0848c5/send                  | 404 | Campaign not found
+POST   /api/parties/bulk-upload                           | 422 | Validation error
+POST   /api/inventory/bulk-upload                         | 422 | Validation error
+POST   /api/inventory/item_23022026113532_ea600b/serials  | 404 | Item not found
+GET    /api/inventory/item_23022026113532_ea600b/movements | 404 | Item not found
+POST   /api/sales                                         | 404 | Party not found
+GET    /api/sales/2602230102                              | 404 | Sale not found
+PUT    /api/sales/2602230102                              | 404 | Sale not found
+GET    /api/sales/2602230102/payments                     | 404 | Sale not found
+POST   /api/sales/2602230102/payments                     | 404 | Sale not found
+GET    /api/sales/2602230102/payment-plan                 | 404 | Sale not found
+POST   /api/sales/2602230102/payment-plan                 | 404 | Sale not found
+POST   /api/sales/2602230102/installments/ppi_01e3c5b8_1/pay | 404 | Sale not found
+POST   /api/parties/pat_f970651e/device-assignments       | 404 | Party not found
+PATCH  /api/device-assignments/{assignment_id}            | 0 | Missing required resource ID
+POST   /api/device-assignments/{assignment_id}/return-loaner | 0 | Missing required resource ID
+POST   /api/hearing-profiles                              | 404 | Patient not found
+GET    /api/hearing-profiles/pat_f970651e                 | 404 | Hearing profile not found
+PUT    /api/hearing-profiles/pat_f970651e                 | 404 | Patient not found
+POST   /api/auth/lookup-phone                             | 404 | User not found or no phone registered
+POST   /api/auth/forgot-password                          | 404 | User not found with this phone number
+POST   /api/auth/verify-otp                               | 400 | Invalid or expired OTP
+POST   /api/auth/reset-password                           | 400 | Invalid or expired OTP
+POST   /api/auth/login                                    | 400 | Kullanıcı adı/e-posta/telefon ve şifre gereklidir
+POST   /api/auth/refresh                                  | 401 | Invalid token type
+GET    /api/auth/me                                       | 404 | User not found
+POST   /api/auth/send-verification-otp                    | 401 | User context required
+POST   /api/auth/set-password                             | 401 | User context required
+GET    /api/appointments/apt_23022026_143532_450871       | 404 | Appointment not found
+PUT    /api/appointments/apt_23022026_143532_450871       | 404 | Appointment not found
+DELETE /api/appointments/apt_23022026_143532_450871       | 404 | Appointment not found
+POST   /api/appointments/apt_23022026_143532_450871/reschedule | 404 | Appointment not found
+POST   /api/appointments/apt_23022026_143532_450871/cancel | 404 | Appointment not found
+POST   /api/appointments/apt_23022026_143532_450871/complete | 404 | Appointment not found
+GET    /api/devices/dev_20260223_143532_147305_403065     | 404 | Device not found
+PUT    /api/devices/dev_20260223_143532_147305_403065     | 404 | Device not found
+DELETE /api/devices/dev_20260223_143532_147305_403065     | 404 | Device not found
+POST   /api/devices/dev_20260223_143532_147305_403065/stock-update | 404 | Device not found
+PUT    /api/notifications/settings                        | 404 | Notification not found
+POST   /api/branches                                      | 403 | Branch limit reached. Your plan allows 1 branches.
+PUT    /api/roles/2d59b194-af61-4a5a-b592-8f1d998260ec    | 404 | role not found
+DELETE /api/roles/2d59b194-af61-4a5a-b592-8f1d998260ec    | 404 | role not found
+POST   /api/roles/2d59b194-af61-4a5a-b592-8f1d998260ec/permissions | 404 | role not found
+PUT    /api/roles/2d59b194-af61-4a5a-b592-8f1d998260ec/permissions | 404 | role not found
+DELETE /api/roles/{role_id}/permissions/{permission_name} | 0 | Missing required resource ID
+PATCH  /api/payment-records/{record_id}                   | 0 | Missing required resource ID
+PATCH  /api/promissory-notes/{note_id}                    | 0 | Missing required resource ID
+POST   /api/promissory-notes/{note_id}/collect            | 0 | Missing required resource ID
+POST   /api/users                                         | 500 | Internal server error
+POST   /api/users/me/password                             | 403 | Invalid current password
+... and 161 more failures
+
+EXECUTION TIME STATISTICS
+--------------------------------------------------------------------------------
+Average:  0.05s
+Maximum:  4.86s
+
+================================================================================

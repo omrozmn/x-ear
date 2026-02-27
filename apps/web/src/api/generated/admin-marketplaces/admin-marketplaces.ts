@@ -30,7 +30,7 @@ import type {
   ListAdminMarketplaceIntegrationsParams,
   MarketplaceDetailResponse,
   MarketplaceListResponse,
-  ResponseEnvelope
+  SchemasBaseResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -48,7 +48,7 @@ export const createAdminMarketplaceInitDb = (
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/marketplaces/init-db`, method: 'POST', signal
     },
       );
@@ -269,7 +269,7 @@ export const createAdminMarketplaceIntegrationSync = (
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/marketplaces/integrations/${integrationId}/sync`, method: 'POST', signal
     },
       );

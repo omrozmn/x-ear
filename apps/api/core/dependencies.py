@@ -65,7 +65,7 @@ class AccessContext:
         is_super_admin=False,
         branch_id=None,
         permissions=None,
-        user_type: str | None = None,
+        user_type: Optional[str] = None,
     ):
         self.user = user
         self.principal_id = user.id if user else None
@@ -240,3 +240,21 @@ def get_tenant_id(ctx: AccessContext = Depends(get_current_context)) -> str:
             detail={"message": "Missing tenant context", "code": "TENANT_MISSING"},
         )
     return str(tenant_id)
+
+
+def get_current_user_with_tenant(ctx: AccessContext = Depends(get_current_context)):
+    """
+    DEPRECATED: Use require_access() from middleware.unified_access instead.
+    Returns tuple of (user, tenant_id).
+    """
+    warnings.warn(
+        "get_current_user_with_tenant is deprecated. Use require_access() from middleware.unified_access",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    if not ctx.user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"message": "Not authenticated", "code": "NOT_AUTHENTICATED"},
+        )
+    return (ctx.user, ctx.tenant_id)

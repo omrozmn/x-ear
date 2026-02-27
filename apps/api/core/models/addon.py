@@ -1,19 +1,20 @@
 """
 AddOn model for additional features/packages
 """
+from core.models.base import Base
 import uuid
 from datetime import datetime
-from enum import Enum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, Numeric, Integer
-from models.base import db
+from enum import Enum as PyEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Text, Numeric, Integer, Date, Time, Enum as SQLEnum
 
-class AddOnType(Enum):
+class AddOnType(PyEnum):
     """AddOn type enumeration"""
     PER_USER = "PER_USER"
     FLAT_FEE = "FLAT_FEE"
     USAGE_BASED = "USAGE_BASED"
+    FEATURE = "FEATURE"
 
-class AddOn(db.Model):
+class AddOn(Base):
     """AddOn model for additional features"""
     __tablename__ = 'addons'
     
@@ -23,7 +24,7 @@ class AddOn(db.Model):
     slug = Column(String(100), nullable=False, unique=True, index=True)
     description = Column(Text, nullable=True)
     
-    addon_type = Column(db.Enum(AddOnType), nullable=False, default=AddOnType.FLAT_FEE)
+    addon_type = Column(SQLEnum(AddOnType), nullable=False, default=AddOnType.FLAT_FEE)
     price = Column(Numeric(10, 2), nullable=False)
     currency = Column(String(3), default='TRY', nullable=False)
     

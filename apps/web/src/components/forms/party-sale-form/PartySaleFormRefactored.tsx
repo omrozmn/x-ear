@@ -409,11 +409,11 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-sm">
+    <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-sm" data-testid="sale-form-container">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" data-testid="sale-form">
         {/* Product Selection */}
-        <div>
+        <div data-testid="sale-form-product-section">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Ürün Seçimi *
           </label>
@@ -421,11 +421,12 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             selectedProduct={selectedProduct}
             onProductSelect={setSelectedProduct}
             placeholder="Ürün adı, kategori veya marka ile arayın..."
+            data-testid="sale-form-product-dropdown"
           />
         </div>
 
         {/* Quantity and Unit Price */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4" data-testid="sale-form-quantity-price">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Miktar *
@@ -436,6 +437,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
               required
+              data-testid="sale-form-quantity"
             />
           </div>
 
@@ -450,12 +452,13 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               value={unitPrice}
               onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
               required
+              data-testid="sale-form-unit-price"
             />
           </div>
         </div>
 
         {/* Discount Section */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4" data-testid="sale-form-discount-section">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               İndirim Tipi
@@ -467,6 +470,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                 { value: 'amount', label: 'Tutar (₺)' },
                 { value: 'percentage', label: 'Yüzde (%)' }
               ]}
+              data-testid="sale-form-discount-type"
             />
           </div>
           <div>
@@ -481,6 +485,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               value={discountInput}
               onChange={(e) => setDiscountInput(parseFloat(e.target.value) || 0)}
               placeholder={discountType === 'percentage' ? '%10' : '100.00'}
+              data-testid="sale-form-discount-value"
             />
           </div>
         </div>

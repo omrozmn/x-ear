@@ -18,7 +18,7 @@ import {
 } from '@/api/client/sales.client';
 import {
   createSgkDocuments,
-  deleteSgkDocument
+  // deleteSgkDocument // Endpoint disabled in backend
 } from '@/api/client/sgk.client';
 import type {
   PartyCreate,
@@ -57,7 +57,7 @@ export const partiesApi = {
 
   // SGK operations
   createSgkDocuments: (data: UploadSGKDocumentRequest) => createSgkDocuments(data),
-  deleteSgkDocument: (documentId: string) => deleteSgkDocument(documentId),
+  // deleteSgkDocument: (documentId: string) => deleteSgkDocument(documentId), // Endpoint disabled
 };
 
 export default partiesApi;

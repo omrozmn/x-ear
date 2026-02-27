@@ -299,7 +299,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         "fixed h-screen overflow-y-auto z-[1000] transition-[width] duration-300",
         "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700",
         sidebarCollapsed ? "w-[80px]" : "w-[240px]"
-      )}>
+      )} data-testid="sidebar">
         <div className={cn(
           "p-4 flex items-center border-b border-gray-200 dark:border-gray-700",
           sidebarCollapsed ? "justify-center" : "justify-between"

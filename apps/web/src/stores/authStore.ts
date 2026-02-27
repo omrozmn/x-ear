@@ -826,7 +826,7 @@ export const useAuthStore = create<AuthStore>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
         subscription: state.subscription,
-        error: state.error, // Include error in persistence
+        // NEVER persist error - it should be cleared on page reload
       }),
     }
   )

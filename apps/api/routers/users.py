@@ -16,7 +16,6 @@ from models.user import User
 from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Users"])
@@ -66,7 +65,7 @@ class PasswordChange(BaseModel):
 
 @router.get("/users", operation_id="listUsers", response_model=ResponseEnvelope[List[UserRead]])
 def list_users(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access("users.view")),
     db_session: Session = Depends(get_db)
@@ -110,6 +109,8 @@ def create_user(
         )
     
     # Check tenant limits
+    tenant = None
+    existing_users_count = 0
     try:
         tenant = db_session.get(Tenant, access.tenant_id)
         if tenant:
@@ -127,6 +128,13 @@ def create_user(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    # Validate username is provided
+    if not user_in.username:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="username is required", code="USERNAME_REQUIRED").model_dump(mode="json")
+        )
     
     if db_session.query(User).filter_by(username=user_in.username).first():
         raise HTTPException(
@@ -154,7 +162,7 @@ def create_user(
 
 @router.get("/users/me", operation_id="listUserMe", response_model=ResponseEnvelope[UserMeRead])
 def get_me(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Get current user profile"""

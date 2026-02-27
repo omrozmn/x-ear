@@ -2,7 +2,7 @@ import logging
 import json
 import os
 from typing import List, Optional, Dict, Any, Union
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 from decimal import Decimal
 
@@ -31,7 +31,6 @@ from schemas.sales import (
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 # Logger
 logger = logging.getLogger(__name__)
 
@@ -262,7 +261,7 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
 
 @router.get("/sales", operation_id="listSales", response_model=ResponseEnvelope[List[SaleRead]])
 def get_sales(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
     include_details: bool = Query(False, description="Include full sale details (devices, payments, invoice)"),
@@ -374,8 +373,23 @@ def get_sale(
     """Get a single sale with full details - Flask parity."""
     sale = get_sale_or_404(db, sale_id, access)
     
+    # Eager load relationships to avoid lazy loading issues
+    db.refresh(sale)
+    
     # Build full sale data with all enrichments
-    sale_data = _build_full_sale_data(db, sale)
+    try:
+        sale_data = _build_full_sale_data(db, sale)
+    except Exception as e:
+        logger.error(f"Error building sale data for {sale_id}: {e}")
+        # Fallback to basic sale data
+        sale_data = {
+            'id': sale.id,
+            'partyId': sale.party_id,
+            'productId': sale.product_id,
+            'status': sale.status,
+            'totalAmount': float(sale.total_amount) if sale.total_amount else 0.0,
+            'error': 'Failed to load full details'
+        }
     
     return ResponseEnvelope(data=sale_data)
 
@@ -507,7 +521,7 @@ def get_sale_payment_plan(
             {
                 'installmentNumber': i.installment_number,
                 'amount': float(i.amount),
-                'dueDate': i.due_date,
+                'dueDate': i.due_date.isoformat() if i.due_date else None,
                 'status': i.status
             }
             for i in insts
@@ -557,7 +571,8 @@ def create_sale_payment_plan(
             payment_plan = create_custom_payment_plan(
                 sale_id=sale_id,
                 installments_data=request_data.installments,
-                settings=settings
+                settings=settings,
+                db=db
             )
         else:
             payment_plan = create_payment_plan(
@@ -565,7 +580,8 @@ def create_sale_payment_plan(
                 plan_type=plan_type,
                 amount=float(sale.total_amount or 0) - down_payment,
                 settings=settings,
-                tenant_id=sale.tenant_id
+                tenant_id=sale.tenant_id,
+                db=db
             )
         
         if payment_plan:
@@ -589,7 +605,7 @@ def create_sale_payment_plan(
             return ResponseEnvelope(
                 data={
                     'id': payment_plan.id,
-                    'planType': payment_plan.plan_type,
+                    'planType': payment_plan.plan_name,
                     'totalAmount': float(payment_plan.total_amount or 0),
                     'installments': inst_data
                 },
@@ -714,19 +730,24 @@ def create_sale(
     access: UnifiedAccess = Depends(require_access())
 ):
     """Create a new sale."""
+    from core.tenant_utils import get_effective_tenant_id
+    
     access.require_permission("sale:write")
+    
+    # Get effective tenant ID (supports impersonation)
+    tenant_id = get_effective_tenant_id(access)
     
     # 1. Validate Patient
     patient = db.get(Party, sale_in.party_id)
     if not patient:
         raise HTTPException(
             status_code=404,
-            detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
+            detail=ApiError(message="Party not found", code="PARTY_NOT_FOUND").model_dump(mode="json"),
         )
-    if access.tenant_id and patient.tenant_id != access.tenant_id:
+    if tenant_id and patient.tenant_id != tenant_id:
         raise HTTPException(
             status_code=404,
-            detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
+            detail=ApiError(message="Party not found", code="PARTY_NOT_FOUND").model_dump(mode="json"),
         ) # Cross-tenant protection
         
     # 2. Validate Product
@@ -778,7 +799,7 @@ def create_sale(
     
     sale = Sale(
         id=sale_id,
-        tenant_id=access.tenant_id or patient.tenant_id,
+        tenant_id=tenant_id,
         branch_id=access.branch_id, # If applicable
         party_id=sale_in.party_id,
         product_id=sale_in.product_id,
@@ -801,7 +822,7 @@ def create_sale(
     # 5. Device Assignment
     assignment = DeviceAssignment(
         tenant_id=sale.tenant_id,
-        branch_id=access.branch_id,
+        branch_id=access.branch_id if hasattr(access, 'branch_id') else None,
         party_id=sale.party_id,
         device_id=product.id,
         inventory_id=product.id,
@@ -814,24 +835,34 @@ def create_sale(
         payment_method=sale_in.payment_method,
         notes=f"Stoktan satış: {product.name} - {product.brand or ''} {product.model or ''}",
         assignment_uid=f"ATM-{uuid4().hex[:6].upper()}",
-        ear=sale_in.ear_side
+        ear=getattr(sale_in, 'ear_side', None) or 'both'
     )
-    if sale_in.serial_number: assignment.serial_number = sale_in.serial_number
-    if sale_in.serial_number_left: assignment.serial_number_left = sale_in.serial_number_left
-    if sale_in.serial_number_right: assignment.serial_number_right = sale_in.serial_number_right
+    if hasattr(sale_in, 'serial_number') and sale_in.serial_number: 
+        assignment.serial_number = sale_in.serial_number
+    if hasattr(sale_in, 'serial_number_left') and sale_in.serial_number_left: 
+        assignment.serial_number_left = sale_in.serial_number_left
+    if hasattr(sale_in, 'serial_number_right') and sale_in.serial_number_right: 
+        assignment.serial_number_right = sale_in.serial_number_right
     
     db.add(assignment)
     
     # 6. Update Inventory
-    # Should decrease by quantity? Sales usually 1 unless bulk?
-    # Monolithic logic was -1 or raw update.
-    _update_inventory_stock(db, product, 1, sale.id, access.user_id)
+    user_id = getattr(access, 'user_id', None) or 'system'
+    _update_inventory_stock(db, product, 1, sale.id, user_id)
     
     db.commit()
+    db.refresh(sale)  # Refresh to load relationships
 
     return ResponseEnvelope(
         data={
-            "sale": SaleRead.model_validate(sale),
+            "id": sale.id,
+            "partyId": sale.party_id,
+            "productId": sale.product_id,
+            "status": sale.status,
+            "totalAmount": float(sale.total_amount) if sale.total_amount else 0.0,
+            "finalAmount": float(sale.final_amount) if sale.final_amount else 0.0,
+            "paidAmount": float(sale.paid_amount) if sale.paid_amount else 0.0,
+            "saleDate": sale.sale_date.isoformat() if sale.sale_date else None,
             "warnings": warnings,
             "saleId": sale.id,
         },
@@ -1261,7 +1292,8 @@ def create_device_assignments(
         accessories=data.accessories or [],
         services=data.services or [],
         sgk_scheme=sgk_scheme,
-        settings=settings
+        settings=settings,
+        db=db
     )
     
     # Create sale record

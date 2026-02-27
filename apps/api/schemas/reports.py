@@ -163,7 +163,7 @@ class PosMovementItem(AppBaseModel):
     installment: Optional[int] = None
     error_message: Optional[str] = Field(None, alias="errorMessage")
     sale_id: Optional[str] = Field(None, alias="saleId")
-    patient_name: Optional[str] = Field(None, alias="patientName")
+    party_name: Optional[str] = Field(None, alias="patientName")
 
 class PosMovementSummary(AppBaseModel):
     total_volume: float = Field(..., alias="totalVolume")

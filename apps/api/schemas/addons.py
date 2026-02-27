@@ -11,12 +11,13 @@ class AddonBase(AppBaseModel):
     name: str = Field(..., description="Addon name")
     slug: Optional[str] = Field(None, description="Addon slug")
     description: Optional[str] = Field(None, description="Addon description")
-    addon_type: str = Field("FEATURE", alias="addonType", description="Addon type")
+    addon_type: str = Field("FLAT_FEE", alias="addonType", description="Addon type (PER_USER, FLAT_FEE, USAGE_BASED)")
     price: float = Field(..., description="Addon price")
     currency: str = Field("TRY", description="Currency")
     unit_name: Optional[str] = Field(None, alias="unitName", description="Unit name")
     limit_amount: Optional[int] = Field(None, alias="limitAmount", description="Limit amount")
     is_active: bool = Field(True, alias="isActive", description="Is addon active")
+    features: Optional[List] = Field(default_factory=list, description="Addon features")
 
 
 class AddonCreate(AddonBase):

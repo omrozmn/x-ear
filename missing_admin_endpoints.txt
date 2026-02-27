@@ -1,0 +1,18 @@
+# Missing Admin Endpoints (Frontend uses but Backend doesn't have)
+
+## Users.tsx
+- useListAdminUserAll - Used to fetch all tenant users without pagination
+- useUpdateAdminUserAll - Used to update any tenant's user
+
+## Status
+These endpoints are referenced in the frontend but return 404 from backend.
+The frontend has been updated with stub implementations to prevent crashes.
+
+## Solution Options
+1. Add these endpoints to backend (if needed)
+2. Use existing endpoints with different parameters
+3. Keep stub implementations (current state)
+
+## Current Workaround
+- useListAdminUserAll: Stubbed with empty array
+- useUpdateAdminUserAll: Stubbed with error throw

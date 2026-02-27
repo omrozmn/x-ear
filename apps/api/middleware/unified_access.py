@@ -34,6 +34,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Optional, Set, Any, Callable
 from functools import lru_cache
+import threading
 
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -48,6 +49,9 @@ SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod'
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+# Thread-local storage for tenant_id (fallback for ContextVar issues)
+_thread_local = threading.local()
 
 
 @dataclass
@@ -155,19 +159,29 @@ def _build_access_from_token(
     is_impersonating = payload.get("is_impersonating", False)
     is_impersonating_tenant = payload.get("is_impersonating_tenant", False)
     
-    # Admin user (prefixed with admin_)
-    if str(user_id).startswith("admin_"):
+    logger.info(f"🔍 [TOKEN DEBUG] user_id={user_id}, is_impersonating={is_impersonating}, is_impersonating_tenant={is_impersonating_tenant}, tenant_id_in_payload={payload.get('tenant_id')}")
+    
+    # Admin user (prefixed with admin_ or adm_)
+    if str(user_id).startswith("admin_") or str(user_id).startswith("adm_"):
         from models.admin_user import AdminUser
+        from core.database import unbound_session
         
-        actual_id = user_id[6:]
-        admin = db.get(AdminUser, actual_id)
-        
-        if not admin:
-            logger.error(f"Admin user not found in DB. ID: {actual_id}")
-            raise HTTPException(status_code=401, detail="Admin user not found")
-        if not admin.is_active:
-            logger.error(f"Admin user inactive. ID: {actual_id}")
-            raise HTTPException(status_code=401, detail="Admin user inactive")
+        # CRITICAL: Admin lookup must bypass tenant filter
+        with unbound_session(reason="auth-admin-lookup"):
+            # Try with full ID first (new format: adm_XXXXX)
+            admin = db.get(AdminUser, str(user_id))
+            
+            # Fallback: try without prefix for legacy IDs
+            if not admin:
+                admin_id_without_prefix = str(user_id).replace("admin_", "").replace("adm_", "")
+                admin = db.get(AdminUser, admin_id_without_prefix)
+            
+            if not admin:
+                logger.error(f"Admin user not found in DB. ID: {user_id}")
+                raise HTTPException(status_code=401, detail="Admin user not found")
+            if not admin.is_active:
+                logger.error(f"Admin user inactive. ID: {user_id}")
+                raise HTTPException(status_code=401, detail="Admin user inactive")
         
         # Get permissions
         permissions = set()
@@ -180,9 +194,10 @@ def _build_access_from_token(
         effective_tenant_id = None
         if is_impersonating_tenant:
             effective_tenant_id = payload.get('effective_tenant_id') or payload.get('tenant_id')
-            # CRITICAL: Set tenant context for query filtering
-            if effective_tenant_id:
-                set_current_tenant_id(effective_tenant_id)
+            logger.info(f"🔑 [TENANT IMPERSONATION] Detected tenant_id in JWT: {effective_tenant_id}")
+            # NOTE: Don't set_current_tenant_id() here - will be set in access_dependency
+            if not effective_tenant_id:
+                logger.error(f"🔴 [TENANT IMPERSONATION] is_impersonating_tenant=True but no tenant_id in JWT! Payload: {payload}")
         
         # Handle role impersonation
         effective_role = admin.role
@@ -193,7 +208,8 @@ def _build_access_from_token(
             if not effective_tenant_id:
                 effective_tenant_id = payload.get('tenant_id') or payload.get('effective_tenant_id')
                 if effective_tenant_id:
-                    set_current_tenant_id(effective_tenant_id)
+                    logger.info(f"🔑 [ROLE IMPERSONATION] Detected tenant_id in JWT: {effective_tenant_id}")
+                    # NOTE: Don't set_current_tenant_id() here - will be set in access_dependency
         
         return UnifiedAccess(
             user=admin,
@@ -211,14 +227,17 @@ def _build_access_from_token(
     
     # Regular tenant user
     from models.user import User
+    from core.database import unbound_session
     
-    user = db.get(User, user_id)
-    if not user:
-        logger.error(f"User not found in DB. ID: {user_id}")
-        raise HTTPException(status_code=401, detail="User not found")
-    if not user.is_active:
-        logger.error(f"User user inactive. ID: {user_id}")
-        raise HTTPException(status_code=401, detail="User inactive")
+    # CRITICAL: User lookup must bypass tenant filter because tenant_id is not set yet
+    with unbound_session(reason="auth-user-lookup"):
+        user = db.get(User, user_id)
+        if not user:
+            logger.error(f"User not found in DB. ID: {user_id}")
+            raise HTTPException(status_code=401, detail="User not found")
+        if not user.is_active:
+            logger.error(f"User user inactive. ID: {user_id}")
+            raise HTTPException(status_code=401, detail="User inactive")
     
     # Check permission version - if changed, token is stale
     token_perm_ver = payload.get('perm_ver', 1)
@@ -234,8 +253,18 @@ def _build_access_from_token(
             }
         )
     
-    # Set tenant context for query filtering
-    set_current_tenant_id(user.tenant_id)
+    # CRITICAL: Handle tenant impersonation for regular users too!
+    # When admin impersonates tenant, they get a regular user token with tenant_id in JWT
+    effective_tenant_id = user.tenant_id  # Default to user's tenant
+    
+    if is_impersonating_tenant:
+        # Use tenant_id from JWT token (impersonation)
+        effective_tenant_id = payload.get('effective_tenant_id') or payload.get('tenant_id')
+        logger.info(f"🔑 [TENANT IMPERSONATION - REGULAR USER] Detected tenant_id in JWT: {effective_tenant_id}")
+    
+    # NOTE: Don't set_current_tenant_id() here - will be set in access_dependency
+    if not effective_tenant_id:
+        logger.error(f"🔴 [TENANT CONTEXT] No tenant_id available for user {user_id}")
     
     # Get permissions from token first (faster), fallback to database
     permissions = set()
@@ -264,7 +293,7 @@ def _build_access_from_token(
         user=user,
         user_id=str(user.id),
         user_type="tenant",
-        tenant_id=user.tenant_id,
+        tenant_id=effective_tenant_id,  # Use effective_tenant_id (supports impersonation)
         branch_id=getattr(user, 'branch_id', None),
         role=user.role,
         permissions=permissions,
@@ -272,6 +301,7 @@ def _build_access_from_token(
         is_admin=(user.role.upper() in ("ADMIN", "SUPER_ADMIN")),
         is_super_admin=(user.role.upper() == "SUPER_ADMIN"),
         is_tenant_admin=(user.role.upper() in ("TENANT_ADMIN", "ADMIN", "SUPER_ADMIN")),
+        is_impersonating=is_impersonating_tenant,  # Set impersonation flag
         claims=payload
     )
 
@@ -281,7 +311,7 @@ def require_access(
     *,
     public: bool = False,
     admin_only: bool = False,
-    tenant_required: bool = True
+    tenant_required: bool = None  # Changed to None for auto-detection
 ) -> Callable:
     """
     Dependency factory for unified access control.
@@ -290,7 +320,7 @@ def require_access(
         permission: Required permission string (e.g., "patients.read")
         public: If True, allows unauthenticated access
         admin_only: If True, requires admin user
-        tenant_required: If True, requires tenant context (default for tenant endpoints)
+        tenant_required: If True, requires tenant context. If None, auto-detects (False for admin_only, True otherwise)
     
     Usage:
         @router.get("/patients")
@@ -298,10 +328,14 @@ def require_access(
             pass
     """
     
+    # Auto-detect tenant_required: admin_only endpoints don't need tenant context by default
+    if tenant_required is None:
+        tenant_required = not admin_only
+    
     def access_dependency(
+        request: Request,
         token: Optional[str] = Depends(oauth2_scheme),
-        db: Session = Depends(get_db),
-        request: Request = None
+        db: Session = Depends(get_db)
     ) -> UnifiedAccess:
         # Public endpoints
         if public:
@@ -329,6 +363,23 @@ def require_access(
         
         access = _build_access_from_token(token, db)
         
+        # CRITICAL: Set tenant context AFTER building access object
+        # Store in multiple places for maximum compatibility:
+        # 1. request.state (for middleware access)
+        # 2. ContextVar (for same-context access)
+        # 3. Thread-local (for cross-context access as fallback)
+        if request and access.tenant_id:
+            request.state.tenant_id = access.tenant_id
+            logger.info(f"🔑 [ACCESS DEPENDENCY] Storing tenant_id in request.state: {access.tenant_id}")
+        
+        # Also set in ContextVar (for same-context access)
+        if access.tenant_id:
+            logger.info(f"🔑 [ACCESS DEPENDENCY] Setting tenant context: {access.tenant_id}")
+            set_current_tenant_id(access.tenant_id)
+            # CRITICAL: Also set in thread-local as fallback
+            _thread_local.tenant_id = access.tenant_id
+            logger.info(f"🔑 [ACCESS DEPENDENCY] Set thread-local tenant_id: {access.tenant_id}")
+        
         # Check for effective tenant header (for super admin impersonation)
         if request and access.is_super_admin:
             effective_tenant = request.headers.get("X-Effective-Tenant-Id")
@@ -343,7 +394,7 @@ def require_access(
                 detail={"message": "Admin access required", "code": "ADMIN_REQUIRED"}
             )
         
-        # Tenant context check (skip for admins without impersonation)
+        # Tenant context check (skip for admin_only endpoints unless explicitly required)
         if tenant_required:
             # Super admins need tenant context (either from user.tenant_id or impersonation)
             if access.is_super_admin:

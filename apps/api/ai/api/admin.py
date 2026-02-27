@@ -423,7 +423,7 @@ async def get_ai_settings(
         enabled=config.enabled,
         phase=config.phase.name,
         model_provider=config.model.provider,
-        model_id=config.model.model_id,
+        model_id=config.model.ai_model_id,
         rate_limit_per_minute=config.quota.rate_limit_per_minute,
         default_quota=config.quota.default_requests_per_period,
     )

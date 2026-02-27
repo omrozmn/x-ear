@@ -3,7 +3,7 @@ FastAPI Admin Analytics Router - Migrated from Flask routes/admin_analytics.py
 Handles admin panel analytics and metrics
 """
 from fastapi import APIRouter, Depends, HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import logging
@@ -23,7 +23,7 @@ from models.plan import Plan
 from models.invoice import Invoice
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
+from typing import Optional
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/analytics", tags=["Admin Analytics"])

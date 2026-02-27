@@ -261,12 +261,12 @@ class EmailApprovalService:
         
         return approvals
     
-    def get_approval_stats(self, tenant_id: str) -> Dict[str, Any]:
+    def get_approval_stats(self, tenant_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Get approval statistics.
         
         Args:
-            tenant_id: Tenant ID
+            tenant_id: Tenant ID (None for cross-tenant admin stats)
         
         Returns:
             Dictionary with approval stats
@@ -274,12 +274,13 @@ class EmailApprovalService:
         from sqlalchemy import func
         
         # Count by status
-        status_counts = self.db.query(
+        query = self.db.query(
             EmailApproval.status,
             func.count(EmailApproval.id).label('count')
-        ).filter(
-            EmailApproval.tenant_id == tenant_id
-        ).group_by(EmailApproval.status).all()
+        )
+        if tenant_id:
+            query = query.filter(EmailApproval.tenant_id == tenant_id)
+        status_counts = query.group_by(EmailApproval.status).all()
         
         stats = {
             'pending': 0,
@@ -291,12 +292,13 @@ class EmailApprovalService:
             stats[status] = count
         
         # Count by risk level
-        risk_counts = self.db.query(
+        query = self.db.query(
             EmailApproval.risk_level,
             func.count(EmailApproval.id).label('count')
-        ).filter(
-            EmailApproval.tenant_id == tenant_id
-        ).group_by(EmailApproval.risk_level).all()
+        )
+        if tenant_id:
+            query = query.filter(EmailApproval.tenant_id == tenant_id)
+        risk_counts = query.group_by(EmailApproval.risk_level).all()
         
         stats['by_risk_level'] = {
             risk_level: count

@@ -415,7 +415,7 @@ class PartyService:
                     if device:
                         brand = brand or device.brand
                         model = model or device.model
-                        serial = serial or device.serial_number
+                        serial = serial or getattr(device, 'serial_number', None)
                         barcode = barcode or getattr(device, 'barcode', None)
                 
                 # Try to find linked inventory
@@ -424,7 +424,7 @@ class PartyService:
                     if inv:
                         brand = brand or inv.brand
                         model = model or inv.model
-                        serial = serial or inv.serial_number
+                        # InventoryItem doesn't have serial_number, skip it
                         barcode = barcode or inv.barcode
             
             # Merge enriched data with original dict (original dict has priority for existing fields)

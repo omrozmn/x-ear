@@ -14,10 +14,10 @@ import {
 import toast from 'react-hot-toast';
 import {
   useListAdminTickets,
-  useCreateAdminTickets,
+  useCreateAdminTicket,
   useUpdateAdminTicket,
   useListAdminUsers,
-  useCreateAdminTicketResponses,
+  useCreateAdminTicketResponse,
 } from '@/lib/api-client';
 
 // Local type definitions (not exported from generated client)
@@ -72,7 +72,7 @@ const Support: React.FC = () => {
 
   // Mutations
   const { mutateAsync: updateTicket } = useUpdateAdminTicket();
-  const { mutateAsync: createTicket } = useCreateAdminTickets();
+  const { mutateAsync: createTicket } = useCreateAdminTicket();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -696,7 +696,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 }) => {
   const [response, setResponse] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const { mutateAsync: createTicketResponse } = useCreateAdminTicketResponses();
+  const { mutateAsync: createTicketResponse } = useCreateAdminTicketResponse();
   // CSAT fields removed as they are not in schema yet
 
   const formatDate = (dateString: string | undefined) => {

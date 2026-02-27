@@ -10,7 +10,6 @@ from models.production_order import ProductionOrder
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
 from schemas.production import ProductionOrderRead
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/production", tags=["Admin Production"])

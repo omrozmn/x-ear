@@ -19,7 +19,7 @@ Requirements:
 
 import logging
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Header
@@ -42,7 +42,6 @@ from services.email_template_service import EmailTemplateService
 from services.encryption_service import EncryptionService
 from services.smtp_config_service import SMTPConfigService
 from datetime import timedelta, timezone
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Email Logs"])

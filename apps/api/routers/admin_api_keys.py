@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from database import get_db
@@ -11,7 +11,6 @@ from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.api_keys import ApiKeyCreate, ApiKeyRead
 from schemas.base import ResponseEnvelope
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/api-keys", tags=["Admin API Keys"])
@@ -38,7 +37,7 @@ async def init_db(
 
 @router.get("", operation_id="listAdminApiKeys", response_model=ApiKeyListResponse)
 async def get_api_keys(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     tenant_id: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -85,7 +84,7 @@ async def create_api_key(
         api_key = ApiKey(
             name=data.name,
             tenant_id=data.tenant_id,
-            created_by=access.user.get("id"),
+            created_by=access.user.id,
             scopes=",".join(data.scopes) if data.scopes else "",
             rate_limit=data.rate_limit
         )

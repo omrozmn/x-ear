@@ -10,14 +10,13 @@ from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
 from schemas.devices import DeviceRead
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/inventory", tags=["Admin Inventory"])
 
 @router.get("", operation_id="listAdminInventory", response_model=ResponseEnvelope[List[DeviceRead]])
 async def get_all_inventory(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     tenant_id: Optional[str] = None,

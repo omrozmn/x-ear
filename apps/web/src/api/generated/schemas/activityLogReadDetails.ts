@@ -8,6 +8,6 @@
 import type { ActivityLogReadDetailsAnyOf } from './activityLogReadDetailsAnyOf';
 
 /**
- * Additional details
+ * Additional details (dict or string)
  */
-export type ActivityLogReadDetails = ActivityLogReadDetailsAnyOf | null;
+export type ActivityLogReadDetails = ActivityLogReadDetailsAnyOf | string | null;

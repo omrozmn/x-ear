@@ -217,27 +217,33 @@ class BounceHandlerService:
         Returns:
             float: Bounce rate (0.0 to 1.0)
         """
-        from sqlalchemy import func
+        from sqlalchemy import func, or_
         
         cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
-        # Count total emails sent
+        # Count total emails sent (use created_at if sent_at is null)
         total_sent = self.db.query(func.count(EmailLog.id)).filter(
             and_(
                 EmailLog.tenant_id == tenant_id,
-                EmailLog.sent_at >= cutoff
+                or_(
+                    EmailLog.sent_at >= cutoff,
+                    and_(EmailLog.sent_at.is_(None), EmailLog.created_at >= cutoff)
+                )
             )
         ).scalar() or 0
         
         if total_sent == 0:
             return 0.0
         
-        # Count bounced emails
+        # Count bounced emails (use created_at if bounced_at is null)
         total_bounced = self.db.query(func.count(EmailLog.id)).filter(
             and_(
                 EmailLog.tenant_id == tenant_id,
                 EmailLog.status == "bounced",
-                EmailLog.bounced_at >= cutoff
+                or_(
+                    EmailLog.bounced_at >= cutoff,
+                    and_(EmailLog.bounced_at.is_(None), EmailLog.created_at >= cutoff)
+                )
             )
         ).scalar() or 0
         

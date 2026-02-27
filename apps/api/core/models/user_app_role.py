@@ -1,17 +1,19 @@
+from sqlalchemy import Column, ForeignKey, String
+from core.models.base import Base
 from .base import db, BaseModel, gen_id
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 
 class UserAppRole(BaseModel):
     __tablename__ = 'user_app_roles'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('uar'))
-    user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False)
-    app_id = db.Column(db.String(50), db.ForeignKey('apps.id'), nullable=False)
-    role_id = db.Column(db.String(50), db.ForeignKey('roles.id'), nullable=False)
+    id = Column(String(50), primary_key=True, default=lambda: gen_id('uar'))
+    user_id = Column(String(50), ForeignKey('users.id'), nullable=False)
+    app_id = Column(String(50), ForeignKey('apps.id'), nullable=False)
+    role_id = Column(String(50), ForeignKey('roles.id'), nullable=False)
 
-    user = relationship('User', backref=db.backref('app_roles', lazy='dynamic'))
-    app = relationship('App', backref=db.backref('user_roles', lazy='dynamic'))
+    user = relationship('User', backref=backref('app_roles', lazy='dynamic'))
+    app = relationship('App', backref=backref('user_roles', lazy='dynamic'))
     role = relationship('Role')
 
     __table_args__ = (

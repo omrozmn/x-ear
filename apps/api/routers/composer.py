@@ -32,7 +32,7 @@ router = APIRouter(
 
 @router.get("/autocomplete", response_model=AutocompleteResponse)
 def autocomplete(
-    q: str = Query(..., min_length=1),
+    q: str = Query("", min_length=0),  # Made optional with default empty string
     context_entity_type: Optional[str] = Query(None),
     context_entity_id: Optional[str] = Query(None),
     db: Session = Depends(get_db),
@@ -41,6 +41,10 @@ def autocomplete(
     """
     Search for entities and suggest actions based on context.
     """
+    # If no query, return empty results
+    if not q or len(q) == 0:
+        return AutocompleteResponse(entities=[], actions=[], intent_type="search")
+    
     entities: List[EntityItem] = []
     actions: List[Capability] = []
     
@@ -335,7 +339,7 @@ async def analyze_documents(
                 # 2. Vision Pass (Qwen2-VL)
                 system_prompt = """You are a document analysis assistant. 
                 Identify the document type.
-                Locate specific fields if present: 'patient_name', 'device_serial', 'invoice_amount', 'invoice_date'.
+                Locate specific fields if present: 'party_name', 'device_serial', 'invoice_amount', 'invoice_date'.
                 Return ONLY valid JSON matching this schema:
                 {
                     "document_type": "string",

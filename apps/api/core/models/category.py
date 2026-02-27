@@ -2,20 +2,21 @@
 Category Model
 Simple table to store inventory categories
 """
-from models.base import db
+from sqlalchemy import Column, Date, DateTime, Integer, String, Time
+from core.models.base import Base
 from datetime import datetime, timezone
 
 def now_utc():
     """Return current UTC timestamp"""
     return datetime.now(timezone.utc)
 
-class Category(db.Model):
+class Category(Base):
     __tablename__ = 'categories'
     
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    created_at = db.Column(db.DateTime(timezone=True), default=now_utc, nullable=False)
-    updated_at = db.Column(db.DateTime(timezone=True), default=now_utc, onupdate=now_utc, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=now_utc, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=now_utc, onupdate=now_utc, nullable=False)
     
     def to_dict(self):
         return {

@@ -34,7 +34,7 @@ export interface ActivityLogRead {
   entityId?: ActivityLogReadEntityId;
   /** Log message */
   message?: ActivityLogReadMessage;
-  /** Additional details */
+  /** Additional details (dict or string) */
   details?: ActivityLogReadDetails;
   /** Is critical action */
   isCritical?: boolean;

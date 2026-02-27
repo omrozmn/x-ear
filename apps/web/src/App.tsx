@@ -73,7 +73,7 @@ function App() {
                 <AuthProvider>
                   <RouterProvider router={router} />
                   <PhoneVerificationModal />
-                  <Toaster position="top-right" />
+                  <Toaster position="top-right" data-testid="toast-notifications" />
                   <ReactQueryDevtools initialIsOpen={false} />
                 </AuthProvider>
               </ThemeProvider>

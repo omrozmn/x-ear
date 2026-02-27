@@ -147,7 +147,7 @@ async def gather_with_tenant_context(
 async def create_task_with_tenant_context(
     coro: Coroutine[Any, Any, T],
     *,
-    name: str | None = None
+    name: Optional[str] = None
 ) -> asyncio.Task[T]:
     """
     Create an asyncio Task with tenant context propagated.
@@ -210,7 +210,7 @@ class TenantContextTaskGroup:
     """
     
     def __init__(self):
-        self._tenant_id: str | None = None
+        self._tenant_id: Optional[str] = None
         self._tasks: list[asyncio.Task] = []
     
     async def __aenter__(self) -> "TenantContextTaskGroup":
@@ -227,7 +227,7 @@ class TenantContextTaskGroup:
         if self._tasks:
             await asyncio.gather(*self._tasks, return_exceptions=True)
     
-    def create_task(self, coro: Coroutine[Any, Any, T], *, name: str | None = None) -> asyncio.Task[T]:
+    def create_task(self, coro: Coroutine[Any, Any, T], *, name: Optional[str] = None) -> asyncio.Task[T]:
         """Create a task with tenant context propagated."""
         tenant_id = self._tenant_id
         

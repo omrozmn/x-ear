@@ -87,7 +87,7 @@ class EventService:
         
         # Let's construct a context dictionary
         context = {
-            "patient_name": recipient_name,
+            "party_name": recipient_name,
             "date": datetime.now(timezone.utc).strftime("%d.%m.%Y"),
             **payload # Merge payload at top level
         }

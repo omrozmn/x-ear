@@ -13,5 +13,5 @@ export interface GetPDFLinkRequest {
   /** List of document UUIDs */
   uuids: string[];
   /** EFATURA, EARSIV, etc. */
-  systemtype: string;
+  systemType: string;
 }

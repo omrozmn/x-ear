@@ -9,7 +9,6 @@ from models.user import ActivityLog
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
 from schemas.audit import AuditLogRead
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/audit", tags=["Audit"])

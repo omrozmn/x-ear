@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File
 from typing import List, Optional, Any, Dict
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 import json
@@ -31,7 +31,6 @@ from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
 
 import logging
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Parties"])
@@ -120,19 +119,29 @@ def create_party(
 ):
     """Create a new patient"""
     try:
+        from core.tenant_utils import get_effective_tenant_id
+        from sqlalchemy.exc import IntegrityError
+        
         service = PartyService(db)
-        if not access.tenant_id or access.tenant_id == 'system':
-            raise HTTPException(
-                status_code=400,
-                detail="Lütfen işlem yapmak için bir klinik (tenant) seçiniz."
-            )
+        tenant_id = get_effective_tenant_id(access)
 
         # Service handles data normalization and defaults
         data = patient_in.model_dump(exclude_unset=True)
         
-        patient = service.create_party(data, access.tenant_id)
+        patient = service.create_party(data, tenant_id)
         
         return ResponseEnvelope(data=patient)
+    except IntegrityError as e:
+        logger.error(f"Party integrity error: {e}")
+        db.rollback()
+        error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
+        if 'phone' in error_msg.lower():
+            raise HTTPException(status_code=409, detail="Phone number already exists")
+        elif 'email' in error_msg.lower():
+            raise HTTPException(status_code=409, detail="Email already exists")
+        elif 'tc_number' in error_msg.lower():
+            raise HTTPException(status_code=409, detail="TC number already exists")
+        raise HTTPException(status_code=409, detail="Duplicate entry")
     except Exception as e:
         logger.error(f"Create patient error: {e}")
         # Service might raise HTTPException or others, safe to re-raise or wrap

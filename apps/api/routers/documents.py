@@ -45,10 +45,10 @@ def get_patient_documents(
         
         party = db.get(Party, party_id)
         if not party:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
-        if access.tenant_id and patient.tenant_id != access.tenant_id:
+        if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from patient's custom data field
@@ -184,10 +184,10 @@ def get_patient_document(
         
         party = db.get(Party, party_id)
         if not party:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
-        if access.tenant_id and patient.tenant_id != access.tenant_id:
+        if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from custom_data
@@ -231,10 +231,10 @@ def delete_patient_document(
         
         party = db.get(Party, party_id)
         if not party:
-            raise HTTPException(status_code=404, detail="Patient not found")
+            raise HTTPException(status_code=404, detail="Party not found")
         
         # Tenant check
-        if access.tenant_id and patient.tenant_id != access.tenant_id:
+        if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Get documents from custom_data

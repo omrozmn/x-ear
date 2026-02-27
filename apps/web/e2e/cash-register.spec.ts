@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers/auth.helpers';
+import { login } from '../../../tests/helpers/auth.helpers';
 
 test.describe('Cash Register Tests', () => {
   

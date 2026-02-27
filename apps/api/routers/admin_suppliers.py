@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from database import get_db
@@ -11,7 +11,6 @@ from models.suppliers import Supplier
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.suppliers import SupplierCreate, SupplierUpdate, SupplierRead
 from schemas.base import ResponseEnvelope
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/suppliers", tags=["Admin Suppliers"])
@@ -25,7 +24,7 @@ class SupplierDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminSuppliers", response_model=SupplierListResponse)
 async def get_suppliers(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     search: Optional[str] = None,
     status: Optional[str] = None,

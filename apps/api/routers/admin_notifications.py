@@ -11,10 +11,10 @@ from models.notification_template import NotificationTemplate
 from models.tenant import Tenant
 from models.user import User
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from core.dependencies import get_current_admin_user
 from schemas.base import ResponseEnvelope
 from schemas.notifications import NotificationRead, NotificationTemplateCreate
 from schemas.notification_templates import EmailTemplateRead
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/notifications", tags=["Admin Notifications"])
@@ -30,7 +30,8 @@ class NotificationSend(BaseModel):
     channel: Optional[str] = "push"
 
 class TemplateCreate(BaseModel):
-    name: Optional[str] = None
+    tenant_id: str  # Required for admin
+    name: str  # Required field
     description: Optional[str] = None
     titleTemplate: Optional[str] = None
     bodyTemplate: Optional[str] = None
@@ -65,7 +66,7 @@ async def init_db(
 
 @router.get("", operation_id="listAdminNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 async def get_notifications(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
     user_id: Optional[str] = None,
     type_filter: Optional[str] = Query(None, alias="type"),
@@ -176,7 +177,7 @@ async def send_notification(
 
 @router.get("/templates", operation_id="listAdminNotificationTemplates", response_model=ResponseEnvelope[List[EmailTemplateRead]])
 async def get_templates(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(20, ge=1, le=100),
     category: Optional[str] = Query(None, description="Filter by template category"),
     channel: Optional[str] = Query(None, description="Filter by channel (push, email)"),
@@ -208,17 +209,21 @@ async def get_templates(
 async def create_template(
     data: TemplateCreate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
+    admin_user=Depends(get_current_admin_user)
 ):
     """Create a notification template"""
     try:
+        # Convert variables list to comma-separated string
+        variables_str = ','.join(data.variables) if data.variables else ''
+        
         template = NotificationTemplate(
+            tenant_id=data.tenant_id,  # Get from request data
             name=data.name,
             description=data.description,
             title_template=data.titleTemplate,
             body_template=data.bodyTemplate,
             channel=data.channel,
-            variables=data.variables,
+            variables=variables_str,
             trigger_event=data.triggerEvent,
             template_category=data.templateCategory,
             is_active=data.isActive

@@ -110,7 +110,7 @@ class SmsLogStatus(str, Enum):
     DELIVERED = 'delivered'
     FAILED = 'failed'
 
-class SmsLogRead(IDMixin, TimestampMixin):
+class SmsLogRead(AppBaseModel, IDMixin, TimestampMixin):
     campaign_id: Optional[str] = Field(None, alias="campaignId")
     party_id: Optional[str] = Field(None, alias="partyId")
     phone_number: str = Field(..., alias="phoneNumber")

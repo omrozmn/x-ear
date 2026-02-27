@@ -24,7 +24,7 @@ from models.device import Device
 from models.invoice import Invoice
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
+from typing import Optional
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/dashboard", tags=["Admin Dashboard"])

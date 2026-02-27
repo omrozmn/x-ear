@@ -9,7 +9,6 @@ from models.scan_queue import ScanQueue
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
 from schemas.scan_queue import ScanQueueRead
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/scan-queue", tags=["Admin Scan Queue"])

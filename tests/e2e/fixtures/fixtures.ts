@@ -1,5 +1,5 @@
 import { test as base, Page, APIRequestContext } from '@playwright/test';
-import { login, AuthTokens } from '../web/helpers/test-utils';
+import { loginApi, AuthTokens } from '../../helpers/auth.helper';
 
 /**
  * Extended test fixtures
@@ -32,7 +32,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
 
         // 1. Login via API - Use tenant admin directly (admin@xear.com has tenant_001)
         console.log('[Fixture] Logging in as tenant admin (admin@xear.com)...');
-        const tokens = await login(request, 'admin@xear.com', 'Admin123!');
+        const tokens = await loginApi(request, 'admin@xear.com', 'Admin123!');
         
         console.log('[Fixture] Login successful:', {
             userId: tokens.userId,
@@ -124,7 +124,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
         }
 
         // Login as admin
-        const tokens = await login(request, process.env.ADMIN_USER_EMAIL || 'admin@xear.com', process.env.ADMIN_USER_PASSWORD || 'Admin123!');
+        const tokens = await loginApi(request, process.env.ADMIN_USER_EMAIL || 'admin@xear.com', process.env.ADMIN_USER_PASSWORD || 'Admin123!');
         // NOTE: Admin uses email/password. Login helper handles "identifier" which accepts email.
 
         // If admin is on a different port (8082), we should probably respect that in setupAuthenticatedPage or manually do it.
@@ -171,7 +171,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
 
     // Shared auth tokens if needed directly
     authTokens: async ({ request }, use) => {
-        const tokens = await login(request);
+        const tokens = await loginApi(request, 'admin@xear.com', 'Admin123!');
         await use(tokens);
     },
 
@@ -184,7 +184,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
         
         // Login as tenant admin
         console.log('[API Context] Logging in as tenant admin...');
-        const tokens = await login(tempContext, 'admin@xear.com', 'Admin123!');
+        const tokens = await loginApi(tempContext, 'admin@xear.com', 'Admin123!');
         await tempContext.dispose();
         
         console.log('[API Context] Creating authenticated context with tenant:', tokens.tenantId);

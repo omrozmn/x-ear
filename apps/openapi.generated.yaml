@@ -1083,6 +1083,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/inventory/bulk-upload:
+    post:
+      tags:
+      - Inventory
+      summary: Bulk Upload Inventory
+      description: Bulk upload inventory items from CSV/XLSX
+      operationId: createInventoryBulkUpload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_createInventoryBulkUpload'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_Dict_str__Any__'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/inventory/{item_id}/serials:
     post:
       tags:
@@ -1204,6 +1232,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -1677,6 +1706,106 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
+  /api/hearing-profiles:
+    post:
+      tags:
+      - hearing-profiles
+      summary: Create Hearing Profile
+      description: 'Create or update a hearing profile for a party
+
+
+        **Permission**: parties.edit'
+      operationId: createHearingProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HearingProfileCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_HearingProfileRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/hearing-profiles/{party_id}:
+    get:
+      tags:
+      - hearing-profiles
+      summary: Get Hearing Profile
+      description: 'Get hearing profile for a party
+
+
+        **Permission**: parties.view'
+      operationId: getHearingProfile
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: party_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Party Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_HearingProfileRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - hearing-profiles
+      summary: Update Hearing Profile
+      description: 'Update hearing profile SGK info
+
+
+        **Permission**: parties.edit'
+      operationId: updateHearingProfile
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: party_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Party Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HearingProfileUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_HearingProfileRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/auth/lookup-phone:
     post:
       tags:
@@ -1951,6 +2080,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -2015,7 +2145,7 @@ paths:
       parameters:
       - name: date
         in: query
-        required: true
+        required: false
         schema:
           type: string
           title: Date
@@ -2056,6 +2186,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -2446,6 +2577,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -2742,6 +2874,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -3241,6 +3374,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -3311,6 +3445,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -3359,6 +3494,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -3431,6 +3567,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -3456,7 +3593,7 @@ paths:
         required: false
         schema:
           type: number
-          minimum: 0.0
+          minimum: 0
           default: 0
           title: Min Amount
       responses:
@@ -3519,6 +3656,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -3806,6 +3944,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -3818,6 +3957,14 @@ paths:
           minimum: 1
           default: 50
           title: Per Page
+      - name: saleId
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Saleid
       responses:
         '200':
           description: Successful Response
@@ -3852,6 +3999,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -4091,6 +4239,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -4129,7 +4278,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreate'
+              $ref: '#/components/schemas/routers__users__UserCreate'
       responses:
         '201':
           description: Successful Response
@@ -4438,6 +4587,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -4717,6 +4867,7 @@ paths:
         content:
           application/json:
             schema:
+              additionalProperties: true
               type: object
               title: Settings Data
         required: true
@@ -4766,8 +4917,8 @@ paths:
       tags:
       - Admin
       summary: Create Admin User
-      description: Create admin user or tenant user
-      operationId: createAdminUsers
+      description: Create a user (admin operation) - can specify tenant_id
+      operationId: createAdminUser
       security:
       - OAuth2PasswordBearer: []
       requestBody:
@@ -4775,136 +4926,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAdminUserRequest'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    get:
-      tags:
-      - Admin
-      summary: Get Admin Users
-      description: Get list of admin users
-      operationId: listAdminUsers
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          default: 1
-          title: Page
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          default: 10
-          title: Limit
-      - name: search
-        in: query
-        required: false
-        schema:
-          type: string
-          default: ''
-          title: Search
-      - name: role
-        in: query
-        required: false
-        schema:
-          type: string
-          default: ''
-          title: Role
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_List_AdminUserRead__'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/users/all:
-    get:
-      tags:
-      - Admin
-      summary: Get All Tenant Users
-      description: Get list of ALL users from ALL tenants
-      operationId: listAdminUserAll
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          default: 1
-          title: Page
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          default: 10
-          title: Limit
-      - name: search
-        in: query
-        required: false
-        schema:
-          type: string
-          default: ''
-          title: Search
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/users/all/{user_id}:
-    put:
-      tags:
-      - Admin
-      summary: Update Any Tenant User
-      description: Update any tenant user (Admin Panel)
-      operationId: updateAdminUserAll
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: user_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: User Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/routers__admin__UpdateTenantUserRequest'
+              $ref: '#/components/schemas/schemas__users__UserCreate'
       responses:
         '200':
           description: Successful Response
@@ -4918,13 +4940,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/tickets:
     get:
       tags:
       - Admin
-      summary: Get Admin Tickets
-      description: Get support tickets
-      operationId: listAdminTickets
+      summary: List Admin Users
+      description: List all users (admin operation)
+      operationId: listAdminUsers
       security:
       - OAuth2PasswordBearer: []
       parameters:
@@ -4933,110 +4954,35 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
+          minimum: 1
           default: 1
           title: Page
-      - name: limit
+      - name: per_page
         in: query
         required: false
         schema:
           type: integer
-          default: 10
-          title: Limit
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_List_TicketRead__'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    post:
-      tags:
-      - Admin
-      summary: Create Admin Ticket
-      description: Create support ticket
-      operationId: createAdminTickets
-      security:
-      - OAuth2PasswordBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTicketRequest'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/tickets/{ticket_id}:
-    put:
-      tags:
-      - Admin
-      summary: Update Admin Ticket
-      description: Update support ticket
-      operationId: updateAdminTicket
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: ticket_id
-        in: path
-        required: true
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Per Page
+      - name: tenant_id
+        in: query
+        required: false
         schema:
-          type: string
-          title: Ticket Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateTicketRequest'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/tickets/{ticket_id}/responses:
-    post:
-      tags:
-      - Admin
-      summary: Create Ticket Response
-      description: Create response for support ticket
-      operationId: createAdminTicketResponses
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: ticket_id
-        in: path
-        required: true
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenant Id
+      - name: search
+        in: query
+        required: false
         schema:
-          type: string
-          title: Ticket Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TicketResponseRequest'
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Search
       responses:
         '200':
           description: Successful Response
@@ -5049,47 +4995,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/debug/switch-role:
-    post:
-      tags:
-      - Admin
-      summary: Debug Switch Role
-      description: Switch to a different role for debugging
-      operationId: createAdminDebugSwitchRole
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SwitchRoleRequest'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-      security:
-      - OAuth2PasswordBearer: []
-  /api/admin/debug/available-roles:
+  /api/admin/users/{user_id}:
     get:
       tags:
       - Admin
-      summary: Debug Available Roles
-      description: Get all available roles for debugging
-      operationId: listAdminDebugAvailableRoles
+      summary: Get Admin User
+      description: Get user details (admin operation)
+      operationId: getAdminUser
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: User Id
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope_AvailableRolesResponse_'
+                $ref: '#/components/schemas/ResponseEnvelope_UserRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/parties/{party_id}:
+    get:
+      tags:
+      - Admin Parties
+      summary: Get Party Detail
+      description: Get single party detail
+      operationId: getAdminParty
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: party_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Party Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyDetailResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/impersonate:
+    post:
+      tags:
+      - Admin
+      summary: Impersonate Tenant
+      description: Impersonate a tenant - returns a token with tenant context
+      operationId: createAdminImpersonate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImpersonateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ImpersonateResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/debug/switch-tenant:
@@ -5097,7 +5086,7 @@ paths:
       tags:
       - Admin
       summary: Debug Switch Tenant
-      description: Switch to a different tenant context for debugging
+      description: Switch to a different tenant context (admin impersonation)
       operationId: createAdminDebugSwitchTenant
       requestBody:
         content:
@@ -5110,7 +5099,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_SwitchTenantResponse_'
         '422':
           description: Validation Error
           content:
@@ -5124,7 +5114,7 @@ paths:
       tags:
       - Admin
       summary: Debug Exit Impersonation
-      description: Exit tenant/role impersonation
+      description: Exit tenant impersonation and return to normal admin mode
       operationId: createAdminDebugExitImpersonation
       responses:
         '200':
@@ -5134,29 +5124,28 @@ paths:
               schema: {}
       security:
       - OAuth2PasswordBearer: []
-  /api/admin/debug/page-permissions/{page_key}:
+  /api/admin/sales/{sale_id}:
     get:
       tags:
       - Admin
-      summary: Debug Page Permissions
-      description: Get permissions required for a specific page
-      operationId: getAdminDebugPagePermission
+      summary: Get Admin Sale
+      description: Get sale details (admin operation - cross-tenant)
+      operationId: getAdminSale
       security:
       - OAuth2PasswordBearer: []
       parameters:
-      - name: page_key
+      - name: sale_id
         in: path
         required: true
         schema:
           type: string
-          title: Page Key
+          title: Sale Id
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_DebugPagePermissionResponse_'
+              schema: {}
         '422':
           description: Validation Error
           content:
@@ -5180,12 +5169,20 @@ paths:
           type: integer
           default: 1
           title: Page
-      - name: limit
+      - name: perPage
         in: query
         required: false
         schema:
           type: integer
           default: 20
+          title: Perpage
+      - name: limit
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
           title: Limit
       - name: status
         in: query
@@ -5269,7 +5266,8 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_TenantRead_'
         '422':
           description: Validation Error
           content:
@@ -5427,7 +5425,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/routers__admin_tenants__UpdateTenantUserRequest'
+              $ref: '#/components/schemas/UpdateTenantUserRequest'
       responses:
         '200':
           description: Successful Response
@@ -5734,6 +5732,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tenants/{tenant_id}/parties:
+    get:
+      tags:
+      - Admin Tenants
+      summary: List Tenant Parties
+      description: List parties for a specific tenant (admin operation)
+      operationId: listAdminTenantParties
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Per Page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tenants/{tenant_id}/sales:
+    get:
+      tags:
+      - Admin Tenants
+      summary: List Tenant Sales
+      description: List sales for a specific tenant (admin operation)
+      operationId: listAdminTenantSales
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Per Page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/dashboard:
     get:
       tags:
@@ -5781,6 +5863,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -5941,7 +6024,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -5963,6 +6046,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -6115,7 +6199,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -6202,6 +6286,111 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_TenantAnalytics_'
       security:
       - OAuth2PasswordBearer: []
+  /api/admin/example-documents:
+    get:
+      tags:
+      - Admin Example Documents
+      summary: List Example Documents
+      description: List all example documents with their status
+      operationId: listAdminExampleDocuments
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_ExampleDocumentRead__'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/example-documents/upload:
+    post:
+      tags:
+      - Admin Example Documents
+      summary: Upload Example Document
+      description: Upload an example document (contract template)
+      operationId: createAdminExampleDocumentUpload
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: document_type
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Document Type
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_createAdminExampleDocumentUpload'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ExampleDocumentRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/example-documents/{document_type}:
+    delete:
+      tags:
+      - Admin Example Documents
+      summary: Delete Example Document
+      description: Delete an example document
+      operationId: deleteAdminExampleDocument
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__response__ResponseEnvelope'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/example-documents/{document_type}/download:
+    get:
+      tags:
+      - Admin Example Documents
+      summary: Download Example Document
+      description: Download an example document
+      operationId: getAdminExampleDocumentDownload
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Type
+      responses:
+        '200':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/invoices:
     get:
       tags:
@@ -6612,61 +6801,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
-  /api/sgk/documents/{document_id}:
-    get:
-      tags:
-      - SGK
-      summary: Get Sgk Document
-      description: Get SGK document
-      operationId: getSgkDocument
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: document_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Document Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    delete:
-      tags:
-      - SGK
-      summary: Delete Sgk Document
-      description: Delete SGK document
-      operationId: deleteSgkDocument
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: document_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Document Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
   /api/sgk/upload:
     post:
       tags:
@@ -6995,7 +7129,7 @@ paths:
       parameters:
       - name: token
         in: query
-        required: true
+        required: false
         schema:
           type: string
           description: Unsubscribe token from email link
@@ -7573,7 +7707,6 @@ paths:
       operationId: listComplaints
       security:
       - OAuth2PasswordBearer: []
-      - OAuth2PasswordBearer: []
       parameters:
       - name: page
         in: query
@@ -7657,7 +7790,6 @@ paths:
                 $ref: '#/components/schemas/ResponseEnvelope_ComplaintStatsResponse_'
       security:
       - OAuth2PasswordBearer: []
-      - OAuth2PasswordBearer: []
   /api/admin/complaints/process-fbl:
     post:
       tags:
@@ -7686,7 +7818,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
-      - OAuth2PasswordBearer: []
   /api/activity-logs:
     get:
       tags:
@@ -7702,6 +7833,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -8630,7 +8762,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -8689,274 +8821,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_List_AppointmentRead__'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/parties/{party_id}/profiles/hearing/tests:
-    get:
-      tags:
-      - HearingProfiles
-      summary: List Hearing Tests
-      description: Get all hearing tests for a party
-      operationId: listHearingTests
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    post:
-      tags:
-      - HearingProfiles
-      summary: Create Hearing Test
-      description: Add a new hearing test to party
-      operationId: createHearingTest
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HearingTestCreate'
-      responses:
-        '201':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/parties/{party_id}/profiles/hearing/tests/{test_id}:
-    put:
-      tags:
-      - HearingProfiles
-      summary: Update Hearing Test
-      description: Update a hearing test
-      operationId: updateHearingTest
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      - name: test_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Test Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HearingTestUpdate'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    delete:
-      tags:
-      - HearingProfiles
-      summary: Delete Hearing Test
-      description: Delete a hearing test
-      operationId: deleteHearingTest
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      - name: test_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Test Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/parties/{party_id}/profiles/hearing/ereceipts:
-    get:
-      tags:
-      - HearingProfiles
-      summary: List Hearing Ereceipts
-      description: Get all e-receipts for a party
-      operationId: listHearingEReceipts
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    post:
-      tags:
-      - HearingProfiles
-      summary: Create Hearing Ereceipt
-      description: Create a new e-receipt for party
-      operationId: createHearingEReceipt
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EReceiptCreate'
-      responses:
-        '201':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/parties/{party_id}/profiles/hearing/ereceipts/{ereceipt_id}:
-    put:
-      tags:
-      - HearingProfiles
-      summary: Update Hearing Ereceipt
-      description: Update an e-receipt
-      operationId: updateHearingEReceipt
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      - name: ereceipt_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Ereceipt Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EReceiptUpdate'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    delete:
-      tags:
-      - HearingProfiles
-      summary: Delete Hearing Ereceipt
-      description: Delete an e-receipt
-      operationId: deleteHearingEReceipt
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      - name: ereceipt_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Ereceipt Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
         '422':
           description: Validation Error
           content:
@@ -9386,6 +9250,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -9892,7 +9757,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/settings:
@@ -9932,7 +9797,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -9954,7 +9819,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/settings/backup:
@@ -9970,7 +9835,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/roles:
@@ -10397,7 +10262,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/api-keys:
@@ -10415,6 +10280,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -10497,7 +10363,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -10519,6 +10385,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -10615,6 +10482,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -10671,6 +10539,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -10725,7 +10594,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/integrations/vatan-sms/config:
@@ -10762,7 +10631,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -10805,7 +10674,50 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/integrations/telegram/config:
+    get:
+      tags:
+      - Admin Integrations
+      summary: Get Telegram Config
+      description: Get Telegram integration configuration
+      operationId: listAdminIntegrationTelegramConfig
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationDetailResponse'
+      security:
+      - OAuth2PasswordBearer: []
+    put:
+      tags:
+      - Admin Integrations
+      summary: Update Telegram Config
+      description: Update Telegram integration configuration
+      operationId: updateAdminIntegrationTelegramConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelegramConfigUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -10829,6 +10741,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -10901,6 +10814,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -11057,7 +10971,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11077,7 +10991,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/marketplaces/integrations:
@@ -11160,7 +11074,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11180,7 +11094,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/notifications:
@@ -11198,6 +11112,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -11259,7 +11174,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11284,6 +11199,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -11412,7 +11328,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11434,6 +11350,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -11467,35 +11384,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/parties/{party_id}:
-    get:
-      tags:
-      - Admin Parties
-      summary: Get Party Detail
-      description: Get single party detail
-      operationId: getAdminParty
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: party_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Party Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartyDetailResponse'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/parties/{party_id}/devices:
     get:
       tags:
@@ -11518,7 +11406,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11547,7 +11435,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11576,7 +11464,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11605,7 +11493,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11681,7 +11569,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/production/orders:
@@ -11708,7 +11596,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11743,7 +11631,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
         '422':
           description: Validation Error
           content:
@@ -11763,7 +11651,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
       security:
       - OAuth2PasswordBearer: []
   /api/admin/scan-queue:
@@ -11841,6 +11729,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -11993,7 +11882,169 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseEnvelope'
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tickets:
+    get:
+      tags:
+      - Admin Tickets
+      summary: Get Admin Tickets
+      description: Get list of tickets
+      operationId: listAdminTickets
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 10
+          title: Limit
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - name: priority
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Priority
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Search
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Admin Tickets
+      summary: Create Admin Ticket
+      description: Create a new ticket
+      operationId: createAdminTicket
+      security:
+      - OAuth2PasswordBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tickets/{ticket_id}:
+    put:
+      tags:
+      - Admin Tickets
+      summary: Update Admin Ticket
+      description: Update a ticket
+      operationId: updateAdminTicket
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Ticket Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tickets/{ticket_id}/responses:
+    post:
+      tags:
+      - Admin Tickets
+      summary: Create Ticket Response
+      description: Add a response to a ticket
+      operationId: createAdminTicketResponse
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Ticket Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketResponseCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/schemas__base__ResponseEnvelope_dict_'
         '422':
           description: Validation Error
           content:
@@ -12087,6 +12138,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -12196,13 +12248,6 @@ paths:
       summary: Get Me
       description: Get current affiliate info
       operationId: listAffiliateMe
-      parameters:
-      - name: affiliate_id
-        in: query
-        required: true
-        schema:
-          type: integer
-          title: Affiliate Id
       responses:
         '200':
           description: Successful Response
@@ -12210,12 +12255,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_AffiliateRead_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/affiliates/{affiliate_id}:
     patch:
       tags:
@@ -13327,6 +13368,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -13467,6 +13509,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -14258,8 +14301,10 @@ paths:
       tags:
       - Invoice Actions
       summary: Serve Invoice Pdf
-      description: Serve invoice PDF
+      description: Serve dynamically generated invoice PDF
       operationId: listInvoicePdf
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
       - name: invoice_id
         in: path
@@ -14320,6 +14365,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -14471,6 +14517,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -14660,6 +14707,7 @@ paths:
         required: false
         schema:
           type: integer
+          maximum: 1000000
           minimum: 1
           default: 1
           title: Page
@@ -15187,9 +15235,11 @@ paths:
       parameters:
       - name: affiliate_id
         in: query
-        required: true
+        required: false
         schema:
-          type: integer
+          anyOf:
+          - type: integer
+          - type: 'null'
           title: Affiliate Id
       responses:
         '200':
@@ -15215,9 +15265,11 @@ paths:
       parameters:
       - name: commission_id
         in: query
-        required: true
+        required: false
         schema:
-          type: integer
+          anyOf:
+          - type: integer
+          - type: 'null'
           title: Commission Id
       responses:
         '200':
@@ -15652,6 +15704,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 type: object
                 title: Response Get Capabilities Api Ai Capabilities Get
   /api/ai/metrics:
@@ -15767,6 +15820,7 @@ paths:
             application/json:
               schema:
                 type: object
+                additionalProperties: true
                 title: Response Acknowledge Alert Api Ai Alerts  Alert Id  Acknowledge
                   Post
         '404':
@@ -15790,6 +15844,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 type: object
                 title: Response Trigger Alert Check Api Ai Alerts Check Post
   /api/ai/admin/kill-switch:
@@ -15887,6 +15942,7 @@ paths:
           content:
             application/json:
               schema:
+                additionalProperties: true
                 type: object
                 title: Response Cleanup Expired Approvals Api Ai Admin Cleanup Expired
                   Post
@@ -15920,10 +15976,11 @@ paths:
       parameters:
       - name: q
         in: query
-        required: true
+        required: false
         schema:
           type: string
-          minLength: 1
+          minLength: 0
+          default: ''
           title: Q
       - name: context_entity_type
         in: query
@@ -16065,6 +16122,7 @@ components:
           type: string
           title: Description
         parameters:
+          additionalProperties: true
           type: object
           title: Parameters
         risk_level:
@@ -16127,10 +16185,12 @@ components:
           description: Log message
         details:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
+          - type: string
           - type: 'null'
           title: Details
-          description: Additional details
+          description: Additional details (dict or string)
         isCritical:
           type: boolean
           title: Iscritical
@@ -16181,6 +16241,7 @@ components:
           default: 0
         topActions:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Topactions
@@ -16261,7 +16322,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -16297,7 +16359,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -16498,6 +16561,7 @@ components:
           type: array
           title: Toptenants
         domainMetrics:
+          additionalProperties: true
           type: object
           title: Domainmetrics
       type: object
@@ -16512,6 +16576,7 @@ components:
     AdminDashboardMetrics:
       properties:
         metrics:
+          additionalProperties: true
           type: object
           title: Metrics
         recentTenants:
@@ -16574,86 +16639,25 @@ components:
     AdminLoginResponse:
       properties:
         token:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
           title: Token
-        refreshToken:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Refreshtoken
+        refresh_token:
+          type: string
+          title: Refresh Token
         user:
-          anyOf:
-          - $ref: '#/components/schemas/AdminUserRead'
-          - type: object
-          - type: 'null'
+          additionalProperties: true
+          type: object
           title: User
-        requiresMfa:
+        requires_mfa:
           type: boolean
-          title: Requiresmfa
+          title: Requires Mfa
           default: false
-      type: object
-      title: AdminLoginResponse
-    AdminUserRead:
-      properties:
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Creation timestamp
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
-        email:
-          type: string
-          title: Email
-        firstName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Firstname
-        lastName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Lastname
-        role:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Role
-        isPhoneVerified:
-          type: boolean
-          title: Isphoneverified
-          default: false
-        isActive:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Isactive
-        lastLogin:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Lastlogin
       type: object
       required:
-      - id
-      - email
-      title: AdminUserRead
-      description: Schema for reading AdminUser - replaces to_dict()
+      - token
+      - refresh_token
+      - user
+      title: AdminLoginResponse
     AffiliateCreate:
       properties:
         name:
@@ -16945,6 +16949,7 @@ components:
           title: Tool Schema Version
           description: Schema version of the tool
         parameters:
+          additionalProperties: true
           type: object
           title: Parameters
           description: Tool parameters
@@ -17022,8 +17027,7 @@ components:
           title: Enabled
           description: Whether AI is enabled
         phase:
-          allOf:
-          - $ref: '#/components/schemas/AiPhaseEnum'
+          $ref: '#/components/schemas/AiPhaseEnum'
           description: Current AI phase
         modelId:
           type: string
@@ -17072,6 +17076,7 @@ components:
           title: Alerts
           description: List of active alerts
         metrics:
+          additionalProperties: true
           type: object
           title: Metrics
           description: Current metrics
@@ -17307,7 +17312,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -17343,7 +17349,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -17452,12 +17459,10 @@ components:
           title: Duration
           default: 30
         appointmentType:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentType'
+          $ref: '#/components/schemas/AppointmentType'
           default: consultation
         status:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentStatus'
+          $ref: '#/components/schemas/AppointmentStatus'
           default: scheduled
         notes:
           anyOf:
@@ -17478,7 +17483,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -17538,12 +17544,10 @@ components:
           title: Duration
           default: 30
         appointmentType:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentType'
+          $ref: '#/components/schemas/AppointmentType'
           default: consultation
         status:
-          allOf:
-          - $ref: '#/components/schemas/AppointmentStatus'
+          $ref: '#/components/schemas/AppointmentStatus'
           default: scheduled
         notes:
           anyOf:
@@ -17580,11 +17584,13 @@ components:
       enum:
       - scheduled
       - confirmed
+      - in_progress
       - completed
       - cancelled
       - no_show
       - rescheduled
       title: AppointmentStatus
+      description: Appointment status - lowercase for API consistency
     AppointmentType:
       type: string
       enum:
@@ -17596,6 +17602,7 @@ components:
       - repair
       - other
       title: AppointmentType
+      description: Appointment type
     AppointmentUpdate:
       properties:
         date:
@@ -17838,6 +17845,7 @@ components:
           title: Rejected
           description: Rejected count
         by_risk_level:
+          additionalProperties: true
           type: object
           title: By Risk Level
           description: Counts by risk level
@@ -18495,43 +18503,6 @@ components:
       - automation
       - timestamp
       title: AutomationStatusResponse
-    AvailableRole:
-      properties:
-        id:
-          type: string
-          title: Id
-        name:
-          type: string
-          title: Name
-        displayName:
-          type: string
-          title: Displayname
-        description:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Description
-        permissionCount:
-          type: integer
-          title: Permissioncount
-          default: 0
-      type: object
-      required:
-      - id
-      - name
-      - displayName
-      title: AvailableRole
-    AvailableRolesResponse:
-      properties:
-        roles:
-          items:
-            $ref: '#/components/schemas/AvailableRole'
-          type: array
-          title: Roles
-      type: object
-      required:
-      - roles
-      title: AvailableRolesResponse
     BatchInvoiceGenerateRequest:
       properties:
         saleIds:
@@ -18547,7 +18518,8 @@ components:
           default: standard
         customerInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Customerinfo
       type: object
@@ -18678,11 +18650,32 @@ components:
           default: ''
         emailTemplate:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Emailtemplate
       type: object
       title: BirfaturaConfigUpdate
+    Body_createAdminExampleDocumentUpload:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_createAdminExampleDocumentUpload
+    Body_createInventoryBulkUpload:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_createInventoryBulkUpload
     Body_createInvoiceBulkUpload:
       properties:
         file:
@@ -19219,7 +19212,8 @@ components:
           default: all
         targetCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Targetcriteria
           default: {}
@@ -19318,7 +19312,8 @@ components:
           title: Targetsegment
         targetCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Targetcriteria
         messageTemplate:
@@ -19476,7 +19471,8 @@ components:
           - type: 'null'
         targetCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Targetcriteria
         messageTemplate:
@@ -19662,7 +19658,8 @@ components:
           description: User's natural language message
         context:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Context
           description: Optional context (conversation history, etc.)
@@ -19987,7 +19984,8 @@ components:
           default: normal
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
           default: {}
@@ -20246,10 +20244,12 @@ components:
           title: Complaint Rate 1H
           description: Complaint rate in last hour (%)
         by_type:
+          additionalProperties: true
           type: object
           title: By Type
           description: Counts by complaint type
         by_provider:
+          additionalProperties: true
           type: object
           title: By Provider
           description: Counts by FBL provider
@@ -20309,12 +20309,12 @@ components:
     CreateActionRequest:
       properties:
         intent:
-          allOf:
-          - $ref: '#/components/schemas/IntentRequest'
+          $ref: '#/components/schemas/IntentRequest'
           description: Classified intent
         context:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Context
           description: Optional context
@@ -20362,45 +20362,6 @@ components:
       - processing_time_ms
       title: CreateActionResponse
       description: Response from action creation.
-    CreateAdminUserRequest:
-      properties:
-        email:
-          type: string
-          title: Email
-        password:
-          type: string
-          title: Password
-        first_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: First Name
-        last_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Last Name
-        role:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Role
-          default: support
-        tenant_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tenant Id
-        username:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Username
-      type: object
-      required:
-      - email
-      - password
-      title: CreateAdminUserRequest
     CreateJobRequest:
       properties:
         filePath:
@@ -20454,46 +20415,18 @@ components:
       - email
       - password
       title: CreateTenantUserRequest
-    CreateTicketRequest:
-      properties:
-        subject:
-          type: string
-          title: Subject
-        description:
-          type: string
-          title: Description
-        priority:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Priority
-          default: medium
-        category:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Category
-          default: general
-        tenant_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tenant Id
-      type: object
-      required:
-      - subject
-      - description
-      title: CreateTicketRequest
     CurrentSubscriptionResponse:
       properties:
         tenant:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Tenant
         plan:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Plan
         isExpired:
@@ -20539,6 +20472,7 @@ components:
           $ref: '#/components/schemas/DashboardKPIs'
         recentActivity:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Recentactivity
@@ -20616,25 +20550,6 @@ components:
       required:
       - text
       title: DebugNERRequest
-    DebugPagePermissionResponse:
-      properties:
-        pageKey:
-          type: string
-          title: Pagekey
-        requiredPermissions:
-          items:
-            type: string
-          type: array
-          title: Requiredpermissions
-        found:
-          type: boolean
-          title: Found
-      type: object
-      required:
-      - pageKey
-      - requiredPermissions
-      - found
-      title: DebugPagePermissionResponse
     DeliverabilityMetricsResponse:
       properties:
         sent_count:
@@ -20727,7 +20642,8 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - items: {}
             type: array
           - type: 'null'
@@ -20807,6 +20723,7 @@ components:
           anyOf:
           - type: number
           - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
           title: Price
         isActive:
           type: boolean
@@ -20847,6 +20764,7 @@ components:
         accessories:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -20854,6 +20772,7 @@ components:
         services:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -20874,6 +20793,7 @@ components:
           type: array
           title: Assignmentids
         pricing:
+          additionalProperties: true
           type: object
           title: Pricing
         warnings:
@@ -21324,7 +21244,7 @@ components:
           - type: string
           - type: 'null'
           title: Sgkscheme
-        sgksupporttype:
+        sgkSupportType:
           anyOf:
           - type: string
           - type: 'null'
@@ -21344,7 +21264,7 @@ components:
           - type: number
           - type: 'null'
           title: Sgkreduction
-        sgksupport:
+        sgkSupport:
           anyOf:
           - type: number
           - type: 'null'
@@ -21572,17 +21492,23 @@ components:
           description: Device status
           default: available
         price:
-          type: number
+          anyOf:
+          - type: number
+          - type: 'null'
           title: Price
           description: Sale price
           default: 0.0
         cost:
-          type: number
+          anyOf:
+          - type: number
+          - type: 'null'
           title: Cost
           description: Cost price
           default: 0.0
         kdvRate:
-          type: number
+          anyOf:
+          - type: number
+          - type: 'null'
           title: Kdvrate
           description: VAT rate
           default: 20.0
@@ -21713,7 +21639,8 @@ components:
           title: Content
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
         mimeType:
@@ -21791,7 +21718,8 @@ components:
           title: Filepath
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
         mimeType:
@@ -21985,41 +21913,6 @@ components:
       - status
       title: EFaturaOutboxRead
       description: Schema for reading an E-Fatura outbox entry
-    EReceiptCreate:
-      properties:
-        sgkReportId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Sgkreportid
-        number:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Number
-        doctorName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Doctorname
-        date:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Date
-        materials:
-          anyOf:
-          - items:
-              type: object
-            type: array
-          - type: 'null'
-          title: Materials
-        status:
-          type: string
-          title: Status
-          default: pending
-      type: object
-      title: EReceiptCreate
     EReceiptQueryRequest:
       properties:
         receiptNumber:
@@ -22039,27 +21932,6 @@ components:
       required:
       - receiptNumber
       title: EReceiptQueryRequest
-    EReceiptUpdate:
-      properties:
-        materials:
-          anyOf:
-          - items:
-              type: object
-            type: array
-          - type: 'null'
-          title: Materials
-        status:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Status
-        doctorName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Doctorname
-      type: object
-      title: EReceiptUpdate
     EmailLogListResponse:
       properties:
         items:
@@ -22161,6 +22033,7 @@ components:
         attachments:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -22171,7 +22044,8 @@ components:
           title: Status
         providerResponse:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Providerresponse
         providerMessageId:
@@ -22472,7 +22346,8 @@ components:
           description: Secondary text (e.g. Phone, ID, Code)
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
           description: Additional context data
@@ -22483,6 +22358,27 @@ components:
       - label
       title: EntityItem
       description: Represents a searchable entity in the system.
+    ExampleDocumentRead:
+      properties:
+        document_type:
+          type: string
+          title: Document Type
+        filename:
+          type: string
+          title: Filename
+        exists:
+          type: boolean
+          title: Exists
+        url:
+          type: string
+          title: Url
+      type: object
+      required:
+      - document_type
+      - filename
+      - exists
+      - url
+      title: ExampleDocumentRead
     ExecuteActionRequest:
       properties:
         mode:
@@ -22557,6 +22453,7 @@ components:
           title: Tool Id
           description: ID of the tool to execute
         args:
+          additionalProperties: true
           type: object
           title: Args
           description: Arguments for the tool
@@ -22588,7 +22485,8 @@ components:
           description: Execution status
         result:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Result
           description: Tool execution result data
@@ -22648,6 +22546,7 @@ components:
       - F
       - O
       title: Gender
+      description: Gender options
     GetActionResponse:
       properties:
         action_id:
@@ -22671,7 +22570,8 @@ components:
           description: Approval status
         execution_result:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Execution Result
           description: Execution result
@@ -22688,41 +22588,41 @@ components:
       description: Response for getting action details.
     GetOutBoxDocumentsRequest:
       properties:
-        systemtype:
+        systemType:
           type: string
           title: Systemtype
           description: EFATURA, EARSIV, etc.
-        documenttype:
+        documentType:
           type: string
           title: Documenttype
           description: INVOICE, DESPATCHADVICE, etc.
-        startdatetime:
+        startDateTime:
           type: string
           title: Startdatetime
           description: ISO 8601 string
-        enddatetime:
+        endDateTime:
           type: string
           title: Enddatetime
           description: ISO 8601 string
-        invoiceno:
+        invoiceNo:
           anyOf:
           - type: string
           - type: 'null'
           title: Invoiceno
-        pagenumber:
+        pageNumber:
           type: integer
           title: Pagenumber
           default: 0
-        pagesize:
+        pageSize:
           type: integer
           title: Pagesize
           default: 20
       type: object
       required:
-      - systemtype
-      - documenttype
-      - startdatetime
-      - enddatetime
+      - systemType
+      - documentType
+      - startDateTime
+      - endDateTime
       title: GetOutBoxDocumentsRequest
       description: Request schema for GetOutBoxDocuments
     GetPDFLinkRequest:
@@ -22733,14 +22633,14 @@ components:
           type: array
           title: Uuids
           description: List of document UUIDs
-        systemtype:
+        systemType:
           type: string
           title: Systemtype
           description: EFATURA, EARSIV, etc.
       type: object
       required:
       - uuids
-      - systemtype
+      - systemType
       title: GetPDFLinkRequest
       description: Request schema for GetPDFLinkByUUID
     HTTPValidationError:
@@ -22797,6 +22697,20 @@ components:
       - timestamp
       title: HealthResponse
       description: Health check response.
+    HearingProfileCreate:
+      properties:
+        partyId:
+          type: string
+          title: Partyid
+        sgkInfo:
+          additionalProperties: true
+          type: object
+          title: Sgkinfo
+      type: object
+      required:
+      - partyId
+      title: HearingProfileCreate
+      description: Schema for creating a hearing profile
     HearingProfileRead:
       properties:
         createdAt:
@@ -22822,7 +22736,8 @@ components:
           title: Partyid
         sgkInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Sgkinfo
       type: object
@@ -22830,44 +22745,17 @@ components:
       - id
       - partyId
       title: HearingProfileRead
-    HearingTestCreate:
+    HearingProfileUpdate:
       properties:
-        testDate:
-          type: string
-          title: Testdate
-        audiologist:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Audiologist
-        audiogramData:
-          anyOf:
-          - type: object
-          - type: 'null'
-          title: Audiogramdata
+        sgkInfo:
+          additionalProperties: true
+          type: object
+          title: Sgkinfo
       type: object
       required:
-      - testDate
-      title: HearingTestCreate
-    HearingTestUpdate:
-      properties:
-        testDate:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Testdate
-        audiologist:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Audiologist
-        audiogramData:
-          anyOf:
-          - type: object
-          - type: 'null'
-          title: Audiogramdata
-      type: object
-      title: HearingTestUpdate
+      - sgkInfo
+      title: HearingProfileUpdate
+      description: Schema for updating a hearing profile
     HistoryCreate:
       properties:
         partyId:
@@ -22908,7 +22796,8 @@ components:
           default: normal
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
           default: {}
@@ -22954,6 +22843,33 @@ components:
       - value
       title: ImpactMetric
       description: Represents a change in a system metric.
+    ImpersonateRequest:
+      properties:
+        tenant_id:
+          type: string
+          title: Tenant Id
+      type: object
+      required:
+      - tenant_id
+      title: ImpersonateRequest
+    ImpersonateResponse:
+      properties:
+        token:
+          type: string
+          title: Token
+        tenant_id:
+          type: string
+          title: Tenant Id
+        user:
+          additionalProperties: true
+          type: object
+          title: User
+      type: object
+      required:
+      - token
+      - tenant_id
+      - user
+      title: ImpersonateResponse
     InstallmentPayment:
       properties:
         amount:
@@ -23038,7 +22954,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -23074,7 +22991,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -23115,6 +23033,7 @@ components:
           title: Confidence
           description: Confidence score
         entities:
+          additionalProperties: true
           type: object
           title: Entities
           description: Extracted entities
@@ -23137,6 +23056,7 @@ components:
           title: Confidence
           description: Confidence score
         entities:
+          additionalProperties: true
           type: object
           title: Entities
           description: Extracted entities
@@ -23570,8 +23490,7 @@ components:
           title: Invoicenumber
           description: Invoice number
         invoiceType:
-          allOf:
-          - $ref: '#/components/schemas/InvoiceType'
+          $ref: '#/components/schemas/InvoiceType'
           description: Invoice type
           default: sale
         invoiceDate:
@@ -23620,8 +23539,7 @@ components:
           description: Total amount
           default: 0.0
         status:
-          allOf:
-          - $ref: '#/components/schemas/InvoiceStatus'
+          $ref: '#/components/schemas/InvoiceStatus'
           description: Invoice status
           default: draft
         notes:
@@ -23665,7 +23583,8 @@ components:
           title: Returnreferencedate
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
       type: object
@@ -23679,7 +23598,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -23762,7 +23682,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -24024,7 +23945,8 @@ components:
           title: Remotemessage
         metadata:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Metadata
       type: object
@@ -24034,7 +23956,8 @@ components:
       properties:
         company_info:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Company Info
         invoice_logo:
@@ -24242,17 +24165,20 @@ components:
     KillSwitchStatusResponse:
       properties:
         global_switch:
+          additionalProperties: true
           type: object
           title: Global Switch
           description: Global kill switch status
         tenant_switches:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Tenant Switches
           description: Tenant kill switches
         capability_switches:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Capability Switches
@@ -24421,7 +24347,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -24457,7 +24384,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - items: {}
+            type: array
           - type: 'null'
           title: Data
         message:
@@ -24567,7 +24495,8 @@ components:
           default: info
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
       type: object
@@ -24631,7 +24560,8 @@ components:
           title: Readat
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
       type: object
@@ -24699,12 +24629,14 @@ components:
           title: Userid
         preferences:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Preferences
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
       type: object
@@ -24748,6 +24680,7 @@ components:
     OcrDebugResponse:
       properties:
         result:
+          additionalProperties: true
           type: object
           title: Result
         timestamp:
@@ -24762,6 +24695,7 @@ components:
       properties:
         entities:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Entities
@@ -24874,7 +24808,8 @@ components:
       properties:
         patientInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Patientinfo
         timestamp:
@@ -24914,6 +24849,7 @@ components:
     OcrProcessResponse:
       properties:
         result:
+          additionalProperties: true
           type: object
           title: Result
         timestamp:
@@ -25016,8 +24952,7 @@ components:
           - type: 'null'
           title: Addressfull
         status:
-          allOf:
-          - $ref: '#/components/schemas/PartyStatus'
+          $ref: '#/components/schemas/PartyStatus'
           default: active
         segment:
           type: string
@@ -25048,6 +24983,7 @@ components:
           title: Tags
           default: []
         sgkInfo:
+          additionalProperties: true
           type: object
           title: Sgkinfo
           default: {}
@@ -25070,7 +25006,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -25106,7 +25043,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -25270,7 +25208,8 @@ components:
           title: Gender
         address:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Address
         addressCity:
@@ -25342,7 +25281,8 @@ components:
           title: Tags
         sgkInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Sgkinfo
         roles:
@@ -25421,6 +25361,7 @@ components:
       - deceased
       - archived
       title: PartyStatus
+      description: Party/Patient status in CRM - lowercase for API consistency
     PartyUpdate:
       properties:
         firstName:
@@ -25487,7 +25428,8 @@ components:
           title: Addressfull
         sgkInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Sgkinfo
       type: object
@@ -25828,6 +25770,7 @@ components:
         installments:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -26210,7 +26153,8 @@ components:
           default: YEARLY
         features:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - items: {}
             type: array
           - type: 'null'
@@ -26238,6 +26182,12 @@ components:
           title: Ispublic
           description: Is plan public
           default: true
+        slug:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Slug
+          description: URL slug for the plan
       type: object
       required:
       - name
@@ -26252,7 +26202,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -26305,7 +26256,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -26450,6 +26402,7 @@ components:
           type: string
           title: Url
         fields:
+          additionalProperties: true
           type: object
           title: Fields
         key:
@@ -26464,12 +26417,15 @@ components:
     PricingSettingsResponse:
       properties:
         devices:
+          additionalProperties: true
           type: object
           title: Devices
         accessories:
+          additionalProperties: true
           type: object
           title: Accessories
         services:
+          additionalProperties: true
           type: object
           title: Services
       type: object
@@ -27027,6 +26983,7 @@ components:
       properties:
         activity:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Activity
@@ -27193,12 +27150,14 @@ components:
           title: Newinventoryid
         oldDeviceInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Olddeviceinfo
         newDeviceInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Newdeviceinfo
         replacementReason:
@@ -27241,6 +27200,7 @@ components:
     ReplacementInvoiceResponse:
       properties:
         invoice:
+          additionalProperties: true
           type: object
           title: Invoice
         replacement:
@@ -27316,6 +27276,7 @@ components:
           anyOf:
           - type: number
           - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
           - type: 'null'
           title: Pricedifference
         returnInvoiceId:
@@ -27572,45 +27533,6 @@ components:
       type: object
       title: ResetPasswordResponse
       description: Response for password reset endpoint.
-    ResponseEnvelope:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Data
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope
-      description: 'Standard response envelope for all API responses.
-
-        Matches the existing Flask ''success_response'' format.'
     ResponseEnvelope_ActivityLogStats_:
       properties:
         success:
@@ -27898,9 +27820,6 @@ components:
           title: Success
           default: true
         data:
-          anyOf:
-          - {}
-          - type: 'null'
           title: Data
         message:
           anyOf:
@@ -28172,41 +28091,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[AutomationStatusResponse]
-    ResponseEnvelope_AvailableRolesResponse_:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/AvailableRolesResponse'
-          - type: 'null'
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[AvailableRolesResponse]
     ResponseEnvelope_BirFaturaInvoicesResponse_:
       properties:
         success:
@@ -28684,7 +28568,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -28716,7 +28601,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -28831,41 +28717,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[DashboardKPIs]
-    ResponseEnvelope_DebugPagePermissionResponse_:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/DebugPagePermissionResponse'
-          - type: 'null'
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[DebugPagePermissionResponse]
     ResponseEnvelope_DeliverabilityMetricsResponse_:
       properties:
         success:
@@ -29119,7 +28970,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -29327,6 +29179,39 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[EmailTemplateRead]
+    ResponseEnvelope_ExampleDocumentRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ExampleDocumentRead'
+          - type: 'null'
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[ExampleDocumentRead]
     ResponseEnvelope_FileListResponse_:
       properties:
         success:
@@ -29362,6 +29247,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[FileListResponse]
+    ResponseEnvelope_HearingProfileRead_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/HearingProfileRead'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[HearingProfileRead]
+    ResponseEnvelope_ImpersonateResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ImpersonateResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[ImpersonateResponse]
     ResponseEnvelope_InventoryItemRead_:
       properties:
         success:
@@ -29718,44 +29673,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[AddonRead]]
-    ResponseEnvelope_List_AdminUserRead__:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/AdminUserRead'
-            type: array
-          - type: 'null'
-          title: Data
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[List[AdminUserRead]]
     ResponseEnvelope_List_AffiliateRead__:
       properties:
         success:
@@ -30259,6 +30176,7 @@ components:
         data:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -30364,6 +30282,42 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[EmailTemplateRead]]
+    ResponseEnvelope_List_ExampleDocumentRead__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ExampleDocumentRead'
+            type: array
+          - type: 'null'
+          title: Data
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[List[ExampleDocumentRead]]
     ResponseEnvelope_List_InventoryItemRead__:
       properties:
         success:
@@ -31200,44 +31154,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[TargetAudienceRead]]
-    ResponseEnvelope_List_TicketRead__:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        data:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/TicketRead'
-            type: array
-          - type: 'null'
-          title: Data
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - $ref: '#/components/schemas/ResponseMeta'
-          - type: 'null'
-        requestId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Requestid
-        timestamp:
-          type: string
-          format: date-time
-          title: Timestamp
-      type: object
-      title: ResponseEnvelope[List[TicketRead]]
     ResponseEnvelope_List_UserRead__:
       properties:
         success:
@@ -33413,6 +33329,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[SupplierStats]
+    ResponseEnvelope_SwitchTenantResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/SwitchTenantResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[SwitchTenantResponse]
     ResponseEnvelope_SystemSettingsResponse_:
       properties:
         success:
@@ -33962,7 +33913,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -34751,6 +34703,44 @@ components:
           - type: string
           - type: 'null'
           title: Notes
+        listPriceTotal:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Listpricetotal
+        totalAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Totalamount
+        discountAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Discountamount
+          default: 0.0
+        finalAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Finalamount
+        paidAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Paidamount
+          default: 0.0
+        sgkCoverage:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Sgkcoverage
+          default: 0.0
+        patientPayment:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Patientpayment
         remainingAmount:
           anyOf:
           - type: number
@@ -34774,7 +34764,8 @@ components:
           title: Reportstatus
         patient:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Patient
         devices:
@@ -34798,13 +34789,15 @@ components:
         payments:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
           title: Payments
         invoice:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Invoice
       type: object
@@ -34845,6 +34838,7 @@ components:
           title: Processed
         errors:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -35071,6 +35065,7 @@ components:
         attachments:
           anyOf:
           - items:
+              additionalProperties: true
               type: object
             type: array
           - type: 'null'
@@ -35133,7 +35128,8 @@ components:
           description: Template name if using template
         templateVariables:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Templatevariables
           description: Template variables
@@ -35277,10 +35273,12 @@ components:
           title: Message
         tenant:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Tenant
         user:
+          additionalProperties: true
           type: object
           title: User
         token:
@@ -35315,12 +35313,12 @@ components:
           - type: string
           - type: 'null'
           title: Text2
-        texta:
+        textA:
           anyOf:
           - type: string
           - type: 'null'
           title: Texta
-        textb:
+        textB:
           anyOf:
           - type: string
           - type: 'null'
@@ -35338,32 +35336,25 @@ components:
           title: Window Minutes
           description: Aggregation window in minutes
         inference_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
+          $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Inference latency metrics
         intent_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
+          $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Intent classification latency
         planning_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
+          $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Action planning latency
         execution_latency:
-          allOf:
-          - $ref: '#/components/schemas/LatencyMetricsResponse'
+          $ref: '#/components/schemas/LatencyMetricsResponse'
           description: Execution latency
         rates:
-          allOf:
-          - $ref: '#/components/schemas/RateMetricsResponse'
+          $ref: '#/components/schemas/RateMetricsResponse'
           description: Error and timeout rates
         approvals:
-          allOf:
-          - $ref: '#/components/schemas/ApprovalMetricsResponse'
+          $ref: '#/components/schemas/ApprovalMetricsResponse'
           description: Approval metrics
         quota:
-          allOf:
-          - $ref: '#/components/schemas/QuotaMetricsResponse'
+          $ref: '#/components/schemas/QuotaMetricsResponse'
           description: Quota metrics
       type: object
       required:
@@ -35415,7 +35406,8 @@ components:
           description: Static options for enum type
         validationRules:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Validationrules
           description: Validation rules (min, max, required, etc.)
@@ -35483,8 +35475,7 @@ components:
           type: string
           title: Tenantid
         status:
-          allOf:
-          - $ref: '#/components/schemas/SmsHeaderStatus'
+          $ref: '#/components/schemas/SmsHeaderStatus'
           default: pending
         rejectionReason:
           anyOf:
@@ -36080,7 +36071,8 @@ components:
           description: Execution status
         result:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Result
           description: Execution result
@@ -36252,12 +36244,14 @@ components:
           title: Message
         tenant:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Tenant
         plan:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Plan
       type: object
@@ -36266,6 +36260,12 @@ components:
       title: SubscriptionResponse
     SupplierCreate:
       properties:
+        tenantId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenantid
+          description: Owner tenant ID
         name:
           anyOf:
           - type: string
@@ -36350,7 +36350,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -36386,7 +36387,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -36611,6 +36613,12 @@ components:
       title: SupplierStats
     SupplierUpdate:
       properties:
+        tenantId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenantid
+          description: Owner tenant ID
         name:
           anyOf:
           - type: string
@@ -36727,20 +36735,53 @@ components:
       type: object
       title: SupplierUpdate
       description: Schema for updating a supplier
-    SwitchRoleRequest:
-      properties:
-        targetRole:
-          type: string
-          title: Targetrole
-      type: object
-      title: SwitchRoleRequest
     SwitchTenantRequest:
       properties:
+        target_tenant_id:
+          type: string
+          title: Target Tenant Id
         targetTenantId:
           type: string
           title: Targettenantid
       type: object
       title: SwitchTenantRequest
+    SwitchTenantResponse:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        accessToken:
+          type: string
+          title: Accesstoken
+        refresh_token:
+          type: string
+          title: Refresh Token
+        refreshToken:
+          type: string
+          title: Refreshtoken
+        tenant_id:
+          type: string
+          title: Tenant Id
+        tenantId:
+          type: string
+          title: Tenantid
+        tenant_name:
+          type: string
+          title: Tenant Name
+        tenantName:
+          type: string
+          title: Tenantname
+      type: object
+      required:
+      - access_token
+      - accessToken
+      - refresh_token
+      - refreshToken
+      - tenant_id
+      - tenantId
+      - tenant_name
+      - tenantName
+      title: SwitchTenantResponse
     SystemSettingRead:
       properties:
         createdAt:
@@ -36787,6 +36828,7 @@ components:
     SystemSettingsResponse:
       properties:
         settings:
+          additionalProperties: true
           type: object
           title: Settings
       type: object
@@ -36809,7 +36851,8 @@ components:
           $ref: '#/components/schemas/SmsSourceType'
         filterCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Filtercriteria
         filePath:
@@ -36853,7 +36896,8 @@ components:
           $ref: '#/components/schemas/SmsSourceType'
         filterCriteria:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Filtercriteria
         tenantId:
@@ -36877,6 +36921,28 @@ components:
       - filter
       - excel
       title: TargetSegment
+    TelegramConfigUpdate:
+      properties:
+        botToken:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bottoken
+          default: ''
+        chatId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Chatid
+          default: ''
+        isActive:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Isactive
+          default: false
+      type: object
+      title: TelegramConfigUpdate
     TenantAnalytics:
       properties:
         totalTenants:
@@ -36906,12 +36972,14 @@ components:
           title: Name
         companyInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Companyinfo
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
       type: object
@@ -36989,8 +37057,7 @@ components:
           title: Taxoffice
           description: Tax office
         status:
-          allOf:
-          - $ref: '#/components/schemas/TenantStatus'
+          $ref: '#/components/schemas/TenantStatus'
           description: Tenant status
           default: active
         productCode:
@@ -37027,14 +37094,16 @@ components:
           default: 0
         companyInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Companyinfo
           description: Company Info
           default: {}
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
           description: Settings
@@ -37047,6 +37116,7 @@ components:
     TenantRatesUpdate:
       properties:
         rates:
+          additionalProperties: true
           type: object
           title: Rates
       type: object
@@ -37136,8 +37206,9 @@ components:
         status:
           $ref: '#/components/schemas/TenantStatus'
         productCode:
-          allOf:
+          anyOf:
           - $ref: '#/components/schemas/ProductCode'
+          - type: 'null'
           description: Product Code
         planId:
           anyOf:
@@ -37169,15 +37240,20 @@ components:
           default: 0
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
           description: Tenant settings
         maxUsers:
-          type: integer
+          anyOf:
+          - type: integer
+          - type: 'null'
           title: Maxusers
         currentUsers:
-          type: integer
+          anyOf:
+          - type: integer
+          - type: 'null'
           title: Currentusers
       type: object
       required:
@@ -37185,9 +37261,6 @@ components:
       - name
       - slug
       - status
-      - productCode
-      - maxUsers
-      - currentUsers
       title: TenantRead
       description: Schema for reading a tenant
     TenantSmsCreditRead:
@@ -37308,17 +37381,20 @@ components:
           title: Currentusers
         companyInfo:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Companyinfo
         settings:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Settings
         featureUsage:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Featureusage
         ownerEmail:
@@ -37439,34 +37515,8 @@ components:
       - billing
       - feature_request
       title: TicketCategory
-    TicketPriority:
-      type: string
-      enum:
-      - low
-      - medium
-      - high
-      - urgent
-      title: TicketPriority
-    TicketRead:
+    TicketCreate:
       properties:
-        createdAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Createdat
-          description: Creation timestamp
-        updatedAt:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Updatedat
-          description: Last update timestamp
-        id:
-          type: string
-          title: Id
-          description: Unique identifier for the resource
         title:
           type: string
           title: Title
@@ -37475,55 +37525,30 @@ components:
           - type: string
           - type: 'null'
           title: Description
-        status:
-          allOf:
-          - $ref: '#/components/schemas/TicketStatus'
-          default: open
         priority:
-          allOf:
-          - $ref: '#/components/schemas/TicketPriority'
+          $ref: '#/components/schemas/TicketPriority'
           default: medium
         category:
-          allOf:
-          - $ref: '#/components/schemas/TicketCategory'
+          $ref: '#/components/schemas/TicketCategory'
           default: general
         tenantId:
           anyOf:
           - type: string
           - type: 'null'
           title: Tenantid
-        tenantName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tenantname
-        assignedTo:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Assignedto
-        assignedAdminName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Assignedadminname
-        slaDueDate:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Sladuedate
-        createdBy:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Createdby
       type: object
       required:
-      - id
       - title
-      title: TicketRead
-    TicketResponseRequest:
+      title: TicketCreate
+    TicketPriority:
+      type: string
+      enum:
+      - low
+      - medium
+      - high
+      - urgent
+      title: TicketPriority
+    TicketResponseCreate:
       properties:
         message:
           type: string
@@ -37531,7 +37556,7 @@ components:
       type: object
       required:
       - message
-      title: TicketResponseRequest
+      title: TicketResponseCreate
     TicketStatus:
       type: string
       enum:
@@ -37540,6 +37565,37 @@ components:
       - resolved
       - closed
       title: TicketStatus
+    TicketUpdate:
+      properties:
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/TicketStatus'
+          - type: 'null'
+        priority:
+          anyOf:
+          - $ref: '#/components/schemas/TicketPriority'
+          - type: 'null'
+        category:
+          anyOf:
+          - $ref: '#/components/schemas/TicketCategory'
+          - type: 'null'
+        assignedTo:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assignedto
+      type: object
+      title: TicketUpdate
     TimelineEventCreate:
       properties:
         type:
@@ -37556,7 +37612,8 @@ components:
           default: ''
         details:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Details
         timestamp:
@@ -37624,7 +37681,8 @@ components:
           default: ''
         details:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Details
         timestamp:
@@ -37888,6 +37946,7 @@ components:
           description: Unsubscribe rate percentage
         top_scenarios:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Top Scenarios
@@ -37910,20 +37969,45 @@ components:
       required:
       - status
       title: UpdateStatusRequest
-    UpdateTicketRequest:
+    UpdateTenantUserRequest:
       properties:
-        status:
+        email:
           anyOf:
           - type: string
           - type: 'null'
-          title: Status
-        assigned_to:
+          title: Email
+        username:
           anyOf:
           - type: string
           - type: 'null'
-          title: Assigned To
+          title: Username
+        first_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: First Name
+        last_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Name
+        role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Active
+        password:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Password
       type: object
-      title: UpdateTicketRequest
+      title: UpdateTenantUserRequest
     UploadSGKDocumentRequest:
       properties:
         partyId:
@@ -37963,43 +38047,6 @@ components:
       - activeUsers
       - monthlyActiveUsers
       title: UserAnalytics
-    UserCreate:
-      properties:
-        username:
-          type: string
-          title: Username
-        password:
-          type: string
-          title: Password
-        email:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Email
-        firstName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Firstname
-        lastName:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Lastname
-        role:
-          type: string
-          title: Role
-          default: user
-        tenantId:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tenantid
-      type: object
-      required:
-      - username
-      - password
-      title: UserCreate
     UserEngagementItem:
       properties:
         date:
@@ -38390,6 +38437,7 @@ components:
           type: boolean
           title: Success
         data:
+          additionalProperties: true
           type: object
           title: Data
       type: object
@@ -38407,6 +38455,7 @@ components:
           type: array
           title: Data
         meta:
+          additionalProperties: true
           type: object
           title: Meta
       type: object
@@ -38430,6 +38479,11 @@ components:
         type:
           type: string
           title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
       - loc
@@ -38470,7 +38524,8 @@ components:
           default: false
         emailTemplate:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Emailtemplate
       type: object
@@ -38623,40 +38678,6 @@ components:
       - stepId
       - status
       title: WorkflowUpdateRequest
-    routers__admin__UpdateTenantUserRequest:
-      properties:
-        email:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Email
-        first_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: First Name
-        last_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Last Name
-        role:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Role
-        password:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Password
-        isActive:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Isactive
-      type: object
-      title: UpdateTenantUserRequest
     routers__admin_notifications__TemplateCreate:
       properties:
         name:
@@ -38753,45 +38774,6 @@ components:
           default: true
       type: object
       title: TemplateCreate
-    routers__admin_tenants__UpdateTenantUserRequest:
-      properties:
-        email:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Email
-        username:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Username
-        first_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: First Name
-        last_name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Last Name
-        role:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Role
-        is_active:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Is Active
-        password:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Password
-      type: object
-      title: UpdateTenantUserRequest
     routers__payments__PaymentRecordCreate:
       properties:
         partyId:
@@ -38962,6 +38944,82 @@ components:
       - unsubscribed_at
       title: UnsubscribeResponse
       description: Response for unsubscribe record.
+    routers__users__UserCreate:
+      properties:
+        username:
+          type: string
+          title: Username
+        password:
+          type: string
+          title: Password
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        firstName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firstname
+        lastName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lastname
+        role:
+          type: string
+          title: Role
+          default: user
+        tenantId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenantid
+      type: object
+      required:
+      - username
+      - password
+      title: UserCreate
+    schemas__base__ResponseEnvelope:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope
+      description: 'Standard response envelope for all API responses.
+
+        Matches the existing Flask ''success_response'' format.'
     schemas__base__ResponseEnvelope_BulkUploadResponse___1:
       properties:
         success:
@@ -39040,7 +39098,8 @@ components:
           default: true
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         message:
@@ -39132,6 +39191,7 @@ components:
           title: Updated
         errors:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -39166,6 +39226,7 @@ components:
           title: Updated
         errors:
           items:
+            additionalProperties: true
             type: object
           type: array
           title: Errors
@@ -39176,6 +39237,40 @@ components:
       - updated
       - errors
       title: BulkUploadResponse
+    schemas__response__ResponseEnvelope:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Data
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope
     schemas__response__ResponseEnvelope_dict_:
       properties:
         success:
@@ -39189,7 +39284,8 @@ components:
           title: Message
         data:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Data
         error:
@@ -39199,7 +39295,8 @@ components:
           title: Error
         meta:
           anyOf:
-          - type: object
+          - additionalProperties: true
+            type: object
           - type: 'null'
           title: Meta
         request_id:
@@ -39312,6 +39409,56 @@ components:
       - amount
       - paymentMethod
       title: PaymentRecordCreate
+    schemas__users__UserCreate:
+      properties:
+        email:
+          type: string
+          title: Email
+        password:
+          type: string
+          title: Password
+        firstName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firstname
+        lastName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lastname
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+        tenantId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenantid
+        username:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Username
+        isActive:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Isactive
+          default: true
+      type: object
+      required:
+      - email
+      - password
+      title: UserCreate
+      description: Schema for creating User
   securitySchemes:
     OAuth2PasswordBearer:
       type: oauth2

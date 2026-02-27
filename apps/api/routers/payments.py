@@ -4,7 +4,7 @@ Payment records and promissory notes management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pydantic import BaseModel, Field
 import logging
@@ -183,7 +183,7 @@ def create_payment_record(
 
 @router.get("/payment-records", operation_id="listPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def list_payment_records(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     sale_id: Optional[str] = Query(None, alias="saleId"),
     access: UnifiedAccess = Depends(require_access()),
@@ -215,7 +215,7 @@ def list_payment_records(
 @router.get("/parties/{party_id}/payment-records", operation_id="listPartyPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def get_party_payment_records(
     party_id: str,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -294,9 +294,9 @@ def get_party_promissory_notes(
         
         notes = query.order_by(PromissoryNote.due_date.asc()).all()
         
-        # Use Pydantic schema for type-safe serialization (NO to_dict())
+        # Use Pydantic schema for type-safe serialization
         return ResponseEnvelope(
-            data=[serialize_promissory_note(note) for note in notes],
+            data=[PromissoryNoteRead.model_validate(note) for note in notes],
             meta={"count": len(notes)}
         )
     except Exception as e:

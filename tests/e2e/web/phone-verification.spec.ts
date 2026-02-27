@@ -14,7 +14,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { login, setPhoneVerified, WEB_BASE_URL as WEB_URL } from './helpers/test-utils';
+import { login, setPhoneVerified, WEB_BASE_URL as WEB_URL } from '../../helpers/auth.helper';
 
 test.describe('Phone Verification Flow', () => {
 

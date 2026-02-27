@@ -9,6 +9,7 @@ import logging
 
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
+from sqlalchemy.exc import IntegrityError
 
 from schemas.base import ResponseEnvelope, ApiError
 from schemas.suppliers import SupplierCreate as SupplierCreateSchema
@@ -91,7 +92,7 @@ class SupplierUpdate(BaseModel):
 
 @router.get("/suppliers", operation_id="listSuppliers", response_model=ResponseEnvelope[List[SupplierRead]])
 def get_suppliers(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
     is_active: Optional[bool] = None,
@@ -314,6 +315,20 @@ def create_supplier(
         return ResponseEnvelope(data=supplier)
     except HTTPException:
         raise
+    except IntegrityError as e:
+        db_session.rollback()
+        logger.warning(f"Supplier creation failed - duplicate: {e}")
+        # Check if it's a company_name duplicate
+        if 'company_name' in str(e):
+            raise HTTPException(
+                status_code=409,
+                detail=ApiError(message="Supplier with this company name already exists", code="DUPLICATE_COMPANY_NAME").model_dump(mode="json")
+            )
+        # Other integrity errors
+        raise HTTPException(
+            status_code=409,
+            detail=ApiError(message="Duplicate entry", code="DUPLICATE").model_dump(mode="json")
+        )
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create supplier error: {e}")

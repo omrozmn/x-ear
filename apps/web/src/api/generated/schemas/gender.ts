@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Gender options
+ */
 export type Gender = typeof Gender[keyof typeof Gender];
 
 

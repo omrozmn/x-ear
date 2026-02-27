@@ -254,9 +254,11 @@ async def create_target_audience(
             name=data.name,
             source_type=data.source_type,
             file_path=data.file_path,
-            total_records=data.total_records,
-            filter_criteria_json=data.filter_criteria
+            total_records=data.total_records
         )
+        # Set filter_criteria using property
+        if data.filter_criteria:
+            audience.filter_criteria_json = data.filter_criteria
         
         db.add(audience)
         db.commit()
@@ -276,7 +278,6 @@ from fastapi import UploadFile, File
 from fastapi.responses import FileResponse
 import os
 import tempfile
-
 @router.post("/documents/upload", operation_id="createSmDocumentUpload")
 async def upload_sms_document(
     file: UploadFile = File(...),

@@ -7,7 +7,7 @@
  */
 
 export type ListAppointmentAvailabilityParams = {
-date: string;
+date?: string;
 /**
  * @minimum 15
  * @maximum 120

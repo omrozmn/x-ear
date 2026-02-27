@@ -1,4 +1,6 @@
 # Appointment Models (formerly Patient appointment models)
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, Time, Index
+from core.models.base import Base
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
 from schemas.enums import AppointmentStatus
@@ -8,7 +10,7 @@ class Appointment(BaseModel, TenantScopedMixin):
     __tablename__ = 'appointments'
 
     # Primary key with auto-generated default
-    id = db.Column(db.String(50), primary_key=True)
+    id = Column(String(50), primary_key=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -16,9 +18,9 @@ class Appointment(BaseModel, TenantScopedMixin):
             self.id = gen_id("apt")
     
     # Foreign keys
-    party_id = db.Column(db.String(50), db.ForeignKey('parties.id'), nullable=False)
-    clinician_id = db.Column(db.String(50))
-    branch_id = db.Column(db.String(50))
+    party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
+    clinician_id = Column(String(50))
+    branch_id = Column(String(50))
     # tenant_id is now inherited from TenantScopedMixin
 
     __table_args__ = (
@@ -26,14 +28,14 @@ class Appointment(BaseModel, TenantScopedMixin):
     )
     
     # DateTime fields (will be consolidated to start_at in future)
-    date = db.Column(db.DateTime, nullable=False)
-    time = db.Column(db.String(10), nullable=False)
-    duration = db.Column(db.Integer, default=30)  # minutes
+    date = Column(DateTime, nullable=False)
+    time = Column(String(10), nullable=False)
+    duration = Column(Integer, default=30)  # minutes
     
     # Appointment details
-    appointment_type = db.Column(db.String(30), default='consultation')
-    status = db.Column(sa.Enum(AppointmentStatus), default=AppointmentStatus.SCHEDULED)
-    notes = db.Column(db.Text)
+    appointment_type = Column(String(30), default='consultation')
+    status = Column(sa.Enum(AppointmentStatus), default=AppointmentStatus.SCHEDULED)
+    notes = Column(Text)
     
     def __setattr__(self, name, value):
         """Override setattr to handle status conversion"""
@@ -99,7 +101,7 @@ class Appointment(BaseModel, TenantScopedMixin):
 
     # Index suggestions for future migration
     __table_args__ = (
-        db.Index('ix_appointment_date', 'date'),
-        db.Index('ix_appointment_patient', 'party_id'),
-        db.Index('ix_appointment_status', 'status'),
+        Index('ix_appointment_date', 'date'),
+        Index('ix_appointment_patient', 'party_id'),
+        Index('ix_appointment_status', 'status'),
     )

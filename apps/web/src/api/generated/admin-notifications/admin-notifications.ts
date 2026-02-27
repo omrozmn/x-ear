@@ -29,11 +29,11 @@ import type {
   ListAdminNotificationTemplatesParams,
   ListAdminNotificationsParams,
   NotificationSend,
-  ResponseEnvelope,
   ResponseEnvelopeEmailTemplateRead,
   ResponseEnvelopeListEmailTemplateRead,
   ResponseEnvelopeListNotificationRead,
-  RoutersAdminNotificationsTemplateCreate
+  RoutersAdminNotificationsTemplateCreate,
+  SchemasBaseResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -51,7 +51,7 @@ export const createAdminNotificationInitDb = (
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/notifications/init-db`, method: 'POST', signal
     },
       );
@@ -207,7 +207,7 @@ export const createAdminNotificationSend = (
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/notifications/send`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: notificationSend, signal
@@ -494,7 +494,7 @@ export const deleteAdminNotificationTemplate = (
  ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/notifications/templates/${templateId}`, method: 'DELETE'
     },
       );

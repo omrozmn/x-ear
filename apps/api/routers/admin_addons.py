@@ -4,7 +4,7 @@ Handles add-on/package management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import uuid
 import re
@@ -17,7 +17,6 @@ from models.admin_user import AdminUser
 from models.addon import AddOn, AddOnType
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/addons", tags=["Admin Addons"])
@@ -31,7 +30,7 @@ class AddonDetailResponse(ResponseEnvelope):
 
 @router.get("", operation_id="listAdminAddons", response_model=AddonListResponse)
 def list_addons(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(20, ge=1, le=100),
     type: Optional[str] = Query(None),
     is_active: Optional[str] = Query(None),
@@ -68,10 +67,17 @@ def create_addon(
 ):
     """Create a new add-on"""
     try:
-        slug = request_data.slug
-        if not slug:
-            slug = re.sub(r'[^\w\s-]', '', request_data.name.lower())
-            slug = re.sub(r'[-\s]+', '-', slug).strip('-')
+        base_slug = request_data.slug
+        if not base_slug:
+            base_slug = re.sub(r'[^\w\s-]', '', request_data.name.lower())
+            base_slug = re.sub(r'[-\s]+', '-', base_slug).strip('-')
+        
+        # Ensure unique slug
+        slug = base_slug
+        counter = 1
+        while db_session.query(AddOn).filter_by(slug=slug).first():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
         
         addon = AddOn(
             id=str(uuid.uuid4()),

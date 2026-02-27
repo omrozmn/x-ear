@@ -1,6 +1,6 @@
 
 import { test, expect } from '../fixtures/fixtures';
-import { createTestParty, deleteTestParty } from './helpers/test-utils';
+import { createTestParty, deleteTestParty } from '../../helpers/auth.helper';
 
 test.describe('Patient Reports Module', () => {
     let partyId: string;

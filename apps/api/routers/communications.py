@@ -35,7 +35,7 @@ def now_utc():
 
 @router.get("/messages", operation_id="listCommunicationMessages")
 async def list_messages(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     type: Optional[str] = None,
     status: Optional[str] = None,
@@ -109,7 +109,7 @@ async def list_messages(
             "success": True,
             "data": paginated,
             "meta": {"total": total, "page": page, "per_page": per_page, "total_pages": (total + per_page - 1) // per_page},
-            "timestamp": now_utc().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -123,9 +123,10 @@ async def send_sms(
     """Send SMS message"""
     try:
         sms_log = SMSLog()
-        sms_log.party_id = data.partyId
-        sms_log.campaign_id = data.campaignId
-        sms_log.phone_number = data.phoneNumber
+        sms_log.tenant_id = access.tenant_id  # Set tenant_id before saving
+        sms_log.party_id = data.party_id
+        sms_log.campaign_id = data.campaign_id
+        sms_log.phone_number = data.phone_number
         sms_log.message = data.message
         sms_log.status = "sent"
         sms_log.sent_at = now_utc()
@@ -134,9 +135,10 @@ async def send_sms(
         db.commit()
         db.refresh(sms_log)
         
-        if data.partyId:
+        if data.party_id:
             comm_history = CommunicationHistory()
-            comm_history.party_id = data.partyId
+            comm_history.tenant_id = access.tenant_id  # Set tenant_id
+            comm_history.party_id = data.party_id
             comm_history.sms_log_id = sms_log.id
             comm_history.communication_type = "sms"
             comm_history.direction = "outbound"
@@ -147,7 +149,7 @@ async def send_sms(
             db.commit()
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return {"success": True, "data": SmsLogRead.model_validate(sms_log), "timestamp": now_utc().isoformat()}
+        return ResponseEnvelope(data=SmsLogRead.model_validate(sms_log))
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -161,16 +163,17 @@ async def send_email(
     """Send Email message"""
     try:
         email_log = EmailLog()
-        email_log.party_id = data.partyId
-        email_log.campaign_id = data.campaignId
-        email_log.template_id = data.templateId
-        email_log.to_email = data.toEmail
-        email_log.from_email = data.fromEmail
-        email_log.cc_emails_json = data.ccEmails
-        email_log.bcc_emails_json = data.bccEmails
+        email_log.tenant_id = access.tenant_id  # Set tenant_id before saving
+        email_log.party_id = data.party_id
+        email_log.campaign_id = data.campaign_id
+        email_log.template_id = data.template_id
+        email_log.to_email = data.to_email
+        email_log.from_email = data.from_email
+        email_log.cc_emails_json = data.cc_emails
+        email_log.bcc_emails_json = data.bcc_emails
         email_log.subject = data.subject
-        email_log.body_text = data.bodyText
-        email_log.body_html = data.bodyHtml
+        email_log.body_text = data.body_text
+        email_log.body_html = data.body_html
         email_log.attachments_json = data.attachments
         email_log.status = "sent"
         email_log.sent_at = now_utc()
@@ -179,9 +182,10 @@ async def send_email(
         db.commit()
         db.refresh(email_log)
         
-        if data.partyId:
+        if data.party_id:
             comm_history = CommunicationHistory()
-            comm_history.party_id = data.partyId
+            comm_history.tenant_id = access.tenant_id  # Set tenant_id
+            comm_history.party_id = data.party_id
             comm_history.email_log_id = email_log.id
             comm_history.communication_type = "email"
             comm_history.direction = "outbound"
@@ -201,7 +205,7 @@ async def send_email(
 
 @router.get("/templates", response_model=ResponseEnvelope[List[CommunicationTemplateRead]], operation_id="listCommunicationTemplates")
 async def list_templates(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     type: Optional[str] = None,
     category: Optional[str] = None,
@@ -253,15 +257,16 @@ async def create_template(
             raise HTTPException(status_code=400, detail="Template name already exists")
         
         template = CommunicationTemplate()
+        template.tenant_id = access.tenant_id  # Set tenant_id before saving
         template.name = data.name
         template.description = data.description
-        template.template_type = data.templateType
+        template.template_type = data.template_type
         template.category = data.category
         template.subject = data.subject
-        template.body_text = data.bodyText
-        template.body_html = data.bodyHtml
+        template.body_text = data.body_text
+        template.body_html = data.body_html
         template.variables_json = data.variables
-        template.is_active = data.isActive
+        template.is_active = data.is_active
         
         db.add(template)
         db.commit()
@@ -309,20 +314,20 @@ async def update_template(
         
         if data.description is not None:
             template.description = data.description
-        if data.templateType is not None:
-            template.template_type = data.templateType
+        if data.template_type is not None:
+            template.template_type = data.template_type
         if data.category is not None:
             template.category = data.category
         if data.subject is not None:
             template.subject = data.subject
-        if data.bodyText is not None:
-            template.body_text = data.bodyText
-        if data.bodyHtml is not None:
-            template.body_html = data.bodyHtml
+        if data.body_text is not None:
+            template.body_text = data.body_text
+        if data.body_html is not None:
+            template.body_html = data.body_html
         if data.variables is not None:
             template.variables_json = data.variables
-        if data.isActive is not None:
-            template.is_active = data.isActive
+        if data.is_active is not None:
+            template.is_active = data.is_active
         
         db.commit()
         db.refresh(template)
@@ -350,7 +355,7 @@ async def delete_template(template_id: str, db: Session = Depends(get_db), acces
 
 @router.get("/history", response_model=ResponseEnvelope[List[CommunicationHistoryRead]], operation_id="listCommunicationHistory")
 async def list_communication_history(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
     party_id: Optional[str] = None,
     type: Optional[str] = None,
@@ -406,21 +411,22 @@ async def create_communication_history(
 ):
     """Create a manual communication history entry"""
     try:
-        party = db.get(Party, data.partyId)
+        party = db.get(Party, data.party_id)
         if not party:
             raise HTTPException(status_code=404, detail="Party not found")
         
         history = CommunicationHistory()
-        history.party_id = data.partyId
-        history.communication_type = data.communicationType
+        history.tenant_id = access.tenant_id  # Set tenant_id
+        history.party_id = data.party_id
+        history.communication_type = data.communication_type
         history.direction = data.direction
         history.subject = data.subject
         history.content = data.content
-        history.contact_method = data.contactMethod
+        history.contact_method = data.contact_method
         history.status = data.status
         history.priority = data.priority
+        history.initiated_by = data.initiated_by
         history.metadata_json = data.metadata
-        history.initiated_by = data.initiatedBy
         
         db.add(history)
         db.commit()

@@ -18,7 +18,6 @@ from schemas.tenants import (
     TenantRead, PlanRead
 )
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
@@ -228,8 +227,10 @@ def complete_signup(
     
     # Create Tenant if not exists
     tenant = None
-    if user.tenant_id:
-        tenant = db.get(Tenant, user.tenant_id)
+    # Check if user has tenant_id attribute (User model has it, AdminUser doesn't)
+    user_tenant_id = getattr(user, 'tenant_id', None)
+    if user_tenant_id:
+        tenant = db.get(Tenant, user_tenant_id)
     
     if not tenant:
         company_name = request_data.company_name or f"{user.first_name}'s Clinic"

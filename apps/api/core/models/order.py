@@ -1,3 +1,5 @@
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
+from core.models.base import Base
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
 import sqlalchemy as sa
@@ -6,13 +8,13 @@ import sqlalchemy as sa
 class Order(BaseModel, TenantScopedMixin):
     __tablename__ = 'orders'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('ord'))
+    id = Column(String(50), primary_key=True, default=lambda: gen_id('ord'))
     # tenant_id is now inherited from TenantScopedMixin
-    customer_id = db.Column(db.String(50), nullable=True)
-    order_number = db.Column(db.String(50), unique=True, nullable=False)
-    total_amount = db.Column(db.Numeric(12, 2), default=0)
-    currency = db.Column(db.String(8), default='TRY')
-    status = db.Column(db.String(32), default='new')
+    customer_id = Column(String(50), nullable=True)
+    order_number = Column(String(50), unique=True, nullable=False)
+    total_amount = Column(Numeric(12, 2), default=0)
+    currency = Column(String(8), default='TRY')
+    status = Column(String(32), default='new')
 
     def to_dict(self):
         base = self.to_dict_base()
@@ -32,12 +34,12 @@ class Order(BaseModel, TenantScopedMixin):
 class OrderItem(BaseModel):
     __tablename__ = 'order_items'
 
-    id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id('oit'))
-    order_id = db.Column(db.String(50), sa.ForeignKey('orders.id'), nullable=False, index=True)
-    product_type = db.Column(db.String(50))
-    product_id = db.Column(db.String(50))
-    quantity = db.Column(sa.Integer, default=1)
-    unit_price = db.Column(sa.Numeric(12, 2), default=0)
+    id = Column(String(50), primary_key=True, default=lambda: gen_id('oit'))
+    order_id = Column(String(50), sa.ForeignKey('orders.id'), nullable=False, index=True)
+    product_type = Column(String(50))
+    product_id = Column(String(50))
+    quantity = Column(sa.Integer, default=1)
+    unit_price = Column(sa.Numeric(12, 2), default=0)
 
     def to_dict(self):
         base = self.to_dict_base()
