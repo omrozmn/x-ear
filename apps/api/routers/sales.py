@@ -786,11 +786,17 @@ def create_sale(
     sale_notes = f"{sale_in.notes or ''}\n{kdv_note}".strip()
     
     # Determine status
-    paid_amt = float(sale_in.paid_amount or 0)
-    if sale_in.payment_method == 'cash' and not sale_in.paid_amount:
-         # Implicit full payment if cash and no specific paid amount given? 
+    # Priority: down_payment > paid_amount > implicit full payment for cash
+    if sale_in.down_payment is not None:
+        paid_amt = float(sale_in.down_payment)
+    elif sale_in.paid_amount is not None:
+        paid_amt = float(sale_in.paid_amount)
+    elif sale_in.payment_method == 'cash':
+         # Implicit full payment if cash and no specific paid amount given
          # Legacy logic: if cash, paid_amount = final_price
          paid_amt = final_price
+    else:
+        paid_amt = 0.0
          
     status_val = 'completed' if paid_amt >= final_price else 'pending'
     
@@ -846,7 +852,28 @@ def create_sale(
     
     db.add(assignment)
     
-    # 6. Update Inventory
+    # 6. Create Payment Record if down_payment provided
+    if sale_in.down_payment and sale_in.down_payment > 0:
+        from core.models.sales import PaymentRecord
+        from decimal import Decimal
+        
+        payment = PaymentRecord(
+            id=f"payment_{uuid4().hex[:8]}",
+            tenant_id=tenant_id,
+            party_id=sale.party_id,
+            sale_id=sale.id,
+            amount=Decimal(str(sale_in.down_payment)),
+            payment_method=sale_in.payment_method or 'cash',
+            payment_type='down_payment',
+            status='paid',
+            notes=f"Peşin ödeme (satış oluşturma sırasında)",
+            payment_date=sale_in.sale_date or datetime.utcnow(),
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        db.add(payment)
+    
+    # 7. Update Inventory
     user_id = getattr(access, 'user_id', None) or 'system'
     _update_inventory_stock(db, product, 1, sale.id, user_id)
     
