@@ -300,6 +300,20 @@ def createSale(
     notes = params.get("notes", "")
     tenant_id = params.get("tenant_id", "default")
 
+    if mode == ToolExecutionMode.SIMULATE:
+        return ToolExecutionResult(
+            tool_id="createSale",
+            success=True,
+            mode=mode,
+            simulated_changes={
+                "action": "create_sale",
+                "party_id": party_id,
+                "total_amount": total_amount,
+                "notes": notes,
+                "status": "Sale Created (Simulated)",
+            },
+        )
+
     try:
         db = SessionLocal()
 

@@ -11,6 +11,7 @@ export const ActionProgress = () => {
         executionError,
         reset,
         updateSlot,
+        nextSlot,
         currentSlot
     } = useComposerStore();
 
@@ -113,7 +114,10 @@ export const ActionProgress = () => {
                                     <button
                                         data-allow-raw="true"
                                         key={opt}
-                                        onClick={() => updateSlot(currentSlot!.name, opt)}
+                                        onClick={() => {
+                                            updateSlot(currentSlot!.name, opt);
+                                            nextSlot();
+                                        }}
                                         className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-semibold rounded hover:bg-blue-50 transition-colors"
                                     >
                                         {opt}
@@ -121,18 +125,106 @@ export const ActionProgress = () => {
                                 ))}
                             </div>
                         )}
-                        {!['enum'].includes(currentSlot.uiType) && (
-                            <input
-                                data-allow-raw="true"
-                                autoFocus
-                                className="w-full border rounded p-1.5 text-sm"
-                                placeholder="Değer yazın..."
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        updateSlot(currentSlot!.name, e.currentTarget.value);
-                                    }
-                                }}
-                            />
+                        {currentSlot.uiType === 'entity_search' && (
+                            <div className="space-y-2">
+                                <input
+                                    data-allow-raw="true"
+                                    autoFocus
+                                    className="w-full border rounded p-1.5 text-sm"
+                                    placeholder="Ara..."
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            updateSlot(currentSlot!.name, e.currentTarget.value);
+                                            nextSlot();
+                                        }
+                                    }}
+                                />
+                                <p className="text-[10px] text-gray-400">ID veya isim yazıp Enter'layın</p>
+                            </div>
+                        )}
+                        {currentSlot.uiType === 'date' && (
+                            <div className="relative group">
+                                <input data-allow-raw="true"
+                                    type="date"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    onChange={(e) => {
+                                        updateSlot(currentSlot.name, e.target.value);
+                                        nextSlot();
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {currentSlot.uiType === 'number' && (
+                            <div className="relative group">
+                                <input data-allow-raw="true"
+                                    type="number"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    placeholder="Sayı girin..."
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            updateSlot(currentSlot.name, Number(e.currentTarget.value));
+                                            nextSlot();
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {currentSlot.uiType === 'text' && (
+                            <div className="relative group">
+                                <input data-allow-raw="true"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    placeholder="Yazmaya başlayın..."
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            updateSlot(currentSlot.name, e.currentTarget.value);
+                                            nextSlot();
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {currentSlot.uiType === 'boolean' && (
+                            <div className="flex gap-2">
+                                <button
+                                    data-allow-raw="true"
+                                    onClick={() => {
+                                        updateSlot(currentSlot.name, true);
+                                        nextSlot();
+                                    }}
+                                    className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-lg hover:bg-green-50 transition-all shadow-sm"
+                                >
+                                    Evet
+                                </button>
+                                <button
+                                    data-allow-raw="true"
+                                    onClick={() => {
+                                        updateSlot(currentSlot.name, false);
+                                        nextSlot();
+                                    }}
+                                    className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-all shadow-sm"
+                                >
+                                    Hayır
+                                </button>
+                            </div>
+                        )}
+                        {currentSlot.uiType === 'time' && (
+                            <div className="relative group">
+                                <input data-allow-raw="true"
+                                    type="time"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    onChange={(e) => {
+                                        updateSlot(currentSlot.name, e.target.value);
+                                        nextSlot();
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {!['enum', 'entity_search', 'date', 'number', 'text', 'boolean', 'time'].includes(currentSlot.uiType as string) && (
+                            <div className="p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700 italic">
+                                {currentSlot.prompt} (Tip: {currentSlot.uiType}) yakında eklenecek.
+                            </div>
                         )}
                     </div>
                 </div>

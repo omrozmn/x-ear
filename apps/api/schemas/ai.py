@@ -11,7 +11,7 @@ IMPORTANT:
 - Tags are used by Orval for code splitting (tags-split mode)
 """
 
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from enum import Enum
 from typing import Optional, List, Dict, Any
 
@@ -313,16 +313,49 @@ class AiUsageSummary(AppBaseModel):
 # AI Status Schemas
 # =============================================================================
 
-class AiStatusResponse(AppBaseModel):
-    """Response schema for AI status endpoint."""
-    enabled: bool = Field(..., description="Whether AI is enabled")
-    phase: AiPhaseEnum = Field(..., description="Current AI phase")
-    ai_model_id: str = Field(..., alias="modelId", description="Active model ID")
-    ai_model_version: str = Field(..., alias="modelVersion", description="Active model version")
-    ai_model_available: bool = Field(..., alias="modelAvailable", description="Whether model is reachable")
-    kill_switch_active: bool = Field(default=False, alias="killSwitchActive")
-    quota_remaining: Optional[int] = Field(None, alias="quotaRemaining")
+class AiPhaseStatus(AppBaseModel):
+    """AI Phase status nested model."""
+    current_phase: AiPhaseEnum = Field(..., alias="currentPhase")
+    phase_name: str = Field(..., alias="phaseName")
+    execution_allowed: bool = Field(..., alias="executionAllowed")
+    proposal_allowed: bool = Field(..., alias="proposalAllowed")
+
+class AiKillSwitchStatus(AppBaseModel):
+    """Kill switch status nested model."""
+    global_active: bool = Field(..., alias="globalActive")
+    tenant_active: bool = Field(..., alias="tenantActive")
+    capabilities_disabled: List[str] = Field(default_factory=list, alias="capabilitiesDisabled")
+    reason: Optional[str] = None
+
+class AiQuotaStatus(AppBaseModel):
+    """Individual capability quota status."""
+    usage_type: str = Field(..., alias="usageType")
+    current_usage: int = Field(..., alias="currentUsage")
     quota_limit: Optional[int] = Field(None, alias="quotaLimit")
+    remaining: Optional[int] = None
+    exceeded: bool = False
+
+class AiUsageStatus(AppBaseModel):
+    """Usage status nested model."""
+    total_requests_today: int = Field(..., alias="totalRequestsToday")
+    quotas: List[AiQuotaStatus] = Field(default_factory=list)
+    any_quota_exceeded: bool = Field(..., alias="anyQuotaExceeded")
+
+class AiModelStatus(AppBaseModel):
+    """Model status nested model."""
+    provider: str
+    model_id: str = Field(..., alias="modelId")
+    available: bool
+
+class AiStatusResponse(AppBaseModel):
+    """Response schema for AI status endpoint (Nested for Frontend)."""
+    enabled: bool = Field(..., description="Whether AI is enabled")
+    available: bool = Field(..., description="Overall availability for UI")
+    phase: AiPhaseStatus
+    kill_switch: AiKillSwitchStatus = Field(..., alias="killSwitch")
+    usage: AiUsageStatus
+    model: AiModelStatus
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # =============================================================================

@@ -3,9 +3,10 @@ FastAPI Tenant Users Router - Migrated from Flask routes/tenant_users.py
 Tenant user management and company settings
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from typing import Optional, List
 from pydantic import BaseModel, Field
+from pathlib import Path
 import logging
 import os
 import uuid as uuid_lib
@@ -396,4 +397,146 @@ def update_tenant_company(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update tenant company error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/tenant/company/upload/{asset_type}", operation_id="uploadCompanyAsset")
+async def upload_company_asset(
+    asset_type: str,
+    file: UploadFile = File(...),
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Upload company asset (logo, stamp, or signature)"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        if asset_type not in ['logo', 'stamp', 'signature']:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="Invalid asset type", code="INVALID_ASSET_TYPE").model_dump(mode="json")
+            )
+        
+        # Create upload directory
+        upload_dir = Path(f"./storage/company_assets/{access.tenant_id}")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename
+        file_ext = Path(file.filename or '').suffix or '.png'
+        filename = f"{asset_type}{file_ext}"
+        file_path = upload_dir / filename
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Update tenant record
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Store relative path
+        url = f"/api/tenant/company/assets/{asset_type}{file_ext}"
+        
+        # Update tenant company_info
+        company_info = tenant.company_info_json or {}
+        company_info[f"{asset_type}Url"] = url
+        tenant.company_info_json = company_info
+        
+        db_session.commit()
+        
+        return ResponseEnvelope(data={"url": url, "type": asset_type})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Upload company asset error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/tenant/company/upload/{asset_type}", operation_id="deleteCompanyAsset")
+def delete_company_asset(
+    asset_type: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Delete company asset"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        if asset_type not in ['logo', 'stamp', 'signature']:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="Invalid asset type", code="INVALID_ASSET_TYPE").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Remove from company_info
+        company_info = tenant.company_info_json or {}
+        if f"{asset_type}Url" in company_info:
+            del company_info[f"{asset_type}Url"]
+            tenant.company_info_json = company_info
+            db_session.commit()
+        
+        # Delete file if exists
+        upload_dir = Path(f"./storage/company_assets/{access.tenant_id}")
+        for ext in ['.png', '.jpg', '.jpeg', '.gif']:
+            file_path = upload_dir / f"{asset_type}{ext}"
+            if file_path.exists():
+                file_path.unlink()
+        
+        return ResponseEnvelope(data={"success": True})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Delete company asset error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tenant/company/assets/{filename}", operation_id="getCompanyAsset")
+def get_company_asset(
+    filename: str,
+    access: UnifiedAccess = Depends(require_access()),
+):
+    """Serve company asset file"""
+    try:
+        if not access.tenant_id:
+            raise HTTPException(status_code=400, detail="No tenant context")
+        
+        file_path = Path(f"./storage/company_assets/{access.tenant_id}/{filename}")
+        
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        return FileResponse(
+            path=str(file_path),
+            media_type="image/png",
+            filename=filename
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get company asset error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

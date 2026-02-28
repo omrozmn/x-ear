@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
   Alert,
-  Input
+  Input,
+  useToastHelpers
 } from '@x-ear/ui-web';
 import {
   X,
@@ -19,31 +20,9 @@ import {
   User
 } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
+import { useListInventory } from '@/api/generated/inventory/inventory';
+import { useCreatePatientDocuments } from '@/api/generated/documents/documents';
 
-// Type for proforma creation data
-interface ProformaCreateData {
-  partyId: string;
-  devicePrice?: number;
-  deviceName?: string;
-  deviceSerial?: string;
-  companyName?: string;
-  notes?: string;
-  createdBy?: string;
-  [key: string]: unknown; // Allow additional properties
-}
-
-// Type for proforma response data
-interface ProformaData {
-  proforma_number?: string;
-  success?: boolean;
-  [key: string]: unknown;
-}
-
-// Mock API function since Proforma endpoint is missing in generated client
-const proformasCreateProforma = async (data: ProformaCreateData) => {
-  console.log('Mock create proforma', data);
-  return { data: { proforma_number: `PF-${Date.now()}`, success: true } };
-};
 import { Party } from '../../../types/party';
 import ProductSearchComponent from './components/ProductSearchComponent';
 
@@ -90,7 +69,7 @@ interface ProformaModalProps {
   isOpen: boolean;
   onClose: () => void;
   party: Party;
-  onProformaCreate: (data: ProformaData) => void;
+  onProformaCreate: (data: ProformaData, pdfBlob: Blob, fileName: string) => void;
 }
 
 export const ProformaModal: React.FC<ProformaModalProps> = ({
@@ -113,45 +92,72 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Mock product data
-  const mockProducts: ProformaProduct[] = [
-    {
-      id: '1',
-      name: 'İşitme Cihazı Premium',
-      brand: 'Phonak',
-      model: 'Audéo Paradise P90',
-      category: 'İşitme Cihazı',
-      listPrice: 25000,
-      salePrice: 22000,
-      vatRate: 18,
-      stock: 5,
-      sgkSupported: true,
-      sgkCode: 'SGK001'
-    },
-    {
-      id: '2',
-      name: 'İşitme Cihazı Standart',
-      brand: 'Oticon',
-      model: 'More 1',
-      category: 'İşitme Cihazı',
-      listPrice: 18000,
-      salePrice: 16000,
-      vatRate: 18,
-      stock: 8,
-      sgkSupported: true,
-      sgkCode: 'SGK002'
+  // Fetch inventory from API
+  const { data: inventoryData, isLoading: isLoadingInventory } = useListInventory({
+    page: 1,
+    per_page: 100
+  });
+  
+  const { mutateAsync: createDocument } = useCreatePatientDocuments();
+  
+  // Toast helpers
+  const { success, error: showError } = useToastHelpers();
+
+  // Convert inventory to ProformaProduct format
+  const products: ProformaProduct[] = useMemo(() => {
+    console.log('🔍 Inventory Data:', inventoryData);
+    
+    // Backend returns ResponseEnvelope: {success: true, data: [...]}
+    // Orval unwraps the outer response, so we get {data: [...]} directly
+    const items = Array.isArray(inventoryData?.data) ? inventoryData.data : [];
+    
+    if (!items || items.length === 0) {
+      console.log('❌ No inventory items available');
+      return [];
     }
-  ];
+    
+    // Category translation map
+    const categoryMap: Record<string, string> = {
+      'hearing_aid': 'İşitme Cihazı',
+      'accessory': 'Aksesuar',
+      'battery': 'Pil',
+      'earmold': 'Kulak Kalıbı',
+      'other': 'Diğer'
+    };
+    
+    const mapped = items.map((item: any) => ({
+      id: item.id,
+      name: item.name || `${item.brand} ${item.model}`,
+      brand: item.brand || '',
+      model: item.model || '',
+      category: categoryMap[item.category] || item.category || 'İşitme Cihazı',
+      listPrice: item.price || 0,
+      salePrice: item.price || 0,
+      vatRate: item.vatRate || 18,
+      stock: item.availableInventory || 0,
+      serialNumber: item.barcode,
+      barcode: item.barcode,
+      sgkSupported: false,
+      sgkCode: ''
+    }));
+    console.log('✅ Mapped products:', mapped.length, mapped);
+    return mapped;
+  }, [inventoryData]);
 
   const searchResults = useMemo(() => {
-    if (!searchTerm.trim()) return [];
-    return mockProducts.filter(product =>
+    console.log('🔎 Search term:', searchTerm, 'Products count:', products.length);
+    if (!searchTerm.trim()) {
+      console.log('⚠️ Empty search term');
+      return [];
+    }
+    const filtered = products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.model.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+    console.log('✅ Search results:', filtered.length, filtered);
+    return filtered;
+  }, [searchTerm, products]);
 
   useEffect(() => {
     if (isOpen) {
@@ -223,6 +229,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
     let subtotal = 0;
     let totalDiscount = 0;
     let vatAmount = 0;
+    const vatRates = new Set<number>();
 
     items.forEach(item => {
       const itemSubtotal = item.unitPrice * item.quantity;
@@ -230,6 +237,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       const itemNet = itemSubtotal - itemDiscount;
       // Use vatRate from product, defaulting to 18 if missing
       const rate = item.product.vatRate ?? 18;
+      vatRates.add(rate);
       const itemVat = itemNet * (rate / 100);
 
       subtotal += itemSubtotal;
@@ -238,12 +246,21 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
     });
 
     const grandTotal = subtotal - totalDiscount + vatAmount;
+    
+    // Determine VAT label
+    let vatLabel = 'KDV';
+    if (vatRates.size === 1) {
+      vatLabel = `KDV (%${Array.from(vatRates)[0]})`;
+    } else if (vatRates.size > 1) {
+      vatLabel = `KDV (Karma: ${Array.from(vatRates).sort((a, b) => a - b).map(r => `%${r}`).join(', ')})`;
+    }
 
     return {
       subtotal,
       totalDiscount,
       vatAmount,
-      grandTotal
+      grandTotal,
+      vatLabel
     };
   }, [items]);
 
@@ -282,42 +299,69 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
     setError('');
 
     try {
-
-      // Create proforma data for API
-      const proformaData = {
-        partyId: party.id,
-        devicePrice: totals.grandTotal,
-        deviceName: items.map(item => `${item.product.brand} ${item.product.model}`).join(', '),
-        deviceSerial: items.map(item => item.product.serialNumber || 'N/A').join(', '),
-        companyName: 'X-EAR İşitme Cihazları',
-        notes: notes,
-        createdBy: getCurrentUserId()
-      };
-
-      // Call proforma creation API
-      const response = await proformasCreateProforma(proformaData);
-
-      // The generated client returns existing data in response.data
-      // Adjust handling based on typical generated code
-      const result = response?.data;
-
-      // Assuming result is the Proforma object or contains it. 
-      // If result has 'success' field check it, otherwise assume 200 OK means success.
-
+      // Generate proforma number
+      const proformaNumber = `PF-${Date.now()}`;
+      const proformaDate = new Date().toLocaleDateString('tr-TR');
+      
       // Generate PDF
-      // If result is the proforma object directly:
-      // await generateProformaPDF(result);
-
-      // If we are here, it succeeded (client throws on error)
-      const data = (result as Record<string, unknown>) || {};
-
-      // Generate PDF
-      await generateProformaPDF(data as ProformaData);
+      const pdfBlob = await generateProformaPDFBlob();
+      
+      // Save as document to backend
+      const fileName = `Proforma_${proformaNumber}_${party.firstName}_${party.lastName}_${proformaDate}.pdf`;
+      
+      try {
+        console.log('📄 Saving document to backend...', {
+          partyId: party.id,
+          fileName,
+          documentType: 'proforma',
+          notes: notes || `Proforma Fatura - ${proformaNumber}`
+        });
+        
+        // Convert PDF blob to base64
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            // Remove data:application/pdf;base64, prefix
+            const base64Content = base64.split(',')[1];
+            resolve(base64Content);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(pdfBlob);
+        });
+        
+        const base64Content = await base64Promise;
+        
+        const docResult = await createDocument({
+          partyId: party.id,
+          data: {
+            type: 'proforma',
+            fileName: fileName,
+            content: base64Content,
+            mimeType: 'application/pdf',
+            metadata: {
+              proformaNumber,
+              validUntil,
+              grandTotal: totals.grandTotal,
+              notes: notes || ''
+            },
+            createdBy: getCurrentUserId() || 'system'
+          }
+        });
+        
+        console.log('✅ Document saved successfully:', docResult);
+        
+        // Show success toast
+        success('Proforma belgelere kaydedildi');
+      } catch (docError) {
+        console.error('❌ Document save error (non-blocking):', docError);
+        showError('Proforma oluşturuldu ancak belgelere kaydedilemedi');
+      }
 
       // Prepare data for parent component
       const finalProformaData = {
-        partyId: party.id || party.tcNumber || '', // Use id if available, fallback to tcNumber
-        proformaNumber: (data.proforma_number as string) || 'PF-' + Date.now(),
+        partyId: party.id,
+        proformaNumber: proformaNumber,
         validUntil: validUntil,
         items: items,
         subtotal: totals.subtotal,
@@ -329,133 +373,130 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       };
 
       setShowSuccess(true);
-      setTimeout(() => {
-        onProformaCreate(finalProformaData);
-        onClose();
-      }, 1500);
+      
+      // Call parent callback with PDF blob and filename to open viewer in parent
+      onProformaCreate(finalProformaData, pdfBlob, fileName);
+      
+      // Close proforma creation modal
+      onClose();
 
     } catch (error) {
       console.error('Proforma creation error:', error);
       setError(error instanceof Error ? error.message : 'Proforma oluşturulurken bir hata oluştu');
+      showError(error instanceof Error ? error.message : 'Proforma oluşturulurken bir hata oluştu');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Generate PDF for proforma
-  const generateProformaPDF = async (proformaData: ProformaData) => {
-    try {
-      // Dynamic import of jsPDF
-      const jsPDFModule = await import('jspdf');
-      const jsPDF = jsPDFModule.default;
+  // Generate PDF for proforma and return as Blob
+  const generateProformaPDFBlob = async (): Promise<Blob> => {
+    // Dynamic import of jsPDF
+    const jsPDFModule = await import('jspdf');
+    const jsPDF = jsPDFModule.default;
 
-      const pdf = new jsPDF();
+    const pdf = new jsPDF();
+    const proformaNumber = `PF-${Date.now()}`;
 
-      // Company header
-      pdf.setFontSize(20);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('X-EAR İŞİTME CİHAZLARI', 20, 30);
+    // Company header
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('X-EAR İŞİTME CİHAZLARI', 20, 30);
 
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Adres: Merkez Mah. İşitme Sok. No:1 İstanbul', 20, 40);
-      pdf.text('Tel: +90 212 555 0123', 20, 50);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Adres: Merkez Mah. İşitme Sok. No:1 İstanbul', 20, 40);
+    pdf.text('Tel: +90 212 555 0123', 20, 50);
 
-      // Proforma title and number
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('PROFORMA FATURA', 20, 70);
+    // Proforma title and number
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('PROFORMA FATURA', 20, 70);
 
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Proforma No: ${proformaData.proforma_number}`, 20, 85);
-      pdf.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 95);
-      pdf.text(`Geçerlilik: ${new Date(validUntil).toLocaleDateString('tr-TR')}`, 20, 105);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Proforma No: ${proformaNumber}`, 20, 85);
+    pdf.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 95);
+    pdf.text(`Geçerlilik: ${new Date(validUntil).toLocaleDateString('tr-TR')}`, 20, 105);
 
-      // Customer info
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('MÜŞTERİ BİLGİLERİ', 20, 125);
+    // Customer info
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('MÜŞTERİ BİLGİLERİ', 20, 125);
 
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Ad Soyad: ${party.firstName} ${party.lastName}`, 20, 140);
-      pdf.text(`TC No: ${party.tcNumber}`, 20, 150);
-      pdf.text(`Telefon: ${party.phone}`, 20, 160);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Ad Soyad: ${party.firstName} ${party.lastName}`, 20, 140);
+    pdf.text(`TC No: ${party.tcNumber}`, 20, 150);
+    pdf.text(`Telefon: ${party.phone}`, 20, 160);
 
-      // Items table header
-      let yPos = 180;
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('ÜRÜN ADI', 20, yPos);
-      pdf.text('MİKTAR', 80, yPos);
-      pdf.text('BİRİM FİYAT', 110, yPos);
-      pdf.text('İNDİRİM', 140, yPos);
-      pdf.text('TOPLAM', 170, yPos);
+    // Items table header
+    let yPos = 180;
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('ÜRÜN ADI', 20, yPos);
+    pdf.text('MİKTAR', 80, yPos);
+    pdf.text('BİRİM FİYAT', 110, yPos);
+    pdf.text('İNDİRİM', 140, yPos);
+    pdf.text('TOPLAM', 170, yPos);
 
-      // Draw line under header
-      pdf.line(20, yPos + 5, 190, yPos + 5);
-      yPos += 15;
+    // Draw line under header
+    pdf.line(20, yPos + 5, 190, yPos + 5);
+    yPos += 15;
 
-      // Items
-      pdf.setFont('helvetica', 'normal');
-      items.forEach((item) => {
-        const productName = `${item.product.brand} ${item.product.model}`;
-        pdf.text(productName.substring(0, 25), 20, yPos);
-        pdf.text(item.quantity.toString(), 80, yPos);
-        pdf.text(`${item.unitPrice.toLocaleString('tr-TR')} TL`, 110, yPos);
-        pdf.text(`%${item.discountPercent}`, 140, yPos);
-        pdf.text(`${item.totalPrice.toLocaleString('tr-TR')} TL`, 170, yPos);
-        yPos += 10;
-      });
-
-      // Summary
+    // Items
+    pdf.setFont('helvetica', 'normal');
+    items.forEach((item) => {
+      const productName = `${item.product.brand} ${item.product.model}`;
+      pdf.text(productName.substring(0, 25), 20, yPos);
+      pdf.text(item.quantity.toString(), 80, yPos);
+      pdf.text(`${item.unitPrice.toLocaleString('tr-TR')} TL`, 110, yPos);
+      pdf.text(`%${item.discountPercent}`, 140, yPos);
+      pdf.text(`${item.totalPrice.toLocaleString('tr-TR')} TL`, 170, yPos);
       yPos += 10;
-      pdf.line(20, yPos, 190, yPos);
-      yPos += 15;
+    });
 
+    // Summary
+    yPos += 10;
+    pdf.line(20, yPos, 190, yPos);
+    yPos += 15;
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Ara Toplam: ${totals.subtotal.toLocaleString('tr-TR')} TL`, 120, yPos);
+    yPos += 10;
+    pdf.text(`Toplam İndirim: ${totals.totalDiscount.toLocaleString('tr-TR')} TL`, 120, yPos);
+    yPos += 10;
+    pdf.text(`KDV (%18): ${totals.vatAmount.toLocaleString('tr-TR')} TL`, 120, yPos);
+    yPos += 10;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text(`GENEL TOPLAM: ${totals.grandTotal.toLocaleString('tr-TR')} TL`, 120, yPos);
+
+    // Terms and conditions
+    if (terms) {
+      yPos += 20;
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Ara Toplam: ${totals.subtotal.toLocaleString('tr-TR')} TL`, 120, yPos);
+      pdf.text('Şartlar ve Koşullar:', 20, yPos);
       yPos += 10;
-      pdf.text(`Toplam İndirim: ${totals.totalDiscount.toLocaleString('tr-TR')} TL`, 120, yPos);
-      yPos += 10;
-      pdf.text(`KDV (%18): ${totals.vatAmount.toLocaleString('tr-TR')} TL`, 120, yPos);
-      yPos += 10;
-
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(14);
-      pdf.text(`GENEL TOPLAM: ${totals.grandTotal.toLocaleString('tr-TR')} TL`, 120, yPos);
-
-      // Terms and conditions
-      if (terms) {
-        yPos += 20;
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text('Şartlar ve Koşullar:', 20, yPos);
-        yPos += 10;
-        const termsLines = pdf.splitTextToSize(terms, 170);
-        pdf.text(termsLines, 20, yPos);
-      }
-
-      // Notes
-      if (notes) {
-        yPos += (terms ? 20 : 10);
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text('Notlar:', 20, yPos);
-        yPos += 10;
-        const notesLines = pdf.splitTextToSize(notes, 170);
-        pdf.text(notesLines, 20, yPos);
-      }
-
-      // Save PDF
-      const fileName = `Proforma_${proformaData.proforma_number}_${party.firstName}_${party.lastName}.pdf`;
-      pdf.save(fileName);
-
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      // Don't throw error, just log it - proforma creation should still succeed
+      const termsLines = pdf.splitTextToSize(terms, 170);
+      pdf.text(termsLines, 20, yPos);
     }
+
+    // Notes
+    if (notes) {
+      yPos += (terms ? 20 : 10);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Notlar:', 20, yPos);
+      yPos += 10;
+      const notesLines = pdf.splitTextToSize(notes, 170);
+      pdf.text(notesLines, 20, yPos);
+    }
+
+    // Return as Blob
+    return pdf.output('blob');
   };
 
   if (!isOpen) return null;
@@ -477,13 +518,13 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                 </p>
               </div>
             </div>
-            <Button
+            <button
               type="button"
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
-            </Button>
+              <X className="w-6 h-6 text-gray-700" />
+            </button>
           </div>
 
           <div className="p-6 space-y-6">
@@ -534,8 +575,8 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                     setSelectedProduct(p as ProformaProduct);
                     setSearchTerm('');
                   }}
-                  isSearching={false}
-                  showResults={searchTerm.length > 0}
+                  isSearching={isLoadingInventory}
+                  showResults={searchTerm.length > 0 && searchResults.length > 0}
                 />
 
                 {/* Add Item Form */}
@@ -553,20 +594,21 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                           <Input
                             type="number"
                             min="1"
-                            value={quantity}
+                            value={quantity === '0' || quantity === '' ? '' : quantity}
                             onChange={(e) => setQuantity(e.target.value)}
+                            placeholder="1"
                             className="w-full"
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Birim Fiyat
+                            Birim Fiyat (₺)
                           </label>
                           <Input
                             type="number"
                             step="0.01"
                             placeholder={selectedProduct.salePrice.toString()}
-                            value={customPrice}
+                            value={customPrice === '0' || customPrice === '' ? '' : customPrice}
                             onChange={(e) => setCustomPrice(e.target.value)}
                             className="w-full"
                           />
@@ -581,8 +623,8 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                           min="0"
                           max="100"
                           step="0.01"
-                          placeholder="İndirim oranı"
-                          value={discountPercent}
+                          placeholder="0"
+                          value={discountPercent === '0' || discountPercent === '' ? '' : discountPercent}
                           onChange={(e) => setDiscountPercent(e.target.value)}
                           className="w-full"
                         />
@@ -626,7 +668,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                         rows={3}
                         value={terms}
                         onChange={(e) => setTerms(e.target.value)}
-                        className="resize-none"
+                        className="resize-none w-full"
                       />
                     </div>
                     <div>
@@ -638,7 +680,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                         placeholder="Proforma ile ilgili notlarınızı buraya yazabilirsiniz..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="resize-none"
+                        className="resize-none w-full"
                       />
                     </div>
                   </CardContent>
@@ -718,7 +760,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                           <span className="text-red-600">-{formatCurrency(totals.totalDiscount)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">KDV (%18):</span>
+                          <span className="text-gray-600">{totals.vatLabel}:</span>
                           <span className="text-gray-900">{formatCurrency(totals.vatAmount)}</span>
                         </div>
                         <div className="flex justify-between font-bold text-lg border-t pt-2">

@@ -88,8 +88,7 @@ export function SearchableSelect({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={`
-            w-full px-3 py-2 text-left border rounded-lg bg-white
-            flex items-center justify-between
+            w-full px-3 py-2 pr-10 text-left border rounded-lg bg-white relative
             ${error ? 'border-red-300' : 'border-gray-300'}
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-400 cursor-pointer'}
             focus:outline-none focus:ring-2 focus:ring-blue-500
@@ -98,19 +97,24 @@ export function SearchableSelect({
           <span className={displayValue ? 'text-gray-900' : 'text-gray-400'}>
             {displayValue || placeholder}
           </span>
-          <div className="flex items-center gap-1">
-            {value && !disabled && (
-              <X
-                size={16}
-                className="text-gray-400 hover:text-gray-600"
-                onClick={handleClear}
-              />
-            )}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
             <ChevronDown
               size={16}
               className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
             />
           </div>
+          {value && !disabled && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute inset-y-0 right-8 flex items-center pointer-events-auto"
+            >
+              <X
+                size={16}
+                className="text-gray-400 hover:text-gray-600"
+              />
+            </button>
+          )}
         </button>
 
         {/* Dropdown */}

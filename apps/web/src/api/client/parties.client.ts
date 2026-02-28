@@ -8,6 +8,7 @@
  *   import { listParties, createParty } from '@/api/client/parties.client';
  */
 
+// Import from parties module
 export {
   listParties,
   getParty,
@@ -20,57 +21,35 @@ export {
   useCreateParties as useCreateParty,
   useUpdateParty,
   useDeleteParty,
+} from '@/api/generated/parties/parties';
+
+// Import from admin-parties module
+export {
   listAdminPartySales,
   getListAdminPartySalesQueryKey,
   useListAdminPartySales,
-  listPartyTimeline,
-  createPartyTimeline,
-  createPartyActivities,
-  deletePartyTimeline,
-  getListPartyTimelineQueryKey,
-  useListPartyTimeline,
-  useCreatePartyTimeline,
-  useCreatePartyActivities,
-  useDeletePartyTimeline,
-  listSgkDocuments,
-  createSgkDocuments,
-  // deleteSgkDocument, // Endpoint disabled in backend
-  getListSgkDocumentsQueryKey,
-  useListSgkDocuments,
-  useCreateSgkDocuments,
-  // useDeleteSgkDocument, // Endpoint disabled in backend
-  listPatientDocuments,
-  getListPatientDocumentsQueryKey,
-  useListPatientDocuments,
-  // listHearingTests, // Endpoint removed/renamed in backend
-  // createHearingTest, // Endpoint removed/renamed in backend
-  // getListHearingTestsQueryKey, // Endpoint removed/renamed in backend
-  // useListHearingTests, // Endpoint removed/renamed in backend
-  // useCreateHearingTest, // Endpoint removed/renamed in backend
-  // listHearingEReceipts, // Endpoint removed/renamed in backend
-  // createHearingEReceipt, // Endpoint removed/renamed in backend
-  // updateHearingEReceipt, // Endpoint removed/renamed in backend
-  // deleteHearingEReceipt, // Endpoint removed/renamed in backend
-  // getListHearingEReceiptsQueryKey, // Endpoint removed/renamed in backend
-  // useListHearingEReceipts, // Endpoint removed/renamed in backend
-  // useCreateHearingEReceipt, // Endpoint removed/renamed in backend
-  // useUpdateHearingEReceipt, // Endpoint removed/renamed in backend
-  // useDeleteHearingEReceipt, // Endpoint removed/renamed in backend
+} from '@/api/generated/admin-parties/admin-parties';
+
+// Import from party-subresources module (only what exists)
+export {
+  listPartySales,
+  getListPartySalesQueryKey,
+  useListPartySales,
   listPartyAppointments,
+  getListPartyAppointmentsQueryKey,
+  useListPartyAppointments,
   listPartyNotes,
   createPartyNotes,
   updatePartyNote,
   deletePartyNote,
-  listPartyDevices,
-  getListPartyAppointmentsQueryKey,
   getListPartyNotesQueryKey,
-  getListPartyDevicesQueryKey,
-  useListPartyAppointments,
   useListPartyNotes,
   useCreatePartyNotes,
   useUpdatePartyNote,
   useDeletePartyNote,
+  listPartyDevices,
+  getListPartyDevicesQueryKey,
   useListPartyDevices,
-} from '@/api/generated/index';
+} from '@/api/generated/party-subresources/party-subresources';
 
 export type { PartyCreate, PartyRead, PartyReadGender, PartyReadStatus } from '@/api/generated/schemas';

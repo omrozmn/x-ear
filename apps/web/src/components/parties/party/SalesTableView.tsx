@@ -70,8 +70,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       <div className="space-y-1">
         {devices.slice(0, 2).map((device, index: number) => (
           <div key={index} className="text-sm">
-            <div className="font-medium text-gray-900">{device.deviceName || 'Cihaz'}</div>
-            <div className="text-xs text-gray-500">{device.brand} {device.model}</div>
+            <div className="font-medium text-gray-900">{device.brand} {device.model}</div>
+            {device.category && (
+              <div className="text-[10px] text-gray-400 uppercase">{device.category}</div>
+            )}
           </div>
         ))}
         {devices.length > 2 && (
@@ -87,11 +89,29 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       return <span className="text-gray-500">-</span>;
     }
 
-    const device = devices[0];
     return (
-      <div className="text-sm">
-        {device.serialNumber && <div className="font-mono">{device.serialNumber}</div>}
-        {device.serialNumber && <div className="text-xs text-gray-500">{device.serialNumber}</div>}
+      <div className="space-y-1">
+        {devices.map((device, index: number) => (
+          <div key={index} className="text-[11px]">
+            {device.barcode && (
+              <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block mb-0.5">
+                {device.barcode}
+              </div>
+            )}
+            {device.serialNumber && (
+              <div className="font-mono text-[11px] text-gray-700">{device.serialNumber}</div>
+            )}
+            {device.serialNumberLeft && (
+              <div className="font-mono text-[11px] text-blue-600">Sol: {device.serialNumberLeft}</div>
+            )}
+            {device.serialNumberRight && (
+              <div className="font-mono text-[11px] text-red-600">Sağ: {device.serialNumberRight}</div>
+            )}
+            {!device.barcode && !device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
+              <div className="text-[10px] text-gray-400">-</div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };

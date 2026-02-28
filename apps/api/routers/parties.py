@@ -126,7 +126,8 @@ def create_party(
         tenant_id = get_effective_tenant_id(access)
 
         # Service handles data normalization and defaults
-        data = patient_in.model_dump(exclude_unset=True)
+        # Use by_alias=False to get snake_case keys that Party.from_dict expects
+        data = patient_in.model_dump(exclude_unset=True, by_alias=False)
         
         patient = service.create_party(data, tenant_id)
         
@@ -268,7 +269,8 @@ def update_party(
     """Update patient"""
     service = PartyService(db)
     
-    data = patient_in.model_dump(exclude_unset=True)
+    # Use by_alias=False to get snake_case keys
+    data = patient_in.model_dump(exclude_unset=True, by_alias=False)
     try:
         updated_patient = service.update_party(party_id, data, access.tenant_id)
         return ResponseEnvelope(data=updated_patient)

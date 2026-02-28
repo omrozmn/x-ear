@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useState, useMemo } from 'react';
+import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import { useComposerStore } from '../../stores/composerStore';
 import { useSpotlightStore } from '../../stores/spotlightStore';
 import { useChatStore } from '../../ai/stores/chatStore';
-import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle, FileText, Store, Shield } from 'lucide-react';
 import {
     useAutocompleteApiAiComposerAutocompleteGet,
     useExecuteToolApiAiComposerExecutePost,
@@ -27,7 +27,7 @@ export function ComposerOverlay() {
         stagedEntities, addStagedEntity, removeStagedEntity
     } = useSpotlightStore();
 
-    const { setVisible: setChatVisible } = useChatStore();
+    const { setVisible: setChatVisible, setPendingPrompt } = useChatStore();
 
     const { canAll } = usePermissionCheck();
     const onClose = useCallback(() => setOpen(false), [setOpen]);
@@ -170,12 +170,20 @@ export function ComposerOverlay() {
         });
     }, [autocompleteData?.actions, canAll]);
 
+    const hasResetRef = useRef(false);
     useEffect(() => {
-        if (!isOpen) {
-            reset();
-            setSlotSearchQuery('');
+        if (isOpen) {
+            if (!hasResetRef.current) {
+                if (mode === 'idle') {
+                    reset();
+                }
+                setSlotSearchQuery('');
+                hasResetRef.current = true;
+            }
+        } else {
+            hasResetRef.current = false;
         }
-    }, [isOpen, reset]);
+    }, [isOpen, mode, reset]);
 
     // Handle keyboard shortcut (Cmd+K or Ctrl+K)
     useEffect(() => {
@@ -283,6 +291,9 @@ export function ComposerOverlay() {
                             <span key={e.id} className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm font-medium">
                                 {e.type === 'patient' && <User size={14} />}
                                 {e.type === 'device' && <Box size={14} />}
+                                {e.type === 'invoice' && <FileText size={14} />}
+                                {e.type === 'supplier' && <Store size={14} />}
+                                {e.type === 'user' && <Shield size={14} />}
                                 {e.label}
                                 <Button
                                     onClick={() => removeStagedEntity(e.id)}
@@ -303,15 +314,17 @@ export function ComposerOverlay() {
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                if (stagedEntities.length > 0 && query.trim().length > 0) {
-                                    // SMART HANDOFF
-                                    startWithCommand(query, stagedEntities);
-                                    setChatVisible(true);
+                                // 1. Priority: Explicit action match
+                                if (autocompleteData?.intentType === 'action' && permittedActions.length > 0) {
+                                    handleSelectAction(permittedActions[0]);
                                     return;
                                 }
 
-                                if (autocompleteData?.intentType === 'action' && permittedActions.length > 0) {
-                                    handleSelectAction(permittedActions[0]);
+                                // 2. Fallback: Hand off to AI Chat
+                                if (query.trim().length > 0) {
+                                    setPendingPrompt(query, stagedEntities);
+                                    setOpen(false); // Reset/Close spotlight
+                                    setChatVisible(true);
                                 }
                             }
                         }}

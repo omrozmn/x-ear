@@ -109,10 +109,36 @@ export async function simulateActionExecution(
         setExecutionStatus('error');
         setExecutionError('Cihaz stokta bulunamadı veya bağlantı hatası.');
     } else {
+        // Build summary from slots for the result card
+        const currentSlots = useComposerStore.getState().slots;
+        const summaryItems: Array<{ label: string; value: string }> = [];
+        const allSlots = action.slots || [];
+
+        for (const slotDef of allSlots) {
+            const rawValue = currentSlots[slotDef.name];
+            // Try to use the display label (_label suffix) if available
+            const labelKey = `_${slotDef.name}_label`;
+            const displayValue = (currentSlots[labelKey] as string) || String(rawValue || '—');
+            summaryItems.push({
+                label: slotDef.prompt || slotDef.name,
+                value: displayValue,
+            });
+        }
+
+        // Also add side if it was collected at runtime
+        if (currentSlots['side']) {
+            summaryItems.push({ label: 'Kulak Tarafı', value: String(currentSlots['side']) });
+        }
+
         setExecutionStatus('success');
         setExecutionResult({
             status: 'success',
-            result: {}
+            result: {
+                actionName: action.name,
+                summary: summaryItems,
+                entityId: (currentSlots['party_id'] || currentSlots['device_id'] || currentSlots['invoice_id'] || null) as string | null,
+                actionType: action.name, // used for route mapping
+            }
         });
     }
 }

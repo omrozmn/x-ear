@@ -14,6 +14,12 @@ import type {
   ResponseEnvelopeListDocumentRead,
   DocumentRead
 } from '@/api/generated/schemas';
+import axios from 'axios';
+import { tokenManager } from '../../utils/token-manager';
+
+// PDF Viewer Modal
+import DocumentViewer from '../sgk/DocumentViewer';
+import type { SGKDocument } from '../../types/sgk';
 
 
 interface Document {
@@ -42,9 +48,17 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
   const [dragActive, setDragActive] = useState(false);
   const [bulkUploadMode, setBulkUploadMode] = useState(false);
   const [documentNotes, setDocumentNotes] = useState('');
+  
+  // PDF Viewer state
+  const [viewerDocument, setViewerDocument] = useState<SGKDocument | null>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   // Toast helpers
   const { success, error, info } = useToastHelpers();
+  
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
 
   // API functions
@@ -69,7 +83,8 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         uploadDate: doc.uploadedAt || doc.createdAt || new Date().toISOString(),
         size: doc.size ? `${(doc.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown',
         status: (doc.status || 'completed') as Document['status'],
-        url: doc.filePath || undefined
+        // Construct proper API URL for document access
+        url: doc.id ? `/api/parties/${partyId}/documents/${doc.id}` : undefined
       }));
 
       setDocuments(apiDocuments);
@@ -219,25 +234,145 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
     await processFileUploads(selectedFiles);
   };
 
-  const handleViewDocument = (documentId: string) => {
+  const handleViewDocument = async (documentId: string) => {
     const document = documents.find(doc => doc.id === documentId);
-    if (document?.url) {
-      window.open(document.url, '_blank');
-    } else {
-      info('Doküman görüntüleme özelliği yakında eklenecek.');
+    if (!document?.url) {
+      error('Doküman URL\'si bulunamadı.');
+      return;
+    }
+
+    try {
+      console.log('🔍 Fetching document:', {
+        documentId,
+        url: document.url,
+        name: document.name
+      });
+
+      // CRITICAL: Use raw axios (not apiClient/customInstance) for blob responses
+      // customInstance unwraps response.data which breaks blob handling
+      const token = tokenManager.accessToken;
+      const response = await axios({
+        url: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}${document.url}`,
+        method: 'GET',
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('✅ Document fetched successfully:', {
+        status: response.status,
+        contentType: response.headers['content-type'],
+        dataType: typeof response.data,
+        isBlob: response.data instanceof Blob,
+        blobSize: response.data instanceof Blob ? response.data.size : 'N/A'
+      });
+
+      // For blob responses, data is the blob itself
+      const blob = response.data;
+      
+      if (!(blob instanceof Blob)) {
+        throw new Error(`Expected Blob but got ${typeof blob}`);
+      }
+      
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Convert to SGKDocument format for viewer
+      const sgkDoc: SGKDocument = {
+        id: document.id,
+        partyId: partyId,
+        filename: document.name,
+        documentType: document.type as any,
+        fileUrl: blobUrl,
+        fileSize: blob.size,
+        mimeType: 'application/pdf',
+        processingStatus: 'completed',
+        uploadedBy: 'system',
+        uploadedAt: document.uploadDate,
+        createdAt: document.uploadDate,
+        updatedAt: document.uploadDate
+      };
+      
+      setViewerDocument(sgkDoc);
+      setIsViewerOpen(true);
+    } catch (err: any) {
+      console.error('❌ Error loading document:', {
+        error: err,
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: document.url
+      });
+      error('Doküman görüntülenirken bir hata oluştu.');
     }
   };
 
-  const handleDownloadDocument = (documentId: string) => {
+  const handleDownloadDocument = async (documentId: string) => {
     const document = documents.find(doc => doc.id === documentId);
-    if (document) {
-      // Create a temporary download link
+    if (!document?.url) {
+      error('Doküman URL\'si bulunamadı.');
+      return;
+    }
+
+    try {
+      console.log('📥 Downloading document:', {
+        documentId,
+        url: document.url,
+        name: document.name
+      });
+
+      // CRITICAL: Use raw axios (not apiClient/customInstance) for blob responses
+      const token = tokenManager.accessToken;
+      const response = await axios({
+        url: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}${document.url}`,
+        method: 'GET',
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('✅ Document downloaded successfully:', {
+        status: response.status,
+        dataType: typeof response.data,
+        isBlob: response.data instanceof Blob,
+        blobSize: response.data instanceof Blob ? response.data.size : 'N/A'
+      });
+
+      // Create blob and download
+      const blob = response.data;
+      
+      if (!(blob instanceof Blob)) {
+        throw new Error(`Expected Blob but got ${typeof blob}`);
+      }
+      
+      // Ensure filename has extension
+      let filename = document.name;
+      if (!filename.toLowerCase().endsWith('.pdf') && 
+          !filename.toLowerCase().endsWith('.jpg') && 
+          !filename.toLowerCase().endsWith('.jpeg') && 
+          !filename.toLowerCase().endsWith('.png')) {
+        // Add .pdf extension if no extension found
+        filename = `${filename}.pdf`;
+      }
+      
+      const blobUrl = URL.createObjectURL(blob);
       const link = window.document.createElement('a');
-      link.href = document.url || '#';
-      link.download = document.name;
+      link.href = blobUrl;
+      link.download = filename;
       window.document.body.appendChild(link);
       link.click();
       window.document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err: any) {
+      console.error('❌ Error downloading document:', {
+        error: err,
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: document.url
+      });
+      error('Doküman indirilirken bir hata oluştu.');
     }
   };
 
@@ -249,10 +384,19 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
 
       // Reload documents
       await loadDocuments();
+      
+      // Close confirmation modal
+      setDeleteConfirmOpen(false);
+      setDocumentToDelete(null);
     } catch (err) {
       console.error('Error deleting document:', err);
       error('Doküman silinirken bir hata oluştu.');
     }
+  };
+  
+  const confirmDelete = (documentId: string) => {
+    setDocumentToDelete(documentId);
+    setDeleteConfirmOpen(true);
   };
 
   const getStatusIcon = (status: string) => {
@@ -429,11 +573,15 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
                   <Select
                     value={selectedDocumentType}
                     onChange={(e) => setSelectedDocumentType(e.target.value)}
+                    placeholder="Belge türü seçiniz..."
                     options={[
                       { value: 'other', label: 'Diğer' },
                       { value: 'sgk', label: 'SGK Belgesi' },
                       { value: 'medical', label: 'Tıbbi Rapor' },
-                      { value: 'invoice', label: 'Fatura' }
+                      { value: 'invoice', label: 'Fatura' },
+                      { value: 'proforma', label: 'Proforma Fatura' },
+                      { value: 'contract', label: 'Sözleşme' },
+                      { value: 'id', label: 'Kimlik Belgesi' }
                     ]}
                   />
                 </div>
@@ -478,11 +626,11 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
       )}
 
       {/* Header with Upload Button */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Belge Yönetimi</h3>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Belgeler</h3>
         <Button
           onClick={() => setIsUploadModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
         >
           <Upload className="w-4 h-4 mr-2" />
           Belge Yükle
@@ -490,21 +638,23 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
       </div>
 
       {/* Search and Filter */}
-      <div className="flex space-x-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Belge ara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 w-full"
           />
         </div>
         <Select
           value={selectedDocumentType}
           onChange={(e) => setSelectedDocumentType(e.target.value)}
+          className="w-full sm:w-48"
           options={[
-            { value: 'all', label: 'Tümü' },
+            { value: 'all', label: 'Tüm Belgeler' },
+            { value: 'proforma', label: 'Proforma' },
             { value: 'sgk', label: 'SGK' },
             { value: 'medical', label: 'Tıbbi' },
             { value: 'invoice', label: 'Fatura' },
@@ -554,7 +704,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
                     <Download className="w-4 h-4" />
                   </Button>
                   <Button
-                    onClick={() => handleDeleteDocument(doc.id)}
+                    onClick={() => confirmDelete(doc.id)}
                     variant="outline"
                     size="sm"
                     className="text-red-600 hover:text-red-800"
@@ -577,6 +727,87 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
             </div>
           )}
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Dokümanı Sil
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Bu işlem geri alınamaz
+                  </p>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                Bu dokümanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve doküman kalıcı olarak silinecektir.
+              </p>
+              
+              <div className="flex justify-end space-x-3">
+                <Button
+                  onClick={() => {
+                    setDeleteConfirmOpen(false);
+                    setDocumentToDelete(null);
+                  }}
+                  variant="outline"
+                  className="px-4 py-2"
+                >
+                  İptal
+                </Button>
+                <Button
+                  onClick={() => documentToDelete && handleDeleteDocument(documentToDelete)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Sil
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF Viewer Modal */}
+      {viewerDocument && (
+        <DocumentViewer
+          document={viewerDocument}
+          isOpen={isViewerOpen}
+          onClose={() => {
+            // Clean up blob URL
+            if (viewerDocument.fileUrl?.startsWith('blob:')) {
+              URL.revokeObjectURL(viewerDocument.fileUrl);
+            }
+            setIsViewerOpen(false);
+            setViewerDocument(null);
+          }}
+          onDownload={(doc) => {
+            if (doc.fileUrl) {
+              // Ensure filename has extension
+              let filename = doc.filename || 'document.pdf';
+              if (!filename.toLowerCase().endsWith('.pdf') && 
+                  !filename.toLowerCase().endsWith('.jpg') && 
+                  !filename.toLowerCase().endsWith('.jpeg') && 
+                  !filename.toLowerCase().endsWith('.png')) {
+                filename = `${filename}.pdf`;
+              }
+              
+              const link = window.document.createElement('a');
+              link.href = doc.fileUrl;
+              link.download = filename;
+              window.document.body.appendChild(link);
+              link.click();
+              window.document.body.removeChild(link);
+            }
+          }}
+        />
       )}
     </div>
   );

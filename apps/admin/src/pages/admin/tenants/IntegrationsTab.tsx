@@ -47,7 +47,8 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         const fetchSmsConfig = async () => {
             try {
                 const response = await apiClient.get(`/api/admin/tenants/${tenant.id}/sms-config`);
-                setSmsConfigData(response.data?.data || null);
+                // Backend returns ResponseEnvelope, Orval unwraps to {data: ...}
+                setSmsConfigData(response.data || null);
             } catch (error) {
                 console.error('Failed to fetch SMS config:', error);
             } finally {

@@ -41,7 +41,6 @@ import { useComposerStore } from '../../stores/composerStore';
 import { useAIStatus, useAIContextSync } from '../../ai/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import {
   SIDEBAR_COLLAPSED,
   JWT_TOKEN,
@@ -371,9 +370,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </Button>
 
-              {/* Language Switcher */}
-              <LanguageSwitcher />
-
               {/* Notifications */}
               <Button
                 className="relative p-2 h-auto text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -512,15 +508,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </main>
       </div>
 
-      {/* AI Chat Widget - Conditionally rendered based on AI availability */}
-      {/* Uses AIFeatureWrapper for graceful degradation - hides when AI unavailable */}
-      <AIFeatureWrapper
-        capability="chat"
-        hideWhenUnavailable
-        showLoading={false}
-      >
-        <AIChatWidget />
-      </AIFeatureWrapper>
+      {/* AI Chat Widget - Always mounted, handles its own availability internally */}
+      <AIChatWidget />
 
       {/* AI Composer Overlay (Cmd+K) */}
       {/* AI Composer Overlay (Cmd+K) */}

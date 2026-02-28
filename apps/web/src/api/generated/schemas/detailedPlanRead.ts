@@ -7,11 +7,11 @@
  */
 import type { DetailedPlanReadCreatedAt } from './detailedPlanReadCreatedAt';
 import type { DetailedPlanReadUpdatedAt } from './detailedPlanReadUpdatedAt';
+import type { DetailedPlanReadSlug } from './detailedPlanReadSlug';
 import type { DetailedPlanReadDescription } from './detailedPlanReadDescription';
 import type { DetailedPlanReadFeatures } from './detailedPlanReadFeatures';
 import type { DetailedPlanReadMaxUsers } from './detailedPlanReadMaxUsers';
 import type { DetailedPlanReadMaxStorageGb } from './detailedPlanReadMaxStorageGb';
-import type { DetailedPlanReadSlug } from './detailedPlanReadSlug';
 
 /**
  * Schema for reading a plan
@@ -25,6 +25,7 @@ export interface DetailedPlanRead {
   id: string;
   /** Plan name */
   name: string;
+  slug?: DetailedPlanReadSlug;
   /** Plan description */
   description?: DetailedPlanReadDescription;
   /** Plan type */
@@ -43,7 +44,6 @@ export interface DetailedPlanRead {
   isActive?: boolean;
   /** Is plan public */
   isPublic?: boolean;
-  slug?: DetailedPlanReadSlug;
   /** Number of tenants using this plan */
   tenantCount?: number;
 }

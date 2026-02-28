@@ -119,8 +119,6 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
             brand = inv_item.brand
             model = inv_item.model
             barcode = inv_item.barcode
-            # Note: InventoryItem doesn't have a single serial_number field
-            # Serial numbers are managed separately via serial_numbers JSON field
     
     # Fallback for loaner devices
     if not brand:
@@ -137,6 +135,8 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
     
     return {
         'id': assignment.device_id or assignment.inventory_id,
+        'inventoryId': assignment.inventory_id,  # Add explicit inventoryId
+        'deviceId': assignment.device_id,  # Add explicit deviceId
         'partyId': assignment.party_id,  # Required field
         'name': formatted_name,
         'brand': brand,
@@ -781,9 +781,8 @@ def create_sale(
     kdv_rate = float(product_tax_rate) / 100.0
     kdv_amount = base_price - (base_price / (1 + kdv_rate))
     
-    # Notes
-    kdv_note = f"KDV Oranı: %{int(kdv_rate*100)}, KDV Tutarı: ₺{kdv_amount:.2f}"
-    sale_notes = f"{sale_in.notes or ''}\n{kdv_note}".strip()
+    # Notes - KDV bilgisini artık notes'a yazmıyoruz, ayrı alanlarda saklıyoruz
+    sale_notes = sale_in.notes or ''
     
     # Determine status
     # Priority: down_payment > paid_amount > implicit full payment for cash
@@ -820,7 +819,9 @@ def create_sale(
         notes=sale_notes,
         sgk_coverage=sgk_cov,
         patient_payment=patient_pay,
-        report_status=sale_in.report_status
+        report_status=sale_in.report_status,
+        kdv_rate=kdv_rate * 100,  # Store as percentage (e.g., 20.0 for 20%)
+        kdv_amount=kdv_amount
     )
     db.add(sale)
     db.flush() # Get ID
@@ -840,7 +841,7 @@ def create_sale(
         net_payable=final_price,
         payment_method=sale_in.payment_method,
         notes=f"Stoktan satış: {product.name} - {product.brand or ''} {product.model or ''}",
-        assignment_uid=f"ATM-{uuid4().hex[:6].upper()}",
+        assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{uuid4().hex[:4].upper()}",
         ear=getattr(sale_in, 'ear_side', None) or 'both'
     )
     if hasattr(sale_in, 'serial_number') and sale_in.serial_number: 
@@ -1179,7 +1180,7 @@ def _create_single_device_assignment(
         loaner_serial_number_right=assignment_data.get('loaner_serial_number_right') or assignment_data.get('loanerSerialNumberRight'),
         loaner_brand=assignment_data.get('loaner_brand') or assignment_data.get('loanerBrand'),
         loaner_model=assignment_data.get('loaner_model') or assignment_data.get('loanerModel'),
-        assignment_uid=f"ATM-{uuid4().hex[:6].upper()}"
+        assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{uuid4().hex[:4].upper()}"
     )
     
     db.add(assignment)
@@ -1510,8 +1511,26 @@ def update_device_assignment(
     if 'device_id' in data:
         assignment.device_id = data['device_id']
     
+    # ==================== INVENTORY CHANGE (DEVICE SWAP) ====================
     if 'inventory_id' in data:
-        assignment.inventory_id = data['inventory_id']
+        new_inventory_id = data['inventory_id']
+        old_inventory_id = assignment.inventory_id
+        
+        # Update inventory_id
+        assignment.inventory_id = new_inventory_id
+        
+        # If inventory changed, fetch new item and update pricing
+        if new_inventory_id and new_inventory_id != old_inventory_id:
+            new_inv_item = db.get(InventoryItem, new_inventory_id)
+            if new_inv_item:
+                # Update base price from new inventory item
+                assignment.list_price = new_inv_item.price
+                
+                logger.info(f"🔄 Device swapped: inventory_id changed from {old_inventory_id} to {new_inventory_id}")
+                logger.info(f"   New price: {new_inv_item.price}, Brand: {new_inv_item.brand}, Model: {new_inv_item.model}")
+                
+                # Force pricing recalculation since base price changed
+                data['base_price'] = new_inv_item.price
     
     # Update pricing fields
     if 'base_price' in data:
@@ -1536,7 +1555,8 @@ def update_device_assignment(
     
     # ==================== PRICING RECALCULATION ====================
     # Simple check: if any pricing field is in the request, recalculate
-    pricing_fields = ['base_price', 'discount_type', 'discount_value', 'sgk_scheme', 'sgkSupportType']
+    # IMPORTANT: inventory_id change also triggers recalculation (device swap)
+    pricing_fields = ['base_price', 'discount_type', 'discount_value', 'sgk_scheme', 'sgkSupportType', 'inventory_id']
     should_recalculate = any(key in data for key in pricing_fields)
     
     logger.info(f"🔢 Pricing recalculation check: {should_recalculate}, data keys: {list(data.keys())}")

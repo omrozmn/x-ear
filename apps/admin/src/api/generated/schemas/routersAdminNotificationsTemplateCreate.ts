@@ -5,7 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { RoutersAdminNotificationsTemplateCreateName } from './routersAdminNotificationsTemplateCreateName';
 import type { RoutersAdminNotificationsTemplateCreateDescription } from './routersAdminNotificationsTemplateCreateDescription';
 import type { RoutersAdminNotificationsTemplateCreateTitleTemplate } from './routersAdminNotificationsTemplateCreateTitleTemplate';
 import type { RoutersAdminNotificationsTemplateCreateBodyTemplate } from './routersAdminNotificationsTemplateCreateBodyTemplate';
@@ -24,7 +23,8 @@ import type { RoutersAdminNotificationsTemplateCreateTemplateCategory } from './
 import type { RoutersAdminNotificationsTemplateCreateIsActive } from './routersAdminNotificationsTemplateCreateIsActive';
 
 export interface RoutersAdminNotificationsTemplateCreate {
-  name?: RoutersAdminNotificationsTemplateCreateName;
+  tenant_id: string;
+  name: string;
   description?: RoutersAdminNotificationsTemplateCreateDescription;
   titleTemplate?: RoutersAdminNotificationsTemplateCreateTitleTemplate;
   bodyTemplate?: RoutersAdminNotificationsTemplateCreateBodyTemplate;

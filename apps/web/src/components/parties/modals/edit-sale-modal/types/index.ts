@@ -12,6 +12,7 @@ export interface EditSaleModalProps {
   sale: SaleRead;
   onSaleUpdate: (sale: SaleRead) => void;
   loading?: boolean;
+  initialTab?: 'details' | 'payments' | 'notes'; // Add initialTab prop
 }
 
 export interface PaymentRecord {
@@ -44,11 +45,16 @@ export interface SaleFormData {
   productName: string;
   brand: string;
   model: string;
+  category: string;
+  barcode: string;
   serialNumber: string;
+  serialNumberLeft: string;
+  serialNumberRight: string;
   listPrice: number;
   salePrice: number;
   discountAmount: number;
   sgkCoverage: number;
+  downPayment: number;
   notes: string;
   saleDate: string;
   deviceId: string;
@@ -56,6 +62,8 @@ export interface SaleFormData {
   warrantyPeriod: number;
   fittingDate: string;
   deliveryDate: string;
+  deliveryStatus: string;
+  reportStatus: string;
 }
 
 export interface EditSaleState {

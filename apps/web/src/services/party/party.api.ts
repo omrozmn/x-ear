@@ -7,9 +7,9 @@ import {
 import {
   listPartyTimeline,
   createPartyTimeline,
+  createPartyActivities,
   deletePartyTimeline,
-  createPartyActivities
-} from '@/api/client/parties.client';
+} from '@/api/client/timeline.client';
 import {
   listAdminPartySales
 } from '@/api/client/parties.client';

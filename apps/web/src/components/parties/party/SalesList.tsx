@@ -84,14 +84,29 @@ export const SalesList: React.FC<SalesListProps> = ({
 
   const renderBarcodeSerialInfo = (sale: SaleRead) => {
     if (sale.devices && sale.devices.length > 0) {
-      const device = sale.devices[0];
-      const barcode = device.barcode || device.serialNumber || '-';
-      const serial = device.serialNumber || '-';
-
       return (
-        <div>
-          <div className="font-medium">{barcode}</div>
-          <div className="text-xs text-gray-600">{serial}</div>
+        <div className="space-y-1">
+          {sale.devices.map((device, index: number) => (
+            <div key={index} className="text-sm">
+              {device.barcode && (
+                <div className="font-mono text-xs bg-gray-100 px-1 rounded inline-block mb-1">
+                  {device.barcode}
+                </div>
+              )}
+              {device.serialNumber && (
+                <div className="font-mono text-gray-900">{device.serialNumber}</div>
+              )}
+              {device.serialNumberLeft && (
+                <div className="font-mono text-xs text-red-600">S: {device.serialNumberLeft}</div>
+              )}
+              {device.serialNumberRight && (
+                <div className="font-mono text-xs text-blue-600">L: {device.serialNumberRight}</div>
+              )}
+              {!device.barcode && !device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
+                <div className="text-xs text-gray-400">Seri yok</div>
+              )}
+            </div>
+          ))}
         </div>
       );
     }

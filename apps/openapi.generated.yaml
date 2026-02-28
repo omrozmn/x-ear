@@ -4572,6 +4572,95 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
+  /api/tenant/company/upload/{asset_type}:
+    post:
+      tags:
+      - Tenant Users
+      summary: Upload Company Asset
+      description: Upload company asset (logo, stamp, or signature)
+      operationId: uploadCompanyAsset
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: asset_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Asset Type
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_uploadCompanyAsset'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Tenant Users
+      summary: Delete Company Asset
+      description: Delete company asset
+      operationId: deleteCompanyAsset
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: asset_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Asset Type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/tenant/company/assets/{filename}:
+    get:
+      tags:
+      - Tenant Users
+      summary: Get Company Asset
+      description: Serve company asset file
+      operationId: getCompanyAsset
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: filename
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Filename
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/suppliers:
     get:
       tags:
@@ -7349,7 +7438,7 @@ paths:
       tags:
       - admin
       summary: Get bounce statistics
-      description: Get overall bounce statistics for tenant
+      description: Get overall bounce statistics (cross-tenant for admin)
       operationId: getBounceStats
       responses:
         '200':
@@ -16280,8 +16369,8 @@ components:
         addonType:
           type: string
           title: Addontype
-          description: Addon type
-          default: FEATURE
+          description: Addon type (PER_USER, FLAT_FEE, USAGE_BASED)
+          default: FLAT_FEE
         price:
           type: number
           title: Price
@@ -16308,6 +16397,13 @@ components:
           title: Isactive
           description: Is addon active
           default: true
+        features:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Features
+          description: Addon features
       type: object
       required:
       - name
@@ -16427,8 +16523,8 @@ components:
         addonType:
           type: string
           title: Addontype
-          description: Addon type
-          default: FEATURE
+          description: Addon type (PER_USER, FLAT_FEE, USAGE_BASED)
+          default: FLAT_FEE
         price:
           type: number
           title: Price
@@ -16455,6 +16551,13 @@ components:
           title: Isactive
           description: Is addon active
           default: true
+        features:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Features
+          description: Addon features
         tenantCount:
           type: integer
           title: Tenantcount
@@ -16976,6 +17079,48 @@ components:
       - requires_approval
       title: AiActionStepResponse
       description: Response for a single action step.
+    AiKillSwitchStatus:
+      properties:
+        globalActive:
+          type: boolean
+          title: Globalactive
+        tenantActive:
+          type: boolean
+          title: Tenantactive
+        capabilitiesDisabled:
+          items:
+            type: string
+          type: array
+          title: Capabilitiesdisabled
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+      type: object
+      required:
+      - globalActive
+      - tenantActive
+      title: AiKillSwitchStatus
+      description: Kill switch status nested model.
+    AiModelStatus:
+      properties:
+        provider:
+          type: string
+          title: Provider
+        modelId:
+          type: string
+          title: Modelid
+        available:
+          type: boolean
+          title: Available
+      type: object
+      required:
+      - provider
+      - modelId
+      - available
+      title: AiModelStatus
+      description: Model status nested model.
     AiPhaseEnum:
       type: string
       enum:
@@ -16984,6 +17129,55 @@ components:
       - execution
       title: AiPhaseEnum
       description: AI Layer operational phase.
+    AiPhaseStatus:
+      properties:
+        currentPhase:
+          $ref: '#/components/schemas/AiPhaseEnum'
+        phaseName:
+          type: string
+          title: Phasename
+        executionAllowed:
+          type: boolean
+          title: Executionallowed
+        proposalAllowed:
+          type: boolean
+          title: Proposalallowed
+      type: object
+      required:
+      - currentPhase
+      - phaseName
+      - executionAllowed
+      - proposalAllowed
+      title: AiPhaseStatus
+      description: AI Phase status nested model.
+    AiQuotaStatus:
+      properties:
+        usageType:
+          type: string
+          title: Usagetype
+        currentUsage:
+          type: integer
+          title: Currentusage
+        quotaLimit:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Quotalimit
+        remaining:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Remaining
+        exceeded:
+          type: boolean
+          title: Exceeded
+          default: false
+      type: object
+      required:
+      - usageType
+      - currentUsage
+      title: AiQuotaStatus
+      description: Individual capability quota status.
     AiSettingsResponse:
       properties:
         enabled:
@@ -17026,44 +17220,51 @@ components:
           type: boolean
           title: Enabled
           description: Whether AI is enabled
+        available:
+          type: boolean
+          title: Available
+          description: Overall availability for UI
         phase:
-          $ref: '#/components/schemas/AiPhaseEnum'
-          description: Current AI phase
-        modelId:
+          $ref: '#/components/schemas/AiPhaseStatus'
+        killSwitch:
+          $ref: '#/components/schemas/AiKillSwitchStatus'
+        usage:
+          $ref: '#/components/schemas/AiUsageStatus'
+        model:
+          $ref: '#/components/schemas/AiModelStatus'
+        timestamp:
           type: string
-          title: Modelid
-          description: Active model ID
-        modelVersion:
-          type: string
-          title: Modelversion
-          description: Active model version
-        modelAvailable:
-          type: boolean
-          title: Modelavailable
-          description: Whether model is reachable
-        killSwitchActive:
-          type: boolean
-          title: Killswitchactive
-          default: false
-        quotaRemaining:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Quotaremaining
-        quotaLimit:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Quotalimit
+          format: date-time
+          title: Timestamp
       type: object
       required:
       - enabled
+      - available
       - phase
-      - modelId
-      - modelVersion
-      - modelAvailable
+      - killSwitch
+      - usage
+      - model
       title: AiStatusResponse
-      description: Response schema for AI status endpoint.
+      description: Response schema for AI status endpoint (Nested for Frontend).
+    AiUsageStatus:
+      properties:
+        totalRequestsToday:
+          type: integer
+          title: Totalrequeststoday
+        quotas:
+          items:
+            $ref: '#/components/schemas/AiQuotaStatus'
+          type: array
+          title: Quotas
+        anyQuotaExceeded:
+          type: boolean
+          title: Anyquotaexceeded
+      type: object
+      required:
+      - totalRequestsToday
+      - anyQuotaExceeded
+      title: AiUsageStatus
+      description: Usage status nested model.
     AlertCheckResponse:
       properties:
         should_alert:
@@ -18756,6 +18957,16 @@ components:
       required:
       - file
       title: Body_createSmDocumentUpload
+    Body_uploadCompanyAsset:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_uploadCompanyAsset
     BounceListResponse:
       properties:
         bounces:
@@ -19702,6 +19913,11 @@ components:
           - $ref: '#/components/schemas/ActionPlanResponse'
           - type: 'null'
           description: Generated action plan if applicable
+        matched_capability:
+          anyOf:
+          - $ref: '#/components/schemas/MatchedCapabilityResponse'
+          - type: 'null'
+          description: Matched capability with slots for UI rendering
         response:
           anyOf:
           - type: string
@@ -20620,6 +20836,11 @@ components:
           type: string
           title: Name
           description: Plan name
+        slug:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Slug
         description:
           anyOf:
           - type: string
@@ -20671,11 +20892,6 @@ components:
           title: Ispublic
           description: Is plan public
           default: true
-        slug:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Slug
         tenantCount:
           type: integer
           title: Tenantcount
@@ -23377,16 +23593,113 @@ components:
           - type: string
           - type: 'null'
           title: Brand
+        model:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        barcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode
+        stockCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Stockcode
+        supplier:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
         availableInventory:
           anyOf:
           - type: integer
           - type: 'null'
           title: Availableinventory
+        totalInventory:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Totalinventory
+        reorderLevel:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Reorderlevel
+        usedInventory:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Usedinventory
+        onTrial:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ontrial
         price:
           anyOf:
           - type: number
           - type: 'null'
           title: Price
+        cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost
+        vatRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Vatrate
+        priceIncludesKdv:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Priceincludeskdv
+        costIncludesKdv:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Costincludeskdv
+        features:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Features
+        direction:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Direction
+        ear:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ear
+        warranty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Warranty
       type: object
       title: InventoryItemUpdate
     InventoryPagination:
@@ -23548,6 +23861,9 @@ components:
           - type: 'null'
           title: Notes
           description: Notes
+        tenantId:
+          type: string
+          title: Tenantid
         partyId:
           anyOf:
           - type: string
@@ -24413,6 +24729,66 @@ components:
           title: Timestamp
       type: object
       title: MarketplaceListResponse
+    MatchedCapabilityResponse:
+      properties:
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        category:
+          type: string
+          title: Category
+        slots:
+          items:
+            $ref: '#/components/schemas/MatchedSlotResponse'
+          type: array
+          title: Slots
+          default: []
+      type: object
+      required:
+      - name
+      - description
+      - category
+      title: MatchedCapabilityResponse
+      description: Matched capability with slots for frontend slot-filling UI.
+    MatchedSlotResponse:
+      properties:
+        name:
+          type: string
+          title: Name
+        prompt:
+          type: string
+          title: Prompt
+        ui_type:
+          type: string
+          title: Ui Type
+        source_endpoint:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Endpoint
+        enum_options:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Enum Options
+        validation_rules:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Validation Rules
+      type: object
+      required:
+      - name
+      - prompt
+      - ui_type
+      title: MatchedSlotResponse
+      description: Slot definition for UI rendering.
     MessageResponse:
       properties:
         message:
@@ -25127,6 +25503,16 @@ components:
           type: boolean
           title: Isprivate
           default: false
+        createdBy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Createdby
+        createdByName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Createdbyname
       type: object
       required:
       - id
@@ -25385,6 +25771,13 @@ components:
             format: email
           - type: 'null'
           title: Email
+        tcNumber:
+          anyOf:
+          - type: string
+            maxLength: 11
+            minLength: 11
+          - type: 'null'
+          title: Tcnumber
         status:
           anyOf:
           - $ref: '#/components/schemas/PartyStatus'
@@ -25833,16 +26226,20 @@ components:
           type: string
           title: Saleid
         planType:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Plantype
         status:
           type: string
           title: Status
           default: active
         installments:
-          items:
-            $ref: '#/components/schemas/PaymentInstallmentRead'
-          type: array
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PaymentInstallmentRead'
+            type: array
+          - type: 'null'
           title: Installments
           default: []
       type: object
@@ -25852,7 +26249,6 @@ components:
       - startDate
       - id
       - saleId
-      - planType
       title: PaymentPlanRead
     PaymentRecordRead:
       properties:
@@ -26131,6 +26527,12 @@ components:
           type: string
           title: Name
           description: Plan name
+        slug:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Slug
+          description: Plan slug (auto-generated if not provided)
         description:
           anyOf:
           - type: string
@@ -26182,12 +26584,6 @@ components:
           title: Ispublic
           description: Is plan public
           default: true
-        slug:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Slug
-          description: URL slug for the plan
       type: object
       required:
       - name
@@ -34741,6 +35137,18 @@ components:
           - type: number
           - type: 'null'
           title: Patientpayment
+        kdvRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Kdvrate
+          default: 20.0
+        kdvAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Kdvamount
+          default: 0.0
         remainingAmount:
           anyOf:
           - type: number
@@ -35512,6 +35920,8 @@ components:
       - pending
       - approved
       - rejected
+      - cancelled
+      - active
       title: SmsHeaderStatus
     SmsHeaderType:
       type: string
@@ -35786,8 +36196,12 @@ components:
           type: string
           title: Tenantid
         documents:
-          items: {}
-          type: array
+          anyOf:
+          - items: {}
+            type: array
+          - type: string
+          - additionalProperties: true
+            type: object
           title: Documents
         documentsSubmittedAt:
           anyOf:
@@ -35983,35 +36397,35 @@ components:
           type: string
           title: Subject
           description: Email subject
-        body_text:
+        bodyText:
           type: string
-          title: Body Text
+          title: Bodytext
           description: Email body (plain text)
-        body_html:
+        bodyHtml:
           anyOf:
           - type: string
           - type: 'null'
-          title: Body Html
+          title: Bodyhtml
           description: Email body (HTML)
       type: object
       required:
       - subject
-      - body_text
+      - bodyText
       title: SpamPreviewRequest
       description: Request for spam score preview.
     SpamPreviewResponse:
       properties:
-        spam_score:
+        spamScore:
           type: number
-          title: Spam Score
+          title: Spamscore
           description: Spam score (0-20+)
-        risk_level:
+        riskLevel:
           type: string
-          title: Risk Level
+          title: Risklevel
           description: Risk level (LOW/MEDIUM/HIGH/CRITICAL)
-        will_be_rejected:
+        willBeRejected:
           type: boolean
-          title: Will Be Rejected
+          title: Willberejected
           description: Whether email will be rejected
         warnings:
           items:
@@ -36027,9 +36441,9 @@ components:
           description: Recommendations to improve score
       type: object
       required:
-      - spam_score
-      - risk_level
-      - will_be_rejected
+      - spamScore
+      - riskLevel
+      - willBeRejected
       - warnings
       - recommendations
       title: SpamPreviewResponse
@@ -37321,6 +37735,8 @@ components:
       - inactive
       - suspended
       - trial
+      - cancelled
+      - pending
       title: TenantStatus
     TenantUpdate:
       properties:
@@ -38680,10 +39096,11 @@ components:
       title: WorkflowUpdateRequest
     routers__admin_notifications__TemplateCreate:
       properties:
+        tenant_id:
+          type: string
+          title: Tenant Id
         name:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
           title: Name
         description:
           anyOf:
@@ -38773,6 +39190,9 @@ components:
           title: Isactive
           default: true
       type: object
+      required:
+      - tenant_id
+      - name
       title: TemplateCreate
     routers__payments__PaymentRecordCreate:
       properties:
@@ -39417,6 +39837,11 @@ components:
         password:
           type: string
           title: Password
+        username:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Username
         firstName:
           anyOf:
           - type: string
@@ -39438,15 +39863,8 @@ components:
           - type: 'null'
           title: Role
         tenantId:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
           title: Tenantid
-        username:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Username
         isActive:
           anyOf:
           - type: boolean
@@ -39457,6 +39875,7 @@ components:
       required:
       - email
       - password
+      - tenantId
       title: UserCreate
       description: Schema for creating User
   securitySchemes:

@@ -54,6 +54,17 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
     }).format(amount);
   };
 
+  const getCategoryLabel = (category: string): string => {
+    const categoryMap: Record<string, string> = {
+      'hearing_aid': 'İşitme Cihazı',
+      'battery': 'Pil',
+      'accessory': 'Aksesuar',
+      'service': 'Servis',
+      'other': 'Diğer'
+    };
+    return categoryMap[category] || category;
+  };
+
   return (
     <div className="space-y-6">
       {/* Product Information */}
@@ -110,6 +121,85 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             </div>
 
             <div>
+              <Label htmlFor="category">Kategori</Label>
+              <Input
+                id="category"
+                value={getCategoryLabel(formData.category)}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                placeholder="Kategori"
+                disabled
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="barcode">Barkod</Label>
+              <Input
+                id="barcode"
+                value={formData.barcode}
+                onChange={(e) => handleInputChange('barcode', e.target.value)}
+                placeholder="Barkod"
+                disabled
+              />
+            </div>
+          </div>
+
+          {/* Serial Number Fields - Dynamic based on category and ear */}
+          {formData.category === 'hearing_aid' ? (
+            // Hearing aid: Show based on ear selection
+            formData.ear === 'both' ? (
+              // Bilateral: Show both left and right
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="serialNumberLeft">Sol Kulak Seri No *</Label>
+                  <Input
+                    id="serialNumberLeft"
+                    value={formData.serialNumberLeft}
+                    onChange={(e) => handleInputChange('serialNumberLeft', e.target.value)}
+                    placeholder="Sol kulak seri numarası"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="serialNumberRight">Sağ Kulak Seri No *</Label>
+                  <Input
+                    id="serialNumberRight"
+                    value={formData.serialNumberRight}
+                    onChange={(e) => handleInputChange('serialNumberRight', e.target.value)}
+                    placeholder="Sağ kulak seri numarası"
+                    required
+                  />
+                </div>
+              </div>
+            ) : formData.ear === 'left' ? (
+              // Left ear only
+              <div>
+                <Label htmlFor="serialNumberLeft">Sol Kulak Seri No *</Label>
+                <Input
+                  id="serialNumberLeft"
+                  value={formData.serialNumberLeft}
+                  onChange={(e) => handleInputChange('serialNumberLeft', e.target.value)}
+                  placeholder="Sol kulak seri numarası"
+                  required
+                />
+              </div>
+            ) : formData.ear === 'right' ? (
+              // Right ear only
+              <div>
+                <Label htmlFor="serialNumberRight">Sağ Kulak Seri No *</Label>
+                <Input
+                  id="serialNumberRight"
+                  value={formData.serialNumberRight}
+                  onChange={(e) => handleInputChange('serialNumberRight', e.target.value)}
+                  placeholder="Sağ kulak seri numarası"
+                  required
+                />
+              </div>
+            ) : null
+          ) : (
+            // Other products: Single serial number
+            <div>
               <Label htmlFor="serialNumber">Seri Numarası</Label>
               <Input
                 id="serialNumber"
@@ -118,7 +208,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                 placeholder="Seri numarası"
               />
             </div>
-          </div>
+          )}
 
           {/* Device Selector */}
           {state.showDeviceSelector && (
@@ -154,123 +244,41 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
         </CardContent>
       </Card>
 
-      {/* Pricing Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Fiyat Bilgileri</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="listPrice">Liste Fiyatı *</Label>
-              <Input
-                id="listPrice"
-                type="number"
-                value={formData.listPrice === 0 ? '' : formData.listPrice}
-                onChange={(e) => handleInputChange('listPrice', parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="discountAmount">İndirim Tutarı</Label>
-              <Input
-                id="discountAmount"
-                type="number"
-                value={formData.discountAmount === 0 ? '' : formData.discountAmount}
-                onChange={(e) => handleInputChange('discountAmount', parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="salePrice">Satış Fiyatı *</Label>
-              <Input
-                id="salePrice"
-                type="number"
-                value={formData.salePrice === 0 ? '' : formData.salePrice}
-                onChange={(e) => handleInputChange('salePrice', parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="sgkCoverage">SGK Karşılığı</Label>
-            <Input
-              id="sgkCoverage"
-              type="number"
-              value={formData.sgkCoverage === 0 ? '' : formData.sgkCoverage}
-              onChange={(e) => handleInputChange('sgkCoverage', parseFloat(e.target.value) || 0)}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Device Specific Fields */}
-      {state.saleType === 'device' && (
+      {/* Delivery & Report Status - Only for hearing_aid and battery categories */}
+      {(formData.category === 'hearing_aid' || formData.category === 'battery') && (
         <Card>
           <CardHeader>
-            <CardTitle>Cihaz Detayları</CardTitle>
+            <CardTitle>Teslim ve Rapor Durumu</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="ear">Kulak</Label>
+                <Label htmlFor="deliveryStatus">Teslim Durumu</Label>
                 <select data-allow-raw="true"
-                  id="ear"
-                  value={formData.ear}
-                  onChange={(e) => handleInputChange('ear', e.target.value as 'left' | 'right' | 'both')}
+                  id="deliveryStatus"
+                  value={formData.deliveryStatus || 'pending'}
+                  onChange={(e) => handleInputChange('deliveryStatus', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="both">Bilateral</option>
-                  <option value="left">Sol Kulak</option>
-                  <option value="right">Sağ Kulak</option>
+                  <option value="pending">Teslim Edilmedi</option>
+                  <option value="delivered">Teslim Edildi</option>
                 </select>
               </div>
 
               <div>
-                <Label htmlFor="warrantyPeriod">Garanti Süresi (Ay)</Label>
-                <Input
-                  id="warrantyPeriod"
-                  type="number"
-                  value={formData.warrantyPeriod === 0 ? '' : formData.warrantyPeriod}
-                  onChange={(e) => handleInputChange('warrantyPeriod', parseInt(e.target.value) || 0)}
-                  placeholder="24"
-                  min="0"
-                />
+                <Label htmlFor="reportStatus">Rapor Durumu</Label>
+                <select data-allow-raw="true"
+                  id="reportStatus"
+                  value={formData.reportStatus || ''}
+                  onChange={(e) => handleInputChange('reportStatus', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Seçiniz...</option>
+                  <option value="received">Rapor Teslim Alındı</option>
+                  <option value="pending">Rapor Bekleniyor</option>
+                  <option value="none">Raporsuz Özel Satış</option>
+                </select>
               </div>
-
-              <div>
-                <Label htmlFor="fittingDate">Fit Tarihi</Label>
-                <Input
-                  id="fittingDate"
-                  type="date"
-                  value={formData.fittingDate}
-                  onChange={(e) => handleInputChange('fittingDate', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="deliveryDate">Teslim Tarihi</Label>
-              <Input
-                id="deliveryDate"
-                type="date"
-                value={formData.deliveryDate}
-                onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-              />
             </div>
           </CardContent>
         </Card>
@@ -314,16 +322,6 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="notes">Notlar</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-              placeholder="Satış ile ilgili notlar..."
-              rows={3}
-            />
-          </div>
         </CardContent>
       </Card>
     </div>

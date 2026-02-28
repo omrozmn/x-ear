@@ -5,6 +5,7 @@ import { CategoryAutocomplete } from './CategoryAutocomplete';
 import { BrandAutocomplete } from './BrandAutocomplete';
 import { SupplierAutocomplete } from './SupplierAutocomplete';
 import { FeaturesTagManager } from '../../../components/inventory/FeaturesTagManager';
+import { getCategoryDisplay } from '../../../utils/category-mapping';
 
 interface ProductInfoSectionProps {
   item: InventoryItem;
@@ -90,7 +91,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Kategori
                 </label>
-                <p className="text-gray-900 dark:text-white">{item.category}</p>
+                <p className="text-gray-900 dark:text-white">{getCategoryDisplay(item.category)}</p>
               </div>
             )}
           </div>

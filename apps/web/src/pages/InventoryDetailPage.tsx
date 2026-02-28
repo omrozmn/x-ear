@@ -232,6 +232,10 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         description: editedItem.description,
         availableInventory: editedItem.availableInventory,
         unit: editedItem.unit,
+        // KDV fields - CRITICAL: Must be sent to backend
+        vatRate: kdvRate,
+        priceIncludesKdv: isPriceKdvIncluded,
+        costIncludesKdv: isCostKdvIncluded,
       };
 
       const response = await updateInventory(id, payload);

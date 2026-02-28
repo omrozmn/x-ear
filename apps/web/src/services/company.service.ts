@@ -55,11 +55,13 @@ export const companyService = {
    * Update company information
    */
   updateCompanyInfo: async (data: Partial<CompanyInfo>): Promise<TenantCompanyResponse> => {
+    console.log('🔄 [companyService] Updating company info:', data);
     const response = await customInstance<{ success: boolean; data: TenantCompanyResponse }>({
       url: '/api/tenant/company',
       method: 'PUT',
       data,
     });
+    console.log('✅ [companyService] Update response:', response);
     return response.data;
   },
 

@@ -228,8 +228,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <Input
               type="number"
               min="0"
-              value={formData.availableInventory}
+              value={formData.availableInventory === 0 ? '' : formData.availableInventory}
               onChange={(e) => handleChange('availableInventory', parseInt(e.target.value) || 0)}
+              placeholder="0"
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.availableInventory ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
@@ -243,8 +244,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <Input
               type="number"
               min="0"
-              value={formData.totalInventory}
+              value={formData.totalInventory === 0 ? '' : formData.totalInventory}
               onChange={(e) => handleChange('totalInventory', parseInt(e.target.value) || 0)}
+              placeholder="0"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
@@ -256,8 +258,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <Input
               type="number"
               min="0"
-              value={formData.reorderLevel}
+              value={formData.reorderLevel === 0 ? '' : formData.reorderLevel}
               onChange={(e) => handleChange('reorderLevel', parseInt(e.target.value) || 0)}
+              placeholder="0"
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.reorderLevel ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
@@ -278,8 +281,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="number"
               min="0"
               step="0.01"
-              value={formData.price}
+              value={formData.price === 0 ? '' : formData.price}
               onChange={(e) => handleChange('price', parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
@@ -294,8 +298,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="number"
               min="0"
               step="0.01"
-              value={formData.cost}
+              value={formData.cost === 0 ? '' : formData.cost}
               onChange={(e) => handleChange('cost', parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
@@ -308,8 +313,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="number"
               min="0"
               step="0.01"
-              value={formData.wholesalePrice}
+              value={formData.wholesalePrice === 0 ? '' : formData.wholesalePrice}
               onChange={(e) => handleChange('wholesalePrice', parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
@@ -322,8 +328,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="number"
               min="0"
               step="0.01"
-              value={formData.retailPrice}
+              value={formData.retailPrice === 0 ? '' : formData.retailPrice}
               onChange={(e) => handleChange('retailPrice', parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
@@ -380,8 +387,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <Input
               type="number"
               min="0"
-              value={formData.warranty}
+              value={formData.warranty === 0 ? '' : formData.warranty}
               onChange={(e) => handleChange('warranty', parseInt(e.target.value) || 0)}
+              placeholder="0"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>

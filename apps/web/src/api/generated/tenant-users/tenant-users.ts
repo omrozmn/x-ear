@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BodyUploadCompanyAsset,
   CompanyInfoUpdate,
   HTTPValidationError,
   ResponseEnvelopeListUserRead,
@@ -479,4 +480,225 @@ export const useUpdateTenantCompany = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * Upload company asset (logo, stamp, or signature)
+ * @summary Upload Company Asset
+ */
+export const uploadCompanyAsset = (
+    assetType: string,
+    bodyUploadCompanyAsset: BodyUploadCompanyAsset,
+ signal?: AbortSignal
+) => {
+      
+      const formData = new FormData();
+formData.append(`file`, bodyUploadCompanyAsset.file)
+
+      return customInstance<unknown>(
+      {url: `/api/tenant/company/upload/${assetType}`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      );
+    }
+  
+
+
+export const getUploadCompanyAssetMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadCompanyAsset>>, TError,{assetType: string;data: BodyUploadCompanyAsset}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof uploadCompanyAsset>>, TError,{assetType: string;data: BodyUploadCompanyAsset}, TContext> => {
+
+const mutationKey = ['uploadCompanyAsset'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadCompanyAsset>>, {assetType: string;data: BodyUploadCompanyAsset}> = (props) => {
+          const {assetType,data} = props ?? {};
+
+          return  uploadCompanyAsset(assetType,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadCompanyAssetMutationResult = NonNullable<Awaited<ReturnType<typeof uploadCompanyAsset>>>
+    export type UploadCompanyAssetMutationBody = BodyUploadCompanyAsset
+    export type UploadCompanyAssetMutationError = HTTPValidationError
+
+    /**
+ * @summary Upload Company Asset
+ */
+export const useUploadCompanyAsset = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadCompanyAsset>>, TError,{assetType: string;data: BodyUploadCompanyAsset}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof uploadCompanyAsset>>,
+        TError,
+        {assetType: string;data: BodyUploadCompanyAsset},
+        TContext
+      > => {
+
+      const mutationOptions = getUploadCompanyAssetMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Delete company asset
+ * @summary Delete Company Asset
+ */
+export const deleteCompanyAsset = (
+    assetType: string,
+ ) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/tenant/company/upload/${assetType}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteCompanyAssetMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCompanyAsset>>, TError,{assetType: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCompanyAsset>>, TError,{assetType: string}, TContext> => {
+
+const mutationKey = ['deleteCompanyAsset'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCompanyAsset>>, {assetType: string}> = (props) => {
+          const {assetType} = props ?? {};
+
+          return  deleteCompanyAsset(assetType,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCompanyAssetMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCompanyAsset>>>
     
+    export type DeleteCompanyAssetMutationError = HTTPValidationError
+
+    /**
+ * @summary Delete Company Asset
+ */
+export const useDeleteCompanyAsset = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCompanyAsset>>, TError,{assetType: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCompanyAsset>>,
+        TError,
+        {assetType: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteCompanyAssetMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Serve company asset file
+ * @summary Get Company Asset
+ */
+export const getCompanyAsset = (
+    filename: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/tenant/company/assets/${filename}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetCompanyAssetQueryKey = (filename?: string,) => {
+    return [
+    `/api/tenant/company/assets/${filename}`
+    ] as const;
+    }
+
+    
+export const getGetCompanyAssetQueryOptions = <TData = Awaited<ReturnType<typeof getCompanyAsset>>, TError = HTTPValidationError>(filename: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompanyAsset>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCompanyAssetQueryKey(filename);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCompanyAsset>>> = ({ signal }) => getCompanyAsset(filename, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(filename), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCompanyAsset>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetCompanyAssetQueryResult = NonNullable<Awaited<ReturnType<typeof getCompanyAsset>>>
+export type GetCompanyAssetQueryError = HTTPValidationError
+
+
+export function useGetCompanyAsset<TData = Awaited<ReturnType<typeof getCompanyAsset>>, TError = HTTPValidationError>(
+ filename: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompanyAsset>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCompanyAsset>>,
+          TError,
+          Awaited<ReturnType<typeof getCompanyAsset>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetCompanyAsset<TData = Awaited<ReturnType<typeof getCompanyAsset>>, TError = HTTPValidationError>(
+ filename: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompanyAsset>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCompanyAsset>>,
+          TError,
+          Awaited<ReturnType<typeof getCompanyAsset>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetCompanyAsset<TData = Awaited<ReturnType<typeof getCompanyAsset>>, TError = HTTPValidationError>(
+ filename: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompanyAsset>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Company Asset
+ */
+
+export function useGetCompanyAsset<TData = Awaited<ReturnType<typeof getCompanyAsset>>, TError = HTTPValidationError>(
+ filename: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompanyAsset>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetCompanyAssetQueryOptions(filename,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+

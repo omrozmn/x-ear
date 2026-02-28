@@ -1102,7 +1102,7 @@ export function useListBounces<TData = Awaited<ReturnType<typeof listBounces>>, 
 
 
 /**
- * Get overall bounce statistics for tenant
+ * Get overall bounce statistics (cross-tenant for admin)
  * @summary Get bounce statistics
  */
 export const getBounceStats = (

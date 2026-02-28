@@ -1,4 +1,4 @@
-import { createPartyTimeline as createPartyTimelineApi } from '@/api/client/parties.client';
+import { createPartyTimeline as createPartyTimelineApi } from '@/api/client/timeline.client';
 import type { TimelineEventCreate } from '@/api/generated/schemas';
 import { outbox } from '../utils/outbox';
 

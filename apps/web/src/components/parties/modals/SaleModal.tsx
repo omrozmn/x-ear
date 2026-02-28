@@ -10,7 +10,7 @@ import { CreditCard, FileText, X, Search, Package, DollarSign } from 'lucide-rea
 import { Party } from '../../../types/party/party-base.types';
 import { useInventory, InventoryItemRead } from '../../../hooks/useInventory';
 import { fuzzySearch } from '../../../utils/fuzzy-search';
-import { createPartyTimeline, createPartyActivities } from '@/api/client/parties.client';
+import { createPartyTimeline, createPartyActivities } from '@/api/client/timeline.client';
 import { partyApiService } from '../../../services/party/party-api.service';
 import { SaleRead } from '@/api/generated/schemas';
 
@@ -272,22 +272,34 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
         <div className="p-6">
           <div className="space-y-6">
-            {/* Hasta Durumu Seçimi - Legacy'deki gibi */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hasta Durumu <span className="text-red-500">*</span>
-              </label>
-              <Select
-                data-testid="sale-party-status-select"
-                value={partyStatus}
-                onChange={(e) => setPartyStatus(e.target.value)}
-                className="w-full"
-                options={[
-                  { value: "worker", label: "Çalışan" },
-                  { value: "retired", label: "Emekli" },
-                  { value: "beneficiary", label: "Yakın (Çalışan/Emekli Yakını)" }
-                ]}
-              />
+            {/* Hasta Durumu ve Satış Tarihi */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hasta Durumu <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  data-testid="sale-party-status-select"
+                  value={partyStatus}
+                  onChange={(e) => setPartyStatus(e.target.value)}
+                  className="w-full"
+                  options={[
+                    { value: "worker", label: "Çalışan" },
+                    { value: "retired", label: "Emekli" },
+                    { value: "beneficiary", label: "Yakın (Çalışan/Emekli Yakını)" }
+                  ]}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Satış Tarihi <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="date"
+                  defaultValue={new Date().toISOString().split('T')[0]}
+                  className="w-full"
+                />
+              </div>
             </div>
 
             {/* Ürün Arama - Legacy'deki gibi fuzzy search */}
@@ -404,6 +416,35 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
               </div>
             )}
 
+            {/* Miktar ve Birim Fiyat */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Miktar <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  data-testid="sale-quantity-input"
+                  type="number"
+                  min="1"
+                  value={quantity === 0 ? '' : quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                  placeholder="1"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Birim Fiyat (₺)
+                </label>
+                <Input
+                  type="text"
+                  value={selectedDevice?.price?.toLocaleString('tr-TR') || '0'}
+                  disabled
+                  className="w-full bg-gray-50"
+                />
+              </div>
+            </div>
+
             {/* İndirim - Legacy'deki gibi */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -414,16 +455,16 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   data-testid="sale-discount-input"
                   type="number"
                   min="0"
-                  value={discount}
+                  value={discount === 0 ? '' : discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  placeholder="İndirim tutarı"
+                  placeholder="0"
                   className="flex-1"
                 />
                 <Select
                   data-testid="sale-discount-type-select"
                   value={discountType}
                   onChange={(e) => setDiscountType(e.target.value as 'percentage' | 'fixed')}
-                  className="w-24"
+                  className="w-32"
                   options={[
                     { value: 'fixed', label: 'TL' },
                     { value: 'percentage', label: '%' }
@@ -489,6 +530,28 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
               </div>
             </div>
 
+            {/* Peşinat / İlk Ödeme */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tahsil Edilen Tutar (₺)
+              </label>
+              <Input
+                data-testid="sale-down-payment-input"
+                type="number"
+                min="0"
+                max={totals.total}
+                value={downPayment === 0 ? '' : downPayment}
+                onChange={(e) => setDownPayment(parseFloat(e.target.value) || 0)}
+                placeholder="0"
+                className="w-full"
+              />
+              {downPayment > 0 && totals.total > 0 && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Kalan: {totals.remaining.toLocaleString('tr-TR')} TL
+                </p>
+              )}
+            </div>
+
             {/* Taksit Seçenekleri - Sadece taksit seçildiğinde göster */}
             {paymentMethod === 'installment' && (
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -499,6 +562,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                     <Select
                       value={installmentCount.toString()}
                       onChange={(e) => setInstallmentCount(parseInt(e.target.value))}
+                      className="w-full"
                       options={[
                         { value: '3', label: '3 Taksit' },
                         { value: '6', label: '6 Taksit' },
@@ -513,9 +577,10 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                       type="number"
                       min="0"
                       step="0.1"
-                      value={interestRate}
+                      value={interestRate === 0 ? '' : interestRate}
                       onChange={(e) => setInterestRate(parseFloat(e.target.value) || 0)}
-                      placeholder="0.0"
+                      placeholder="0"
+                      className="w-full"
                     />
                   </div>
                 </div>

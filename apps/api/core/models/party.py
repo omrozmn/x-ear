@@ -157,32 +157,25 @@ class Party(BaseModel, TenantScopedMixin, JSONMixin):
         
         Handles both camelCase (API) and snake_case (Pydantic model_dump) keys.
         """
-        import logging
-        logger = logging.getLogger(__name__)
-        
-        logger.info('🔍 Party.from_dict - Input data keys: %s', list(data.keys()))
-        logger.info('🔍 Party.from_dict - city: %s, addressCity: %s', data.get("city"), data.get("addressCity"))
-        logger.info('🔍 Party.from_dict - district: %s, addressDistrict: %s', data.get("district"), data.get("addressDistrict"))
-        logger.info('🔍 Party.from_dict - address: %s', data.get("address"))
-        
         party = Party()
         party.id = data.get('id') or gen_id("pat")
         
         # Handle TC number - support both camelCase and snake_case
-        tc_number = data.get('tcNumber') or data.get('tc_number')
-        party.tc_number = tc_number if tc_number and tc_number.strip() else None
+        # Check snake_case first (from Pydantic model_dump with by_alias=False)
+        tc_number = data.get('tc_number') or data.get('tcNumber')
+        party.tc_number = tc_number if tc_number and str(tc_number).strip() else None
         
-        identity_number = data.get('identityNumber') or data.get('identity_number')
-        party.identity_number = identity_number if identity_number and identity_number.strip() else None
+        identity_number = data.get('identity_number') or data.get('identityNumber')
+        party.identity_number = identity_number if identity_number and str(identity_number).strip() else None
         
-        # Support both camelCase and snake_case for name fields
-        party.first_name = data.get('firstName') or data.get('first_name')
-        party.last_name = data.get('lastName') or data.get('last_name')
+        # Support both camelCase and snake_case for name fields (snake_case first)
+        party.first_name = data.get('first_name') or data.get('firstName')
+        party.last_name = data.get('last_name') or data.get('lastName')
         party.phone = data.get('phone')
         party.email = data.get('email')
         
-        # Handle birth date - support both formats
-        birth_date = data.get('birthDate') or data.get('birth_date') or data.get('dob')
+        # Handle birth date - support both formats (snake_case first)
+        birth_date = data.get('birth_date') or data.get('birthDate') or data.get('dob')
         if birth_date:
             if isinstance(birth_date, str):
                 party.birth_date = datetime.fromisoformat(birth_date)
@@ -203,36 +196,34 @@ class Party(BaseModel, TenantScopedMixin, JSONMixin):
             party.address_full = address_data
         
         # Also check for direct city/district/addressCity/addressDistrict fields
-        # These take priority over nested address object
-        if data.get('city'):
-            party.address_city = data.get('city')
-        if data.get('addressCity'):
+        # These take priority over nested address object (snake_case first)
+        if data.get('address_city'):
+            party.address_city = data.get('address_city')
+        elif data.get('addressCity'):
             party.address_city = data.get('addressCity')
-        if data.get('district'):
-            party.address_district = data.get('district')
-        if data.get('addressDistrict'):
+        elif data.get('city'):
+            party.address_city = data.get('city')
+            
+        if data.get('address_district'):
+            party.address_district = data.get('address_district')
+        elif data.get('addressDistrict'):
             party.address_district = data.get('addressDistrict')
+        elif data.get('district'):
+            party.address_district = data.get('district')
         
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info('🔍 Party.from_dict - After processing:')
-        logger.info('🔍   address_city: %s', party.address_city)
-        logger.info('🔍   address_district: %s', party.address_district)
-        logger.info('🔍   address_full: %s', party.address_full)
-        
-        # CRM fields - use enum with proper conversion, support both cases
+        # CRM fields - use enum with proper conversion, support both cases (snake_case first)
         status_value = data.get('status', 'active')
         party.status = PartyStatus.from_legacy(status_value) if isinstance(status_value, str) else PartyStatus.ACTIVE
         party.segment = data.get('segment', 'lead')
-        party.acquisition_type = data.get('acquisitionType') or data.get('acquisition_type') or 'walk-in'
-        party.conversion_step = data.get('conversionStep') or data.get('conversion_step')
-        party.referred_by = data.get('referredBy') or data.get('referred_by')
-        party.priority_score = data.get('priorityScore') or data.get('priority_score') or 0
-        party.branch_id = data.get('branchId') or data.get('branch_id')
+        party.acquisition_type = data.get('acquisition_type') or data.get('acquisitionType') or 'walk-in'
+        party.conversion_step = data.get('conversion_step') or data.get('conversionStep')
+        party.referred_by = data.get('referred_by') or data.get('referredBy')
+        party.priority_score = data.get('priority_score') or data.get('priorityScore') or 0
+        party.branch_id = data.get('branch_id') or data.get('branchId')
         
-        # JSON fields - support both cases
-        party.tags_json = data.get('tags') or data.get('tags_json') or []
-        party.sgk_info_json = data.get('sgkInfo') or data.get('sgk_info') or data.get('sgk_info_json') or {
+        # JSON fields - support both cases (snake_case first)
+        party.tags_json = data.get('tags_json') or data.get('tags') or []
+        party.sgk_info_json = data.get('sgk_info_json') or data.get('sgk_info') or data.get('sgkInfo') or {
             'rightEarDevice': 'available',
             'leftEarDevice': 'available',
             'rightEarBattery': 'available',

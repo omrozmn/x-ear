@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Badge } from '@x-ear/ui-web';
 import { Edit, Package, History, Printer, Shield, Barcode } from 'lucide-react';
 import { InventoryItem } from '../../../types/inventory';
+import { getCategoryDisplay } from '../../../utils/category-mapping';
 
 interface ProductDetailsModalProps {
   isOpen: boolean;
@@ -243,7 +244,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.category}</p>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{getCategoryDisplay(product.category)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tip</label>

@@ -29,11 +29,14 @@ import PromissoryNoteModal from './modals/PromissoryNoteModal';
 import EditSaleModal from './modals/EditSaleModal';
 import { ReturnExchangeModal } from './modals/ReturnExchangeModal';
 import ProformaModal from './modals/ProformaModal';
+import DocumentViewer from '../sgk/DocumentViewer';
+import type { SGKDocument } from '../../types/sgk';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
 import { SalesTableView } from './party/SalesTableView';
 import { listSales } from '@/api/client/sales.client';
+import { listPartySales } from '@/api/client/parties.client';
 import { PARTY_SALES_DATA } from '../../constants/storage-keys';
 
 interface DeviceReplacement {
@@ -71,6 +74,11 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [showReturnExchangeModal, setShowReturnExchangeModal] = useState(false);
   const [showProformaModal, setShowProformaModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState<SaleRead | undefined>(undefined);
+  const [editSaleInitialTab, setEditSaleInitialTab] = useState<'details' | 'payments' | 'notes'>('details');
+  
+  // PDF Viewer state for proforma
+  const [showProformaPdfViewer, setShowProformaPdfViewer] = useState(false);
+  const [proformaPdfDocument, setProformaPdfDocument] = useState<SGKDocument | null>(null);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -126,7 +134,8 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     try {
       console.log('🔄 Loading party sales for:', party.id);
 
-      const response = await listSales({ search: party.id });
+      // Use the correct endpoint for party-specific sales
+      const response = await listPartySales(party.id);
 
       console.log('📊 API Response:', response);
 
@@ -369,11 +378,13 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const handleCreateSale = () => setShowNewSaleModal(true);
   const handleEditSaleClick = (sale: SaleRead) => {
     setSelectedSale(sale);
+    setEditSaleInitialTab('details');
     setShowEditSaleModal(true);
   };
   const handlePromissoryNoteClick = (sale: SaleRead) => {
     setSelectedSale(sale);
-    setShowPromissoryNoteModal(true);
+    setEditSaleInitialTab('notes'); // Open notes tab directly
+    setShowEditSaleModal(true); // Open EditSaleModal instead of PromissoryNoteModal
   };
   /*
   const handleQueryPartyRights = async () => {
@@ -415,20 +426,6 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
           </Button>
           <Button onClick={() => setShowProformaModal(true)} variant="outline">
             Proforma
-          </Button>
-          {/* 
-          <Button onClick={() => handleSaleAction(() => setShowCollectionModal(true))} variant="outline">
-            Tahsilat
-          </Button>
-          <Button onClick={() => handleSaleAction(() => setShowPromissoryNoteModal(true))} variant="outline">
-            Senet
-          </Button> 
-          */}
-          <Button onClick={() => handleSaleAction()} variant="outline">
-            İade/Değişim
-          </Button>
-          <Button onClick={() => handleSaleAction()} variant="outline">
-            Cihaz Değişimi
           </Button>
         </div>
       </div>
@@ -745,6 +742,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             onClose={() => setShowEditSaleModal(false)}
             party={party}
             sale={selectedSale}
+            initialTab={editSaleInitialTab}
             onSaleUpdate={(saleData) => {
               console.log('Sale updated:', saleData);
               setShowEditSaleModal(false);
@@ -778,12 +776,57 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             isOpen={showProformaModal}
             onClose={() => setShowProformaModal(false)}
             party={party}
-            onProformaCreate={(data) => {
+            onProformaCreate={(data, pdfBlob, fileName) => {
               console.log('Proforma created:', data);
               setShowProformaModal(false);
+              
+              // Open PDF viewer with the generated proforma
+              const pdfUrl = URL.createObjectURL(pdfBlob);
+              const sgkDoc: SGKDocument = {
+                id: 'proforma-preview',
+                partyId: party.id || '',
+                filename: fileName,
+                documentType: 'fatura',
+                fileUrl: pdfUrl,
+                fileSize: pdfBlob.size,
+                mimeType: 'application/pdf',
+                processingStatus: 'completed',
+                uploadedBy: 'system',
+                uploadedAt: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              setProformaPdfDocument(sgkDoc);
+              setShowProformaPdfViewer(true);
             }}
           />
         </div>
+      )}
+      
+      {/* Proforma PDF Viewer */}
+      {proformaPdfDocument && (
+        <DocumentViewer
+          document={proformaPdfDocument}
+          isOpen={showProformaPdfViewer}
+          onClose={() => {
+            // Clean up blob URL
+            if (proformaPdfDocument.fileUrl?.startsWith('blob:')) {
+              URL.revokeObjectURL(proformaPdfDocument.fileUrl);
+            }
+            setShowProformaPdfViewer(false);
+            setProformaPdfDocument(null);
+          }}
+          onDownload={(doc) => {
+            if (doc.fileUrl) {
+              const link = window.document.createElement('a');
+              link.href = doc.fileUrl;
+              link.download = doc.filename || 'proforma.pdf';
+              window.document.body.appendChild(link);
+              link.click();
+              window.document.body.removeChild(link);
+            }
+          }}
+        />
       )}
 
       {/* Device Replacement Modal */}

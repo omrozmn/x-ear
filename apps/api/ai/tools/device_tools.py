@@ -299,7 +299,7 @@ def checkDeviceStock(
     description="Assign a hearing aid device to a patient",
     category=ToolCategory.ADMIN,
     risk_level=RiskLevel.MEDIUM,
-    schema_version="1.0.0",
+    schema_version="1.1.0",
     parameters=[
         ToolParameter(
             name="party_id",
@@ -312,6 +312,14 @@ def checkDeviceStock(
             type="string",
             description="ID of the device to assign",
             required=True,
+        ),
+        ToolParameter(
+            name="ear_side",
+            type="string",
+            description="Which ear the device is for",
+            required=False,
+            default="Left",
+            enum=["Left", "Right", "Binaural"],
         ),
         ToolParameter(
             name="user_id",
@@ -339,8 +347,23 @@ def assignDevice(
     """Assign a device to a patient."""
     party_id = params["party_id"]
     device_id = params["device_id"]
+    ear_side = params.get("ear_side", "Left")
     user_id = params.get("user_id", "system")
     tenant_id = params.get("tenant_id", "default")
+
+    if mode == ToolExecutionMode.SIMULATE:
+        return ToolExecutionResult(
+            tool_id="assignDevice",
+            success=True,
+            mode=mode,
+            simulated_changes={
+                "action": "assign_device",
+                "party_id": party_id,
+                "device_id": device_id,
+                "ear_side": ear_side,
+                "status": "Assigned (Simulated)",
+            },
+        )
 
     try:
         db = SessionLocal()

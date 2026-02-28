@@ -19,6 +19,8 @@ class PartyNoteRead(AppBaseModel, IDMixin, TimestampMixin):
     title: Optional[str] = None
     content: str
     is_private: bool = Field(False, alias="isPrivate")
+    created_by: Optional[str] = Field(None, alias="createdBy")
+    created_by_name: Optional[str] = Field(None, alias="createdByName")
 
 
 class PartyNoteCreate(AppBaseModel):

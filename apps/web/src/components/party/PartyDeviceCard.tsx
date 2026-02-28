@@ -166,7 +166,12 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           <div>
             <span className="text-gray-500 dark:text-gray-400">Atama ID:</span>
-            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-xs">{device.assignmentUid || device.saleId || '-'}</p>
+            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-xs">
+              {device.assignmentUid || '-'}
+              {device.reason?.toLowerCase() === 'sale' && device.saleId && (
+                <span className="text-[10px] text-gray-500 ml-1">({device.saleId})</span>
+              )}
+            </p>
           </div>
           <div>
             <span className="text-gray-500 dark:text-gray-400">Barkod No:</span>

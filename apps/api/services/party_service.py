@@ -269,12 +269,18 @@ class PartyService:
         
             self.db.commit()
             self.db.refresh(new_party)
+            
             return new_party
         except Exception as e:
             self.db.rollback()
             raise e
 
     def update_party(self, party_id: str, data: Dict[str, Any], tenant_id: str) -> Party:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info('🔍 UPDATE PARTY - party_id: %s, data keys: %s', party_id, list(data.keys()))
+        logger.info('🔍 UPDATE PARTY - tcNumber: %s, tc_number: %s', data.get('tcNumber'), data.get('tc_number'))
+        
         party = self.get_party(party_id, tenant_id)
         
         # Helper map for Party fields - Handle both camelCase (legacy/API) and snake_case (Pydantic model_dump)
@@ -290,6 +296,8 @@ class PartyService:
         
         if 'tcNumber' in data: party.tc_number = data['tcNumber']
         elif 'tc_number' in data: party.tc_number = data['tc_number']
+        
+        logger.info('🔍 UPDATE PARTY - After setting, party.tc_number: %s', party.tc_number)
         
         if 'birthDate' in data or 'birth_date' in data:
             d = data.get('birthDate') or data.get('birth_date')
@@ -357,6 +365,7 @@ class PartyService:
         
         try:
             self.db.commit()
+            logger.info('🔍 UPDATE PARTY - After commit, party.tc_number: %s', party.tc_number)
             try:
                 self.db.refresh(party)
             except Exception as refresh_error:

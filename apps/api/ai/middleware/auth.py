@@ -141,9 +141,13 @@ class AIAuthMiddleware:
             if path.startswith(exclude_path):
                 await self.app(scope, receive, send)
                 return
-        
         # Create Request object to access headers
         request = Request(scope, receive)
+        
+        # Skip OPTIONS requests to allow CORS preflight to succeed
+        if request.method == "OPTIONS":
+            await self.app(scope, receive, send)
+            return
         
         # Extract Authorization header
         auth_header = request.headers.get("Authorization")

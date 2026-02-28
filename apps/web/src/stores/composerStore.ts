@@ -58,6 +58,7 @@ interface ComposerState {
     addExecutionStep: (step: ExecutionStep) => void;
     updateExecutionStep: (id: string, updates: Partial<ExecutionStep>) => void;
     setExecutionError: (error: string | null) => void;
+    setPlan: (plan: any) => void;
 }
 
 export type ExecutionStatus = 'idle' | 'init' | 'running' | 'waiting' | 'success' | 'error';
@@ -147,8 +148,10 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         // Find first missing slot
         const requiredSlots = selectedAction.slots || [];
         const nextMissing = requiredSlots.find(s => {
+            const isOptional = s.validationRules?.required === false;
             const val = slots[s.name];
-            return val === undefined || val === null || val === '';
+            const isMissing = val === undefined || val === null || val === '';
+            return isMissing && !isOptional;
         });
 
         if (nextMissing) {
@@ -193,6 +196,32 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
             query: prompt,
             mode: 'idle', // Chat will handle the rest
             isOpen: false
+        });
+    },
+
+    setPlan: (plan) => {
+        if (!plan) return;
+
+        // Map first step as selected action for simplified view
+        const firstStep = plan.steps[0];
+
+        // Convert Steps to ExecutionSteps for progress UI
+        const executionSteps: ExecutionStep[] = plan.steps.map((s: any) => ({
+            id: `step-${s.stepNumber}`,
+            label: s.description,
+            status: 'pending'
+        }));
+
+        set({
+            selectedAction: {
+                name: firstStep.toolName,
+                description: firstStep.description,
+                slots: [] // Handled by chat
+            } as any,
+            executionSteps,
+            executionStatus: 'waiting', // Waiting for user confirmation
+            mode: 'confirmation',
+            slots: firstStep.parameters || {}
         });
     }
 }));

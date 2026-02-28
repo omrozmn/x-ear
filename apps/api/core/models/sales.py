@@ -243,6 +243,10 @@ class Sale(BaseModel, TenantScopedMixin):
     report_status = Column(String(50))
     notes = Column(Text)
     
+    # KDV (VAT) information
+    kdv_rate = Column(Float, default=20.0)  # KDV oranı (%)
+    kdv_amount = Column(sa.Numeric(12,2), default=0.0)  # KDV tutarı
+    
     # Relationships
     party = relationship('Party', backref=backref('sales', cascade='all, delete-orphan'), lazy=True)
 
@@ -266,7 +270,9 @@ class Sale(BaseModel, TenantScopedMixin):
             'sgkCoverage': float(self.sgk_coverage) if self.sgk_coverage else 0.0,
             'patientPayment': float(self.patient_payment) if self.patient_payment else None,
             'reportStatus': self.report_status,
-            'notes': self.notes
+            'notes': self.notes,
+            'kdvRate': float(self.kdv_rate) if self.kdv_rate else 20.0,
+            'kdvAmount': float(self.kdv_amount) if self.kdv_amount else 0.0
         }
         sale_dict.update(base_dict)
         return sale_dict

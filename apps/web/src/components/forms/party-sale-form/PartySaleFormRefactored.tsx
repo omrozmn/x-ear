@@ -434,9 +434,11 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             <Input
               type="number"
               min="1"
-              value={quantity}
+              value={quantity === 0 ? '' : quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              placeholder="1"
               required
+              fullWidth
               data-testid="sale-form-quantity"
             />
           </div>
@@ -449,9 +451,11 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               type="number"
               min="0"
               step="0.01"
-              value={unitPrice}
+              value={unitPrice === 0 ? '' : unitPrice}
               onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
               required
+              fullWidth
               data-testid="sale-form-unit-price"
             />
           </div>
@@ -466,6 +470,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             <Select
               value={discountType}
               onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
+              fullWidth
               options={[
                 { value: 'amount', label: 'Tutar (₺)' },
                 { value: 'percentage', label: 'Yüzde (%)' }
@@ -482,9 +487,10 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               min="0"
               step={discountType === 'percentage' ? '1' : '0.01'}
               max={discountType === 'percentage' ? '100' : undefined}
-              value={discountInput}
+              value={discountInput === 0 ? '' : discountInput}
               onChange={(e) => setDiscountInput(parseFloat(e.target.value) || 0)}
-              placeholder={discountType === 'percentage' ? '%10' : '100.00'}
+              placeholder={discountType === 'percentage' ? '0' : '0.00'}
+              fullWidth
               data-testid="sale-form-discount-value"
             />
           </div>
@@ -500,6 +506,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               value={sgkSupportType}
               onChange={(e) => setSgkSupportType(e.target.value)}
               className="mb-1"
+              fullWidth
               options={sgkSupportOptions}
             />
             {sgkSupportType && sgkFallbackValues[sgkSupportType] > 0 && (
@@ -596,6 +603,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               required
+              fullWidth
               options={[
                 { value: 'cash', label: 'Nakit' },
                 { value: 'credit_card', label: 'Kredi Kartı' },
@@ -614,6 +622,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               value={saleDate}
               onChange={(e) => setSaleDate(e.target.value)}
               required
+              fullWidth
             />
           </div>
         </div>
@@ -628,12 +637,14 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               type="number"
               min="0"
               step="0.01"
-              value={collectedAmount}
+              value={collectedAmount === 0 ? '' : collectedAmount}
               onChange={(e) => {
                 setCollectedAmount(parseFloat(e.target.value) || 0);
                 setIsCollectedAmountManuallySet(true);
               }}
+              placeholder="0.00"
               className="font-medium text-blue-800"
+              fullWidth
             />
           </div>
 
@@ -644,6 +655,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             <Select
               value={reportStatus}
               onChange={(e) => setReportStatus(e.target.value)}
+              fullWidth
               options={[
                 { value: 'no_report', label: 'Raporsuz Özel Satış' },
                 { value: 'report_pending', label: 'Rapor Beklemede' },

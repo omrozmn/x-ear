@@ -169,7 +169,8 @@ const Roles: React.FC = () => {
     };
 
     const roles = rolesResponse?.data?.roles || [];
-    const permissionGroups = permissionsResponse?.data?.data || []; // Array of PermissionGroup
+    // Backend returns ResponseEnvelope, Orval unwraps to {data: [...]}
+    const permissionGroups = Array.isArray(permissionsResponse?.data) ? permissionsResponse.data : [];
 
     // Filter roles by search
     const filteredRoles = roles.filter(role =>

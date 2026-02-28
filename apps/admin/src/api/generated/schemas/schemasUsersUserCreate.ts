@@ -5,12 +5,11 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { SchemasUsersUserCreateUsername } from './schemasUsersUserCreateUsername';
 import type { SchemasUsersUserCreateFirstName } from './schemasUsersUserCreateFirstName';
 import type { SchemasUsersUserCreateLastName } from './schemasUsersUserCreateLastName';
 import type { SchemasUsersUserCreatePhone } from './schemasUsersUserCreatePhone';
 import type { SchemasUsersUserCreateRole } from './schemasUsersUserCreateRole';
-import type { SchemasUsersUserCreateTenantId } from './schemasUsersUserCreateTenantId';
-import type { SchemasUsersUserCreateUsername } from './schemasUsersUserCreateUsername';
 import type { SchemasUsersUserCreateIsActive } from './schemasUsersUserCreateIsActive';
 
 /**
@@ -19,11 +18,11 @@ import type { SchemasUsersUserCreateIsActive } from './schemasUsersUserCreateIsA
 export interface SchemasUsersUserCreate {
   email: string;
   password: string;
+  username?: SchemasUsersUserCreateUsername;
   firstName?: SchemasUsersUserCreateFirstName;
   lastName?: SchemasUsersUserCreateLastName;
   phone?: SchemasUsersUserCreatePhone;
   role?: SchemasUsersUserCreateRole;
-  tenantId?: SchemasUsersUserCreateTenantId;
-  username?: SchemasUsersUserCreateUsername;
+  tenantId: string;
   isActive?: SchemasUsersUserCreateIsActive;
 }

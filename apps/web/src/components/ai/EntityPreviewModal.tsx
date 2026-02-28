@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, Box, FileText, ChevronRight } from 'lucide-react';
+import { X, User, Box, FileText, ChevronRight, Store, Shield } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 import { EntityItem } from '../../api/generated/schemas';
 
@@ -15,7 +15,11 @@ export const EntityPreviewModal: React.FC<EntityPreviewModalProps> = ({ entity, 
             <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                        {entity.type === 'patient' ? <User size={16} /> : <Box size={16} />}
+                        {entity.type === 'patient' && <User size={16} />}
+                        {entity.type === 'device' && <Box size={16} />}
+                        {entity.type === 'invoice' && <FileText size={16} />}
+                        {entity.type === 'supplier' && <Store size={16} />}
+                        {entity.type === 'user' && <Shield size={16} />}
                     </div>
                     <h3 className="font-semibold text-gray-900">{entity.label}</h3>
                 </div>

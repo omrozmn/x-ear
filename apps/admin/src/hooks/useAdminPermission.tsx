@@ -26,7 +26,8 @@ export function useAdminPermissions() {
         queryKey: ['admin-my-permissions'],
         queryFn: async () => {
             const response = await adminApiInstance.get('/api/admin/my-permissions');
-            return response.data?.data || response.data;
+            // Backend returns ResponseEnvelope, already unwrapped by Orval
+            return response.data;
         },
         enabled: isAuthenticated,
         staleTime: 5 * 60 * 1000, // 5 dakika cache

@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-02-26T10:11:48.773Z
+ * Generated: 2026-02-28T21:09:26.623Z
  */
 
 // ACTIVITY_LOGS
@@ -814,6 +814,9 @@ export {
   useUpdateTenantUser,
   useGetTenantCompany,
   useUpdateTenantCompany,
+  useUploadCompanyAsset,
+  useDeleteCompanyAsset,
+  useGetCompanyAsset,
 } from './tenant-users/tenant-users';
 
 // TIMELINE

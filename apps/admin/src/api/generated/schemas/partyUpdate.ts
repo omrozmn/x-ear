@@ -9,6 +9,7 @@ import type { PartyUpdateFirstName } from './partyUpdateFirstName';
 import type { PartyUpdateLastName } from './partyUpdateLastName';
 import type { PartyUpdatePhone } from './partyUpdatePhone';
 import type { PartyUpdateEmail } from './partyUpdateEmail';
+import type { PartyUpdateTcNumber } from './partyUpdateTcNumber';
 import type { PartyUpdateStatus } from './partyUpdateStatus';
 import type { PartyUpdateSegment } from './partyUpdateSegment';
 import type { PartyUpdateAcquisitionType } from './partyUpdateAcquisitionType';
@@ -24,6 +25,7 @@ export interface PartyUpdate {
   lastName?: PartyUpdateLastName;
   phone?: PartyUpdatePhone;
   email?: PartyUpdateEmail;
+  tcNumber?: PartyUpdateTcNumber;
   status?: PartyUpdateStatus;
   segment?: PartyUpdateSegment;
   acquisitionType?: PartyUpdateAcquisitionType;

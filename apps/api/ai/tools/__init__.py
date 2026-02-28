@@ -39,6 +39,9 @@ class ToolCategory(str, Enum):
     REPORT = "report"       # Report generation
     NOTIFICATION = "notification"  # Notifications
     ADMIN = "admin"         # Administrative operations
+    USER_DATA = "user_data" # User data management
+    ACTION = "action"       # General actions
+    INTEGRATION = "integration"  # External integrations
 
 
 @dataclass

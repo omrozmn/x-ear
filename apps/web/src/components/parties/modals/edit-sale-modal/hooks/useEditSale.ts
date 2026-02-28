@@ -19,18 +19,25 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     productName: '',
     brand: '',
     model: '',
+    category: '',
+    barcode: '',
     serialNumber: '',
+    serialNumberLeft: '',
+    serialNumberRight: '',
     listPrice: 0,
     salePrice: 0,
     discountAmount: 0,
     sgkCoverage: 0,
+    downPayment: 0,
     notes: '',
     saleDate: '',
     deviceId: '',
     ear: 'both',
     warrantyPeriod: 24,
     fittingDate: '',
-    deliveryDate: ''
+    deliveryDate: '',
+    deliveryStatus: 'pending',
+    reportStatus: 'raporsuz'
   });
 
   // UI state
@@ -150,27 +157,39 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       const s = sale as unknown as Record<string, unknown>;
       const extendedSale = sale as unknown as ExtendedSaleRead;
 
+      // Get device data from devices array (primary source)
+      const firstDevice = extendedSale.devices?.[0];
+      
       setFormData(prev => ({
         ...prev,
-        productName: productDetails?.name || (s.productName as string) || (s.product_name as string) || sale.productId || '',
-        brand: productDetails?.brand || (s.brand as string) || (s.productBrand as string) || (s.product_brand as string) || '',
-        model: productDetails?.model || (s.model as string) || (s.productModel as string) || (s.product_model as string) || '',
-        serialNumber: productDetails?.availableSerials?.[0] || (s.serialNumber as string) || (s.serial_number as string) || '',
-        listPrice: extendedSale.listPriceTotal || (s.listPrice as number) || (s.list_price as number) || 0,
-        salePrice: extendedSale.totalAmount || (s.amount as number) || 0,
+        // Use device data from devices array first, then fallback to product details
+        productName: firstDevice?.name || productDetails?.name || (s.productName as string) || (s.product_name as string) || sale.productId || '',
+        brand: firstDevice?.brand || productDetails?.brand || (s.brand as string) || (s.productBrand as string) || (s.product_brand as string) || '',
+        model: firstDevice?.model || productDetails?.model || (s.model as string) || (s.productModel as string) || (s.product_model as string) || '',
+        category: firstDevice?.category || productDetails?.category || (s.category as string) || '',
+        barcode: firstDevice?.barcode || productDetails?.barcode || (s.barcode as string) || '',
+        serialNumber: firstDevice?.serialNumber || firstDevice?.serialNumberLeft || firstDevice?.serialNumberRight || productDetails?.availableSerials?.[0] || (s.serialNumber as string) || (s.serial_number as string) || '',
+        serialNumberLeft: firstDevice?.serialNumberLeft || (s.serialNumberLeft as string) || (s.serial_number_left as string) || '',
+        serialNumberRight: firstDevice?.serialNumberRight || (s.serialNumberRight as string) || (s.serial_number_right as string) || '',
+        listPrice: firstDevice?.listPrice || extendedSale.listPriceTotal || (s.listPrice as number) || (s.list_price as number) || 0,
+        salePrice: firstDevice?.salePrice || extendedSale.totalAmount || (s.amount as number) || 0,
         discountAmount: extendedSale.discountAmount || (s.discount_amount as number) || 0,
-        sgkCoverage: extendedSale.sgkCoverage || (s.sgk_coverage as number) || 0,
+        sgkCoverage: firstDevice?.sgkCoverageAmount || extendedSale.sgkCoverage || (s.sgk_coverage as number) || 0,
+        downPayment: extendedSale.paidAmount || (s.paid_amount as number) || 0,
         notes: sale.notes || '',
         saleDate: sale.saleDate ? sale.saleDate.split('T')[0] : ((s.date as string)?.split('T')[0] || ''),
-        deviceId: sale.productId || '',
-        ear: (s.ear as 'left' | 'right' | 'both') || 'both', // default
-        // Preserve existing values if they were manually set? 
-        // For now, simpler to just re-sync, assuming this only runs on load.
+        deviceId: firstDevice?.id || sale.productId || '',
+        ear: (firstDevice?.ear as 'left' | 'right' | 'both') || (s.ear as 'left' | 'right' | 'both') || 'both',
+        warrantyPeriod: prev.warrantyPeriod, // Keep existing
+        fittingDate: prev.fittingDate, // Keep existing
+        deliveryDate: prev.deliveryDate, // Keep existing
+        deliveryStatus: firstDevice?.deliveryStatus || (s.delivery_status as string) || 'pending',
+        reportStatus: firstDevice?.reportStatus || (s.report_status as string) || 'raporsuz'
       }));
 
       setState(prev => ({
         ...prev,
-        saleStatus: sale.status || 'PENDING',
+        saleStatus: sale.status || 'pending',
         paymentMethod: sale.paymentMethod || 'cash',
         saleType: (productDetails?.category as string) === 'hearing_aid' ? 'device' : 'service'
       }));
@@ -247,18 +266,25 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       productName: '',
       brand: '',
       model: '',
+      category: '',
+      barcode: '',
       serialNumber: '',
+      serialNumberLeft: '',
+      serialNumberRight: '',
       listPrice: 0,
       salePrice: 0,
       discountAmount: 0,
       sgkCoverage: 0,
+      downPayment: 0,
       notes: '',
       saleDate: '',
       deviceId: '',
       ear: 'both',
       warrantyPeriod: 24,
       fittingDate: '',
-      deliveryDate: ''
+      deliveryDate: '',
+      deliveryStatus: 'pending',
+      reportStatus: 'raporsuz'
     });
 
     setState({

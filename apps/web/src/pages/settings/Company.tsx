@@ -14,6 +14,7 @@ import { Button, Input, Textarea } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 import { companyService, CompanyInfo } from '../../services/company.service';
 import { useAuthStore } from '../../stores/authStore';
+import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
 
 interface AssetUploadProps {
   type: 'logo' | 'stamp' | 'signature';
@@ -240,13 +241,15 @@ export default function CompanySettings() {
 
     try {
       setSaving(true);
+      console.log('💾 Saving company info:', formData);
       const updated = await companyService.updateCompanyInfo(formData);
+      console.log('✅ Company info saved:', updated);
       // setCompanyData(updated);
       setFormData(updated.companyInfo || {});
       setHasChanges(false);
       toast.success('Firma bilgileri kaydedildi');
     } catch (error: unknown) {
-      console.error('Failed to save company info:', error);
+      console.error('❌ Failed to save company info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Firma bilgileri kaydedilemedi';
       toast.error(errorMessage);
     } finally {
@@ -628,6 +631,17 @@ export default function CompanySettings() {
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Language Settings */}
+      <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Dil Ayarları
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Uygulama dilini değiştirin
+        </p>
+        <LanguageSwitcher className="!justify-start" />
       </div>
     </div>
   );

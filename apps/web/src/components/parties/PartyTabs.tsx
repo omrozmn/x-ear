@@ -73,7 +73,7 @@ const TabsTrigger: React.FC<{
       disabled={disabled}
       data-testid={dataTestId}
       className={`
-        group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
+        group inline-flex items-center py-6 px-1 border-b-2 font-medium text-sm whitespace-nowrap
         ${isActive
           ? 'border-blue-500 text-blue-600'
           : disabled

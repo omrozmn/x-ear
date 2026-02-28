@@ -46,6 +46,7 @@ export interface InvoiceCreate {
   status?: InvoiceStatus;
   /** Notes */
   notes?: InvoiceCreateNotes;
+  tenantId?: string;
   partyId?: InvoiceCreatePartyId;
   saleId?: InvoiceCreateSaleId;
   /** Invoice items */

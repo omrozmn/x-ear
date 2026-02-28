@@ -131,15 +131,7 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-2">
-                          <div className="font-medium text-gray-900">{product.name}</div>
-                          {enableFuzzySearch && (
-                            <div className={`flex items-center space-x-1 ${getRelevanceColor(result.relevance)}`}>
-                              {getRelevanceIcon(result.relevance)}
-                              <span className="text-xs">({Math.round(result.score * 100)}%)</span>
-                            </div>
-                          )}
-                        </div>
+                        <div className="font-medium text-gray-900">{product.name}</div>
                         <div className="text-sm text-gray-600">
                           {product.brand} - {product.model}
                         </div>
@@ -153,6 +145,7 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
                             </Badge>
                           )}
                           <span className="text-xs text-gray-500">{product.category}</span>
+                          <span className="text-xs text-blue-600 font-medium">KDV: %{product.vatRate}</span>
                         </div>
                       </div>
                       <div className="text-right">

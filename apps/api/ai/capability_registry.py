@@ -105,6 +105,30 @@ PARTY_MANAGEMENT_CAPABILITIES = [
             "Requires explicit user confirmation for sensitive fields"
         ]
     ),
+    Capability(
+        name="Get Comprehensive Party Summary",
+        description="Get a complete summary of a patient including info, timeline, and recent activities",
+        category="Party Management",
+        example_phrases=[
+            "Ahmet Yılmaz'ın geçmişini özetle",
+            "Give me a full summary for Jane Smith",
+            "Hasta özetini getir"
+        ],
+        required_permissions=["parties.view", "timeline.view"],
+        tool_operations=["get_party_comprehensive_summary"],
+        slots=[
+            SlotConfig(
+                name="party_id",
+                prompt="Hangi hastanın geçmişini istersiniz?",
+                ui_type="entity_search",
+                source_endpoint="/parties/search",
+                validation_rules={"required": True}
+            )
+        ],
+        limitations=[
+            "Cannot access parties from other tenants"
+        ]
+    ),
 ]
 
 SALES_OPERATIONS_CAPABILITIES = [
@@ -142,6 +166,30 @@ SALES_OPERATIONS_CAPABILITIES = [
             "Requires explicit user confirmation",
             "Requires valid party ID",
             "Cannot create sales for parties from other tenants"
+        ]
+    ),
+    Capability(
+        name="Generate and Send E-Invoice",
+        description="Generate an e-invoice for a sale and send it to GIB",
+        category="Sales Operations",
+        example_phrases=[
+            "Ahmet Beyin satışının e-faturasını kes",
+            "Faturayı GİB'e yolla"
+        ],
+        required_permissions=["invoices.write"],
+        tool_operations=["generate_and_send_e_invoice"],
+        limitations=[
+            "Cannot modify financial records in Phase A (read-only)",
+            "Requires explicit user confirmation",
+            "Requires valid invoice ID"
+        ],
+        slots=[
+            SlotConfig(
+                name="invoice_id",
+                prompt="Hangi faturayı göndermek istiyorsunuz? (Fatura No)",
+                ui_type="text",
+                validation_rules={"required": True}
+            )
         ]
     ),
 ]
@@ -250,6 +298,27 @@ APPOINTMENT_CAPABILITIES = [
         ]
     ),
     Capability(
+        name="Check Appointment Availability",
+        description="Check available time slots for new appointments",
+        category="Appointments",
+        example_phrases=[
+            "Yarın öğleden sonra boş yer var mı?",
+            "When is the next available slot?",
+            "Boş saatleri göster"
+        ],
+        required_permissions=["appointments.view"],
+        tool_operations=["check_appointment_availability"],
+        slots=[
+            SlotConfig(
+                name="date",
+                prompt="Hangi tarih için boş saatlere bakalım?",
+                ui_type="date",
+                validation_rules={"required": False}
+            )
+        ],
+        limitations=[]
+    ),
+    Capability(
         name="Schedule Appointment",
         description="Create a new appointment for a party",
         category="Appointments",
@@ -285,6 +354,57 @@ APPOINTMENT_CAPABILITIES = [
             "Requires valid party ID and time slot",
             "Cannot schedule in the past",
             "Cannot double-book time slots",
+            "Requires explicit user confirmation"
+        ]
+    ),
+    Capability(
+        name="Reschedule Appointment",
+        description="Change the date and time of an existing appointment",
+        category="Appointments",
+        example_phrases=[
+            "Randevuyu yarına erteleyelim",
+            "Reschedule this appointment",
+            "Randevuyu kaydır"
+        ],
+        required_permissions=["appointments.edit"],
+        tool_operations=["reschedule_appointment"],
+        slots=[
+            SlotConfig(
+                name="appointment_id",
+                prompt="Hangi randevuyu değiştirmek istiyorsunuz?",
+                ui_type="text",
+                validation_rules={"required": True}
+            ),
+            SlotConfig(
+                name="new_date",
+                prompt="Yeni tarih ne olsun?",
+                ui_type="date",
+                validation_rules={"required": True, "future_only": True}
+            )
+        ],
+        limitations=[
+            "Requires explicit user confirmation"
+        ]
+    ),
+    Capability(
+        name="Cancel Appointment",
+        description="Cancel an existing appointment",
+        category="Appointments",
+        example_phrases=[
+            "Randevuyu iptal et",
+            "Cancel my appointment"
+        ],
+        required_permissions=["appointments.delete"],
+        tool_operations=["cancel_appointment"],
+        slots=[
+            SlotConfig(
+                name="appointment_id",
+                prompt="Hangi randevuyu iptal etmek istiyorsunuz?",
+                ui_type="text",
+                validation_rules={"required": True}
+            )
+        ],
+        limitations=[
             "Requires explicit user confirmation"
         ]
     ),
@@ -412,6 +532,125 @@ DOCUMENT_MANAGEMENT_CAPABILITIES = [
     ),
 ]
 
+INVOICE_CAPABILITIES = [
+    Capability(
+        name="Generate & Send E-Invoice",
+        description="Generate and send an e-invoice to GIB (Revenue Administration)",
+        category="Finance",
+        example_phrases=[
+            "E-fatura gönder",
+            "Faturayı GIB'e gönder",
+            "Send e-invoice"
+        ],
+        required_permissions=["invoices.write"],
+        tool_operations=["generate_and_send_e_invoice"],
+        slots=[
+            SlotConfig(
+                name="invoice_id",
+                prompt="Hangi faturayı göndermek istiyorsunuz?",
+                ui_type="text",
+                validation_rules={"required": True}
+            )
+        ],
+        limitations=[
+            "Requires valid invoice ID",
+            "Requires explicit user confirmation"
+        ]
+    ),
+]
+
+INVENTORY_ALERT_CAPABILITIES = [
+    Capability(
+        name="Low Stock Alerts",
+        description="Check for devices and inventory items with critically low stock levels",
+        category="Device Management",
+        example_phrases=[
+            "Stok uyarısı var mı?",
+            "Azalan ürünleri göster",
+            "Low stock alerts"
+        ],
+        required_permissions=["inventory.view"],
+        tool_operations=["get_low_stock_alerts"],
+        slots=[],
+        limitations=[]
+    ),
+]
+
+FINANCE_AND_CASH_CAPABILITIES = [
+    Capability(
+        name="View Daily Cash Summary",
+        description="Get the unified cash summary and KPIs for the day/month",
+        category="Finance",
+        example_phrases=[
+            "Bugünkü kasa durumu nedir?",
+            "Nakit ve kredi kartı özetini söyle",
+            "Şu an kasada ne kadar var?"
+        ],
+        required_permissions=["cash_records.view", "dashboard.read"],
+        tool_operations=["get_daily_cash_summary"],
+        limitations=[
+            "Only available for users with finance/dashboard permissions"
+        ],
+        slots=[
+            SlotConfig(
+                name="period",
+                prompt="Hangi dönemin özetini istersiniz? (today, week, month)",
+                ui_type="enum",
+                enum_options=["today", "week", "month", "year"],
+                validation_rules={"required": False}
+            )
+        ]
+    ),
+]
+
+SGK_CAPABILITIES = [
+    Capability(
+        name="Query SGK E-Receipt",
+        description="Check if a patient has a valid SGK e-receipt",
+        category="SGK Transactions",
+        example_phrases=[
+            "Bu hastanın e-reçetesi var mı?",
+            "Check e-receipt from SGK",
+            "TC ile reçete sorgula"
+        ],
+        required_permissions=["sgk.view"],
+        tool_operations=["query_sgk_e_receipt"],
+        limitations=[
+            "Requires valid TC Identity Number"
+        ],
+        slots=[
+            SlotConfig(
+                name="tc_number",
+                prompt="Hastanın TC Kimlik Numarası nedir?",
+                ui_type="text",
+                validation_rules={"required": True}
+            )
+        ]
+    ),
+    Capability(
+        name="Query SGK Patient Rights",
+        description="Check if a patient is eligible for SGK coverage for hearing aids",
+        category="SGK Transactions",
+        example_phrases=[
+            "SGK müstahaklık sorgusu yap",
+            "Cihaz alma hakkı var mı?"
+        ],
+        required_permissions=["sgk.view"],
+        tool_operations=["query_sgk_patient_rights"],
+        limitations=[
+            "Requires valid TC Identity Number"
+        ],
+        slots=[
+            SlotConfig(
+                name="tc_number",
+                prompt="Hastanın TC Kimlik Numarası nedir?",
+                ui_type="text",
+                validation_rules={"required": True}
+            )
+        ]
+    ),
+]
+
 
 # =============================================================================
 # Registry Functions
@@ -431,7 +670,11 @@ def get_all_capabilities() -> List[Capability]:
         APPOINTMENT_CAPABILITIES +
         REPORTING_CAPABILITIES +
         CONFIG_AND_ADMIN_CAPABILITIES +
-        DOCUMENT_MANAGEMENT_CAPABILITIES
+        DOCUMENT_MANAGEMENT_CAPABILITIES +
+        INVOICE_CAPABILITIES +
+        INVENTORY_ALERT_CAPABILITIES +
+        FINANCE_AND_CASH_CAPABILITIES +
+        SGK_CAPABILITIES
     )
 
 

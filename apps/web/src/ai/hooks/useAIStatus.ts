@@ -209,7 +209,7 @@ export function useAIKillSwitchActive(): boolean {
  */
 export function useAIQuotaExceeded(): boolean {
   const { data } = useAIStatus();
-  return data?.usage.anyQuotaExceeded ?? false;
+  return data?.usage?.anyQuotaExceeded ?? false;
 }
 
 // =============================================================================

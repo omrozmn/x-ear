@@ -7,6 +7,6 @@
  */
 
 /**
- * URL slug for the plan
+ * Plan slug (auto-generated if not provided)
  */
 export type PlanCreateSlug = string | null;

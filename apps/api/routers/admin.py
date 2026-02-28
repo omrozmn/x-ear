@@ -267,7 +267,9 @@ def impersonate_tenant(
                 'role': 'TENANT_ADMIN',
                 'user_type': 'impersonated',
                 'tenant_id': request_data.tenant_id,
-                'original_admin_id': admin_id
+                'original_admin_id': admin_id,
+                'is_impersonating_tenant': True,  # CRITICAL: Flag for tenant impersonation
+                'effective_tenant_id': request_data.tenant_id  # Explicit tenant context
             }
         )
         

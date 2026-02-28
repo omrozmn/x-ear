@@ -21,9 +21,9 @@ import {
 } from '@/api/client/parties.client';
 import { listAdminPartySales } from '@/api/client/parties.client';
 import { createSales, updateSale } from '@/api/client/sales.client';
-import { listPartyTimeline } from '@/api/client/parties.client';
+import { listPartyTimeline } from '@/api/client/timeline.client';
 import { listSgkDocuments as listPartySgkDocuments } from '@/api/client/sgk.client';
-import { listPatientDocuments as listPartyDocuments } from '@/api/client/parties.client';
+import { listPatientDocuments as listPartyDocuments } from '@/api/client/documents.client';
 // import {
 //   listHearingTests as listPartyHearingTests
 // } from '@/api/client/parties.client'; // Endpoint removed/renamed in backend

@@ -73,7 +73,19 @@ function App() {
                 <AuthProvider>
                   <RouterProvider router={router} />
                   <PhoneVerificationModal />
-                  <Toaster position="top-right" data-testid="toast-notifications" />
+                  <Toaster 
+                    position="top-right" 
+                    data-testid="toast-notifications"
+                    containerStyle={{
+                      zIndex: 99999,
+                    }}
+                    toastOptions={{
+                      style: {
+                        zIndex: 99999,
+                      },
+                      className: 'z-[99999]',
+                    }}
+                  />
                   <ReactQueryDevtools initialIsOpen={false} />
                 </AuthProvider>
               </ThemeProvider>

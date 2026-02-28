@@ -402,6 +402,7 @@ var Sidebar = ({
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
         "div",
         {
+          "data-testid": `sidebar-menu-${item.id}`,
           className: `
             flex items-center px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors
             ${level > 0 ? "ml-6" : ""}
@@ -415,14 +416,14 @@ var Sidebar = ({
             }
           },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center flex-1 min-w-0", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex-shrink-0", children: item.icon }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center flex-1 min-w-0", "data-testid": `sidebar-menu-item-${item.id}`, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex-shrink-0", "data-testid": `sidebar-icon-${item.id}`, children: item.icon }),
               !collapsed && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ml-3 truncate", children: item.label }),
-                item.badge && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200", children: item.badge })
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ml-3 truncate", "data-testid": `sidebar-label-${item.id}`, children: item.label }),
+                item.badge && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200", "data-testid": `sidebar-badge-${item.id}`, children: item.badge })
               ] })
             ] }),
-            hasChildren && !collapsed && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex-shrink-0 ml-2", children: isExpanded ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_lucide_react2.ChevronDown, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_lucide_react2.ChevronRight, { className: "w-4 h-4" }) })
+            hasChildren && !collapsed && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex-shrink-0 ml-2", "data-testid": `sidebar-expand-${item.id}`, children: isExpanded ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_lucide_react2.ChevronDown, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_lucide_react2.ChevronRight, { className: "w-4 h-4" }) })
           ]
         }
       ),
@@ -440,6 +441,7 @@ var Sidebar = ({
     /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
       "div",
       {
+        "data-testid": "sidebar-container",
         className: `
           fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out
           ${collapsed ? "w-16" : "w-64"}
@@ -448,7 +450,7 @@ var Sidebar = ({
           ${className}
         `,
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700", "data-testid": "sidebar-header", children: [
             !collapsed && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex-shrink-0", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-white font-bold text-lg", children: "X" }) }) }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ml-2 text-xl font-semibold text-gray-900 dark:text-white", children: "X-Ear" })
@@ -458,6 +460,7 @@ var Sidebar = ({
               {
                 onClick: onClose,
                 className: "p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden",
+                "data-testid": "sidebar-close-button",
                 children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_lucide_react2.X, { className: "w-5 h-5" })
               }
             ),
@@ -466,6 +469,7 @@ var Sidebar = ({
               {
                 onClick: toggleCollapsed,
                 className: "hidden lg:block p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700",
+                "data-testid": "sidebar-collapse-button",
                 children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_lucide_react2.ChevronRight, { className: `w-4 h-4 transition-transform ${collapsed ? "" : "rotate-180"}` })
               }
             )
@@ -1389,13 +1393,11 @@ var Select = (0, import_react7.forwardRef)(({
   ...props
 }, ref) => {
   const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
-  const baseClasses = "block px-3 py-2 pr-9 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none";
+  const baseClasses = "block w-full px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none";
   const stateClasses = error ? "border-red-300 dark:border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500";
-  const widthClasses = fullWidth ? "w-full" : "";
   const selectClasses = [
     baseClasses,
     stateClasses,
-    widthClasses,
     className
   ].filter(Boolean).join(" ");
   return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: fullWidth ? "w-full" : "", children: [
@@ -1429,7 +1431,7 @@ var Select = (0, import_react7.forwardRef)(({
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none", children: error ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react8.AlertCircle, { className: "w-4 h-4 text-red-500" }) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react8.ChevronDown, { className: "w-4 h-4 text-gray-400" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none", children: error ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react8.AlertCircle, { className: "w-4 h-4 text-red-500" }) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react8.ChevronDown, { className: "w-4 h-4 text-gray-400" }) })
     ] }),
     error && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "mt-1 text-sm text-red-600", children: error }),
     helperText && !error && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "mt-1 text-sm text-gray-500", children: helperText })

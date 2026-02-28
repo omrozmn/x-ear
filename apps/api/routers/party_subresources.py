@@ -240,7 +240,10 @@ def get_party_sales(
             sale_dict = SaleRead.model_validate(sale).model_dump(by_alias=True)
             
             # === Flask parity: Get device assignments (new method first, then legacy) ===
-            assignments = db.query(DeviceAssignment).filter_by(sale_id=sale.id).all()
+            from sqlalchemy.orm import joinedload
+            assignments = db.query(DeviceAssignment).options(
+                joinedload(DeviceAssignment.inventory)
+            ).filter_by(sale_id=sale.id).all()
             
             # Legacy fallback if no assignments found by sale_id
             if not assignments:
@@ -255,10 +258,8 @@ def get_party_sales(
             # Add devices from assignments
             devices = []
             for assignment in assignments:
-                # Get inventory item details if available
-                inventory_item = None
-                if assignment.inventory_id:
-                    inventory_item = db.get(InventoryItem, assignment.inventory_id)
+                # Get inventory item from relationship (already loaded via joinedload)
+                inventory_item = assignment.inventory if hasattr(assignment, 'inventory') else None
                 
                 # Build device info with inventory details
                 if inventory_item:
@@ -275,10 +276,13 @@ def get_party_sales(
                 
                 device_info = {
                     'id': assignment.inventory_id or assignment.device_id,
+                    'partyId': party_id,
                     'name': device_name,
                     'brand': brand,
                     'model': model,
-                    'serialNumber': assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right,
+                    'serialNumber': assignment.serial_number,
+                    'serialNumberLeft': assignment.serial_number_left,
+                    'serialNumberRight': assignment.serial_number_right,
                     'barcode': barcode,
                     'ear': assignment.ear,
                     'listPrice': float(assignment.list_price) if assignment.list_price else None,

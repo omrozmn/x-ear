@@ -23,13 +23,16 @@ import { AIStatusIndicator } from '../AIStatusIndicator';
 import { PhaseABanner } from '../PhaseABanner';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { ChatInput } from './ChatInput';
-import { Search, Zap, User, Box, Check, X, Calendar, Edit3, Hash, Loader2 } from 'lucide-react';
+import { Search, Zap, User, Box, Check, X, Calendar, Edit3, Hash, Loader2, Clock } from 'lucide-react';
 import { useAutocompleteApiAiComposerAutocompleteGet } from '../../../api/generated';
 import { EntityItem } from '../../../api/generated/schemas';
 import { useChatStore } from '../../stores/chatStore';
 import { useMobile } from '../../../hooks/useMobile';
+import { useAIRuntimeStore } from '../../stores/aiRuntimeStore';
 import { QuickActions } from './QuickActions';
 import { ActionProgress } from './ActionProgress';
+import { ActionResultCard } from './ActionResultCard';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 
 // =============================================================================
 // Types
@@ -139,15 +142,19 @@ const RobotIcon = () => (
 /**
  * Typing indicator component
  */
-function TypingIndicator(): React.ReactElement {
+function TypingIndicator({ message }: { message?: string }): React.ReactElement {
   return (
-    <div className="flex items-center gap-2 px-4 py-2 text-gray-500 text-sm">
-      <div className="flex gap-1">
-        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+    <div className="flex flex-col gap-1 px-4 py-3 animate-in fade-in transition-all">
+      <div className="flex items-center gap-3 text-gray-500 text-xs font-medium italic">
+        <div className="flex gap-1 items-center">
+          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0ms]" />
+          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:150ms]" />
+          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:300ms]" />
+        </div>
+        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          {message || 'İşleminiz hazırlanıyor...'}
+        </span>
       </div>
-      <span>AI yazıyor...</span>
     </div>
   );
 }
@@ -203,9 +210,58 @@ function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
   );
 }
 
-// =============================================================================
-// Main Component
-// =============================================================================
+
+/**
+ * Helper component for entity search in chat flow
+ */
+function EntitySearchSlot({ currentSlot, onSelect }: { currentSlot: any, onSelect: (id: string, label: string) => void }) {
+  const [query, setQuery] = React.useState('');
+  const slotEntityType = currentSlot?.sourceEndpoint?.includes('inventory') ? 'device' : 'patient';
+  const { data, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(
+    { q: query, context_entity_type: slotEntityType },
+    { query: { enabled: query.length > 1 } }
+  );
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          className="w-full pl-8 pr-4 py-1.5 bg-white border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Ara..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoFocus
+        />
+      </div>
+
+      {isLoading && (
+        <div className="flex items-center gap-2 text-[10px] text-gray-400">
+          <Loader2 className="w-3 h-3 animate-spin" /> Arıyor...
+        </div>
+      )}
+
+      {data?.entities && data.entities.length > 0 && (
+        <div className="bg-white border rounded shadow-sm max-h-32 overflow-y-auto divide-y divide-gray-50">
+          {data.entities.map((e: EntityItem) => (
+            <button
+              key={e.id}
+              onClick={() => onSelect(e.id, e.label)}
+              className="w-full flex items-center gap-2 p-1.5 hover:bg-blue-50 transition-colors text-left"
+            >
+              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
+                {e.type === 'patient' ? <User size={12} /> : <Box size={12} />}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-gray-900 truncate">{e.label}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * AIChatWidget Component
@@ -236,24 +292,64 @@ export function AIChatWidget({
   onClose,
 }: AIChatWidgetProps): React.ReactElement | null {
   // State
-  const { isVisible: isOpen, setVisible: setIsOpen } = useChatStore();
+  const {
+    isVisible: isOpen,
+    setVisible: setIsOpen,
+    pendingPrompt,
+    pendingContext,
+    setPendingPrompt
+  } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Hooks
   const { data: status, isLoading: isStatusLoading } = useAIStatus();
+
+  const {
+    mode, selectedAction: currentAction, currentSlot, slots,
+    updateSlot, nextSlot, reset, executionResult, executionStatus,
+    setContext, context, query, setPlan, selectAction
+  } = useComposerStore();
+  const isExecuting = useAIRuntimeStore((state) => state.isExecuting);
+  const executionProgress = useAIRuntimeStore((state) => state.executionProgress);
+
+
   const {
     messages,
     sendMessage,
     isTyping,
     isLoading: isSending,
-  } = useAIChat();
-
-  const {
-    mode, selectedAction: currentAction, currentSlot, slots,
-    updateSlot, nextSlot, reset, executionResult, executionStatus,
-    setContext, context
-  } = useComposerStore();
+    clearHistory,
+  } = useAIChat({
+    onSuccess: (response) => {
+      // If there's an action plan, set it in the composer
+      if (response.actionPlan) {
+        setPlan(response.actionPlan);
+      }
+      // If matchedCapability is returned, auto-trigger slot-filling/execution UI
+      if (response.matchedCapability) {
+        const cap = response.matchedCapability;
+        selectAction({
+          name: cap.name,
+          description: cap.description,
+          category: cap.category,
+          examplePhrases: [],
+          requiredPermissions: [],
+          toolOperations: [],
+          limitations: [],
+          slots: cap.slots.map(s => ({
+            name: s.name,
+            prompt: s.prompt,
+            uiType: s.uiType,
+            sourceEndpoint: s.sourceEndpoint || null,
+            enumOptions: s.enumOptions || null,
+            validationRules: s.validationRules || null,
+          })),
+        } as any);
+      }
+    }
+  });
 
   // Derived state
   const isAvailable = status?.available ?? false;
@@ -265,10 +361,10 @@ export function AIChatWidget({
   const getUnavailableReason = useCallback((): string | undefined => {
     if (!status) return undefined;
     if (!status.enabled) return 'AI devre dışı bırakılmış.';
-    if (status.killSwitch.globalActive) return 'AI geçici olarak durduruldu.';
-    if (status.killSwitch.tenantActive) return 'AI bu hesap için durduruldu.';
-    if (status.usage.anyQuotaExceeded) return 'Günlük AI limitinize ulaştınız.';
-    if (!status.model.available) return 'AI modeli şu anda kullanılamıyor.';
+    if (status.killSwitch?.globalActive) return 'AI geçici olarak durduruldu.';
+    if (status.killSwitch?.tenantActive) return 'AI bu hesap için durduruldu.';
+    if (status.usage?.anyQuotaExceeded) return 'Günlük AI limitinize ulaştınız.';
+    if (status.model && !status.model.available) return 'AI modeli şu anda kullanılamıyor.';
     return undefined;
   }, [status]);
 
@@ -297,6 +393,7 @@ export function AIChatWidget({
     }
   }, [messages, isTyping, isOpen]);
 
+
   // ==========================================================================
   // Event Handlers
   // ==========================================================================
@@ -313,6 +410,19 @@ export function AIChatWidget({
       onClose?.();
     }
   }, [isOpen, onOpen, onClose, setIsOpen]);
+
+  /**
+   * Reset conversation
+   */
+  const handleReset = useCallback(() => {
+    setShowResetConfirm(true);
+  }, []);
+
+  const confirmReset = useCallback(() => {
+    clearHistory();
+    reset(); // Also reset composer store
+    setShowResetConfirm(false);
+  }, [clearHistory, reset]);
 
   /**
    * Close chat window
@@ -334,6 +444,27 @@ export function AIChatWidget({
       console.error('[AIChatWidget] Send error:', error);
     }
   }, [sendMessage]);
+
+  // Handle Handoff from Spotlight (startWithCommand)
+  useEffect(() => {
+    if (isOpen && pendingPrompt && pendingPrompt.trim().length > 0) {
+      // Capture local copies and CLEAR IMMEDIATELY to prevent re-entry/infinite loop
+      const promptToHandle = pendingPrompt;
+      const contextToHandle = pendingContext;
+      setPendingPrompt(null, null);
+
+      // Set context first if provided
+      if (contextToHandle && contextToHandle.length > 0) {
+        setContext(contextToHandle);
+      }
+
+      // Small timeout to ensure chat is fully ready
+      const timer = setTimeout(() => {
+        handleSend(promptToHandle);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, pendingPrompt, pendingContext, handleSend, setContext, setPendingPrompt]);
 
   /**
    * Handle keyboard events for accessibility
@@ -359,21 +490,50 @@ export function AIChatWidget({
     nextSlot();
   };
 
-  // ==========================================================================
-  // Don't render if AI is disabled entirely
-  // ==========================================================================
-  if (!isStatusLoading && !isEnabled) {
-    return null;
-  }
+  // No longer returning null here to ensure the widget can respond to visibility changes
+  // Internal sub-components handle the disabled state UI
 
   // Mobile-specific classes override default positioning
   const containerClasses = isMobile
     ? 'fixed inset-0 z-[2000] flex flex-col bg-white'
     : `fixed ${positionClasses.window} w-96 h-[500px] max-h-[80vh] bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200`;
 
+  const getDynamicTypingMessage = () => {
+    // Priority 1: Real-time execution progress if available
+    if (isExecuting && executionProgress) {
+      if (executionProgress.overallStatus === 'running' && executionProgress.currentStep > 0) {
+        // If we have step statuses, find the current running one
+        const currentStepStatus = executionProgress.stepStatuses.find(
+          s => s.stepNumber === executionProgress.currentStep
+        );
+        if (currentStepStatus?.message) return currentStepStatus.message;
+        return `İşlem yürütülüyor (Adım ${executionProgress.currentStep}/${executionProgress.totalSteps})...`;
+      }
+      if (executionProgress.overallStatus === 'initializing') return 'İşlem hazırlanıyor...';
+    }
+
+    if (messages.length === 0) return 'Sistemle bağlantı kuruluyor...';
+
+    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() || '';
+
+    // Priority 2: Keyword based for initial request
+    if (lastUserMessage.includes('hasta') || lastUserMessage.includes('kayıt')) return 'Hasta kaydı hazırlanıyor...';
+    if (lastUserMessage.includes('cihaz') || lastUserMessage.includes('ata') || lastUserMessage.includes('teslim')) return 'Cihaz işlemi planlanıyor...';
+    if (lastUserMessage.includes('fatura')) return 'Fatura detayları hazırlanıyor...';
+    if (lastUserMessage.includes('randevu')) return 'Randevu takvimi kontrol ediliyor...';
+    if (lastUserMessage.includes('satış')) return 'Satış işlemi hazırlanıyor...';
+    if (lastUserMessage.includes('tahsilat') || lastUserMessage.includes('ödeme')) return 'Tahsilat işlemi hazırlanıyor...';
+    if (lastUserMessage.includes('stok') || lastUserMessage.includes('envanter')) return 'Stok bilgisi kontrol ediliyor...';
+
+    // Priority 3: Fallback for short follow-ups (ee, et, devam)
+    if (['ee', 'et', 'devam', 'yap', 'onay', 'onayla'].includes(lastUserMessage.trim())) return 'İşleme devam ediliyor...';
+
+    return 'Mesajınız inceleniyor...';
+  };
+
   return (
     <div
-      className={`fixed z-50 ${className}`}
+      className={`fixed z-[3000] ${className}`}
       onKeyDown={handleKeyDown}
     >
       {/* Floating Button (Hidden on Mobile when open) */}
@@ -420,16 +580,32 @@ export function AIChatWidget({
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
             <div className="flex items-center gap-2">
               <RobotIcon />
-              <span className="font-semibold text-gray-900">AI Asistan</span>
-              <AIStatusIndicator status={status} size="sm" />
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-900 leading-none">AI Asistan</span>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <AIStatusIndicator status={status} size="sm" />
+                  <span className="text-[10px] text-gray-500">Beta</span>
+                </div>
+              </div>
             </div>
-            <button data-allow-raw="true"
-              onClick={handleClose}
-              className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Chat'i kapat"
-            >
-              <CloseIcon />
-            </button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <button data-allow-raw="true"
+                  onClick={handleReset}
+                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all focus:outline-none focus:ring-1 focus:ring-red-200"
+                  title="Sohbeti Temizle"
+                >
+                  <Clock size={16} />
+                </button>
+              )}
+              <button data-allow-raw="true"
+                onClick={handleClose}
+                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Chat'i kapat"
+              >
+                <CloseIcon />
+              </button>
+            </div>
           </div>
 
           {/* Phase A Banner (12.8) */}
@@ -467,6 +643,11 @@ export function AIChatWidget({
                 message={message}
               />
             ))}
+
+            {/* Thinking Indicator */}
+            {isTyping && (
+              <TypingIndicator message={getDynamicTypingMessage()} />
+            )}
 
             {/* Conversational Slot Filling */}
             {isOpen && mode === 'slot_filling' && currentAction && currentSlot && (
@@ -586,6 +767,45 @@ export function AIChatWidget({
                       />
                     </div>
                   )}
+
+                  {currentSlot.uiType === 'boolean' && (
+                    <div className="flex gap-2">
+                      <button
+                        data-allow-raw="true"
+                        onClick={() => {
+                          updateSlot(currentSlot.name, true);
+                          nextSlot();
+                        }}
+                        className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-lg hover:bg-green-50 transition-all shadow-sm"
+                      >
+                        Evet
+                      </button>
+                      <button
+                        data-allow-raw="true"
+                        onClick={() => {
+                          updateSlot(currentSlot.name, false);
+                          nextSlot();
+                        }}
+                        className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-all shadow-sm"
+                      >
+                        Hayır
+                      </button>
+                    </div>
+                  )}
+
+                  {currentSlot.uiType === 'time' && (
+                    <div className="relative group">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                      <input data-allow-raw="true"
+                        type="time"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                        onChange={(e) => {
+                          updateSlot(currentSlot.name, e.target.value);
+                          nextSlot();
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <p className="mt-3 text-[10px] text-gray-400 flex items-center gap-1">
@@ -684,49 +904,36 @@ export function AIChatWidget({
               </div>
             )}
 
-            {/* Legacy Execution/Dry-run Result - Only show if NO active execution flow (backward compat) */}
+            {/* Action Result Card or Legacy Event Card */}
             {isOpen && executionResult && executionStatus === 'idle' && (
-              <div className={`mt-2 p-3 rounded-lg border animate-in slide-in-from-bottom-2 ${executionResult.status === 'success' ? 'bg-green-50 border-green-100 text-green-900' :
-                executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
-                  'bg-red-50 border-red-100 text-red-900'
-                }`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-bold capitalize">
-                    {executionResult.status === 'success' ? '✅ Başarılı!' :
-                      executionResult.status === 'dry_run' ? '🔍 Simülasyon Özeti' :
-                        '❌ Hata'}
-                  </span>
-                </div>
-                <p className="text-xs mb-3">
-                  {executionResult.status === 'success' ? 'İşlem başarıyla tamamlandı.' :
-                    executionResult.status === 'dry_run' ? 'Bu işlem yapıldığında yukarıdaki parametreler sisteme işlenecektir.' :
-                      executionResult.error}
-                </p>
-                {executionResult.status === 'dry_run' && (
-                  <button data-allow-raw="true"
-                    onClick={() => {
-                      // Direct confirmation from simulation
-                      // Note: In a real app we'd call the handleConfirm analog
-                      reset();
-                    }}
-                    className="w-full bg-blue-600 text-white py-2 rounded text-xs font-bold hover:bg-blue-700 transition-colors"
-                  >
-                    Şimdi Onayla ve Tamamla
-                  </button>
+              <>
+                {executionResult.status === 'success' ? (
+                  <ActionResultCard onClose={reset} />
+                ) : (
+                  <div className={`mt-2 p-3 rounded-lg border animate-in slide-in-from-bottom-2 ${executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
+                    'bg-red-50 border-red-100 text-red-900'
+                    }`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm font-bold capitalize">
+                        {executionResult.status === 'dry_run' ? '🔍 Simülasyon Özeti' : '❌ Hata'}
+                      </span>
+                    </div>
+                    <p className="text-xs mb-3">
+                      {executionResult.status === 'dry_run' ? 'Bu işlem yapıldığında yukarıdaki parametreler sisteme işlenecektir.' : executionResult.error}
+                    </p>
+                    {executionResult.status === 'dry_run' && (
+                      <button data-allow-raw="true"
+                        onClick={() => { reset(); }}
+                        className="w-full bg-blue-600 text-white py-2 rounded text-xs font-bold hover:bg-blue-700 transition-colors"
+                      >
+                        Şimdi Onayla ve Tamamla
+                      </button>
+                    )}
+                  </div>
                 )}
-                {executionResult.status === 'success' && (
-                  <button data-allow-raw="true"
-                    onClick={reset}
-                    className="w-full bg-gray-900 text-white py-2 rounded text-xs font-bold hover:bg-black transition-colors"
-                  >
-                    Kapat
-                  </button>
-                )}
-              </div>
+              </>
             )}
 
-            {/* Typing Indicator */}
-            {isTyping && <TypingIndicator />}
 
             {/* Auto-scroll anchor (12.5) */}
             <div ref={messagesEndRef} />
@@ -742,6 +949,18 @@ export function AIChatWidget({
           />
         </div>
       )}
+
+      {/* Reset Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={confirmReset}
+        title="Sohbeti Temizle"
+        description="Tüm sohbet geçmişiniz kalıcı olarak silinecektir. Bu işlemi onaylıyor musunuz?"
+        confirmLabel="Temizle"
+        cancelLabel="Vazgeç"
+        variant="danger"
+      />
     </div>
   );
 }

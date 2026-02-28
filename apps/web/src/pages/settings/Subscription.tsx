@@ -244,8 +244,9 @@ function AddOnsList() {
         description?: string;
         addonType?: string;
     }
-    const addonsResponse = addonsData as unknown as { data?: { data?: Addon[] } } | undefined;
-    const addons: Addon[] = (addonsResponse?.data?.data || []).filter((addon) => addon.isActive);
+    // Backend returns ResponseEnvelope: {success: true, data: [...]}
+    // Orval unwraps to {data: [...]}
+    const addons = (Array.isArray(addonsData?.data) ? addonsData.data : []).filter((addon) => addon.isActive) as Addon[];
     if (addons.length === 0) return <div className="text-gray-500">Mevcut eklenti bulunmuyor.</div>;
 
     return (

@@ -231,6 +231,7 @@ def _build_access_from_token(
     
     # CRITICAL: User lookup must bypass tenant filter because tenant_id is not set yet
     with unbound_session(reason="auth-user-lookup"):
+        # We must use the unbound_db session, otherwise the external db might still have the tenant filter active!
         user = db.get(User, user_id)
         if not user:
             logger.error(f"User not found in DB. ID: {user_id}")
@@ -238,6 +239,9 @@ def _build_access_from_token(
         if not user.is_active:
             logger.error(f"User user inactive. ID: {user_id}")
             raise HTTPException(status_code=401, detail="User inactive")
+        
+        # Merge the user into the main request db session so relationships lazy-load correctly
+        db.add(user)
     
     # Check permission version - if changed, token is stale
     token_perm_ver = payload.get('perm_ver', 1)

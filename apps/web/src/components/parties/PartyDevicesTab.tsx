@@ -498,10 +498,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         <h3 className="text-lg font-medium text-gray-900">Atanmış Cihazlar</h3>
         <Button
           onClick={() => setShowDeviceForm(true)}
-          className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          aria-label="Cihaz ata"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors rounded-md"
+          aria-label="Yeni Cihaz Ata"
         >
           <Plus className="w-5 h-5" />
+          <span>Yeni Cihaz Ata</span>
         </Button>
       </div>
 

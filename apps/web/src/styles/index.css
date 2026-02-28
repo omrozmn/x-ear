@@ -63,6 +63,15 @@
   z-index: 60000 !important;
 }
 
+/* React Hot Toast - ensure it's above all modals */
+[data-testid="toast-notifications"] {
+  z-index: 99999 !important;
+}
+
+[data-testid="toast-notifications"] > div {
+  z-index: 99999 !important;
+}
+
 /* Ensure invoice modal and other high-level modals are above nested modals */
 .InvoiceModal,
 .invoice-modal,

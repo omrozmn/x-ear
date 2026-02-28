@@ -191,7 +191,8 @@ def sync_sale_totals(session: Session, sale_id: str) -> None:
         
         total_list += float(a.list_price or 0) * a_qty
         total_final += float(a.net_payable or 0)
-        total_sgk += float(a.sgk_support or 0) * a_qty
+        # FIX: Don't multiply SGK by quantity for bilateral - sgk_support already represents total for both ears
+        total_sgk += float(a.sgk_support or 0)
     
     # Update sale totals
     sale.total_amount = total_list

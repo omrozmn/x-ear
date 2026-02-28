@@ -287,6 +287,10 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     sgk_coverage: Optional[float] = Field(0.0, alias="sgkCoverage")
     patient_payment: Optional[float] = Field(None, alias="patientPayment")
     
+    # KDV (VAT) fields
+    kdv_rate: Optional[float] = Field(20.0, alias="kdvRate")
+    kdv_amount: Optional[float] = Field(0.0, alias="kdvAmount")
+    
     remaining_amount: Optional[float] = Field(0.0, alias="remainingAmount")
 
     @model_validator(mode='before')

@@ -142,6 +142,16 @@ export function ChatInput({
     }
   }, [autoFocus]);
 
+  // Restore focus after loading finishes
+  useEffect(() => {
+    if (!isLoading && !disabled && autoFocus && inputRef.current) {
+      // Small timeout to allow the browser to re-enable the input before focusing
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 10);
+    }
+  }, [isLoading, disabled, autoFocus]);
+
   /**
    * Handle form submission
    */

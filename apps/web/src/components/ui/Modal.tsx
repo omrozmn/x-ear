@@ -2,7 +2,7 @@ import { Button } from '@x-ear/ui-web';
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
-type Props = {
+type ModalProps = {
   open: boolean;
   title?: string;
   onClose: () => void;
@@ -21,7 +21,7 @@ const sizeClasses = {
   full: 'max-w-[95vw]',
 };
 
-export const Modal: React.FC<Props> = ({
+export const Modal: React.FC<ModalProps> = ({
   open,
   title,
   onClose,
@@ -67,24 +67,27 @@ export const Modal: React.FC<Props> = ({
       />
       <div className={`
         bg-white rounded-lg shadow-xl z-10 w-full h-auto max-h-[90vh] 
-        flex flex-col overflow-hidden
+        flex flex-col overflow-hidden relative
         ${sizeClasses[size]}
         ${className}
       `}>
-        {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          {showCloseButton && (
-            <Button
-              onClick={onClose}
-              aria-label="close"
-              variant='ghost'
-              className="p-1 hover:bg-gray-100 rounded-full"
-            >
-              <X size={20} />
-            </Button>
-          )}
-        </div>
+        {/* Close button - top right corner */}
+        {showCloseButton && (
+          <Button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 z-10"
+            aria-label="Kapat"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        )}
+
+        {/* Header - only show if title is provided */}
+        {title && (
+          <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0 pr-12">
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
@@ -96,3 +99,4 @@ export const Modal: React.FC<Props> = ({
 };
 
 export default Modal;
+export type { ModalProps };

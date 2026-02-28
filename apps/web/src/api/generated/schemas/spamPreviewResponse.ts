@@ -12,11 +12,11 @@ import type { SpamWarning } from './spamWarning';
  */
 export interface SpamPreviewResponse {
   /** Spam score (0-20+) */
-  spam_score: number;
+  spamScore: number;
   /** Risk level (LOW/MEDIUM/HIGH/CRITICAL) */
-  risk_level: string;
+  riskLevel: string;
   /** Whether email will be rejected */
-  will_be_rejected: boolean;
+  willBeRejected: boolean;
   /** List of warnings */
   warnings: SpamWarning[];
   /** Recommendations to improve score */

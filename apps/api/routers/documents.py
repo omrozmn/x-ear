@@ -84,7 +84,7 @@ def add_patient_document(
     """Add a new document to patient - stores file locally"""
     try:
         from core.models.party import Party
-        from models.user import ActivityLog
+        from core.models.user import ActivityLog
         
         party = db.get(Party, party_id)
         if not party:

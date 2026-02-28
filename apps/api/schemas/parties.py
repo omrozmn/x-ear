@@ -51,6 +51,7 @@ class PartyUpdate(AppBaseModel):
     last_name: Optional[str] = Field(None, alias="lastName")
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
+    tc_number: Optional[str] = Field(None, min_length=11, max_length=11, alias="tcNumber")
     status: Optional[PartyStatus] = None
     # CRM fields
     segment: Optional[str] = None

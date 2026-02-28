@@ -6,15 +6,15 @@ import {
   createPartyNotes,
   deletePartyNote,
   updatePartyNote,
-  createPartyTimeline
 } from '@/api/client/parties.client';
+import { createPartyTimeline } from '@/api/client/timeline.client';
 import type {
   PatientNoteCreate as PartyNoteCreate,
   PatientNoteUpdate as PartyNoteUpdate,
   TimelineEventCreate,
 } from '@/api/generated/schemas';
 import type { Party, PartyNote } from '../../types/party/index';
-import { getCurrentUserId, getCurrentUserName } from '@/utils/auth-utils';
+import { getCurrentUserId, getCurrentUserName, getCurrentUser } from '@/utils/auth-utils';
 
 interface PartyNotesTabProps {
   party: Party;
@@ -52,17 +52,22 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
       // Let's look at import: listPartyNotes. 
       // If we use 'as any', we are bypassing. 
       // Let's safe-cast to unknown record for now to read .data if types are missing
-      const responseData = (response as unknown as { data: Array<{ id: string; content?: string; createdAt?: string; createdBy?: string; type?: string }> })?.data || [];
+      const responseData = (response as unknown as { data: Array<{ id: string; content?: string; createdAt?: string; createdBy?: string; createdByName?: string; type?: string }> })?.data || [];
 
       if (Array.isArray(responseData)) {
         // Map API response to PartyNote interface
-        const notesList: PartyNote[] = responseData.map((note) => ({
-          id: note.id || '',
-          text: note.content || '',
-          date: note.createdAt || new Date().toISOString(),
-          author: note.createdBy || 'system',
-          type: (note.type as PartyNote['type']) || undefined
-        }));
+        const notesList: PartyNote[] = responseData.map((note) => {
+          // Use createdByName from backend if available, fallback to createdBy or 'System'
+          let authorName = note.createdByName || note.createdBy || 'System';
+          
+          return {
+            id: note.id || '',
+            text: note.content || '',
+            date: note.createdAt || new Date().toISOString(),
+            author: authorName,
+            type: (note.type as PartyNote['type']) || undefined
+          };
+        });
 
         setNotes(notesList);
       }
@@ -249,8 +254,8 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
             placeholder="Not içeriğini yazınız..."
             value={newNoteContent}
             onChange={(e) => setNewNoteContent(e.target.value)}
-            rows={4}
-            className="mb-3"
+            rows={8}
+            className="mb-3 w-full"
           />
           <div className="flex justify-end space-x-2">
             <Button onClick={handleCancelAdd} variant="outline">
@@ -285,8 +290,8 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
                   <Textarea
                     value={editNoteContent}
                     onChange={(e) => setEditNoteContent(e.target.value)}
-                    rows={4}
-                    className="mb-3"
+                    rows={8}
+                    className="mb-3 w-full"
                   />
                   <div className="flex justify-end space-x-2">
                     <Button onClick={handleCancelEdit} variant="outline">

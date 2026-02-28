@@ -274,23 +274,57 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           // Make API request (returns ApiChatResponse)
           const apiResponse = await chatApiAiChatPost(payload);
 
-          // Map back to local type (camelCase)
+          // Map back to local type
+          // NOTE: orval-mutator's response interceptor already converts ALL keys 
+          // from snake_case to camelCase via humps.camelizeKeys(). So apiResponse
+          // already has camelCase keys (requestId, matchedCapability, etc.)
+          const api = apiResponse as any;
           const response: ChatResponse = {
-            requestId: apiResponse.request_id,
-            status: apiResponse.status,
-            intent: apiResponse.intent ? {
-              intentType: apiResponse.intent.intent_type,
-              confidence: apiResponse.intent.confidence,
-              entities: apiResponse.intent.entities || {},
-              clarificationNeeded: apiResponse.intent.clarification_needed || false,
-              clarificationQuestion: apiResponse.intent.clarification_question || undefined,
+            requestId: api.requestId,
+            status: api.status,
+            intent: api.intent ? {
+              intentType: api.intent.intentType,
+              confidence: api.intent.confidence,
+              entities: api.intent.entities || {},
+              clarificationNeeded: api.intent.clarificationNeeded || false,
+              clarificationQuestion: api.intent.clarificationQuestion || undefined,
             } : undefined,
-            response: typeof apiResponse.response === 'string' ? apiResponse.response : JSON.stringify(apiResponse.response),
-            needsClarification: apiResponse.needs_clarification || false,
-            clarificationQuestion: apiResponse.clarification_question || undefined,
-            processingTimeMs: apiResponse.processing_time_ms,
-            piiDetected: apiResponse.pii_detected || false,
-            phiDetected: apiResponse.phi_detected || false,
+            response: typeof api.response === 'string' ? api.response : JSON.stringify(api.response),
+            needsClarification: api.needsClarification || false,
+            clarificationQuestion: api.clarificationQuestion || undefined,
+            processingTimeMs: api.processingTimeMs,
+            piiDetected: api.piiDetected || false,
+            phiDetected: api.phiDetected || false,
+            actionPlan: api.actionPlan ? {
+              planId: api.actionPlan.planId,
+              status: 'pending',
+              steps: (api.actionPlan.steps || []).map((s: any) => ({
+                stepNumber: s.stepNumber,
+                toolName: s.toolName,
+                toolSchemaVersion: '',
+                parameters: s.parameters,
+                description: s.description,
+                riskLevel: (s.riskLevel || 'low').toLowerCase() as any,
+                requiresApproval: s.requiresApproval
+              })),
+              overallRiskLevel: (api.actionPlan.overallRiskLevel || 'low').toLowerCase() as any,
+              requiresApproval: api.actionPlan.requiresApproval,
+              planHash: '',
+              createdAt: new Date().toISOString()
+            } : undefined,
+            matchedCapability: api.matchedCapability ? {
+              name: api.matchedCapability.name,
+              description: api.matchedCapability.description,
+              category: api.matchedCapability.category,
+              slots: (api.matchedCapability.slots || []).map((s: any) => ({
+                name: s.name,
+                prompt: s.prompt,
+                uiType: s.uiType,
+                sourceEndpoint: s.sourceEndpoint || undefined,
+                enumOptions: s.enumOptions || undefined,
+                validationRules: s.validationRules || undefined,
+              })),
+            } : undefined,
           };
 
           return response;
@@ -351,9 +385,34 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
     // On success: Add assistant response
     onSuccess: (response) => {
-      // Add assistant message to history
-      const assistantMessage = createAssistantMessage(response);
-      addMessage(assistantMessage);
+      // ACTION intents produce status messages ("hazırlık yapıyorum", "devam ediyorum")
+      // that should only flash in the typing indicator, NOT stay as permanent bubbles.
+      // Chat bubbles are only for: questions, completed results, greetings, unknowns.
+      const intentType = response.intent?.intentType?.toLowerCase();
+      const isAction = intentType === 'action' || response.status === 'executing';
+      const isAskingQuestion = response.needsClarification || !!response.clarificationQuestion || intentType === 'clarification_needed';
+      const hasPlan = !!response.actionPlan;
+      const hasMatchedCapability = !!response.matchedCapability;
+      // Show the message if:
+      // 1. It's NOT an action AND NOT a plan AND NOT a matched capability (normal responses)
+      // 2. OR it's explicitly asking a question (and NOT entering slot-filling mode)
+      // When matchedCapability has slots, the message should NOT appear as a permanent
+      // chat bubble — the slot-filling interactive UI takes over entirely.
+      const shouldShowMessage = (!isAction && !hasPlan && !hasMatchedCapability) || (isAskingQuestion && !hasMatchedCapability);
+
+      // DEBUG: Remove after fixing slot-filling
+      console.log('[useAIChat] DEBUG onSuccess:', {
+        intentType, isAction, isAskingQuestion, hasPlan, hasMatchedCapability, shouldShowMessage,
+        matchedCapability: response.matchedCapability,
+        actionPlan: response.actionPlan,
+        response: response.response?.substring(0, 80),
+        needsClarification: response.needsClarification,
+      });
+
+      if (shouldShowMessage && response.response) {
+        const assistantMessage = createAssistantMessage(response);
+        addMessage(assistantMessage);
+      }
 
       // Update session ID if returned
       if (response.requestId && !sessionId) {

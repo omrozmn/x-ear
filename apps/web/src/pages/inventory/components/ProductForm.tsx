@@ -408,9 +408,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <Input
                   key="available-inventory"
                   type="number"
-                  value={formData.availableInventory}
+                  value={formData.availableInventory === 0 ? '' : formData.availableInventory}
                   onChange={(e) => handleInputChange('availableInventory', parseInt(e.target.value) || 0)}
                   min="0"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
@@ -422,9 +423,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <Input
                   key="reorder-level"
                   type="number"
-                  value={formData.reorderLevel}
+                  value={formData.reorderLevel === 0 ? '' : formData.reorderLevel}
                   onChange={(e) => handleInputChange('reorderLevel', parseInt(e.target.value) || 0)}
                   min="0"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
@@ -436,9 +438,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <Input
                   key="on-trial-quantity"
                   type="number"
-                  value={extendedData.onTrialQuantity}
+                  value={extendedData.onTrialQuantity === 0 ? '' : extendedData.onTrialQuantity}
                   onChange={(e) => handleExtendedChange('onTrialQuantity', parseInt(e.target.value) || 0)}
                   min="0"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
@@ -459,10 +462,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <Input
                   key="unit-price"
                   type="number"
-                  value={formData.price}
+                  value={formData.price === 0 ? '' : formData.price}
                   onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
                   min="0"
                   step="0.01"
+                  placeholder="0.00"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
@@ -517,10 +521,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <Input
                   key="warranty-period"
                   type="number"
-                  value={formData.warranty}
+                  value={formData.warranty === 0 ? '' : formData.warranty}
                   onChange={(e) => handleInputChange('warranty', parseInt(e.target.value) || 0)}
                   min="0"
                   max="120"
+                  placeholder="0"
                   className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
