@@ -241,10 +241,12 @@ ASSIGNMENT_2=$(echo "$PARTY_DEVICES_2" | jq ".data[] | select(.id == \"$ASSIGNME
 A2_BRAND=$(echo "$ASSIGNMENT_2" | jq -r '.brand')
 A2_MODEL=$(echo "$ASSIGNMENT_2" | jq -r '.model')
 A2_LIST=$(echo "$ASSIGNMENT_2" | jq -r '.listPrice')
+A2_SGK=$(echo "$ASSIGNMENT_2" | jq -r '.sgkSupport')
 A2_NET=$(echo "$ASSIGNMENT_2" | jq -r '.netPayable')
 
 echo "  Brand/Model: $A2_BRAND $A2_MODEL"
 echo "  List Price: $A2_LIST"
+echo "  SGK Support: $A2_SGK"
 echo "  Net Payable: $A2_NET"
 
 echo ""
@@ -253,11 +255,13 @@ SALE_2=$(curl -s -X GET "${API_URL}/api/sales/${SALE_ID}" \
   -H "Authorization: Bearer ${TOKEN}")
 
 S2_TOTAL=$(echo "$SALE_2" | jq -r '.data.totalAmount')
+S2_SGK=$(echo "$SALE_2" | jq -r '.data.sgkCoverage')
 S2_DISCOUNT=$(echo "$SALE_2" | jq -r '.data.discountAmount')
 S2_FINAL=$(echo "$SALE_2" | jq -r '.data.finalAmount')
 S2_PAID=$(echo "$SALE_2" | jq -r '.data.paidAmount')
 
 echo "  Total Amount: $S2_TOTAL"
+echo "  SGK Coverage: $S2_SGK"
 echo "  Discount Amount: $S2_DISCOUNT"
 echo "  Final Amount: $S2_FINAL"
 echo "  Paid Amount: $S2_PAID"
@@ -270,12 +274,14 @@ SALES_HISTORY_2=$(curl -s -X GET "${API_URL}/api/parties/${PARTY_ID}/sales" \
 SALE_IN_TABLE_2=$(echo "$SALES_HISTORY_2" | jq ".data[] | select(.id == \"$SALE_ID\")")
 
 T2_TOTAL=$(echo "$SALE_IN_TABLE_2" | jq -r '.totalAmount')
+T2_SGK=$(echo "$SALE_IN_TABLE_2" | jq -r '.sgkCoverage')
 T2_DISCOUNT=$(echo "$SALE_IN_TABLE_2" | jq -r '.discountAmount')
 T2_FINAL=$(echo "$SALE_IN_TABLE_2" | jq -r '.finalAmount')
 T2_PAID=$(echo "$SALE_IN_TABLE_2" | jq -r '.paidAmount')
 T2_DEVICES=$(echo "$SALE_IN_TABLE_2" | jq -r '.devices[0].brand + " " + .devices[0].model')
 
 echo "  Total Amount: $T2_TOTAL"
+echo "  SGK Coverage: $T2_SGK"
 echo "  Discount Amount: $T2_DISCOUNT"
 echo "  Final Amount: $T2_FINAL"
 echo "  Paid Amount: $T2_PAID"
@@ -311,9 +317,9 @@ echo ""
 echo "${YELLOW}📊 SCENARIO 2 COMPARISON (After Device Change):${NC}"
 echo "Expected: Device changed to $INV2_BRAND $INV2_MODEL, Price=$INV2_PRICE, Discount=20%, Down=3000"
 echo ""
-echo "Assignment Card:     Brand=$A2_BRAND $A2_MODEL, List=$A2_LIST, Net=$A2_NET"
-echo "Sale Record:         Total=$S2_TOTAL, Discount=$S2_DISCOUNT, Final=$S2_FINAL, Paid=$S2_PAID"
-echo "Sales Table:         Total=$T2_TOTAL, Discount=$T2_DISCOUNT, Final=$T2_FINAL, Device=$T2_DEVICES"
+echo "Assignment Card:     Brand=$A2_BRAND $A2_MODEL, List=$A2_LIST, SGK=$A2_SGK, Net=$A2_NET"
+echo "Sale Record:         Total=$S2_TOTAL, SGK=$S2_SGK, Discount=$S2_DISCOUNT, Final=$S2_FINAL, Paid=$S2_PAID"
+echo "Sales Table:         Total=$T2_TOTAL, SGK=$T2_SGK, Discount=$T2_DISCOUNT, Final=$T2_FINAL, Device=$T2_DEVICES"
 echo "Sale Assignments:    Brand=$SA2_BRAND $SA2_MODEL, List=$SA2_LIST, Net=$SA2_NET"
 
 ERRORS_2=0
