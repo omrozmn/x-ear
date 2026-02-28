@@ -368,11 +368,13 @@ class SaleCreate(AppBaseModel):
     sale_date: Optional[datetime] = Field(None, alias="saleDate")
 
 class SaleUpdate(AppBaseModel):
+    total_amount: Optional[float] = Field(None, alias="totalAmount")
     list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
     discount_amount: Optional[float] = Field(None, alias="discountAmount")
     sgk_coverage: Optional[float] = Field(None, alias="sgkCoverage")
     patient_payment: Optional[float] = Field(None, alias="patientPayment")
     final_amount: Optional[float] = Field(None, alias="finalAmount")
+    paid_amount: Optional[float] = Field(None, alias="paidAmount")
     
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     status: Optional[str] = None

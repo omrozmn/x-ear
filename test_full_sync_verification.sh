@@ -16,7 +16,7 @@ NC='\033[0m'
 
 echo "🔑 Generating token..."
 cd "$(dirname "$0")"
-TOKEN=$(python gen_token_deneme.py)
+TOKEN=$(venv/bin/python gen_token_deneme.py 2>/dev/null | tail -1)
 
 echo ""
 echo "=========================================="
@@ -217,7 +217,7 @@ IDEMPOTENCY_KEY_2="test-$(date +%s)-$RANDOM"
 
 echo ""
 echo "${BLUE}1️⃣ Updating assignment with new inventory ($INV2_BRAND $INV2_MODEL)...${NC}"
-UPDATE_RESPONSE=$(curl -s -X PUT "${API_URL}/api/device-assignments/${ASSIGNMENT_ID}" \
+UPDATE_RESPONSE=$(curl -s -X PATCH "${API_URL}/api/device-assignments/${ASSIGNMENT_ID}" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: ${IDEMPOTENCY_KEY_2}" \

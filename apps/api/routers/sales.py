@@ -908,13 +908,21 @@ def update_sale(
     
     sale = get_sale_or_404(db, sale_id, access)
     
-    if sale_in.list_price_total is not None: sale.list_price_total = Decimal(str(sale_in.list_price_total))
-    if sale_in.discount_amount is not None: sale.discount_amount = Decimal(str(sale_in.discount_amount))
-    if sale_in.sgk_coverage is not None: sale.sgk_coverage = Decimal(str(sale_in.sgk_coverage))
-    if sale_in.patient_payment is not None: sale.patient_payment = Decimal(str(sale_in.patient_payment))
+    # Update all amount fields directly from request
+    if sale_in.total_amount is not None: 
+        sale.total_amount = Decimal(str(sale_in.total_amount))
+    if sale_in.list_price_total is not None: 
+        sale.list_price_total = Decimal(str(sale_in.list_price_total))
+    if sale_in.discount_amount is not None: 
+        sale.discount_amount = Decimal(str(sale_in.discount_amount))
+    if sale_in.sgk_coverage is not None: 
+        sale.sgk_coverage = Decimal(str(sale_in.sgk_coverage))
+    if sale_in.patient_payment is not None: 
+        sale.patient_payment = Decimal(str(sale_in.patient_payment))
     if sale_in.final_amount is not None: 
         sale.final_amount = Decimal(str(sale_in.final_amount))
-        sale.total_amount = sale.final_amount # Logic from legacy
+    if sale_in.paid_amount is not None: 
+        sale.paid_amount = Decimal(str(sale_in.paid_amount))
         
     if sale_in.payment_method: sale.payment_method = sale_in.payment_method
     if sale_in.status: sale.status = sale_in.status
@@ -1463,6 +1471,7 @@ def update_device_assignment(
     # Convert Pydantic model to dict for easier processing
     data = updates.model_dump(exclude_unset=True, by_alias=False)
     logger.info(f"📝 UPDATE DEVICE {assignment_id} PAYLOAD: {json.dumps(data, default=str)}")
+    logger.info(f"🔍 DOWN_PAYMENT CHECK: 'down_payment' in data = {'down_payment' in data}, value = {data.get('down_payment', 'NOT_FOUND')}")
     
     # Initialize defaults for bilateral logic
     initial_ear_val = str(assignment.ear or '').upper()
