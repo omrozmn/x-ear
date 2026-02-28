@@ -103,7 +103,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
               onClick={() => setShowPaymentModal(true)}
               className="text-xs"
             >
-              Detay
+              Ödeme Takibi
             </Button>
           </div>
 

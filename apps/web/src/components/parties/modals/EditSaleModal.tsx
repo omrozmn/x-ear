@@ -134,8 +134,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
               value={state.saleStatus}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateState({ saleStatus: e.target.value })}
               options={[
-                { value: 'draft', label: 'Taslak' },
-                { value: 'confirmed', label: 'Onaylandı' },
+                { value: 'ordered', label: 'Sipariş Edildi' },
+                { value: 'waiting_report', label: 'Rapor Bekleniyor' },
                 { value: 'delivered', label: 'Teslim Edildi' },
                 { value: 'completed', label: 'Tamamlandı' },
                 { value: 'cancelled', label: 'İptal' }

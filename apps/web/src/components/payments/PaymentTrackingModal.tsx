@@ -42,6 +42,7 @@ import { unwrapArray } from '../../utils/response-unwrap';
 
 interface PaymentRecord {
   id: string;
+  saleId?: string; // Added to filter by sale
   amount: number;
   paymentDate: string;
   paymentMethod: string;
@@ -123,7 +124,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     noteNumber: ''
   });
 
-  // Orval Hooks for real data
+  // Orval Hooks for real data - FILTER BY SALE ID
   const { data: paymentRecordsResponse } = useListPartyPaymentRecords(sale.partyId, undefined, {
     query: {
       queryKey: getListPartyPaymentRecordsQueryKey(sale.partyId),
@@ -140,9 +141,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   const createPaymentMutation = useCreatePaymentRecords();
 
-  // Unwrap data safely using strict types
+  // Unwrap data safely using strict types and FILTER BY SALE ID
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const realPaymentRecords = unwrapArray<PaymentRecord>(paymentRecordsResponse) || [];
+  const allPaymentRecords = unwrapArray<PaymentRecord>(paymentRecordsResponse) || [];
+  // Filter to only show payments for THIS sale
+  const realPaymentRecords = allPaymentRecords.filter(p => p.saleId === sale.id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const realPromissoryNotes = unwrapArray<PromissoryNote>(promissoryNotesResponse) || [];
 
@@ -217,6 +220,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     try {
       const paymentData: RoutersPaymentsPaymentRecordCreate = {
         partyId: sale.partyId,
+        saleId: sale.id, // Link payment to this specific sale
         amount: newPayment.amount,
         paymentDate: newPayment.paymentDate,
         paymentMethod: newPayment.paymentMethod,

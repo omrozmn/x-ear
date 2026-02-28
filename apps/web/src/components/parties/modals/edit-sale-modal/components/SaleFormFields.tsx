@@ -166,7 +166,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               <Input
                 id="listPrice"
                 type="number"
-                value={formData.listPrice}
+                value={formData.listPrice === 0 ? '' : formData.listPrice}
                 onChange={(e) => handleInputChange('listPrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
                 min="0"
@@ -180,7 +180,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               <Input
                 id="discountAmount"
                 type="number"
-                value={formData.discountAmount}
+                value={formData.discountAmount === 0 ? '' : formData.discountAmount}
                 onChange={(e) => handleInputChange('discountAmount', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
                 min="0"
@@ -193,7 +193,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               <Input
                 id="salePrice"
                 type="number"
-                value={formData.salePrice}
+                value={formData.salePrice === 0 ? '' : formData.salePrice}
                 onChange={(e) => handleInputChange('salePrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
                 min="0"
@@ -208,7 +208,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             <Input
               id="sgkCoverage"
               type="number"
-              value={formData.sgkCoverage}
+              value={formData.sgkCoverage === 0 ? '' : formData.sgkCoverage}
               onChange={(e) => handleInputChange('sgkCoverage', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
               min="0"
@@ -234,7 +234,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                   onChange={(e) => handleInputChange('ear', e.target.value as 'left' | 'right' | 'both')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="both">Her İki Kulak</option>
+                  <option value="both">Bilateral</option>
                   <option value="left">Sol Kulak</option>
                   <option value="right">Sağ Kulak</option>
                 </select>
@@ -245,7 +245,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                 <Input
                   id="warrantyPeriod"
                   type="number"
-                  value={formData.warrantyPeriod}
+                  value={formData.warrantyPeriod === 0 ? '' : formData.warrantyPeriod}
                   onChange={(e) => handleInputChange('warrantyPeriod', parseInt(e.target.value) || 0)}
                   placeholder="24"
                   min="0"
