@@ -1,0 +1,141 @@
+name: E2E Tests (Critical)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: e2e-critical-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: xear_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: x-ear/package-lock.json
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install frontend dependencies
+        working-directory: x-ear
+        run: npm ci
+      
+      - name: Install backend dependencies
+        working-directory: x-ear/apps/api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install Playwright Browsers
+        working-directory: x-ear
+        run: npx playwright install --with-deps chromium
+      
+      - name: Setup test database
+        working-directory: x-ear/apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
+          REDIS_URL: redis://localhost:6379
+        run: |
+          alembic upgrade head
+          python scripts/seed_comprehensive_data.py
+      
+      - name: Start backend server
+        working-directory: x-ear/apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key-for-ci
+          JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci
+          ENVIRONMENT: test
+        run: |
+          python main.py &
+          echo $! > backend.pid
+      
+      - name: Start frontend server
+        working-directory: x-ear/apps/web
+        env:
+          VITE_API_BASE_URL: http://localhost:5003
+        run: |
+          npm run dev &
+          echo $! > frontend.pid
+      
+      - name: Wait for services
+        run: |
+          npx wait-on http://localhost:5003/health --timeout 120000
+          npx wait-on http://localhost:8080 --timeout 120000
+      
+      - name: Run Critical tests (web + admin)
+        working-directory: x-ear
+        env:
+          BASE_URL: http://localhost:8080
+          TEST_USER_EMAIL: test@example.com
+          TEST_USER_PASSWORD: password123
+        run: npx playwright test --project=web --project=admin --reporter=html,json,junit
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-critical
+          path: x-ear/playwright-report/
+          retention-days: 30
+      
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-critical
+          path: x-ear/test-results/
+          retention-days: 30
+      
+      - name: Cleanup
+        if: always()
+        working-directory: x-ear
+        run: |
+          if [ -f apps/api/backend.pid ]; then
+            kill $(cat apps/api/backend.pid) || true
+          fi
+          if [ -f apps/web/frontend.pid ]; then
+            kill $(cat apps/web/frontend.pid) || true
+          fi

@@ -1,15 +1,21 @@
-name: E2E Tests (P0 - Critical)
+name: E2E Tests (Weekly)
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * 0' # Run weekly on Sunday at 2 AM UTC
+
+concurrency:
+  group: e2e-weekly-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 90
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     
     services:
       postgres:
@@ -65,7 +71,7 @@ jobs:
       
       - name: Install Playwright Browsers
         working-directory: x-ear
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps ${{ matrix.browser }}
       
       - name: Setup test database
         working-directory: x-ear/apps/api
@@ -101,19 +107,19 @@ jobs:
           npx wait-on http://localhost:5003/health --timeout 120000
           npx wait-on http://localhost:8080 --timeout 120000
       
-      - name: Run P0 tests
+      - name: Run Weekly tests (all projects + all browsers)
         working-directory: x-ear
         env:
           BASE_URL: http://localhost:8080
           TEST_USER_EMAIL: test@example.com
           TEST_USER_PASSWORD: password123
-        run: npx playwright test --grep "@p0" --reporter=html,json,junit
+        run: npx playwright test --project=web --project=admin --project=landing --project=landing --browser=${{ matrix.browser }} --reporter=html,json,junit
       
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-p0
+          name: playwright-report-weekly-${{ matrix.browser }}
           path: x-ear/playwright-report/
           retention-days: 30
       
@@ -121,7 +127,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-p0
+          name: test-results-weekly-${{ matrix.browser }}
           path: x-ear/test-results/
           retention-days: 30
       

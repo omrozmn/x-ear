@@ -1,10 +1,12 @@
-name: E2E Tests (P1 - High Priority)
+name: E2E Tests (PR)
 
 on:
   pull_request:
     branches: [main, develop]
-  schedule:
-    - cron: '0 2 * * *' # Run daily at 2 AM UTC
+
+concurrency:
+  group: e2e-pr-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -101,19 +103,19 @@ jobs:
           npx wait-on http://localhost:5003/health --timeout 120000
           npx wait-on http://localhost:8080 --timeout 120000
       
-      - name: Run P1 tests
+      - name: Run P1 tests (all projects)
         working-directory: x-ear
         env:
           BASE_URL: http://localhost:8080
           TEST_USER_EMAIL: test@example.com
           TEST_USER_PASSWORD: password123
-        run: npx playwright test --grep "@p1" --reporter=html,json,junit
+        run: npx playwright test --project=web --project=admin --project=landing --reporter=html,json,junit
       
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-p1
+          name: playwright-report-pr
           path: x-ear/playwright-report/
           retention-days: 30
       
@@ -121,7 +123,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-p1
+          name: test-results-pr
           path: x-ear/test-results/
           retention-days: 30
       
