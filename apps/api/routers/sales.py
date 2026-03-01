@@ -374,7 +374,7 @@ def get_sales(
     page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
-    include_details: bool = Query(False, description="Include full sale details (devices, payments, invoice)"),
+    include_details: bool = Query(True, description="Include full sale details (devices, payments, invoice)"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
