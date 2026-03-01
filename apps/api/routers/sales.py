@@ -87,6 +87,8 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
     """Build device info from assignment with inventory lookup - COMPLETE field mapping."""
     from models.device import Device
     
+    logger.info(f"Building device info for assignment {assignment.id}")
+    
     device_name = None
     barcode = None
     brand = None
@@ -226,6 +228,9 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
         'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
         'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None,
     }
+    
+    logger.info(f"Built device info: brand={result.get('brand')}, deviceName={result.get('deviceName')}, keys_count={len(result)}")
+    return result
 
 def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     """Build complete sale data with all enrichments - Flask parity."""
@@ -300,6 +305,12 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     
     # Extract first device info for sale-level fields (for backwards compatibility)
     first_device = devices[0] if devices else {}
+    
+    # Debug logging
+    logger.info(f"Building sale data for {sale.id}: devices count={len(devices)}")
+    if first_device:
+        logger.info(f"First device sample keys: {list(first_device.keys())[:10]}")
+        logger.info(f"First device brand: {first_device.get('brand', 'MISSING')}, deviceName: {first_device.get('deviceName', 'MISSING')}")
     
     sale_dict = {
         'id': sale.id,

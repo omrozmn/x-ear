@@ -294,6 +294,24 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     kdv_amount: Optional[float] = Field(0.0, alias="kdvAmount")
     
     remaining_amount: Optional[float] = Field(0.0, alias="remainingAmount")
+    
+    # Sale-level product fields (from first device for backwards compatibility)
+    product_name: Optional[str] = Field(None, alias="productName")
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    barcode: Optional[str] = None
+    serial_number: Optional[str] = Field(None, alias="serialNumber")
+    category: Optional[str] = None
+    list_price: Optional[float] = Field(None, alias="listPrice")
+    sale_price: Optional[float] = Field(None, alias="salePrice")
+    sgk_support: Optional[float] = Field(None, alias="sgkSupport")
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    discount_type: Optional[str] = Field(None, alias="discountType")
+    discount_value: Optional[float] = Field(None, alias="discountValue")
+    down_payment: Optional[float] = Field(None, alias="downPayment")
+    delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
+    payment_status: Optional[str] = Field(None, alias="paymentStatus")
+    invoice_status: Optional[str] = Field(None, alias="invoiceStatus")
 
     @model_validator(mode='before')
     @classmethod
