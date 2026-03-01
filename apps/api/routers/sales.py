@@ -84,7 +84,7 @@ def _calculate_sgk_coverage(db: Session, sale: Sale, assignments: List[DeviceAss
     return float(sale.sgk_coverage) if sale.sgk_coverage else 0.0
 
 def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment) -> Dict[str, Any]:
-    """Build device info from assignment with inventory lookup."""
+    """Build device info from assignment with inventory lookup - COMPLETE field mapping."""
     from models.device import Device
     
     device_name = None
@@ -94,6 +94,17 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
     serial_number = None
     serial_number_left = None
     serial_number_right = None
+    category = None
+    
+    # Get down payment from payment records
+    down_payment = 0.0
+    if assignment.sale_id:
+        payment_record = db.query(PaymentRecord).filter_by(
+            sale_id=assignment.sale_id,
+            payment_type='down_payment'
+        ).first()
+        if payment_record:
+            down_payment = float(payment_record.amount or 0)
     
     # Try device lookup first
     if assignment.device_id:
@@ -111,6 +122,7 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
                 if inv_item:
                     device_name = inv_item.name
                     barcode = inv_item.barcode
+                    category = inv_item.category
     
     # Try inventory lookup if no device
     if not brand and assignment.inventory_id:
@@ -119,40 +131,100 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
             brand = inv_item.brand
             model = inv_item.model
             barcode = inv_item.barcode
+            category = inv_item.category
+            if not device_name:
+                device_name = inv_item.name
     
     # Fallback for loaner devices
     if not brand:
         brand = assignment.loaner_brand or 'Unknown'
         model = assignment.loaner_model or 'Device'
     
+    # Ensure brand and model are strings (not None)
+    brand = brand or 'Unknown'
+    model = model or ''
+    
     # Build device name
     name_parts = []
     if brand: name_parts.append(brand)
     if model: name_parts.append(model)
-    formatted_name = " ".join(name_parts)
+    formatted_name = " ".join(name_parts).strip()
     if not formatted_name and device_name:
         formatted_name = device_name
+    if not formatted_name:
+        formatted_name = 'Device'
     
+    # CRITICAL: Return ALL fields from assignment for consistency across endpoints
     return {
-        'id': assignment.device_id or assignment.inventory_id,
-        'inventoryId': assignment.inventory_id,  # Add explicit inventoryId
-        'deviceId': assignment.device_id,  # Add explicit deviceId
-        'partyId': assignment.party_id,  # Required field
+        # CORRECT ID - assignment ID, not device/inventory ID!
+        'id': assignment.id,
+        'saleId': assignment.sale_id,
+        
+        # Device/Inventory references
+        'deviceId': assignment.device_id,
+        'inventoryId': assignment.inventory_id,
+        'partyId': assignment.party_id,
+        
+        # Device info
         'name': formatted_name,
+        'deviceName': formatted_name,
         'brand': brand,
         'model': model,
+        'barcode': barcode,
+        'category': category,
+        
+        # Serial numbers
         'serialNumber': serial_number or assignment.serial_number,
         'serialNumberLeft': serial_number_left or assignment.serial_number_left,
         'serialNumberRight': serial_number_right or assignment.serial_number_right,
-        'barcode': barcode,
+        
+        # Ear & reason
         'ear': assignment.ear,
+        'earSide': assignment.ear,
+        'reason': assignment.reason,
+        
+        # Pricing fields
         'listPrice': float(assignment.list_price) if assignment.list_price else None,
         'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
-        'sgk_coverage_amount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-        'patient_responsible_amount': float(assignment.net_payable) if assignment.net_payable else None,
+        'sgkSupport': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+        'netPayable': float(assignment.net_payable) if assignment.net_payable else None,
+        
+        # Discount fields
+        'discountType': assignment.discount_type,
+        'discountValue': float(assignment.discount_value) if assignment.discount_value else None,
+        
+        # SGK fields
+        'sgkScheme': assignment.sgk_scheme,
+        'sgkSupportType': assignment.sgk_scheme,
+        
+        # Status fields - CRITICAL for consistency!
+        'reportStatus': assignment.report_status,
+        'deliveryStatus': assignment.delivery_status,
+        
+        # Payment fields
+        'paymentMethod': assignment.payment_method,
+        'downPayment': down_payment,
+        
+        # Assignment metadata
+        'assignmentUid': assignment.assignment_uid,
+        'assignedDate': assignment.created_at.isoformat() if assignment.created_at else None,
+        'createdAt': assignment.created_at.isoformat() if assignment.created_at else None,
+        'updatedAt': assignment.updated_at.isoformat() if assignment.updated_at else None,
+        
+        # Loaner fields
+        'isLoaner': bool(assignment.is_loaner) if assignment.is_loaner is not None else False,
+        'loanerInventoryId': assignment.loaner_inventory_id,
+        'loanerBrand': assignment.loaner_brand,
+        'loanerModel': assignment.loaner_model,
+        'loanerSerialNumber': assignment.loaner_serial_number,
+        'loanerSerialNumberLeft': assignment.loaner_serial_number_left,
+        'loanerSerialNumberRight': assignment.loaner_serial_number_right,
+        
         # Backwards-compatible keys for frontend
         'sgkReduction': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-        'patientPayment': float(assignment.net_payable) if assignment.net_payable else None
+        'patientPayment': float(assignment.net_payable) if assignment.net_payable else None,
+        'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+        'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None,
     }
 
 def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
@@ -225,6 +297,10 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     # Build complete sale data using SaleRead schema logic (manually to avoid full pydantic overhead here)
     # Ideally we'd validte through SaleRead.model_validate(sale).model_dump(by_alias=True)
     # But for parity with existing keys, manual is safer for now.
+    
+    # Extract first device info for sale-level fields (for backwards compatibility)
+    first_device = devices[0] if devices else {}
+    
     sale_dict = {
         'id': sale.id,
         'partyId': sale.party_id,
@@ -244,6 +320,29 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'patientPayment': float(sale.patient_payment) if sale.patient_payment else None,
         'reportStatus': sale.report_status,
         'notes': sale.notes,
+        'kdvRate': float(sale.kdv_rate) if sale.kdv_rate else 20.0,
+        'kdvAmount': float(sale.kdv_amount) if sale.kdv_amount else 0.0,
+        
+        # Sale-level product fields (from first device for backwards compatibility)
+        'productName': first_device.get('deviceName'),
+        'brand': first_device.get('brand'),
+        'model': first_device.get('model'),
+        'barcode': first_device.get('barcode'),
+        'serialNumber': first_device.get('serialNumber'),
+        'category': first_device.get('category'),
+        'listPrice': first_device.get('listPrice'),
+        'salePrice': first_device.get('salePrice'),
+        'sgkSupport': first_device.get('sgkSupport'),
+        'sgkScheme': first_device.get('sgkScheme'),
+        'discountType': first_device.get('discountType'),
+        'discountValue': first_device.get('discountValue'),
+        'downPayment': first_device.get('downPayment'),
+        'deliveryStatus': first_device.get('deliveryStatus'),
+        
+        # Calculated fields
+        'remainingAmount': float(sale.total_amount or 0) - float(sale.paid_amount or 0),
+        'paymentStatus': 'paid' if float(sale.paid_amount or 0) >= float(sale.total_amount or 0) else 'pending',
+        'invoiceStatus': invoice_data['status'] if invoice_data else 'not_issued',
         
         # Enriched
         'devices': devices,
@@ -928,6 +1027,26 @@ def update_sale(
     if sale_in.status: sale.status = sale_in.status
     if sale_in.notes: sale.notes = sale_in.notes
     
+    # Sync back to assignments (proportional distribution for bilateral)
+    if sale_in.total_amount is not None or sale_in.sgk_coverage is not None or sale_in.final_amount is not None:
+        assignments = db.query(DeviceAssignment).filter_by(sale_id=sale_id).all()
+        if assignments:
+            for assignment in assignments:
+                ear_val = str(assignment.ear or '').upper()
+                qty = 2 if ear_val in ['B', 'BOTH', 'BILATERAL'] else 1
+                
+                # Distribute sale values proportionally (divide by quantity for bilateral)
+                if sale_in.total_amount is not None:
+                    assignment.list_price = Decimal(str(sale.total_amount)) / qty
+                
+                if sale_in.sgk_coverage is not None:
+                    assignment.sgk_support = Decimal(str(sale.sgk_coverage)) / qty
+                
+                if sale_in.final_amount is not None:
+                    assignment.net_payable = Decimal(str(sale.final_amount)) / qty
+                
+                logger.info(f"🔄 Synced assignment {assignment.id}: list={assignment.list_price}, sgk={assignment.sgk_support}, net={assignment.net_payable}")
+    
     db.commit()
 
     return ResponseEnvelope(data=sale, message="Sale updated")
@@ -1152,9 +1271,16 @@ def _create_single_device_assignment(
     if assignment_data.get('sgk_support') is not None or assignment_data.get('sgkSupport') is not None:
         sgk_support = float(assignment_data.get('sgk_support') or assignment_data.get('sgkSupport'))
     
-    net_payable = final_sale_price
+    # Calculate net_payable - MUST multiply by quantity for bilateral!
+    ear_val = str(assignment_data.get('ear', '')).lower()
+    qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+    net_payable = final_sale_price * qty
+    
+    # Allow explicit net_payable override (already as TOTAL)
     if assignment_data.get('patient_payment') is not None or assignment_data.get('patientPayment') is not None:
         net_payable = float(assignment_data.get('patient_payment') or assignment_data.get('patientPayment'))
+    elif assignment_data.get('net_payable') is not None:
+        net_payable = float(assignment_data.get('net_payable'))
     
     # Create assignment
     assignment = DeviceAssignment(
@@ -1570,13 +1696,17 @@ def update_device_assignment(
     
     logger.info(f"🔢 Pricing recalculation check: {should_recalculate}, data keys: {list(data.keys())}")
     
-    # Check for explicit pricing overrides
+    # Check for explicit pricing overrides (support both snake_case and camelCase)
+    explicit_list_price = data.get('list_price')
     explicit_sale_price = data.get('sale_price')
-    explicit_patient_payment = data.get('patient_payment')
-    explicit_sgk = data.get('sgk_reduction') or data.get('sgkSupport')
+    explicit_patient_payment = data.get('patient_payment') or data.get('net_payable')
+    explicit_sgk = data.get('sgk_support') or data.get('sgk_reduction')
     
-    if explicit_sale_price is not None or explicit_patient_payment is not None or explicit_sgk is not None:
+    if explicit_list_price is not None or explicit_sale_price is not None or explicit_patient_payment is not None or explicit_sgk is not None:
         # Apply explicit pricing selectively
+        if explicit_list_price is not None:
+            assignment.list_price = Decimal(str(explicit_list_price))
+        
         if explicit_sgk is not None:
             assignment.sgk_support = Decimal(str(explicit_sgk))
         
@@ -1586,7 +1716,11 @@ def update_device_assignment(
         if explicit_sale_price is not None:
             assignment.sale_price = Decimal(str(explicit_sale_price))
         
-        logger.info(f"✅ Selectively applied explicit pricing: sale_price={explicit_sale_price}, patient_payment={explicit_patient_payment}, sgk={explicit_sgk}")
+        logger.info(f"✅ Selectively applied explicit pricing: list_price={explicit_list_price}, sale_price={explicit_sale_price}, patient_payment={explicit_patient_payment}, sgk={explicit_sgk}")
+        
+        # Flush and refresh to ensure sync_sale_totals sees updated values
+        db.flush()
+        db.refresh(assignment)
     elif should_recalculate:
         recalculate_assignment_pricing(db, assignment)
     
@@ -1633,6 +1767,7 @@ def update_device_assignment(
                         logger.error(f"Failed to sync down payment: {e}")
                 
                 # Sync sale totals
+                db.expire_all()  # Clear session cache before sync
                 sync_sale_totals(db, sale.id)
         except Exception as e:
             logger.warning(f"Failed to sync sale record: {e}")

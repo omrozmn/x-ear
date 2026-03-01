@@ -473,6 +473,9 @@ class PartyService:
             final_device['salePrice'] = float(assignment.sale_price) if assignment.sale_price is not None else 0.0
             final_device['listPrice'] = float(assignment.list_price) if assignment.list_price is not None else 0.0
             
+            # === Boolean field handling: Ensure is_loaner is always boolean ===
+            final_device['isLoaner'] = bool(assignment.is_loaner) if assignment.is_loaner is not None else False
+            
             # === Flask parity: Fetch downPayment from PaymentRecord ===
             final_device['downPayment'] = 0.0
             if assignment.sale_id:

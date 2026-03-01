@@ -257,17 +257,14 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
                 </p>
               </div>
 
-              {/* SGK Support - Per ear amount for bilateral assignments */}
+              {/* SGK Support - Backend already stores per-ear amount */}
               {(() => {
-                // Backend stores sgkSupport as total (both ears combined for bilateral)
-                // We need to divide by 2 for bilateral to show per-ear amount
                 const rawSgk = device.sgkSupport ?? device.sgk_support ?? device.sgkReduction ?? null;
 
                 if (rawSgk !== null && rawSgk !== undefined && Number(rawSgk) > 0) {
-                  const earVal = (device.ear || device.earSide || device.ear_side || '').toString().toLowerCase();
-                  const isBilateral = earVal.startsWith('b') || earVal === 'both' || earVal === 'bilateral';
-                  // For bilateral, divide by 2 to show per-ear SGK support
-                  const perEarSgk = isBilateral ? Number(rawSgk) / 2 : Number(rawSgk);
+                  // Backend stores per-ear SGK value (e.g., 4239.2 for each ear)
+                  // No need to divide for bilateral - just display as-is
+                  const perEarSgk = Number(rawSgk);
 
                   return (
                     <div>
@@ -284,6 +281,20 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
                 <span className="text-gray-500 dark:text-gray-400">Ödeme Yöntemi:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">{getPaymentMethodText(device.paymentMethod)}</p>
               </div>
+
+              {/* Down Payment / Peşinat */}
+              {(() => {
+                const downPayment = device.downPayment ?? device.down_payment ?? 0;
+                if (downPayment > 0) {
+                  return (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">Alınan Ödeme (Peşinat):</span>
+                      <p className="font-medium text-blue-600 dark:text-blue-400">{formatCurrency(downPayment)}</p>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </>
           )}
 

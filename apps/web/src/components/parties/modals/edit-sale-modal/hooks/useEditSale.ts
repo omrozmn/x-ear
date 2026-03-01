@@ -28,6 +28,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     salePrice: 0,
     discountAmount: 0,
     sgkCoverage: 0,
+    sgkScheme: '',
     downPayment: 0,
     notes: '',
     saleDate: '',
@@ -149,16 +150,18 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
   }, [sale?.id, isOpen]);
 
   // Initialize form data when sale or productDetails availability changes
-  // Note: We use a ref or check to prevent overwriting user edits if we handled that, 
-  // but here we assume simple init on open + update when data arrives.
   useEffect(() => {
     if (sale && isOpen) {
-      // Use efficient fallbacks for extended Sale properties
       const s = sale as unknown as Record<string, unknown>;
       const extendedSale = sale as unknown as ExtendedSaleRead;
 
-      // Get device data from devices array (primary source)
-      const firstDevice = extendedSale.devices?.[0];
+      // Get device data from devices array
+      const devices = extendedSale.devices || [];
+      const firstDevice = devices[0];
+      
+      // Calculate totals from ALL devices (for bilateral sales)
+      const totalListPrice = devices.reduce((sum, d) => sum + (d.listPrice || 0), 0);
+      const totalSgkCoverage = devices.reduce((sum, d) => sum + (d.sgkSupport || d.sgkCoverageAmount || 0), 0);
       
       setFormData(prev => ({
         ...prev,
@@ -171,10 +174,12 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
         serialNumber: firstDevice?.serialNumber || firstDevice?.serialNumberLeft || firstDevice?.serialNumberRight || productDetails?.availableSerials?.[0] || (s.serialNumber as string) || (s.serial_number as string) || '',
         serialNumberLeft: firstDevice?.serialNumberLeft || (s.serialNumberLeft as string) || (s.serial_number_left as string) || '',
         serialNumberRight: firstDevice?.serialNumberRight || (s.serialNumberRight as string) || (s.serial_number_right as string) || '',
-        listPrice: firstDevice?.listPrice || extendedSale.listPriceTotal || (s.listPrice as number) || (s.list_price as number) || 0,
-        salePrice: firstDevice?.salePrice || extendedSale.totalAmount || (s.amount as number) || 0,
+        // Use calculated totals for bilateral sales
+        listPrice: totalListPrice || extendedSale.listPriceTotal || extendedSale.totalAmount || (s.listPrice as number) || (s.list_price as number) || 0,
+        salePrice: extendedSale.finalAmount || extendedSale.totalAmount || (s.amount as number) || 0,
         discountAmount: extendedSale.discountAmount || (s.discount_amount as number) || 0,
-        sgkCoverage: firstDevice?.sgkCoverageAmount || extendedSale.sgkCoverage || (s.sgk_coverage as number) || 0,
+        sgkCoverage: totalSgkCoverage || extendedSale.sgkCoverage || (s.sgk_coverage as number) || 0,
+        sgkScheme: firstDevice?.sgkScheme || (s.sgk_scheme as string) || '',
         downPayment: extendedSale.paidAmount || (s.paid_amount as number) || 0,
         notes: sale.notes || '',
         saleDate: sale.saleDate ? sale.saleDate.split('T')[0] : ((s.date as string)?.split('T')[0] || ''),
@@ -275,6 +280,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       salePrice: 0,
       discountAmount: 0,
       sgkCoverage: 0,
+      sgkScheme: '',
       downPayment: 0,
       notes: '',
       saleDate: '',

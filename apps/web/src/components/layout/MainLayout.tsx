@@ -216,6 +216,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       icon: Settings,
       submenu: [
         { label: t('nav.settings.general'), href: '/settings' },
+        { label: 'SGK Ayarları', href: '/settings/sgk' },
         { label: t('nav.settings.integration'), href: '/settings/integration' },
         { label: t('nav.settings.team'), href: '/settings/team' },
         { label: t('nav.settings.subscription'), href: '/settings/subscription' }

@@ -195,6 +195,7 @@ def sync_sale_totals(session: Session, sale_id: str) -> None:
         total_sgk += float(a.sgk_support or 0) * a_qty
     
     # Update sale totals
+    sale.list_price_total = total_list  # Add this line!
     sale.total_amount = total_list
     sale.final_amount = total_final
     sale.sgk_coverage = total_sgk

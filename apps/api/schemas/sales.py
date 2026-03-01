@@ -221,9 +221,11 @@ class DeviceAssignmentUpdate(AppBaseModel):
     
     # Explicit overrides
     sale_price: Optional[float] = Field(None, alias="salePrice")
+    list_price: Optional[float] = Field(None, alias="listPrice")
     patient_payment: Optional[float] = Field(None, alias="patientPayment")
+    net_payable: Optional[float] = Field(None, alias="netPayable")
     sgk_reduction: Optional[float] = Field(None, alias="sgkReduction")
-    sgkSupport: Optional[float] = None # Alias
+    sgk_support: Optional[float] = Field(None, alias="sgkSupport")
     
     # Down payment
     down_payment: Optional[float] = Field(None, alias="downPayment")

@@ -73,12 +73,12 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
     onClose();
   };
 
-  // Get assignment ID - prefer from devices array, fallback to ear assignment IDs
+  // Get assignment UID - prefer from devices array
   // Note: For bilateral sales, there may be multiple assignments
-  const assignmentIds = sale.devices?.map(d => d.assignmentUid).filter(Boolean) || [];
-  const assignmentId = assignmentIds.length > 0 
-    ? assignmentIds.join(', ')
-    : (sale.rightEarAssignmentId || sale.leftEarAssignmentId || '');
+  const assignmentUids = sale.devices?.map(d => d.assignmentUid).filter(Boolean) || [];
+  const displayAssignmentId = assignmentUids.length > 0 
+    ? assignmentUids.join(', ')
+    : '';
 
   const promissoryNotes = promissoryNotesData?.data || [];
 
@@ -86,7 +86,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`Satış Düzenle - Satış ID: ${sale.id}${assignmentId ? ` | Atama ID: ${assignmentId}` : ''}`}
+      title={`Satış Düzenle - Satış ID: ${sale.id}${displayAssignmentId ? ` | Atama ID: ${displayAssignmentId}` : ''}`}
       size="xl"
       showFooter={false}
       className="z-[100]"
@@ -224,16 +224,60 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">SGK Karşılığı</label>
+                      <label className="text-xs text-gray-600 block mb-1">SGK Destek Türü</label>
+                      <select data-allow-raw="true"
+                        value={formData.sgkScheme || ''}
+                        onChange={(e) => {
+                          const scheme = e.target.value;
+                          updateFormData({ sgkScheme: scheme });
+                          // Auto-calculate SGK coverage based on scheme (from settings/fallback)
+                          const sgkAmounts: Record<string, number> = {
+                            'no_coverage': 0,
+                            'under4_parent_working': 6104.44,
+                            'under4_parent_retired': 7630.56,
+                            'age5_12_parent_working': 5426.17,
+                            'age5_12_parent_retired': 6782.72,
+                            'age13_18_parent_working': 5087.04,
+                            'age13_18_parent_retired': 6358.88,
+                            'over18_working': 3391.36,
+                            'over18_retired': 4239.20,
+                            'under18': 5000,
+                            'standard': 0
+                          };
+                          const amount = sgkAmounts[scheme] || 0;
+                          updateFormData({ sgkCoverage: amount });
+                        }}
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">SGK Desteği Yok</option>
+                        <option value="under4_parent_working">4 Yaş Altı (Veli Çalışan)</option>
+                        <option value="under4_parent_retired">4 Yaş Altı (Veli Emekli)</option>
+                        <option value="age5_12_parent_working">5-12 Yaş (Veli Çalışan)</option>
+                        <option value="age5_12_parent_retired">5-12 Yaş (Veli Emekli)</option>
+                        <option value="age13_18_parent_working">13-18 Yaş (Veli Çalışan)</option>
+                        <option value="age13_18_parent_retired">13-18 Yaş (Veli Emekli)</option>
+                        <option value="over18_working">18+ Yaş (Çalışan)</option>
+                        <option value="over18_retired">18+ Yaş (Emekli)</option>
+                        <option value="under18">Genel (18 Yaş Altı)</option>
+                        <option value="standard">Standart</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-gray-600 block mb-1">SGK Desteği (₺)</label>
                       <input
                         type="number"
                         value={formData.sgkCoverage === 0 ? '' : formData.sgkCoverage}
                         onChange={(e) => updateFormData({ sgkCoverage: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
                         placeholder="0.00"
                         step="0.01"
+                        readOnly
                       />
                     </div>
+                    <div className="invisible"></div>
                   </div>
 
                   <div>
@@ -249,13 +293,13 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="text-xs text-gray-600 block mb-1">Toplam Tutar</label>
+                    <label className="text-xs text-gray-600 block mb-1">Toplam Tutar (KDV Dahil %{sale.kdvRate || 20})</label>
                     <div className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 font-semibold text-gray-900">
                       {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.totalAmount || 0)}
                     </div>
                     {sale.kdvAmount != null && sale.kdvAmount > 0 && (
                       <div className="text-[10px] text-gray-500 mt-0.5 px-2">
-                        KDV: {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.kdvAmount || 0)} (%{sale.kdvRate || 20})
+                        KDV Tutarı: {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.kdvAmount || 0)}
                       </div>
                     )}
                   </div>

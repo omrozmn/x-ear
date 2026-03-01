@@ -54,6 +54,7 @@ export interface SaleFormData {
   salePrice: number;
   discountAmount: number;
   sgkCoverage: number;
+  sgkScheme?: string; // SGK scheme selection
   downPayment: number;
   notes: string;
   saleDate: string;

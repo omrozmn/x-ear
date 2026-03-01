@@ -250,7 +250,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       const fieldMapping: Record<string, string> = {
         sgkSupportType: 'sgk_scheme',
         sgkScheme: 'sgk_scheme',
-        listPrice: 'base_price',
+        listPrice: 'list_price',
         basePrice: 'base_price',
         discountType: 'discount_type',
         discountValue: 'discount_value',
@@ -264,7 +264,8 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         serialNumberLeft: 'serial_number_left',
         serialNumberRight: 'serial_number_right',
         salePrice: 'sale_price',
-        partyPayment: 'party_payment',
+        partyPayment: 'patient_payment',
+        netPayable: 'net_payable',
         sgkReduction: 'sgk_reduction',
         sgkSupport: 'sgk_support',
         isLoaner: 'is_loaner',
