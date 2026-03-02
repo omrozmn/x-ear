@@ -60,6 +60,17 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   /* Removed incorrect client-side VAT calculation. 
      Backend's finalAmount/totalAmount is already the correct figure. */
 
+  const getCategoryLabel = (category: string): string => {
+    const categoryMap: Record<string, string> = {
+      'hearing_aid': 'İşitme Cihazı',
+      'battery': 'Pil',
+      'accessory': 'Aksesuar',
+      'service': 'Servis',
+      'other': 'Diğer'
+    };
+    return categoryMap[category] || category;
+  };
+
   const renderDevicesSummary = (sale: ExtendedSaleRead) => {
     const devices = sale.devices || [];
     if (!devices || devices.length === 0) {
@@ -72,7 +83,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
           <div key={index} className="text-sm">
             <div className="font-medium text-gray-900">{device.brand} {device.model}</div>
             {device.category && (
-              <div className="text-[10px] text-gray-400 uppercase">{device.category}</div>
+              <div className="text-[10px] text-gray-400 uppercase">{getCategoryLabel(device.category)}</div>
             )}
           </div>
         ))}
@@ -89,29 +100,37 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       return <span className="text-gray-500">-</span>;
     }
 
+    // Get unique barcode (should be same for all devices in bilateral sale)
+    const firstDevice = devices[0];
+    const barcode = firstDevice?.barcode;
+    
+    // Collect all serial numbers with ear information
+    const serialNumbers: { text: string; color: string }[] = [];
+    devices.forEach(device => {
+      if (device.serialNumberLeft) {
+        serialNumbers.push({ text: `Sol: ${device.serialNumberLeft}`, color: 'text-blue-600' });
+      }
+      if (device.serialNumberRight) {
+        serialNumbers.push({ text: `Sağ: ${device.serialNumberRight}`, color: 'text-red-600' });
+      }
+    });
+
     return (
       <div className="space-y-1">
-        {devices.map((device, index: number) => (
-          <div key={index} className="text-[11px]">
-            {device.barcode && (
-              <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block mb-0.5">
-                {device.barcode}
-              </div>
-            )}
-            {device.serialNumber && (
-              <div className="font-mono text-[11px] text-gray-700">{device.serialNumber}</div>
-            )}
-            {device.serialNumberLeft && (
-              <div className="font-mono text-[11px] text-blue-600">Sol: {device.serialNumberLeft}</div>
-            )}
-            {device.serialNumberRight && (
-              <div className="font-mono text-[11px] text-red-600">Sağ: {device.serialNumberRight}</div>
-            )}
-            {!device.barcode && !device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
-              <div className="text-[10px] text-gray-400">-</div>
-            )}
+        {barcode && (
+          <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block mb-0.5">
+            {barcode}
           </div>
-        ))}
+        )}
+        {serialNumbers.length > 0 ? (
+          serialNumbers.map((serial, index) => (
+            <div key={index} className={`font-mono text-[11px] ${serial.color}`}>
+              {serial.text}
+            </div>
+          ))
+        ) : (
+          !barcode && <div className="text-[10px] text-gray-400">-</div>
+        )}
       </div>
     );
   };
@@ -233,13 +252,38 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               // Cast to ExtendedSaleRead to access runtime properties
               const extendedSale = sale as unknown as ExtendedSaleRead;
 
-              // GOLDEN PATH: Trust the backend's computed values
+              // Calculate totals from devices array (for bilateral sales)
+              const devices = extendedSale.devices || [];
+              const totalSgkFromDevices = devices.reduce((sum, d) => sum + (d.sgkSupport || d.sgkCoverageAmount || 0), 0);
+              const totalListPriceFromDevices = devices.reduce((sum, d) => sum + (d.listPrice || 0), 0);
+              
+              // Get discount type from first device (all devices should have same discount type)
+              const firstDevice = devices[0];
+              const discountType = firstDevice?.discountType || 'none';
+              const discountValue = firstDevice?.discountValue || 0;
+
+              // GOLDEN PATH: Trust the backend's computed values, but use devices array for SGK
               const displayTotal = extendedSale.finalAmount ?? extendedSale.totalAmount ?? 0;
               const paidAmount = extendedSale.paidAmount ?? 0;
-              const remainingAmount = extendedSale.remainingAmount ?? 0;
+              // Calculate remaining amount correctly: finalAmount - paidAmount
+              const remainingAmount = Math.max(0, displayTotal - paidAmount);
               const discountAmount = extendedSale.discountAmount ?? 0;
-              const listPrice = extendedSale.listPriceTotal ?? extendedSale.totalAmount ?? 0;
-              const sgkCoverage = extendedSale.sgkCoverage ?? 0;
+              const listPrice = totalListPriceFromDevices || (extendedSale.listPriceTotal ?? extendedSale.totalAmount ?? 0);
+              const sgkCoverage = totalSgkFromDevices || (extendedSale.sgkCoverage ?? 0);
+              
+              // Format discount display with type indicator
+              const formatDiscount = () => {
+                if (discountAmount <= 0) return '-';
+                
+                if (discountType === 'percentage' && discountValue > 0) {
+                  return `-${discountValue}% (${formatCurrency(discountAmount)})`;
+                } else if (discountType === 'amount' && discountValue > 0) {
+                  return `-${formatCurrency(discountValue)}`;
+                } else {
+                  // Fallback: just show the amount
+                  return `-${formatCurrency(discountAmount)}`;
+                }
+              };
 
               const hasInvoice = Boolean(sale.invoice);
               // Backend 'status' is authoritative
@@ -270,7 +314,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                     {sgkCoverage > 0 ? formatCurrency(sgkCoverage) : '-'}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${discountAmount > 0 ? 'text-red-600' : 'text-gray-500'}`}>
-                    {discountAmount > 0 ? '-' : ''}{formatCurrency(discountAmount)}
+                    {formatDiscount()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(displayTotal)}

@@ -156,6 +156,15 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
     if not formatted_name:
         formatted_name = 'Device'
     
+    # Map serial number to correct field based on ear side
+    ear_side = str(assignment.ear or '').lower()
+    if serial_number or assignment.serial_number:
+        main_serial = serial_number or assignment.serial_number
+        if ear_side == 'left':
+            serial_number_left = serial_number_left or assignment.serial_number_left or main_serial
+        elif ear_side == 'right':
+            serial_number_right = serial_number_right or assignment.serial_number_right or main_serial
+    
     # CRITICAL: Return ALL fields from assignment for consistency across endpoints
     return {
         # CORRECT ID - assignment ID, not device/inventory ID!
@@ -306,11 +315,18 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     # Extract first device info for sale-level fields (for backwards compatibility)
     first_device = devices[0] if devices else {}
     
+    # Calculate total net payable (sum of all devices' net_payable)
+    total_net_payable = sum(float(d.get('netPayable') or 0) for d in devices) if devices else float(sale.patient_payment or sale.total_amount or 0)
+    
+    # Calculate total SGK coverage (sum of all devices' sgkSupport)
+    total_sgk_coverage = sum(float(d.get('sgkSupport') or 0) for d in devices) if devices else sgk_coverage_value
+    
     # Debug logging
     logger.info(f"Building sale data for {sale.id}: devices count={len(devices)}")
     if first_device:
         logger.info(f"First device sample keys: {list(first_device.keys())[:10]}")
         logger.info(f"First device brand: {first_device.get('brand', 'MISSING')}, deviceName: {first_device.get('deviceName', 'MISSING')}")
+    logger.info(f"Total net payable: {total_net_payable}, Total SGK: {total_sgk_coverage}")
     
     sale_dict = {
         'id': sale.id,
@@ -319,16 +335,16 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'branchId': sale.branch_id,
         'saleDate': sale.sale_date.isoformat() if sale.sale_date else None,
         'listPriceTotal': float(sale.list_price_total) if sale.list_price_total else None,
-        'totalAmount': float(sale.total_amount) if sale.total_amount else None,
+        'totalAmount': total_net_payable,  # CRITICAL FIX: Use net payable (after SGK deduction)
         'discountAmount': float(sale.discount_amount) if sale.discount_amount else 0.0,
-        'finalAmount': float(sale.final_amount) if sale.final_amount else None,
+        'finalAmount': total_net_payable,  # CRITICAL FIX: Use net payable (after SGK deduction)
         'paidAmount': float(sale.paid_amount) if sale.paid_amount else 0.0,
         'rightEarAssignmentId': sale.right_ear_assignment_id,
         'leftEarAssignmentId': sale.left_ear_assignment_id,
         'status': sale.status,
         'paymentMethod': sale.payment_method,
-        'sgkCoverage': float(sale.sgk_coverage) if sale.sgk_coverage else 0.0,
-        'patientPayment': float(sale.patient_payment) if sale.patient_payment else None,
+        'sgkCoverage': total_sgk_coverage,  # Use calculated total SGK
+        'patientPayment': total_net_payable,  # Patient pays net payable
         'reportStatus': sale.report_status,
         'notes': sale.notes,
         'kdvRate': float(sale.kdv_rate) if sale.kdv_rate else 20.0,
@@ -340,6 +356,8 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'model': first_device.get('model'),
         'barcode': first_device.get('barcode'),
         'serialNumber': first_device.get('serialNumber'),
+        'serialNumberLeft': first_device.get('serialNumberLeft'),
+        'serialNumberRight': first_device.get('serialNumberRight'),
         'category': first_device.get('category'),
         'listPrice': first_device.get('listPrice'),
         'salePrice': first_device.get('salePrice'),
@@ -349,10 +367,14 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'discountValue': first_device.get('discountValue'),
         'downPayment': first_device.get('downPayment'),
         'deliveryStatus': first_device.get('deliveryStatus'),
+        'netPayable': total_net_payable,  # Total net payable
         
-        # Calculated fields
-        'remainingAmount': float(sale.total_amount or 0) - float(sale.paid_amount or 0),
-        'paymentStatus': 'paid' if float(sale.paid_amount or 0) >= float(sale.total_amount or 0) else 'pending',
+        # Override report_status from device if available
+        'reportStatus': first_device.get('reportStatus') or sale.report_status,
+        
+        # Calculated fields - CRITICAL FIX: Use net payable for remaining amount
+        'remainingAmount': total_net_payable - float(sale.paid_amount or 0),
+        'paymentStatus': 'paid' if float(sale.paid_amount or 0) >= total_net_payable else 'pending',
         'invoiceStatus': invoice_data['status'] if invoice_data else 'not_issued',
         
         # Enriched
@@ -361,8 +383,7 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'paymentRecords': payments_data,
         'payments': payments_data,
         'invoice': invoice_data,
-        'patient': patient_data,
-        'sgkCoverage': sgk_coverage_value # Override with recalc check if needed
+        'patient': patient_data
     }
     
     return sale_dict
@@ -936,37 +957,164 @@ def create_sale(
     db.add(sale)
     db.flush() # Get ID
     
-    # 5. Device Assignment
-    assignment = DeviceAssignment(
-        tenant_id=sale.tenant_id,
-        branch_id=access.branch_id if hasattr(access, 'branch_id') else None,
-        party_id=sale.party_id,
-        device_id=product.id,
-        inventory_id=product.id,
-        sale_id=sale.id,
-        reason='Sale',
-        from_inventory=True,
-        list_price=base_price,
-        sale_price=final_price,
-        net_payable=final_price,
-        payment_method=sale_in.payment_method,
-        notes=f"Stoktan satış: {product.name} - {product.brand or ''} {product.model or ''}",
-        assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{uuid4().hex[:4].upper()}",
-        ear=getattr(sale_in, 'ear_side', None) or 'both'
-    )
-    if hasattr(sale_in, 'serial_number') and sale_in.serial_number: 
-        assignment.serial_number = sale_in.serial_number
-    if hasattr(sale_in, 'serial_number_left') and sale_in.serial_number_left: 
-        assignment.serial_number_left = sale_in.serial_number_left
-    if hasattr(sale_in, 'serial_number_right') and sale_in.serial_number_right: 
-        assignment.serial_number_right = sale_in.serial_number_right
+    # 5. Device Assignment - Create 2 separate assignments for bilateral
+    ear_side = getattr(sale_in, 'ear_side', None) or 'both'
     
-    db.add(assignment)
+    # Determine if bilateral
+    is_bilateral = ear_side.lower() in ('both', 'bilateral')
+    
+    # Get SGK scheme and calculate per-ear SGK support
+    sgk_scheme = getattr(sale_in, 'sgk_scheme', None)
+    sgk_per_ear = 0.0
+    
+    # Fallback SGK values (per ear)
+    sgk_fallback_values = {
+        'no_coverage': 0,
+        'under4_parent_working': 6104.44,
+        'under4_parent_retired': 7630.56,
+        'age5_12_parent_working': 5426.17,
+        'age5_12_parent_retired': 6782.72,
+        'age13_18_parent_working': 5087.04,
+        'age13_18_parent_retired': 6358.88,
+        'over18_working': 3391.36,
+        'over18_retired': 4239.20
+    }
+    
+    if sgk_scheme and sgk_scheme != 'no_coverage':
+        try:
+            # Try to get from settings first
+            from models.system import Settings
+            settings_record = Settings.get_system_settings()
+            settings = settings_record.settings_json if settings_record else {}
+            sgk_settings = settings.get('sgk', {})
+            schemes = sgk_settings.get('schemes', {})
+            
+            # Get scheme coverage amount
+            scheme_data = schemes.get(sgk_scheme, {})
+            sgk_per_ear = float(scheme_data.get('coverage_amount', 0))
+            
+            # Fallback to hardcoded values if not in settings
+            if sgk_per_ear == 0:
+                sgk_per_ear = sgk_fallback_values.get(sgk_scheme, 0)
+        except Exception as e:
+            logger.warning(f"Failed to get SGK from settings, using fallback: {e}")
+            sgk_per_ear = sgk_fallback_values.get(sgk_scheme, 0)
+        
+        logger.info(f"SGK scheme: {sgk_scheme}, per-ear coverage: {sgk_per_ear}")
+    
+    if is_bilateral:
+        # Create LEFT assignment
+        assignment_left = DeviceAssignment(
+            tenant_id=sale.tenant_id,
+            branch_id=access.branch_id if hasattr(access, 'branch_id') else None,
+            party_id=sale.party_id,
+            device_id=product.id,
+            inventory_id=product.id,
+            sale_id=sale.id,
+            reason='sale',
+            from_inventory=True,
+            list_price=base_price / 2,  # Per-ear price
+            sale_price=final_price / 2,  # Per-ear price
+            sgk_support=sgk_per_ear,  # Per-ear SGK
+            sgk_scheme=sgk_scheme,
+            net_payable=(final_price / 2) - sgk_per_ear,  # Per-ear net payable after SGK
+            payment_method=sale_in.payment_method,
+            report_status=sale_in.report_status,
+            notes=f"Stoktan satış (Sol): {product.name} - {product.brand or ''} {product.model or ''}",
+            assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{uuid4().hex[:4].upper()}",
+            ear='left'
+        )
+        if hasattr(sale_in, 'serial_number_left') and sale_in.serial_number_left: 
+            assignment_left.serial_number = sale_in.serial_number_left
+            assignment_left.serial_number_left = sale_in.serial_number_left
+        
+        db.add(assignment_left)
+        
+        # Create RIGHT assignment
+        assignment_right = DeviceAssignment(
+            tenant_id=sale.tenant_id,
+            branch_id=access.branch_id if hasattr(access, 'branch_id') else None,
+            party_id=sale.party_id,
+            device_id=product.id,
+            inventory_id=product.id,
+            sale_id=sale.id,
+            reason='sale',
+            from_inventory=True,
+            list_price=base_price / 2,  # Per-ear price
+            sale_price=final_price / 2,  # Per-ear price
+            sgk_support=sgk_per_ear,  # Per-ear SGK
+            sgk_scheme=sgk_scheme,
+            net_payable=(final_price / 2) - sgk_per_ear,  # Per-ear net payable after SGK
+            payment_method=sale_in.payment_method,
+            report_status=sale_in.report_status,
+            notes=f"Stoktan satış (Sağ): {product.name} - {product.brand or ''} {product.model or ''}",
+            assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{uuid4().hex[:4].upper()}",
+            ear='right'
+        )
+        if hasattr(sale_in, 'serial_number_right') and sale_in.serial_number_right: 
+            assignment_right.serial_number = sale_in.serial_number_right
+            assignment_right.serial_number_right = sale_in.serial_number_right
+        
+        db.add(assignment_right)
+        
+        # Update sale SGK coverage to total (2 x per-ear)
+        total_sgk = sgk_per_ear * 2
+        sale.sgk_coverage = Decimal(str(total_sgk))
+        sale.patient_payment = Decimal(str(final_price - total_sgk))
+        
+        logger.info(f"✅ Created bilateral sale: 2 assignments (left + right) for sale {sale.id}, SGK per ear: {sgk_per_ear}, total SGK: {total_sgk}")
+    else:
+        # Single ear assignment
+        assignment = DeviceAssignment(
+            tenant_id=sale.tenant_id,
+            branch_id=access.branch_id if hasattr(access, 'branch_id') else None,
+            party_id=sale.party_id,
+            device_id=product.id,
+            inventory_id=product.id,
+            sale_id=sale.id,
+            reason='sale',
+            from_inventory=True,
+            list_price=base_price,
+            sale_price=final_price,
+            sgk_support=sgk_per_ear,  # Single ear SGK
+            sgk_scheme=sgk_scheme,
+            net_payable=final_price - sgk_per_ear,  # Net payable after SGK
+            payment_method=sale_in.payment_method,
+            report_status=sale_in.report_status,
+            notes=f"Stoktan satış: {product.name} - {product.brand or ''} {product.model or ''}",
+            assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{uuid4().hex[:4].upper()}",
+            ear=ear_side
+        )
+        # Set serial number based on ear side
+        if hasattr(sale_in, 'serial_number') and sale_in.serial_number:
+            assignment.serial_number = sale_in.serial_number
+            # Also set to specific ear field based on ear_side
+            if ear_side == 'left':
+                assignment.serial_number_left = sale_in.serial_number
+            elif ear_side == 'right':
+                assignment.serial_number_right = sale_in.serial_number
+        
+        # Also check for specific ear serial numbers
+        if hasattr(sale_in, 'serial_number_left') and sale_in.serial_number_left: 
+            assignment.serial_number_left = sale_in.serial_number_left
+            if not assignment.serial_number:
+                assignment.serial_number = sale_in.serial_number_left
+        if hasattr(sale_in, 'serial_number_right') and sale_in.serial_number_right: 
+            assignment.serial_number_right = sale_in.serial_number_right
+            if not assignment.serial_number:
+                assignment.serial_number = sale_in.serial_number_right
+        
+        db.add(assignment)
+        
+        # Update sale SGK coverage
+        sale.sgk_coverage = Decimal(str(sgk_per_ear))
+        sale.patient_payment = Decimal(str(final_price - sgk_per_ear))
+        
+        logger.info(f"✅ Created single ear sale: 1 assignment ({ear_side}) for sale {sale.id}, SGK: {sgk_per_ear}")
     
     # 6. Create Payment Record if down_payment provided
     if sale_in.down_payment and sale_in.down_payment > 0:
         from core.models.sales import PaymentRecord
-        from decimal import Decimal
         
         payment = PaymentRecord(
             id=f"payment_{uuid4().hex[:8]}",
@@ -977,7 +1125,7 @@ def create_sale(
             payment_method=sale_in.payment_method or 'cash',
             payment_type='down_payment',
             status='paid',
-            notes=f"Peşin ödeme (satış oluşturma sırasında)",
+            notes=f"Ön ödeme (satış oluşturma sırasında)",
             payment_date=sale_in.sale_date or datetime.utcnow(),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
@@ -986,7 +1134,8 @@ def create_sale(
     
     # 7. Update Inventory
     user_id = getattr(access, 'user_id', None) or 'system'
-    _update_inventory_stock(db, product, 1, sale.id, user_id)
+    quantity_to_deduct = 2 if is_bilateral else 1
+    _update_inventory_stock(db, product, quantity_to_deduct, sale.id, user_id)
     
     db.commit()
     db.refresh(sale)  # Refresh to load relationships
@@ -1038,25 +1187,207 @@ def update_sale(
     if sale_in.status: sale.status = sale_in.status
     if sale_in.notes: sale.notes = sale_in.notes
     
-    # Sync back to assignments (proportional distribution for bilateral)
-    if sale_in.total_amount is not None or sale_in.sgk_coverage is not None or sale_in.final_amount is not None:
-        assignments = db.query(DeviceAssignment).filter_by(sale_id=sale_id).all()
-        if assignments:
-            for assignment in assignments:
-                ear_val = str(assignment.ear or '').upper()
-                qty = 2 if ear_val in ['B', 'BOTH', 'BILATERAL'] else 1
+    # Handle ear selection changes (bilateral ↔ single ear)
+    assignments = db.query(DeviceAssignment).filter_by(sale_id=sale_id).all()
+    
+    if sale_in.ear and assignments:
+        current_ears = {a.ear for a in assignments}
+        requested_ear = sale_in.ear.lower()
+        
+        # Determine current state
+        is_currently_bilateral = len(assignments) == 2 and 'left' in current_ears and 'right' in current_ears
+        is_currently_single = len(assignments) == 1
+        
+        # Determine requested state
+        is_requested_bilateral = requested_ear in ('both', 'bilateral')
+        is_requested_single_left = requested_ear == 'left'
+        is_requested_single_right = requested_ear == 'right'
+        
+        logger.info(f"🔄 Ear change request: current={current_ears}, requested={requested_ear}, bilateral={is_currently_bilateral}, single={is_currently_single}")
+        
+        # CASE 1: Bilateral → Single (delete one assignment)
+        if is_currently_bilateral and (is_requested_single_left or is_requested_single_right):
+            # Keep the requested ear, delete the other
+            keep_ear = 'left' if is_requested_single_left else 'right'
+            delete_ear = 'right' if is_requested_single_left else 'left'
+            
+            assignment_to_keep = next((a for a in assignments if a.ear == keep_ear), None)
+            assignment_to_delete = next((a for a in assignments if a.ear == delete_ear), None)
+            
+            if assignment_to_keep and assignment_to_delete:
+                # Return stock for deleted assignment
+                if assignment_to_delete.inventory_id:
+                    inventory_item = db.get(InventoryItem, assignment_to_delete.inventory_id)
+                    if inventory_item:
+                        inventory_item.available_inventory = (inventory_item.available_inventory or 0) + 1
+                        create_stock_movement(
+                            inventory_id=assignment_to_delete.inventory_id,
+                            movement_type='return',
+                            quantity=1,
+                            tenant_id=access.tenant_id,
+                            transaction_id=sale_id,
+                            session=db
+                        )
                 
-                # Distribute sale values proportionally (divide by quantity for bilateral)
-                if sale_in.total_amount is not None:
-                    assignment.list_price = Decimal(str(sale.total_amount)) / qty
+                # Delete the assignment
+                db.delete(assignment_to_delete)
+                logger.info(f"✅ Deleted {delete_ear} ear assignment {assignment_to_delete.id}")
                 
-                if sale_in.sgk_coverage is not None:
-                    assignment.sgk_support = Decimal(str(sale.sgk_coverage)) / qty
+                # Update the remaining assignment's ear field to match the kept ear
+                assignment_to_keep.ear = keep_ear
                 
+                # Update pricing for remaining assignment (now gets full amount)
                 if sale_in.final_amount is not None:
-                    assignment.net_payable = Decimal(str(sale.final_amount)) / qty
+                    assignment_to_keep.net_payable = Decimal(str(sale_in.final_amount))
+                if sale_in.list_price_total is not None:
+                    assignment_to_keep.list_price = Decimal(str(sale_in.list_price_total))
                 
-                logger.info(f"🔄 Synced assignment {assignment.id}: list={assignment.list_price}, sgk={assignment.sgk_support}, net={assignment.net_payable}")
+                assignments = [assignment_to_keep]
+        
+        # CASE 2: Single → Bilateral (create new assignment)
+        elif is_currently_single and is_requested_bilateral:
+            existing_assignment = assignments[0]
+            existing_ear = existing_assignment.ear
+            
+            # Determine which ear the existing assignment should be
+            # If existing ear is already 'left' or 'right', keep it
+            # If it's 'both' or something else, default to 'left'
+            if existing_ear not in ('left', 'right'):
+                existing_ear = 'left'
+                existing_assignment.ear = 'left'
+            
+            new_ear = 'right' if existing_ear == 'left' else 'left'
+            
+            # Check inventory availability
+            if existing_assignment.inventory_id:
+                inventory_item = db.get(InventoryItem, existing_assignment.inventory_id)
+                if inventory_item and (inventory_item.available_inventory or 0) < 1:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=ApiError(
+                            message=f"Bilateral satış için yeterli stok yok. Lütfen stok ekleyin.",
+                            code="INSUFFICIENT_STOCK"
+                        ).model_dump(mode="json")
+                    )
+                
+                # Deduct stock
+                inventory_item.available_inventory = (inventory_item.available_inventory or 0) - 1
+                create_stock_movement(
+                    inventory_id=existing_assignment.inventory_id,
+                    movement_type='sale',
+                    quantity=-1,
+                    tenant_id=access.tenant_id,
+                    transaction_id=sale_id,
+                    session=db
+                )
+            
+            # Create new assignment for the other ear
+            new_assignment = DeviceAssignment(
+                id=f"assign_{uuid4().hex[:8]}",
+                party_id=sale.party_id,
+                sale_id=sale_id,
+                device_id=existing_assignment.device_id,
+                inventory_id=existing_assignment.inventory_id,
+                ear=new_ear,
+                reason=existing_assignment.reason,
+                list_price=existing_assignment.list_price,
+                sale_price=existing_assignment.sale_price,
+                sgk_support=existing_assignment.sgk_support,
+                sgk_scheme=existing_assignment.sgk_scheme,
+                net_payable=existing_assignment.net_payable,
+                discount_type=existing_assignment.discount_type,
+                discount_value=existing_assignment.discount_value,
+                delivery_status=existing_assignment.delivery_status,
+                report_status=existing_assignment.report_status,
+                payment_method=existing_assignment.payment_method,
+                tenant_id=access.tenant_id,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            
+            db.add(new_assignment)
+            logger.info(f"✅ Created new {new_ear} ear assignment {new_assignment.id}")
+            
+            # Update pricing for both assignments (split amounts)
+            if sale_in.final_amount is not None:
+                per_ear_amount = Decimal(str(sale_in.final_amount)) / 2
+                existing_assignment.net_payable = per_ear_amount
+                new_assignment.net_payable = per_ear_amount
+            if sale_in.list_price_total is not None:
+                per_ear_price = Decimal(str(sale_in.list_price_total)) / 2
+                existing_assignment.list_price = per_ear_price
+                new_assignment.list_price = per_ear_price
+            
+            assignments = [existing_assignment, new_assignment]
+        
+        # CASE 3: Single Left → Single Right (or vice versa)
+        elif is_currently_single and (is_requested_single_left or is_requested_single_right):
+            assignment = assignments[0]
+            old_ear = assignment.ear
+            new_ear = 'left' if is_requested_single_left else 'right'
+            
+            if old_ear != new_ear:
+                assignment.ear = new_ear
+                logger.info(f"✅ Changed ear from {old_ear} to {new_ear} for assignment {assignment.id}")
+    
+    # Update device assignments with device-specific fields
+    if not assignments:
+        assignments = db.query(DeviceAssignment).filter_by(sale_id=sale_id).all()
+    
+    if assignments:
+        num_assignments = len(assignments)
+        
+        # Calculate SGK support per assignment if sgk_scheme changed
+        sgk_support_per_ear = None
+        if sale_in.sgk_scheme:
+            # Get SGK amount from settings or fallback
+            settings = _get_settings(db, access.tenant_id)
+            sgk_amounts = {
+                'no_coverage': 0,
+                'under4_parent_working': 6104.44,
+                'under4_parent_retired': 7630.56,
+                'age5_12_parent_working': 5426.17,
+                'age5_12_parent_retired': 6782.72,
+                'age13_18_parent_working': 5087.04,
+                'age13_18_parent_retired': 6358.88,
+                'over18_working': 3391.36,
+                'over18_retired': 4239.20,
+                'under18': 5000,
+                'standard': 0
+            }
+            sgk_support_per_ear = Decimal(str(sgk_amounts.get(sale_in.sgk_scheme, 0)))
+        
+        for assignment in assignments:
+            # Update device-specific fields
+            if sale_in.sgk_scheme:
+                assignment.sgk_scheme = sale_in.sgk_scheme
+                if sgk_support_per_ear is not None:
+                    assignment.sgk_support = sgk_support_per_ear
+            
+            # Update discount type
+            if sale_in.discount_type:
+                assignment.discount_type = sale_in.discount_type
+            
+            # Update serial numbers based on ear
+            if assignment.ear == 'left' and sale_in.serial_number_left:
+                assignment.serial_number = sale_in.serial_number_left
+            elif assignment.ear == 'right' and sale_in.serial_number_right:
+                assignment.serial_number = sale_in.serial_number_right
+            
+            # Update delivery and report status
+            if sale_in.delivery_status:
+                assignment.delivery_status = sale_in.delivery_status
+            if sale_in.report_status:
+                assignment.report_status = sale_in.report_status
+            
+            # Distribute sale values equally across all assignments (only if not already handled by ear change logic)
+            if sale_in.total_amount is not None and num_assignments > 0 and not sale_in.ear:
+                assignment.list_price = Decimal(str(sale.total_amount)) / num_assignments
+            
+            if sale_in.final_amount is not None and num_assignments > 0 and not sale_in.ear:
+                assignment.net_payable = Decimal(str(sale.final_amount)) / num_assignments
+            
+            logger.info(f"🔄 Updated assignment {assignment.id}: ear={assignment.ear}, sgk_scheme={assignment.sgk_scheme}, sgk_support={assignment.sgk_support}, serial={assignment.serial_number}")
     
     db.commit()
 
@@ -1282,12 +1613,10 @@ def _create_single_device_assignment(
     if assignment_data.get('sgk_support') is not None or assignment_data.get('sgkSupport') is not None:
         sgk_support = float(assignment_data.get('sgk_support') or assignment_data.get('sgkSupport'))
     
-    # Calculate net_payable - MUST multiply by quantity for bilateral!
-    ear_val = str(assignment_data.get('ear', '')).lower()
-    qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
-    net_payable = final_sale_price * qty
+    # Calculate net_payable - NO quantity multiplier needed since we create separate assignments for bilateral
+    net_payable = final_sale_price
     
-    # Allow explicit net_payable override (already as TOTAL)
+    # Allow explicit net_payable override
     if assignment_data.get('patient_payment') is not None or assignment_data.get('patientPayment') is not None:
         net_payable = float(assignment_data.get('patient_payment') or assignment_data.get('patientPayment'))
     elif assignment_data.get('net_payable') is not None:
@@ -1301,7 +1630,7 @@ def _create_single_device_assignment(
         device_id=virtual_device.id if virtual_device else inventory_id,
         sale_id=sale_id,
         ear=assignment_data.get('ear') or 'both',
-        reason=assignment_data.get('reason', 'Sale'),
+        reason=assignment_data.get('reason', 'Satış'),
         from_inventory=(inventory_item is not None),
         inventory_id=inventory_id,
         list_price=base_price,
@@ -1498,41 +1827,108 @@ def create_device_assignments(
         # Convert Pydantic model to dict
         a_dict = assignment_data.model_dump(by_alias=False)
         
-        assignment, error, warning = _create_single_device_assignment(
-            db=db,
-            assignment_data=a_dict,
-            party_id=party_id,
-            sale_id=sale.id,
-            sgk_scheme=sgk_scheme,
-            pricing_calculation=pricing_calculation,
-            index=i,
-            tenant_id=tenant_id,
-            branch_id=branch_id,
-            created_by=access.user_id
-        )
+        # Check if bilateral - if so, create 2 separate assignments (left + right)
+        ear_val = str(a_dict.get('ear', '')).lower()
+        is_bilateral = ear_val in ['both', 'bilateral', 'b']
         
-        if error:
-            db.rollback()
-            raise HTTPException(
-                status_code=400,
-                detail=ApiError(message=error, code="ASSIGNMENT_ERROR").model_dump(mode="json"),
+        if is_bilateral:
+            # Create LEFT ear assignment
+            left_dict = a_dict.copy()
+            left_dict['ear'] = 'left'
+            # For bilateral, split serial numbers
+            if 'serial_number_left' in left_dict and left_dict['serial_number_left']:
+                left_dict['serial_number'] = left_dict['serial_number_left']
+            
+            assignment_left, error_left, warning_left = _create_single_device_assignment(
+                db=db,
+                assignment_data=left_dict,
+                party_id=party_id,
+                sale_id=sale.id,
+                sgk_scheme=sgk_scheme,
+                pricing_calculation=pricing_calculation,
+                index=i,
+                tenant_id=tenant_id,
+                branch_id=branch_id,
+                created_by=access.user_id
             )
-        
-        if warning:
-            warnings.append(warning)
-        
-        created_assignment_ids.append(assignment.id)
-        
-        # Update sale ear assignments
-        ear_val = (assignment.ear or '').lower()
-        if ear_val.startswith('r') or ear_val == 'right':
-            sale.right_ear_assignment_id = assignment.id
-        elif ear_val.startswith('l') or ear_val == 'left':
-            sale.left_ear_assignment_id = assignment.id
+            
+            if error_left:
+                db.rollback()
+                raise HTTPException(
+                    status_code=400,
+                    detail=ApiError(message=f"Left ear: {error_left}", code="ASSIGNMENT_ERROR").model_dump(mode="json"),
+                )
+            
+            if warning_left:
+                warnings.append(f"Sol kulak: {warning_left}")
+            
+            created_assignment_ids.append(assignment_left.id)
+            sale.left_ear_assignment_id = assignment_left.id
+            
+            # Create RIGHT ear assignment
+            right_dict = a_dict.copy()
+            right_dict['ear'] = 'right'
+            # For bilateral, split serial numbers
+            if 'serial_number_right' in right_dict and right_dict['serial_number_right']:
+                right_dict['serial_number'] = right_dict['serial_number_right']
+            
+            assignment_right, error_right, warning_right = _create_single_device_assignment(
+                db=db,
+                assignment_data=right_dict,
+                party_id=party_id,
+                sale_id=sale.id,
+                sgk_scheme=sgk_scheme,
+                pricing_calculation=pricing_calculation,
+                index=i,
+                tenant_id=tenant_id,
+                branch_id=branch_id,
+                created_by=access.user_id
+            )
+            
+            if error_right:
+                db.rollback()
+                raise HTTPException(
+                    status_code=400,
+                    detail=ApiError(message=f"Right ear: {error_right}", code="ASSIGNMENT_ERROR").model_dump(mode="json"),
+                )
+            
+            if warning_right:
+                warnings.append(f"Sağ kulak: {warning_right}")
+            
+            created_assignment_ids.append(assignment_right.id)
+            sale.right_ear_assignment_id = assignment_right.id
+            
         else:
-            if not sale.right_ear_assignment_id:
+            # Single ear assignment (left or right)
+            assignment, error, warning = _create_single_device_assignment(
+                db=db,
+                assignment_data=a_dict,
+                party_id=party_id,
+                sale_id=sale.id,
+                sgk_scheme=sgk_scheme,
+                pricing_calculation=pricing_calculation,
+                index=i,
+                tenant_id=tenant_id,
+                branch_id=branch_id,
+                created_by=access.user_id
+            )
+            
+            if error:
+                db.rollback()
+                raise HTTPException(
+                    status_code=400,
+                    detail=ApiError(message=error, code="ASSIGNMENT_ERROR").model_dump(mode="json"),
+                )
+            
+            if warning:
+                warnings.append(warning)
+            
+            created_assignment_ids.append(assignment.id)
+            
+            # Update sale ear assignments
+            if ear_val.startswith('r') or ear_val == 'right':
                 sale.right_ear_assignment_id = assignment.id
-            elif not sale.left_ear_assignment_id:
+            elif ear_val.startswith('l') or ear_val == 'left':
                 sale.left_ear_assignment_id = assignment.id
     
     # Create payment plan if needed
@@ -1770,7 +2166,7 @@ def update_device_assignment(
                                         payment_method=assignment.payment_method or 'cash',
                                         payment_type='down_payment',
                                         status='paid',
-                                        notes='Peşinat (Cihaz Düzenleme)'
+                                        notes='Ön ödeme (Cihaz Düzenleme)'
                                     )
                                     db.add(payment)
                                     logger.info(f"✅ Created new down payment record for: {down_val}")

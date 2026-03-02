@@ -168,7 +168,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             onChange={(e) => updateFormData('reason', e.target.value)}
             options={[
               { value: '', label: 'Sebep seçiniz' },
-              ...(!isManualMode ? [{ value: 'sale', label: 'Satış' }] : []),
+              { value: 'sale', label: 'Satış' },
               { value: 'service', label: 'Servis' },
               { value: 'repair', label: 'Tamir' },
               { value: 'trial', label: 'Deneme' },
@@ -224,14 +224,14 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             const isSelected = formData.ear === ear.value;
             const colorClasses = {
               blue: isSelected
-                ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200'
-                : 'border-blue-300 bg-white text-blue-600 hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/10',
+                ? 'border-blue-600 border-4 bg-blue-50 text-blue-800 shadow-lg dark:bg-blue-900/40 dark:text-blue-100 dark:border-blue-500'
+                : 'border-blue-300 border-2 bg-white text-blue-600 hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/10',
               red: isSelected
-                ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200'
-                : 'border-red-300 bg-white text-red-600 hover:bg-red-50 dark:bg-slate-800 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/10',
+                ? 'border-red-600 border-4 bg-red-50 text-red-800 shadow-lg dark:bg-red-900/40 dark:text-red-100 dark:border-red-500'
+                : 'border-red-300 border-2 bg-white text-red-600 hover:bg-red-50 dark:bg-slate-800 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/10',
               gradient: isSelected
-                ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-200'
-                : 'border-green-300 bg-white text-green-600 hover:bg-green-50 dark:bg-slate-800 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/10'
+                ? 'border-green-600 border-4 bg-green-50 text-green-800 shadow-lg dark:bg-green-900/40 dark:text-green-100 dark:border-green-500'
+                : 'border-green-300 border-2 bg-white text-green-600 hover:bg-green-50 dark:bg-slate-800 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/10'
             };
 
             return (
@@ -244,8 +244,8 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                   onChange={(e) => updateFormData('ear', e.target.value)}
                   className="sr-only"
                 />
-                <div className={`flex items-center justify-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${colorClasses[ear.color as keyof typeof colorClasses]}`}>
-                  <span className="text-sm font-medium">{ear.label}</span>
+                <div className={`flex items-center justify-center p-3 rounded-lg cursor-pointer transition-all ${colorClasses[ear.color as keyof typeof colorClasses]}`}>
+                  <span className={`text-sm ${isSelected ? 'font-bold' : 'font-medium'}`}>{ear.label}</span>
                 </div>
               </label>
             );
