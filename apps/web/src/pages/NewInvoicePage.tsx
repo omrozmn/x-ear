@@ -10,6 +10,10 @@ import { GOVERNMENT_EXEMPTION_REASONS } from '../constants/governmentInvoiceCons
 import { Select } from '@x-ear/ui-web';
 import { CustomerSectionCompact } from '../components/invoices/CustomerSectionCompact';
 import WithholdingCard from '../components/invoices/WithholdingCard';
+import { useIsMobile } from '../hooks/useBreakpoint';
+import { MobileLayout } from '../components/mobile/MobileLayout';
+import { MobileHeader } from '../components/mobile/MobileHeader';
+import { cn } from '@/lib/utils';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -72,6 +76,7 @@ export function NewInvoicePage() {
     scenario: 'other',
     currency: 'TRY'
   });
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (invoiceData: InvoiceFormData) => {
     setIsSaving(true);
@@ -163,6 +168,7 @@ export function NewInvoicePage() {
       onRequestLineEditor={handleRequestLineEditor}
       activeLineEditor={activeLineEditor}
       onCloseLineEditor={handleCloseLineEditor}
+      isMobile={isMobile}
     />
   );
 }
@@ -213,7 +219,7 @@ function InvoiceSidebar({
         customerAddress={extendedData?.customerAddress as string | undefined}
         customerCity={extendedData?.customerCity as string | undefined}
         customerDistrict={extendedData?.customerDistrict as string | undefined}
-        onChange={handlers?.handleExtendedFieldChange || (() => {})}
+        onChange={handlers?.handleExtendedFieldChange || (() => { })}
       />
 
       {/* SGK Section */}
@@ -242,7 +248,7 @@ function InvoiceSidebar({
           <div className="p-4">
             <GovernmentSection
               formData={extendedData as never}
-              onChange={handlers?.handleExtendedFieldChange || (() => {})}
+              onChange={handlers?.handleExtendedFieldChange || (() => { })}
             />
           </div>
         </div>
@@ -500,7 +506,128 @@ function NewInvoicePageContent({
   onRequestLineEditor?: (type: 'withholding' | 'special' | 'medical', index: number) => void;
   activeLineEditor?: ActiveLineEditor | null;
   onCloseLineEditor?: () => void;
+  isMobile?: boolean;
 }) {
+  if (isMobile) {
+    return (
+      <MobileLayout className="bg-gray-50 dark:bg-gray-950">
+        <MobileHeader
+          title="Yeni Fatura"
+          onBack={handleCancel}
+          actions={
+            <Button
+              onClick={() => handleSubmit(formData)}
+              disabled={isSaving}
+              size="sm"
+              className="bg-blue-600 text-white font-medium"
+            >
+              Kaydet
+            </Button>
+          }
+        />
+
+        <div className="p-4 space-y-4 pb-32">
+          {/* 1. Customer Selection (Critical) */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-1">
+            <CustomerSectionCompact
+              customerId={formData.customerId as string}
+              customerFirstName={formData.customerFirstName as string}
+              customerLastName={formData.customerLastName as string}
+              onChange={onFormDataChange}
+            />
+          </div>
+
+          {/* 2. Basic Info (Type & Scenario) */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div className="p-4 border-b border-gray-50 dark:border-gray-800">
+              <h3 className="font-bold text-gray-900 dark:text-white">Fatura Detayları</h3>
+            </div>
+            <InvoiceFormExtended
+              onSubmit={handleSubmit as never}
+              onCancel={handleCancel}
+              isLoading={isSaving}
+              onDataChange={onFormDataChange}
+              onRequestLineEditor={onRequestLineEditor}
+              initialData={formData}
+              mobileHiddenSections={['items', 'additionalInfo']} // We'll handle items separately for better UX
+            />
+          </div>
+
+          {/* 3. Conditional Sections (SGK, Government, etc.) */}
+          <div className="space-y-4">
+            {showSGKSection && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/30 overflow-hidden">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/30">
+                  <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">SGK Bilgileri</h3>
+                </div>
+                <div className="p-4">
+                  <SGKInvoiceSection
+                    sgkData={formData.sgkData as never}
+                    onChange={(data) => onFormDataChange('sgkData', data)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {showGovernmentSection && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
+                <GovernmentSection
+                  formData={formData as never}
+                  onChange={onFormDataChange}
+                />
+              </div>
+            )}
+
+            {showExportSection && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
+                <ExportDetailsCard
+                  value={formData.exportDetails as never}
+                  onChange={(data) => onFormDataChange('exportDetails', data)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 4. Product Lines (Full width for focus) */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div className="p-4 border-b border-gray-50 dark:border-gray-800">
+              <h3 className="font-bold text-gray-900 dark:text-white">Ürün ve Hizmetler</h3>
+            </div>
+            <ProductLinesSection
+              lines={(formData.items as never[]) || []}
+              onChange={(lines) => onFormDataChange('items', lines)}
+              invoiceType={formData.invoiceType}
+              scenario={formData.scenario}
+              currency={formData.currency}
+              onCurrencyChange={(c) => onFormDataChange('currency', c)}
+              generalDiscount={formData.totalDiscount}
+              onGeneralDiscountChange={(v) => onFormDataChange('totalDiscount', v)}
+            />
+          </div>
+        </div>
+
+        {/* Bottom Bar for Action Buttons on Mobile */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 safe-area-inset-bottom z-30">
+          <div className="flex gap-4">
+            <Button
+              onClick={handleSaveDraft}
+              variant="outline"
+              className="flex-1 min-h-[48px] rounded-xl border-gray-300"
+            >
+              Taslak
+            </Button>
+            <Button
+              onClick={() => handleSubmit(formData)}
+              disabled={isSaving}
+              className="flex-[2] min-h-[48px] rounded-xl bg-blue-600 text-white font-bold"
+            >
+              {isSaving ? 'Kaydediliyor...' : 'Faturayı Kes'}
+            </Button>
+          </div>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   return (
     <div className="new-invoice-page min-h-screen bg-gray-50 dark:bg-gray-900 w-full pb-8">
