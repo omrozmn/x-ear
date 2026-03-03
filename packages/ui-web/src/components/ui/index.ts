@@ -2,6 +2,7 @@
 export { Modal, useModal } from './Modal';
 export { StatsCard, createPatientStats, createInventoryStats } from './StatsCard';
 export { DataTable } from './DataTable';
+export { DataCard } from './DataCard';
 export type { Column, TableAction, BulkAction } from './DataTable';
 export { Button } from './Button';
 export { Input } from './Input';

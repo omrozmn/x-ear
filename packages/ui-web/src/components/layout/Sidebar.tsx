@@ -29,6 +29,9 @@ interface SidebarProps {
   onClose?: () => void;
   currentPath?: string;
   className?: string;
+  isMobile?: boolean;
+  isTablet?: boolean;
+  isDesktop?: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -145,6 +148,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   currentPath = '/dashboard',
   className = '',
+  isMobile = false,
+  isTablet = false,
+  isDesktop = true,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -192,39 +198,48 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return currentPath === href || currentPath.startsWith(href + '/');
   };
 
+  const handleMenuClick = (item: MenuItem, hasChildren: boolean) => {
+    if (hasChildren) {
+      toggleExpanded(item.id);
+    } else if (item.href) {
+      window.location.href = item.href;
+      if (isMobile && onClose) {
+        onClose();
+      }
+    }
+  };
+
   const renderMenuItem = (item: MenuItem, level = 0) => {
-    const hasChildren = item.children && item.children.length > 0;
+    const hasChildren = !!(item.children && item.children.length > 0);
     const isExpanded = expandedItems.has(item.id);
     const active = isActive(item.href);
+    const showCollapsed = collapsed && !isMobile;
 
     return (
       <div key={item.id}>
         <div
           data-testid={`sidebar-menu-${item.id}`}
           className={`
-            flex items-center px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors
+            flex items-center rounded-lg cursor-pointer transition-all
             ${level > 0 ? 'ml-6' : ''}
+            ${showCollapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'}
             ${active
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
             }
+            min-h-[44px]
           `}
-          onClick={() => {
-            if (hasChildren) {
-              toggleExpanded(item.id);
-            } else if (item.href) {
-              // Navigate to the route
-              window.location.href = item.href;
-            }
-          }}
+          onClick={() => handleMenuClick(item, hasChildren)}
         >
           <div className="flex items-center flex-1 min-w-0" data-testid={`sidebar-menu-item-${item.id}`}>
             <div className="flex-shrink-0" data-testid={`sidebar-icon-${item.id}`}>
               {item.icon}
             </div>
-            {!collapsed && (
+            {!showCollapsed && (
               <>
-                <span className="ml-3 truncate" data-testid={`sidebar-label-${item.id}`}>{item.label}</span>
+                <span className="ml-3 truncate text-sm font-medium" data-testid={`sidebar-label-${item.id}`}>
+                  {item.label}
+                </span>
                 {item.badge && (
                   <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" data-testid={`sidebar-badge-${item.id}`}>
                     {item.badge}
@@ -233,7 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </>
             )}
           </div>
-          {hasChildren && !collapsed && (
+          {hasChildren && !showCollapsed && (
             <div className="flex-shrink-0 ml-2" data-testid={`sidebar-expand-${item.id}`}>
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
@@ -244,8 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* Submenu */}
-        {hasChildren && isExpanded && !collapsed && (
+        {hasChildren && isExpanded && !showCollapsed && (
           <div className="mt-1 space-y-1">
             {item.children?.map((child) => renderMenuItem(child, level + 1))}
           </div>
@@ -254,76 +268,103 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
-  return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={onClose}
-        />
-      )}
+  // Mobile: Full overlay + slide-in sidebar
+  if (isMobile) {
+    return (
+      <>
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => onClose?.()}
+          />
+        )}
 
-      {/* Sidebar */}
-      <div
-        data-testid="sidebar-container"
-        className={`
-          fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out
-          ${collapsed ? 'w-16' : 'w-64'}
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static lg:inset-0
-          ${className}
-        `}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
-          {!collapsed && (
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">X</span>
-                </div>
+        <div
+          data-testid="sidebar-container"
+          className={`
+            fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+            w-[280px] transition-transform duration-300 ease-in-out
+            ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+            ${className}
+          `}
+        >
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">X</span>
               </div>
-              <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
+              <span className="text-xl font-semibold text-gray-900 dark:text-white">
                 X-Ear
               </span>
             </div>
-          )}
-          
-          {/* Mobile close button */}
-          <button
-            onClick={onClose}
-            className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-            data-testid="sidebar-close-button"
-          >
-            <X className="w-5 h-5" />
-          </button>
+            
+            <button
+              onClick={() => onClose?.()}
+              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              data-testid="sidebar-close-button"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-          {/* Desktop collapse button */}
-          <button
-            onClick={toggleCollapsed}
-            className="hidden lg:block p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-            data-testid="sidebar-collapse-button"
-          >
-            <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
-          </button>
-        </div>
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            {menuItems.map((item) => renderMenuItem(item))}
+          </nav>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => renderMenuItem(item))}
-        </nav>
-
-        {/* Footer */}
-        {!collapsed && (
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
               X-Ear v1.0.0
             </div>
           </div>
+        </div>
+      </>
+    );
+  }
+
+  // Tablet/Desktop: Static sidebar with collapse
+  return (
+    <div
+      data-testid="sidebar-container"
+      className={`
+        fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+        transition-all duration-300 ease-in-out
+        ${collapsed ? 'w-16' : 'w-64'}
+        ${className}
+      `}
+    >
+      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">X</span>
+            </div>
+            <span className="text-xl font-semibold text-gray-900 dark:text-white">
+              X-Ear
+            </span>
+          </div>
         )}
+        
+        <button
+          onClick={toggleCollapsed}
+          className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          data-testid="sidebar-collapse-button"
+        >
+          <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
+        </button>
       </div>
-    </>
+
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {menuItems.map((item) => renderMenuItem(item))}
+      </nav>
+
+      {!collapsed && (
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            X-Ear v1.0.0
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

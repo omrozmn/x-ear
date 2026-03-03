@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { DataCard } from './DataCard';
 
 export interface Column<T = any> {
   key: string;
@@ -60,6 +61,7 @@ export interface DataTableProps<T = any> {
   hoverable?: boolean;
   className?: string;
   onRowClick?: (record: T) => void;
+  responsive?: boolean;
 }
 
 export const DataTable = <T extends Record<string, any>>({
@@ -82,10 +84,24 @@ export const DataTable = <T extends Record<string, any>>({
   hoverable = true,
   className = '',
   onRowClick,
+  responsive = true,
 }: DataTableProps<T>) => {
   const [searchValue, setSearchValue] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [isMobileInternal, setIsMobileInternal] = useState(false);
+
+  useEffect(() => {
+    if (!responsive) return;
+
+    const checkMobile = () => {
+      setIsMobileInternal(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [responsive]);
 
   const getRowKey = useCallback((record: T, index: number): string | number => {
     if (typeof rowKey === 'function') {
@@ -389,137 +405,158 @@ export const DataTable = <T extends Record<string, any>>({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className={`min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses[size]}`}>
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              {rowSelection && (
-                <th className={`${cellPadding[size]} text-left`}>
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    ref={(input) => {
-                      if (input) input.indeterminate = !!isIndeterminate;
-                    }}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </th>
-              )}
-
-              {columns.map(column => (
-                <th
-                  key={column.key}
-                  className={`
-                    ${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider
-                    ${column.sortable && sortable ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600' : ''}
-                    ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
-                  `}
-                  style={{ width: column.width }}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>{column.title}</span>
-                    {column.sortable && sortable && (
-                      <div className="flex flex-col">
-                        <ChevronUp
-                          className={`w-3 h-3 ${sortConfig?.key === column.key && sortConfig.direction === 'asc'
-                              ? 'text-blue-600'
-                              : 'text-gray-400'
-                            }`}
-                        />
-                        <ChevronDown
-                          className={`w-3 h-3 -mt-1 ${sortConfig?.key === column.key && sortConfig.direction === 'desc'
-                              ? 'text-blue-600'
-                              : 'text-gray-400'
-                            }`}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </th>
-              ))}
-
-              {actions && actions.length > 0 && (
-                <th className={`${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider`}>
-                  İşlemler
-                </th>
-              )}
-            </tr>
-          </thead>
-
-          <tbody className={`bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 ${striped ? 'divide-y-0' : ''}`}>
-            {loading ? (
+      {/* Table / Card List */}
+      {isMobileInternal ? (
+        <div className="p-4">
+          {data.length === 0 ? (
+            <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+              {emptyText}
+            </div>
+          ) : (
+            data.map((record, index) => (
+              <DataCard
+                key={getRowKey(record, index)}
+                record={record}
+                columns={columns}
+                onRowClick={onRowClick}
+                renderActions={actions && actions.length > 0 ? renderActions : undefined}
+                rowKey={getRowKey(record, index)}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className={`min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses[size]}`}>
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center">
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="ml-2 text-gray-600 dark:text-gray-400">Yükleniyor...</span>
-                  </div>
-                </td>
-              </tr>
-            ) : data.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  {emptyText}
-                </td>
-              </tr>
-            ) : (
-              data.map((record, index) => {
-                const key = getRowKey(record, index);
-                const isSelected = rowSelection?.selectedRowKeys.includes(key);
-                const checkboxProps = rowSelection?.getCheckboxProps?.(record) || {};
+                {rowSelection && (
+                  <th className={`${cellPadding[size]} text-left`}>
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(input) => {
+                        if (input) input.indeterminate = !!isIndeterminate;
+                      }}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </th>
+                )}
 
-                return (
-                  <tr
-                    key={key}
+                {columns.map(column => (
+                  <th
+                    key={column.key}
                     className={`
-                      ${striped && index % 2 === 1 ? 'bg-gray-50 dark:bg-gray-700/50' : ''}
-                      ${hoverable ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}
-                      ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
-                      ${onRowClick ? 'cursor-pointer' : ''}
+                      ${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider
+                      ${column.sortable && sortable ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600' : ''}
+                      ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                     `}
-                    onClick={() => onRowClick?.(record)}
+                    style={{ width: column.width }}
+                    onClick={() => column.sortable && handleSort(column.key)}
                   >
-                    {rowSelection && (
-                      <td className={cellPadding[size]}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          disabled={checkboxProps.disabled}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleSelectRow(record, e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-                        />
-                      </td>
-                    )}
+                    <div className="flex items-center space-x-1">
+                      <span>{column.title}</span>
+                      {column.sortable && sortable && (
+                        <div className="flex flex-col">
+                          <ChevronUp
+                            className={`w-3 h-3 ${sortConfig?.key === column.key && sortConfig.direction === 'asc'
+                              ? 'text-blue-600'
+                              : 'text-gray-400'
+                              }`}
+                          />
+                          <ChevronDown
+                            className={`w-3 h-3 -mt-1 ${sortConfig?.key === column.key && sortConfig.direction === 'desc'
+                              ? 'text-blue-600'
+                              : 'text-gray-400'
+                              }`}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </th>
+                ))}
 
-                    {columns.map(column => (
-                      <td
-                        key={column.key}
-                        className={`
-                          ${cellPadding[size]} text-gray-900 dark:text-gray-100
-                          ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
-                          ${bordered ? 'border-r border-gray-200 dark:border-gray-700 last:border-r-0' : ''}
-                        `}
-                      >
-                        {renderCell(column, record, index)}
-                      </td>
-                    ))}
+                {actions && actions.length > 0 && (
+                  <th className={`${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider`}>
+                    İşlemler
+                  </th>
+                )}
+              </tr>
+            </thead>
 
-                    {actions && actions.length > 0 && (
-                      <td className={cellPadding[size]}>
-                        {renderActions(record)}
-                      </td>
-                    )}
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+            <tbody className={`bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 ${striped ? 'divide-y-0' : ''}`}>
+              {loading ? (
+                <tr>
+                  <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 text-gray-600 dark:text-gray-400">Yükleniyor...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    {emptyText}
+                  </td>
+                </tr>
+              ) : (
+                data.map((record, index) => {
+                  const key = getRowKey(record, index);
+                  const isSelected = rowSelection?.selectedRowKeys.includes(key);
+                  const checkboxProps = rowSelection?.getCheckboxProps?.(record) || {};
+
+                  return (
+                    <tr
+                      key={key}
+                      className={`
+                        ${striped && index % 2 === 1 ? 'bg-gray-50 dark:bg-gray-700/50' : ''}
+                        ${hoverable ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}
+                        ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                        ${onRowClick ? 'cursor-pointer' : ''}
+                      `}
+                      onClick={() => onRowClick?.(record)}
+                    >
+                      {rowSelection && (
+                        <td className={cellPadding[size]}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            disabled={checkboxProps.disabled}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => handleSelectRow(record, e.target.checked)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                          />
+                        </td>
+                      )}
+
+                      {columns.map(column => (
+                        <td
+                          key={column.key}
+                          className={`
+                            ${cellPadding[size]} text-gray-900 dark:text-gray-100
+                            ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
+                            ${bordered ? 'border-r border-gray-200 dark:border-gray-700 last:border-r-0' : ''}
+                          `}
+                        >
+                          {renderCell(column, record, index)}
+                        </td>
+                      ))}
+
+                      {actions && actions.length > 0 && (
+                        <td className={cellPadding[size]}>
+                          {renderActions(record)}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination */}
       {renderPagination()}
