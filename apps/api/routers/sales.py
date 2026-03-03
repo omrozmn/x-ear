@@ -176,9 +176,10 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
         'inventoryId': assignment.inventory_id,
         'partyId': assignment.party_id,
         
-        # Device info
-        'name': formatted_name,
-        'deviceName': formatted_name,
+        # Device info - FIXED: Keep both product name and formatted name
+        'name': formatted_name,  # Brand + Model (e.g., "earnet force100")
+        'deviceName': formatted_name,  # Brand + Model (backwards compat)
+        'productName': device_name,  # Real product name from inventory (e.g., "deneme")
         'brand': brand,
         'model': model,
         'barcode': barcode,
@@ -200,9 +201,16 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
         'sgkSupport': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
         'netPayable': float(assignment.net_payable) if assignment.net_payable else None,
         
-        # Discount fields
+        # Discount fields - calculate discountValue if missing
         'discountType': assignment.discount_type,
-        'discountValue': float(assignment.discount_value) if assignment.discount_value else None,
+        'discountValue': (
+            float(assignment.discount_value) if assignment.discount_value 
+            else (
+                ((float(assignment.list_price or 0) - float(assignment.sale_price or 0)) / float(assignment.list_price or 1)) * 100
+                if assignment.discount_type == 'percentage' and assignment.list_price and float(assignment.list_price) > 0
+                else None
+            )
+        ),
         
         # SGK fields
         'sgkScheme': assignment.sgk_scheme,
@@ -217,7 +225,7 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
         'downPayment': down_payment,
         
         # Assignment metadata
-        'assignmentUid': assignment.assignment_uid,
+        'assignmentUid': assignment.assignment_uid,  # ✅ FIXED: Use snake_case from DB
         'assignedDate': assignment.created_at.isoformat() if assignment.created_at else None,
         'createdAt': assignment.created_at.isoformat() if assignment.created_at else None,
         'updatedAt': assignment.updated_at.isoformat() if assignment.updated_at else None,
@@ -321,12 +329,31 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     # Calculate total SGK coverage (sum of all devices' sgkSupport)
     total_sgk_coverage = sum(float(d.get('sgkSupport') or 0) for d in devices) if devices else sgk_coverage_value
     
+    # Calculate correct amounts with discount applied
+    # Note: list_price_total in DB is actually UNIT price, not total
+    # For bilateral sales, we need to multiply by device count
+    
+    unit_list_price = float(sale.unit_list_price or sale.list_price_total) if (sale.unit_list_price or sale.list_price_total) else 0
+    device_count = len(devices)
+    actual_list_price_total = unit_list_price * device_count if device_count > 0 else unit_list_price
+    
+    # ✅ UPDATED: Use stored values from database instead of recalculating
+    # The update_sale function already calculates and stores these values correctly
+    discount_type = getattr(sale, 'discount_type', None) or 'none'
+    discount_value = float(getattr(sale, 'discount_value', 0)) if hasattr(sale, 'discount_value') else 0.0
+    discount_amount = float(sale.discount_amount) if sale.discount_amount else 0.0
+    final_amount = float(sale.final_amount) if sale.final_amount else float(sale.total_amount or 0)
+    
+    # Use stored SGK coverage
+    total_sgk_coverage = float(sale.sgk_coverage) if sale.sgk_coverage else 0.0
+    
     # Debug logging
-    logger.info(f"Building sale data for {sale.id}: devices count={len(devices)}")
+    logger.info(f"Building sale data for {sale.id}: devices count={device_count}")
+    logger.info(f"Using stored values: discount_type={discount_type}, discount_value={discount_value}, discount_amount={discount_amount}")
+    logger.info(f"Final amount from DB: {final_amount}")
     if first_device:
         logger.info(f"First device sample keys: {list(first_device.keys())[:10]}")
-        logger.info(f"First device brand: {first_device.get('brand', 'MISSING')}, deviceName: {first_device.get('deviceName', 'MISSING')}")
-    logger.info(f"Total net payable: {total_net_payable}, Total SGK: {total_sgk_coverage}")
+        logger.info(f"First device brand: {first_device.get('brand', 'MISSING')}, deviceName: {first_device.get('deviceName', 'MISSING')}, productName: {first_device.get('productName', 'MISSING')}")
     
     sale_dict = {
         'id': sale.id,
@@ -334,24 +361,30 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'productId': sale.product_id,
         'branchId': sale.branch_id,
         'saleDate': sale.sale_date.isoformat() if sale.sale_date else None,
-        'listPriceTotal': float(sale.list_price_total) if sale.list_price_total else None,
-        'totalAmount': total_net_payable,  # CRITICAL FIX: Use net payable (after SGK deduction)
-        'discountAmount': float(sale.discount_amount) if sale.discount_amount else 0.0,
-        'finalAmount': total_net_payable,  # CRITICAL FIX: Use net payable (after SGK deduction)
+        'listPriceTotal': unit_list_price,  # Keep as unit price for backwards compatibility
+        'actualListPriceTotal': actual_list_price_total,  # NEW: Actual total (unit × count)
+        'unitListPrice': unit_list_price,  # NEW: Explicit unit price
+        'totalAmount': final_amount,  # After SGK and discount
+        'discountAmount': discount_amount,  # ✅ Calculated using new formula
+        'discountType': discount_type,  # ✅ From Sale model
+        'discountValue': discount_value,  # ✅ From Sale model
+        'finalAmount': final_amount,  # After SGK and discount
         'paidAmount': float(sale.paid_amount) if sale.paid_amount else 0.0,
+        'remainingAmount': max(0, final_amount - float(sale.paid_amount or 0)),  # NEW: Calculated remaining
         'rightEarAssignmentId': sale.right_ear_assignment_id,
         'leftEarAssignmentId': sale.left_ear_assignment_id,
         'status': sale.status,
         'paymentMethod': sale.payment_method,
         'sgkCoverage': total_sgk_coverage,  # Use calculated total SGK
-        'patientPayment': total_net_payable,  # Patient pays net payable
+        'patientPayment': final_amount,  # Patient pays final amount (after SGK and discount)
         'reportStatus': sale.report_status,
         'notes': sale.notes,
         'kdvRate': float(sale.kdv_rate) if sale.kdv_rate else 20.0,
         'kdvAmount': float(sale.kdv_amount) if sale.kdv_amount else 0.0,
         
         # Sale-level product fields (from first device for backwards compatibility)
-        'productName': first_device.get('deviceName'),
+        # ✅ FIXED: Use productName from device (real inventory name)
+        'productName': first_device.get('productName') or first_device.get('deviceName'),  # Real product name (e.g., "deneme")
         'brand': first_device.get('brand'),
         'model': first_device.get('model'),
         'barcode': first_device.get('barcode'),
@@ -363,8 +396,6 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'salePrice': first_device.get('salePrice'),
         'sgkSupport': first_device.get('sgkSupport'),
         'sgkScheme': first_device.get('sgkScheme'),
-        'discountType': first_device.get('discountType'),
-        'discountValue': first_device.get('discountValue'),
         'downPayment': first_device.get('downPayment'),
         'deliveryStatus': first_device.get('deliveryStatus'),
         'netPayable': total_net_payable,  # Total net payable
@@ -372,9 +403,9 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         # Override report_status from device if available
         'reportStatus': first_device.get('reportStatus') or sale.report_status,
         
-        # Calculated fields - CRITICAL FIX: Use net payable for remaining amount
-        'remainingAmount': total_net_payable - float(sale.paid_amount or 0),
-        'paymentStatus': 'paid' if float(sale.paid_amount or 0) >= total_net_payable else 'pending',
+        # Calculated fields - ✅ FIXED: Use final_amount for remaining amount calculation
+        'remainingAmount': max(0, final_amount - float(sale.paid_amount or 0)),
+        'paymentStatus': 'paid' if float(sale.paid_amount or 0) >= final_amount else 'pending',
         'invoiceStatus': invoice_data['status'] if invoice_data else 'not_issued',
         
         # Enriched
@@ -963,6 +994,24 @@ def create_sale(
     # Determine if bilateral
     is_bilateral = ear_side.lower() in ('both', 'bilateral')
     
+    # ✅ FIX: Adjust sale totals for bilateral sales
+    if is_bilateral:
+        # For bilateral sales, we need to double the totals since we're selling 2 devices
+        sale.list_price_total = Decimal(str(base_price))  # Keep as unit price for backwards compatibility
+        sale.unit_list_price = Decimal(str(base_price))   # Store unit price explicitly
+        sale.total_amount = Decimal(str(base_price * 2))  # Double for 2 devices
+        sale.final_amount = Decimal(str(final_price * 2)) # Double for 2 devices
+        
+        # Adjust patient payment and SGK coverage for bilateral
+        sgk_total = sgk_cov * 2  # Double SGK coverage for 2 devices
+        sale.sgk_coverage = Decimal(str(sgk_total))
+        sale.patient_payment = Decimal(str(max(0, (final_price * 2) - sgk_total)))
+        
+        logger.info(f"🔄 Adjusted bilateral sale totals: unit={base_price}, total={base_price * 2}, sgk_total={sgk_total}")
+    else:
+        # Single device - keep original logic
+        sale.unit_list_price = Decimal(str(base_price))   # Store unit price explicitly
+    
     # Get SGK scheme and calculate per-ear SGK support
     sgk_scheme = getattr(sale_in, 'sgk_scheme', None)
     sgk_per_ear = 0.0
@@ -1013,11 +1062,11 @@ def create_sale(
             sale_id=sale.id,
             reason='sale',
             from_inventory=True,
-            list_price=base_price / 2,  # Per-ear price
-            sale_price=final_price / 2,  # Per-ear price
+            list_price=base_price,  # Full unit price per device
+            sale_price=final_price,  # Full unit price per device
             sgk_support=sgk_per_ear,  # Per-ear SGK
             sgk_scheme=sgk_scheme,
-            net_payable=(final_price / 2) - sgk_per_ear,  # Per-ear net payable after SGK
+            net_payable=final_price - sgk_per_ear,  # Full unit price minus SGK per ear
             payment_method=sale_in.payment_method,
             report_status=sale_in.report_status,
             notes=f"Stoktan satış (Sol): {product.name} - {product.brand or ''} {product.model or ''}",
@@ -1040,11 +1089,11 @@ def create_sale(
             sale_id=sale.id,
             reason='sale',
             from_inventory=True,
-            list_price=base_price / 2,  # Per-ear price
-            sale_price=final_price / 2,  # Per-ear price
+            list_price=base_price,  # Full unit price per device
+            sale_price=final_price,  # Full unit price per device
             sgk_support=sgk_per_ear,  # Per-ear SGK
             sgk_scheme=sgk_scheme,
-            net_payable=(final_price / 2) - sgk_per_ear,  # Per-ear net payable after SGK
+            net_payable=final_price - sgk_per_ear,  # Full unit price minus SGK per ear
             payment_method=sale_in.payment_method,
             report_status=sale_in.report_status,
             notes=f"Stoktan satış (Sağ): {product.name} - {product.brand or ''} {product.model or ''}",
@@ -1182,6 +1231,65 @@ def update_sale(
         sale.final_amount = Decimal(str(sale_in.final_amount))
     if sale_in.paid_amount is not None: 
         sale.paid_amount = Decimal(str(sale_in.paid_amount))
+    
+    # ✅ UPDATED: Handle new discount fields (Fix #2 - Backend Calculation)
+    if sale_in.discount_type is not None:
+        sale.discount_type = sale_in.discount_type
+    if sale_in.discount_value is not None:
+        sale.discount_value = Decimal(str(sale_in.discount_value))
+    
+    # ✅ UPDATED: Handle new unit_list_price field
+    if sale_in.unit_list_price is not None:
+        sale.unit_list_price = Decimal(str(sale_in.unit_list_price))
+        
+        # 🔧 PRICE SYNC FIX: Update device assignment prices when unitListPrice changes
+        assignments = db.query(DeviceAssignment).filter_by(sale_id=sale_id).all()
+        if assignments:
+            new_unit_price = Decimal(str(sale_in.unit_list_price))
+            for assignment in assignments:
+                assignment.list_price = new_unit_price
+                assignment.sale_price = new_unit_price
+                logger.info(f"💰 Synced price for assignment {assignment.id}: list_price={new_unit_price}")
+            
+            # Also update sale totals
+            device_count = len(assignments)
+            sale.total_amount = new_unit_price * device_count
+            sale.list_price_total = new_unit_price if device_count == 1 else new_unit_price
+            logger.info(f"💰 Updated sale totals: total_amount={sale.total_amount}, device_count={device_count}")
+    
+    # ✅ UPDATED: Recalculate amounts when discount fields change (SGK FIRST, discount SECOND)
+    if sale_in.discount_type is not None or sale_in.discount_value is not None:
+        # Get current values
+        unit_list_price = float(sale.unit_list_price or sale.list_price_total or 0)
+        sgk_coverage = float(sale.sgk_coverage or 0)
+        discount_type = sale.discount_type or 'none'
+        discount_value = float(sale.discount_value or 0)
+        
+        # Count device assignments to calculate total list price
+        assignments = db.query(DeviceAssignment).filter_by(sale_id=sale_id).all()
+        device_count = len(assignments) if assignments else 1
+        actual_list_price_total = unit_list_price * device_count
+        
+        # Apply SGK FIRST, discount SECOND formula
+        price_after_sgk = actual_list_price_total - sgk_coverage
+        
+        # Calculate discount amount
+        discount_amount = 0.0
+        if discount_type == 'percentage' and discount_value > 0:
+            discount_amount = (price_after_sgk * discount_value) / 100
+        elif discount_type == 'amount' and discount_value > 0:
+            discount_amount = discount_value
+        
+        # Calculate final amount
+        final_amount = price_after_sgk - discount_amount
+        
+        # Update calculated fields
+        sale.discount_amount = Decimal(str(discount_amount))
+        sale.total_amount = Decimal(str(actual_list_price_total))
+        sale.final_amount = Decimal(str(final_amount))
+        sale.patient_payment = Decimal(str(final_amount))
+        
+        logger.info(f"🧮 Recalculated sale {sale_id}: list_price={actual_list_price_total}, sgk={sgk_coverage}, discount={discount_amount}, final={final_amount}")
         
     if sale_in.payment_method: sale.payment_method = sale_in.payment_method
     if sale_in.status: sale.status = sale_in.status
@@ -1368,26 +1476,21 @@ def update_sale(
             if sale_in.discount_type:
                 assignment.discount_type = sale_in.discount_type
             
-            # Update serial numbers based on ear
-            if assignment.ear == 'left' and sale_in.serial_number_left:
+            # ✅ NEW: Update serial numbers
+            if assignment.ear == 'left' and sale_in.serial_number_left is not None:
                 assignment.serial_number = sale_in.serial_number_left
-            elif assignment.ear == 'right' and sale_in.serial_number_right:
+                logger.info(f"📝 Updated left ear serial: {sale_in.serial_number_left}")
+            elif assignment.ear == 'right' and sale_in.serial_number_right is not None:
                 assignment.serial_number = sale_in.serial_number_right
+                logger.info(f"📝 Updated right ear serial: {sale_in.serial_number_right}")
             
             # Update delivery and report status
-            if sale_in.delivery_status:
+            if sale_in.delivery_status is not None:
                 assignment.delivery_status = sale_in.delivery_status
-            if sale_in.report_status:
+            if sale_in.report_status is not None:
                 assignment.report_status = sale_in.report_status
             
-            # Distribute sale values equally across all assignments (only if not already handled by ear change logic)
-            if sale_in.total_amount is not None and num_assignments > 0 and not sale_in.ear:
-                assignment.list_price = Decimal(str(sale.total_amount)) / num_assignments
-            
-            if sale_in.final_amount is not None and num_assignments > 0 and not sale_in.ear:
-                assignment.net_payable = Decimal(str(sale.final_amount)) / num_assignments
-            
-            logger.info(f"🔄 Updated assignment {assignment.id}: ear={assignment.ear}, sgk_scheme={assignment.sgk_scheme}, sgk_support={assignment.sgk_support}, serial={assignment.serial_number}")
+            logger.info(f"🔄 Updated assignment {assignment.id}: ear={assignment.ear}, sgk_scheme={assignment.sgk_scheme}, sgk_support={assignment.sgk_support}")
     
     db.commit()
 
@@ -1958,6 +2061,35 @@ def create_device_assignments(
     )
 
 
+@router.get("/device-assignments/{assignment_id}", operation_id="getDeviceAssignment", response_model=ResponseEnvelope[DeviceAssignmentRead])
+def get_device_assignment(
+    assignment_id: str,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get a single device assignment with full details."""
+    assignment = db.get(DeviceAssignment, assignment_id)
+    if not assignment:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Assignment not found", code="ASSIGNMENT_NOT_FOUND").model_dump(mode="json"),
+        )
+    
+    # Tenant check via sale
+    if assignment.sale_id:
+        sale = db.get(Sale, assignment.sale_id)
+        if sale and access.tenant_id and sale.tenant_id != access.tenant_id:
+            raise HTTPException(
+                status_code=403,
+                detail=ApiError(message="Access denied", code="FORBIDDEN").model_dump(mode="json"),
+            )
+    
+    # Build full assignment data using the same helper as sales
+    assignment_data = _build_device_info_from_assignment(db, assignment)
+    
+    return ResponseEnvelope(data=assignment_data)
+
+
 @router.patch("/device-assignments/{assignment_id}", operation_id="updateDeviceAssignment", response_model=ResponseEnvelope[DeviceAssignmentRead])
 def update_device_assignment(
     assignment_id: str,
@@ -2002,9 +2134,13 @@ def update_device_assignment(
             )
     
     # Convert Pydantic model to dict for easier processing
-    data = updates.model_dump(exclude_unset=True, by_alias=False)
+    data = updates.model_dump(exclude_unset=True, by_alias=True)
     logger.info(f"📝 UPDATE DEVICE {assignment_id} PAYLOAD: {json.dumps(data, default=str)}")
-    logger.info(f"🔍 DOWN_PAYMENT CHECK: 'down_payment' in data = {'down_payment' in data}, value = {data.get('down_payment', 'NOT_FOUND')}")
+    logger.info(f"🔍 DOWN_PAYMENT CHECK: 'down_payment' in data = {'down_payment' in data}, 'downPayment' in data = {'downPayment' in data}, down_payment value = {data.get('down_payment', 'NOT_FOUND')}, downPayment value = {data.get('downPayment', 'NOT_FOUND')}")
+    
+    # Also try with by_alias=True to see the difference
+    data_with_alias = updates.model_dump(exclude_unset=True, by_alias=True)
+    logger.info(f"📝 WITH ALIAS: {json.dumps(data_with_alias, default=str)}")
     
     # Initialize defaults for bilateral logic
     initial_ear_val = str(assignment.ear or '').upper()
@@ -2044,18 +2180,18 @@ def update_device_assignment(
                     )
     
     # ==================== BASIC FIELD UPDATES ====================
-    if 'ear_side' in data:
-        assignment.ear = data['ear_side']
+    if 'ear' in data:
+        assignment.ear = data['ear']
     
     if 'reason' in data:
         assignment.reason = data['reason']
     
-    if 'device_id' in data:
-        assignment.device_id = data['device_id']
+    if 'deviceId' in data:
+        assignment.device_id = data['deviceId']
     
     # ==================== INVENTORY CHANGE (DEVICE SWAP) ====================
-    if 'inventory_id' in data:
-        new_inventory_id = data['inventory_id']
+    if 'inventoryId' in data:
+        new_inventory_id = data['inventoryId']
         old_inventory_id = assignment.inventory_id
         
         # Update inventory_id
@@ -2072,42 +2208,42 @@ def update_device_assignment(
                 logger.info(f"   New price: {new_inv_item.price}, Brand: {new_inv_item.brand}, Model: {new_inv_item.model}")
                 
                 # Force pricing recalculation since base price changed
-                data['base_price'] = new_inv_item.price
+                data['basePrice'] = new_inv_item.price
     
     # Update pricing fields
-    if 'base_price' in data:
-        assignment.list_price = data['base_price']
+    if 'basePrice' in data:
+        assignment.list_price = data['basePrice']
     
-    if 'discount_type' in data:
-        assignment.discount_type = data['discount_type']
+    if 'discountType' in data:
+        assignment.discount_type = data['discountType']
     
-    if 'discount_value' in data:
-        assignment.discount_value = data['discount_value']
+    if 'discountValue' in data:
+        assignment.discount_value = data['discountValue']
     
-    if 'payment_method' in data:
-        assignment.payment_method = data['payment_method']
+    if 'paymentMethod' in data:
+        assignment.payment_method = data['paymentMethod']
     
     if 'notes' in data:
         assignment.notes = data['notes']
     
-    if 'sgk_scheme' in data:
-        assignment.sgk_scheme = data['sgk_scheme']
+    if 'sgkScheme' in data:
+        assignment.sgk_scheme = data['sgkScheme']
     elif 'sgkSupportType' in data:
         assignment.sgk_scheme = data['sgkSupportType']
     
     # ==================== PRICING RECALCULATION ====================
     # Simple check: if any pricing field is in the request, recalculate
     # IMPORTANT: inventory_id change also triggers recalculation (device swap)
-    pricing_fields = ['base_price', 'discount_type', 'discount_value', 'sgk_scheme', 'sgkSupportType', 'inventory_id']
+    pricing_fields = ['basePrice', 'discountType', 'discountValue', 'sgkScheme', 'sgkSupportType', 'inventoryId']
     should_recalculate = any(key in data for key in pricing_fields)
     
     logger.info(f"🔢 Pricing recalculation check: {should_recalculate}, data keys: {list(data.keys())}")
     
     # Check for explicit pricing overrides (support both snake_case and camelCase)
-    explicit_list_price = data.get('list_price')
-    explicit_sale_price = data.get('sale_price')
-    explicit_patient_payment = data.get('patient_payment') or data.get('net_payable')
-    explicit_sgk = data.get('sgk_support') or data.get('sgk_reduction')
+    explicit_list_price = data.get('listPrice')
+    explicit_sale_price = data.get('salePrice')
+    explicit_patient_payment = data.get('patientPayment') or data.get('netPayable')
+    explicit_sgk = data.get('sgkSupport') or data.get('sgkReduction')
     
     if explicit_list_price is not None or explicit_sale_price is not None or explicit_patient_payment is not None or explicit_sgk is not None:
         # Apply explicit pricing selectively
@@ -2136,11 +2272,18 @@ def update_device_assignment(
         try:
             sale = db.get(Sale, assignment.sale_id)
             if sale:
-                # Sync down payment
-                if 'down_payment' in data:
+                # First sync sale totals
+                db.expire_all()  # Clear session cache before sync
+                sync_sale_totals(db, sale.id)
+                
+                # Then sync down payment (after totals sync to avoid cache issues)
+                down_payment_value = data.get('downPayment')
+                if down_payment_value is not None:
                     try:
-                        down_val = float(data.get('down_payment', 0))
+                        down_val = float(down_payment_value)
                         if down_val >= 0:
+                            # Refresh sale object after sync_sale_totals
+                            db.refresh(sale)
                             sale.paid_amount = down_val
                             
                             # Create or Update PaymentRecord for Down Payment
@@ -2170,28 +2313,28 @@ def update_device_assignment(
                                     )
                                     db.add(payment)
                                     logger.info(f"✅ Created new down payment record for: {down_val}")
+                            
+                            # Flush to ensure paid_amount is saved
+                            db.flush()
+                            logger.info(f"💰 Updated sale.paid_amount to: {down_val}")
                     except Exception as e:
                         logger.error(f"Failed to sync down payment: {e}")
-                
-                # Sync sale totals
-                db.expire_all()  # Clear session cache before sync
-                sync_sale_totals(db, sale.id)
         except Exception as e:
             logger.warning(f"Failed to sync sale record: {e}")
     
     # ==================== SERIAL NUMBER UPDATES ====================
-    if 'serial_number' in data:
-        assignment.serial_number = data['serial_number']
+    if 'serialNumber' in data:
+        assignment.serial_number = data['serialNumber']
     
-    if 'serial_number_left' in data:
-        assignment.serial_number_left = data['serial_number_left']
+    if 'serialNumberLeft' in data:
+        assignment.serial_number_left = data['serialNumberLeft']
     
-    if 'serial_number_right' in data:
-        assignment.serial_number_right = data['serial_number_right']
+    if 'serialNumberRight' in data:
+        assignment.serial_number_right = data['serialNumberRight']
     
     # ==================== DELIVERY STATUS HANDLING ====================
-    if 'delivery_status' in data:
-        new_delivery_status = data.get('delivery_status')
+    if 'deliveryStatus' in data:
+        new_delivery_status = data.get('deliveryStatus')
         old_delivery_status = assignment.delivery_status
         
         # If changing from pending to delivered, decrease stock
@@ -2228,17 +2371,17 @@ def update_device_assignment(
         assignment.delivery_status = new_delivery_status
     
     # ==================== REPORT STATUS ====================
-    if 'report_status' in data:
-        assignment.report_status = data.get('report_status')
+    if 'reportStatus' in data:
+        assignment.report_status = data.get('reportStatus')
     
     # ==================== LOANER DEVICE MANAGEMENT ====================
-    if 'is_loaner' in data:
-        new_is_loaner = data.get('is_loaner')
+    if 'isLoaner' in data:
+        new_is_loaner = data.get('isLoaner')
         old_is_loaner = assignment.is_loaner
         
         # If adding loaner device
         if not old_is_loaner and new_is_loaner:
-            loaner_inventory_id = data.get('loaner_inventory_id')
+            loaner_inventory_id = data.get('loanerInventoryId')
             
             if loaner_inventory_id:
                 loaner_item = db.get(InventoryItem, loaner_inventory_id)
@@ -2255,10 +2398,10 @@ def update_device_assignment(
                     is_bilateral = ear_val in ['both', 'bilateral', 'b']
                     
                     if is_bilateral:
-                        assignment.loaner_serial_number_left = data.get('loaner_serial_number_left')
-                        assignment.loaner_serial_number_right = data.get('loaner_serial_number_right')
+                        assignment.loaner_serial_number_left = data.get('loanerSerialNumberLeft')
+                        assignment.loaner_serial_number_right = data.get('loanerSerialNumberRight')
                     else:
-                        assignment.loaner_serial_number = data.get('loaner_serial_number')
+                        assignment.loaner_serial_number = data.get('loanerSerialNumber')
                     
                     # Ensure manual serials are in inventory
                     ensure_loaner_serials_in_inventory(db, assignment, data.get('user_id', 'system'))
@@ -2342,7 +2485,7 @@ def update_device_assignment(
     
     # ==================== LOANER SWAP / FIELD UPDATES ====================
     if assignment.is_loaner:
-        new_loaner_inventory_id = data.get('loaner_inventory_id')
+        new_loaner_inventory_id = data.get('loanerInventoryId')
         if new_loaner_inventory_id:
             old_loaner_inventory_id = assignment.loaner_inventory_id
             
@@ -2393,8 +2536,8 @@ def update_device_assignment(
                     # Get NEW serial numbers from request data
                     new_serials = []
                     if ear_val in ['both', 'bilateral', 'b']:
-                        new_left = data.get('loaner_serial_number_left')
-                        new_right = data.get('loaner_serial_number_right')
+                        new_left = data.get('loanerSerialNumberLeft')
+                        new_right = data.get('loanerSerialNumberRight')
                         if new_left:
                             new_serials.append(new_left)
                             new_loaner.remove_serial_number(new_left)
@@ -2402,7 +2545,7 @@ def update_device_assignment(
                             new_serials.append(new_right)
                             new_loaner.remove_serial_number(new_right)
                     else:
-                        new_sn = data.get('loaner_serial_number')
+                        new_sn = data.get('loanerSerialNumber')
                         if new_sn:
                             new_serials.append(new_sn)
                             new_loaner.remove_serial_number(new_sn)
@@ -2434,20 +2577,20 @@ def update_device_assignment(
                 assignment.loaner_inventory_id = new_loaner_inventory_id
         
         # Update individual loaner fields (after swap is processed)
-        if 'loaner_serial_number' in data:
-            assignment.loaner_serial_number = data['loaner_serial_number']
+        if 'loanerSerialNumber' in data:
+            assignment.loaner_serial_number = data['loanerSerialNumber']
         
-        if 'loaner_brand' in data:
-            assignment.loaner_brand = data['loaner_brand']
+        if 'loanerBrand' in data:
+            assignment.loaner_brand = data['loanerBrand']
         
-        if 'loaner_model' in data:
-            assignment.loaner_model = data['loaner_model']
+        if 'loanerModel' in data:
+            assignment.loaner_model = data['loanerModel']
         
-        if 'loaner_serial_number_left' in data:
-            assignment.loaner_serial_number_left = data['loaner_serial_number_left']
+        if 'loanerSerialNumberLeft' in data:
+            assignment.loaner_serial_number_left = data['loanerSerialNumberLeft']
         
-        if 'loaner_serial_number_right' in data:
-            assignment.loaner_serial_number_right = data['loaner_serial_number_right']
+        if 'loanerSerialNumberRight' in data:
+            assignment.loaner_serial_number_right = data['loanerSerialNumberRight']
         
         # Ensure manual serials are in inventory if changed
         if assignment.loaner_inventory_id:
