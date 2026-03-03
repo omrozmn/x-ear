@@ -41,6 +41,8 @@ import { useComposerStore } from '../../stores/composerStore';
 import { useAIStatus, useAIContextSync } from '../../ai/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
+import { useMobile } from '../../hooks/useMobile';
+import { BottomNav } from './BottomNav';
 import {
   SIDEBAR_COLLAPSED,
   JWT_TOKEN,
@@ -143,9 +145,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return true;
     const saved = localStorage.getItem(SIDEBAR_COLLAPSED);
     return saved ? JSON.parse(saved) : false;
   });
+
+  const isMobile = useMobile();
 
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({});
@@ -294,11 +299,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
-      {/* Sidebar */}
+      {/* Sidebar - Hidden on mobile by default, acting as a drawer when toggle is clicked */}
       <nav className={cn(
-        "fixed h-screen overflow-y-auto z-[1000] transition-[width] duration-300",
+        "fixed h-screen overflow-y-auto z-[2000] transition-[width,transform] duration-300",
         "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700",
-        sidebarCollapsed ? "w-[80px]" : "w-[240px]"
+        sidebarCollapsed ? (isMobile ? "-translate-x-full w-[240px]" : "w-[80px]") : "w-[240px] translate-x-0"
       )} data-testid="sidebar">
         <div className={cn(
           "p-4 flex items-center border-b border-gray-200 dark:border-gray-700",
@@ -325,16 +330,23 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </ul>
       </nav>
       {/* Main Content */}
-      {/* Main Content */}
       <div className={cn(
-        "flex-1 flex flex-col transition-[margin] duration-300",
-        sidebarCollapsed ? "ml-[80px]" : "ml-[240px]"
+        "flex-1 flex flex-col transition-[margin] duration-300 min-w-0",
+        isMobile ? "ml-0" : (sidebarCollapsed ? "ml-[80px]" : "ml-[240px]")
       )}>
         {/* Header */}
-        <header className="sticky top-0 z-[999] px-8 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="flex justify-between items-center gap-4">
-            <h1 className="m-0 text-2xl font-semibold text-gray-800 dark:text-white whitespace-nowrap">
-              Dashboard
+        <header className="sticky top-0 z-[999] px-4 md:px-8 py-3 md:py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex justify-between items-center gap-2 md:gap-4">
+            {isMobile && (
+              <Button
+                onClick={toggleSidebar}
+                className="p-2 mr-1 h-auto text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                variant='ghost'>
+                <Menu size={20} />
+              </Button>
+            )}
+            <h1 className="m-0 text-lg md:text-2xl font-semibold text-gray-800 dark:text-white whitespace-nowrap truncate">
+              {getPageKeyFromPath(location.pathname)?.title || 'Dashboard'}
             </h1>
 
             {/* AI Composer Trigger - Centered Search Bar */}
@@ -464,7 +476,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-8 bg-gray-50 dark:bg-gray-950 min-h-[calc(100vh-80px)]">
+        <main className={cn(
+          "flex-1 p-4 md:p-8 bg-gray-50 dark:bg-gray-950 min-h-[calc(100vh-64px)]",
+          isMobile && "pb-24" // Extra padding for BottomNav
+        )}>
           {(user?.isImpersonatingTenant || user?.isImpersonating) && (
             <div className="mb-4 p-3 rounded-lg flex items-center justify-between border-2 bg-emerald-100 dark:bg-emerald-900/30 border-emerald-600 dark:border-emerald-500">
               <div className="flex items-center gap-2">
@@ -511,6 +526,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       {/* AI Chat Widget - Always mounted, handles its own availability internally */}
       <AIChatWidget />
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && <BottomNav />}
 
       {/* AI Composer Overlay (Cmd+K) */}
       {/* AI Composer Overlay (Cmd+K) */}
