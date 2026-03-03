@@ -53,6 +53,8 @@ export interface SaleFormData {
   listPrice: number;
   salePrice: number;
   discountAmount: number;
+  discountType?: 'none' | 'percentage' | 'amount';
+  discountValue: number;  // ✅ NEW: Discount value (percentage or amount)
   sgkCoverage: number;
   sgkScheme?: string; // SGK scheme selection
   downPayment: number;
@@ -60,6 +62,8 @@ export interface SaleFormData {
   saleDate: string;
   deviceId: string;
   ear: 'left' | 'right' | 'both';
+  quantity: number; // Quantity for non-hearing-aid products
+  reason: string; // Assignment reason (Satış, Deneme, Tamir, etc.)
   warrantyPeriod: number;
   fittingDate: string;
   deliveryDate: string;

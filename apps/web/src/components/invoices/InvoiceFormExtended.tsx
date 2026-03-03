@@ -32,6 +32,7 @@ import {
 } from '../../types/invoice';
 import { getAutoCurrency } from '../../utils/currencyManager';
 import { ProductLinesSection } from './ProductLinesSection';
+import { useGetTenantCompany } from '@/api/generated/tenant-users/tenant-users';
 
 // Local form state interface to replace 'any'
 interface InvoiceFormState {
@@ -164,6 +165,59 @@ export function InvoiceFormExtended({
   const [medicalModalOpen, setMedicalModalOpen] = useState(false);
   const [currentItemIndex] = useState<number>(); // Removed unused setCurrentItemIndex
 
+  // Firma bilgilerini çek (SGK otomatik doldurma için)
+  const { data: companyData } = useGetTenantCompany();
+
+  // handleExtendedFieldChange'i önce tanımla (useEffect'lerden önce olmalı)
+  const handleExtendedFieldChange = useCallback((field: string, value: unknown) => {
+    setExtendedData(prev => {
+      if (field === 'scenarioData') {
+        const val = value as InvoiceScenarioData;
+        const newScenario = val?.scenario || prev.scenario || 'other';
+        return { ...prev, scenarioData: val, scenario: newScenario };
+      }
+      return { ...prev, [field]: value };
+    });
+
+    if (onDataChange) {
+      if (field === 'scenarioData') {
+        const val = value as InvoiceScenarioData;
+        onDataChange('scenarioData', value);
+        onDataChange('scenario', val?.scenario || 'other');
+      } else {
+        onDataChange(field, value);
+      }
+    }
+  }, [onDataChange]);
+
+  // SGK fatura türü seçildiğinde otomatik ürün ekle (sadece items boşsa ve firma tipi işitme merkezi ise)
+  useEffect(() => {
+    const isSGKInvoice = extendedData.scenario === 'other' && extendedData.invoiceType === '50';
+    const hasNoItems = !extendedData.items || extendedData.items.length === 0;
+    const isHearingCenter = companyData?.data?.companyInfo?.companyType === 'hearing_center';
+    
+    if (isSGKInvoice && hasNoItems && isHearingCenter) {
+      // İşitme cihazı otomatik ekle
+      const defaultItem: InvoiceItem = {
+        id: `line-${Date.now()}`,
+        name: 'İşitme Cihazı',
+        description: 'İşitme Cihazı',
+        quantity: 1,
+        unit: 'AY', // Ay birimi
+        unitPrice: 0,
+        discount: 0,
+        discountType: 'percentage',
+        taxRate: 18,
+        taxAmount: 0,
+        totalPrice: 0
+      };
+      
+      handleExtendedFieldChange('items', [defaultItem]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extendedData.scenario, extendedData.invoiceType, companyData?.data?.companyInfo?.companyType, handleExtendedFieldChange]);
+  // NOT: extendedData.items'ı dependency'e eklemeyin - sonsuz döngü yaratır
+
   // Koşullu görünürlük
   const currentScenario = extendedData.scenarioData?.scenario;
   const currentInvoiceType = extendedData.invoiceType;
@@ -217,27 +271,6 @@ export function InvoiceFormExtended({
   // İhracat tipi (13) seçildiğinde sidebar'ı aç
   // Removed auto-opening export modal when invoice type is 13.
   // Export details should be shown in the right-hand sidebar instead.
-
-  const handleExtendedFieldChange = useCallback((field: string, value: unknown) => {
-    setExtendedData(prev => {
-      if (field === 'scenarioData') {
-        const val = value as InvoiceScenarioData;
-        const newScenario = val?.scenario || prev.scenario || 'other';
-        return { ...prev, scenarioData: val, scenario: newScenario };
-      }
-      return { ...prev, [field]: value };
-    });
-
-    if (onDataChange) {
-      if (field === 'scenarioData') {
-        const val = value as InvoiceScenarioData;
-        onDataChange('scenarioData', value);
-        onDataChange('scenario', val?.scenario || 'other');
-      } else {
-        onDataChange(field, value);
-      }
-    }
-  }, [onDataChange]);
 
   // Removed unused _handleOpenWithholdingModal - withholding modal is opened via other means
 

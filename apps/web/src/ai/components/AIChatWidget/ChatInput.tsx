@@ -43,6 +43,17 @@ export interface ChatInputProps {
   isLoading?: boolean;
 
   /**
+   * Whether a file is currently uploading
+   * @default false
+   */
+  isUploading?: boolean;
+
+  /**
+   * Callback when user selects files to upload
+   */
+  onFileUpload?: (files: FileList) => void;
+
+  /**
    * Additional CSS classes
    */
   className?: string;
@@ -74,6 +85,26 @@ const SendIcon = () => (
       strokeLinejoin="round"
       strokeWidth={2}
       d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+    />
+  </svg>
+);
+
+/**
+ * Paperclip icon SVG for file upload
+ */
+const PaperclipIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
     />
   </svg>
 );
@@ -129,11 +160,14 @@ export function ChatInput({
   disabled = false,
   placeholder = 'Mesajınızı yazın...',
   isLoading = false,
+  isUploading = false,
+  onFileUpload,
   className = '',
   autoFocus = true,
 }: ChatInputProps): React.ReactElement {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -187,14 +221,51 @@ export function ChatInput({
     setInputValue(e.target.value);
   }, []);
 
-  const isDisabled = disabled || isLoading;
+  const isDisabled = disabled || isLoading || isUploading;
   const canSend = inputValue.trim().length > 0 && !isDisabled;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0 && onFileUpload) {
+      onFileUpload(e.target.files);
+    }
+    // clear input so same file can be uploaded again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   return (
     <form
       onSubmit={handleSubmit}
       className={`flex items-center gap-2 p-3 border-t border-gray-200 bg-white ${className}`}
     >
+      {/* File Upload Button */}
+      {onFileUpload && (
+        <>
+          <input data-allow-raw="true"
+            type="file"
+            multiple
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.doc,.docx"
+          />
+          <button data-allow-raw="true"
+            type="button"
+            disabled={isDisabled}
+            onClick={() => fileInputRef.current?.click()}
+            className={`
+              flex items-center justify-center p-2 rounded-full transition-colors
+              ${isUploading ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'}
+              disabled:opacity-50 disabled:cursor-not-allowed
+            `}
+            title="Dosya Yükle"
+          >
+            {isUploading ? <LoadingSpinner /> : <PaperclipIcon />}
+          </button>
+        </>
+      )}
+
       {/* Text input */}
       <input data-allow-raw="true"
         ref={inputRef}

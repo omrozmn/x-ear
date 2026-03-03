@@ -12,6 +12,7 @@ export { Checkbox } from './Checkbox';
 export { Radio, RadioGroup } from './Radio';
 export { Spinner, Loading } from './Spinner';
 export { DatePicker } from './DatePicker';
+export { TimePicker } from './TimePicker';
 // Toast components and hooks
 export { ToastProvider, useToast, useToastHelpers } from './Toast';
 export type { Toast } from './Toast';

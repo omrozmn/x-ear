@@ -488,7 +488,7 @@ export const useDeviceAssignment = ({
       // Payment method is only required if downPayment is entered
       const downPayment = formData.downPayment || 0;
       if (downPayment > 0 && !formData.paymentMethod) {
-        newErrors.paymentMethod = 'Peşinat girildiğinde ödeme yöntemi seçimi zorunludur';
+        newErrors.paymentMethod = 'Ön ödeme girildiğinde ödeme yöntemi seçimi zorunludur';
       }
     }
 

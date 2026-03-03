@@ -75,7 +75,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [showProformaModal, setShowProformaModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState<SaleRead | undefined>(undefined);
   const [editSaleInitialTab, setEditSaleInitialTab] = useState<'details' | 'payments' | 'notes'>('details');
-  
+
   // PDF Viewer state for proforma
   const [showProformaPdfViewer, setShowProformaPdfViewer] = useState(false);
   const [proformaPdfDocument, setProformaPdfDocument] = useState<SGKDocument | null>(null);
@@ -412,7 +412,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
 
       {/* Sales Summary Cards */}
       <SalesSummaryCards
-        sales={filteredSales}
+        sales={filteredSales as unknown as SaleRead[]}
         sgkCoverageCalculation={sgkCoverageCalculation}
       />
 
@@ -480,8 +480,8 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             showAdvancedFilters={showAdvancedFilters}
             setShowAdvancedFilters={setShowAdvancedFilters}
             selectedSales={selectedSales}
-            onExportSales={() => handleExportSales(filteredSales)}
-            onPrintSales={() => handlePrintSales(filteredSales)}
+            onExportSales={() => handleExportSales(filteredSales as unknown as SaleRead[])}
+            onPrintSales={() => handlePrintSales(filteredSales as unknown as SaleRead[])}
             onBulkCollection={() => setShowCollectionModal(true)}
             onBulkPromissoryNote={() => setShowPromissoryNoteModal(true)}
           />
@@ -512,7 +512,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             // viewMode === 'table' ? (
             // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
-              sales={filteredSales}
+              sales={filteredSales as unknown as SaleRead[]}
               partyId={party.id || ''}
               onSaleClick={(sale) => handleEditSaleClick(sale as SaleRead)}
               onEditSale={(sale) => handleEditSaleClick(sale as SaleRead)}
@@ -522,158 +522,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
         </CardContent>
       </Card>
 
-      {/* Device Replacements */}
-      {deviceReplacements.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
-              <RefreshCw className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" />
-              Cihaz Değişimleri
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {replacementsLoading ? (
-              <div className="text-center py-4">
-                <Loading className="w-6 h-6 mx-auto mb-2" />
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Cihaz değişimleri yükleniyor...</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {deviceReplacements.map((replacement, index) => (
-                  <div key={replacement.id} className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg border-2 border-amber-300 dark:border-amber-700/50">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Cihaz Değişimi #{index + 1}</h4>
-                          <span className={`inline-block px-2 py-0.5 text-xs rounded ${replacement.status === 'pending_invoice' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400' :
-                            replacement.status === 'invoice_created' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' :
-                              replacement.status === 'completed' && replacement.returnInvoice?.gibSent ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-                                replacement.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-                                  'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
-                            }`}>
-                            {
-                              replacement.status === 'pending_invoice' ? 'Fatura Bekliyor' :
-                                replacement.status === 'invoice_created' && !replacement.returnInvoice?.gibSent ? 'Fatura Oluşturuldu' :
-                                  replacement.status === 'completed' && replacement.returnInvoice?.gibSent ? 'GİB\'e Gönderildi ✓' :
-                                    replacement.status === 'completed' ? 'Tamamlandı' : 'Beklemede'
-                            }
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                          <strong>Tarih:</strong> {new Date(replacement.createdAt).toLocaleDateString('tr-TR', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric'
-                          })}
-                        </p>
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded p-2">
-                            <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1">Eski Cihaz</p>
-                            <p className="text-xs text-gray-900 dark:text-gray-300">{replacement.oldDeviceInfo}</p>
-                          </div>
-                          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded p-2">
-                            <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">Yeni Cihaz</p>
-                            <p className="text-xs text-gray-900 dark:text-gray-300">{replacement.newDeviceInfo}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      {replacement.status === 'pending_invoice' ? (
-                        <Button
-                          size="sm"
-                          className="flex-1 text-xs bg-blue-600 hover:bg-blue-700"
-                          onClick={() => {/* Open return invoice modal */ }}
-                        >
-                          <FileText className="w-3 h-3 mr-1" />
-                          İade Faturası
-                        </Button>
-                      ) : replacement.returnInvoice?.gibSent ? (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 text-xs"
-                            onClick={() => {/* Preview invoice */ }}
-                          >
-                            <Eye className="w-3 h-3 mr-1" />
-                            Önizle
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="flex-1 text-xs bg-green-600 hover:bg-green-700"
-                            disabled
-                          >
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            GİB'e Gönderildi
-                          </Button>
-                        </>
-                      ) : replacement.returnInvoice ? (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 text-xs"
-                            onClick={() => {/* Preview invoice */ }}
-                          >
-                            <Eye className="w-3 h-3 mr-1" />
-                            Önizle
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="flex-1 text-xs bg-green-600 hover:bg-green-700"
-                            onClick={() => {/* Send to GIB */ }}
-                          >
-                            <Send className="w-3 h-3 mr-1" />
-                            GİB'e Gönder
-                          </Button>
-                        </>
-                      ) : null}
-                    </div>
-
-                    {replacement.returnInvoice && (
-                      <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700/50">
-                        <p className="text-xs text-green-600 flex items-center mb-1">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          İade faturası oluşturuldu: {replacement.returnInvoice.invoiceNumber}
-                        </p>
-                        {replacement.returnInvoice.gibSent && replacement.returnInvoice.gibSentDate && (
-                          <p className="text-xs text-green-700 font-semibold flex items-center mb-1">
-                            <Send className="w-3 h-3 mr-1" />
-                            GİB'e gönderildi: {new Date(replacement.returnInvoice.gibSentDate).toLocaleString('tr-TR', {
-                              day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                            })}
-                          </p>
-                        )}
-                        {replacement.returnInvoice.supplierInvoiceNumber && (
-                          <p className="text-xs text-gray-600">
-                            <FileText className="w-3 h-3 mr-1" />
-                            İadeye Konu Fatura: {replacement.returnInvoice.supplierInvoiceNumber}
-                          </p>
-                        )}
-                        {replacement.returnInvoice.supplierName && (
-                          <p className="text-xs text-gray-600">
-                            <RefreshCw className="w-3 h-3 mr-1" />
-                            Tedarikçi: {replacement.returnInvoice.supplierName}
-                          </p>
-                        )}
-                        {replacement.returnInvoice.invoiceNote && (
-                          <p className="text-xs text-amber-700 mt-1">
-                            <AlertCircle className="w-3 h-3 mr-1" />
-                            {replacement.returnInvoice.invoiceNote}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Modals */}
       {showNewSaleModal && (
@@ -682,13 +531,15 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Yeni Satış</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => setShowNewSaleModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                  aria-label="Kapat"
                 >
-                  ×
-                </Button>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
               <PartySaleFormRefactored
                 partyId={party.id || ''}
@@ -753,21 +604,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
         </div>
       )}
 
-      {/* Return Exchange Modal Wrapper */}
-      {showReturnExchangeModal && selectedSale && (
-        <div className="fixed inset-0 z-[9999]">
-          <ReturnExchangeModal
-            isOpen={showReturnExchangeModal}
-            onClose={() => setShowReturnExchangeModal(false)}
-            party={party}
-            sale={selectedSale}
-            onReturnExchangeCreate={() => {
-              setShowReturnExchangeModal(false);
-              loadPartySales();
-            }}
-          />
-        </div>
-      )}
+
 
       {/* Proforma Modal Wrapper - Add z-index */}
       {showProformaModal && (
@@ -779,7 +616,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             onProformaCreate={(data, pdfBlob, fileName) => {
               console.log('Proforma created:', data);
               setShowProformaModal(false);
-              
+
               // Open PDF viewer with the generated proforma
               const pdfUrl = URL.createObjectURL(pdfBlob);
               const sgkDoc: SGKDocument = {
@@ -802,7 +639,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
           />
         </div>
       )}
-      
+
       {/* Proforma PDF Viewer */}
       {proformaPdfDocument && (
         <DocumentViewer

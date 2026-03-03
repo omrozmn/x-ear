@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BodyUploadOcrDocument,
   CreateJobRequest,
   DebugNERRequest,
   EntityExtractionRequest,
@@ -41,7 +42,8 @@ import type {
   ResponseEnvelopeOcrPatientResponse,
   ResponseEnvelopeOcrProcessResponse,
   ResponseEnvelopeOcrSimilarityResponse,
-  SimilarityRequest
+  SimilarityRequest,
+  UploadOcrDocumentParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -50,6 +52,75 @@ import { customInstance } from '../../orval-mutator';
 
 
 /**
+ * Upload and process a document (PDF/Image) for OCR
+ * @summary Upload Document
+ */
+export const uploadOcrDocument = (
+    bodyUploadOcrDocument: BodyUploadOcrDocument,
+    params?: UploadOcrDocumentParams,
+ signal?: AbortSignal
+) => {
+      
+      const formData = new FormData();
+formData.append(`file`, bodyUploadOcrDocument.file)
+
+      return customInstance<ResponseEnvelopeOcrProcessResponse>(
+      {url: `/api/ocr/upload`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData,
+        params, signal
+    },
+      );
+    }
+  
+
+
+export const getUploadOcrDocumentMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadOcrDocument>>, TError,{data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof uploadOcrDocument>>, TError,{data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}, TContext> => {
+
+const mutationKey = ['uploadOcrDocument'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadOcrDocument>>, {data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}> = (props) => {
+          const {data,params} = props ?? {};
+
+          return  uploadOcrDocument(data,params,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadOcrDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof uploadOcrDocument>>>
+    export type UploadOcrDocumentMutationBody = BodyUploadOcrDocument
+    export type UploadOcrDocumentMutationError = HTTPValidationError
+
+    /**
+ * @summary Upload Document
+ */
+export const useUploadOcrDocument = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadOcrDocument>>, TError,{data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof uploadOcrDocument>>,
+        TError,
+        {data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams},
+        TContext
+      > => {
+
+      const mutationOptions = getUploadOcrDocumentMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * Health check endpoint (Public)
  * @summary Health Check
  */

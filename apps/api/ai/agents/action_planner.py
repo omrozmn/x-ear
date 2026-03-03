@@ -104,8 +104,8 @@ class ActionPlan:
             "missingParameters": self.missing_parameters,
             "slotFillingPrompt": self.slot_filling_prompt,
             "stepCount": self.step_count,
-            "createdAt": self.created_at.isoformat(),
-            "expiresAt": self.expires_at.isoformat() if self.expires_at else None,
+            "createdAt": self.created_at.isoformat() if hasattr(self.created_at, "isoformat") else str(self.created_at),
+            "expiresAt": self.expires_at.isoformat() if self.expires_at and hasattr(self.expires_at, "isoformat") else None,
         }
 
 
@@ -124,12 +124,14 @@ class ActionPlannerResult:
     
     @property
     def needs_approval(self) -> bool:
-        return self.plan.requires_approval if self.plan else False
+        if self.plan is not None:
+            return bool(self.plan.requires_approval)
+        return False
     
     def to_dict(self) -> dict:
         return {
             "status": self.status.value,
-            "plan": self.plan.to_dict() if self.plan else None,
+            "plan": self.plan.to_dict() if self.plan is not None else None,
             "errorMessage": self.error_message,
             "deniedPermissions": self.denied_permissions,
             "processingTimeMs": self.processing_time_ms,
@@ -212,7 +214,7 @@ class ActionPlanner:
     def _generate_plan_id(self, tenant_id: str, user_id: str) -> str:
         """Generate a unique plan ID."""
         import uuid
-        return f"plan_{tenant_id}_{uuid.uuid4().hex[:12]}"
+        return f"plan_{tenant_id}_{str(uuid.uuid4().hex)[:12]}"
     
     def _compute_plan_hash(self, steps: List[ActionStep]) -> str:
         """Compute hash of the action plan for integrity verification."""
@@ -306,28 +308,44 @@ class ActionPlanner:
                 continue
         return required_params
     
-    def _generate_slot_prompt(self, parameter_name: str) -> str:
+    def _generate_slot_prompt(self, parameter_name: str, language: str = "tr") -> str:
         """
         Generate user-friendly prompt for missing parameter.
         
         Args:
             parameter_name: Name of the missing parameter
+            language: Target language
             
         Returns:
             User-friendly prompt asking for the parameter
         """
         prompts = {
-            "party_id": "Hangi kişi veya kuruluş için işlem yapmak istiyorsunuz? Lütfen isim veya ID belirtin.",
-            "first_name": "Lütfen adını belirtin.",
-            "last_name": "Lütfen soyadını belirtin.",
-            "phone": "Lütfen telefon numarasını belirtin.",
-            "email": "Lütfen e-posta adresini belirtin.",
-            "device_id": "Hangi cihazdan bahsediyorsunuz? Lütfen cihaz adı veya seri numarasını belirtin.",
-            "amount": "Miktar nedir? Lütfen bir sayı belirtin.",
-            "date": "Hangi tarih için? Lütfen tarihi belirtin (örn: 2025-01-25).",
-            "time": "Saat kaçta? Lütfen saati belirtin (örn: 14:30).",
+            "tr": {
+                "party_id": "Hangi kişi veya kuruluş için işlem yapmak istiyorsunuz? Lütfen isim veya ID belirtin.",
+                "first_name": "Lütfen adını belirtin.",
+                "last_name": "Lütfen soyadını belirtin.",
+                "phone": "Lütfen telefon numarasını belirtin.",
+                "email": "Lütfen e-posta adresini belirtin.",
+                "device_id": "Hangi cihazdan bahsediyorsunuz? Lütfen cihaz adı veya seri numarasını belirtin.",
+                "amount": "Miktar nedir? Lütfen bir sayı belirtin.",
+                "date": "Hangi tarih için? Lütfen tarihi belirtin (örn: 2025-01-25).",
+                "time": "Saat kaçta? Lütfen saati belirtin (örn: 14:30).",
+            },
+            "en": {
+                "party_id": "For which person or organization would you like to perform the operation? Please specify name or ID.",
+                "first_name": "Please specify the first name.",
+                "last_name": "Please specify the last name.",
+                "phone": "Please specify the phone number.",
+                "email": "Please specify the email address.",
+                "device_id": "Which device are you referring to? Please specify device name or serial number.",
+                "amount": "What is the amount? Please specify a number.",
+                "date": "For which date? Please specify the date (e.g., 2025-01-25).",
+                "time": "At what time? Please specify the time (e.g., 14:30).",
+            }
         }
-        return prompts.get(parameter_name, f"Lütfen {parameter_name} bilgisini belirtin.")
+        
+        lang_prompts = prompts.get(language, prompts["tr"])
+        return lang_prompts.get(parameter_name, f"Please specify {parameter_name}." if language == "en" else f"Lütfen {parameter_name} bilgisini belirtin.")
     
     async def create_plan(
         self,
@@ -336,6 +354,7 @@ class ActionPlanner:
         user_id: str,
         user_permissions: Set[str],
         context: Optional[Dict[str, Any]] = None,
+        language: str = "tr",
     ) -> ActionPlannerResult:
         """
         Create an action plan from user intent.
@@ -469,7 +488,7 @@ class ActionPlanner:
         # Generate slot-filling prompt if needed
         slot_prompt = None
         if missing_params:
-            slot_prompt = self._generate_slot_prompt(missing_params[0])
+            slot_prompt = self._generate_slot_prompt(missing_params[0], language=language)
         
         # Calculate overall risk
         overall_risk = self._calculate_overall_risk(steps)
@@ -512,10 +531,11 @@ class ActionPlanner:
         user_id: str,
         user_permissions: Set[str],
         context: Optional[Dict[str, Any]] = None,
+        language: str = "tr",
     ) -> ActionPlannerResult:
         """Synchronous version of create_plan."""
         import asyncio
-        return asyncio.run(self.create_plan(intent, tenant_id, user_id, user_permissions, context))
+        return asyncio.run(self.create_plan(intent, tenant_id, user_id, user_permissions, context, language))
     
     def _parse_plan_response(self, response: str) -> dict:
         """Parse LLM response into plan data."""
@@ -524,7 +544,7 @@ class ActionPlanner:
         # Handle markdown code blocks
         if response.startswith("```"):
             lines = response.split("\n")
-            json_lines = []
+            json_lines: List[str] = []
             in_json = False
             for line in lines:
                 if line.startswith("```") and not in_json:
@@ -544,6 +564,7 @@ class ActionPlanner:
         tenant_id: str,
         user_id: str,
         user_permissions: Set[str],
+        language: str = "tr",
     ) -> ActionPlannerResult:
         """
         Create a simple plan without LLM.
@@ -591,12 +612,17 @@ class ActionPlanner:
                 
                 # Create step
                 tool = self.tool_registry.get_tool("createParty")
+                description = (
+                    f"Create party record for {parameters['first_name']} {parameters['last_name']}"
+                    if language == "en" else
+                    f"{parameters['first_name']} {parameters['last_name']} için hasta kaydı oluştur"
+                )
                 step = ActionStep(
                     step_number=1,
                     tool_name="createParty",
                     tool_schema_version=tool.schema_version,
                     parameters=parameters,
-                    description=f"{parameters['first_name']} {parameters['last_name']} için hasta kaydı oluştur",
+                    description=description,
                     risk_level=tool.risk_level,
                     requires_approval=False,
                 )
@@ -656,7 +682,8 @@ class ActionPlanner:
         """
         if plan.expires_at is None:
             return False
-        return datetime.now(timezone.utc) > plan.expires_at
+        now = datetime.now(timezone.utc)
+        return bool(now > plan.expires_at) if plan.expires_at is not None else False
 
 
 # Global instance

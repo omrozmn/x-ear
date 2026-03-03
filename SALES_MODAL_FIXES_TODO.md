@@ -37,20 +37,30 @@
 ---
 
 ### 3. SGK Desteği ve Rapor Durumu - Backend'e Kaydedilmiyor
-**Durum:** ❌ Çözülmedi
+**Durum:** ✅ ÇÖZÜLDÜ
 **Sorun:**
 - Yeni satış modalında SGK desteği ve rapor durumu seçiliyor
 - Ama satış düzenleme modalında aynı değerler gelmiyor
 - Backend'e doğru kaydedilmiyor olabilir
 
 **Kontrol:**
-1. Frontend'den backend'e gönderilen data'yı kontrol et
-2. Backend'de `create_sale` fonksiyonunda `sgk_scheme` ve `report_status` kaydediliyor mu?
-3. `_build_full_sale_data` fonksiyonunda bu field'lar döndürülüyor mu?
+1. ✅ Frontend'den backend'e gönderilen data'yı kontrol et
+2. ✅ Backend'de `create_sale` fonksiyonunda `sgk_scheme` ve `report_status` kaydediliyor mu?
+3. ✅ `_build_full_sale_data` fonksiyonunda bu field'lar döndürülüyor mu?
+
+**Çözüm:**
+- Backend'de her şey doğru çalışıyor:
+  * `create_sale` fonksiyonunda `report_status` Sale tablosuna kaydediliyor
+  * `sgk_scheme` DeviceAssignment tablosuna kaydediliyor
+  * `_build_device_info_from_assignment` fonksiyonunda `sgkScheme` ve `reportStatus` döndürülüyor
+  * `_build_full_sale_data` fonksiyonunda bu değerler sale data'ya ekleniyor
+- Frontend'de her şey doğru çalışıyor:
+  * `useEditSale` hook'unda backend'den gelen `sgkScheme` ve `reportStatus` form state'ine yükleniyor
+  * `submitForm` fonksiyonunda bu değerler backend'e gönderiliyor
 
 **Dosyalar:**
-- `x-ear/apps/web/src/components/forms/party-sale-form/PartySaleFormRefactored.tsx` (frontend)
-- `x-ear/apps/api/routers/sales.py` (backend - create_sale, _build_full_sale_data)
+- `x-ear/apps/api/routers/sales.py` (create_sale, _build_full_sale_data, _build_device_info_from_assignment)
+- `x-ear/apps/web/src/components/parties/modals/edit-sale-modal/hooks/useEditSale.ts`
 
 ---
 

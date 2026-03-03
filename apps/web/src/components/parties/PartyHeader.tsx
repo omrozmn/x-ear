@@ -1,5 +1,5 @@
-import React from 'react';
-import { Button } from '@x-ear/ui-web';
+import React, { useState } from 'react';
+import { Button, Modal } from '@x-ear/ui-web';
 import { Party } from '../../types/party';
 import {
   Phone,
@@ -10,7 +10,8 @@ import {
   Edit,
   MessageSquare,
   FileText,
-  Trash2
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 // Badge component
@@ -67,6 +68,17 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
   onAddNote,
   isLoading,
 }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setShowDeleteModal(false);
+    onDelete?.();
+  };
+
   if (isLoading || !party) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
@@ -164,9 +176,6 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
               <div>
                 <span className="font-medium">Kazanım Türü:</span> {formatAcquisitionType(party.acquisitionType || undefined)}
               </div>
-              <div>
-                <span className="font-medium">Roller:</span> {party.roles && party.roles.length > 0 ? party.roles.map(r => r.code || '').join(', ') : 'Belirtilmemiş'}
-              </div>
             </div>
 
             {/* Contact Info */}
@@ -237,8 +246,8 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-2">
-          {/* Primary Actions */}
+        <div className="flex items-center gap-2">
+          {/* Primary Action - Not Ekle */}
           {onAddNote && (
             <Button
               size="sm"
@@ -251,81 +260,117 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
             </Button>
           )}
 
-          {onCall && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onCall}
-              icon={<Phone className="w-4 h-4" />}
-              iconPosition="left"
-            >
-              Ara
-            </Button>
-          )}
+          {/* Secondary Actions Group */}
+          <div className="flex items-center gap-2 px-2 border-l border-gray-200 dark:border-gray-700">
+            {onEdit && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={onEdit}
+                icon={<Edit className="w-4 h-4" />}
+                iconPosition="left"
+              >
+                Düzenle
+              </Button>
+            )}
 
-          {onSendSMS && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSendSMS}
-              icon={<MessageSquare className="w-4 h-4" />}
-              iconPosition="left"
-            >
-              SMS
-            </Button>
-          )}
+            {onTagUpdate && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onTagUpdate}
+                icon={<FileText className="w-4 h-4" />}
+                iconPosition="left"
+              >
+                Etiket Güncelle
+              </Button>
+            )}
 
-          {onEdit && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onEdit}
-              icon={<Edit className="w-4 h-4" />}
-              iconPosition="left"
-            >
-              Düzenle
-            </Button>
-          )}
+            {onCall && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onCall}
+                icon={<Phone className="w-4 h-4" />}
+                iconPosition="left"
+              >
+                Ara
+              </Button>
+            )}
 
-          {onGenerateReport && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onGenerateReport}
-              icon={<FileText className="w-4 h-4" />}
-              iconPosition="left"
-            >
-              Rapor Oluştur
-            </Button>
-          )}
+            {onSendSMS && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSendSMS}
+                icon={<MessageSquare className="w-4 h-4" />}
+                iconPosition="left"
+              >
+                SMS
+              </Button>
+            )}
+          </div>
 
-          {onTagUpdate && (
-            <Button
-              size="sm"
-              onClick={onTagUpdate}
-              className="bg-green-600 hover:bg-green-700 text-white"
-              icon={<Edit className="w-4 h-4" />}
-              iconPosition="left"
-            >
-              Etiket Güncelle
-            </Button>
-          )}
-
+          {/* Danger Zone */}
           {onDelete && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onDelete}
-              data-testid="party-delete-button"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
-              icon={<Trash2 className="w-4 h-4" />}
-              iconPosition="left"
-            >
-              Sil
-            </Button>
+            <div className="flex items-center gap-2 px-2 border-l border-gray-200 dark:border-gray-700">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteClick}
+                data-testid="party-delete-button"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300 dark:border-red-700 dark:hover:bg-red-900/20"
+                icon={<Trash2 className="w-4 h-4" />}
+                iconPosition="left"
+              >
+                Sil
+              </Button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Hastayı Sil"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start space-x-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                Bu işlem geri alınamaz!
+              </p>
+              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                <span className="font-semibold">{party.firstName} {party.lastName}</span> isimli hastayı ve tüm ilişkili verilerini silmek üzeresiniz.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteModal(false)}
+            >
+              İptal
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700"
+              icon={<Trash2 className="w-4 h-4" />}
+              iconPosition="left"
+            >
+              Evet, Sil
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

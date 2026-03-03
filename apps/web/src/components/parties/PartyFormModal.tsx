@@ -110,14 +110,21 @@ export function PartyFormModal({
 
   // Initialize form data
   useEffect(() => {
+    console.log('[PartyFormModal] useEffect triggered - isOpen:', isOpen, 'initialData:', initialData);
     if (initialData) {
-      setFormData({
+      console.log('[PartyFormModal] Initializing with data:', initialData);
+      console.log('[PartyFormModal] birthDate from initialData:', initialData.birthDate);
+      console.log('[PartyFormModal] gender from initialData:', initialData.gender);
+      console.log('[PartyFormModal] addressCity from initialData:', initialData.addressCity);
+      console.log('[PartyFormModal] addressDistrict from initialData:', initialData.addressDistrict);
+      
+      const newFormData = {
         firstName: initialData.firstName || '',
         lastName: initialData.lastName || '',
         phone: initialData.phone || '',
         tcNumber: initialData.tcNumber || '',
         gender: initialData.gender || '',
-        birthDate: (initialData.birthDate as string) || '',
+        birthDate: initialData.birthDate || '',
         email: initialData.email || '',
         address: typeof initialData.address === 'string' ? initialData.address : initialData.addressFull || '',
         city: (getSafeAddressProperty(initialData.address, 'city') as string) || initialData.addressCity || '',
@@ -127,8 +134,11 @@ export function PartyFormModal({
         acquisitionType: initialData.acquisitionType || '',
         branchId: initialData.branchId || '',
         tags: (initialData.tags as unknown as string[]) || []
-      });
+      };
+      console.log('[PartyFormModal] Setting formData to:', newFormData);
+      setFormData(newFormData);
     } else {
+      console.log('[PartyFormModal] No initialData, resetting form');
       // Reset form for new party
       setFormData({
         firstName: '',
@@ -244,11 +254,8 @@ export function PartyFormModal({
         gender: formData.gender?.trim() || undefined,
         email: formData.email?.trim() || undefined,
         birthDate: formData.birthDate?.trim() || undefined,
-        // Don't send address as empty string - backend expects object or undefined
+        // Address fields - backend expects addressCity, addressDistrict, addressFull
         addressFull: formData.address?.trim() || undefined,
-        // Send both formats for backend compatibility
-        city: formData.city?.trim() || undefined,
-        district: formData.district?.trim() || undefined,
         addressCity: formData.city?.trim() || undefined,
         addressDistrict: formData.district?.trim() || undefined,
         branchId: formData.branchId?.trim() || undefined,
@@ -260,6 +267,8 @@ export function PartyFormModal({
       };
 
       console.log('=== FORM SUBMIT DATA ===');
+      console.log('formData.birthDate:', formData.birthDate);
+      console.log('cleanedData.birthDate:', cleanedData.birthDate);
       console.log('cleanedData:', cleanedData);
 
       // We need to cast cleanedData to PartyCreate because address handling is loose in form but explicit in type
@@ -508,7 +517,7 @@ export function PartyFormModal({
           </div>
 
           {/* Row 4: Adres (left) + E-posta (right) (email moved under address) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Adres
@@ -541,102 +550,6 @@ export function PartyFormModal({
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
-            </div>
-          </div>
-
-          {/* (moved) Address field consolidated above with Doğum Tarihi */}
-
-          {/* Row 6: Durum, Segment */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Durum
-              </label>
-              <div className="relative">
-                <select data-allow-raw="true"
-                  value={formData.status || ''}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                >
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Pasif</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Segment
-              </label>
-              <div className="relative">
-                <select data-allow-raw="true"
-                  value={formData.segment}
-                  onChange={(e) => handleInputChange('segment', e.target.value)}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                >
-                  <option value="NEW">Yeni</option>
-                  <option value="TRIAL">Deneme</option>
-                  <option value="PURCHASED">Satın Almış</option>
-                  <option value="CONTROL">Kontrol</option>
-                  <option value="RENEWAL">Yenileme</option>
-                  <option value="EXISTING">Mevcut</option>
-                  <option value="VIP">VIP</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Row 7: Kazanım Türü, Şube */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Kazanım Türü
-              </label>
-              <div className="relative">
-                <select data-allow-raw="true"
-                  value={formData.acquisitionType}
-                  onChange={(e) => handleInputChange('acquisitionType', e.target.value)}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                >
-                  <option value="referral">Referans</option>
-                  <option value="online">Online</option>
-                  <option value="walk-in">Ziyaret</option>
-                  <option value="social-media">Sosyal Medya</option>
-                  <option value="advertisement">Reklam</option>
-                  <option value="tabela">Tabela</option>
-                  <option value="other">Diğer</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Şube
-              </label>
-              <div className="relative">
-                <select data-allow-raw="true"
-                  value={formData.branchId}
-                  onChange={(e) => handleInputChange('branchId', e.target.value)}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                >
-                  <option value="">Seçiniz</option>
-                  {branches.map(branch => (
-                    <option key={branch.id} value={branch.id}>{branch.name}</option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                </div>
-              </div>
             </div>
           </div>
         </div>

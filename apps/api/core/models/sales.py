@@ -221,9 +221,12 @@ class Sale(BaseModel, TenantScopedMixin):
     
     # Sale details
     sale_date = Column(DateTime, nullable=False)
-    list_price_total = Column(sa.Numeric(12,2))  # Total list price (before discount)
+    list_price_total = Column(sa.Numeric(12,2))  # NOTE: This is UNIT price, not total! For bilateral sales, multiply by device count
+    unit_list_price = Column(sa.Numeric(12,2))  # Informational: Same as list_price_total, added for clarity
     total_amount = Column(sa.Numeric(12,2))  # Precise money handling
     discount_amount = Column(sa.Numeric(12,2), default=0.0)  # Precise money handling
+    discount_type = Column(String(20), default='none')  # 'none', 'percentage', 'amount'
+    discount_value = Column(sa.Numeric(12,2), default=0.0)  # Percentage value (e.g., 10 for 10%) or amount value
     final_amount = Column(sa.Numeric(12,2))  # Precise money handling
     paid_amount = Column(sa.Numeric(12,2), default=0.0)  # Track paid amount for partial payments
     
@@ -259,8 +262,11 @@ class Sale(BaseModel, TenantScopedMixin):
             'branchId': self.branch_id,
             'saleDate': self.sale_date.isoformat() if self.sale_date else None,
             'listPriceTotal': float(self.list_price_total) if self.list_price_total else None,
+            'unitListPrice': float(self.unit_list_price) if self.unit_list_price else None,
             'totalAmount': float(self.total_amount) if self.total_amount else None,
             'discountAmount': float(self.discount_amount) if self.discount_amount else 0.0,
+            'discountType': self.discount_type,
+            'discountValue': float(self.discount_value) if self.discount_value else 0.0,
             'finalAmount': float(self.final_amount) if self.final_amount else None,
             'paidAmount': float(self.paid_amount) if self.paid_amount else 0.0,
             'rightEarAssignmentId': self.right_ear_assignment_id,

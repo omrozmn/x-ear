@@ -314,6 +314,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             } : undefined,
             matchedCapability: api.matchedCapability ? {
               name: api.matchedCapability.name,
+              displayName: api.matchedCapability.displayName || api.matchedCapability.name,
               description: api.matchedCapability.description,
               category: api.matchedCapability.category,
               slots: (api.matchedCapability.slots || []).map((s: any) => ({
@@ -399,15 +400,6 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       // When matchedCapability has slots, the message should NOT appear as a permanent
       // chat bubble — the slot-filling interactive UI takes over entirely.
       const shouldShowMessage = (!isAction && !hasPlan && !hasMatchedCapability) || (isAskingQuestion && !hasMatchedCapability);
-
-      // DEBUG: Remove after fixing slot-filling
-      console.log('[useAIChat] DEBUG onSuccess:', {
-        intentType, isAction, isAskingQuestion, hasPlan, hasMatchedCapability, shouldShowMessage,
-        matchedCapability: response.matchedCapability,
-        actionPlan: response.actionPlan,
-        response: response.response?.substring(0, 80),
-        needsClarification: response.needsClarification,
-      });
 
       if (shouldShowMessage && response.response) {
         const assistantMessage = createAssistantMessage(response);

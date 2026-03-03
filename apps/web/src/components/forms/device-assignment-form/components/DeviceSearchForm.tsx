@@ -99,7 +99,7 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Marka, model veya barkod ile arayın..."
-            className={`pl-10 ${errors.deviceId ? 'border-red-300' : ''}`}
+            className={`w-full pl-10 ${errors.deviceId ? 'border-red-300' : ''}`}
           />
         </div>
         {errors.deviceId && (

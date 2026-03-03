@@ -265,23 +265,20 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
         {/* Footer Actions for View Mode */}
         {currentMode === 'view' && appointment && (
-          <div className="bg-gray-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-slate-600 flex-shrink-0">
+          <div className="bg-gray-50 dark:bg-slate-700 px-4 py-3 sm:px-6 flex items-center justify-between border-t border-gray-200 dark:border-slate-600 flex-shrink-0">
+            {/* Delete button on the left */}
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+              variant='outline'>
+              {t('list.actions.delete')}
+            </Button>
+            
+            {/* Edit button on the right */}
             <Button
               onClick={() => setCurrentMode('edit')}
               variant='primary'>
               {t('list.actions.edit')}
-            </Button>
-            <Button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="mt-3 sm:mt-0 sm:mr-3 text-red-700 hover:bg-red-50"
-              variant='outline'>
-              {t('list.actions.delete')}
-            </Button>
-            <Button
-              onClick={onClose}
-              className="mt-3 sm:mt-0 sm:mr-3"
-              variant='outline'>
-              {t('modal.actions.close')}
             </Button>
           </div>
         )}

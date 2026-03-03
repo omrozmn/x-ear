@@ -4,7 +4,7 @@ Sales Tools for AI Layer
 Contains tools for managing Sales and Invoices.
 """
 from typing import Any, Dict, List
-from ai.tools import (
+from ai.tools import (  # type: ignore
     register_tool,
     ToolParameter,
     ToolCategory,
@@ -12,8 +12,8 @@ from ai.tools import (
     ToolExecutionMode,
     ToolExecutionResult,
 )
-from core.database import SessionLocal
-from core.models.sales import Sale, PaymentRecord
+from core.database import SessionLocal  # type: ignore
+from core.models.sales import Sale, PaymentRecord  # type: ignore
 
 
 # =============================================================================

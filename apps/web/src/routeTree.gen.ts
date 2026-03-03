@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UtsRouteImport } from './routes/uts'
 import { Route as TestRouteImport } from './routes/test'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvoicesRouteImport } from './routes/invoices'
@@ -34,7 +35,9 @@ import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers/$sup
 import { Route as SgkDownloadsRouteImport } from './routes/sgk/downloads'
 import { Route as SettingsTeamRouteImport } from './routes/settings/team'
 import { Route as SettingsSubscriptionRouteImport } from './routes/settings/subscription'
+import { Route as SettingsSgkRouteImport } from './routes/settings/sgk'
 import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
+import { Route as SettingsPartiesRouteImport } from './routes/settings/parties'
 import { Route as SettingsIntegrationRouteImport } from './routes/settings/integration'
 import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
 import { Route as ReportsActivityRouteImport } from './routes/reports/activity'
@@ -55,6 +58,11 @@ const UtsRoute = UtsRouteImport.update({
 const TestRoute = TestRouteImport.update({
   id: '/test',
   path: '/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -118,9 +126,9 @@ const SgkIndexRoute = SgkIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const ReportsIndexRoute = ReportsIndexRouteImport.update({
   id: '/reports/',
@@ -163,29 +171,39 @@ const SgkDownloadsRoute = SgkDownloadsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsTeamRoute = SettingsTeamRouteImport.update({
-  id: '/settings/team',
-  path: '/settings/team',
-  getParentRoute: () => rootRouteImport,
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsSubscriptionRoute = SettingsSubscriptionRouteImport.update({
-  id: '/settings/subscription',
-  path: '/settings/subscription',
-  getParentRoute: () => rootRouteImport,
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsSgkRoute = SettingsSgkRouteImport.update({
+  id: '/sgk',
+  path: '/sgk',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsRolesRoute = SettingsRolesRouteImport.update({
-  id: '/settings/roles',
-  path: '/settings/roles',
-  getParentRoute: () => rootRouteImport,
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsPartiesRoute = SettingsPartiesRouteImport.update({
+  id: '/parties',
+  path: '/parties',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsIntegrationRoute = SettingsIntegrationRouteImport.update({
-  id: '/settings/integration',
-  path: '/settings/integration',
-  getParentRoute: () => rootRouteImport,
+  id: '/integration',
+  path: '/integration',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsCompanyRoute = SettingsCompanyRouteImport.update({
-  id: '/settings/company',
-  path: '/settings/company',
-  getParentRoute: () => rootRouteImport,
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const ReportsActivityRoute = ReportsActivityRouteImport.update({
   id: '/reports/activity',
@@ -244,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
   '/cashflow/$id': typeof CashflowIdRoute
@@ -257,7 +276,9 @@ export interface FileRoutesByFullPath {
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
+  '/settings/parties': typeof SettingsPartiesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/sgk': typeof SettingsSgkRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
@@ -293,7 +314,9 @@ export interface FileRoutesByTo {
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
+  '/settings/parties': typeof SettingsPartiesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/sgk': typeof SettingsSgkRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
@@ -320,6 +343,7 @@ export interface FileRoutesById {
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
   '/cashflow/$id': typeof CashflowIdRoute
@@ -333,7 +357,9 @@ export interface FileRoutesById {
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
+  '/settings/parties': typeof SettingsPartiesRoute
   '/settings/roles': typeof SettingsRolesRoute
+  '/settings/sgk': typeof SettingsSgkRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
@@ -361,6 +387,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/login'
     | '/profile'
+    | '/settings'
     | '/test'
     | '/uts'
     | '/cashflow/$id'
@@ -374,7 +401,9 @@ export interface FileRouteTypes {
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
+    | '/settings/parties'
     | '/settings/roles'
+    | '/settings/sgk'
     | '/settings/subscription'
     | '/settings/team'
     | '/sgk/downloads'
@@ -410,7 +439,9 @@ export interface FileRouteTypes {
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
+    | '/settings/parties'
     | '/settings/roles'
+    | '/settings/sgk'
     | '/settings/subscription'
     | '/settings/team'
     | '/sgk/downloads'
@@ -436,6 +467,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/login'
     | '/profile'
+    | '/settings'
     | '/test'
     | '/uts'
     | '/cashflow/$id'
@@ -449,7 +481,9 @@ export interface FileRouteTypes {
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
+    | '/settings/parties'
     | '/settings/roles'
+    | '/settings/sgk'
     | '/settings/subscription'
     | '/settings/team'
     | '/sgk/downloads'
@@ -476,23 +510,18 @@ export interface RootRouteChildren {
   InvoicesRoute: typeof InvoicesRouteWithChildren
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
+  SettingsRoute: typeof SettingsRouteWithChildren
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
   PartiesPartyIdRoute: typeof PartiesPartyIdRoute
   PosFailRoute: typeof PosFailRoute
   PosSuccessRoute: typeof PosSuccessRoute
   ReportsActivityRoute: typeof ReportsActivityRoute
-  SettingsCompanyRoute: typeof SettingsCompanyRoute
-  SettingsIntegrationRoute: typeof SettingsIntegrationRoute
-  SettingsRolesRoute: typeof SettingsRolesRoute
-  SettingsSubscriptionRoute: typeof SettingsSubscriptionRoute
-  SettingsTeamRoute: typeof SettingsTeamRoute
   SgkDownloadsRoute: typeof SgkDownloadsRoute
   SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
   PartiesIndexRoute: typeof PartiesIndexRoute
   PosIndexRoute: typeof PosIndexRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
-  SettingsIndexRoute: typeof SettingsIndexRoute
   SgkIndexRoute: typeof SgkIndexRoute
   SuppliersIndexRoute: typeof SuppliersIndexRoute
 }
@@ -511,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/test'
       fullPath: '/test'
       preLoaderRoute: typeof TestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -599,10 +635,10 @@ declare module '@tanstack/react-router' {
     }
     '/settings/': {
       id: '/settings/'
-      path: '/settings'
+      path: '/'
       fullPath: '/settings/'
       preLoaderRoute: typeof SettingsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/reports/': {
       id: '/reports/'
@@ -662,38 +698,52 @@ declare module '@tanstack/react-router' {
     }
     '/settings/team': {
       id: '/settings/team'
-      path: '/settings/team'
+      path: '/team'
       fullPath: '/settings/team'
       preLoaderRoute: typeof SettingsTeamRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/subscription': {
       id: '/settings/subscription'
-      path: '/settings/subscription'
+      path: '/subscription'
       fullPath: '/settings/subscription'
       preLoaderRoute: typeof SettingsSubscriptionRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/sgk': {
+      id: '/settings/sgk'
+      path: '/sgk'
+      fullPath: '/settings/sgk'
+      preLoaderRoute: typeof SettingsSgkRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/roles': {
       id: '/settings/roles'
-      path: '/settings/roles'
+      path: '/roles'
       fullPath: '/settings/roles'
       preLoaderRoute: typeof SettingsRolesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/parties': {
+      id: '/settings/parties'
+      path: '/parties'
+      fullPath: '/settings/parties'
+      preLoaderRoute: typeof SettingsPartiesRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/integration': {
       id: '/settings/integration'
-      path: '/settings/integration'
+      path: '/integration'
       fullPath: '/settings/integration'
       preLoaderRoute: typeof SettingsIntegrationRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/settings/company': {
       id: '/settings/company'
-      path: '/settings/company'
+      path: '/company'
       fullPath: '/settings/company'
       preLoaderRoute: typeof SettingsCompanyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/reports/activity': {
       id: '/reports/activity'
@@ -807,6 +857,32 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
   InvoicesRouteChildren,
 )
 
+interface SettingsRouteChildren {
+  SettingsCompanyRoute: typeof SettingsCompanyRoute
+  SettingsIntegrationRoute: typeof SettingsIntegrationRoute
+  SettingsPartiesRoute: typeof SettingsPartiesRoute
+  SettingsRolesRoute: typeof SettingsRolesRoute
+  SettingsSgkRoute: typeof SettingsSgkRoute
+  SettingsSubscriptionRoute: typeof SettingsSubscriptionRoute
+  SettingsTeamRoute: typeof SettingsTeamRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsCompanyRoute: SettingsCompanyRoute,
+  SettingsIntegrationRoute: SettingsIntegrationRoute,
+  SettingsPartiesRoute: SettingsPartiesRoute,
+  SettingsRolesRoute: SettingsRolesRoute,
+  SettingsSgkRoute: SettingsSgkRoute,
+  SettingsSubscriptionRoute: SettingsSubscriptionRoute,
+  SettingsTeamRoute: SettingsTeamRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
@@ -818,23 +894,18 @@ const rootRouteChildren: RootRouteChildren = {
   InvoicesRoute: InvoicesRouteWithChildren,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
+  SettingsRoute: SettingsRouteWithChildren,
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
   PartiesPartyIdRoute: PartiesPartyIdRoute,
   PosFailRoute: PosFailRoute,
   PosSuccessRoute: PosSuccessRoute,
   ReportsActivityRoute: ReportsActivityRoute,
-  SettingsCompanyRoute: SettingsCompanyRoute,
-  SettingsIntegrationRoute: SettingsIntegrationRoute,
-  SettingsRolesRoute: SettingsRolesRoute,
-  SettingsSubscriptionRoute: SettingsSubscriptionRoute,
-  SettingsTeamRoute: SettingsTeamRoute,
   SgkDownloadsRoute: SgkDownloadsRoute,
   SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
   PartiesIndexRoute: PartiesIndexRoute,
   PosIndexRoute: PosIndexRoute,
   ReportsIndexRoute: ReportsIndexRoute,
-  SettingsIndexRoute: SettingsIndexRoute,
   SgkIndexRoute: SgkIndexRoute,
   SuppliersIndexRoute: SuppliersIndexRoute,
 }

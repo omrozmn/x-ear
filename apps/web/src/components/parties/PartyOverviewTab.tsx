@@ -158,12 +158,12 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
             </div>
 
             <div className="flex items-center space-x-3">
-              <div className="w-5 h-5 flex items-center justify-center">
-                {getStatusBadge(party.status || undefined)}
-              </div>
+              <User className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Durum</p>
-                <p className="text-sm text-gray-900 dark:text-white">{getStatusText(party.status || undefined)}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Cinsiyet</p>
+                <p className="text-sm text-gray-900 dark:text-white">
+                  {party.gender === 'M' || party.gender === 'm' ? 'Erkek' : party.gender === 'F' || party.gender === 'f' ? 'Kadın' : 'Belirtilmemiş'}
+                </p>
               </div>
             </div>
 
@@ -182,22 +182,6 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.birthDate ? formatDate(party.birthDate) : 'Belirtilmemiş'}
                 </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Tag className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Segment</p>
-                <p className="text-sm text-gray-900 dark:text-white">{getSegmentText(party.segment || undefined)}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Tag className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kazanım Türü</p>
-                <p className="text-sm text-gray-900 dark:text-white">{getAcquisitionTypeText(party.acquisitionType || undefined)}</p>
               </div>
             </div>
 

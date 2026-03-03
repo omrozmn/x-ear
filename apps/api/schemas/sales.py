@@ -179,6 +179,7 @@ class DeviceAssignmentRead(IDMixin, TimestampMixin, DeviceAssignmentBase):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     discount_type: Optional[str] = Field(None, alias="discountType")
     discount_value: Optional[float] = Field(None, alias="discountValue")
+    discount_percent: Optional[float] = Field(None, alias="discountPercent")  # Alias for discount_value (frontend compatibility)
     down_payment: Optional[float] = Field(0.0, alias="downPayment")  # From PaymentRecord (Flask parity)
     
     # Ear side alias (Flask parity)
@@ -282,6 +283,8 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     
     # Financial fields
     list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
+    actual_list_price_total: Optional[float] = Field(None, alias="actualListPriceTotal")  # ✅ NEW: Actual total (unit × count)
+    unit_list_price: Optional[float] = Field(None, alias="unitListPrice")  # ✅ NEW: Explicit unit price
     total_amount: Optional[float] = Field(None, alias="totalAmount")
     discount_amount: Optional[float] = Field(0.0, alias="discountAmount")
     final_amount: Optional[float] = Field(None, alias="finalAmount")
@@ -301,6 +304,8 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     model: Optional[str] = None
     barcode: Optional[str] = None
     serial_number: Optional[str] = Field(None, alias="serialNumber")
+    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
+    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
     category: Optional[str] = None
     list_price: Optional[float] = Field(None, alias="listPrice")
     sale_price: Optional[float] = Field(None, alias="salePrice")
@@ -312,6 +317,7 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
     payment_status: Optional[str] = Field(None, alias="paymentStatus")
     invoice_status: Optional[str] = Field(None, alias="invoiceStatus")
+    net_payable: Optional[float] = Field(None, alias="netPayable")
 
     @model_validator(mode='before')
     @classmethod
@@ -390,7 +396,10 @@ class SaleCreate(AppBaseModel):
 class SaleUpdate(AppBaseModel):
     total_amount: Optional[float] = Field(None, alias="totalAmount")
     list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
+    unit_list_price: Optional[float] = Field(None, alias="unitListPrice")  # ✅ NEW: Unit price field
     discount_amount: Optional[float] = Field(None, alias="discountAmount")
+    discount_type: Optional[str] = Field(None, alias="discountType")  # 'percentage', 'amount', 'none'
+    discount_value: Optional[float] = Field(None, alias="discountValue")  # Percentage value (e.g., 10 for 10%) or amount value
     sgk_coverage: Optional[float] = Field(None, alias="sgkCoverage")
     patient_payment: Optional[float] = Field(None, alias="patientPayment")
     final_amount: Optional[float] = Field(None, alias="finalAmount")
@@ -399,6 +408,14 @@ class SaleUpdate(AppBaseModel):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     status: Optional[str] = None
     notes: Optional[str] = None
+    
+    # Device-specific fields (will update all device assignments)
+    ear: Optional[str] = None  # 'left', 'right', 'both' - will handle assignment creation/deletion
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
+    serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
+    delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
+    report_status: Optional[str] = Field(None, alias="reportStatus")
 
 class SaleRecalcRequest(AppBaseModel):
     party_id: Optional[str] = Field(None, alias="partyId")

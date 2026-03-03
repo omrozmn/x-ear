@@ -164,7 +164,21 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       // Unwrap data safely using strict types and FILTER BY SALE ID
       const allPaymentRecords = unwrapArray<PaymentRecord>(paymentRecordsResponse) || [];
       // Filter to only show payments for THIS sale
-      const realPaymentRecords = allPaymentRecords.filter(p => p.saleId === sale.id);
+      let realPaymentRecords = allPaymentRecords.filter(p => p.saleId === sale.id);
+      
+      // WORKAROUND: If sale has paidAmount but no payment records, add initial down payment
+      if (sale.paidAmount && sale.paidAmount > 0 && realPaymentRecords.length === 0) {
+        realPaymentRecords = [{
+          id: 'initial-down-payment',
+          saleId: sale.id,
+          amount: sale.paidAmount,
+          paymentDate: sale.saleDate || new Date().toISOString(),
+          paymentMethod: sale.paymentMethod || 'cash',
+          status: 'paid',
+          notes: 'İlk Ön Ödeme'
+        }];
+      }
+      
       const realPromissoryNotes = unwrapArray<PromissoryNote>(promissoryNotesResponse) || [];
 
       // Mock Installments
@@ -177,7 +191,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       setPromissoryNotes(realPromissoryNotes);
       setInstallments(mockInstallments);
     }
-  }, [isOpen, paymentRecordsResponse, promissoryNotesResponse, sale.id]);
+  }, [isOpen, paymentRecordsResponse, promissoryNotesResponse, sale.id, sale.paidAmount, sale.saleDate, sale.paymentMethod]);
 
   // Calculate summary
   useEffect(() => {

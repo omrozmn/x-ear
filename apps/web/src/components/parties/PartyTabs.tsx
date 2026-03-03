@@ -44,7 +44,7 @@ const TabsList: React.FC<{
   onValueChange?: (value: string) => void;
 }> = ({ className, children, activeValue, onValueChange }) => {
   return (
-    <div className={`border-b border-gray-200 ${className || ''}`}>
+    <div className={`border-b border-gray-200 mb-6 ${className || ''}`}>
       <nav className="-mb-px flex space-x-8" aria-label="Tabs">
         {React.Children.map(children, child =>
           React.isValidElement(child)
@@ -108,12 +108,20 @@ interface PartyTabsProps {
   party: Party;
   activeTab: PartyTab;
   onTabChange: (tab: PartyTab) => void;
+  tabCounts?: {
+    devices?: number;
+    sales?: number;
+    timeline?: number;
+    documents?: number;
+    notes?: number;
+  };
 }
 
 export const PartyTabs: React.FC<PartyTabsProps> = ({
   party,
   activeTab,
   onTabChange,
+  tabCounts,
 }) => {
   const tabs = [
     {
@@ -128,7 +136,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       id: 'devices',
       label: 'Cihazlar',
       icon: <Headphones className="w-4 h-4" />,
-      count: party.devices?.length || 0,
+      count: tabCounts?.devices ?? party.devices?.length ?? 0,
       disabled: false,
       hidden: false,
     },
@@ -146,7 +154,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       id: 'sales',
       label: 'Satışlar',
       icon: <CreditCard className="w-4 h-4" />,
-      count: 0, // TODO: Get sales count from party data
+      count: tabCounts?.sales ?? 0,
       disabled: false,
       hidden: false,
     },
@@ -164,7 +172,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       id: 'documents',
       label: 'Belgeler',
       icon: <FileText className="w-4 h-4" />,
-      count: party.reports?.length || 0,
+      count: tabCounts?.documents ?? party.reports?.length ?? 0,
       disabled: false,
       hidden: false,
     },
@@ -172,7 +180,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       id: 'timeline',
       label: 'Zaman Çizelgesi',
       icon: <Clock className="w-4 h-4" />,
-      count: null,
+      count: tabCounts?.timeline ?? null,
       disabled: false,
       hidden: false,
     },
@@ -180,7 +188,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       id: 'notes',
       label: 'Notlar',
       icon: <StickyNote className="w-4 h-4" />,
-      count: party.notes?.length || 0,
+      count: tabCounts?.notes ?? party.notes?.length ?? 0,
       disabled: false,
       hidden: false,
     },

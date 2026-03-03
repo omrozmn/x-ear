@@ -23,6 +23,7 @@ export interface CompanyInfo {
   accountHolder?: string;
   sgkMukellefKodu?: string;
   sgkMukellefAdi?: string;
+  companyType?: 'hearing_center' | 'pharmacy' | 'hospital' | 'optical' | 'medical' | 'other';
   tradeRegistryNo?: string;
   mersisNo?: string;
 }

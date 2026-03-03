@@ -3,6 +3,7 @@ import { useToastHelpers, Button, Input, Select, Textarea } from '@x-ear/ui-web'
 import { PartyApiService } from '../../../services/party/party-api.service';
 import { listInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../../../utils/response-unwrap';
+import { createPartyTimeline, createPartyActivities } from '@/api/client/timeline.client';
 
 // InventoryItem type definition (since schema may not export it directly)
 interface InventoryItem {
@@ -242,6 +243,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   // Form state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [ear, setEar] = useState<'left' | 'right' | 'both'>('right'); // Ear selection for hearing aids - default to right
   const [unitPrice, setUnitPrice] = useState<number>(0);
   const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
   const [discountInput, setDiscountInput] = useState<number>(0);
@@ -252,6 +254,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   const [collectedAmount, setCollectedAmount] = useState<number>(0);
   const [isCollectedAmountManuallySet, setIsCollectedAmountManuallySet] = useState<boolean>(false);
   const [reportStatus, setReportStatus] = useState<string>('no_report');
+  const [serialNumber, setSerialNumber] = useState<string>('');
+  const [serialNumberLeft, setSerialNumberLeft] = useState<string>('');
+  const [serialNumberRight, setSerialNumberRight] = useState<string>('');
 
   // Determine if product is a hearing aid
   const isHearingAid = useMemo(() => {
@@ -284,26 +289,35 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
   // Pricing calculation with discount and SGK
   const pricingCalculation = useMemo(() => {
+    // 1. Base Price
     const basePrice = quantity * unitPrice;
 
-    // Calculate Discount
+    // 2. KDV setup (Hearing aids 0%, others 20%)
+    const kdvRate = selectedProduct ? getKdvRate(selectedProduct.category) : 20;
+    const kdvAmount = (basePrice * kdvRate) / 100;
+
+    // 3. Amount with KDV
+    const totalWithKdv = basePrice + kdvAmount;
+
+    // 4. Calculate Discount ON the KDV-inclusive amount
     let calculatedDiscount = 0;
     if (discountType === 'percentage') {
-      calculatedDiscount = (basePrice * discountInput) / 100;
+      calculatedDiscount = (totalWithKdv * discountInput) / 100;
     } else {
       calculatedDiscount = discountInput;
     }
 
-    const netAmount = Math.max(0, basePrice - calculatedDiscount);
-    const kdvRate = selectedProduct ? getKdvRate(selectedProduct.category) : 20;
-    const kdvAmount = (netAmount * kdvRate) / 100;
-    const totalWithKdv = netAmount + kdvAmount;
+    // 5. Net Amount is after discount
+    const netAmount = Math.max(0, totalWithKdv - calculatedDiscount);
 
     // Calculate SGK
     let calculatedSgk = 0;
     if (isHearingAid) {
       const schemeAmount = sgkFallbackValues[sgkSupportType] || 0;
-      calculatedSgk = Math.min(schemeAmount, totalWithKdv);
+      // For bilateral, SGK support is per ear, so multiply by 2
+      const sgkMultiplier = ear === 'both' ? 2 : 1;
+      const totalSgkSupport = schemeAmount * sgkMultiplier;
+      calculatedSgk = Math.min(totalSgkSupport, totalWithKdv);
     } else {
       calculatedSgk = 0;
     }
@@ -312,7 +326,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
     return {
       basePrice,
-      netAmount,
+      netAmount, // netAmount is now the amount after discount (and KDV) but before SGK
       kdvRate,
       kdvAmount,
       totalWithKdv,
@@ -321,7 +335,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
       finalAmount
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity, unitPrice, discountType, discountInput, selectedProduct, sgkSupportType, isHearingAid]);
+  }, [quantity, unitPrice, discountType, discountInput, selectedProduct, sgkSupportType, isHearingAid, ear]);
 
   // Calculate total amount
   // const totalAmount = useMemo(() => {
@@ -348,8 +362,29 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
       return;
     }
 
+    if (isHearingAid) {
+      if (ear === 'both') {
+        if (!serialNumberLeft.trim() || !serialNumberRight.trim()) {
+          alert('Bilateral satışlarda sağ ve sol seri numaraları zorunludur');
+          return;
+        }
+      } else if (ear === 'left') {
+        // ✅ FIXED: Seri numarası artık zorunlu değil (User Request)
+        // if (!serialNumber.trim()) {
+        //   alert('Sol kulak için seri numarası zorunludur');
+        //   return;
+        // }
+      } else if (ear === 'right') {
+        // ✅ FIXED: Seri numarası artık zorunlu değil (User Request)
+        // if (!serialNumber.trim()) {
+        //   alert('Sağ kulak için seri numarası zorunludur');
+        //   return;
+        // }
+      }
+    }
+
     try {
-      const saleData = {
+      const saleData: any = {
         devices: [{
           inventoryId: selectedProduct.id,
           id: selectedProduct.id,
@@ -360,7 +395,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           unitPrice: unitPrice,
           totalPrice: pricingCalculation.basePrice,
           listPrice: unitPrice,
-          ear: 'both', // Default ear side
+          ear: isHearingAid ? ear : 'both', // Use ear state for hearing aids, 'both' for other products
           discountType: discountType,
           discountValue: discountInput,
           notes: notes
@@ -376,7 +411,65 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         reportStatus: reportStatus
       };
 
+      // Add serial numbers based on ear selection
+      if (isHearingAid) {
+        if (ear === 'both') {
+          if (serialNumberLeft) saleData.serialNumberLeft = serialNumberLeft;
+          if (serialNumberRight) saleData.serialNumberRight = serialNumberRight;
+        } else {
+          if (serialNumber) saleData.serialNumber = serialNumber;
+        }
+      }
+
       const response = await partyApiService.createSale(partyId || '', saleData);
+
+      // Create timeline and sales logs
+      const saleId = (response as any).data?.id || (response as any).id;
+      if (saleId && partyId) {
+        try {
+          const timelineData = {
+            type: 'sale',
+            title: 'Ürün Satışı Gerçekleştirildi',
+            description: `Ürün satışı yapıldı: ${selectedProduct?.brand || ''} ${selectedProduct?.name || ''}`.trim(),
+            details: {
+              id: saleId,
+              product_id: selectedProduct?.id,
+              product_name: `${selectedProduct?.brand || ''} ${selectedProduct?.name || ''}`.trim(),
+              amount: pricingCalculation.totalWithKdv,
+              payment_method: paymentMethod,
+              notes: notes
+            },
+            user: 'Sistem', // TODO: Get from auth context
+            category: 'sales'
+          };
+          await createPartyTimeline(partyId, timelineData as any);
+        } catch (e) {
+          console.error('Error creating timeline log:', e);
+        }
+
+        try {
+          const activityData = {
+            type: 'sale',
+            title: 'Satış Geliri',
+            description: `${selectedProduct?.brand || ''} ${selectedProduct?.name || ''} satışı`.trim(),
+            details: {
+              party_id: partyId,
+              sale_id: saleId,
+              product_id: selectedProduct?.id,
+              amount: pricingCalculation.finalAmount,
+              payment_type: paymentMethod,
+              discount: pricingCalculation.discountAmount,
+              notes: notes,
+              user_name: 'Sistem', // TODO: Get from auth context
+              timestamp: new Date().toISOString()
+            },
+            category: 'sales'
+          };
+          await createPartyActivities(partyId, activityData as any);
+        } catch (e) {
+          console.error('Error creating sales log:', e);
+        }
+      }
 
       // Reset form
       resetForm();
@@ -399,6 +492,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   const resetForm = () => {
     setSelectedProduct(null);
     setQuantity(1);
+    setEar('right'); // Reset ear selection to right (default)
     setUnitPrice(0);
     setDiscountType('amount');
     setDiscountInput(0);
@@ -406,6 +500,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
     setPaymentMethod('cash');
     setSaleDate(new Date().toISOString().split('T')[0]);
     setNotes('');
+    setSerialNumber('');
+    setSerialNumberLeft('');
+    setSerialNumberRight('');
   };
 
   return (
@@ -425,23 +522,47 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           />
         </div>
 
-        {/* Quantity and Unit Price */}
+        {/* Ear Selection (for hearing aids) or Quantity (for other products) and Unit Price */}
         <div className="grid grid-cols-2 gap-4" data-testid="sale-form-quantity-price">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Miktar *
-            </label>
-            <Input
-              type="number"
-              min="1"
-              value={quantity === 0 ? '' : quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-              placeholder="1"
-              required
-              fullWidth
-              data-testid="sale-form-quantity"
-            />
-          </div>
+          {isHearingAid ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Kulak *
+              </label>
+              <select
+                value={ear}
+                onChange={(e) => {
+                  const newEar = e.target.value as 'left' | 'right' | 'both';
+                  setEar(newEar);
+                  // Auto-set quantity based on ear selection
+                  setQuantity(newEar === 'both' ? 2 : 1);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                data-testid="sale-form-ear-selector"
+              >
+                <option value="left">Sol Kulak</option>
+                <option value="right">Sağ Kulak</option>
+                <option value="both">İki Kulak (Bilateral)</option>
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Miktar *
+              </label>
+              <Input
+                type="number"
+                min="1"
+                value={quantity === 0 ? '' : quantity}
+                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                placeholder="1"
+                required
+                fullWidth
+                data-testid="sale-form-quantity"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -460,6 +581,58 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             />
           </div>
         </div>
+
+        {/* Serial Number Section - Only for Hearing Aids */}
+        {isHearingAid && (
+          <div className="grid grid-cols-2 gap-4" data-testid="sale-form-serial-section">
+            {ear === 'both' ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="text-blue-600">Sol Kulak</span> Seri No
+                  </label>
+                  <Input
+                    type="text"
+                    value={serialNumberLeft}
+                    onChange={(e) => setSerialNumberLeft(e.target.value)}
+                    placeholder="Sol kulak seri numarası"
+                    fullWidth
+                    data-testid="sale-form-serial-left"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="text-red-600">Sağ Kulak</span> Seri No
+                  </label>
+                  <Input
+                    type="text"
+                    value={serialNumberRight}
+                    onChange={(e) => setSerialNumberRight(e.target.value)}
+                    placeholder="Sağ kulak seri numarası"
+                    fullWidth
+                    data-testid="sale-form-serial-right"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <span className={ear === 'left' ? 'text-blue-600' : 'text-red-600'}>
+                    {ear === 'left' ? 'Sol Kulak' : 'Sağ Kulak'}
+                  </span> Seri No
+                </label>
+                <Input
+                  type="text"
+                  value={serialNumber}
+                  onChange={(e) => setSerialNumber(e.target.value)}
+                  placeholder="Seri numarası"
+                  fullWidth
+                  data-testid="sale-form-serial-number"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Discount Section */}
         <div className="grid grid-cols-2 gap-4" data-testid="sale-form-discount-section">
@@ -561,15 +734,19 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                 {/* Simplified breakdown */}
                 <div className="flex justify-between text-xs text-blue-700">
                   <span>Ara Toplam:</span>
-                  <span className={pricingCalculation.discountAmount > 0 ? "line-through text-gray-400" : ""}>
+                  <span>
                     ₺{pricingCalculation.basePrice.toLocaleString('tr-TR')}
                   </span>
+                </div>
+                <div className="flex justify-between text-xs text-blue-700">
+                  <span>KDV (%{pricingCalculation.kdvRate}):</span>
+                  <span>₺{pricingCalculation.kdvAmount.toLocaleString('tr-TR')}</span>
                 </div>
                 {/* Show discounted net amount if there is a discount */}
                 {pricingCalculation.discountAmount > 0 && (
                   <div className="flex justify-between text-xs text-blue-700 font-medium">
-                    <span>İndirimli Tutar:</span>
-                    <span>₺{pricingCalculation.netAmount.toLocaleString('tr-TR')}</span>
+                    <span>Toplam (KDV Dahil):</span>
+                    <span className="line-through text-gray-400">₺{pricingCalculation.totalWithKdv.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
                 {pricingCalculation.discountAmount > 0 && (
@@ -584,10 +761,6 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                     <span>-₺{pricingCalculation.sgkCoverage.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-xs text-blue-700">
-                  <span>KDV (%{pricingCalculation.kdvRate}):</span>
-                  <span>₺{pricingCalculation.kdvAmount.toLocaleString('tr-TR')}</span>
-                </div>
               </div>
             </div>
           </div>

@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'make_brand_nullable'
-down_revision = 'fix_sequences_id_column'
+down_revision = 'fix_sequences_id'
 branch_labels = None
 depends_on = None
 

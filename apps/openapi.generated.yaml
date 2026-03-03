@@ -1259,7 +1259,7 @@ paths:
         schema:
           type: boolean
           description: Include full sale details (devices, payments, invoice)
-          default: false
+          default: true
           title: Include Details
         description: Include full sale details (devices, payments, invoice)
       responses:
@@ -1600,6 +1600,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
   /api/device-assignments/{assignment_id}:
+    get:
+      tags:
+      - Sales
+      summary: Get Device Assignment
+      description: Get a single device assignment with full details.
+      operationId: getDeviceAssignment
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Assignment Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_DeviceAssignmentRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     patch:
       tags:
       - Sales
@@ -8189,6 +8217,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/ocr/upload:
+    post:
+      tags:
+      - OCR
+      summary: Upload Document
+      description: Upload and process a document (PDF/Image) for OCR
+      operationId: uploadOcrDocument
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: doc_type
+        in: query
+        required: false
+        schema:
+          type: string
+          default: medical
+          title: Doc Type
+      - name: auto_crop
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Auto Crop
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_uploadOcrDocument'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_OcrProcessResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/ocr/health:
     get:
       tags:
@@ -8863,7 +8934,7 @@ paths:
       tags:
       - PartySubresources
       summary: Get Party Sales
-      description: Get all sales for a specific party - Flask parity
+      description: Get all sales for a specific party - Flask parity with _build_full_sale_data
       operationId: listPartySales
       security:
       - OAuth2PasswordBearer: []
@@ -18967,6 +19038,16 @@ components:
       required:
       - file
       title: Body_uploadCompanyAsset
+    Body_uploadOcrDocument:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_uploadOcrDocument
     BounceListResponse:
       properties:
         bounces:
@@ -19743,11 +19824,32 @@ components:
         name:
           type: string
           title: Name
-          description: Human-readable capability name
+          description: Internal unique capability identifier
+        displayNameTr:
+          type: string
+          title: Displaynametr
+          description: Turkish display name
+          default: ''
+        displayNameEn:
+          type: string
+          title: Displaynameen
+          description: English display name
+          default: ''
+        descriptionTr:
+          type: string
+          title: Descriptiontr
+          description: Turkish description
+          default: ''
+        descriptionEn:
+          type: string
+          title: Descriptionen
+          description: English description
+          default: ''
         description:
           type: string
           title: Description
-          description: What this capability does
+          description: Legacy description (English)
+          default: ''
         category:
           type: string
           title: Category
@@ -19785,7 +19887,6 @@ components:
       type: object
       required:
       - name
-      - description
       - category
       - examplePhrases
       - requiredPermissions
@@ -20373,6 +20474,21 @@ components:
           - type: string
           - type: 'null'
           title: Accountholder
+        sgkMukellefKodu:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sgkmukellefkodu
+        sgkMukellefAdi:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sgkmukellefadi
+        companyType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Companytype
       type: object
       title: CompanyInfoUpdate
     ComplaintListResponse:
@@ -21331,6 +21447,11 @@ components:
           - type: number
           - type: 'null'
           title: Discountvalue
+        discountPercent:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Discountpercent
         downPayment:
           anyOf:
           - type: number
@@ -21470,11 +21591,21 @@ components:
           - type: number
           - type: 'null'
           title: Saleprice
+        listPrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Listprice
         patientPayment:
           anyOf:
           - type: number
           - type: 'null'
           title: Patientpayment
+        netPayable:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Netpayable
         sgkReduction:
           anyOf:
           - type: number
@@ -24734,6 +24865,11 @@ components:
         name:
           type: string
           title: Name
+        display_name:
+          type: string
+          title: Display Name
+          description: Turkish user-facing display name
+          default: ''
         description:
           type: string
           title: Description
@@ -25778,6 +25914,16 @@ components:
             minLength: 11
           - type: 'null'
           title: Tcnumber
+        gender:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gender
+        birthDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Birthdate
         status:
           anyOf:
           - $ref: '#/components/schemas/PartyStatus'
@@ -25804,6 +25950,16 @@ components:
             type: array
           - type: 'null'
           title: Tags
+        city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: City
+        district:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: District
         addressCity:
           anyOf:
           - type: string
@@ -35104,6 +35260,16 @@ components:
           - type: number
           - type: 'null'
           title: Listpricetotal
+        actualListPriceTotal:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Actuallistpricetotal
+        unitListPrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Unitlistprice
         totalAmount:
           anyOf:
           - type: number
@@ -35155,6 +35321,101 @@ components:
           - type: 'null'
           title: Remainingamount
           default: 0.0
+        productName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Productname
+        brand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+        model:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model
+        barcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode
+        serialNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serialnumber
+        serialNumberLeft:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serialnumberleft
+        serialNumberRight:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serialnumberright
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        listPrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Listprice
+        salePrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Saleprice
+        sgkSupport:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Sgksupport
+        sgkScheme:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sgkscheme
+        discountType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Discounttype
+        discountValue:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Discountvalue
+        downPayment:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Downpayment
+        deliveryStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Deliverystatus
+        paymentStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paymentstatus
+        invoiceStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoicestatus
+        netPayable:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Netpayable
         rightEarAssignmentId:
           anyOf:
           - type: string
@@ -35259,16 +35520,36 @@ components:
       title: SaleRecalcResponse
     SaleUpdate:
       properties:
+        totalAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Totalamount
         listPriceTotal:
           anyOf:
           - type: number
           - type: 'null'
           title: Listpricetotal
+        unitListPrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Unitlistprice
         discountAmount:
           anyOf:
           - type: number
           - type: 'null'
           title: Discountamount
+        discountType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Discounttype
+        discountValue:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Discountvalue
         sgkCoverage:
           anyOf:
           - type: number
@@ -35284,6 +35565,11 @@ components:
           - type: number
           - type: 'null'
           title: Finalamount
+        paidAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Paidamount
         paymentMethod:
           anyOf:
           - type: string
@@ -35299,6 +35585,36 @@ components:
           - type: string
           - type: 'null'
           title: Notes
+        ear:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ear
+        sgkScheme:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sgkscheme
+        serialNumberLeft:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serialnumberleft
+        serialNumberRight:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serialnumberright
+        deliveryStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Deliverystatus
+        reportStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reportstatus
       type: object
       title: SaleUpdate
     ScanQueueRead:
@@ -35786,7 +36102,20 @@ components:
         prompt:
           type: string
           title: Prompt
-          description: Question to ask the user
+          description: Legacy prompt (Turkish)
+          default: ''
+        promptTr:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prompttr
+          description: Turkish prompt
+        promptEn:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prompten
+          description: English prompt
         uiType:
           type: string
           enum:
@@ -35796,6 +36125,8 @@ components:
           - number
           - text
           - file
+          - boolean
+          - time
           title: Uitype
           description: UI component to render
         sourceEndpoint:
@@ -35822,7 +36153,6 @@ components:
       type: object
       required:
       - name
-      - prompt
       - uiType
       title: SlotConfig
       description: Configuration for a required parameter slot.

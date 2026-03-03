@@ -85,7 +85,7 @@ const SerialAutocomplete: React.FC<{
         }}
         onFocus={() => setIsOpen(true)}
         placeholder={placeholder}
-        className="dark:bg-slate-800 dark:text-white"
+        className="w-full dark:bg-slate-800 dark:text-white"
       />
 
       {isOpen && filteredSerials.length > 0 && (

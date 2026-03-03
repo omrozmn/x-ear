@@ -76,6 +76,9 @@ class CompanyInfoUpdate(BaseModel):
     bank_name: Optional[str] = Field(None, alias="bankName")
     iban: Optional[str] = None
     account_holder: Optional[str] = Field(None, alias="accountHolder")
+    sgk_mukellef_kodu: Optional[str] = Field(None, alias="sgkMukellefKodu")
+    sgk_mukellef_adi: Optional[str] = Field(None, alias="sgkMukellefAdi")
+    company_type: Optional[str] = Field(None, alias="companyType")
 
 class AssetUpload(BaseModel):
     data: str  # Base64 encoded
@@ -383,10 +386,15 @@ def update_tenant_company(
                 detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
             )
         
+        # Get current company_info or initialize empty dict
+        company_info = tenant.company_info or {}
+        
+        # Update company_info with new data (using snake_case keys)
         data = company_in.model_dump(exclude_unset=True, by_alias=False)
-        for key, value in data.items():
-            if hasattr(tenant, key):
-                setattr(tenant, key, value)
+        company_info.update(data)
+        
+        # Save back to tenant
+        tenant.company_info = company_info
         
         db_session.commit()
         db_session.refresh(tenant)
@@ -447,9 +455,9 @@ async def upload_company_asset(
         url = f"/api/tenant/company/assets/{asset_type}{file_ext}"
         
         # Update tenant company_info
-        company_info = tenant.company_info_json or {}
+        company_info = tenant.company_info or {}
         company_info[f"{asset_type}Url"] = url
-        tenant.company_info_json = company_info
+        tenant.company_info = company_info
         
         db_session.commit()
         
@@ -491,10 +499,10 @@ def delete_company_asset(
             )
         
         # Remove from company_info
-        company_info = tenant.company_info_json or {}
+        company_info = tenant.company_info or {}
         if f"{asset_type}Url" in company_info:
             del company_info[f"{asset_type}Url"]
-            tenant.company_info_json = company_info
+            tenant.company_info = company_info
             db_session.commit()
         
         # Delete file if exists

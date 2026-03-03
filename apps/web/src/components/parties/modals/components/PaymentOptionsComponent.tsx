@@ -118,12 +118,12 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Peşinat
+                  Ön Ödeme
                 </label>
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="Peşinat tutarı"
+                  placeholder="Ön ödeme tutarı"
                   value={downPayment}
                   onChange={(e) => onDownPaymentChange(e.target.value)}
                 />

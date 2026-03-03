@@ -80,3 +80,6 @@ from .enums import *
 # Email System
 from .email import TenantSMTPConfig, SMTPEmailLog, EmailTemplate
 from .email_deliverability import EmailBounce, EmailUnsubscribe, DMARCReport, EmailComplaint, DeliverabilityMetrics
+
+# Bulk Import
+from .bulk_import import BulkImportBatch, BulkImportRecord

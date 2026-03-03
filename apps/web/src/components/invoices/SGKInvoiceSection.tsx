@@ -1,5 +1,7 @@
 import { Input, Select, DatePicker } from '@x-ear/ui-web';
 import { SGKInvoiceData } from '../../types/invoice';
+import { useEffect } from 'react';
+import { useGetTenantCompany } from '@/api/generated/tenant-users/tenant-users';
 
 interface SGKInvoiceSectionProps {
     sgkData?: SGKInvoiceData;
@@ -42,6 +44,55 @@ export function SGKInvoiceSection({
 }: SGKInvoiceSectionProps) {
     // Payment details toggle - reserved for future feature
     // const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+
+    // Firma bilgilerini çek
+    const { data: companyData } = useGetTenantCompany();
+
+    // SGK Mükellef bilgilerini ve firma tipine göre additionalInfo'yu otomatik doldur
+    useEffect(() => {
+        if (companyData?.data) {
+            const company = companyData.data;
+            const updates: Partial<SGKInvoiceData> = {};
+            
+            // Mükellef Kodu otomatik doldur (sadece boşsa)
+            if (!sgkData.mukellefKodu && company.companyInfo?.sgkMukellefKodu) {
+                updates.mukellefKodu = company.companyInfo.sgkMukellefKodu;
+            }
+            
+            // Mükellef Adı otomatik doldur (sadece boşsa)
+            if (!sgkData.mukellefAdi && company.companyInfo?.sgkMukellefAdi) {
+                updates.mukellefAdi = company.companyInfo.sgkMukellefAdi;
+            }
+            
+            // Firma tipine göre additionalInfo otomatik seç (sadece boşsa)
+            if (!sgkData.additionalInfo && company.companyInfo?.companyType) {
+                const companyType = company.companyInfo.companyType;
+                
+                // Firma tipi mapping
+                const typeMapping: Record<string, 'E' | 'H' | 'O' | 'M' | 'A' | 'MH' | 'D'> = {
+                    'pharmacy': 'E',        // Eczane
+                    'hospital': 'H',        // Hastane
+                    'optical': 'O',         // Optik
+                    'hearing_center': 'M',  // İşitme Merkezi -> Medikal
+                    'medical': 'M',         // Medikal
+                };
+                
+                if (typeMapping[companyType]) {
+                    updates.additionalInfo = typeMapping[companyType];
+                }
+            }
+            
+            // Eğer güncellenecek alan varsa onChange çağır
+            if (Object.keys(updates).length > 0) {
+                onChange({
+                    ...sgkData,
+                    ...updates
+                });
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [companyData?.data?.companyInfo?.sgkMukellefKodu, companyData?.data?.companyInfo?.sgkMukellefAdi, companyData?.data?.companyInfo?.companyType, onChange]);
+    // NOT: sgkData'yı dependency'e eklemeyin - sonsuz döngü yaratır
 
     const handleChange = (field: keyof SGKInvoiceData, value: string | number | boolean) => {
         // Update the field

@@ -125,6 +125,9 @@ def recalculate_assignment_pricing(session: Session, assignment: DeviceAssignmen
     """
     Recalculate pricing for a device assignment based on SGK scheme and discounts.
     This is called when pricing-related fields change (base_price, discount, sgk_scheme).
+    
+    IMPORTANT: This function calculates PER-EAR values. For bilateral sales, we create
+    2 separate assignments (left + right), each with their own SGK support.
     """
     list_price = float(assignment.list_price or 0)
     logger.info(f"💰 Starting pricing calculation: list_price={list_price}, sgk_scheme={assignment.sgk_scheme}")
@@ -147,31 +150,36 @@ def recalculate_assignment_pricing(session: Session, assignment: DeviceAssignmen
             discount_amount = 0
     elif assignment.discount_type == 'amount' and assignment.discount_value:
         try:
+            # For fixed amount discounts, divide by 2 for bilateral (per ear)
+            ear_val = str(assignment.ear or '').upper()
+            is_bilateral = ear_val in ['B', 'BOTH', 'BILATERAL']
             discount_amount = float(assignment.discount_value)
+            if is_bilateral:
+                discount_amount = discount_amount / 2  # Split discount across both ears
         except (ValueError, TypeError):
             discount_amount = 0
     
-    # Re-calculate quantity after applying ear updates
-    ear_val = str(assignment.ear or '').upper()
-    quantity = 2 if ear_val in ['B', 'BOTH', 'BILATERAL'] else 1
-    
     sale_price = max(0, price_after_sgk - discount_amount)
     
-    # Handle bilateral (x2) - quantity affects net_payable only
-    net_payable = sale_price * quantity
+    # For single ear assignments, net_payable = sale_price
+    # For bilateral, this will be called twice (once per ear), so no need to multiply
+    net_payable = sale_price
     
-    # Update calculated fields - store per-ear amounts (per-unit storage)
+    # Update calculated fields - store per-ear amounts
     assignment.sgk_support = Decimal(str(sgk_support_per_ear))
     assignment.sale_price = Decimal(str(sale_price))
     assignment.net_payable = Decimal(str(net_payable))
     
-    logger.info(f"✅ Pricing calculated: sgk_support={sgk_support_per_ear}, sale_price={sale_price}, net_payable={net_payable}, qty={quantity}")
+    logger.info(f"✅ Pricing calculated: sgk_support={sgk_support_per_ear}, sale_price={sale_price}, net_payable={net_payable}")
 
 
 def sync_sale_totals(session: Session, sale_id: str) -> None:
     """
     Synchronize sale totals by summing all device assignments.
     Called after assignment updates to keep sale record in sync.
+    
+    IMPORTANT: For bilateral sales, we now have 2 separate assignments (left + right),
+    so we simply sum all assignments without any quantity multipliers.
     """
     sale = session.get(Sale, sale_id)
     if not sale:
@@ -185,17 +193,13 @@ def sync_sale_totals(session: Session, sale_id: str) -> None:
     total_sgk = 0.0
     
     for a in all_assignments:
-        # Determine quantity for this assignment
-        a_ear = str(a.ear or '').upper()
-        a_qty = 2 if a_ear in ['B', 'BOTH', 'BILATERAL'] else 1
-        
-        total_list += float(a.list_price or 0) * a_qty
+        # Each assignment is already per-ear, so just sum them
+        total_list += float(a.list_price or 0)
         total_final += float(a.net_payable or 0)
-        # SGK support is per-ear, so multiply by quantity for bilateral
-        total_sgk += float(a.sgk_support or 0) * a_qty
+        total_sgk += float(a.sgk_support or 0)
     
     # Update sale totals
-    sale.list_price_total = total_list  # Add this line!
+    sale.list_price_total = total_list
     sale.total_amount = total_list
     sale.final_amount = total_final
     sale.sgk_coverage = total_sgk

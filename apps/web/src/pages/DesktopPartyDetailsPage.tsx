@@ -4,7 +4,9 @@ import {
   ArrowLeft,
   Calendar,
   Activity,
-  CreditCard
+  CreditCard,
+  Tag,
+  Users
 } from 'lucide-react';
 import { useParty } from '../hooks/useParty';
 import { usePartyDevices } from '../hooks/party/usePartyDevices';
@@ -16,6 +18,7 @@ import { PartyTabs, type PartyTab } from '../components/parties/PartyTabs';
 import { PartyTabContent } from '../components/parties/PartyTabContent';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
 import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
+import { usePartyEditModal } from '../hooks/usePartyEditModal';
 // import ReportModal from '../components/parties/modals/ReportModal'; // Not used - showReportModal is false
 import { PartyNoteForm } from '../components/forms/PartyNoteForm';
 import type { SaleRead } from '@/api/generated/schemas';
@@ -25,7 +28,7 @@ import { useGlobalError } from '../hooks/useGlobalError';
 import { PARTY_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
-import { useUpdateParty, useDeleteParty } from '../hooks/useParties';
+import { useDeleteParty, useUpdateParty } from '@/api/generated/parties/parties';
 import { partyApiService } from '../services/party/party-api.service';
 // import type { Party } from '../types/party'; // Type inferred from useParty hook
 
@@ -41,14 +44,32 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     const saved = localStorage.getItem(PARTY_DETAILS_TAB_LEGACY);
     return (saved as PartyTab) || 'general';
   });
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [, setShowReportModal] = useState(false); // Value unused, setter used in PartyHeader
 
   const { party, isLoading, error, refetch } = useParty(partyId);
-  const updatePartyMutation = useUpdateParty();
-  const deletePartyMutation = useDeleteParty();
+  
+  // Edit modal hook
+  const editModal = usePartyEditModal(refetch || (() => Promise.resolve()));
+  
+  // Tag update mutation (for PartyTagUpdateModal)
+  const updatePartyMutation = useUpdateParty({
+    mutation: {
+      onSuccess: async () => {
+        await refetch?.();
+      }
+    }
+  });
+  
+  const deletePartyMutation = useDeleteParty({
+    mutation: {
+      onSuccess: () => {
+        // Navigate away after successful delete
+        navigate({ to: '/parties' });
+      }
+    }
+  });
   const { devices } = usePartyDevices(partyId ?? '');
   const { sales } = usePartySales(partyId);
   const { timeline } = usePartyTimeline(partyId);
@@ -59,6 +80,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     sales: sales.length,
     timeline: timeline.length,
     documents: documents.length,
+    notes: party?.notes?.length ?? 0,
   };
 
   // Utility functions
@@ -93,6 +115,35 @@ export const DesktopPartyDetailsPage: React.FC = () => {
         {statusInfo.label}
       </span>
     );
+  };
+
+  const getSegmentText = (segment?: string) => {
+    const segmentMap: Record<string, string> = {
+      lead: 'Potansiyel Müşteri',
+      trial: 'Deneme Aşamasında',
+      control: 'Kontrol Hastası',
+      existing: 'Mevcut Hasta',
+      NEW: 'Yeni',
+      TRIAL: 'Deneme',
+      PURCHASED: 'Satın Almış',
+      CONTROL: 'Kontrol',
+      RENEWAL: 'Yenileme',
+      EXISTING: 'Mevcut',
+      VIP: 'VIP'
+    };
+    return segmentMap[segment || ''] || segment || 'Belirtilmemiş';
+  };
+
+  const getAcquisitionTypeText = (type?: string) => {
+    const typeMap: Record<string, string> = {
+      referral: 'Referans',
+      online: 'Online',
+      'walk-in': 'Ziyaret',
+      'social-media': 'Sosyal Medya',
+      advertisement: 'Reklam',
+      tabela: 'Tabela'
+    };
+    return typeMap[type || ''] || type || 'Belirtilmemiş';
   };
 
   useEffect(() => {
@@ -131,9 +182,9 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     console.log('[DELETE] User confirmed, calling mutation');
     
     try {
-      await deletePartyMutation.mutateAsync(partyId);
-      console.log('[DELETE] Mutation successful, navigating to /parties');
-      navigate({ to: '/parties' });
+      await deletePartyMutation.mutateAsync({ partyId });
+      console.log('[DELETE] Mutation successful');
+      // Navigation handled by onSuccess callback
     } catch (err) {
       console.error('[DELETE] Error during deletion:', err);
       showError('Hasta silinirken bir hata oluştu');
@@ -186,7 +237,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
         <PartyHeader
           party={party}
           isLoading={isLoading}
-          onEdit={() => setShowEditModal(true)}
+          onEdit={() => party && editModal.openModal(party)}
           onTagUpdate={() => setShowTagModal(true)}
           onAddNote={() => setShowNoteModal(true)}
           onGenerateReport={() => setShowReportModal(true)}
@@ -194,7 +245,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
         />
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 px-6">
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-blue-500" />
@@ -215,24 +266,32 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* SGK Durumu - v1'de aktif edilecek
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-purple-500" />
-              <div>
-                <p className="text-sm text-gray-600">SGK Durumu</p>
-                <p className="font-medium">{party.sgkInfo ? 'Var' : 'Yok'}</p>
-              </div>
-            </div>
-          </div>
-          */}
-
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-red-500" />
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Durum</p>
                 <div className="mt-1">{getStatusBadge(party.status ?? 'active')}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center space-x-2">
+              <Tag className="h-5 w-5 text-purple-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Segment</p>
+                <p className="font-medium text-gray-900 dark:text-white">{getSegmentText(party.segment || undefined)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-orange-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Kazanım Türü</p>
+                <p className="font-medium text-gray-900 dark:text-white">{getAcquisitionTypeText(party.acquisitionType || undefined)}</p>
               </div>
             </div>
           </div>
@@ -244,6 +303,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             party={party}
             activeTab={activeTab}
             onTabChange={handleTabChange}
+            tabCounts={tabCounts}
           />
         </ErrorBoundary>
 
@@ -279,31 +339,14 @@ export const DesktopPartyDetailsPage: React.FC = () => {
       {renderContent()}
 
       {/* Edit Modal */}
-      {showEditModal && party && (
+      {party && (
         <PartyFormModal
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onSubmit={async (data) => {
-            try {
-              await updatePartyMutation.mutateAsync({
-                partyId: party.id!,
-                updates: {
-                  ...data,
-                  // Ensure branchId is compatible (string | undefined) if generic type expects string
-                  branchId: data.branchId ?? undefined
-                }
-              });
-              setShowEditModal(false);
-              await refetch?.();
-              return party;
-            } catch (error) {
-              console.error('Failed to update party:', error);
-              throw error;
-            }
-          }}
+          isOpen={editModal.isOpen}
+          onClose={editModal.closeModal}
+          onSubmit={editModal.handleSubmit}
           initialData={party}
           title="Hasta Düzenle"
-          isLoading={updatePartyMutation.isPending}
+          isLoading={editModal.isLoading}
         />
       )}
 
@@ -317,9 +360,10 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             try {
               await updatePartyMutation.mutateAsync({
                 partyId,
-                updates
+                data: updates
               });
-              await refetch?.();
+              // refetch handled by onSuccess callback
+              setShowTagModal(false); // Close modal after successful update
             } catch (error) {
               console.error('Failed to update party tags:', error);
               throw error;

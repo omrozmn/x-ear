@@ -2,7 +2,7 @@
 FastAPI OCR Router - Migrated from Flask routes/ocr.py
 Handles OCR processing, NLP entity extraction, and document analysis
 """
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFile, File
 from typing import Optional, List
 from datetime import datetime, timezone
 from pydantic import BaseModel
@@ -67,6 +67,96 @@ def download_image_from_url(url: str) -> Optional[str]:
         return None
 
 # --- Routes ---
+
+@router.post("/upload", operation_id="uploadOcrDocument", response_model=ResponseEnvelope[OcrProcessResponse])
+async def upload_document(
+    file: UploadFile = File(...),
+    doc_type: str = "medical",
+    auto_crop: bool = True,
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Upload and process a document (PDF/Image) for OCR"""
+    temp_file_path = None
+    try:
+        svc = get_nlp_service()
+        if not svc:
+            raise HTTPException(status_code=503, detail="OCR service not available")
+            
+        if not svc.initialized:
+            try:
+                svc.initialize()
+            except Exception as e:
+                raise HTTPException(status_code=503, detail=f"OCR service init failed: {e}")
+                
+        # Save uploaded file to temp file
+        file_ext = os.path.splitext(file.filename)[1] if file.filename else ".tmp"
+        fd, temp_file_path = tempfile.mkstemp(suffix=file_ext)
+        os.close(fd)
+        
+        with open(temp_file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+            
+        # Check if file is tabular data
+        if file_ext.lower() in [".csv", ".xls", ".xlsx"]:
+            import pandas as pd
+            import json
+            try:
+                if file_ext.lower() == ".csv":
+                    df = pd.read_csv(temp_file_path)
+                else:
+                    df = pd.read_excel(temp_file_path)
+                
+                # Convert up to 5 rows to JSON string
+                records = df.head(5).to_dict(orient="records")
+                extracted_text = f"Tabular Data from {file.filename} (showing up to 5 rows). To process the entire file of {len(df)} rows, use the execute_smart_bulk_import tool and provide this file path: {temp_file_path}\n"
+                extracted_text += json.dumps(records, ensure_ascii=False, indent=2)
+                
+                result = {
+                    "text": extracted_text,
+                    "entities": [],
+                    "classification": {"type": "tabular_data", "confidence": 1.0},
+                    "patient_info": None
+                }
+                
+                return ResponseEnvelope(data=OcrProcessResponse(
+                    result=result,
+                    timestamp=datetime.now(timezone.utc).isoformat()
+                ))
+            except Exception as e:
+                logger.error(f"Failed to parse tabular data: {e}")
+                raise HTTPException(status_code=400, detail=f"Tabular veri ayrıştırma hatası: {str(e)}")
+
+        # Process as image/PDF with OCR
+        result = svc.process_document(
+            image_path=temp_file_path,
+            doc_type=doc_type,
+            auto_crop=auto_crop
+        )
+        
+        # Extract patient info if possible
+        try:
+            patient_info = svc.extract_patient_name(image_path=temp_file_path)
+            result['patient_info'] = patient_info
+        except Exception:
+            result['patient_info'] = None
+            
+        return ResponseEnvelope(data=OcrProcessResponse(
+            result=result,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        ))
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OCR Upload error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+            except Exception:
+                pass
 
 @router.get("/health", operation_id="listOcrHealth", response_model=ResponseEnvelope[OcrHealthResponse])
 def health_check():

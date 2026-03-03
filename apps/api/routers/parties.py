@@ -121,6 +121,7 @@ def create_party(
     try:
         from core.tenant_utils import get_effective_tenant_id
         from sqlalchemy.exc import IntegrityError
+        from models.user import ActivityLog
         
         service = PartyService(db)
         tenant_id = get_effective_tenant_id(access)
@@ -130,6 +131,25 @@ def create_party(
         data = patient_in.model_dump(exclude_unset=True, by_alias=False)
         
         patient = service.create_party(data, tenant_id)
+        
+        # Log activity
+        try:
+            activity_log = ActivityLog(
+                user_id=getattr(access, 'user_id', None) or 'system',
+                action='party_created',
+                entity_type='party',
+                entity_id=patient.id,
+                tenant_id=tenant_id,
+                details=json.dumps({
+                    'name': f"{patient.first_name} {patient.last_name}",
+                    'phone': patient.phone,
+                    'status': patient.status
+                })
+            )
+            db.add(activity_log)
+            db.commit()
+        except Exception as log_error:
+            logger.warning(f"Failed to log party creation: {log_error}")
         
         return ResponseEnvelope(data=patient)
     except IntegrityError as e:
@@ -267,12 +287,44 @@ def update_party(
     db: Session = Depends(get_db)
 ):
     """Update patient"""
+    from models.user import ActivityLog
+    
     service = PartyService(db)
     
     # Use by_alias=False to get snake_case keys
     data = patient_in.model_dump(exclude_unset=True, by_alias=False)
     try:
         updated_patient = service.update_party(party_id, data, access.tenant_id)
+        
+        # Log activity
+        try:
+            # Build change summary
+            changes = {}
+            if 'status' in data:
+                changes['status'] = data['status']
+            if 'segment' in data:
+                changes['segment'] = data['segment']
+            if 'acquisition_type' in data:
+                changes['acquisition_type'] = data['acquisition_type']
+            if 'branch_id' in data:
+                changes['branch_id'] = data['branch_id']
+            
+            activity_log = ActivityLog(
+                user_id=getattr(access, 'user_id', None) or 'system',
+                action='party_updated',
+                entity_type='party',
+                entity_id=party_id,
+                tenant_id=access.tenant_id,
+                details=json.dumps({
+                    'name': f"{updated_patient.first_name} {updated_patient.last_name}",
+                    'changes': changes
+                })
+            )
+            db.add(activity_log)
+            db.commit()
+        except Exception as log_error:
+            logger.warning(f"Failed to log party update: {log_error}")
+        
         return ResponseEnvelope(data=updated_patient)
     except Exception as e:
         logger.error(f"Update patient error: {e}")
@@ -287,9 +339,33 @@ def delete_party(
     db: Session = Depends(get_db)
 ):
     """Delete patient"""
+    from models.user import ActivityLog
+    
     service = PartyService(db)
     try:
+        # Get party info before deletion for logging
+        party = service.get_party(party_id, access.tenant_id)
+        party_name = f"{party.first_name} {party.last_name}" if party else "Unknown"
+        
         service.delete_party(party_id, access.tenant_id)
+        
+        # Log activity
+        try:
+            activity_log = ActivityLog(
+                user_id=getattr(access, 'user_id', None) or 'system',
+                action='party_deleted',
+                entity_type='party',
+                entity_id=party_id,
+                tenant_id=access.tenant_id,
+                details=json.dumps({
+                    'name': party_name
+                })
+            )
+            db.add(activity_log)
+            db.commit()
+        except Exception as log_error:
+            logger.warning(f"Failed to log party deletion: {log_error}")
+        
         return ResponseEnvelope(message="Patient deleted")
     except Exception as e:
         logger.error(f"Delete patient error: {e}")

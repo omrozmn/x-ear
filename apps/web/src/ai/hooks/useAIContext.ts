@@ -17,6 +17,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { useParams } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { CURRENT_TENANT_ID } from '../../constants/storage-keys';
 import { useAuthStore } from '../../stores/authStore';
 import { useAISessionStore } from '../stores/aiSessionStore';
@@ -186,6 +187,7 @@ function extractPartyId(params: Record<string, unknown>): string | null {
  */
 export function useAIContext(options: UseAIContextOptions = {}): UseAIContextReturn {
   const { capability, partyIdOverride, profileOverride } = options;
+  const { i18n } = useTranslation();
 
   // Get user from auth store
   const user = useAuthStore((state) => state.user);
@@ -242,6 +244,7 @@ export function useAIContext(options: UseAIContextOptions = {}): UseAIContextRet
       party_id: partyId,
       role,
       profile,
+      language: i18n.language,
       ...(capability && { capability }),
     };
 
@@ -253,7 +256,7 @@ export function useAIContext(options: UseAIContextOptions = {}): UseAIContextRet
       partyId,
       role,
     };
-  }, [user, isAuthenticated, params, capability, partyIdOverride, profileOverride]);
+  }, [user, isAuthenticated, params, capability, partyIdOverride, profileOverride, i18n.language]);
 
   // Sync context with session store for context change detection
   useEffect(() => {

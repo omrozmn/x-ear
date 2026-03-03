@@ -240,7 +240,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
     if (!formData.brand) newErrors.brand = 'Marka seçimi zorunludur';
     if (!formData.model) newErrors.model = 'Model seçimi zorunludur';
-    if (!formData.serialNumber) newErrors.serialNumber = 'Seri numarası zorunludur';
+    // ✅ FIXED: Seri numarası artık zorunlu değil (User Request)
+    // if (!formData.serialNumber) newErrors.serialNumber = 'Seri numarası zorunludur';
     if (!formData.ear) newErrors.ear = 'Kulak seçimi zorunludur';
     if (!formData.assignedDate) newErrors.assignedDate = 'Atama tarihi zorunludur';
     if (!formData.reason) newErrors.reason = 'Atama sebebi zorunludur';

@@ -317,7 +317,7 @@ def checkDeviceStock(
             name="ear_side",
             type="string",
             description="Which ear the device is for",
-            required=False,
+            required=True,
             default="Left",
             enum=["Left", "Right", "Binaural"],
         ),

@@ -5,7 +5,6 @@ import {
   Phone,
   Mail,
   CreditCard,
-  Edit,
   Trash2,
   MessageSquare
 } from 'lucide-react';
@@ -30,7 +29,6 @@ interface PartyListProps {
   onPartySelect?: (partyId: string) => void;
   onPartyClick?: (party: Party) => void;
   onView?: (party: Party) => void;
-  onEdit?: (party: Party) => void;
   onDelete?: (party: Party) => void;
   onTagClick?: (party: Party) => void;
   onBulkAction?: (action: string, partyIds: string[]) => void;
@@ -55,10 +53,14 @@ function SortableHeader({ field, label, sortBy, sortOrder, onSort }: SortableHea
   const isActive = sortBy === field;
 
   return (
-    <button data-allow-raw="true"
+    <button
+      type="button"
       onClick={() => onSort?.(field)}
-      className={`flex items-center space-x-1 text-left font-medium text-gray-700 hover:text-gray-900 ${isActive ? 'text-blue-600' : ''
-        }`}
+      className={`flex items-center space-x-1 text-left font-medium transition-colors ${
+        isActive 
+          ? 'text-blue-600 dark:text-blue-400' 
+          : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+      }`}
     >
       <span>{label}</span>
       {isActive && (
@@ -81,7 +83,6 @@ export function PartyList({
   onPartySelect,
   onPartyClick,
   onView,
-  onEdit,
   onDelete,
   onTagClick,
   // onBulkAction, // Currently unused
@@ -225,16 +226,6 @@ export function PartyList({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEdit?.(party);
-                    }}
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
                       onDelete?.(party);
                     }}
                   >
@@ -282,16 +273,40 @@ export function PartyList({
                   {t('list.columns.phone')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
-                  {t('list.columns.segment')}
+                  <SortableHeader
+                    field="segment"
+                    label={t('list.columns.segment')}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={onSort}
+                  />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  {t('list.columns.acquisition')}
+                  <SortableHeader
+                    field="acquisitionType"
+                    label={t('list.columns.acquisition')}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={onSort}
+                  />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  {t('list.columns.branch')}
+                  <SortableHeader
+                    field="branchId"
+                    label={t('list.columns.branch')}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={onSort}
+                  />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
-                  {t('list.columns.status')}
+                  <SortableHeader
+                    field="status"
+                    label={t('list.columns.status')}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={onSort}
+                  />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
                   <SortableHeader
@@ -413,42 +428,28 @@ export function PartyList({
                   {showActions && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit?.(party);
-                          }}
-                          className="h-9 w-9 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 text-gray-400 dark:text-gray-500"
-                          title={t('edit', { ns: 'common' })}
-                        >
-                          <Edit className="h-5 w-5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setCommunicationParty(party);
                           }}
-                          className="h-9 w-9 p-0 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500"
+                          className="h-11 w-11 p-0 inline-flex items-center justify-center rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
                           title={t('nav.communication', { ns: 'layout' })}
                         >
-                          <MessageSquare className="h-5 w-5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                          <MessageSquare className="h-6 w-6" />
+                        </button>
+                        <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDelete?.(party);
                           }}
-                          className="h-9 w-9 p-0 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500"
+                          className="h-11 w-11 p-0 inline-flex items-center justify-center rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
                           title={t('delete', { ns: 'common' })}
                         >
-                          <Trash2 className="h-5 w-5" />
-                        </Button>
+                          <Trash2 className="h-6 w-6" />
+                        </button>
                       </div>
                     </td>
                   )}

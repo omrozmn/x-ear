@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 
 export interface AutocompleteOption {
@@ -69,6 +70,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([]);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -182,6 +184,34 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
     }
   };
 
+  // Update dropdown position when opened or on scroll/resize
+  useEffect(() => {
+    const updatePosition = () => {
+      if (inputRef.current && isOpen) {
+        const rect = inputRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    if (isOpen) {
+      updatePosition();
+      // Use requestAnimationFrame for smoother updates
+      const rafId = requestAnimationFrame(updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        cancelAnimationFrame(rafId);
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen]);
+
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -219,6 +249,63 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   }, []);
 
   const showDropdown = isOpen && (filteredOptions.length > 0 || loading || (searchQuery.length >= minSearchLength && filteredOptions.length === 0));
+
+  // Render dropdown content
+  const renderDropdown = () => {
+    if (!showDropdown) return null;
+
+    const dropdown = (
+      <div
+        ref={dropdownRef}
+        className={clsx(
+          'fixed z-[9999] bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto',
+          dropdownClassName
+        )}
+        style={{
+          top: `${dropdownPosition.top}px`,
+          left: `${dropdownPosition.left}px`,
+          width: `${dropdownPosition.width}px`,
+        }}
+      >
+        {loading ? (
+          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+            {loadingText}
+          </div>
+        ) : filteredOptions.length > 0 ? (
+          filteredOptions.map((option, index) => (
+            <div
+              key={option.id}
+              onClick={() => handleOptionSelect(option)}
+              className={clsx(
+                'px-3 py-2 cursor-pointer text-sm',
+                'hover:bg-gray-100',
+                index === highlightedIndex && 'bg-blue-50 text-blue-700',
+                optionClassName
+              )}
+            >
+              {renderOption ? renderOption(option) : (
+                <div>
+                  <div className="font-medium">{option.label}</div>
+                  {option.description && (
+                    <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+                  )}
+                  {option.category && (
+                    <div className="text-xs text-blue-600 mt-1">{option.category}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="px-3 py-2 text-sm text-gray-500 text-center">
+            {noResultsText}
+          </div>
+        )}
+      </div>
+    );
+
+    return createPortal(dropdown, document.body);
+  };
 
   return (
     <div className={clsx('relative w-full', className)}>
@@ -288,51 +375,8 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         </div>
       </div>
 
-      {/* Dropdown */}
-      {showDropdown && (
-        <div
-          ref={dropdownRef}
-          className={clsx(
-            'absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto',
-            dropdownClassName
-          )}
-        >
-          {loading ? (
-            <div className="px-3 py-2 text-sm text-gray-500 text-center">
-              {loadingText}
-            </div>
-          ) : filteredOptions.length > 0 ? (
-            filteredOptions.map((option, index) => (
-              <div
-                key={option.id}
-                onClick={() => handleOptionSelect(option)}
-                className={clsx(
-                  'px-3 py-2 cursor-pointer text-sm',
-                  'hover:bg-gray-100',
-                  index === highlightedIndex && 'bg-blue-50 text-blue-700',
-                  optionClassName
-                )}
-              >
-                {renderOption ? renderOption(option) : (
-                  <div>
-                    <div className="font-medium">{option.label}</div>
-                    {option.description && (
-                      <div className="text-xs text-gray-500 mt-1">{option.description}</div>
-                    )}
-                    {option.category && (
-                      <div className="text-xs text-blue-600 mt-1">{option.category}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="px-3 py-2 text-sm text-gray-500 text-center">
-              {noResultsText}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Dropdown rendered via portal */}
+      {renderDropdown()}
 
       {/* Error message */}
       {error && (

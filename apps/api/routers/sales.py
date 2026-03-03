@@ -656,6 +656,28 @@ def record_sale_payment(
     
     db.add(payment)
     db.commit()
+    
+    # Log activity
+    try:
+        from models.user import ActivityLog
+        activity_log = ActivityLog(
+            user_id=getattr(access, 'user_id', None) or 'system',
+            action='payment_received',
+            entity_type='payment',
+            entity_id=payment.id,
+            tenant_id=access.tenant_id,
+            details=json.dumps({
+                'sale_id': sale_id,
+                'party_id': sale.party_id,
+                'amount': float(amount),
+                'payment_method': payment_in.payment_method,
+                'payment_type': payment_in.payment_type
+            })
+        )
+        db.add(activity_log)
+        db.commit()
+    except Exception as log_error:
+        logger.warning(f"Failed to log payment: {log_error}")
 
     return ResponseEnvelope(
         data={
@@ -1188,6 +1210,28 @@ def create_sale(
     
     db.commit()
     db.refresh(sale)  # Refresh to load relationships
+    
+    # Log activity
+    try:
+        from models.user import ActivityLog
+        activity_log = ActivityLog(
+            user_id=user_id,
+            action='sale_created',
+            entity_type='sale',
+            entity_id=sale.id,
+            tenant_id=tenant_id,
+            details=json.dumps({
+                'party_id': sale.party_id,
+                'product_id': sale.product_id,
+                'total_amount': float(sale.total_amount) if sale.total_amount else 0.0,
+                'payment_method': sale.payment_method,
+                'ear_side': ear_side
+            })
+        )
+        db.add(activity_log)
+        db.commit()
+    except Exception as log_error:
+        logger.warning(f"Failed to log sale creation: {log_error}")
 
     return ResponseEnvelope(
         data={
@@ -1493,6 +1537,31 @@ def update_sale(
             logger.info(f"🔄 Updated assignment {assignment.id}: ear={assignment.ear}, sgk_scheme={assignment.sgk_scheme}, sgk_support={assignment.sgk_support}")
     
     db.commit()
+    
+    # Log activity
+    try:
+        from models.user import ActivityLog
+        changes = {}
+        if sale_in.status: changes['status'] = sale_in.status
+        if sale_in.payment_method: changes['payment_method'] = sale_in.payment_method
+        if sale_in.final_amount is not None: changes['final_amount'] = float(sale_in.final_amount)
+        if sale_in.ear: changes['ear'] = sale_in.ear
+        
+        activity_log = ActivityLog(
+            user_id=getattr(access, 'user_id', None) or 'system',
+            action='sale_updated',
+            entity_type='sale',
+            entity_id=sale_id,
+            tenant_id=access.tenant_id,
+            details=json.dumps({
+                'party_id': sale.party_id,
+                'changes': changes
+            })
+        )
+        db.add(activity_log)
+        db.commit()
+    except Exception as log_error:
+        logger.warning(f"Failed to log sale update: {log_error}")
 
     return ResponseEnvelope(data=sale, message="Sale updated")
 

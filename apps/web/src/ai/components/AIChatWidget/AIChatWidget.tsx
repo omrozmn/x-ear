@@ -16,6 +16,7 @@
  */
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAIChat } from '../../hooks/useAIChat';
 import { useComposerStore } from '../../../stores/composerStore';
 import { useAIStatus } from '../../hooks/useAIStatus';
@@ -23,7 +24,7 @@ import { AIStatusIndicator } from '../AIStatusIndicator';
 import { PhaseABanner } from '../PhaseABanner';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { ChatInput } from './ChatInput';
-import { Search, Zap, User, Box, Check, X, Calendar, Edit3, Hash, Loader2, Clock } from 'lucide-react';
+import { Search, Zap, User, Box, Check, X, Calendar, Edit3, Hash, Loader2, Clock, Trash2 } from 'lucide-react';
 import { useAutocompleteApiAiComposerAutocompleteGet } from '../../../api/generated';
 import { EntityItem } from '../../../api/generated/schemas';
 import { useChatStore } from '../../stores/chatStore';
@@ -33,6 +34,8 @@ import { QuickActions } from './QuickActions';
 import { ActionProgress } from './ActionProgress';
 import { ActionResultCard } from './ActionResultCard';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
+import { useAIActions } from '../../hooks/useAIActions';
+import { customInstance } from '../../../api/orval-mutator';
 
 // =============================================================================
 // Types
@@ -143,6 +146,7 @@ const RobotIcon = () => (
  * Typing indicator component
  */
 function TypingIndicator({ message }: { message?: string }): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-1 px-4 py-3 animate-in fade-in transition-all">
       <div className="flex items-center gap-3 text-gray-500 text-xs font-medium italic">
@@ -152,7 +156,7 @@ function TypingIndicator({ message }: { message?: string }): React.ReactElement 
           <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:300ms]" />
         </div>
         <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          {message || 'İşleminiz hazırlanıyor...'}
+          {message || t('ai.preparingAction', 'İşleminiz hazırlanıyor...')}
         </span>
       </div>
     </div>
@@ -166,13 +170,14 @@ function TypingIndicator({ message }: { message?: string }): React.ReactElement 
  * Empty state when no messages
  */
 function EmptyState({ onAction }: { onAction: (msg: string) => void }): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center min-h-full py-6 px-4">
       <div className="mb-4 text-center">
         <RobotIcon />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">AI Asistan</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">{t('ai.assistant', 'AI Asistan')}</h3>
         <p className="mt-1 text-sm text-gray-500 max-w-[200px] mx-auto">
-          Merhaba. Hasta, satış, cihaz, randevu ve fatura işlemlerini buradan yapabilirsin.
+          {t('ai.welcomeMessage', 'Merhaba. Hasta, satış, cihaz, randevu ve fatura işlemlerini buradan yapabilirsin.')}
         </p>
       </div>
 
@@ -185,6 +190,7 @@ function EmptyState({ onAction }: { onAction: (msg: string) => void }): React.Re
  * Unavailable state when AI is not available
  */
 function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4">
       <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
@@ -202,9 +208,9 @@ function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
           />
         </svg>
       </div>
-      <h3 className="text-sm font-medium text-gray-900">AI Kullanılamıyor</h3>
+      <h3 className="text-sm font-medium text-gray-900">{t('ai.unavailable', 'AI Kullanılamıyor')}</h3>
       <p className="mt-1 text-sm text-gray-500">
-        {reason || 'AI şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.'}
+        {reason || t('ai.unavailableGeneric', 'AI şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.')}
       </p>
     </div>
   );
@@ -215,6 +221,7 @@ function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
  * Helper component for entity search in chat flow
  */
 function EntitySearchSlot({ currentSlot, onSelect }: { currentSlot: any, onSelect: (id: string, label: string) => void }) {
+  const { t } = useTranslation();
   const [query, setQuery] = React.useState('');
   const slotEntityType = currentSlot?.sourceEndpoint?.includes('inventory') ? 'device' : 'patient';
   const { data, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(
@@ -237,7 +244,7 @@ function EntitySearchSlot({ currentSlot, onSelect }: { currentSlot: any, onSelec
 
       {isLoading && (
         <div className="flex items-center gap-2 text-[10px] text-gray-400">
-          <Loader2 className="w-3 h-3 animate-spin" /> Arıyor...
+          <Loader2 className="w-3 h-3 animate-spin" /> {t('common.searching', 'Arıyor...')}
         </div>
       )}
 
@@ -291,6 +298,7 @@ export function AIChatWidget({
   onOpen,
   onClose,
 }: AIChatWidgetProps): React.ReactElement | null {
+  const { t, i18n } = useTranslation();
   // State
   const {
     isVisible: isOpen,
@@ -302,9 +310,11 @@ export function AIChatWidget({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Hooks
   const { data: status, isLoading: isStatusLoading } = useAIStatus();
+  const { executeAction, isExecuting: isExecutingRealAction } = useAIActions();
 
   const {
     mode, selectedAction: currentAction, currentSlot, slots,
@@ -326,6 +336,14 @@ export function AIChatWidget({
       // If there's an action plan, set it in the composer
       if (response.actionPlan) {
         setPlan(response.actionPlan);
+        useAIRuntimeStore.getState().setCurrentPlan(response.actionPlan as any);
+
+        if (!response.actionPlan.requiresApproval) {
+          executeAction({
+            actionId: response.actionPlan.planId,
+            mode: 'execute'
+          }).catch(console.error);
+        }
       }
       // If matchedCapability is returned, auto-trigger slot-filling/execution UI
       if (response.matchedCapability) {
@@ -360,13 +378,13 @@ export function AIChatWidget({
   // Get unavailable reason
   const getUnavailableReason = useCallback((): string | undefined => {
     if (!status) return undefined;
-    if (!status.enabled) return 'AI devre dışı bırakılmış.';
-    if (status.killSwitch?.globalActive) return 'AI geçici olarak durduruldu.';
-    if (status.killSwitch?.tenantActive) return 'AI bu hesap için durduruldu.';
-    if (status.usage?.anyQuotaExceeded) return 'Günlük AI limitinize ulaştınız.';
-    if (status.model && !status.model.available) return 'AI modeli şu anda kullanılamıyor.';
+    if (!status.enabled) return t('ai.errors.disabled', 'AI devre dışı bırakılmış.');
+    if (status.killSwitch?.globalActive) return t('ai.errors.globalKillSwitch', 'AI geçici olarak durduruldu.');
+    if (status.killSwitch?.tenantActive) return t('ai.errors.tenantKillSwitch', 'AI bu hesap için durduruldu.');
+    if (status.usage?.anyQuotaExceeded) return t('ai.errors.quotaExceeded', 'Günlük AI limitinize ulaştınız.');
+    if (status.model && !status.model.available) return t('ai.errors.modelUnavailable', 'AI modeli şu anda kullanılamıyor.');
     return undefined;
-  }, [status]);
+  }, [status, t]);
 
   // Mobile Detection
   const isMobile = useMobile();
@@ -434,6 +452,47 @@ export function AIChatWidget({
   }, [onClose]); // setIsOpen is stable and doesn't need to be in deps
 
   /**
+   * Handle File Upload for AI OCR processing
+   */
+  const handleFileUpload = useCallback(async (files: FileList) => {
+    if (!files || files.length === 0) return;
+
+    // We process the first file for now
+    const file = files[0];
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await customInstance<{ data: { result: { text?: string; ocr_text?: string; patient_info?: any } } }>({
+        url: '/ocr/upload',
+        method: 'POST',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const extractedText = response?.data?.result?.text || response?.data?.result?.ocr_text;
+
+      if (extractedText) {
+        // Feed the extracted text to the AI as a system instruction
+        const prompt = `[SİSTEM: Kullanıcı sisteme "${file.name}" adlı bir belge yükledi.]\n\nOkunan Belge İçeriği:\n${extractedText}\n\nLütfen bu belge içeriğine göre yapılabilecek uygun bir işlem (Örn: Hasta Kaydı Oluştur, Bilgi Güncelle, Fatura Kes vb.) varsa doğrudan işlemi başlatıp onayımı isteyin.`;
+
+        await handleSend(prompt);
+      } else {
+        console.error("No text extracted from document");
+        // Optionally show toast error here
+      }
+    } catch (error) {
+      console.error("File upload failed", error);
+    } finally {
+      setIsUploading(false);
+    }
+  }, []);
+
+  /**
    * Handle sending a message
    */
   const handleSend = useCallback(async (message: string) => {
@@ -499,6 +558,8 @@ export function AIChatWidget({
     : `fixed ${positionClasses.window} w-96 h-[500px] max-h-[80vh] bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200`;
 
   const getDynamicTypingMessage = () => {
+    const lang = i18n.language || 'tr';
+
     // Priority 1: Real-time execution progress if available
     if (isExecuting && executionProgress) {
       if (executionProgress.overallStatus === 'running' && executionProgress.currentStep > 0) {
@@ -507,28 +568,60 @@ export function AIChatWidget({
           s => s.stepNumber === executionProgress.currentStep
         );
         if (currentStepStatus?.message) return currentStepStatus.message;
-        return `İşlem yürütülüyor (Adım ${executionProgress.currentStep}/${executionProgress.totalSteps})...`;
+        return lang === 'en'
+          ? `Executing action (Step ${executionProgress.currentStep}/${executionProgress.totalSteps})...`
+          : `İşlem yürütülüyor (Adım ${executionProgress.currentStep}/${executionProgress.totalSteps})...`;
       }
-      if (executionProgress.overallStatus === 'initializing') return 'İşlem hazırlanıyor...';
+      if (executionProgress.overallStatus === 'initializing') return lang === 'en' ? 'Preparing operation...' : 'İşlem hazırlanıyor...';
     }
 
-    if (messages.length === 0) return 'Sistemle bağlantı kuruluyor...';
+    // Priority 2: State-aware messages (most accurate when already in a workflow)
+    if (mode === 'slot_filling' && currentAction) {
+      const actionName = (currentAction.displayName as string) || (currentAction.name as string);
+      return lang === 'en' ? `Processing info for ${actionName}...` : `${actionName} için bilgiler işleniyor...`;
+    }
+    if (mode === 'confirmation' && currentAction) {
+      const actionName = (currentAction.displayName as string) || (currentAction.name as string);
+      return lang === 'en' ? `Confirming ${actionName}...` : `${actionName} onaylanıyor...`;
+    }
+
+    if (messages.length === 0) return lang === 'en' ? 'Connecting to system...' : 'Sistemle bağlantı kuruluyor...';
 
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() || '';
 
-    // Priority 2: Keyword based for initial request
-    if (lastUserMessage.includes('hasta') || lastUserMessage.includes('kayıt')) return 'Hasta kaydı hazırlanıyor...';
-    if (lastUserMessage.includes('cihaz') || lastUserMessage.includes('ata') || lastUserMessage.includes('teslim')) return 'Cihaz işlemi planlanıyor...';
-    if (lastUserMessage.includes('fatura')) return 'Fatura detayları hazırlanıyor...';
-    if (lastUserMessage.includes('randevu')) return 'Randevu takvimi kontrol ediliyor...';
-    if (lastUserMessage.includes('satış')) return 'Satış işlemi hazırlanıyor...';
-    if (lastUserMessage.includes('tahsilat') || lastUserMessage.includes('ödeme')) return 'Tahsilat işlemi hazırlanıyor...';
-    if (lastUserMessage.includes('stok') || lastUserMessage.includes('envanter')) return 'Stok bilgisi kontrol ediliyor...';
+    // Priority 3: Keyword based for initial request or context-less turns
+    if (lang === 'en') {
+      if (lastUserMessage.includes('patient') || lastUserMessage.includes('record')) return 'Preparing patient record...';
+      if (lastUserMessage.includes('device') || lastUserMessage.includes('assign') || lastUserMessage.includes('deliver')) return 'Planning device operation...';
+      if (lastUserMessage.includes('invoice') || lastUserMessage.includes('e-prescription') || lastUserMessage.includes('sgk')) return 'Checking financial info and SGK status...';
+      if (lastUserMessage.includes('appointment')) return 'Checking appointment calendar...';
+      if (lastUserMessage.includes('sale')) return 'Preparing sales operation...';
+      if (lastUserMessage.includes('collection') || lastUserMessage.includes('payment') || lastUserMessage.includes('cash')) return 'Checking cash and payment info...';
+      if (lastUserMessage.includes('stock') || lastUserMessage.includes('inventory')) return 'Checking stock information...';
+      if (lastUserMessage.includes('report') || lastUserMessage.includes('stat')) return 'Preparing report data...';
+      if (lastUserMessage.includes('file') || lastUserMessage.includes('upload') || lastUserMessage.includes('document')) return 'Preparing document operation...';
+      if (lastUserMessage.includes('bulk') || lastUserMessage.includes('excel') || lastUserMessage.includes('template')) return 'Preparing bulk operation wizard...';
+      if (lastUserMessage.includes('setting') || lastUserMessage.includes('package') || lastUserMessage.includes('subscription') || lastUserMessage.includes('notification')) return 'Checking system settings...';
+    } else {
+      if (lastUserMessage.includes('hasta') || lastUserMessage.includes('kayıt')) return 'Hasta kaydı hazırlanıyor...';
+      if (lastUserMessage.includes('cihaz') || lastUserMessage.includes('ata') || lastUserMessage.includes('teslim')) return 'Cihaz işlemi planlanıyor...';
+      if (lastUserMessage.includes('fatura') || lastUserMessage.includes('e-reçete') || lastUserMessage.includes('sgk')) return 'Finansal bilgiler ve SGK sorgusu yapılıyor...';
+      if (lastUserMessage.includes('randevu')) return 'Randevu takvimi kontrol ediliyor...';
+      if (lastUserMessage.includes('satış')) return 'Satış işlemi hazırlanıyor...';
+      if (lastUserMessage.includes('tahsilat') || lastUserMessage.includes('ödeme') || lastUserMessage.includes('kasa')) return 'Kasa ve ödeme bilgileri kontrol ediliyor...';
+      if (lastUserMessage.includes('stok') || lastUserMessage.includes('envanter')) return 'Stok bilgisi kontrol ediliyor...';
+      if (lastUserMessage.includes('rapor') || lastUserMessage.includes('istatistik')) return 'Rapor verileri hazırlanıyor...';
+      if (lastUserMessage.includes('dosya') || lastUserMessage.includes('yükle') || lastUserMessage.includes('belge')) return 'Belge işlemi hazırlanıyor...';
+      if (lastUserMessage.includes('toplu') || lastUserMessage.includes('excel') || lastUserMessage.includes('şablon')) return 'Toplu işlem sihirbazı hazırlanıyor...';
+      if (lastUserMessage.includes('ayar') || lastUserMessage.includes('paket') || lastUserMessage.includes('abonelik') || lastUserMessage.includes('bildirim')) return 'Sistem ayarları kontrol ediliyor...';
+    }
 
-    // Priority 3: Fallback for short follow-ups (ee, et, devam)
-    if (['ee', 'et', 'devam', 'yap', 'onay', 'onayla'].includes(lastUserMessage.trim())) return 'İşleme devam ediliyor...';
+    // Priority 4: Fallback for short follow-ups (ee, et, devam)
+    if (['ee', 'et', 'devam', 'yap', 'onay', 'onayla', 'continue', 'yes', 'do it'].includes(lastUserMessage.trim())) {
+      return lang === 'en' ? 'Continuing operation...' : 'İşleme devam ediliyor...';
+    }
 
-    return 'Mesajınız inceleniyor...';
+    return lang === 'en' ? 'Analyzing your message...' : 'Mesajınız inceleniyor...';
   };
 
   return (
@@ -590,13 +683,25 @@ export function AIChatWidget({
             </div>
             <div className="flex items-center gap-1">
               {messages.length > 0 && (
-                <button data-allow-raw="true"
-                  onClick={handleReset}
-                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all focus:outline-none focus:ring-1 focus:ring-red-200"
-                  title="Sohbeti Temizle"
-                >
-                  <Clock size={16} />
-                </button>
+                showResetConfirm ? (
+                  <button data-allow-raw="true"
+                    onClick={() => { confirmReset(); setShowResetConfirm(false); }}
+                    onBlur={() => setShowResetConfirm(false)}
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-red-500"
+                    title="Silmeyi Onayla"
+                    autoFocus
+                  >
+                    Emin misiniz?
+                  </button>
+                ) : (
+                  <button data-allow-raw="true"
+                    onClick={() => setShowResetConfirm(true)}
+                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all focus:outline-none focus:ring-1 focus:ring-red-200"
+                    title="Sohbeti Temizle"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )
               )}
               <button data-allow-raw="true"
                 onClick={handleClose}
@@ -768,7 +873,7 @@ export function AIChatWidget({
                     </div>
                   )}
 
-                  {currentSlot.uiType === 'boolean' && (
+                  {(currentSlot.uiType as string) === 'boolean' && (
                     <div className="flex gap-2">
                       <button
                         data-allow-raw="true"
@@ -778,7 +883,7 @@ export function AIChatWidget({
                         }}
                         className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-lg hover:bg-green-50 transition-all shadow-sm"
                       >
-                        Evet
+                        {t('common.yes', 'Evet')}
                       </button>
                       <button
                         data-allow-raw="true"
@@ -788,12 +893,12 @@ export function AIChatWidget({
                         }}
                         className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-all shadow-sm"
                       >
-                        Hayır
+                        {t('common.no', 'Hayır')}
                       </button>
                     </div>
                   )}
 
-                  {currentSlot.uiType === 'time' && (
+                  {(currentSlot.uiType as string) === 'time' && (
                     <div className="relative group">
                       <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                       <input data-allow-raw="true"
@@ -809,7 +914,7 @@ export function AIChatWidget({
                 </div>
 
                 <p className="mt-3 text-[10px] text-gray-400 flex items-center gap-1">
-                  <Zap size={10} /> Değeri girip Enter'layın veya seçim yapın
+                  <Zap size={10} /> {t('ai.inputValueHint', "Değeri girip Enter'layın veya seçim yapın")}
                 </p>
               </div>
             )}
@@ -832,7 +937,7 @@ export function AIChatWidget({
                 <div className="space-y-3 mb-4">
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <div className="text-[10px] text-gray-400 uppercase font-bold mb-1">İşlem Modeli</div>
-                    <div className="text-sm font-semibold text-gray-900">{currentAction.name}</div>
+                    <div className="text-sm font-semibold text-gray-900">{currentAction.displayName || currentAction.name}</div>
                   </div>
 
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
@@ -877,14 +982,15 @@ export function AIChatWidget({
                   <button
                     data-allow-raw="true"
                     onClick={() => {
-                      useComposerStore.getState().setExecutionStatus('init');
-                      import('../../utils/mockExecutor').then(({ simulateActionExecution }) => {
-                        simulateActionExecution(currentAction, slots, useComposerStore.getState());
-                      });
+                      executeAction({
+                        actionId: useAIRuntimeStore.getState().currentPlan?.planId || currentAction?.name || '',
+                        mode: 'execute'
+                      }).catch(console.error);
                     }}
                     className="flex-1 bg-purple-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
+                    disabled={isExecutingRealAction}
                   >
-                    Şimdi Uygula
+                    {isExecutingRealAction ? 'Uygulanıyor...' : 'Şimdi Uygula'}
                   </button>
                   <button
                     data-allow-raw="true"
@@ -944,23 +1050,15 @@ export function AIChatWidget({
             onSend={handleSend}
             disabled={!isAvailable}
             isLoading={isSending}
+            isUploading={isUploading}
+            onFileUpload={handleFileUpload}
             placeholder={isAvailable ? 'Mesajınızı yazın...' : 'AI kullanılamıyor'}
             autoFocus={isOpen}
           />
         </div>
       )}
 
-      {/* Reset Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={confirmReset}
-        title="Sohbeti Temizle"
-        description="Tüm sohbet geçmişiniz kalıcı olarak silinecektir. Bu işlemi onaylıyor musunuz?"
-        confirmLabel="Temizle"
-        cancelLabel="Vazgeç"
-        variant="danger"
-      />
+
     </div>
   );
 }

@@ -421,7 +421,7 @@ export const useDeletePartyNote = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get all sales for a specific party - Flask parity
+ * Get all sales for a specific party - Flask parity with _build_full_sale_data
  * @summary Get Party Sales
  */
 export const listPartySales = (

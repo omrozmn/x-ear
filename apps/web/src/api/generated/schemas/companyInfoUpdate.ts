@@ -19,6 +19,9 @@ import type { CompanyInfoUpdateWebsite } from './companyInfoUpdateWebsite';
 import type { CompanyInfoUpdateBankName } from './companyInfoUpdateBankName';
 import type { CompanyInfoUpdateIban } from './companyInfoUpdateIban';
 import type { CompanyInfoUpdateAccountHolder } from './companyInfoUpdateAccountHolder';
+import type { CompanyInfoUpdateSgkMukellefKodu } from './companyInfoUpdateSgkMukellefKodu';
+import type { CompanyInfoUpdateSgkMukellefAdi } from './companyInfoUpdateSgkMukellefAdi';
+import type { CompanyInfoUpdateCompanyType } from './companyInfoUpdateCompanyType';
 
 export interface CompanyInfoUpdate {
   name?: CompanyInfoUpdateName;
@@ -35,4 +38,7 @@ export interface CompanyInfoUpdate {
   bankName?: CompanyInfoUpdateBankName;
   iban?: CompanyInfoUpdateIban;
   accountHolder?: CompanyInfoUpdateAccountHolder;
+  sgkMukellefKodu?: CompanyInfoUpdateSgkMukellefKodu;
+  sgkMukellefAdi?: CompanyInfoUpdateSgkMukellefAdi;
+  companyType?: CompanyInfoUpdateCompanyType;
 }

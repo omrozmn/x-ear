@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'add_barcode_da'
-down_revision = 'make_inventory_brand_nullable'
+down_revision = 'make_brand_nullable'
 branch_labels = None
 depends_on = None
 

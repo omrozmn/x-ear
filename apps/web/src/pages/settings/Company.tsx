@@ -311,48 +311,46 @@ export default function CompanySettings() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <Building2 className="w-7 h-7 text-indigo-600" />
-            Firma Ayarları
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Firma bilgilerinizi ve fatura görsellerini yönetin
-          </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 sm:gap-3">
+              <Building2 className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-600" />
+              Firma Ayarları
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Firma bilgilerinizi ve fatura görsellerini yönetin
+            </p>
+          </div>
+          {hasChanges && isTenantAdmin && (
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              loading={saving}
+              variant="primary"
+              className="flex items-center w-full sm:w-auto justify-center"
+            >
+              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+            </Button>
+          )}
         </div>
-        {hasChanges && isTenantAdmin && (
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            loading={saving}
-            variant="primary"
-            className="flex items-center"
-          >
-            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-          </Button>
-        )}
-      </div>
 
       {!isTenantAdmin && (
-        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
-          <p className="text-sm text-yellow-700 dark:text-yellow-300">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-start gap-2 sm:gap-3">
+          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
             Firma bilgilerini sadece Tenant Admin düzenleyebilir. Sadece görüntüleme modundasınız.
           </p>
         </div>
       )}
 
       {/* Company Assets Section */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
           Fatura Görselleri
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Bu görseller faturalarınızda ve PDF çıktılarında görüntülenecektir.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <AssetUpload
             type="logo"
             label="Firma Logosu"
@@ -387,32 +385,33 @@ export default function CompanySettings() {
       </div>
 
       {/* Company Info Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          Firma Bilgileri
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+      <div className="space-y-6">
+        {/* Temel Bilgiler */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center">
+              <Building2 className="w-5 h-5 mr-2 text-indigo-600" />
               Temel Bilgiler
             </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Firma unvanı ve vergi bilgileri
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Firma Unvanı
+                </label>
+                <Input
+                  type="text"
+                  value={formData.name || ''}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  disabled={!isTenantAdmin}
+                  placeholder="Örnek Firma Ltd. Şti."
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Firma Unvanı
-              </label>
-              <Input
-                type="text"
-                value={formData.name || ''}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                disabled={!isTenantAdmin}
-                placeholder="Örnek Firma Ltd. Şti."
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   VKN / TCKN
@@ -425,6 +424,7 @@ export default function CompanySettings() {
                   placeholder="1234567890"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Vergi Dairesi
@@ -438,67 +438,88 @@ export default function CompanySettings() {
                 />
               </div>
             </div>
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Adres
-              </label>
-              <Textarea
-                value={formData.address || ''}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                disabled={!isTenantAdmin}
-                rows={2}
-                placeholder="Cadde No: 123, Kat: 4"
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
+        {/* Adres Bilgileri */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+              Adres Bilgileri
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Firma adresi ve konum bilgileri
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  İlçe
+                  Adres
                 </label>
-                <Input
-                  type="text"
-                  value={formData.district || ''}
-                  onChange={(e) => handleInputChange('district', e.target.value)}
+                <Textarea
+                  value={formData.address || ''}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
                   disabled={!isTenantAdmin}
-                  placeholder="Kadıköy"
+                  rows={2}
+                  placeholder="Cadde No: 123, Kat: 4"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  İl
-                </label>
-                <Input
-                  type="text"
-                  value={formData.city || ''}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  placeholder="İstanbul"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Posta Kodu
-                </label>
-                <Input
-                  type="text"
-                  value={formData.postalCode || ''}
-                  onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                  disabled={!isTenantAdmin}
-                  placeholder="34000"
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    İlçe
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.district || ''}
+                    onChange={(e) => handleInputChange('district', e.target.value)}
+                    disabled={!isTenantAdmin}
+                    placeholder="Kadıköy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    İl
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.city || ''}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    disabled={!isTenantAdmin}
+                    placeholder="İstanbul"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Posta Kodu
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.postalCode || ''}
+                    onChange={(e) => handleInputChange('postalCode', e.target.value)}
+                    disabled={!isTenantAdmin}
+                    placeholder="34000"
+                  />
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Contact & SGK Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-              İletişim ve SGK Bilgileri
+        {/* İletişim Bilgileri */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+              İletişim Bilgileri
             </h3>
-
-            <div className="grid grid-cols-2 gap-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Telefon, e-posta ve web sitesi bilgileri
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Telefon
@@ -511,6 +532,7 @@ export default function CompanySettings() {
                   placeholder="0216 123 45 67"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Faks
@@ -523,39 +545,72 @@ export default function CompanySettings() {
                   placeholder="0216 123 45 68"
                 />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                E-posta
-              </label>
-              <Input
-                type="email"
-                value={formData.email || ''}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                disabled={!isTenantAdmin}
-                placeholder="info@firma.com"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  E-posta
+                </label>
+                <Input
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  disabled={!isTenantAdmin}
+                  placeholder="info@firma.com"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Web Sitesi
-              </label>
-              <Input
-                type="url"
-                value={formData.website || ''}
-                onChange={(e) => handleInputChange('website', e.target.value)}
-                disabled={!isTenantAdmin}
-                placeholder="https://www.firma.com"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Web Sitesi
+                </label>
+                <Input
+                  type="url"
+                  value={formData.website || ''}
+                  onChange={(e) => handleInputChange('website', e.target.value)}
+                  disabled={!isTenantAdmin}
+                  placeholder="https://www.firma.com"
+                />
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mb-3">
-                SGK Bilgileri
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
+        {/* SGK Bilgileri */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-200 dark:border-indigo-800">
+          <div className="p-6 border-b border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20">
+            <h3 className="text-base font-semibold text-indigo-900 dark:text-indigo-100">
+              SGK Bilgileri
+            </h3>
+            <p className="text-sm text-indigo-700 dark:text-indigo-300 mt-1">
+              SGK faturalarında kullanılacak bilgiler
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Firma Tipi
+                </label>
+                <select
+                  value={formData.companyType || ''}
+                  onChange={(e) => handleInputChange('companyType', e.target.value)}
+                  disabled={!isTenantAdmin}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
+                >
+                  <option value="">Seçiniz</option>
+                  <option value="hearing_center">İşitme Merkezi</option>
+                  <option value="pharmacy">Eczane</option>
+                  <option value="hospital">Hastane</option>
+                  <option value="optical">Optik</option>
+                  <option value="medical">Medikal</option>
+                  <option value="other">Diğer</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  SGK faturalarında kullanılacak firma tipi
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     SGK Mükellef Kodu
@@ -568,6 +623,7 @@ export default function CompanySettings() {
                     placeholder="1234567"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     SGK Mükellef Adı
@@ -582,11 +638,21 @@ export default function CompanySettings() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-3">
-                Banka Bilgileri
-              </h4>
+        {/* Banka Bilgileri */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-green-200 dark:border-green-800">
+          <div className="p-6 border-b border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
+            <h3 className="text-base font-semibold text-green-900 dark:text-green-100">
+              Banka Bilgileri
+            </h3>
+            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+              Ödeme ve fatura bilgileri
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Banka Adı
@@ -599,7 +665,8 @@ export default function CompanySettings() {
                   placeholder="Banka Adı"
                 />
               </div>
-              <div className="mt-3">
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   IBAN
                 </label>
@@ -616,32 +683,35 @@ export default function CompanySettings() {
           </div>
         </div>
 
-        {/* Save Button (bottom) */}
+        {/* Save Button */}
         {hasChanges && isTenantAdmin && (
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              loading={saving}
-              variant="success"
-              className="flex items-center"
-            >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-            </Button>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                loading={saving}
+                variant="success"
+                className="flex items-center"
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+              </Button>
+            </div>
           </div>
         )}
       </div>
 
       {/* Language Settings */}
-      <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="mt-6 sm:mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
           Dil Ayarları
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
           Uygulama dilini değiştirin
         </p>
         <LanguageSwitcher className="!justify-start" />
+      </div>
       </div>
     </div>
   );

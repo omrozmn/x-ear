@@ -154,6 +154,7 @@ export interface MatchedSlot {
  */
 export interface MatchedCapability {
   name: string;
+  displayName?: string;
   description: string;
   category: string;
   slots: MatchedSlot[];
@@ -276,6 +277,7 @@ export interface AIContext {
   role: AIRole;
   profile: AIProfile;
   capability?: AICapability;
+  language?: string;
 }
 
 export type AIRole = 'PARTY' | 'STAFF' | 'ADMIN' | 'SUPER_ADMIN';

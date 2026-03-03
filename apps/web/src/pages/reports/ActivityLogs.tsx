@@ -11,6 +11,7 @@ import {
 import {
     useListActivityLogs
 } from '@/api/client/activity-logs.client';
+import { useExecuteToolApiAiComposerExecutePost } from '@/api/generated/ai-composer/ai-composer';
 import type { ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
 import { Button, Input, Select } from '@x-ear/ui-web';
 
@@ -144,6 +145,36 @@ export default function ActivityLogsPage() {
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [selectedLog, setSelectedLog] = useState<ExtendedActivityLogRead | null>(null);
+
+    const { mutate: executeTool, isPending: isRollingBack } = useExecuteToolApiAiComposerExecutePost({
+        mutation: {
+            onSuccess: (data) => {
+                if (data.status === 'error') {
+                    alert('Geri alma işleminde hata: ' + data.error);
+                } else {
+                    alert('Geri alma işlemi başarıyla tamamlandı.');
+                    // Refresh logs (tanstack query invalidation is better, but simple refresh works)
+                    window.location.reload();
+                }
+            },
+            onError: (error) => {
+                const msg = error instanceof Error ? error.message : JSON.stringify(error);
+                alert('Geri alma işleminde teknik bir hata oluştu: ' + msg);
+            }
+        }
+    });
+
+    const handleRollback = (batchId: string) => {
+        if (confirm('Bu toplu yükleme işlemi geri alınacaktır. Eklenen tüm kayıtlar silinecektir. Emin misiniz?')) {
+            executeTool({
+                data: {
+                    tool_id: 'rollback_bulk_import',
+                    args: { batch_id: batchId },
+                    dry_run: false
+                }
+            });
+        }
+    };
 
     // Cast params to intersection type to allow extra filters missing from schema but potentially supported
     const queryParams: ListActivityLogsParams & { branch_id?: string; entity_type?: string; is_critical?: boolean; per_page?: number } = {
@@ -299,15 +330,29 @@ export default function ActivityLogsPage() {
                                                 {log.ipAddress}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => setSelectedLog(log)}
-                                                    className="p-1.5"
-                                                    title="Detay"
-                                                >
-                                                    <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                                </Button>
+                                                <div className="flex items-center gap-1">
+                                                    {log.action === 'TOPLU_YUKLEME' && log.data?.batch_id && !log.data?.rolled_back ? (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleRollback(String(log.data!.batch_id))}
+                                                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                            title="Bu Toplu Yüklemeyi Geri Al"
+                                                            disabled={isRollingBack}
+                                                        >
+                                                            {isRollingBack ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="text-xs font-semibold select-none flex items-center gap-1"> Geri Al</span>}
+                                                        </Button>
+                                                    ) : null}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setSelectedLog(log)}
+                                                        className="p-1.5"
+                                                        title="Detay"
+                                                    >
+                                                        <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                                    </Button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

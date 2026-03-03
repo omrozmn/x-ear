@@ -20,4 +20,6 @@ export const SlotConfigUiType = {
   number: 'number',
   text: 'text',
   file: 'file',
+  boolean: 'boolean',
+  time: 'time',
 } as const;

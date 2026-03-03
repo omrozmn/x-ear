@@ -1,4 +1,4 @@
-import { Button, Input, Textarea, Select, useToastHelpers, DatePicker } from '@x-ear/ui-web';
+import { Button, Input, Textarea, Select, useToastHelpers, DatePicker, TimePicker } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
 import { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentType, AppointmentStatus } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
@@ -218,6 +218,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         };
 
         const newAppointment = await createAppointment(appointmentData);
+        
+        // Ensure partyName is set in the returned appointment
+        // Backend might not return it, so we add it from formData
+        if (newAppointment && !newAppointment.partyName) {
+          newAppointment.partyName = formData.partyName;
+        }
+        
         showSuccess(t('form.success.create'));
         onSave?.(newAppointment);
       } else if (appointment) {
@@ -306,17 +313,27 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
               {/* Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('form.time')}
                 </label>
-                <Input
+                <select
                   data-testid="appointment-time-input"
-                  type="time"
                   value={formData.time}
                   onChange={(e) => handleInputChange('time', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.time ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white ${errors.time ? 'border-red-300' : 'border-gray-300'
                     }`}
-                />
+                >
+                  {Array.from({ length: 24 * 4 }, (_, i) => {
+                    const hour = Math.floor(i / 4);
+                    const minute = (i % 4) * 15;
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    return (
+                      <option key={timeStr} value={timeStr}>
+                        {timeStr}
+                      </option>
+                    );
+                  })}
+                </select>
                 {errors.time && (
                   <p className="mt-1 text-sm text-red-600">{errors.time}</p>
                 )}

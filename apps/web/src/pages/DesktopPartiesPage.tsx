@@ -8,10 +8,10 @@ import React, { useState } from 'react';
 import { Button, Input, Modal, Pagination } from '@x-ear/ui-web';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useParties, useCreateParty, useDeleteParty } from '../hooks/useParties';
+import { useUpdateParty } from '@/api/generated/parties/parties';
 import { Party } from '../types/party';
 import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings } from 'lucide-react';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
-import { useUpdateParty } from '../hooks/useParties';
 import { PartyFilters } from '../components/parties/PartyFilters';
 import { PartyList } from '../components/parties/PartyList';
 // import { PartyCSVUpload } from '../components/parties/csv/PartyCSVUpload'; // UniversalImporter is used instead
@@ -33,8 +33,6 @@ export function DesktopPartiesPage() {
   const [searchValue, setSearchValue] = useState('');
   const [selectedParties, setSelectedParties] = useState<string[]>([]);
   const [showNewPartyModal, setShowNewPartyModal] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingParty, setEditingParty] = useState<Party | null>(null);
   const [filters, setFilters] = useState<PartyFiltersType>({});
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,19 +44,20 @@ export function DesktopPartiesPage() {
   const [tagUpdateParty, setTagUpdateParty] = useState<Party | null>(null);
 
   // Hooks
-  const { data, isLoading, error } = useParties();
+  const { data, isLoading, error, refetch } = useParties();
   const parties = data?.parties || [];
-  const updatePartyMutation = useUpdateParty();
   const createPartyMutation = useCreateParty();
   const deletePartyMutation = useDeleteParty();
-
-  // Mock stats for now
-  const stats = {
-    total: (parties?.length || 0),
-    active: parties.filter(p => p.status === 'ACTIVE').length,
-    inactive: parties.filter(p => p.status === 'INACTIVE').length,
-    withDevices: 0
-  };
+  
+  // Tag update mutation
+  const updatePartyMutation = useUpdateParty({
+    mutation: {
+      onSuccess: async () => {
+        // Immediately refetch to update the list
+        await refetch();
+      }
+    }
+  });
 
   // Handlers
   const handleSearch = (value: string) => {
@@ -66,17 +65,11 @@ export function DesktopPartiesPage() {
   };
 
   const handleRefresh = () => {
-    // refetch is not available in this hook, we'll use a different approach
-    window.location.reload();
+    refetch();
   };
 
   const handleNewParty = () => {
     setShowNewPartyModal(true);
-  };
-
-  const handleEditParty = (party: Party) => {
-    setEditingParty(party);
-    setIsEditModalOpen(true);
   };
 
   const handlePartySelect = (partyId: string) => {
@@ -135,8 +128,12 @@ export function DesktopPartiesPage() {
 
   const handleTagUpdate = async (partyId: string, updates: { tags?: string[]; status?: PartyStatus; segment?: PartySegment; acquisitionType?: string; branchId?: string }) => {
     try {
-      // Clean up updates object to remove undefined fields if needed, or simply pass
-      await updatePartyMutation.mutateAsync({ partyId, updates: updates as Partial<Party> });
+      await updatePartyMutation.mutateAsync({ 
+        partyId, 
+        data: updates
+      });
+      // Wait for refetch to complete before closing modal
+      await refetch();
       setTagUpdateParty(null);
     } catch (error) {
       console.error('Failed to update party tags:', error);
@@ -158,19 +155,63 @@ export function DesktopPartiesPage() {
       if (!matchesSearch) return false;
     }
 
-    // Status filter
+    // Status filter - case insensitive and typo-resistant comparison
     if (filters.status && filters.status.length > 0) {
-      if (!filters.status.includes(party.status as PartyStatus)) return false;
+      const normalizeStatus = (status: string) => {
+        return String(status || '')
+          .toUpperCase()
+          .trim()
+          .replace(/[İI]/g, 'I') // Turkish I normalization
+          .replace(/Ş/g, 'S')
+          .replace(/Ğ/g, 'G')
+          .replace(/Ü/g, 'U')
+          .replace(/Ö/g, 'O')
+          .replace(/Ç/g, 'C');
+      };
+      
+      const partyStatus = normalizeStatus(party.status || '');
+      const filterStatuses = filters.status.map(s => normalizeStatus(s));
+      if (!filterStatuses.includes(partyStatus)) return false;
     }
 
-    // Segment filter
+    // Segment filter - case insensitive and typo-resistant comparison
     if (filters.segment && filters.segment.length > 0) {
-      if (!filters.segment.includes(party.segment as PartySegment)) return false;
+      const normalizeSegment = (segment: string) => {
+        return String(segment || '')
+          .toUpperCase()
+          .trim()
+          .replace(/[İI]/g, 'I')
+          .replace(/Ş/g, 'S')
+          .replace(/Ğ/g, 'G')
+          .replace(/Ü/g, 'U')
+          .replace(/Ö/g, 'O')
+          .replace(/Ç/g, 'C');
+      };
+      
+      const partySegment = normalizeSegment(party.segment || '');
+      const filterSegments = filters.segment.map(s => normalizeSegment(s));
+      if (!filterSegments.includes(partySegment)) return false;
     }
 
-    // Acquisition Type filter
+    // Acquisition Type filter - case insensitive and typo-resistant comparison
     if (filters.acquisitionType && filters.acquisitionType.length > 0) {
-      if (!party.acquisitionType || !filters.acquisitionType.includes(party.acquisitionType)) return false;
+      const normalizeAcquisition = (acq: string) => {
+        return String(acq || '')
+          .toLowerCase()
+          .trim()
+          .replace(/[ıi]/g, 'i')
+          .replace(/ş/g, 's')
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c')
+          .replace(/\s+/g, '-') // spaces to dashes
+          .replace(/_/g, '-'); // underscores to dashes
+      };
+      
+      const partyAcquisition = normalizeAcquisition(party.acquisitionType || '');
+      const filterAcquisitions = filters.acquisitionType.map(a => normalizeAcquisition(a));
+      if (!partyAcquisition || !filterAcquisitions.includes(partyAcquisition)) return false;
     }
 
     // Labels filter
@@ -186,6 +227,23 @@ export function DesktopPartiesPage() {
     if (filters.tags && filters.tags.length > 0) {
       const partyTags = party.tags || [];
       if (!filters.tags.every(t => partyTags.includes(t))) return false;
+    }
+
+    // Date range filter (registrationDateRange)
+    if (filters.registrationDateRange) {
+      const { start, end } = filters.registrationDateRange;
+      if (party.createdAt) {
+        const partyDate = new Date(party.createdAt);
+        if (start) {
+          const startDate = new Date(start);
+          if (partyDate < startDate) return false;
+        }
+        if (end) {
+          const endDate = new Date(end);
+          endDate.setHours(23, 59, 59, 999); // Include the entire end date
+          if (partyDate > endDate) return false;
+        }
+      }
     }
 
     return true;
@@ -205,6 +263,22 @@ export function DesktopPartiesPage() {
         aValue = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         bValue = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         break;
+      case 'status':
+        aValue = (a.status || '').toLowerCase();
+        bValue = (b.status || '').toLowerCase();
+        break;
+      case 'segment':
+        aValue = (a.segment || '').toLowerCase();
+        bValue = (b.segment || '').toLowerCase();
+        break;
+      case 'acquisitionType':
+        aValue = (a.acquisitionType || '').toLowerCase();
+        bValue = (b.acquisitionType || '').toLowerCase();
+        break;
+      case 'branchId':
+        aValue = (a.branchId || '').toLowerCase();
+        bValue = (b.branchId || '').toLowerCase();
+        break;
       default:
         return 0;
     }
@@ -213,6 +287,27 @@ export function DesktopPartiesPage() {
     if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
     return 0;
   });
+
+  // Stats based on FILTERED parties (updates dynamically with filters)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const stats = {
+    total: filteredParties.length,
+    active: filteredParties.filter(p => {
+      const status = String(p.status || '').toUpperCase();
+      return status === 'ACTIVE';
+    }).length,
+    inactive: filteredParties.filter(p => {
+      const status = String(p.status || '').toUpperCase();
+      return status === 'INACTIVE';
+    }).length,
+    newThisMonth: filteredParties.filter(p => {
+      if (!p.createdAt) return false;
+      const createdDate = new Date(p.createdAt);
+      return createdDate >= thirtyDaysAgo;
+    }).length
+  };
 
   // Paginated parties
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -237,8 +332,7 @@ export function DesktopPartiesPage() {
               variant="outline"
               size="sm"
               onClick={() => {
-                // TODO: Navigate to settings page with parties tab active
-                alert('TODO: Ayarlar sayfasında hastalar sekmesi açılacak');
+                navigate({ to: '/settings/party-segments' });
               }}
             >
               <Settings className="h-4 w-4 mr-2" />
@@ -287,10 +381,10 @@ export function DesktopPartiesPage() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cihazlı</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.withDevices}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Yeni (30 Gün)</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.newThisMonth}</p>
               </div>
-              <Headphones className="h-8 w-8 text-purple-500" />
+              <Flame className="h-8 w-8 text-blue-500" />
             </div>
           </div>
         </div>
@@ -365,7 +459,6 @@ export function DesktopPartiesPage() {
           <>
             <PartyList
               parties={paginatedParties}
-              onEdit={handleEditParty}
               onPartyClick={handlePartyClick}
               onDelete={handleDeleteParty}
               onPartySelect={handlePartySelect}
@@ -374,7 +467,7 @@ export function DesktopPartiesPage() {
               sortBy={sortBy}
               sortOrder={sortOrder}
               onTagClick={setTagUpdateParty}
-              showSelection={selectedParties.length > 0}
+              showSelection={true}
               showActions={true}
             />
             <div className="border-t border-gray-200 p-4">
@@ -402,6 +495,8 @@ export function DesktopPartiesPage() {
           try {
             const result = await createPartyMutation.mutateAsync(data as unknown as Omit<Party, 'id' | 'createdAt' | 'updatedAt'>);
             setShowNewPartyModal(false);
+            // Refetch to get updated list
+            await refetch();
             return result;
           } catch (e) {
             console.error('Failed to create party', e);
@@ -412,36 +507,13 @@ export function DesktopPartiesPage() {
         isLoading={createPartyMutation.isPending}
       />
 
-      {/* Edit Modal */}
-      <PartyFormModal
-        isOpen={isEditModalOpen}
-        onClose={() => { setIsEditModalOpen(false); setEditingParty(null); }}
-        onSubmit={async (updates) => {
-          try {
-            if (!editingParty?.id) return null;
-            await updatePartyMutation.mutateAsync({
-              partyId: editingParty.id,
-              updates: updates as Partial<Party>,
-            });
-            setIsEditModalOpen(false);
-            setEditingParty(null);
-            return editingParty;
-          } catch (e) {
-            console.error('Failed to update party', e);
-            throw e;
-          }
-        }}
-        initialData={editingParty || undefined}
-        title="Hasta Düzenle"
-        isLoading={updatePartyMutation.isPending}
-      />
-
       {/* Tag Update Modal */}
       <PartyTagUpdateModal
         isOpen={!!tagUpdateParty}
         onClose={() => setTagUpdateParty(null)}
         party={tagUpdateParty}
         onUpdate={handleTagUpdate}
+        isLoading={updatePartyMutation.isPending}
       />
 
       {/* CSV Upload Modal (now shared UniversalImporter with mapping + preview) */}

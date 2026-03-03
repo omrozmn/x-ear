@@ -195,7 +195,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
           Fiyatlandırma Bilgileri
         </h4>
 
-        {/* List Price and SGK Support - 2 columns in one row */}
+        {/* List Price and SGK Support - 2 columns, each input full width in its column */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* List Price */}
           <div>
@@ -207,7 +207,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               value={formData.listPrice || ''}
               onChange={(e) => updateFormData('listPrice', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className={`dark:bg-slate-800 dark:text-white ${errors.listPrice ? 'border-red-300 dark:border-red-700' : ''}`}
+              className={`w-full dark:bg-slate-800 dark:text-white ${errors.listPrice ? 'border-red-300 dark:border-red-700' : ''}`}
             />
             {errors.listPrice && (
               <p className="mt-1 text-sm text-red-600">{errors.listPrice}</p>
@@ -241,7 +241,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
           </div>
         )}
 
-        {/* Discount Section */}
+        {/* Discount Section - 2 columns, each input full width in its column */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -269,7 +269,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
                 value={formData.discountValue || ''}
                 onChange={(e) => updateFormData('discountValue', parseFloat(e.target.value) || 0)}
                 placeholder="0"
-                className="dark:bg-slate-800 dark:text-white"
+                className="w-full dark:bg-slate-800 dark:text-white"
               />
             </div>
           )}
@@ -335,19 +335,19 @@ export const PricingForm: React.FC<PricingFormProps> = ({
           Ödeme Bilgileri
         </h4>
 
-        {/* Down Payment and Payment Method - 2 columns in one row */}
+        {/* Down Payment and Payment Method - 2 columns, each input full width in its column */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Down Payment */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Peşinat
+              Ön Ödeme
             </label>
             <Input
               type="number"
               value={formData.downPayment || ''}
               onChange={(e) => updateFormData('downPayment', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className="dark:bg-slate-800 dark:text-white"
+              className="w-full dark:bg-slate-800 dark:text-white"
             />
           </div>
 

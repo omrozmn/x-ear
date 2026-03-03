@@ -16,33 +16,54 @@
 
 import React from 'react';
 import { Badge } from '@x-ear/ui-web';
-import { useTranslation } from 'react-i18next';
 
 // Component wrapper for Status Badge
 export const StatusBadge = ({ status }: { status?: string }) => {
-  const { t } = useTranslation('constants');
 
   const normalizedStatus = (status || '').toUpperCase();
+  
+  // Turkish label mapping
+  const statusLabels: Record<string, string> = {
+    'ACTIVE': 'Aktif',
+    'INACTIVE': 'Pasif',
+    'TRIAL': 'Deneme',
+    'BLOCKED': 'Engelli'
+  };
+  
+  const label = statusLabels[normalizedStatus] || 'Bilinmiyor';
+  
   switch (normalizedStatus) {
     case 'ACTIVE':
-      return <Badge variant="success" size="sm">{t('party.status.active')}</Badge>;
+      return <Badge variant="success" size="sm">{label}</Badge>;
     case 'INACTIVE':
-      return <Badge variant="warning" size="sm">{t('party.status.inactive')}</Badge>;
+      return <Badge variant="warning" size="sm">{label}</Badge>;
     case 'TRIAL':
-      return <Badge variant="primary" size="sm">{t('party.status.trial')}</Badge>;
+      return <Badge variant="primary" size="sm">{label}</Badge>;
     case 'BLOCKED':
-      return <Badge variant="danger" size="sm">Engelli</Badge>; // Add translation key if missing
+      return <Badge variant="danger" size="sm">{label}</Badge>;
     default:
-      return <Badge variant="secondary" size="sm">Bilinmiyor</Badge>;
+      return <Badge variant="secondary" size="sm">{label}</Badge>;
   }
 };
 
 export const SegmentBadge = ({ segment }: { segment?: string }) => {
-  const { t } = useTranslation('constants');
-
   if (!segment) return <Badge variant="secondary" size="sm">-</Badge>;
 
-  const label = t(`party.segment.${segment.toLowerCase()}`, { defaultValue: segment });
+  // Turkish label mapping
+  const segmentLabels: Record<string, string> = {
+    'lead': 'Potansiyel Müşteri',
+    'trial': 'Deneme Aşamasında',
+    'control': 'Kontrol Hastası',
+    'purchased': 'Mevcut Hasta',
+    'vip': 'VIP',
+    'premium': 'Premium',
+    'standard': 'Standart',
+    'new': 'Yeni',
+    'churned': 'Kayıp'
+  };
+
+  const normalizedSegment = segment.toLowerCase();
+  const label = segmentLabels[normalizedSegment] || segment;
 
   switch (segment.toUpperCase()) {
     case 'VIP':
@@ -53,9 +74,12 @@ export const SegmentBadge = ({ segment }: { segment?: string }) => {
       return <Badge variant="default" size="sm">{label}</Badge>;
     case 'NEW':
     case 'LEAD':
+    case 'TRIAL':
       return <Badge variant="primary" size="sm">{label}</Badge>;
     case 'CHURNED':
       return <Badge variant="danger" size="sm">{label}</Badge>;
+    case 'CONTROL':
+      return <Badge variant="warning" size="sm">{label}</Badge>;
     default:
       return <Badge variant="secondary" size="sm">{label}</Badge>;
   }
@@ -64,7 +88,20 @@ export const SegmentBadge = ({ segment }: { segment?: string }) => {
 export const AcquisitionStatusBadge = ({ acquisitionType }: { acquisitionType?: string }) => {
   if (!acquisitionType) return <Badge variant="secondary" size="sm">-</Badge>;
 
-  const label = acquisitionType;
+  // Turkish label mapping
+  const acquisitionLabels: Record<string, string> = {
+    'referral': 'Referans',
+    'online': 'Online',
+    'walk-in': 'Ziyaret',
+    'walk_in': 'Ziyaret',
+    'social-media': 'Sosyal Medya',
+    'social_media': 'Sosyal Medya',
+    'advertisement': 'Reklam',
+    'tabela': 'Tabela'
+  };
+
+  const normalizedType = acquisitionType.toLowerCase().replace('_', '-');
+  const label = acquisitionLabels[normalizedType] || acquisitionType;
   const upperType = acquisitionType.toUpperCase().replace('-', '_');
 
   switch (upperType) {

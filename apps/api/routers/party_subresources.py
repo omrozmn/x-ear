@@ -217,12 +217,12 @@ def get_party_sales(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
-    """Get all sales for a specific party - Flask parity"""
+    """Get all sales for a specific party - Flask parity with _build_full_sale_data"""
     try:
         from core.models.party import Party
-        from models.sales import Sale, DeviceAssignment, PaymentRecord, PaymentPlan
-        from models.inventory import InventoryItem
-        from models.invoice import Invoice
+        from models.sales import Sale
+        # Import the helper function from sales router
+        from routers.sales import _build_full_sale_data
         
         party = db.get(Party, party_id)
         if not party:
@@ -232,102 +232,25 @@ def get_party_sales(
         if access.tenant_id and party.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
-        # Get all sales for this party
-        sales = db.query(Sale).filter_by(party_id=party_id).order_by(Sale.sale_date.desc()).all()
+        # Get all sales for this party - Order by sale_date DESC, then by id DESC for same-day sales
+        sales = db.query(Sale).filter_by(party_id=party_id).order_by(Sale.sale_date.desc(), Sale.id.desc()).all()
         
+        # Use the same helper function as /api/sales/{sale_id} for consistency
         sales_data = []
         for sale in sales:
-            sale_dict = SaleRead.model_validate(sale).model_dump(by_alias=True)
-            
-            # === Flask parity: Get device assignments (new method first, then legacy) ===
-            from sqlalchemy.orm import joinedload
-            assignments = db.query(DeviceAssignment).options(
-                joinedload(DeviceAssignment.inventory)
-            ).filter_by(sale_id=sale.id).all()
-            
-            # Legacy fallback if no assignments found by sale_id
-            if not assignments:
-                linked_ids = [
-                    getattr(sale, 'right_ear_assignment_id', None),
-                    getattr(sale, 'left_ear_assignment_id', None)
-                ]
-                linked_ids = [lid for lid in linked_ids if lid]
-                if linked_ids:
-                    assignments = db.query(DeviceAssignment).filter(DeviceAssignment.id.in_(linked_ids)).all()
-            
-            # Add devices from assignments
-            devices = []
-            for assignment in assignments:
-                # Get inventory item from relationship (already loaded via joinedload)
-                inventory_item = assignment.inventory if hasattr(assignment, 'inventory') else None
-                
-                # Build device info with inventory details
-                if inventory_item:
-                    device_name = f"{inventory_item.brand} {inventory_item.model}"
-                    brand = inventory_item.brand
-                    model = inventory_item.model
-                    barcode = inventory_item.barcode
-                else:
-                    # Fallback for manual/loaner devices
-                    device_name = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}".strip()
-                    brand = assignment.loaner_brand or ''
-                    model = assignment.loaner_model or ''
-                    barcode = None
-                
-                device_info = {
-                    'id': assignment.inventory_id or assignment.device_id,
-                    'partyId': party_id,
-                    'name': device_name,
-                    'brand': brand,
-                    'model': model,
-                    'serialNumber': assignment.serial_number,
-                    'serialNumberLeft': assignment.serial_number_left,
-                    'serialNumberRight': assignment.serial_number_right,
-                    'barcode': barcode,
-                    'ear': assignment.ear,
-                    'listPrice': float(assignment.list_price) if assignment.list_price else None,
-                    'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
-                    'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-                    'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None,
-                    # Legacy frontend support
-                    'sgkReduction': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-                    'patientPayment': float(assignment.net_payable) if assignment.net_payable else None
-                }
-                devices.append(device_info)
-            
-            sale_dict['devices'] = devices
-            
-            # === Flask parity: Add payment plan ===
-            payment_plan = db.query(PaymentPlan).filter_by(sale_id=sale.id).first()
-            if payment_plan:
-                sale_dict['paymentPlan'] = PaymentPlanRead.model_validate(payment_plan).model_dump(by_alias=True)
-            else:
-                sale_dict['paymentPlan'] = None
-            
-            # Add payment records
-            payment_records = []
-            payments = db.query(PaymentRecord).filter_by(sale_id=sale.id).order_by(PaymentRecord.payment_date.desc()).all()
-            for payment in payments:
-                payment_records.append(PaymentRecordRead.model_validate(payment).model_dump(by_alias=True))
-            
-            sale_dict['paymentRecords'] = payment_records
-            
-            # === Flask parity: Add invoice ===
-            invoice = db.query(Invoice).filter_by(sale_id=sale.id).first()
-            if invoice:
-                sale_dict['invoice'] = InvoiceRead.model_validate(invoice).model_dump(by_alias=True)
-            else:
-                sale_dict['invoice'] = None
-            
-            # === Flask parity: SGK coverage recalculation if zero ===
-            sgk_coverage_value = float(sale.sgk_coverage) if sale.sgk_coverage else 0.0
-            if abs(sgk_coverage_value) < 0.01 and assignments:
-                # Recalculate from assignments
-                total_sgk = sum(float(a.sgk_support or 0) for a in assignments)
-                sgk_coverage_value = total_sgk
-            sale_dict['sgkCoverage'] = sgk_coverage_value
-            
-            sales_data.append(sale_dict)
+            try:
+                sale_dict = _build_full_sale_data(db, sale)
+                sales_data.append(sale_dict)
+            except Exception as e:
+                logger.warning(f"Error building sale data for {sale.id}: {e}")
+                # Fallback to basic sale data
+                sales_data.append({
+                    'id': sale.id,
+                    'partyId': sale.party_id,
+                    'status': sale.status,
+                    'totalAmount': float(sale.total_amount or 0),
+                    'error': 'Failed to load full details'
+                })
         
         return ResponseEnvelope(
             data=sales_data,

@@ -23,7 +23,7 @@ interface ComposerState {
 
     // Action State
     availableActions: Capability[];
-    selectedAction: Capability | null;
+    selectedAction: (Capability & { displayName?: string }) | null;
 
     // Slot State
     slots: Record<string, unknown>; // Collected arguments

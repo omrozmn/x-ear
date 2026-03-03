@@ -12,6 +12,8 @@ import type { MatchedSlotResponse } from './matchedSlotResponse';
  */
 export interface MatchedCapabilityResponse {
   name: string;
+  /** Turkish user-facing display name */
+  display_name?: string;
   description: string;
   category: string;
   slots?: MatchedSlotResponse[];

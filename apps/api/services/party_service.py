@@ -301,10 +301,23 @@ class PartyService:
         
         if 'birthDate' in data or 'birth_date' in data:
             d = data.get('birthDate') or data.get('birth_date')
-            if isinstance(d, date) and not isinstance(d, datetime):
-                 party.birth_date = datetime.combine(d, time.min)
-            else:
-                party.birth_date = d
+            if d:
+                if isinstance(d, str):
+                    # Parse string to datetime
+                    try:
+                        party.birth_date = datetime.fromisoformat(d.replace('Z', '+00:00'))
+                    except:
+                        # Try other formats
+                        for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'):
+                            try:
+                                party.birth_date = datetime.strptime(d, fmt)
+                                break
+                            except:
+                                pass
+                elif isinstance(d, date) and not isinstance(d, datetime):
+                    party.birth_date = datetime.combine(d, time.min)
+                else:
+                    party.birth_date = d
         
         if 'gender' in data: party.gender = data['gender']
         

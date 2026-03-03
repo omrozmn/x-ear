@@ -52,6 +52,8 @@ class PartyUpdate(AppBaseModel):
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     tc_number: Optional[str] = Field(None, min_length=11, max_length=11, alias="tcNumber")
+    gender: Optional[str] = None
+    birth_date: Optional[str] = Field(None, alias="birthDate")
     status: Optional[PartyStatus] = None
     # CRM fields
     segment: Optional[str] = None
@@ -59,6 +61,8 @@ class PartyUpdate(AppBaseModel):
     branch_id: Optional[str] = Field(None, alias="branchId")
     tags: Optional[List[str]] = None
     # Address fields
+    city: Optional[str] = None
+    district: Optional[str] = None
     address_city: Optional[str] = Field(None, alias="addressCity")
     address_district: Optional[str] = Field(None, alias="addressDistrict")
     address_full: Optional[str] = Field(None, alias="addressFull")

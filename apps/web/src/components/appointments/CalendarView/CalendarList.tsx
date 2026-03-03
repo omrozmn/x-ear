@@ -239,9 +239,8 @@ export const CalendarList: React.FC<CalendarListProps> = ({
         ) : (
           groupedByMonth.map((month) => (
             <div key={month.monthKey} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Text className="text-xl font-semibold">{month.monthLabel}</Text>
-                <Badge variant="secondary">{Object.values(month.dates).flat().length} randevu</Badge>
+              <div className="flex items-center justify-center">
+                <Text className="text-xl font-semibold text-center">{month.monthLabel}</Text>
               </div>
 
               {Object.entries(month.dates)

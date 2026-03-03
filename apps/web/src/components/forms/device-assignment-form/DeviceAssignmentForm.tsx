@@ -313,15 +313,13 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         {(selectedDevice || isManualMode) && (
           <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Notlar</h3>
-            <div className="relative">
-              <Textarea
-                value={formData.notes || ''}
-                onChange={(e) => updateFormData('notes', e.target.value)}
-                placeholder="Cihaz ataması ile ilgili notlar..."
-                rows={3}
-                className="resize-none dark:bg-slate-800 dark:text-white"
-              />
-            </div>
+            <Textarea
+              value={formData.notes || ''}
+              onChange={(e) => updateFormData('notes', e.target.value)}
+              placeholder="Cihaz ataması ile ilgili notlar..."
+              rows={3}
+              className="w-full resize-none dark:bg-slate-800 dark:text-white"
+            />
           </div>
         )}
 

@@ -65,20 +65,31 @@ class IntentRefinerResult:
         return self.status == RefinerStatus.BLOCKED
     
     def to_dict(self) -> dict:
-        return {
-            "status": self.status.value,
-            "intent": self.intent.model_dump() if self.intent is not None else None,
-            "needsClarification": self.needs_clarification,
+        intent_data = None
+        if self.intent is not None:
+            intent_data = self.intent.model_dump()
+            
+        if self.redaction_result is not None:
+            pii_detected = bool(self.redaction_result.has_pii)
+            
+        if self.redaction_result is not None:
+            phi_detected = bool(self.redaction_result.has_phi)
+
+        res: dict = {
+            "status": str(self.status.value),
+            "intent": intent_data,
+            "needsClarification": bool(self.needs_clarification),
             "clarificationQuestion": self.clarification_question,
             "errorMessage": self.error_message,
-            "processingTimeMs": self.processing_time_ms,
-            "piiDetected": self.redaction_result.has_pii if self.redaction_result is not None else False,
-            "phiDetected": self.redaction_result.has_phi if self.redaction_result is not None else False,
+            "processingTimeMs": float(self.processing_time_ms),
+            "piiDetected": pii_detected,
+            "phiDetected": phi_detected,
         }
+        return res
 
 
 # Optimized short Turkish prompt with required fields check
-INTENT_CLASSIFICATION_PROMPT = """Kullanıcı mesajını sınıflandır:
+INTENT_CLASSIFICATION_PROMPT_TR = """Kullanıcı mesajını sınıflandır:
 
 MESAJ: {user_message}
 
@@ -109,6 +120,39 @@ JSON DÖNDÜR:
 }}
 
 KISA VE NET!"""
+
+# Optimized short English prompt
+INTENT_CLASSIFICATION_PROMPT_EN = """Classify user message:
+
+MESSAGE: {user_message}
+
+CONTEXT (RECENT ACTIONS): {context}
+
+TYPES:
+- action: Perform an action (create, add, delete, update, assign, deliver)
+- query: Ask a question, get information (what are you doing, what is the plan, etc.)
+- greeting: Greetings (hello, hi)
+- cancel: Cancel the operation
+- unknown: Unclear
+
+IMPORTANT RULES:
+1. If user asks "what are you doing?", "what are you preparing?", intent_type should be "query" and conversational_response should explain the pending_plan_id or active operation from context.
+2. If required fields for an action are missing, "clarification_needed" must be true.
+3. Conversational_response MUST ALWAYS be specific to the operation. e.g.: "I'm preparing a device assignment", "I'm creating a patient record".
+4. If user says "cancel", "stop", "forget it", intent_type should be "cancel".
+
+RETURN JSON:
+{{
+  "intent_type": "action|query|greeting|unknown|cancel",
+  "confidence": 0.0-1.0,
+  "entities": {{}},
+  "clarification_needed": true/false,
+  "clarification_question": "ask here if any info is missing",
+  "conversational_response": "clear and specific response for the user",
+  "reasoning": "logic"
+}}
+
+SHORT AND CLEAR!"""
 
 
 class IntentRefiner:
@@ -163,6 +207,7 @@ class IntentRefiner:
         tenant_id: str,
         user_id: str,
         context: Optional[Dict[str, Any]] = None,
+        language: str = "tr",
     ) -> IntentRefinerResult:
         """
         Refine user intent from message.
@@ -190,13 +235,14 @@ class IntentRefiner:
                     "user_id": user_id,
                 }
             )
+            conversational_response = "İşlem iptal ediliyor." if language == "tr" else "Operation is being cancelled."
             return IntentRefinerResult(
                 status=RefinerStatus.SUCCESS,
                 intent=IntentOutput(
                     intent_type=IntentType.CANCEL,
                     confidence=0.95,
                     entities={},
-                    conversational_response="İşlem iptal ediliyor.",
+                    conversational_response=conversational_response,
                     reasoning="Cancellation keyword detected",
                 ),
                 processing_time_ms=(time.time() - start_time) * 1000,
@@ -211,13 +257,14 @@ class IntentRefiner:
                     "user_id": user_id,
                 }
             )
+            conversational_response = "Size yeteneklerimi göstereyim." if language == "tr" else "Let me show you my capabilities."
             return IntentRefinerResult(
                 status=RefinerStatus.SUCCESS,
                 intent=IntentOutput(
                     intent_type=IntentType.CAPABILITY_INQUIRY,
                     confidence=0.95,
                     entities={},
-                    conversational_response="Size yeteneklerimi göstereyim.",
+                    conversational_response=conversational_response,
                     reasoning="Capability inquiry pattern detected",
                 ),
                 processing_time_ms=(time.time() - start_time) * 1000,
@@ -238,13 +285,14 @@ class IntentRefiner:
                 }
             )
             
+            conversational_response = f"{slot_name} bilgisi alındı." if language == "tr" else f"Information for {slot_name} received."
             return IntentRefinerResult(
                 status=RefinerStatus.SUCCESS,
                 intent=IntentOutput(
                     intent_type=IntentType.SLOT_FILL,
                     confidence=0.85,
                     entities={slot_name: extracted_value},
-                    conversational_response=f"{slot_name} bilgisi alındı.",
+                    conversational_response=conversational_response,
                     reasoning=f"Slot-filling response for {slot_name}",
                 ),
                 processing_time_ms=(time.time() - start_time) * 1000,
@@ -287,8 +335,10 @@ class IntentRefiner:
             )
         
         # Step 3: Build prompt for LLM
-        context_str = json.dumps(context, ensure_ascii=False) if context else "Yok"
-        prompt = INTENT_CLASSIFICATION_PROMPT.format(
+        context_str = json.dumps(context, ensure_ascii=False) if context else ("Yok" if language == "tr" else "None")
+        
+        prompt_tmpl = INTENT_CLASSIFICATION_PROMPT_EN if language == "en" else INTENT_CLASSIFICATION_PROMPT_TR
+        prompt = prompt_tmpl.format(
             user_message=redacted_message,
             context=context_str
         )
@@ -296,10 +346,15 @@ class IntentRefiner:
         # Step 4: Call LLM with circuit breaker and optimized timeout
         # Use 3B fast model with 7-second timeout and 100 token limit
         try:
+            system_prompt = (
+                "You are an English speaking intent classification assistant. REPLY ONLY IN ENGLISH. Return ONLY JSON."
+                if language == "en" else
+                "Sen bir Türkçe konuşan niyet sınıflandırma asistanısın. YALNIZCA TÜRKÇE YANIT VER. SADECE JSON döndür."
+            )
             model_response = await self.circuit_breaker.execute(
                 self.model_client.generate,
                 prompt=prompt,
-                system_prompt="Sen bir Türkçe konuşan niyet sınıflandırma asistanısın. YALNIZCA TÜRKÇE YANIT VER. SADECE JSON döndür.",
+                system_prompt=system_prompt,
                 num_predict=100,  # Increased to 100 tokens for complete JSON
                 temperature=0.1,  # Low temperature for consistent classification
                 timeout_override=7.0,  # 7-second timeout
@@ -327,7 +382,7 @@ class IntentRefiner:
                     }
                 )
                 # Use rule-based fallback
-                intent = self.classify_without_llm(user_message, context=context)
+                intent = self.classify_without_llm(user_message, context=context, language=language)
                 return IntentRefinerResult(
                     status=RefinerStatus.SUCCESS,
                     intent=intent,
@@ -347,7 +402,7 @@ class IntentRefiner:
                 }
             )
             # Use rule-based fallback
-            intent = self.classify_without_llm(user_message, context=context)
+            intent = self.classify_without_llm(user_message, context=context, language=language)
             return IntentRefinerResult(
                 status=RefinerStatus.SUCCESS,
                 intent=intent,
@@ -379,13 +434,8 @@ class IntentRefiner:
         try:
             intent = self._parse_intent_response(model_response.content)
             
-            # Validate: If action intent but missing required entities, use fallback
-            if (intent.intent_type == IntentType.ACTION and 
-                not intent.clarification_needed and
-                "first_name" not in intent.entities and
-                "phone" not in intent.entities):
-                logger.info("LLM returned action without required entities, using fallback")
-                intent = self.classify_without_llm(user_message, context=context)
+            # Action Planner is responsible for validating if required entities/slots are present.
+            # We should not hardcode validation for specific fields like first_name or phone here.
                 
         except Exception as e:
             logger.error(f"Failed to parse intent response: {e}")
@@ -426,10 +476,11 @@ class IntentRefiner:
         tenant_id: str,
         user_id: str,
         context: Optional[Dict[str, Any]] = None,
+        language: str = "tr",
     ) -> IntentRefinerResult:
         """Synchronous version of refine_intent."""
         import asyncio
-        return asyncio.run(self.refine_intent(user_message, tenant_id, user_id, context))
+        return asyncio.run(self.refine_intent(user_message, tenant_id, user_id, context, language))
     
     def _parse_intent_response(self, response: str) -> IntentOutput:
         """
@@ -447,7 +498,7 @@ class IntentRefiner:
         # Handle markdown code blocks
         if response.startswith("```"):
             lines = response.split("\n")
-            json_lines = []
+            json_lines: List[Any] = []
             in_json = False
             for line in lines:
                 if line.startswith("```") and not in_json:
@@ -497,6 +548,7 @@ class IntentRefiner:
         self,
         user_message: str,
         context: Optional[Dict[str, Any]] = None,
+        language: str = "tr",
     ) -> IntentOutput:
         """
         Rule-based classification without LLM.
@@ -540,19 +592,27 @@ class IntentRefiner:
                     return True
             return False
 
-        if _is_cancellation():
+        # Cancellation only if NOT combined with a domain keyword (e.g. "randevu iptal" is NOT generic cancel)
+        domain_keywords = ["randevu", "fatura", "cihaz", "satış", "hasta", "stok", "envanter", "appointment", "invoice", "device", "sale", "patient", "stock", "inventory"]
+        if _is_cancellation() and not _has_stem(domain_keywords):
+            conversational_response = "İşlem iptal edildi." if language == "tr" else "Operation cancelled."
             return IntentOutput(intent_type=IntentType.CANCEL, confidence=0.95,
-                conversational_response="İşlem iptal edildi.", reasoning="İptal anahtar kelimesi")
+                conversational_response=conversational_response, reasoning="İptal anahtar kelimesi")
 
         # 2. CONFIRMATIONS (ee, et, devam, onay, etc.)
-        confirmation_keywords = ["evet", "tamam", "olur", "onayla", "ee", "et", "devam", "yap", "devam et", "oldu", "peki"]
+        confirmation_keywords_tr = ["evet", "tamam", "olur", "onayla", "ee", "et", "devam", "yap", "devam et", "oldu", "peki"]
+        confirmation_keywords_en = ["yes", "ok", "okay", "confirm", "continue", "do it", "proceed", "fine"]
+        confirmation_keywords = confirmation_keywords_tr + confirmation_keywords_en
+        
         if any(w == message_clean or message_clean.startswith(w + " ") for w in confirmation_keywords):
             if pending_plan_id:
+                conversational_response = "Plan onaylandı, işlemi gerçekleştiriyorum." if language == "tr" else "Plan confirmed, executing the operation."
                 return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"confirm_plan": pending_plan_id, "action_type": last_action or "confirm"},
-                    conversational_response="Plan onaylandı, işlemi gerçekleştiriyorum.", reasoning="Kullanıcı bekleyen planı onayladı")
+                    conversational_response=conversational_response, reasoning="Kullanıcı bekleyen planı onayladı")
             elif last_action:
+                 conversational_response = "İşleme devam ediyorum." if language == "tr" else "Continuing with the operation."
                  return IntentOutput(intent_type=IntentType.ACTION, confidence=0.75, entities={"action_type": last_action},
-                    conversational_response="İşleme devam ediyorum.", reasoning="Kullanıcı önceki eylemi sürdürdü")
+                    conversational_response=conversational_response, reasoning="Kullanıcı önceki eylemi sürdürdü")
 
 
         # 3. GREETINGS
@@ -560,7 +620,18 @@ class IntentRefiner:
             return IntentOutput(intent_type=IntentType.GREETING, confidence=0.9, 
                 conversational_response="Merhaba! Size nasıl yardımcı olabilirim?", reasoning="Selamlama")
 
-        # 4. INVOICES (Action first, then Query)
+        # 4. SGK
+        if _has_stem(["müstahaklık", "sgk hak", "cihaz hakkı"]):
+            return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "query_sgk_patient_rights"},
+                conversational_response="SGK müstahaklık durumunu sorguluyorum.", reasoning="SGK Hak")
+        if _has_stem(["e-reçete", "reçete sorgula", "sgk reçete", "reçetesi var mı"]):
+            return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "query_sgk_e_receipt"},
+                conversational_response="SGK e-reçete durumunu sorguluyorum.", reasoning="E-Reçete")
+        if _has_stem(["aylık sgk", "sgk faturası", "sgk faturası kes", "sgk faturası oluştur", "sgk faturası hazırla"]):
+            return IntentOutput(intent_type=IntentType.ACTION, confidence=0.9, entities={"action_type": "createSgkMonthlyInvoiceDraft"},
+                conversational_response="SGK aylık fatura taslağı hazırlıyorum.", reasoning="SGK Monthly Invoice")
+
+        # 5. INVOICES (Action first, then Query)
         if _has_stem(["e-fatura kes", "gib'e yolla", "faturayı gönder", "fatura yolla", "faturayı yolla", "gib gönder", "gib’e yolla"]):
             return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "generate_and_send_e_invoice"},
                 conversational_response="E-fatura gönderim işlemini başlatıyorum.", reasoning="E-Fatura gönderim")
@@ -591,8 +662,8 @@ class IntentRefiner:
             return IntentOutput(intent_type=IntentType.ACTION, confidence=0.8, entities={"action_type": "appointment_create"},
                 conversational_response="Randevu oluşturma işlemi için hazırlık yapıyorum.", reasoning="Oluşturma")
 
-        # 6. INVENTORY (Low Stock first, then Assign/List)
-        if _has_stem(["eksik", "stok uyarı", "stok uyarısı", "biten", "kritik stok", "stok az"]):
+        # 6. INVENTORY (Low Stock first, then Assign, Edit, List)
+        if _has_stem(["eksik", "stok uyarı", "stok uyarısı", "biten", "kritik stok", "stok az", "düşük stok", "azalan"]):
             return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "get_low_stock_alerts"},
                 conversational_response="Kritik seviyedeki stokları kontrol ediyorum.", reasoning="Stok uyarısı")
 
@@ -600,32 +671,55 @@ class IntentRefiner:
             if _has_stem(["ata", "ver", "teslim", "emanet"]):
                 return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "device_assign"},
                     conversational_response="Cihaz atama işlemi için hazırlık yapıyorum.", reasoning="Atama")
+            if _has_stem(["düzenle", "güncelle", "değiştir", "edit", "seri no", "seri numara"]):
+                return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "inventory_edit"},
+                    conversational_response="Envanter düzenleme işlemi için hazırlık yapıyorum.", reasoning="Envanter düzenleme")
+            if _has_stem(["durum", "kontrol", "bak", "göster", "listele", "ara"]):
+                return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "inventory_list"},
+                    conversational_response="Envanter durumunu kontrol ediyorum.", reasoning="Envanter sorgu")
             return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "inventory_list"},
                 conversational_response="Cihazları listeliyorum.", reasoning="Envanter")
 
-        # 7. SGK
-        if _has_stem(["müstahaklık", "sgk hak", "cihaz hakkı"]):
-            return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "query_sgk_patient_rights"},
-                conversational_response="SGK müstahaklık durumunu sorguluyorum.", reasoning="SGK Hak")
-        if _has_stem(["e-reçete", "reçete sorgula", "sgk reçete", "reçetesi var mı"]):
-            return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "query_sgk_e_receipt"},
-                conversational_response="SGK e-reçete durumunu sorguluyorum.", reasoning="E-Reçete")
 
-        # 8. FINANCE
-        if _has_stem(["kasa", "nakit", "tahsilat", "ödeme", "finans", "kredi kartı", "durum"]):
-            return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "get_daily_cash_summary"},
-                conversational_response="Kasa durumunu özetliyorum.", reasoning="Kasa")
-        if _has_stem(["tahsilat", "ödeme ekle", "para al"]):
+        # 8. FINANCE (Action first: tahsilat/ödeme with action verbs, then query)
+        if _has_stem(["tahsilat yap", "tahsilat oluştur", "tahsilat ekle", "ödeme ekle", "ödeme al", "para al", "tahsilat gir"]):
             return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "collection_create"},
                 conversational_response="Yeni tahsilat girişi için hazırlık yapıyorum.", reasoning="Tahsilat")
+        if _has_stem(["kasa", "nakit", "finans", "kredi kartı", "kasa durumu", "günlük kasa", "kasa özeti"]):
+            return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "get_daily_cash_summary"},
+                conversational_response="Kasa durumunu özetliyorum.", reasoning="Kasa")
+        if _has_stem(["tahsilat", "ödeme"]):
+            if _has_stem(["listele", "göster", "kontrol", "durum", "geçmiş"]):
+                return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "get_daily_cash_summary"},
+                    conversational_response="Ödeme durumunu kontrol ediyorum.", reasoning="Ödeme sorgu")
+            return IntentOutput(intent_type=IntentType.ACTION, confidence=0.8, entities={"action_type": "collection_create"},
+                conversational_response="Tahsilat işlemi için hazırlık yapıyorum.", reasoning="Tahsilat default")
 
-        # 9. CRM SUMMARY
-        if _has_stem(["geçmiş", "özet", "hasta detayı", "hasta özeti"]):
+        # 9. PARTY / PATIENT CRUD
+        if _has_stem(["hasta", "kişi", "müşteri"]):
+            if _has_stem(["kaydet", "oluştur", "ekle", "kayıt", "yeni hasta"]):
+                return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "party_create"},
+                    conversational_response="Yeni hasta/kişi kaydı oluşturuyorum.", reasoning="Hasta oluşturma")
+            if _has_stem(["güncelle", "düzenle", "değiştir", "düzelt"]):
+                return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "party_update"},
+                    conversational_response="Hasta/kişi bilgisi güncelleme işlemi başlatıyorum.", reasoning="Hasta güncelleme")
+            if _has_stem(["bilgi", "detay", "bak", "göster", "görüntüle"]):
+                return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "party_view"},
+                    conversational_response="Hasta/kişi bilgilerini getiriyorum.", reasoning="Hasta bilgi")
+            if _has_stem(["geçmiş", "özet", "dosya", "rapor"]):
+                return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "get_party_comprehensive_summary"},
+                    conversational_response="Hasta geçmişini özetliyorum.", reasoning="Hasta özeti")
+            # Default: view patient
+            return IntentOutput(intent_type=IntentType.QUERY, confidence=0.7, entities={"query_type": "party_view"},
+                conversational_response="Hasta bilgilerini getiriyorum.", reasoning="Hasta sorgusu")
+
+        # 10. CRM SUMMARY (standalone)
+        if _has_stem(["geçmiş", "özet"]):
             return IntentOutput(intent_type=IntentType.QUERY, confidence=0.85, entities={"query_type": "get_party_comprehensive_summary"},
                 conversational_response="Hasta geçmişini özetliyorum.", reasoning="Hasta özeti")
 
-        # 10. SALES
-        if _has_stem(["satış", "satıs", "satiş", "fatura kes", "satış yap"]):
+        # 11. SALES
+        if _has_stem(["satış", "satıs", "satiş", "fatura kes", "satış yap", "satış oluştur", "satış kaydet"]):
             return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "sale_create"},
                 conversational_response="Yeni satış işlemi için hazırlık yapıyorum.", reasoning="Satış")
 
@@ -635,8 +729,9 @@ class IntentRefiner:
         if phone_match: entities["phone"] = phone_match.group().replace(" ", "")
         
         # Generic Fallback
+        conversational_response = "Size nasıl yardımcı olabilirim?" if language == "tr" else "How can I help you?"
         return IntentOutput(intent_type=IntentType.QUERY, confidence=0.1, entities=entities, 
-            conversational_response="Size nasıl yardımcı olabilirim?", reasoning="Belirsiz")
+            conversational_response=conversational_response, reasoning="Belirsiz")
 # Global instance
 _refiner: Optional[IntentRefiner] = None
 

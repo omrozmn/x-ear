@@ -224,7 +224,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
     if (!formData.brand) newErrors.brand = 'Marka seçimi zorunludur';
     if (!formData.model) newErrors.model = 'Model seçimi zorunludur';
-    if (!formData.serialNumber) newErrors.serialNumber = 'Seri numarası zorunludur';
+    // ✅ FIXED: Seri numarası artık zorunlu değil (User Request)
+    // if (!formData.serialNumber) newErrors.serialNumber = 'Seri numarası zorunludur';
     if (!formData.ear) newErrors.ear = 'Kulak seçimi zorunludur';
     if (!formData.assignedDate) newErrors.assignedDate = 'Atama tarihi zorunludur';
     if (!formData.reason) newErrors.reason = 'Atama sebebi zorunludur';
@@ -402,8 +403,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 type="button"
                 onClick={() => handleInputChange('ear', option.value)}
                 className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${formData.ear === option.value
-                    ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                   }`}
               >
                 {option.label}
@@ -440,6 +441,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               onChange={(event) => handleInputChange('reason', event.target.value)}
               options={[
                 { value: '', label: 'Sebep seçin' },
+                { value: 'sale', label: 'Satış' },
                 { value: 'new', label: 'Yeni Hasta' },
                 { value: 'replacement', label: 'Değişim' },
                 { value: 'upgrade', label: 'Yükseltme' },
@@ -470,8 +472,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 type="button"
                 onClick={() => handleInputChange('status', status.value)}
                 className={`p-2 rounded-lg border text-sm font-medium transition-colors ${formData.status === status.value
-                    ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                   }`}
               >
                 {status.label}
@@ -598,8 +600,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   type="button"
                   onClick={() => handleInputChange('paymentMethod', method.value)}
                   className={`p-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${formData.paymentMethod === method.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                     }`}
                 >
                   <Icon className="w-4 h-4" />

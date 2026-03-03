@@ -321,7 +321,7 @@ class ToolRegistry:
                     errors.append(f"Parameter '{param.name}' must be object")
                 
                 # Enum checking
-                if param.enum and value not in param.enum:
+                if param.enum is not None and value not in param.enum:
                     errors.append(f"Parameter '{param.name}' must be one of: {param.enum}")
         
         # Check for unknown parameters
@@ -476,6 +476,8 @@ try:
     from ai.tools import sales_tools
     from ai.tools import device_tools
     from ai.tools import appointment_tools
+    from ai.tools import bulk_import_tools
+    from ai.tools import sgk_tools
 except ImportError:
     # Handle partial initialization or circular import gracefully during development
     pass

@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-02-28T21:09:26.623Z
+ * Generated: 2026-03-03T13:11:43.434Z
  */
 
 // ACTIVITY_LOGS
@@ -569,6 +569,7 @@ export {
 
 // OCR
 export {
+  useUploadOcrDocument,
   useListOcrHealth,
   useCreateOcrInitDb,
   useCreateOcrInitialize,
@@ -720,6 +721,7 @@ export {
   useCreateSaleInstallmentPay,
   useCreateSaleRecalc,
   useCreatePartyDeviceAssignments,
+  useGetDeviceAssignment,
   useUpdateDeviceAssignment,
   useCreateDeviceAssignmentReturnLoaner,
   useCreatePricingPreview,

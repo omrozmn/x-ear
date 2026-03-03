@@ -13,18 +13,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { Party } from '@/types/party';
-
-interface TimelineEvent {
-  id: string;
-  type: 'registration' | 'note' | 'appointment' | 'device' | 'payment' | 'document' | 'sms' | 'sgk' | 'sale' | 'label' | 'ereceipt' | 'profile' | 'call';
-  title: string;
-  description: string;
-  date: string;
-  icon: string;
-  priority?: 'low' | 'medium' | 'high';
-  category?: string;
-  metadata?: Record<string, unknown>;
-}
+import { usePartyTimeline } from '@/hooks/party/usePartyTimeline';
 
 interface PartyTimelineTabProps {
   party: Party;
@@ -33,6 +22,10 @@ interface PartyTimelineTabProps {
 
 export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => {
   const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
+  
+  // Use backend timeline API
+  const { timeline: backendTimeline, loading, error, fetchTimeline } = usePartyTimeline(party.id);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const formatDate = (dateStr: string): string => {
     try {
@@ -64,163 +57,23 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
   const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Collect events from party data
+  // Use backend timeline data
   const allEvents = useMemo(() => {
-    const events: TimelineEvent[] = [];
-
-    // Registration event
-    if (party.createdAt) {
-      events.push({
-        id: 'registration',
-        type: 'registration',
-        title: 'Hasta Kaydı Oluşturuldu',
-        description: 'Hasta sistemde kayıt edildi',
-        date: party.createdAt,
-        icon: '👤',
-        priority: 'high',
-        category: 'System'
-      });
-    }
-
-    // Notes events
-    if (party.notes) {
-      party.notes.forEach((note, index) => {
-        events.push({
-          id: `note-${index}`,
-          type: 'note',
-          title: 'Not Eklendi',
-          description: note.text?.substring(0, 100) + (note.text?.length > 100 ? '...' : ''),
-          date: note.date,
-          icon: '📝',
-          priority: note.type === 'clinical' ? 'high' : 'medium',
-          category: 'Clinical',
-          metadata: { author: note.author, type: note.type, isPrivate: note.isPrivate }
-        });
-      });
-    }
-
-    // Appointment events
-    if (party.appointments) {
-      party.appointments.forEach((appointment, index) => {
-        const apptData = appointment as Record<string, unknown>;
-        events.push({
-          id: `appointment-${index}`,
-          type: 'appointment',
-          title: 'Randevu',
-          description: `${apptData.status === 'scheduled' ? 'Planlandı' : apptData.status === 'completed' ? 'Tamamlandı' : 'İptal Edildi'}${apptData.note ? ` - ${apptData.note as string}` : ''}`,
-          date: apptData.date as string,
-          icon: '📅',
-          priority: apptData.status === 'scheduled' ? 'high' : 'medium',
-          category: 'Appointments'
-        });
-      });
-    }
-
-    // Device events
-    if (party.devices) {
-      party.devices.forEach((device, index) => {
-        events.push({
-          id: `device-${index}`,
-          type: 'device',
-          title: device.status === 'trial' ? 'Cihaz Denemesi' : 'Cihaz Ataması',
-          description: `${device.brand} ${device.model} - ${device.side === 'right' ? 'Sağ' : device.side === 'left' ? 'Sol' : 'İki'} Kulak`,
-          date: device.purchaseDate || party.createdAt || '',
-          icon: '🔊',
-          priority: 'high',
-          category: 'Devices',
-          metadata: { serialNumber: device.serialNumber, type: device.type, price: device.price }
-        });
-      });
-    }
-
-    // Payment events
-    if (party.sales) {
-      party.sales.forEach((sale, index) => {
-        const saleData = sale as Record<string, unknown>;
-        events.push({
-          id: `payment-${index}`,
-          type: 'payment',
-          title: 'Ödeme',
-          description: `₺${saleData.totalAmount as number} - ${saleData.paymentMethod as string || 'Belirtilmemiş'}`,
-          date: saleData.saleDate as string || saleData.createdAt as string || party.createdAt || '',
-          icon: '💰',
-          priority: 'high',
-          category: 'Financial'
-        });
-      });
-    }
-
-    // Communication events (SMS, calls, etc.)
-    if (party.communications) {
-      party.communications.forEach((comm, index) => {
-        events.push({
-          id: `comm-${index}`,
-          type: comm.type as TimelineEvent['type'],
-          title: `${comm.type.toUpperCase()} ${comm.direction === 'outbound' ? 'Gönderildi' : 'Alındı'}`,
-          description: comm.content?.substring(0, 50) + (comm.content?.length > 50 ? '...' : ''),
-          date: comm.date || '',
-          icon: comm.type === 'sms' ? '📱' : comm.type === 'call' ? '📞' : '📧',
-          priority: 'medium',
-          category: 'Communication'
-        });
-      });
-    }
-
-    // SGK events
-    if (party.sgkWorkflow && typeof party.sgkWorkflow === 'object' && 'statusHistory' in party.sgkWorkflow) {
-      const sgkWorkflow = party.sgkWorkflow as { statusHistory?: Array<{ status: string; notes?: string; timestamp: string }> };
-      sgkWorkflow.statusHistory?.forEach((status, index) => {
-        events.push({
-          id: `sgk-${index}`,
-          type: 'sgk',
-          title: 'SGK Durum Güncellendi',
-          description: `Durum: ${status.status}${status.notes ? ` - ${status.notes}` : ''}`,
-          date: status.timestamp,
-          icon: '🏥',
-          priority: 'high',
-          category: 'SGK'
-        });
-      });
-    }
-
-    // E-receipt events
-    if (party.ereceiptHistory) {
-      party.ereceiptHistory.forEach((receipt, index) => {
-        const receiptData = receipt as Record<string, unknown>;
-        events.push({
-          id: `ereceipt-${index}`,
-          type: 'ereceipt',
-          title: 'E-Reçete Kaydedildi',
-          description: `Reçete #${receiptData.receiptNumber as string} - ₺${receiptData.totalAmount as number}`,
-          date: receiptData.date as string,
-          icon: '💊',
-          priority: 'medium',
-          category: 'Medical'
-        });
-      });
-    }
-
-    // Reports events
-    if (party.reports) {
-      party.reports.forEach((report, index) => {
-        const reportData = report as Record<string, unknown>;
-        events.push({
-          id: `report-${index}`,
-          type: 'document',
-          title: 'Rapor Eklendi',
-          description: `${reportData.title as string} - ${reportData.type as string}`,
-          date: reportData.createdAt as string,
-          icon: '📄',
-          priority: reportData.type === 'medical' ? 'high' : 'medium',
-          category: 'Medical'
-        });
-      });
-    }
-
-    return events;
-  }, [party]);
+    if (loading || !backendTimeline) return [];
+    
+    return (backendTimeline || []).map(event => ({
+      id: event.id,
+      type: event.eventType as any,
+      title: event.title,
+      description: event.description || '',
+      date: event.timestamp || event.createdAt,
+      icon: event.icon || '📝',
+      priority: 'medium' as const,
+      category: event.category || 'General',
+      metadata: event.details || event.metadata
+    }));
+  }, [backendTimeline, loading]);
 
   // Filter events based on search and filters
   const filteredEvents = useMemo(() => {
@@ -282,8 +135,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      // Simulate refresh - in real app, this would refetch party data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await fetchTimeline();
       showSuccessToast('Timeline yenilendi');
     } catch (error) {
       showErrorToast('Timeline yenilenirken hata oluştu');
@@ -431,7 +283,25 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
       </Card>
 
       {/* Timeline */}
-      {Object.keys(groupedEvents).length > 0 ? (
+      {loading ? (
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <CardContent className="text-center py-8">
+            <div className="text-gray-500 dark:text-gray-400">
+              <RefreshCw className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600 animate-spin" />
+              <p className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">Yükleniyor...</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <CardContent className="text-center py-8">
+            <div className="text-red-500">
+              <p className="text-lg font-medium mb-2">Hata oluştu</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : Object.keys(groupedEvents).length > 0 ? (
         <div className="space-y-8">
           {Object.entries(groupedEvents).map(([date, dayEvents]) => (
             <div key={date} className="relative">

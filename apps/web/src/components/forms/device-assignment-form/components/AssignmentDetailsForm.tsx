@@ -210,32 +210,43 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
       </div>
 
-      {/* Ear Selection - BUTTONS with color coding: Right=Red, Bilateral=Gradient, Left=Blue */}
+      {/* Ear Selection - Audiological view (R on left, L on right) */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Kulak Seçimi *
         </label>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { value: 'right', label: 'Sağ Kulak', color: 'red' },
-            { value: 'both', label: 'Bilateral', color: 'gradient' },
-            { value: 'left', label: 'Sol Kulak', color: 'blue' }
+            { value: 'right', label: 'Sağ Kulak', icon: 'R', position: 'left' },
+            { value: 'both', label: 'Bilateral', icon: 'B', position: 'center' },
+            { value: 'left', label: 'Sol Kulak', icon: 'L', position: 'right' }
           ].map((ear) => {
             const isSelected = formData.ear === ear.value;
-            const colorClasses = {
-              blue: isSelected
-                ? 'border-blue-600 border-4 bg-blue-50 text-blue-800 shadow-lg dark:bg-blue-900/40 dark:text-blue-100 dark:border-blue-500'
-                : 'border-blue-300 border-2 bg-white text-blue-600 hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/10',
-              red: isSelected
-                ? 'border-red-600 border-4 bg-red-50 text-red-800 shadow-lg dark:bg-red-900/40 dark:text-red-100 dark:border-red-500'
-                : 'border-red-300 border-2 bg-white text-red-600 hover:bg-red-50 dark:bg-slate-800 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/10',
-              gradient: isSelected
-                ? 'border-green-600 border-4 bg-green-50 text-green-800 shadow-lg dark:bg-green-900/40 dark:text-green-100 dark:border-green-500'
-                : 'border-green-300 border-2 bg-white text-green-600 hover:bg-green-50 dark:bg-slate-800 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/10'
-            };
+            
+            // Gradient colors based on position
+            let gradientClass = '';
+            let borderClass = '';
+            let textClass = '';
+            
+            if (ear.position === 'left') {
+              // Right ear - Red gradient
+              gradientClass = isSelected 
+                ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg ring-2 ring-red-300 dark:ring-red-700'
+                : 'bg-white border-2 border-red-300 text-red-600 hover:border-red-400 hover:bg-red-50 dark:bg-slate-800 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20';
+            } else if (ear.position === 'right') {
+              // Left ear - Blue gradient
+              gradientClass = isSelected
+                ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg ring-2 ring-blue-300 dark:ring-blue-700'
+                : 'bg-white border-2 border-blue-300 text-blue-600 hover:border-blue-400 hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-400 dark:border-blue-700 dark:hover:bg-blue-900/20';
+            } else {
+              // Bilateral - Red to Blue diagonal gradient (50-50 split)
+              gradientClass = isSelected
+                ? 'bg-gradient-to-br from-red-500 from-50% to-blue-500 to-50% text-white shadow-lg ring-2 ring-purple-300 dark:ring-purple-700'
+                : 'bg-white border-2 border-purple-300 text-purple-600 hover:border-purple-400 hover:bg-purple-50 dark:bg-slate-800 dark:text-purple-400 dark:border-purple-700 dark:hover:bg-purple-900/20';
+            }
 
             return (
-              <label key={ear.value} className="relative">
+              <label key={ear.value} className="relative cursor-pointer">
                 <Input
                   type="radio"
                   name="ear"
@@ -244,15 +255,16 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                   onChange={(e) => updateFormData('ear', e.target.value)}
                   className="sr-only"
                 />
-                <div className={`flex items-center justify-center p-3 rounded-lg cursor-pointer transition-all ${colorClasses[ear.color as keyof typeof colorClasses]}`}>
-                  <span className={`text-sm ${isSelected ? 'font-bold' : 'font-medium'}`}>{ear.label}</span>
+                <div className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 ${gradientClass}`}>
+                  <div className={`text-base font-bold mb-0.5`}>{ear.icon}</div>
+                  <span className={`text-xs ${isSelected ? 'font-semibold' : 'font-medium'}`}>{ear.label}</span>
                 </div>
               </label>
             );
           })}
         </div>
         {errors.ear && (
-          <p className="mt-1 text-sm text-red-600">{errors.ear}</p>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.ear}</p>
         )}
       </div>
 
@@ -321,9 +333,9 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
       )}
 
-      {/* Delivery & Report Status */}
+      {/* Delivery & Report Status - Full width for consistency */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-slate-700">
-        <div>
+        <div className="md:col-span-1">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Teslimat Durumu
           </label>
@@ -341,7 +353,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
 
         {formData.reason === 'sale' && (
-          <div>
+          <div className="md:col-span-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Rapor Durumu
             </label>
@@ -376,14 +388,14 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg space-y-3 border border-purple-200 dark:border-purple-800">
             <h5 className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-2">Emanet Cihaz Seçimi</h5>
 
-            {/* Search Input */}
-            <div className="relative">
+            {/* Search Input - Full width */}
+            <div>
               <Input
                 type="text"
                 value={loanerSearch}
                 onChange={(e) => setLoanerSearch(e.target.value)}
                 placeholder="Envanterde emanet cihaz ara (Marka, Model...)"
-                className="border-purple-300 dark:border-purple-700 focus:ring-purple-500 focus:border-purple-500 placeholder-purple-300 dark:bg-slate-800 dark:text-white"
+                className="w-full border-purple-300 dark:border-purple-700 focus:ring-purple-500 focus:border-purple-500 placeholder-purple-300 dark:bg-slate-800 dark:text-white"
               />
 
               {/* Results Dropdown */}
@@ -410,7 +422,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
               )}
             </div>
 
-            {/* Selected/Filled Details (Read Only or Editable) */}
+            {/* Marka + Model - 2 columns (1/2 each), full width in each column */}
             <div className="grid grid-cols-2 gap-3 mt-2">
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Marka</label>
@@ -419,7 +431,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                   value={formData.loanerBrand || ''}
                   onChange={(e) => updateFormData('loanerBrand', e.target.value)}
                   placeholder="Marka"
-                  className="text-sm dark:bg-slate-800 dark:text-white"
+                  className="w-full text-sm dark:bg-slate-800 dark:text-white"
                 />
               </div>
               <div>
@@ -429,104 +441,107 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                   value={formData.loanerModel || ''}
                   onChange={(e) => updateFormData('loanerModel', e.target.value)}
                   placeholder="Model"
-                  className="text-sm dark:bg-slate-800 dark:text-white"
+                  className="w-full text-sm dark:bg-slate-800 dark:text-white"
                 />
               </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Seri No</label>
-                {formData.ear === 'both' ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Left Side (Visual) -> Right Ear (Red) */}
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        value={formData.loanerSerialNumberRight || ''}
-                        onChange={(e) => updateFormData('loanerSerialNumberRight', e.target.value)}
-                        onFocus={() => setActiveSerialInput('right')}
-                        onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                        placeholder="Sağ (R)"
-                        className="text-sm border-2 border-red-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-red-200 pr-8"
-                      />
-                      {activeSerialInput === 'right' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                          {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
-                            <div
-                              key={sn}
-                              className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
-                              onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberRight', sn); setActiveSerialInput(null); }}
-                            >
-                              {sn}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <div className="absolute right-2 top-1.5 text-xs text-red-500 font-bold">R</div>
-                    </div>
+            </div>
 
-                    {/* Right Side (Visual) -> Left Ear (Blue) */}
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        value={formData.loanerSerialNumberLeft || ''}
-                        onChange={(e) => updateFormData('loanerSerialNumberLeft', e.target.value)}
-                        onFocus={() => setActiveSerialInput('left')}
-                        onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                        placeholder="Sol (L)"
-                        className="text-sm border-2 border-blue-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-blue-200 pr-8"
-                      />
-                      {activeSerialInput === 'left' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                          {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
-                            <div
-                              key={sn}
-                              className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
-                              onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberLeft', sn); setActiveSerialInput(null); }}
-                            >
-                              {sn}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <div className="absolute right-2 top-1.5 text-xs text-blue-500 font-bold">L</div>
-                    </div>
-                  </div>
-                ) : (
+            {/* Seri No - Full width or 2 columns based on ear */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Seri No</label>
+              {formData.ear === 'both' ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Right Side (Visual) -> Right Ear (Red) */}
                   <div className="relative">
                     <Input
                       type="text"
-                      value={formData.loanerSerialNumber || ''}
-                      onChange={(e) => updateFormData('loanerSerialNumber', e.target.value)}
-                      onFocus={() => setActiveSerialInput('single')}
+                      value={formData.loanerSerialNumberRight || ''}
+                      onChange={(e) => updateFormData('loanerSerialNumberRight', e.target.value)}
+                      onFocus={() => setActiveSerialInput('right')}
                       onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
-                      placeholder="Seri No"
-                      className={`text-sm border-2 dark:bg-slate-800 dark:text-white ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
-                        formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
-                          'border-gray-300 dark:border-slate-600 focus:ring-gray-200'
-                        }`}
+                      placeholder="Sağ (R)"
+                      className="w-full text-sm border-2 border-red-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-red-200 pr-8"
                     />
-                    {activeSerialInput === 'single' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
+                    {activeSerialInput === 'right' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
                         {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                           <div
                             key={sn}
                             className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
-                            onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumber', sn); setActiveSerialInput(null); }}
+                            onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberRight', sn); setActiveSerialInput(null); }}
                           >
                             {sn}
                           </div>
                         ))}
                       </div>
                     )}
+                    <div className="absolute right-2 top-1.5 text-xs text-red-500 font-bold">R</div>
                   </div>
-                )}
-              </div>
-              {formData.loanerInventoryId && (
-                <div className="col-span-2 text-xs text-green-600 flex items-center">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Envanterden seçildi
+
+                  {/* Left Side (Visual) -> Left Ear (Blue) */}
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      value={formData.loanerSerialNumberLeft || ''}
+                      onChange={(e) => updateFormData('loanerSerialNumberLeft', e.target.value)}
+                      onFocus={() => setActiveSerialInput('left')}
+                      onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
+                      placeholder="Sol (L)"
+                      className="w-full text-sm border-2 border-blue-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-blue-200 pr-8"
+                    />
+                    {activeSerialInput === 'left' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
+                          <div
+                            key={sn}
+                            className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                            onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberLeft', sn); setActiveSerialInput(null); }}
+                          >
+                            {sn}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="absolute right-2 top-1.5 text-xs text-blue-500 font-bold">L</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Input
+                    type="text"
+                    value={formData.loanerSerialNumber || ''}
+                    onChange={(e) => updateFormData('loanerSerialNumber', e.target.value)}
+                    onFocus={() => setActiveSerialInput('single')}
+                    onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
+                    placeholder="Seri No"
+                    className={`w-full text-sm border-2 dark:bg-slate-800 dark:text-white ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
+                      formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
+                        'border-gray-300 dark:border-slate-600 focus:ring-gray-200'
+                      }`}
+                  />
+                  {activeSerialInput === 'single' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
+                        <div
+                          key={sn}
+                          className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                          onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumber', sn); setActiveSerialInput(null); }}
+                        >
+                          {sn}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+
+            {formData.loanerInventoryId && (
+              <div className="text-xs text-green-600 flex items-center">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Envanterden seçildi
+              </div>
+            )}
           </div>
         )}
       </div>

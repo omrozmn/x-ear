@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { User, Headphones, Settings, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useComposerStore } from '../../../stores/composerStore';
 
 export const ActionProgress = () => {
+    const { t } = useTranslation();
     const {
         selectedAction,
         slots,
@@ -21,7 +23,7 @@ export const ActionProgress = () => {
     // Helpers to get label from slots (assuming format stored in selectAction)
     const getSlotLabel = (key: string) => {
         const labelKey = `_${key}_label`;
-        return (slots[labelKey] as string) || (slots[key] as string) || 'Seçilmedi';
+        return (slots[labelKey] as string) || (slots[key] as string) || t('common.notSelected', 'Seçilmedi');
     };
 
     const patientLabel = getSlotLabel('patient_id') || getSlotLabel('party_id');
@@ -39,22 +41,32 @@ export const ActionProgress = () => {
                     </div>
                     <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900 leading-relaxed">
-                            {selectedAction?.name} işlemi başarıyla tamamlandı.
+                            {selectedAction?.displayName || selectedAction?.name} {t('ai.actionCompleted', 'işlemi başarıyla tamamlandı.')}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
-                            {deviceLabel !== 'Seçilmedi' ? `${deviceLabel} cihazı atandı.` : 'İşlem kaydedildi.'}
+                            {deviceLabel !== t('common.notSelected', 'Seçilmedi')
+                                ? t('ai.deviceAssigned', { device: deviceLabel, defaultValue: `${deviceLabel} cihazı atandı.` }) as string
+                                : t('ai.operationRecorded', 'İşlem kaydedildi.')}
                         </p>
 
                         <div className="flex gap-2 mt-4">
-                            <button data-allow-raw="true" className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors">
-                                Hasta Detaylarını Aç
+                            <button
+                                data-allow-raw="true"
+                                onClick={() => {
+                                    if (patientLabel !== 'Seçilmedi') {
+                                        window.location.href = `/parties/${slots.patient_id || slots.party_id}`;
+                                    }
+                                }}
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors"
+                            >
+                                {t('ai.openPatientDetails', 'Hasta Detaylarını Aç')}
                             </button>
                             <button
                                 data-allow-raw="true"
                                 onClick={reset}
                                 className="px-3 py-1.5 bg-gray-900 hover:bg-black text-white text-xs font-medium rounded transition-colors"
                             >
-                                Yeni İşlem Yap
+                                {t('ai.newAction', 'Yeni İşlem Yap')}
                             </button>
                         </div>
                     </div>
@@ -73,10 +85,10 @@ export const ActionProgress = () => {
                     </div>
                     <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">
-                            Bir noktada durmam gerekti.
+                            {t('ai.errorTitle', 'Bir noktada durmam gerekti.')}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
-                            {executionError || 'İşlem şu anda gerçekleştirilemiyor.'}
+                            {executionError || t('ai.errorGeneric', 'İşlem şu anda gerçekleştirilemiyor.')}
                         </p>
 
                         <div className="flex gap-2 mt-4">
@@ -85,10 +97,14 @@ export const ActionProgress = () => {
                                 onClick={reset} // TODO: Add Retry logic?
                                 className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded transition-colors"
                             >
-                                Tekrar Dene
+                                {t('common.retry', 'Tekrar Dene')}
                             </button>
-                            <button data-allow-raw="true" className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded transition-colors">
-                                Detay Gör
+                            <button
+                                data-allow-raw="true"
+                                onClick={() => alert("Hata detayı: " + (executionError || 'Bilinmeyen hata'))}
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded transition-colors"
+                            >
+                                {t('common.viewDetail', 'Detay Gör')}
                             </button>
                         </div>
                     </div>
@@ -104,7 +120,7 @@ export const ActionProgress = () => {
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 text-blue-900">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                        <span className="text-sm font-medium">{currentSlot.prompt || 'Bir bilgiye ihtiyacım var.'}</span>
+                        <span className="text-sm font-medium">{currentSlot.prompt || t('ai.infoNeeded', 'Bir bilgiye ihtiyacım var.')}</span>
                     </div>
 
                     <div className="pl-3.5">
@@ -131,7 +147,7 @@ export const ActionProgress = () => {
                                     data-allow-raw="true"
                                     autoFocus
                                     className="w-full border rounded p-1.5 text-sm"
-                                    placeholder="Ara..."
+                                    placeholder={t('common.searchPlaceholder', 'Ara...')}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             updateSlot(currentSlot!.name, e.currentTarget.value);
@@ -139,7 +155,7 @@ export const ActionProgress = () => {
                                         }
                                     }}
                                 />
-                                <p className="text-[10px] text-gray-400">ID veya isim yazıp Enter'layın</p>
+                                <p className="text-[10px] text-gray-400">{t('ai.searchHint', "ID veya isim yazıp Enter'layın")}</p>
                             </div>
                         )}
                         {currentSlot.uiType === 'date' && (
@@ -159,7 +175,7 @@ export const ActionProgress = () => {
                                 <input data-allow-raw="true"
                                     type="number"
                                     className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
-                                    placeholder="Sayı girin..."
+                                    placeholder={t('ai.enterNumber', 'Sayı girin...')}
                                     autoFocus
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
@@ -174,7 +190,7 @@ export const ActionProgress = () => {
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
-                                    placeholder="Yazmaya başlayın..."
+                                    placeholder={t('ai.startTyping', 'Yazmaya başlayın...')}
                                     autoFocus
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
@@ -185,7 +201,7 @@ export const ActionProgress = () => {
                                 />
                             </div>
                         )}
-                        {currentSlot.uiType === 'boolean' && (
+                        {(currentSlot.uiType as string) === 'boolean' && (
                             <div className="flex gap-2">
                                 <button
                                     data-allow-raw="true"
@@ -195,7 +211,7 @@ export const ActionProgress = () => {
                                     }}
                                     className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-lg hover:bg-green-50 transition-all shadow-sm"
                                 >
-                                    Evet
+                                    {t('common.yes', 'Evet')}
                                 </button>
                                 <button
                                     data-allow-raw="true"
@@ -205,11 +221,11 @@ export const ActionProgress = () => {
                                     }}
                                     className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-all shadow-sm"
                                 >
-                                    Hayır
+                                    {t('common.no', 'Hayır')}
                                 </button>
                             </div>
                         )}
-                        {currentSlot.uiType === 'time' && (
+                        {(currentSlot.uiType as string) === 'time' && (
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     type="time"
@@ -223,7 +239,7 @@ export const ActionProgress = () => {
                         )}
                         {!['enum', 'entity_search', 'date', 'number', 'text', 'boolean', 'time'].includes(currentSlot.uiType as string) && (
                             <div className="p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700 italic">
-                                {currentSlot.prompt} (Tip: {currentSlot.uiType}) yakında eklenecek.
+                                {currentSlot.prompt} ({t('ai.type', 'Tip')}: {currentSlot.uiType as string}) {t('ai.comingSoon', 'yakında eklenecek.')}
                             </div>
                         )}
                     </div>
@@ -241,7 +257,7 @@ export const ActionProgress = () => {
                 {executionStatus === 'init' ? (
                     <div className="flex items-center gap-2 text-gray-600 animate-pulse">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                        <span className="text-sm font-medium">İşlem başlatılıyor...</span>
+                        <span className="text-sm font-medium">{t('ai.initializing', 'İşlem başlatılıyor...')}</span>
                     </div>
                 ) : (
                     currentStep && (
@@ -277,7 +293,7 @@ export const ActionProgress = () => {
                     )}
                     <div className="flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600 shadow-sm">
                         <Settings size={12} className="text-orange-500" />
-                        <span>{selectedAction?.name || 'Sistem İşlemi'}</span>
+                        <span>{selectedAction?.displayName || selectedAction?.name || 'Sistem İşlemi'}</span>
                     </div>
                 </div>
             )}

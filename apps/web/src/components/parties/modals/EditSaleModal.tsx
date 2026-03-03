@@ -31,6 +31,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
     formData,
     state,
     availableDevices,
+    calculatedPricing,
     updateFormData,
     updateState,
     submitForm,
@@ -62,9 +63,12 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log('[EditSaleModal] handleSubmit called');
     e.preventDefault();
     e.stopPropagation();
+    console.log('[EditSaleModal] Calling submitForm...');
     await submitForm(onSaleUpdate);
+    console.log('[EditSaleModal] submitForm completed');
   };
 
   const handleClose = () => {
@@ -100,7 +104,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
       {state.error && (
         <Alert variant="error" className="mb-4">
           <AlertCircle className="w-4 h-4" />
-          <span>{state.error}</span>
+          <span>{typeof state.error === 'string' ? state.error : JSON.stringify(state.error)}</span>
         </Alert>
       )}
 
@@ -188,7 +192,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                 <div className="space-y-3 mb-4 pb-4 border-b border-blue-200">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">Liste Fiyatı</label>
+                      <label className="text-xs text-gray-600 block mb-1">Liste Fiyatı (birim)</label>
                       <input
                         type="number"
                         value={formData.listPrice === 0 ? '' : formData.listPrice}
@@ -199,30 +203,45 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">İndirim</label>
-                      <input
-                        type="number"
-                        value={formData.discountAmount === 0 ? '' : formData.discountAmount}
-                        onChange={(e) => updateFormData({ discountAmount: parseFloat(e.target.value) || 0 })}
+                      <label className="text-xs text-gray-600 block mb-1">İndirim Türü</label>
+                      <select data-allow-raw="true"
+                        value={formData.discountType || 'amount'}
+                        onChange={(e) => updateFormData({ discountType: e.target.value as 'none' | 'percentage' | 'amount' })}
                         className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="0.00"
-                        step="0.01"
-                      />
+                      >
+                        <option value="none">İndirim Yok</option>
+                        <option value="percentage">Yüzde (%)</option>
+                        <option value="amount">Tutar (₺)</option>
+                      </select>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">Satış Fiyatı</label>
+                      <label className="text-xs text-gray-600 block mb-1">Birim Satış Fiyatı</label>
+                      <div className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700">
+                        {formData.listPrice > 0 ? (
+                          new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
+                            formData.ear === 'both' ? formData.listPrice * 2 : formData.listPrice
+                          )
+                        ) : '₺0,00'}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600 block mb-1">İndirim Değeri</label>
                       <input
                         type="number"
-                        value={formData.salePrice === 0 ? '' : formData.salePrice}
-                        onChange={(e) => updateFormData({ salePrice: parseFloat(e.target.value) || 0 })}
+                        value={formData.discountValue === 0 ? '' : formData.discountValue}
+                        onChange={(e) => updateFormData({ discountValue: parseFloat(e.target.value) || 0 })}
                         className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="0.00"
                         step="0.01"
+                        disabled={formData.discountType === 'none'}
                       />
                     </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-gray-600 block mb-1">SGK Destek Türü</label>
                       <select data-allow-raw="true"
@@ -262,55 +281,76 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                         <option value="standard">Standart</option>
                       </select>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">SGK Desteği (₺)</label>
+                      <label className="text-xs text-gray-600 block mb-1">Ön Ödeme</label>
                       <input
                         type="number"
-                        value={formData.sgkCoverage === 0 ? '' : formData.sgkCoverage}
-                        onChange={(e) => updateFormData({ sgkCoverage: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                        value={formData.downPayment === 0 ? '' : formData.downPayment}
+                        onChange={(e) => updateFormData({ downPayment: parseFloat(e.target.value) || 0 })}
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="0.00"
                         step="0.01"
-                        readOnly
                       />
                     </div>
-                    <div className="invisible"></div>
                   </div>
 
-                  <div>
-                    <label className="text-xs text-gray-600 block mb-1">Peşin Ödeme</label>
-                    <input
-                      type="number"
-                      value={formData.downPayment === 0 ? '' : formData.downPayment}
-                      onChange={(e) => updateFormData({ downPayment: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                      step="0.01"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-600 block mb-1">Toplam Tutar (KDV Dahil %{sale.kdvRate || 20})</label>
-                    <div className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 font-semibold text-gray-900">
-                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.totalAmount || 0)}
-                    </div>
-                    {sale.kdvAmount != null && sale.kdvAmount > 0 && (
-                      <div className="text-[10px] text-gray-500 mt-0.5 px-2">
-                        KDV Tutarı: {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.kdvAmount || 0)}
-                      </div>
-                    )}
-                  </div>
+                  {/* SGK Desteği field removed - will be shown in calculation breakdown */}
                 </div>
 
                 {/* Payment Summary */}
                 <div className="space-y-2">
+                  {/* Price Calculation Breakdown */}
+                  <div className="mb-3 px-2 py-2 bg-blue-50 rounded text-[11px] space-y-0.5">
+                    {/* List Price */}
+                    {formData.listPrice > 0 && (
+                      <div className="flex justify-between text-gray-700">
+                        <span>Liste Fiyatı (birim):</span>
+                        <span className="font-medium">
+                          {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(formData.listPrice)}
+                          {formData.ear === 'both' && <span className="text-blue-600 ml-1">x2</span>}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* SGK Deduction (shown before discount per correct calculation order) */}
+                    {calculatedPricing.sgkReduction > 0 && (
+                      <div className="flex justify-between text-gray-700">
+                        <span>SGK Desteği:</span>
+                        <span className="font-medium text-green-600">
+                          -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(calculatedPricing.sgkReduction)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Discount */}
+                    {formData.discountValue > 0 && formData.discountType !== 'none' && (
+                      <div className="flex justify-between text-gray-700">
+                        <span>İndirim {formData.discountType === 'percentage' ? `(%${formData.discountValue})` : ''}:</span>
+                        <span className="font-medium text-red-600">
+                          -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
+                            formData.discountType === 'percentage' 
+                              ? (formData.listPrice - (calculatedPricing.sgkReduction / (formData.ear === 'both' ? 2 : 1))) * (formData.ear === 'both' ? 2 : 1) * (formData.discountValue / 100)
+                              : formData.discountValue
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* KDV */}
+                    {sale.kdvAmount != null && sale.kdvAmount > 0 && (
+                      <div className="flex justify-between text-gray-500 pt-1 border-t border-blue-200">
+                        <span>KDV (%{sale.kdvRate || 20}):</span>
+                        <span className="font-medium">
+                          +{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.kdvAmount || 0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-700 font-medium">Toplam Tutar:</span>
                     <span className="text-lg font-bold text-gray-900">
-                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.totalAmount || 0)}
+                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(calculatedPricing.totalAmount || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -321,8 +361,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-blue-200">
                     <span className="text-sm text-gray-700 font-medium">Kalan:</span>
-                    <span className={`text-lg font-bold ${(sale.totalAmount || 0) - (sale.paidAmount || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format((sale.totalAmount || 0) - (sale.paidAmount || 0))}
+                    <span className={`text-lg font-bold ${calculatedPricing.totalAmount - (sale.paidAmount || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(Math.max(0, calculatedPricing.totalAmount - (sale.paidAmount || 0)))}
                     </span>
                   </div>
                 </div>

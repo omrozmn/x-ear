@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Input,
   Label,
@@ -42,6 +42,24 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
   onStateChange,
   onDeviceSelect
 }) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        onStateChange({ showDeviceSelector: false });
+      }
+    };
+
+    if (state.showDeviceSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [state.showDeviceSelector, onStateChange]);
+
   const handleInputChange = (field: keyof SaleFormData, value: string | number) => {
     onFormDataChange({ [field]: value });
   };
@@ -76,43 +94,79 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          {/* Row 1: Ürün Adı + Marka */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative w-full" ref={dropdownRef}>
               <Label htmlFor="productName">Ürün Adı *</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="productName"
-                  value={formData.productName}
-                  onChange={(e) => handleInputChange('productName', e.target.value)}
-                  placeholder="Ürün adını giriniz"
-                  required
-                />
-                {state.saleType === 'device' && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onStateChange({ showDeviceSelector: !state.showDeviceSelector })}
-                  >
-                    <Search className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
+              <Input
+                className="w-full"
+                id="productName"
+                value={formData.productName}
+                onChange={(e) => {
+                  handleInputChange('productName', e.target.value);
+                  onStateChange({ deviceSearchTerm: e.target.value, showDeviceSelector: true });
+                }}
+                onFocus={() => onStateChange({ showDeviceSelector: true })}
+                placeholder="Ürün adını giriniz veya arayın..."
+                required
+              />
+              
+              {/* Autocomplete Dropdown - Shows filtered results */}
+              {state.showDeviceSelector && formData.productName && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {availableDevices
+                    .filter(device => 
+                      device.name.toLowerCase().includes(formData.productName.toLowerCase()) ||
+                      device.brand?.toLowerCase().includes(formData.productName.toLowerCase()) ||
+                      device.model?.toLowerCase().includes(formData.productName.toLowerCase())
+                    )
+                    .slice(0, 10)
+                    .map((device) => (
+                      <div
+                        key={device.id}
+                        className="p-3 border-b last:border-b-0 cursor-pointer hover:bg-blue-50 transition-colors"
+                        onClick={() => {
+                          onDeviceSelect(device);
+                          onStateChange({ showDeviceSelector: false });
+                        }}
+                      >
+                        <div className="font-medium text-gray-900">{device.name}</div>
+                        <div className="text-sm text-gray-600">
+                          {device.brand} {device.model && `- ${device.model}`} • {formatCurrency(device.price || 0)}
+                        </div>
+                      </div>
+                    ))}
+                  {availableDevices.filter(device => 
+                    device.name.toLowerCase().includes(formData.productName.toLowerCase()) ||
+                    device.brand?.toLowerCase().includes(formData.productName.toLowerCase()) ||
+                    device.model?.toLowerCase().includes(formData.productName.toLowerCase())
+                  ).length === 0 && (
+                    <div className="p-3 text-sm text-gray-500 text-center">
+                      Sonuç bulunamadı
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div>
+            <div className="w-full">
               <Label htmlFor="brand">Marka</Label>
               <Input
+                className="w-full"
                 id="brand"
                 value={formData.brand}
                 onChange={(e) => handleInputChange('brand', e.target.value)}
                 placeholder="Marka"
               />
             </div>
+          </div>
 
-            <div>
+          {/* Row 2: Model + Kategori */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="w-full">
               <Label htmlFor="model">Model</Label>
               <Input
+                className="w-full"
                 id="model"
                 value={formData.model}
                 onChange={(e) => handleInputChange('model', e.target.value)}
@@ -120,9 +174,10 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               />
             </div>
 
-            <div>
+            <div className="w-full">
               <Label htmlFor="category">Kategori</Label>
               <Input
+                className="w-full"
                 id="category"
                 value={getCategoryLabel(formData.category)}
                 onChange={(e) => handleInputChange('category', e.target.value)}
@@ -132,10 +187,12 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          {/* Row 3: Barkod + Kulak/Miktar */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="w-full">
               <Label htmlFor="barcode">Barkod</Label>
               <Input
+                className="w-full"
                 id="barcode"
                 value={formData.barcode}
                 onChange={(e) => handleInputChange('barcode', e.target.value)}
@@ -143,6 +200,39 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                 disabled
               />
             </div>
+
+            {/* Ear Selector (for hearing aids) or Quantity (for other products) */}
+            {formData.category === 'hearing_aid' ? (
+              <div className="w-full">
+                <Label htmlFor="ear">Kulak *</Label>
+                <select data-allow-raw="true"
+                  id="ear"
+                  value={formData.ear || 'both'}
+                  onChange={(e) => onFormDataChange({ ear: e.target.value as 'left' | 'right' | 'both' })}
+                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="left">Sol Kulak</option>
+                  <option value="right">Sağ Kulak</option>
+                  <option value="both">İki Kulak (Bilateral)</option>
+                </select>
+              </div>
+            ) : formData.category && formData.category !== 'hearing_aid' ? (
+              <div className="w-full">
+                <Label htmlFor="quantity">Miktar *</Label>
+                <Input
+                  className="w-full"
+                  id="quantity"
+                  type="number"
+                  value={formData.quantity || 1}
+                  onChange={(e) => onFormDataChange({ quantity: parseInt(e.target.value) || 1 })}
+                  placeholder="1"
+                  min="1"
+                  step="1"
+                  required
+                />
+              </div>
+            ) : null}
           </div>
 
           {/* Serial Number Fields - Dynamic based on category and ear */}
@@ -150,96 +240,65 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             // Hearing aid: Show based on ear selection
             formData.ear === 'both' ? (
               // Bilateral: Show both left and right
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="serialNumberLeft">Sol Kulak Seri No *</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="w-full">
+                  <Label htmlFor="serialNumberLeft">Sol Kulak Seri No</Label>
                   <Input
+                    className="w-full"
                     id="serialNumberLeft"
                     value={formData.serialNumberLeft}
                     onChange={(e) => handleInputChange('serialNumberLeft', e.target.value)}
                     placeholder="Sol kulak seri numarası"
-                    required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="serialNumberRight">Sağ Kulak Seri No *</Label>
+                <div className="w-full">
+                  <Label htmlFor="serialNumberRight">Sağ Kulak Seri No</Label>
                   <Input
+                    className="w-full"
                     id="serialNumberRight"
                     value={formData.serialNumberRight}
                     onChange={(e) => handleInputChange('serialNumberRight', e.target.value)}
                     placeholder="Sağ kulak seri numarası"
-                    required
                   />
                 </div>
               </div>
             ) : formData.ear === 'left' ? (
               // Left ear only
-              <div>
-                <Label htmlFor="serialNumberLeft">Sol Kulak Seri No *</Label>
+              <div className="w-full">
+                <Label htmlFor="serialNumberLeft">Sol Kulak Seri No</Label>
                 <Input
+                  className="w-full"
                   id="serialNumberLeft"
                   value={formData.serialNumberLeft}
                   onChange={(e) => handleInputChange('serialNumberLeft', e.target.value)}
                   placeholder="Sol kulak seri numarası"
-                  required
                 />
               </div>
             ) : formData.ear === 'right' ? (
               // Right ear only
-              <div>
-                <Label htmlFor="serialNumberRight">Sağ Kulak Seri No *</Label>
+              <div className="w-full">
+                <Label htmlFor="serialNumberRight">Sağ Kulak Seri No</Label>
                 <Input
+                  className="w-full"
                   id="serialNumberRight"
                   value={formData.serialNumberRight}
                   onChange={(e) => handleInputChange('serialNumberRight', e.target.value)}
                   placeholder="Sağ kulak seri numarası"
-                  required
                 />
               </div>
             ) : null
           ) : (
             // Other products: Single serial number
-            <div>
+            <div className="w-full">
               <Label htmlFor="serialNumber">Seri Numarası</Label>
               <Input
+                className="w-full"
                 id="serialNumber"
                 value={formData.serialNumber}
                 onChange={(e) => handleInputChange('serialNumber', e.target.value)}
                 placeholder="Seri numarası"
               />
             </div>
-          )}
-
-          {/* Device Selector */}
-          {state.showDeviceSelector && (
-            <Card className="border-dashed">
-              <CardHeader>
-                <CardTitle className="text-sm">Cihaz Seç</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Cihaz ara..."
-                    value={state.deviceSearchTerm}
-                    onChange={(e) => onStateChange({ deviceSearchTerm: e.target.value })}
-                  />
-                  <div className="max-h-40 overflow-y-auto space-y-1">
-                    {availableDevices.map((device) => (
-                      <div
-                        key={device.id}
-                        className="p-2 border rounded cursor-pointer hover:bg-gray-50"
-                        onClick={() => onDeviceSelect(device)}
-                      >
-                        <div className="font-medium">{device.name}</div>
-                        <div className="text-sm text-gray-500">
-                          {device.brand} - {device.model} - {formatCurrency(device.price || 0)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           )}
         </CardContent>
       </Card>
@@ -251,27 +310,28 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             <CardTitle>Teslim ve Rapor Durumu</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            {/* Row 1: Teslim Durumu + Rapor Durumu */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="w-full">
                 <Label htmlFor="deliveryStatus">Teslim Durumu</Label>
                 <select data-allow-raw="true"
                   id="deliveryStatus"
                   value={formData.deliveryStatus || 'pending'}
                   onChange={(e) => handleInputChange('deliveryStatus', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="pending">Teslim Edilmedi</option>
                   <option value="delivered">Teslim Edildi</option>
                 </select>
               </div>
 
-              <div>
+              <div className="w-full">
                 <Label htmlFor="reportStatus">Rapor Durumu</Label>
                 <select data-allow-raw="true"
                   id="reportStatus"
                   value={formData.reportStatus || ''}
                   onChange={(e) => handleInputChange('reportStatus', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Seçiniz...</option>
                   <option value="received">Rapor Teslim Alındı</option>
@@ -293,10 +353,12 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          {/* Row 1: Satış Tarihi + Ödeme Yöntemi */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="w-full">
               <Label htmlFor="saleDate">Satış Tarihi *</Label>
               <Input
+                className="w-full"
                 id="saleDate"
                 type="date"
                 value={formData.saleDate}
@@ -305,13 +367,13 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               />
             </div>
 
-            <div>
+            <div className="w-full">
               <Label htmlFor="paymentMethod">Ödeme Yöntemi</Label>
               <select data-allow-raw="true"
                 id="paymentMethod"
                 value={state.paymentMethod}
                 onChange={(e) => onStateChange({ paymentMethod: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="cash">Nakit</option>
                 <option value="credit_card">Kredi Kartı</option>
@@ -321,7 +383,6 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               </select>
             </div>
           </div>
-
         </CardContent>
       </Card>
     </div>

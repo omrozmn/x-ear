@@ -1,154 +1,194 @@
 import React, { useState } from 'react';
-import { SaleRead } from '../../../api/generated/schemas/saleRead';
-import { ExtendedSaleRead } from '@/types/extended-sales';
+import { PartySale } from '@/hooks/party/usePartySales';
 import {
   MoreVertical,
-  Eye,
-  Edit,
   FileText,
   Banknote,
-  FolderOpen,
-  Ban,
-  Send
+  Ban
 } from 'lucide-react';
-import { Button } from '../../ui/Button';
+import { Button } from '@/components/ui/Button';
 
 interface SalesTableViewProps {
-  sales: SaleRead[];
-  partyId: string;
-  onSaleClick?: (sale: SaleRead) => void;
-  onEditSale?: (sale: SaleRead) => void;
-  onCreateInvoice?: (sale: SaleRead) => void;
-  onViewInvoice?: (sale: SaleRead) => void;
-  onManagePromissoryNotes?: (sale: SaleRead) => void;
-  onOpenDocuments?: (partyId: string) => void;
-  onCancelSale?: (sale: SaleRead) => void;
+  sales: PartySale[];
+  onSaleClick?: (sale: PartySale) => void;
+  onCreateInvoice?: (sale: PartySale) => void;
+  onViewInvoice?: (sale: PartySale) => void;
+  onManagePromissoryNotes?: (sale: PartySale) => void;
+  onCancelSale?: (sale: PartySale) => void;
 }
 
-// Local ExtendedSaleRead removed in favor of imported one from @/types/extended-sales
-// interface ExtendedSaleRead extends SaleRead { ... }
-
 export const SalesTableView: React.FC<SalesTableViewProps> = ({
-  sales: rawSales,
-  partyId,
+  sales,
   onSaleClick,
-  onEditSale,
   onCreateInvoice,
   onViewInvoice,
   onManagePromissoryNotes,
-  onOpenDocuments,
   onCancelSale
 }) => {
-  const sales = rawSales as unknown as ExtendedSaleRead[];
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    // dateString can be Date object in some weird cases or str, relying on str from API
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('tr-TR');
   };
 
-  const formatCurrency = (amount?: number) => {
-    const safe = amount ?? 0;
-    try {
-      return safe.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TRY';
-    } catch (e) {
-      return `${Number(safe).toFixed(2)} TRY`;
-    }
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('tr-TR') + ' TL';
   };
 
-  /* Removed incorrect client-side VAT calculation. 
-     Backend's finalAmount/totalAmount is already the correct figure. */
-
-  const getCategoryLabel = (category: string): string => {
-    const categoryMap: Record<string, string> = {
-      'hearing_aid': 'İşitme Cihazı',
-      'battery': 'Pil',
-      'accessory': 'Aksesuar',
-      'service': 'Servis',
-      'other': 'Diğer'
-    };
-    return categoryMap[category] || category;
+  const calculateDisplayTotal = (sale: PartySale) => {
+    // Backend now provides the correct final amount (VAT inclusive if applicable)
+    // Use nullish coalescing to accept 0 as a valid final amount
+    return sale.finalAmount ?? (sale.totalAmount - (sale.discountAmount || 0) - (sale.sgkCoverage || 0));
   };
 
-  const renderDevicesSummary = (sale: ExtendedSaleRead) => {
-    const devices = sale.devices || [];
-    if (!devices || devices.length === 0) {
+  const renderDevicesSummary = (sale: PartySale) => {
+    if (!sale.devices || sale.devices.length === 0) {
+      // Fallback to sale-level fields if no devices array
+      if (sale.productName) {
+        return (
+          <div className="space-y-1">
+            <div className="text-sm">
+              <div className="font-medium text-gray-900">{sale.productName}</div>
+              {(sale.brand || sale.model) && (
+                <div className="text-xs text-gray-500">
+                  {sale.brand} {sale.model}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
       return <span className="text-gray-500">Ürün/Hizmet</span>;
     }
 
+    // ✅ FIXED: Prioritize productName from sale, then smart fallback
+    const firstDevice = sale.devices[0];
+    const isBilateral = sale.devices.length === 2;
+    
+    // Get all available data
+    const saleProductName = sale.productName || '';  // e.g., "deneme" (from inventory.name)
+    const deviceName = firstDevice.name || '';  // e.g., "earnet force100" (brand + model)
+    const brand = firstDevice.brand || sale.brand || '';  // e.g., "earnet"
+    const model = firstDevice.model || sale.model || '';  // e.g., "force100"
+    
+    // Build brand+model string
+    const brandModel = `${brand} ${model}`.trim();
+    
+    // Decide what to show
+    let title = '';
+    let subtitle = '';
+    
+    if (saleProductName) {
+      // We have a product name from sale - use it as title
+      title = saleProductName;
+      // Use brand+model or deviceName as subtitle
+      subtitle = brandModel || deviceName;
+    } else if (deviceName) {
+      // No sale product name, use device name as title
+      // Check if deviceName is same as brand+model to avoid duplication
+      const isDuplicate = deviceName.toLowerCase() === brandModel.toLowerCase();
+      
+      if (isDuplicate) {
+        // deviceName is same as brand+model, use category or generic name as title
+        title = firstDevice.category || 'İşitme Cihazı';
+        subtitle = deviceName;
+      } else {
+        // deviceName is different, use it as title
+        title = deviceName;
+        subtitle = brandModel;
+      }
+    } else {
+      // Fallback
+      title = brandModel || firstDevice.category || 'Ürün';
+      subtitle = '';
+    }
+    
     return (
       <div className="space-y-1">
-        {devices.slice(0, 2).map((device, index: number) => (
-          <div key={index} className="text-sm">
-            <div className="font-medium text-gray-900">{device.brand} {device.model}</div>
-            {device.category && (
-              <div className="text-[10px] text-gray-400 uppercase">{getCategoryLabel(device.category)}</div>
-            )}
+        <div className="text-sm">
+          <div className="font-medium text-gray-900">
+            {title}
+            {isBilateral && <span className="ml-1 text-blue-600">(Bilateral)</span>}
           </div>
-        ))}
-        {devices.length > 2 && (
-          <div className="text-xs text-gray-500">+{devices.length - 2} daha...</div>
-        )}
+          {subtitle && (
+            <div className="text-xs text-gray-500">
+              {subtitle}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
 
-  const renderBarcodeSerialInfo = (sale: ExtendedSaleRead) => {
-    const devices = sale.devices || [];
-    if (!devices || devices.length === 0) {
+  const renderBarcodeSerialInfo = (sale: PartySale) => {
+    if (!sale.devices || sale.devices.length === 0) {
       return <span className="text-gray-500">-</span>;
     }
 
-    // Get unique barcode (should be same for all devices in bilateral sale)
-    const firstDevice = devices[0];
-    const barcode = firstDevice?.barcode;
-    
-    // Collect all serial numbers with ear information
-    const serialNumbers: { text: string; color: string }[] = [];
-    devices.forEach(device => {
-      if (device.serialNumberLeft) {
-        serialNumbers.push({ text: `Sol: ${device.serialNumberLeft}`, color: 'text-blue-600' });
-      }
-      if (device.serialNumberRight) {
-        serialNumbers.push({ text: `Sağ: ${device.serialNumberRight}`, color: 'text-red-600' });
-      }
-    });
+    // ✅ FIXED: Bilateral satışlarda tek barkod göster (User Request)
+    // İlk cihazın barkodunu göster, bilateral olsa bile tek barkod
+    const firstDevice = sale.devices[0];
+    const deviceData = firstDevice as typeof firstDevice & {
+      serialNumberLeft?: string;
+      serialNumberRight?: string;
+    };
 
     return (
-      <div className="space-y-1">
-        {barcode && (
-          <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block mb-0.5">
-            {barcode}
-          </div>
-        )}
-        {serialNumbers.length > 0 ? (
-          serialNumbers.map((serial, index) => (
-            <div key={index} className={`font-mono text-[11px] ${serial.color}`}>
-              {serial.text}
+      <div className="flex flex-col gap-1 overflow-hidden">
+        <div className="text-sm">
+          {/* Tek barkod göster (bilateral olsa bile) */}
+          {deviceData.barcode && (
+            <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block mb-1">
+              {deviceData.barcode}
             </div>
-          ))
-        ) : (
-          !barcode && <div className="text-[10px] text-gray-400">-</div>
-        )}
+          )}
+
+          {/* Seri numaralar - bilateral ise her ikisini göster */}
+          {sale.devices.length === 2 && (deviceData.serialNumberLeft || deviceData.serialNumberRight) ? (
+            // Bilateral satış - sol ve sağ seri numaralarını göster
+            <div className="space-y-1">
+              {deviceData.serialNumberLeft && (
+                <div className="text-xs text-gray-600 font-medium">
+                  <span className="text-[10px] text-gray-400 mr-1 italic">Sol:</span>
+                  {deviceData.serialNumberLeft}
+                </div>
+              )}
+              {sale.devices[1] && (sale.devices[1] as any).serialNumberRight && (
+                <div className="text-xs text-gray-600 font-medium">
+                  <span className="text-[10px] text-gray-400 mr-1 italic">Sağ:</span>
+                  {(sale.devices[1] as any).serialNumberRight}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Tek cihaz - standart seri numarası göster
+            deviceData.serialNumber && (
+              <div className="text-xs text-gray-600 font-medium">
+                {deviceData.serialNumber} {deviceData.ear ? `(${deviceData.ear === 'left' ? 'Sol' : deviceData.ear === 'right' ? 'Sağ' : deviceData.ear})` : ''}
+              </div>
+            )
+          )}
+
+          {!deviceData.barcode && !deviceData.serialNumber && !deviceData.serialNumberLeft && !deviceData.serialNumberRight && (
+            <div className="text-xs text-gray-400 italic">Barkod/Seri No Yok</div>
+          )}
+        </div>
       </div>
     );
   };
 
-  const renderPaymentMethods = (sale: SaleRead) => {
+  const renderPaymentMethods = (sale: PartySale) => {
     const methods: string[] = [];
     if (sale.paymentMethod === 'cash') methods.push('Nakit');
     if (sale.paymentMethod === 'card') methods.push('Kart');
     if (sale.paymentMethod === 'installment') methods.push('Taksit');
-    const extendedSale = sale as unknown as ExtendedSaleRead;
-    if (extendedSale.sgkCoverage && extendedSale.sgkCoverage > 0) methods.push('SGK');
+    if (sale.sgkCoverage && sale.sgkCoverage > 0) methods.push('SGK');
 
     return methods.join(', ') || 'Belirtilmemiş';
   };
 
-  const renderStatusBadge = (status?: string, paidAmount: number = 0, remainingAmount: number = 0) => {
-    const s = status ?? (remainingAmount <= 0 ? 'completed' : paidAmount > 0 ? 'pending' : 'pending');
-    if (s === 'cancelled') {
+  const renderStatusBadge = (status: string, paidAmount: number, remainingAmount: number) => {
+    if (status === 'cancelled') {
       return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal Edildi</span>;
     }
 
@@ -163,38 +203,25 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Bekliyor</span>;
   };
 
-  const renderInvoiceStatusBadge = (sale: SaleRead) => {
-    const hasInvoice = Boolean(sale.invoice);
-    const extendedSale = sale as unknown as ExtendedSaleRead;
-    const invoiceStatus = extendedSale.invoiceStatus || (hasInvoice ? 'issued' : 'none');
-
-    if (invoiceStatus === 'sent') {
-      return <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">📧 Gönderildi</span>;
-    }
-
-    if (invoiceStatus === 'issued' || hasInvoice) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">📄 Kesildi</span>;
-    }
-
-    if (invoiceStatus === 'cancelled') {
-      return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">🚫 İptal</span>;
-    }
-
-    return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">⚪ Yok</span>;
-  };
-
-  const toggleOverflowMenu = (e: React.MouseEvent, saleId: string | number | undefined) => {
+  const toggleOverflowMenu = (e: React.MouseEvent, saleId: string) => {
     e.stopPropagation();
-    setOpenMenuId(openMenuId === String(saleId) ? null : String(saleId));
+    setOpenMenuId(openMenuId === saleId ? null : saleId);
   };
 
   const closeOverflowMenu = () => {
     setOpenMenuId(null);
   };
 
+
   console.log('📋 SalesTableView: Rendering sales table with', sales?.length || 0, 'sales');
   if (sales && sales.length > 0) {
     console.log('📋 Sales data sample:', sales[0]);
+    console.log('💰 DEBUGGING PAID AMOUNT - First sale:', JSON.stringify({
+      id: sales[0].id,
+      paidAmount: sales[0].paidAmount,
+      finalAmount: sales[0].finalAmount,
+      listPriceTotal: sales[0].listPriceTotal
+    }, null, 2));
   }
 
   return (
@@ -215,10 +242,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               Liste Fiyatı
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              SGK Desteği
+              İndirim
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              İndirim
+              SGK Desteği
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Toplam Tutar
@@ -230,10 +257,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               Kalan Tutar
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ödeme Durumu
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Fatura Durumu
+              Durum
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               İşlemler
@@ -243,63 +267,42 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         <tbody className="bg-white divide-y divide-gray-200">
           {(!sales || sales.length === 0) ? (
             <tr>
-              <td colSpan={12} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
                 Henüz satış kaydı bulunmuyor
               </td>
             </tr>
           ) : (
             sales.map((sale) => {
-              // Cast to ExtendedSaleRead to access runtime properties
-              const extendedSale = sale as unknown as ExtendedSaleRead;
+              const displayTotal = calculateDisplayTotal(sale);
 
-              // Calculate totals from devices array (for bilateral sales)
-              const devices = extendedSale.devices || [];
-              const totalSgkFromDevices = devices.reduce((sum, d) => sum + (d.sgkSupport || d.sgkCoverageAmount || 0), 0);
-              const totalListPriceFromDevices = devices.reduce((sum, d) => sum + (d.listPrice || 0), 0);
-              
-              // Get discount type from first device (all devices should have same discount type)
-              const firstDevice = devices[0];
-              const discountType = firstDevice?.discountType || 'none';
-              const discountValue = firstDevice?.discountValue || 0;
+              // DEBUG: Check paidAmount value
+              if (sale.id === '2512310103') {
+                console.log('🔴 RENDER - Sale 2512310103:', {
+                  'sale.paidAmount': sale.paidAmount,
+                  'typeof': typeof sale.paidAmount,
+                  'sale object keys': Object.keys(sale),
+                  'full sale': sale
+                });
+              }
 
-              // GOLDEN PATH: Trust the backend's computed values, but use devices array for SGK
-              const displayTotal = extendedSale.finalAmount ?? extendedSale.totalAmount ?? 0;
-              const paidAmount = extendedSale.paidAmount ?? 0;
-              // Calculate remaining amount correctly: finalAmount - paidAmount
-              const remainingAmount = Math.max(0, displayTotal - paidAmount);
-              const discountAmount = extendedSale.discountAmount ?? 0;
-              const listPrice = totalListPriceFromDevices || (extendedSale.listPriceTotal ?? extendedSale.totalAmount ?? 0);
-              const sgkCoverage = totalSgkFromDevices || (extendedSale.sgkCoverage ?? 0);
-              
-              // Format discount display with type indicator
-              const formatDiscount = () => {
-                if (discountAmount <= 0) return '-';
-                
-                if (discountType === 'percentage' && discountValue > 0) {
-                  return `-${discountValue}% (${formatCurrency(discountAmount)})`;
-                } else if (discountType === 'amount' && discountValue > 0) {
-                  return `-${formatCurrency(discountValue)}`;
-                } else {
-                  // Fallback: just show the amount
-                  return `-${formatCurrency(discountAmount)}`;
-                }
-              };
-
-              const hasInvoice = Boolean(sale.invoice);
-              // Backend 'status' is authoritative
-              const statusStr = sale.status;
-              const cancelledClass = statusStr === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
+              const paidAmount = sale.paidAmount || 0;
+              const remainingAmount = displayTotal - paidAmount;
+              const discountAmount = sale.discountAmount || 0;
+              const sgkAmount = sale.sgkCoverage || 0;
+              const listPrice = sale.totalAmount || 0;
+              const hasInvoice = !!sale.invoice;
+              const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
               const partialPaymentClass = paidAmount > 0 && remainingAmount > 0 ? 'bg-yellow-50' : '';
 
               return (
                 <tr
-                  key={String(sale.id)}
+                  key={sale.id}
                   className={`hover:bg-gray-50 ${partialPaymentClass} ${cancelledClass} cursor-pointer transition-colors`}
                   onClick={() => onSaleClick?.(sale)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="font-medium">{sale.id}</div>
-                    <div className="text-xs text-gray-600">{formatDate(sale.saleDate ?? undefined)}</div>
+                    <div className="text-xs text-gray-600">{formatDate(sale.saleDate)}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {renderDevicesSummary(sale)}
@@ -308,13 +311,33 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                     {renderBarcodeSerialInfo(sale)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                    {formatCurrency(listPrice)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-blue-600">
-                    {sgkCoverage > 0 ? formatCurrency(sgkCoverage) : '-'}
+                    {(() => {
+                      // Bilateral için: toplam fiyatı göster (actualListPriceTotal)
+                      // Tek cihaz için: birim fiyatı göster
+                      const actualTotal = sale.actualListPriceTotal || sale.totalAmount || 0;
+                      return formatCurrency(actualTotal);
+                    })()}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${discountAmount > 0 ? 'text-red-600' : 'text-gray-500'}`}>
-                    {formatDiscount()}
+                    {(() => {
+                      // ✅ UPDATED: Format discount display based on type (User Decision)
+                      const discountType = (sale.discountType as 'none' | 'percentage' | 'amount') || 'none';
+                      const discountValue = sale.discountValue || 0;
+                      
+                      if (discountType === 'none' || discountAmount === 0) {
+                        return '-';
+                      } else if (discountType === 'percentage') {
+                        return `-${discountValue}% (${formatCurrency(discountAmount)})`;
+                      } else if (discountType === 'amount') {
+                        return `-${formatCurrency(discountAmount)}`;
+                      } else {
+                        // Fallback for old data without discountType
+                        return discountAmount > 0 ? `-${formatCurrency(discountAmount)}` : '-';
+                      }
+                    })()}
+                  </td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${sgkAmount > 0 ? 'text-blue-600' : 'text-gray-500'}`}>
+                    {sgkAmount > 0 ? '-' : ''}{formatCurrency(sgkAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(displayTotal)}
@@ -327,10 +350,12 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                     {formatCurrency(remainingAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {renderStatusBadge(statusStr ?? undefined, paidAmount, remainingAmount)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {renderInvoiceStatusBadge(sale)}
+                    {renderStatusBadge(sale.status, paidAmount, remainingAmount)}
+                    {hasInvoice && (
+                      <span className="block mt-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        Fatura Oluşturuldu
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm" onClick={(e) => e.stopPropagation()}>
                     <div className="relative">
@@ -340,72 +365,32 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                         onClick={(e) => toggleOverflowMenu(e, sale.id)}
                         aria-label="Aksiyonlar"
                         aria-haspopup="true"
-                        aria-expanded={openMenuId === String(sale.id)}
+                        aria-expanded={openMenuId === sale.id}
                       >
                         <MoreVertical className="w-4 h-4" />
                       </Button>
 
                       {/* Overflow Menu */}
-                      {openMenuId === String(sale.id) && (
+                      {openMenuId === sale.id && (
                         <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                           <div className="py-1">
-                            <button data-allow-raw="true"
+                            <button
+                              data-allow-raw="true"
                               onClick={() => {
-                                onSaleClick?.(sale);
-                                closeOverflowMenu();
-                              }}
-                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              Görüntüle
-                            </button>
-                            <button data-allow-raw="true"
-                              onClick={() => {
-                                onEditSale?.(sale);
-                                closeOverflowMenu();
-                              }}
-                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Düzenle
-                            </button>
-                            {hasInvoice ? (
-                              <>
-                                <button data-allow-raw="true"
-                                  onClick={() => {
-                                    onViewInvoice?.(sale);
-                                    closeOverflowMenu();
-                                  }}
-                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                  <FileText className="w-4 h-4 mr-2" />
-                                  Fatura Görüntüle
-                                </button>
-                                <button data-allow-raw="true"
-                                  onClick={() => {
-                                    // TODO: Implement e-invoice sending
-                                    console.log('E-fatura gönder:', sale.id);
-                                    closeOverflowMenu();
-                                  }}
-                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                  <Send className="w-4 h-4 mr-2" />
-                                  E-Fatura Gönder
-                                </button>
-                              </>
-                            ) : (
-                              <button data-allow-raw="true"
-                                onClick={() => {
+                                if (hasInvoice) {
+                                  onViewInvoice?.(sale);
+                                } else {
                                   onCreateInvoice?.(sale);
-                                  closeOverflowMenu();
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <FileText className="w-4 h-4 mr-2" />
-                                Fatura Kes
-                              </button>
-                            )}
-                            <button data-allow-raw="true"
+                                }
+                                closeOverflowMenu();
+                              }}
+                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              <FileText className="w-4 h-4 mr-2" />
+                              Fatura kes
+                            </button>
+                            <button
+                              data-allow-raw="true"
                               onClick={() => {
                                 onManagePromissoryNotes?.(sale);
                                 closeOverflowMenu();
@@ -415,17 +400,8 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                               <Banknote className="w-4 h-4 mr-2" />
                               Senetler
                             </button>
-                            <button data-allow-raw="true"
-                              onClick={() => {
-                                onOpenDocuments?.(partyId);
-                                closeOverflowMenu();
-                              }}
-                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <FolderOpen className="w-4 h-4 mr-2" />
-                              Belgeler
-                            </button>
-                            <button data-allow-raw="true"
+                            <button
+                              data-allow-raw="true"
                               onClick={() => {
                                 onCancelSale?.(sale);
                                 closeOverflowMenu();

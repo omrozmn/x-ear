@@ -282,19 +282,13 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
                 <p className="font-medium text-gray-900 dark:text-gray-200">{getPaymentMethodText(device.paymentMethod)}</p>
               </div>
 
-              {/* Down Payment / Peşinat */}
-              {(() => {
-                const downPayment = device.downPayment ?? device.down_payment ?? 0;
-                if (downPayment > 0) {
-                  return (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400">Alınan Ödeme (Peşinat):</span>
-                      <p className="font-medium text-blue-600 dark:text-blue-400">{formatCurrency(downPayment)}</p>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
+              {/* Down Payment / Peşinat - Always show for sales */}
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Ön Ödeme:</span>
+                <p className="font-medium text-blue-600 dark:text-blue-400">
+                  {formatCurrency(device.downPayment ?? (device as any).down_payment ?? 0)}
+                </p>
+              </div>
             </>
           )}
 

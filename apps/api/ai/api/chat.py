@@ -145,6 +145,7 @@ class MatchedSlotResponse(BaseModel):
 class MatchedCapabilityResponse(BaseModel):
     """Matched capability with slots for frontend slot-filling UI."""
     name: str
+    display_name: str = Field(default="", description="Turkish user-facing display name")
     description: str
     category: str
     slots: List[MatchedSlotResponse] = []
@@ -210,7 +211,7 @@ async def chat(
         user_context: Current user context from auth
     """
     start_time = time.time()
-    request_id = f"chat_{uuid4().hex[:16]}"
+    request_id = "chat_" + str(uuid4().hex)[:16]
     tenant_id = access.tenant_id
     user_id = access.user_id
     if not tenant_id or not user_id:
@@ -304,6 +305,9 @@ async def chat(
             ).model_dump(),
         )
     
+    # Get language from context (default to 'tr')
+    lang = (request.context or {}).get("language", "tr")
+
     # Process with Intent Refiner
     try:
         # Get conversation history for context (Requirement 4.6)
@@ -320,6 +324,9 @@ async def chat(
         full_context = request.context or {}
         full_context["conversation_history"] = [turn.to_dict() for turn in conversation_history]
         
+        # Get all entities mentioned so far (Requirement 4.4)
+        accumulated_entities = memory.get_accumulated_entities(session_id)
+        
         # Check if we have a pending action plan from previous turn
         pending_plan_id = None
         if conversation_history:
@@ -327,9 +334,10 @@ async def chat(
             if last_turn.entities:
                 pending_plan_id = last_turn.entities.get("pending_plan_id") or last_turn.entities.get("prepared_plan_id")
                 
-                if last_turn.entities.get("pending_plan_id"):
+                # If we were previously waiting for a slot or a plan, set context
+                if last_turn.entities.get("pending_plan_id") or last_turn.entities.get("awaiting_slot_fill"):
                     awaiting_slot_fill = True
-                    slot_name = last_turn.entities.get("missing_parameter")
+                    slot_name = last_turn.entities.get("missing_parameter") or last_turn.entities.get("slot_name")
                     full_context["awaiting_slot_fill"] = awaiting_slot_fill
                     full_context["slot_name"] = slot_name
                     
@@ -343,7 +351,29 @@ async def chat(
             tenant_id=tenant_id,
             user_id=user_id,
             context=full_context,
+            language=lang,
         )
+        
+        # Merge new findings into accumulated entities
+        if result.is_success and result.intent:
+            # If it's a slot fill, the LLM extracted a specific value.
+            # Merge it and then treat it like an ACTION or QUERY based on previous turn.
+            accumulated_entities.update(result.intent.entities)
+            result.intent.entities = accumulated_entities
+            
+            # If it's a SLOT_FILL, we want to re-classify it or at least keep the action_type/query_type
+            # from history so that Layer 2 and Layer 3 matching works.
+            if result.intent.intent_type == IntentType.SLOT_FILL:
+                # Recover previous intent type and core identifiers
+                prev_action_type = accumulated_entities.get("action_type") or accumulated_entities.get("query_type")
+                if prev_action_type:
+                    # Upgrade to ACTION or QUERY so that matcher/planner can proceed
+                    if "view" in prev_action_type or "list" in prev_action_type or "query" in prev_action_type:
+                        result.intent.intent_type = IntentType.QUERY
+                    else:
+                        result.intent.intent_type = IntentType.ACTION
+                    logger.info(f"SLOT_FILL upgraded to {result.intent.intent_type} for {prev_action_type} with merged entities")
+
     except Exception as e:
         logger.error(f"Intent refiner error: {e}")
         raise HTTPException(
@@ -414,10 +444,10 @@ async def chat(
     intent_response = None
     if result.intent:
         intent_response = IntentResponse(
-            intent_type=result.intent.intent_type.value,
-            confidence=result.intent.confidence,
-            entities=result.intent.entities,
-            clarification_needed=result.intent.clarification_needed,
+            intent_type=str(result.intent.intent_type.value),
+            confidence=float(result.intent.confidence),
+            entities=dict(result.intent.entities or {}),
+            clarification_needed=bool(result.intent.clarification_needed),
             clarification_question=result.intent.clarification_question,
         )
     
@@ -446,15 +476,16 @@ async def chat(
             latency_ms=int(processing_time_ms),
         )
         
+        response_msg = "İşlem iptal edildi." if lang == "tr" else "Operation cancelled."
         return ChatResponse(
-            request_id=request_id,
-            status=result.status.value,
+            request_id=str(request_id),
+            status=str(result.status.value),
             intent=intent_response,
-            response="İşlem iptal edildi.",
+            response=str(response_msg),
             needs_clarification=False,
-            processing_time_ms=processing_time_ms,
-            pii_detected=result.redaction_result.has_pii if result.redaction_result else False,
-            phi_detected=result.redaction_result.has_phi if result.redaction_result else False,
+            processing_time_ms=float(processing_time_ms),
+            pii_detected=bool(result.redaction_result.has_pii if result.redaction_result else False),
+            phi_detected=bool(result.redaction_result.has_phi if result.redaction_result else False),
         )
     
     # Handle capability inquiry (Requirement 5.2)
@@ -518,44 +549,9 @@ async def chat(
             phi_detected=result.redaction_result.has_phi if result.redaction_result else False,
         )
     
-    # Handle slot-filling response (Requirement 4.4)
-    if result.is_success and result.intent and result.intent.intent_type == IntentType.SLOT_FILL:
-        # Update pending action plan with filled slot
-        # For now, we'll just acknowledge the slot value
-        # In a full implementation, this would update the action plan and check if all slots are filled
-        
-        slot_value = result.intent.entities.get(slot_name, "")
-        response_message = f"{slot_name} bilgisi alındı: {slot_value}. Devam ediyorum..."
-        
-        # Store conversation turn
-        memory.add_turn(
-            session_id=session_id,
-            user_message=request.prompt,
-            ai_response=response_message,
-            intent_type=result.intent.intent_type.value if result.intent else None,
-            entities=result.intent.entities if result.intent else {},
-        )
-        
-        # Update request status to completed
-        request_logger.update_request_status(
-            request_id=request_id,
-            status=RequestStatus.COMPLETED,
-            intent_type=result.intent.intent_type.value,
-            intent_confidence=result.intent.confidence,
-            intent_data=result.intent.entities,
-            latency_ms=int(processing_time_ms),
-        )
-        
-        return ChatResponse(
-            request_id=request_id,
-            status=result.status.value,
-            intent=intent_response,
-            response=response_message,
-            needs_clarification=False,
-            processing_time_ms=processing_time_ms,
-            pii_detected=result.redaction_result.has_pii if result.redaction_result else False,
-            phi_detected=result.redaction_result.has_phi if result.redaction_result else False,
-        )
+    # Removed early return for SLOT_FILL to allow planning/matching with merged entities.
+    # The logic above already merged entities and upgraded SLOT_FILL to ACTION/QUERY.
+
     
     # Action Planning (Layer 2)
     action_plan_response = None
@@ -596,11 +592,12 @@ async def chat(
                         latency_ms=int(processing_time_ms),
                     )
                     
+                    error_msg = "Action plan timed out. Please start over." if lang == "en" else "İşlem planı zaman aşımına uğradı. Lütfen baştan başlayın."
                     return ChatResponse(
                         request_id=request_id,
                         status="timeout",
                         intent=intent_response,
-                        response="Action plan timed out. Please start over.",
+                        response=error_msg,
                         needs_clarification=False,
                         processing_time_ms=processing_time_ms,
                         pii_detected=result.redaction_result.has_pii if result.redaction_result else False,
@@ -614,6 +611,7 @@ async def chat(
                 user_id=user_id,
                 user_permissions=permissions,
                 context=full_context,
+                language=lang,
             )
             
             # If LLM planning failed or returned no actions, try fallback
@@ -624,6 +622,7 @@ async def chat(
                     tenant_id=tenant_id,
                     user_id=user_id,
                     user_permissions=permissions,
+                    language=lang,
                 )
             
             if plan_result.is_success and plan_result.plan:
@@ -686,28 +685,43 @@ async def chat(
     if result.is_success and result.intent and result.intent.intent_type in (IntentType.ACTION, IntentType.QUERY):
         matched_cap = _match_capability_from_intent(result.intent.entities)
         if matched_cap:
+            # Get language from context (default to 'tr')
+            lang = (request.context or {}).get("language", "tr")
+            
             matched_capability_response = MatchedCapabilityResponse(
                 name=matched_cap.name,
-                description=matched_cap.description,
+                display_name=matched_cap.get_display_name(lang),
+                description=matched_cap.get_description(lang),
                 category=matched_cap.category,
-                slots=[
-                    MatchedSlotResponse(
-                        name=s.name,
-                        prompt=s.prompt,
-                        ui_type=s.ui_type,
-                        source_endpoint=s.source_endpoint,
-                        enum_options=s.enum_options,
-                        validation_rules=s.validation_rules,
-                    )
-                    for s in matched_cap.slots
-                ]
             )
             # Check if capability has required slots that need filling
-            has_required_slots = any(
-                s.validation_rules and s.validation_rules.get("required", True)
-                for s in matched_cap.slots
-            )
-            logger.info(f"Matched capability: {matched_cap.name} with {len(matched_cap.slots)} slots (has_required={has_required_slots})")
+            # Filter out slots that are already in entities (Requirement 4.3)
+            missing_slots = []
+            for s in matched_cap.slots:
+                if s.name not in (result.intent.entities or {}):
+                    missing_slots.append(s)
+            
+            # Update the response to only show missing slots
+            matched_capability_response.slots = [
+                MatchedSlotResponse(
+                    name=s.name,
+                    prompt=s.get_prompt(lang),
+                    ui_type=s.ui_type,
+                    source_endpoint=s.source_endpoint,
+                    enum_options=s.enum_options,
+                    validation_rules=s.validation_rules,
+                )
+                for s in missing_slots
+            ]
+            
+            has_required_slots = False
+            if missing_slots:
+                has_required_slots = any(
+                    s.validation_rules is None or s.validation_rules.get("required", True)
+                    for s in missing_slots
+                )
+            
+            logger.info(f"Matched capability: {matched_cap.name} with {len(missing_slots)} missing slots (has_required={has_required_slots})")
 
     # CRITICAL: If the matched capability has required slots to fill,
     # suppress the action_plan. Frontend slot-filling UI must collect
@@ -715,6 +729,10 @@ async def chat(
     if has_required_slots and matched_capability_response:
         action_plan_response = None
         logger.info("Suppressed action_plan because matched capability has required slots to fill first")
+    elif matched_capability_response and action_plan_response:
+        # If we have a valid action plan and no required slots, suppress matched_capability
+        # so the frontend goes straight to confirmation/execution instead of slot-filling.
+        matched_capability_response = None
 
     # Generate response message
     response_message = None
@@ -724,21 +742,39 @@ async def chat(
         # If it's a vague query and we have a pending plan, remind the user
         if result.intent.intent_type == IntentType.QUERY and pending_plan_id:
             if "?" in request.prompt or len(request.prompt) < 15:
-                response_message = f"Az önceki işleminiz (Plan: {pending_plan_id}) için onayınızı bekliyorum. Devam etmek ister misiniz?"
+                if lang == "en":
+                    response_message = f"I'm waiting for your approval for your previous action (Plan: {pending_plan_id}). Would you like to continue?"
+                else:
+                    response_message = f"Az önceki işleminiz (Plan: {pending_plan_id}) için onayınızı bekliyorum. Devam etmek ister misiniz?"
         
         # If we have an action plan (not suppressed), append a confirmation message
-        if action_plan_response and "plan" not in (response_message or "").lower() and "hazırlan" not in (response_message or "").lower():
-            response_message += f"\n\nİşleminiz için bir plan hazırladım. (Plan ID: {action_plan_response.plan_id})"
+        if action_plan_response and "plan" not in (response_message or "").lower() and "hazırlan" not in (response_message or "").lower() and "prepar" not in (response_message or "").lower():
+            if lang == "en":
+                response_message += f"\n\nI prepared a plan for your operation. (Plan ID: {action_plan_response.plan_id})"
+            else:
+                response_message += f"\n\nİşleminiz için bir plan hazırladım. (Plan ID: {action_plan_response.plan_id})"
         
-        # If slot-filling is needed, use a clean Turkish message acknowledging intent
+        # If slot-filling is needed, use a clean message acknowledging intent
         if has_required_slots and matched_capability_response:
-            tr_name = _CAPABILITY_DISPLAY_TR.get(matched_capability_response.name, matched_capability_response.name)
-            response_message = f"{tr_name} için gerekli bilgileri topluyorum."
+            display_name = matched_capability_response.display_name
+            if lang == "en":
+                response_message = f"I am collecting required information for {display_name}."
+            else:
+                response_message = f"{display_name} için gerekli bilgileri topluyorum."
     
     # Store conversation turn in memory
-    memory_entities = result.intent.entities.copy() if result.intent and result.intent.entities else {}
+    memory_entities: Dict[str, Any] = {}
+    if result.intent and result.intent.entities:
+        memory_entities = dict(result.intent.entities.copy())
+        
     if action_plan_response:
-        memory_entities["prepared_plan_id"] = action_plan_response.plan_id
+        memory_entities.update({"prepared_plan_id": str(action_plan_response.plan_id)})
+    
+    # If we are waiting for a slot via MatchedCapability, save that state
+    if has_required_slots and matched_capability_response:
+        memory_entities.update({"awaiting_slot_fill": True})
+        if matched_capability_response.slots:
+            memory_entities.update({"slot_name": str(matched_capability_response.slots[0].name)})
 
     memory.add_turn(
         session_id=session_id,
@@ -759,17 +795,17 @@ async def chat(
     )
 
     return ChatResponse(
-        request_id=request_id,
-        status=result.status.value,
+        request_id=str(request_id),
+        status=str(result.status.value),
         intent=intent_response,
         action_plan=action_plan_response,
         matched_capability=matched_capability_response,
-        response=response_message,
-        needs_clarification=has_required_slots,
-        clarification_question=matched_capability_response.slots[0].prompt if has_required_slots and matched_capability_response and matched_capability_response.slots else result.clarification_question,
-        processing_time_ms=processing_time_ms,
-        pii_detected=result.redaction_result.has_pii if result.redaction_result else False,
-        phi_detected=result.redaction_result.has_phi if result.redaction_result else False,
+        response=str(response_message),
+        needs_clarification=bool(has_required_slots),
+        clarification_question=str(matched_capability_response.slots[0].prompt) if has_required_slots and matched_capability_response and matched_capability_response.slots else str(result.clarification_question or ""),
+        processing_time_ms=float(processing_time_ms),
+        pii_detected=bool(result.redaction_result.has_pii if result.redaction_result else False),
+        phi_detected=bool(result.redaction_result.has_phi if result.redaction_result else False),
     )
 
 
@@ -783,6 +819,7 @@ _ACTION_TYPE_TO_CAPABILITY = {
     "sale_create": "Create Sales Opportunity",
     "appointment_create": "Schedule Appointment",
     "device_assign": "Assign Device to Party",
+    "inventory_edit": "View Device Inventory",  # edit uses same capability with edit-focused slots
     "collection_create": "Create Sales Opportunity",  # collections go through sales
     "party_create": "Create Party Record",
     "party_update": "Update Party Information",
@@ -801,30 +838,11 @@ _ACTION_TYPE_TO_CAPABILITY = {
     "get_low_stock_alerts": "Low Stock Alerts",
     "query_sgk_patient_rights": "Query SGK Patient Rights",
     "query_sgk_e_receipt": "Query SGK E-Receipt",
+    "createSgkMonthlyInvoiceDraft": "Create SGK Monthly Invoice Draft",
 }
 
-# Turkish user-facing display names for capabilities
-_CAPABILITY_DISPLAY_TR = {
-    "Create Sales Opportunity": "Satış kaydı oluşturma",
-    "Schedule Appointment": "Randevu oluşturma",
-    "Assign Device to Party": "Cihaz atama",
-    "Create Party Record": "Hasta/kişi kaydı oluşturma",
-    "Update Party Information": "Hasta/kişi bilgisi güncelleme",
-    "Cancel Appointment": "Randevu iptal etme",
-    "Reschedule Appointment": "Randevu erteleme",
-    "Generate & Send E-Invoice": "E-fatura gönderme",
-    "Generate Reports": "Rapor oluşturma",
-    "View Appointments": "Randevuları görüntüleme",
-    "View Sales Information": "Satış bilgilerini görüntüleme",
-    "View Device Inventory": "Cihaz envanterini görüntüleme",
-    "View Party Information": "Hasta/kişi bilgilerini görüntüleme",
-    "Check Appointment Availability": "Randevu uygunluğu kontrolü",
-    "Get Comprehensive Party Summary": "Hasta/kişi özet raporu",
-    "View Daily Cash Summary": "Günlük kasa özeti",
-    "Low Stock Alerts": "Düşük stok uyarıları",
-    "Query SGK Patient Rights": "SGK hasta hakları sorgulama",
-    "Query SGK E-Receipt": "SGK e-reçete sorgulama",
-}
+# Turkish user-facing display names for capabilities (Deprecated: use Capability.display_name_tr)
+_CAPABILITY_DISPLAY_TR = {}
 
 
 def _match_capability_from_intent(entities: Dict[str, Any]) -> Optional[Any]:

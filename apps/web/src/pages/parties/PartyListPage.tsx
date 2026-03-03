@@ -339,6 +339,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
             onClick={handlePartyClick}
             onEdit={() => setEditingParty(party)}
             onDelete={() => party.id && handleDeleteParty(party.id)}
+            showSelection={true}
             className="hover:shadow-md transition-shadow"
           />
         ))}
