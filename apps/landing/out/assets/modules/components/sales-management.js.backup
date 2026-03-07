@@ -1,0 +1,2344 @@
+/**
+ * Sales Management Component
+ * Handles sales tracking, invoice generation, payment tracking, and returns/exchanges
+ * Now integrated with backend device sales APIs
+ */
+class SalesManagementComponent {
+  constructor(apiClient) {
+    this.apiClient = apiClient;
+    this.currentPatientId = null; // Will be set when rendering
+    this.currentSale = {
+      items: [],
+      totals: {
+        subtotal: 0,
+        totalTax: 0,
+        grandTotal: 0,
+        taxBreakdown: { 0: 0, 1: 0, 8: 0, 18: 0 }
+      }
+    };
+    this.itemCounter = 1;
+    this.invoiceCounter = 1;
+    
+    // Tax rates for different product types
+    this.taxRates = {
+      'hearing_aid': 8,
+      'accessory': 18,
+      'service': 18,
+      'consultation': 0
+    };
+    
+    // Initialize promissory note component
+    this.promissoryNote = new window.PromissoryNoteComponent(apiClient);
+    
+    this.init();
+  }
+
+  init() {
+    this.loadSalesData();
+    this.loadInvoiceData();
+  }
+
+  // Data Management
+  loadSalesData() {
+    const salesData = localStorage.getItem('salesData');
+    this.salesData = salesData ? JSON.parse(salesData) : [];
+  }
+
+  saveSalesData() {
+    localStorage.setItem('salesData', JSON.stringify(this.salesData));
+  }
+
+  loadInvoiceData() {
+    const invoiceData = localStorage.getItem('invoiceData');
+    this.invoiceData = invoiceData ? JSON.parse(invoiceData) : [];
+  }
+
+  saveInvoiceData() {
+    localStorage.setItem('invoiceData', JSON.stringify(this.invoiceData));
+  }
+
+  // Sales Tab Rendering - Updated to use backend APIs
+  async renderSalesTab(patientData) {
+    // Store patient ID for later use
+    this.currentPatientId = patientData.id;
+    
+    // Fetch sales from backend API
+    const patientSales = await this.fetchPatientSalesFromAPI(patientData.id);
+    const totalSales = this.calculateTotalSales(patientSales);
+    const lastSaleDate = this.getLastSaleDate(patientSales);
+    
+    // Get returns/exchanges HTML
+    const returnsExchangesHtml = await this.renderReturnsExchanges(patientData.id);
+
+    return `
+      <div class="space-y-6">
+        <!-- Sales Summary -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Satış Özeti</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-green-50 p-4 rounded-lg">
+              <h4 class="text-sm text-gray-600">Toplam Satış</h4>
+              <p class="text-xl font-bold text-green-600">${totalSales.toLocaleString('tr-TR')} TL</p>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <h4 class="text-sm text-gray-600">Satış Sayısı</h4>
+              <p class="text-xl font-bold text-blue-600">${patientSales.length}</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+              <h4 class="text-sm text-gray-600">Son Satış</h4>
+              <p class="text-sm text-gray-800">${lastSaleDate}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3">
+          <button onclick="salesManagement.openDeviceSaleModal('${patientData.id}')" 
+                  class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-headphones mr-2"></i>Cihaz Satışı
+          </button>
+          <button onclick="salesManagement.openNewSaleModal('${patientData.id}')" 
+                  class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Genel Satış
+          </button>
+          <button onclick="salesManagement.openInvoiceModal('${patientData.id}')" 
+                  class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+            <i class="fas fa-file-invoice mr-2"></i>Fatura Oluştur
+          </button>
+          <button onclick="salesManagement.openCollectionModal('${patientData.id}')" 
+                  class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+            <i class="fas fa-hand-holding-usd mr-2"></i>Tahsilat
+          </button>
+          <button onclick="window.promissoryNote.openModal('${patientData.id}')" 
+                  class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+            <i class="fas fa-file-contract mr-2"></i>Senet Oluştur
+          </button>
+        </div>
+
+        <!-- Sales History -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Satış Geçmişi</h3>
+          <div id="sales-history-${patientData.id}">
+            ${this.renderSalesHistory(patientSales)}
+          </div>
+        </div>
+
+        <!-- Returns and Exchanges -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">İade ve Değişim</h3>
+          <div id="returns-exchanges-${patientData.id}">
+            ${returnsExchangesHtml}
+          </div>
+        </div>
+
+        <!-- Price Quotes (Proforma) -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Teklifler (Proforma)</h3>
+            <button onclick="salesManagement.openProformaModal('${patientData.id}')" 
+                    class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+              <i class="fas fa-file-invoice mr-2"></i>Proforma Oluştur
+            </button>
+          </div>
+          <div id="proformas-${patientData.id}">
+            ${this.renderProformas(patientData.id)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Device Sale Modal - New method for backend integration
+  async openDeviceSaleModal(patientId) {
+    try {
+      // Prefer domainManager for patient data
+      let patientData = null;
+      try {
+        if (typeof window !== 'undefined' && window.domainManager && typeof window.domainManager.getPatient === 'function') {
+          patientData = await window.domainManager.getPatient(patientId);
+        } else if (typeof window !== 'undefined' && window.legacyBridge && typeof window.legacyBridge.getPatients === 'function') {
+          const list = await Promise.resolve(window.legacyBridge.getPatients());
+          patientData = list.find(p => p.id === patientId) || null;
+        }
+      } catch (dmErr) {
+        console.warn('SalesManagementComponent: domain lookup failed', dmErr);
+      }
+
+      // Fallback to API
+      if (!patientData) {
+        try {
+          const patientResponse = await (this.apiClient.getPatient ? this.apiClient.getPatient(patientId) : this.apiClient.get(`/api/patients/${patientId}`));
+          patientData = (patientResponse && (patientResponse.data ?? patientResponse)) || {};
+        } catch (err) {
+          console.warn('SalesManagementComponent: API patient fetch failed', err);
+          patientData = {};
+        }
+      }
+
+      patientData = this.normalizePatientObject(patientData || {});
+
+      // Get devices and settings via API as before
+      const devicesResponse = await this.apiClient.get('/api/devices');
+      const devicesPayload = (devicesResponse && (devicesResponse.data ?? devicesResponse)) || [];
+      const availableDevices = devicesPayload.filter(device => device.status === 'available');
+
+      const settingsResponse = await this.apiClient.get('/api/settings');
+      const settingsPayload = (settingsResponse && (settingsResponse.data ?? settingsResponse)) || {};
+      const pricingSettings = settingsPayload.pricing || {};
+
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-900">Cihaz Satışı - ${patientData.first_name} ${patientData.last_name}</h2>
+              <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="device-sale-form" class="space-y-6">
+              <!-- Device Selection -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cihaz Seçimi</label>
+                <select id="device-select" name="device_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Cihaz seçin...</option>
+                  ${availableDevices.map(device => `
+                    <option value="${device.id}" data-price="${device.price}" data-type="${device.device_type}">
+                      ${device.brand} ${device.model} - ${device.serial_number} (${device.price.toLocaleString('tr-TR')} TL)
+                    </option>
+                  `).join('')}
+                </select>
+              </div>
+
+              <!-- SGK Information -->
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-blue-900 mb-2">SGK Bilgileri</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm text-blue-700 mb-1">SGK Durumu</label>
+                    <select id="sgk-status" name="sgk_status" class="w-full border border-gray-300 rounded px-3 py-2">
+                      <option value="none">SGK Yok</option>
+                      <option value="partial">Kısmi SGK</option>
+                      <option value="full">Tam SGK</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-blue-700 mb-1">SGK Oranı (%)</label>
+                    <input type="number" id="sgk-percentage" name="sgk_percentage" min="0" max="100" step="1" 
+                           class="w-full border border-gray-300 rounded px-3 py-2" placeholder="0">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pricing Preview -->
+              <div id="pricing-preview" class="bg-gray-50 p-4 rounded-lg hidden">
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Fiyat Önizleme</h3>
+                <div id="pricing-details" class="space-y-2 text-sm"></div>
+              </div>
+
+              <!-- Payment Options -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Seçenekleri</label>
+                <div class="space-y-3">
+                  <div class="flex items-center">
+                    <input type="radio" id="payment-cash" name="payment_type" value="cash" checked class="mr-2">
+                    <label for="payment-cash" class="text-sm">Peşin Ödeme</label>
+                  </div>
+                  <div class="flex items-center">
+                    <input type="radio" id="payment-installment" name="payment_type" value="installment" class="mr-2">
+                    <label for="payment-installment" class="text-sm">Taksitli Ödeme</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Installment Options -->
+              <div id="installment-options" class="hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Taksit Sayısı</label>
+                <select id="installment-count" name="installment_count" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                  <option value="3">3 Taksit</option>
+                  <option value="6">6 Taksit</option>
+                  <option value="9">9 Taksit</option>
+                  <option value="12">12 Taksit</option>
+                  <option value="24">24 Taksit</option>
+                </select>
+                <div class="mt-2">
+                  <label class="block text-sm text-gray-600 mb-1">Faiz Oranı (%)</label>
+                  <input type="number" id="interest-rate" name="interest_rate" step="0.1" min="0" max="50" 
+                         class="w-full border border-gray-300 rounded px-3 py-2" placeholder="0">
+                </div>
+              </div>
+
+              <!-- Sale Notes -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Satış Notları</label>
+                <textarea id="sale-notes" name="notes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2" 
+                          placeholder="Satış ile ilgili notlar..."></textarea>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="this.closest('.fixed').remove()" 
+                        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                  İptal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  Satışı Tamamla
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Event listeners
+      this.setupDeviceSaleForm(patientId, pricingSettings);
+      
+    } catch (error) {
+      console.error('Error opening device sale modal:', error);
+      this.showError('Cihaz satış modalı açılırken hata oluştu');
+    }
+  }
+
+  // Payment Plan Modal - New method for creating installment plans
+  async openPaymentPlanModal(saleId) {
+    try {
+      // Get sale data
+      const saleResponse = await this.apiClient.get(`/api/sales/${saleId}`);
+      const sale = (saleResponse && (saleResponse.data ?? saleResponse)) || null;
+
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-900">Taksit Planı Oluştur - Satış #${saleId}</h2>
+              <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="payment-plan-form" class="space-y-6">
+              <!-- Sale Summary -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Satış Bilgileri</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span class="text-gray-600">Toplam Tutar:</span>
+                    <span class="font-medium ml-2">${sale.final_price?.toLocaleString('tr-TR') || sale.total_amount?.toLocaleString('tr-TR') || '0'} TL</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600">Ödenen:</span>
+                    <span class="font-medium ml-2">${sale.down_payment?.toLocaleString('tr-TR') || '0'} TL</span>
+                  </div>
+                  <div class="col-span-2">
+                    <span class="text-gray-600">Kalan Tutar:</span>
+                    <span class="font-medium ml-2 text-red-600">${((sale.final_price || sale.total_amount || 0) - (sale.down_payment || 0)).toLocaleString('tr-TR')} TL</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Installment Details -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Taksit Sayısı</label>
+                <select id="installment-months" name="installment_count" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Taksit sayısı seçin...</option>
+                  <option value="3">3 Taksit</option>
+                  <option value="6">6 Taksit</option>
+                  <option value="9">9 Taksit</option>
+                  <option value="12">12 Taksit</option>
+                  <option value="18">18 Taksit</option>
+                  <option value="24">24 Taksit</option>
+                  <option value="36">36 Taksit</option>
+                </select>
+              </div>
+
+              <!-- Interest Rate -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Faiz Oranı (%)</label>
+                <input type="number" id="interest-rate-plan" name="interest_rate" step="0.1" min="0" max="50" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0">
+              </div>
+
+              <!-- Start Date -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">İlk Ödeme Tarihi</label>
+                <input type="date" id="start-date" name="start_date" value="${new Date().toISOString().split('T')[0]}" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+              </div>
+
+              <!-- Preview -->
+              <div id="plan-preview" class="bg-blue-50 p-4 rounded-lg hidden">
+                <h3 class="text-sm font-medium text-blue-900 mb-2">Taksit Planı Önizleme</h3>
+                <div id="plan-details" class="space-y-2 text-sm"></div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="this.closest('.fixed').remove()" 
+                        class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                  İptal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  Taksit Planı Oluştur
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Event listeners
+      this.setupPaymentPlanForm(saleId, sale);
+      
+    } catch (error) {
+      console.error('Error opening payment plan modal:', error);
+      this.showError('Taksit planı modalı açılırken hata oluştu');
+    }
+  }
+
+  // Setup Payment Plan Form Event Listeners
+  setupPaymentPlanForm(saleId, saleData) {
+    const form = document.getElementById('payment-plan-form');
+    const installmentMonths = document.getElementById('installment-months');
+    const interestRate = document.getElementById('interest-rate-plan');
+    const startDate = document.getElementById('start-date');
+
+    // Update preview when inputs change
+    const updatePreview = () => {
+      const months = parseInt(installmentMonths.value);
+      const rate = parseFloat(interestRate.value) || 0;
+      const start = new Date(startDate.value);
+
+      if (months && start) {
+        this.updatePaymentPlanPreview(saleData, months, rate, start);
+      } else {
+        document.getElementById('plan-preview').classList.add('hidden');
+      }
+    };
+
+    installmentMonths.addEventListener('change', updatePreview);
+    interestRate.addEventListener('input', updatePreview);
+    startDate.addEventListener('change', updatePreview);
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await this.submitPaymentPlan(form, saleId);
+    });
+  }
+
+  // Update Payment Plan Preview
+  updatePaymentPlanPreview(saleData, months, interestRate, startDate) {
+    const totalAmount = (saleData.final_price || saleData.total_amount || 0) - (saleData.down_payment || 0);
+    
+    if (totalAmount <= 0) {
+      document.getElementById('plan-preview').classList.add('hidden');
+      return;
+    }
+
+    // Calculate installments
+    const monthlyRate = interestRate / 100 / 12;
+    const monthlyPayment = totalAmount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+    
+    const installments = [];
+    let remainingBalance = totalAmount;
+    
+    for (let i = 0; i < months; i++) {
+      const dueDate = new Date(startDate);
+      dueDate.setMonth(startDate.getMonth() + i);
+      
+      const interestPayment = remainingBalance * monthlyRate;
+      const principalPayment = monthlyPayment - interestPayment;
+      remainingBalance -= principalPayment;
+      
+      installments.push({
+        number: i + 1,
+        dueDate: dueDate.toLocaleDateString('tr-TR'),
+        amount: monthlyPayment.toFixed(2),
+        principal: principalPayment.toFixed(2),
+        interest: interestPayment.toFixed(2),
+        balance: Math.max(0, remainingBalance).toFixed(2)
+      });
+    }
+
+    const planDetails = document.getElementById('plan-details');
+    planDetails.innerHTML = `
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div>
+          <span class="text-gray-600">Aylık Ödeme:</span>
+          <span class="font-medium ml-2">${monthlyPayment.toLocaleString('tr-TR')} TL</span>
+        </div>
+        <div>
+          <span class="text-gray-600">Toplam Faiz:</span>
+          <span class="font-medium ml-2">${(monthlyPayment * months - totalAmount).toLocaleString('tr-TR')} TL</span>
+        </div>
+      </div>
+      <div class="text-xs text-gray-600 mb-2">Taksit Detayları:</div>
+      <div class="max-h-32 overflow-y-auto">
+        ${installments.slice(0, 6).map(inst => `
+          <div class="flex justify-between text-xs">
+            <span>${inst.number}. taksit - ${inst.dueDate}:</span>
+            <span>${inst.amount} TL</span>
+          </div>
+        `).join('')}
+        ${installments.length > 6 ? `<div class="text-xs text-gray-500 mt-1">... ve ${installments.length - 6} taksit daha</div>` : ''}
+      </div>
+    `;
+
+    document.getElementById('plan-preview').classList.remove('hidden');
+  }
+
+  // Submit Payment Plan
+  async submitPaymentPlan(form, saleId) {
+    const formData = new FormData(form);
+    const planData = {
+      installment_count: parseInt(formData.get('installment_count')),
+      interest_rate: parseFloat(formData.get('interest_rate')) || 0,
+      start_date: formData.get('start_date')
+    };
+
+    try {
+      const response = await this.apiClient.post(`/api/sales/${saleId}/payment-plan`, planData);
+      
+      if (response.data.success) {
+        this.showSuccess('Taksit planı başarıyla oluşturuldu');
+        
+        // Refresh patient data
+        if (window.patientDetailsComponent) {
+          window.patientDetailsComponent.loadPatientData();
+        }
+        
+        form.closest('.fixed').remove();
+      } else {
+        this.showError('Taksit planı oluşturulurken hata oluştu');
+      }
+    } catch (error) {
+      console.error('Error submitting payment plan:', error);
+      this.showError('Taksit planı oluşturulurken hata oluştu: ' + error.message);
+    }
+  }
+
+  // Setup Device Sale Form Event Listeners
+  setupDeviceSaleForm(patientId, pricingSettings) {
+    const form = document.getElementById('device-sale-form');
+    const deviceSelect = document.getElementById('device-select');
+    const sgkStatus = document.getElementById('sgk-status');
+    const sgkPercentage = document.getElementById('sgk-percentage');
+    const paymentCash = document.getElementById('payment-cash');
+    const paymentInstallment = document.getElementById('payment-installment');
+    const installmentOptions = document.getElementById('installment-options');
+
+    // Device selection change - update pricing preview
+    deviceSelect.addEventListener('change', async () => {
+      const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
+      if (selectedOption.value) {
+        const devicePrice = parseFloat(selectedOption.getAttribute('data-price'));
+        await this.updatePricingPreview(devicePrice, pricingSettings);
+      } else {
+        document.getElementById('pricing-preview').classList.add('hidden');
+      }
+    });
+
+    // SGK status change
+    sgkStatus.addEventListener('change', async () => {
+      const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
+      if (selectedOption.value) {
+        const devicePrice = parseFloat(selectedOption.getAttribute('data-price'));
+        await this.updatePricingPreview(devicePrice, pricingSettings);
+      }
+    });
+
+    // SGK percentage change
+    sgkPercentage.addEventListener('input', async () => {
+      const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
+      if (selectedOption.value) {
+        const devicePrice = parseFloat(selectedOption.getAttribute('data-price'));
+        await this.updatePricingPreview(devicePrice, pricingSettings);
+      }
+    });
+
+    // Payment type change
+    paymentCash.addEventListener('change', () => {
+      installmentOptions.classList.add('hidden');
+    });
+
+    paymentInstallment.addEventListener('change', () => {
+      installmentOptions.classList.remove('hidden');
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await this.submitDeviceSale(form, patientId);
+    });
+  }
+
+  // Update Pricing Preview
+  async updatePricingPreview(devicePrice, pricingSettings) {
+    const sgkStatus = document.getElementById('sgk-status').value;
+    const sgkPercentage = parseFloat(document.getElementById('sgk-percentage').value) || 0;
+
+    try {
+      const previewResponse = await this.apiClient.post('/api/pricing/preview', {
+        device_price: devicePrice,
+        sgk_status: sgkStatus,
+        sgk_percentage: sgkPercentage,
+        pricing_settings: pricingSettings
+      });
+
+      const pricing = previewResponse.data;
+      const pricingDetails = document.getElementById('pricing-details');
+      
+      pricingDetails.innerHTML = `
+        <div class="flex justify-between">
+          <span>Cihaz Fiyatı:</span>
+          <span>${pricing.device_price.toLocaleString('tr-TR')} TL</span>
+        </div>
+        ${pricing.sgk_discount > 0 ? `
+        <div class="flex justify-between text-green-600">
+          <span>SGK İndirimi:</span>
+          <span>-${pricing.sgk_discount.toLocaleString('tr-TR')} TL</span>
+        </div>
+        ` : ''}
+        <div class="flex justify-between font-medium">
+          <span>Ödenecek Tutar:</span>
+          <span>${pricing.final_price.toLocaleString('tr-TR')} TL</span>
+        </div>
+        ${pricing.installment_options ? `
+        <div class="mt-2 pt-2 border-t">
+          <div class="text-xs text-gray-600">Taksit Seçenekleri:</div>
+          ${pricing.installment_options.map(opt => `
+            <div class="flex justify-between text-xs">
+              <span>${opt.installments} taksit:</span>
+              <span>${opt.monthly_payment.toLocaleString('tr-TR')} TL/ay</span>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+      `;
+
+      document.getElementById('pricing-preview').classList.remove('hidden');
+    } catch (error) {
+      console.error('Error updating pricing preview:', error);
+    }
+  }
+
+  // Submit Device Sale
+  async submitDeviceSale(form, patientId) {
+    const formData = new FormData(form);
+    const saleData = {
+      patient_id: patientId,
+      device_id: formData.get('device_id'),
+      sgk_status: formData.get('sgk_status'),
+      sgk_percentage: parseFloat(formData.get('sgk_percentage')) || 0,
+      payment_type: formData.get('payment_type'),
+      notes: formData.get('notes'),
+      pricing_settings: {} // Will be fetched from backend
+    };
+
+    if (saleData.payment_type === 'installment') {
+      saleData.installment_count = parseInt(formData.get('installment_count'));
+      saleData.interest_rate = parseFloat(formData.get('interest_rate')) || 0;
+    }
+
+    try {
+      // Submit device assignment with sale
+      const response = await this.apiClient.post(`/api/patients/${patientId}/assign-devices-extended`, saleData);
+      
+      if (response.data.success) {
+        this.showSuccess('Cihaz satışı başarıyla tamamlandı');
+        
+        // If installment payment, create payment plan
+        if (saleData.payment_type === 'installment' && response.data.sale_id) {
+          await this.createPaymentPlan(response.data.sale_id, saleData);
+        }
+        
+        // Refresh patient data and close modal
+        if (window.patientDetailsComponent) {
+          window.patientDetailsComponent.loadPatientData();
+        }
+        
+        form.closest('.fixed').remove();
+      } else {
+        this.showError('Satış tamamlanırken hata oluştu');
+      }
+    } catch (error) {
+      console.error('Error submitting device sale:', error);
+      this.showError('Satış tamamlanırken hata oluştu: ' + error.message);
+    }
+  }
+
+  // Create Payment Plan for Installments
+  async createPaymentPlan(saleId, saleData) {
+    try {
+      const planData = {
+        installment_count: saleData.installment_count,
+        interest_rate: saleData.interest_rate,
+        start_date: new Date().toISOString().split('T')[0]
+      };
+
+      await this.apiClient.post(`/api/sales/${saleId}/payment-plan`, planData);
+    } catch (error) {
+      console.error('Error creating payment plan:', error);
+      this.showError('Taksit planı oluşturulurken hata oluştu');
+    }
+  }
+
+  // Sales History Rendering
+  renderSalesHistory(sales) {
+    if (!sales || sales.length === 0) {
+      return '<p class="text-gray-500 text-sm">Henüz satış kaydı yok</p>';
+    }
+
+    return sales
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .map(sale => `
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-3">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h4 class="font-medium text-gray-900">Satış #${sale.id}</h4>
+              <p class="text-sm text-gray-600">${new Date(sale.date).toLocaleDateString('tr-TR')}</p>
+              <div class="mt-2">
+                ${sale.items.map(item => `
+                  <div class="text-sm">
+                    <span class="font-medium">${item.quantity}x ${item.name}</span>
+                    <span class="text-gray-600"> - ${item.price.toLocaleString('tr-TR')} TL</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-green-600">${sale.totalAmount.toLocaleString('tr-TR')} TL</p>
+              <span class="inline-block px-2 py-1 text-xs rounded ${this.getSaleStatusColor(sale.status)}">
+                ${this.getSaleStatusText(sale.status)}
+              </span>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-2 mt-3">
+            <button onclick="salesManagement.viewSaleDetails('${sale.id}')" 
+                    class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+              Detaylar
+            </button>
+            <button onclick="salesManagement.printInvoice('${sale.id}')" 
+                    class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+              Fatura
+            </button>
+            <button onclick="salesManagement.editSale('${sale.id}')" 
+                    class="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700">
+              Düzenle
+            </button>
+          </div>
+        </div>
+      `).join('');
+  }
+
+  // Payment Tracking Rendering
+  renderPaymentTracking(sales) {
+    const pendingPayments = sales.filter(sale => sale.paymentStatus === 'pending' || sale.paymentStatus === 'partial');
+    
+    if (pendingPayments.length === 0) {
+      return '<p class="text-gray-500 text-sm">Bekleyen ödeme yok</p>';
+    }
+
+    return pendingPayments.map(sale => `
+      <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-3">
+        <div class="flex justify-between items-center">
+          <div>
+            <h4 class="font-medium text-gray-900">Satış #${sale.id}</h4>
+            <p class="text-sm text-gray-600">Vade: ${new Date(sale.dueDate).toLocaleDateString('tr-TR')}</p>
+            <p class="text-sm font-medium text-red-600">Kalan: ${(sale.totalAmount - (sale.paidAmount || 0)).toLocaleString('tr-TR')} TL</p>
+          </div>
+          <div class="text-right">
+            <button onclick="salesManagement.recordPayment('${sale.id}')" 
+                    class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+              Ödeme Kaydet
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Returns and Exchanges Rendering
+  async renderReturnsExchanges(patientId) {
+    const returns = this.getPatientReturns(patientId);
+    
+    // Get device replacements from API
+    let deviceReplacements = [];
+    try {
+      const response = await fetch(`${this.apiClient.baseUrl}/api/patients/${patientId}/replacements`);
+      const result = await response.json();
+      if (result.success) {
+        deviceReplacements = result.data;
+      }
+    } catch (error) {
+      console.error('Error fetching replacements:', error);
+    }
+    
+    if (returns.length === 0 && deviceReplacements.length === 0) {
+      return `
+        <div class="text-center py-4">
+          <p class="text-gray-500 text-sm mb-3">Henüz iade/değişim kaydı yok</p>
+          <button onclick="salesManagement.openReturnModal('${patientId}')" 
+                  class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+            <i class="fas fa-undo mr-2"></i>İade/Değişim Başlat
+          </button>
+        </div>
+      `;
+    }
+
+    let html = '';
+    
+    // Render device replacements
+    if (deviceReplacements.length > 0) {
+      html += '<h4 class="text-md font-semibold text-gray-900 mb-3">Cihaz Değişimleri</h4>';
+      html += deviceReplacements.map((replacement, index) => {
+        const invoice = replacement.return_invoice || {};
+        return `
+        <div class="bg-amber-50 p-4 rounded-lg border-2 border-amber-300 mb-4">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <h4 class="font-semibold text-gray-900">Cihaz Değişimi #${index + 1}</h4>
+                <span class="inline-block px-2 py-1 text-xs rounded ${
+                  replacement.status === 'pending_invoice' ? 'bg-yellow-100 text-yellow-800' : 
+                  replacement.status === 'invoice_created' ? 'bg-blue-100 text-blue-800' :
+                  replacement.status === 'completed' && invoice.gib_sent ? 'bg-green-100 text-green-800' :
+                  replacement.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                  'bg-gray-100 text-gray-800'
+                }">
+                  ${
+                    replacement.status === 'pending_invoice' ? 'Fatura Bekliyor' : 
+                    replacement.status === 'invoice_created' && !invoice.gib_sent ? 'Fatura Oluşturuldu' :
+                    replacement.status === 'completed' && invoice.gib_sent ? 'GİB\'e Gönderildi ✓' :
+                    replacement.status === 'completed' ? 'Tamamlandı' : 'Beklemede'
+                  }
+                </span>
+              </div>
+              <p class="text-sm text-gray-600 mb-1">
+                <strong>Tarih:</strong> ${new Date(replacement.createdAt || replacement.created_at).toLocaleDateString('tr-TR', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+              <div class="grid grid-cols-2 gap-4 mt-2">
+                <div class="bg-red-50 border border-red-200 rounded p-2">
+                  <p class="text-xs text-red-600 font-medium mb-1">Eski Cihaz</p>
+                  <p class="text-sm text-gray-900">${replacement.oldDeviceInfo || replacement.old_device_info || 'Belirtilmemiş'}</p>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded p-2">
+                  <p class="text-xs text-green-600 font-medium mb-1">Yeni Cihaz</p>
+                  <p class="text-sm text-gray-900">${replacement.newDeviceInfo || replacement.new_device_info || 'Belirtilmemiş'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex gap-2 mt-3 pt-3 border-t border-amber-200">
+            ${replacement.status === 'pending_invoice' ? `
+              <button onclick="salesManagement.openReturnInvoiceModal('${replacement.id}', '${patientId}')" 
+                      class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium transition-colors">
+                <i class="fas fa-file-invoice mr-1"></i>İade Faturası Oluştur
+              </button>
+            ` : invoice.gib_sent ? `
+              <button disabled
+                      class="flex-1 px-3 py-2 bg-green-600 text-white rounded-md opacity-75 cursor-not-allowed text-sm font-medium">
+                <i class="fas fa-check-circle mr-1"></i>GİB'e Gönderildi
+              </button>
+              <button onclick="salesManagement.previewInvoice('${invoice.id}')" 
+                      class="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm font-medium transition-colors">
+                <i class="fas fa-eye mr-1"></i>Fatura Önizle
+              </button>
+            ` : invoice.id ? `
+              <button onclick="salesManagement.previewInvoice('${invoice.id}')" 
+                      class="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm font-medium transition-colors">
+                <i class="fas fa-eye mr-1"></i>Fatura Önizle
+              </button>
+              <button onclick="salesManagement.sendInvoice('${invoice.id}')" 
+                      class="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium transition-colors">
+                <i class="fas fa-paper-plane mr-1"></i>GİB'e Gönder
+              </button>
+            ` : ''}
+          </div>
+          
+          ${invoice.id ? `
+            <div class="mt-2 pt-2 border-t border-amber-200">
+              <p class="text-xs text-green-600 flex items-center mb-1">
+                <i class="fas fa-check-circle mr-1"></i>
+                İade faturası oluşturuldu: ${invoice.invoice_number || invoice.id}
+              </p>
+              ${invoice.gib_sent ? `
+                <p class="text-xs text-green-700 font-semibold flex items-center mb-1">
+                  <i class="fas fa-paper-plane mr-1"></i>
+                  GİB'e gönderildi: ${new Date(invoice.gib_sent_date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </p>
+              ` : ''}
+              ${invoice.supplier_invoice_number ? `
+                <p class="text-xs text-gray-600">
+                  <i class="fas fa-file-alt mr-1"></i>
+                  İadeye Konu Fatura: ${invoice.supplier_invoice_number}
+                </p>
+              ` : ''}
+              ${invoice.supplier_name ? `
+                <p class="text-xs text-gray-600">
+                  <i class="fas fa-truck mr-1"></i>
+                  Tedarikçi: ${invoice.supplier_name}
+                </p>
+              ` : ''}
+              ${invoice.invoice_note ? `
+                <p class="text-xs text-amber-700 mt-1">
+                  <i class="fas fa-sticky-note mr-1"></i>
+                  ${invoice.invoice_note}
+                </p>
+              ` : ''}
+            </div>
+          ` : ''}
+        </div>
+      `;
+      }).join('');
+      
+      html += '<div class="mb-6"></div>'; // Spacer
+    }
+    
+    // Render standard returns
+    if (returns.length > 0) {
+      html += '<h4 class="text-md font-semibold text-gray-900 mb-3">Genel İade/Değişim</h4>';
+      html += returns.map(returnItem => `
+        <div class="bg-orange-50 p-4 rounded-lg border border-orange-200 mb-3">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-medium text-gray-900">${returnItem.type === 'return' ? 'İade' : 'Değişim'} #${returnItem.id}</h4>
+              <p class="text-sm text-gray-600">Tarih: ${new Date(returnItem.date).toLocaleDateString('tr-TR')}</p>
+              <p class="text-sm text-gray-600">Sebep: ${returnItem.reason}</p>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-1 text-xs rounded ${this.getReturnStatusColor(returnItem.status)}">
+                ${this.getReturnStatusText(returnItem.status)}
+              </span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    return html;
+  }
+
+  // Modal Functions
+  openNewSaleModal(patientId) {
+    const modalHtml = `
+      <div id="newSaleModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Yeni Satış</h3>
+            <button onclick="salesManagement.closeModal('newSaleModal')" class="text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <form id="newSaleForm" onsubmit="salesManagement.saveSale(event, '${patientId}')">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Satış Tarihi</label>
+                <input type="date" id="saleDate" value="${new Date().toISOString().split('T')[0]}" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ödeme Yöntemi</label>
+                <select id="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                  <option value="cash">Nakit</option>
+                  <option value="card">Kart</option>
+                  <option value="transfer">Havale</option>
+                  <option value="installment">Taksit</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-2">
+                <h4 class="font-medium">Satış Kalemleri</h4>
+                <button type="button" onclick="salesManagement.addSaleItem()" 
+                        class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                  <i class="fas fa-plus mr-1"></i>Kalem Ekle
+                </button>
+              </div>
+              <div id="saleItems">
+                ${this.renderSaleItemRow(1)}
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>Ara Toplam: <span id="subtotal">0.00 TL</span></div>
+                <div>KDV: <span id="totalTax">0.00 TL</span></div>
+                <div class="col-span-2 font-bold text-lg">Genel Toplam: <span id="grandTotal">0.00 TL</span></div>
+              </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+              <button type="button" onclick="salesManagement.closeModal('newSaleModal')" 
+                      class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                İptal
+              </button>
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Satışı Kaydet
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    this.attachSaleFormListeners();
+  }
+
+  renderSaleItemRow(index) {
+    return `
+      <div class="sale-item-row grid grid-cols-12 gap-2 mb-2 items-end" data-index="${index}">
+        <div class="col-span-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ürün/Hizmet</label>
+          <select class="item-product w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+            <option value="">Seçiniz...</option>
+            <option value="hearing_aid" data-price="8000" data-tax="8">İşitme Cihazı</option>
+            <option value="ear_mold" data-price="300" data-tax="18">Kulakiçi Kalıp</option>
+            <option value="battery" data-price="50" data-tax="18">Pil</option>
+            <option value="maintenance" data-price="200" data-tax="18">Bakım Hizmeti</option>
+            <option value="consultation" data-price="150" data-tax="0">Konsültasyon</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Miktar</label>
+          <input type="number" class="item-quantity w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                 value="1" min="1" required>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Birim Fiyat</label>
+          <input type="number" class="item-price w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                 step="0.01" required>
+        </div>
+        <div class="col-span-1">
+          <label class="block text-sm font-medium text-gray-700 mb-1">KDV %</label>
+          <input type="number" class="item-tax w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                 readonly>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Toplam</label>
+          <input type="text" class="item-total w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+        </div>
+        <div class="col-span-1">
+          <button type="button" onclick="salesManagement.removeSaleItem(${index})" 
+                  class="bg-red-600 text-white px-2 py-2 rounded hover:bg-red-700">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Sale Management Functions
+  addSaleItem() {
+    this.itemCounter++;
+    const container = document.getElementById('saleItems');
+    container.insertAdjacentHTML('beforeend', this.renderSaleItemRow(this.itemCounter));
+    this.attachSaleFormListeners();
+  }
+
+  removeSaleItem(index) {
+    const row = document.querySelector(`[data-index="${index}"]`);
+    if (row) {
+      row.remove();
+      this.calculateSaleTotal();
+    }
+  }
+
+  attachSaleFormListeners() {
+    document.querySelectorAll('.item-product').forEach(select => {
+      select.addEventListener('change', (e) => {
+        const row = e.target.closest('.sale-item-row');
+        const option = e.target.selectedOptions[0];
+        if (option && option.dataset.price) {
+          row.querySelector('.item-price').value = option.dataset.price;
+          row.querySelector('.item-tax').value = option.dataset.tax;
+          this.calculateSaleTotal();
+        }
+      });
+    });
+
+    document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
+      input.addEventListener('input', () => this.calculateSaleTotal());
+    });
+  }
+
+  calculateSaleTotal() {
+    let subtotal = 0;
+    let totalTax = 0;
+
+    document.querySelectorAll('.sale-item-row').forEach(row => {
+      const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+      const price = parseFloat(row.querySelector('.item-price').value) || 0;
+      const taxRate = parseFloat(row.querySelector('.item-tax').value) || 0;
+      
+      const itemTotal = quantity * price;
+      const itemTax = itemTotal * (taxRate / 100);
+      
+      row.querySelector('.item-total').value = (itemTotal + itemTax).toFixed(2) + ' TL';
+      
+      subtotal += itemTotal;
+      totalTax += itemTax;
+    });
+
+    const grandTotal = subtotal + totalTax;
+    
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' TL';
+    document.getElementById('totalTax').textContent = totalTax.toFixed(2) + ' TL';
+    document.getElementById('grandTotal').textContent = grandTotal.toFixed(2) + ' TL';
+  }
+
+  saveSale(event, patientId) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const items = [];
+    let totalAmount = 0;
+    
+    document.querySelectorAll('.sale-item-row').forEach(row => {
+      const product = row.querySelector('.item-product').value;
+      const productText = row.querySelector('.item-product').selectedOptions[0].text;
+      const quantity = parseFloat(row.querySelector('.item-quantity').value);
+      const price = parseFloat(row.querySelector('.item-price').value);
+      const taxRate = parseFloat(row.querySelector('.item-tax').value);
+      
+      if (product && quantity && price) {
+        const itemTotal = quantity * price;
+        const itemTax = itemTotal * (taxRate / 100);
+        const finalTotal = itemTotal + itemTax;
+        
+        items.push({
+          product,
+          name: productText,
+          quantity,
+          price,
+          taxRate,
+          total: finalTotal
+        });
+        
+        totalAmount += finalTotal;
+      }
+    });
+    
+    if (items.length === 0) {
+      this.showToast('En az bir satış kalemi eklemelisiniz', 'error');
+      return;
+    }
+    
+    const sale = {
+      id: this.generateSaleId(),
+      patientId,
+      date: document.getElementById('saleDate').value,
+      paymentMethod: document.getElementById('paymentMethod').value,
+      items,
+      totalAmount,
+      status: 'completed',
+      paymentStatus: 'paid',
+      createdAt: new Date().toISOString()
+    };
+    
+    this.salesData.push(sale);
+    this.saveSalesData();
+    
+    // Generate invoice
+    this.generateInvoice(sale);
+    
+    this.closeModal('newSaleModal');
+    this.showToast('Satış başarıyla kaydedildi', 'success');
+    
+    // Refresh the sales tab
+    this.refreshSalesTab(patientId);
+  }
+
+  // Invoice Generation
+  generateInvoice(sale) {
+    const invoice = {
+      id: this.generateInvoiceId(),
+      saleId: sale.id,
+      invoiceNumber: this.generateInvoiceNumber(),
+      patientId: sale.patientId,
+      date: sale.date,
+      dueDate: this.calculateDueDate(sale.date),
+      items: sale.items,
+      subtotal: sale.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
+      totalTax: sale.items.reduce((sum, item) => sum + (item.quantity * item.price * item.taxRate / 100), 0),
+      totalAmount: sale.totalAmount,
+      status: 'draft',
+      paymentMethod: sale.paymentMethod,
+      createdAt: new Date().toISOString()
+    };
+    
+    this.invoiceData.push(invoice);
+    this.saveInvoiceData();
+    
+    return invoice;
+  }
+
+  // Utility Functions
+  generateSaleId() {
+    return 'SALE-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  }
+
+  generateInvoiceId() {
+    return 'INV-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  }
+
+  generateInvoiceNumber() {
+    const year = new Date().getFullYear();
+    const number = this.invoiceCounter.toString().padStart(6, '0');
+    this.invoiceCounter++;
+    return `XEAR${year}${number}`;
+  }
+
+  calculateDueDate(saleDate, termDays = 30) {
+    const date = new Date(saleDate);
+    date.setDate(date.getDate() + termDays);
+    return date.toISOString().split('T')[0];
+  }
+
+  // Fetch sales from backend API
+  async fetchPatientSalesFromAPI(patientId) {
+    try {
+      const response = await this.apiClient.get(`/api/patients/${patientId}/sales`);
+      const sales = response?.data || response || [];
+      
+      // Normalize sales data for frontend
+      return sales.map(sale => ({
+        id: sale.id,
+        patientId: sale.patientId || sale.patient_id,
+        date: sale.saleDate || sale.sale_date || sale.createdAt || sale.created_at,
+        totalAmount: parseFloat(sale.finalAmount || sale.final_amount || sale.totalAmount || sale.total_amount || 0),
+        status: sale.status || 'completed',
+        paymentMethod: sale.paymentMethod || sale.payment_method || 'cash',
+        items: sale.device_assignments || sale.deviceAssignments || [],
+        notes: sale.notes || ''
+      }));
+    } catch (error) {
+      console.warn('Failed to fetch sales from API, falling back to localStorage:', error);
+      // Fallback to localStorage
+      return this.getPatientSales(patientId);
+    }
+  }
+
+  getPatientSales(patientId) {
+    return this.salesData.filter(sale => sale.patientId === patientId);
+  }
+
+  getPatientReturns(patientId) {
+    // This would be implemented with actual returns data
+    return [];
+  }
+
+  calculateTotalSales(sales) {
+    return sales.reduce((total, sale) => total + (sale.totalAmount || 0), 0);
+  }
+
+  getLastSaleDate(sales) {
+    if (!sales || sales.length === 0) return 'Henüz satış yok';
+    const lastSale = sales.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+    return new Date(lastSale.date).toLocaleDateString('tr-TR');
+  }
+
+  getSaleStatusColor(status) {
+    const colors = {
+      'completed': 'bg-green-100 text-green-800',
+      'pending': 'bg-yellow-100 text-yellow-800',
+      'cancelled': 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  }
+
+  getSaleStatusText(status) {
+    const texts = {
+      'completed': 'Tamamlandı',
+      'pending': 'Beklemede',
+      'cancelled': 'İptal Edildi'
+    };
+    return texts[status] || 'Bilinmiyor';
+  }
+
+  getReturnStatusColor(status) {
+    const colors = {
+      'pending': 'bg-yellow-100 text-yellow-800',
+      'approved': 'bg-green-100 text-green-800',
+      'rejected': 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  }
+
+  getReturnStatusText(status) {
+    const texts = {
+      'pending': 'Beklemede',
+      'approved': 'Onaylandı',
+      'rejected': 'Reddedildi'
+    };
+    return texts[status] || 'Bilinmiyor';
+  }
+
+  // Action Functions
+  viewSaleDetails(saleId) {
+    const sale = this.salesData.find(s => s.id === saleId);
+    if (!sale) {
+      this.showToast('Satış bulunamadı', 'error');
+      return;
+    }
+    
+    // Show sale details modal
+    this.showSaleDetailsModal(sale);
+  }
+
+  printInvoice(saleId) {
+    const sale = this.salesData.find(s => s.id === saleId);
+    if (!sale) {
+      this.showToast('Satış bulunamadı', 'error');
+      return;
+    }
+    
+    // Generate and print invoice
+    this.showToast('Fatura yazdırılıyor...', 'info');
+    // Implementation for printing would go here
+  }
+
+  editSale(saleId) {
+    const sale = this.salesData.find(s => s.id === saleId);
+    if (!sale) {
+      this.showToast('Satış bulunamadı', 'error');
+      return;
+    }
+    
+    // Open edit modal with sale data
+    this.showToast('Satış düzenleme özelliği geliştirme aşamasında', 'info');
+  }
+
+  recordPayment(saleId) {
+    const sale = this.salesData.find(s => s.id === saleId);
+    if (!sale) {
+      this.showToast('Satış bulunamadı', 'error');
+      return;
+    }
+
+    // Open payment recording modal
+    this.openPaymentRecordingModal(sale);
+  }
+
+  // Open Payment Recording Modal
+  openPaymentRecordingModal(sale) {
+    const remainingAmount = sale.totalAmount - (sale.paidAmount || 0);
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Ödeme Kaydet - Satış #${sale.id}</h2>
+            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-gray-600">Toplam Tutar:</span>
+                <span class="font-medium ml-2">${sale.totalAmount.toLocaleString('tr-TR')} TL</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Ödenen:</span>
+                <span class="font-medium ml-2 text-green-600">${(sale.paidAmount || 0).toLocaleString('tr-TR')} TL</span>
+              </div>
+              <div class="col-span-2">
+                <span class="text-gray-600">Kalan Tutar:</span>
+                <span class="font-medium ml-2 text-red-600">${remainingAmount.toLocaleString('tr-TR')} TL</span>
+              </div>
+            </div>
+          </div>
+
+          <form id="payment-recording-form" class="space-y-4">
+            <!-- Payment Amount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Tutarı (TL)</label>
+              <input type="number" id="payment-amount" name="amount" step="0.01" min="0.01"
+                     max="${remainingAmount}" value="${remainingAmount}"
+                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+            </div>
+
+            <!-- Payment Method -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Yöntemi</label>
+              <select id="payment-method" name="method" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                <option value="cash">Nakit</option>
+                <option value="card">Kredi Kartı</option>
+                <option value="transfer">Havale/EFT</option>
+                <option value="check">Çek</option>
+              </select>
+            </div>
+
+            <!-- Payment Date -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Tarihi</label>
+              <input type="date" id="payment-date" name="date" value="${new Date().toISOString().split('T')[0]}"
+                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+            </div>
+
+            <!-- Notes -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Notlar</label>
+              <textarea id="payment-notes" name="notes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Ödeme ile ilgili notlar..."></textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+              <button type="button" onclick="this.closest('.fixed').remove()"
+                      class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                İptal
+              </button>
+              <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                Ödemeyi Kaydet
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Setup form submission
+    const form = document.getElementById('payment-recording-form');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.submitPaymentRecording(form, sale);
+    });
+  }
+
+  // Submit Payment Recording
+  submitPaymentRecording(form, sale) {
+    const formData = new FormData(form);
+    const paymentData = {
+      amount: parseFloat(formData.get('amount')),
+      method: formData.get('method'),
+      date: formData.get('date'),
+      notes: formData.get('notes'),
+      saleId: sale.id,
+      timestamp: new Date().toISOString()
+    };
+
+    // Validate payment amount
+    const remainingAmount = sale.totalAmount - (sale.paidAmount || 0);
+    if (paymentData.amount > remainingAmount) {
+      this.showToast('Ödeme tutarı kalan tutardan fazla olamaz', 'error');
+      return;
+    }
+
+    // Update sale payment status
+    if (!sale.payments) {
+      sale.payments = [];
+    }
+
+    sale.payments.push(paymentData);
+    sale.paidAmount = (sale.paidAmount || 0) + paymentData.amount;
+
+    // Update payment status
+    if (sale.paidAmount >= sale.totalAmount) {
+      sale.paymentStatus = 'paid';
+    } else if (sale.paidAmount > 0) {
+      sale.paymentStatus = 'partial';
+    }
+
+    // Save updated sale data
+    this.saveSalesData();
+
+    // Log activity
+    this.logActivity(sale.patientId, 'payment_recorded', {
+      saleId: sale.id,
+      amount: paymentData.amount,
+      method: paymentData.method,
+      date: paymentData.date
+    });
+
+    this.showToast(`Ödeme başarıyla kaydedildi: ${paymentData.amount.toLocaleString('tr-TR')} TL`, 'success');
+
+    // Close modal and refresh
+    form.closest('.fixed').remove();
+
+    // Refresh the sales tab if possible
+    if (window.patientTabContentComponent && window.currentPatientData) {
+      const salesContent = window.patientTabContentComponent.renderSales(window.currentPatientData);
+      const salesContainer = document.querySelector('[data-tab="sales"]');
+      if (salesContainer) {
+        salesContainer.innerHTML = salesContent;
+      }
+    }
+  }
+
+  openInvoiceModal(patientId) {
+    this.showToast('Fatura oluşturma özelliği geliştirme aşamasında', 'info');
+  }
+
+  openPaymentTrackingModal(patientId) {
+    this.showToast('Ödeme takibi özelliği geliştirme aşamasında', 'info');
+  }
+
+  async openCollectionModal(patientId) {
+    try {
+      // Fetch patient sales and outstanding payments
+      const sales = await this.fetchPatientSalesFromAPI(patientId);
+      
+      // Get promissory notes for this patient
+      let promissoryNotes = [];
+      try {
+        const response = await this.apiClient.get(`/api/patients/${patientId}/promissory-notes`);
+        promissoryNotes = response?.data || response || [];
+      } catch (err) {
+        console.warn('Failed to fetch promissory notes:', err);
+      }
+
+      const modal = document.createElement('div');
+      modal.id = 'collectionModal';
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-900">Tahsilat Takibi</h2>
+              <button onclick="this.closest('#collectionModal').remove()" 
+                      class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-2xl"></i>
+              </button>
+            </div>
+
+            <div class="space-y-6">
+              <!-- Outstanding Sales -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4">Bekleyen Ödemeler</h3>
+                <div class="space-y-3">
+                  ${sales.filter(s => s.status === 'pending').map(sale => `
+                    <div class="bg-white p-4 rounded border">
+                      <div class="flex justify-between items-center">
+                        <div>
+                          <p class="font-medium">${sale.id}</p>
+                          <p class="text-sm text-gray-600">${new Date(sale.date).toLocaleDateString('tr-TR')}</p>
+                        </div>
+                        <div class="text-right">
+                          <p class="text-lg font-bold text-red-600">${(sale.totalAmount || 0).toLocaleString('tr-TR')} TL</p>
+                          <button onclick="salesManagement.recordPayment('${sale.id}', '${patientId}', ${sale.totalAmount})" 
+                                  class="mt-2 text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+                            Ödeme Al
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('') || '<p class="text-gray-500 text-center py-4">Bekleyen ödeme yok</p>'}
+                </div>
+              </div>
+
+              <!-- Promissory Notes -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4">Senet Takibi</h3>
+                <div class="space-y-3">
+                  ${promissoryNotes.map(note => {
+                    const isPaid = note.status === 'paid';
+                    const isOverdue = note.status === 'overdue' || (note.dueDate && new Date(note.dueDate) < new Date());
+                    return `
+                      <div class="bg-white p-4 rounded border ${isPaid ? 'opacity-60' : ''}">
+                        <div class="flex justify-between items-center">
+                          <div>
+                            <p class="font-medium">Senet ${note.id}</p>
+                            <p class="text-sm text-gray-600">Vade: ${note.dueDate ? new Date(note.dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}</p>
+                            ${isOverdue && !isPaid ? '<span class="text-xs text-red-600 font-semibold">VADESİ GEÇMİŞ</span>' : ''}
+                          </div>
+                          <div class="text-right">
+                            <p class="text-lg font-bold ${isPaid ? 'text-green-600' : isOverdue ? 'text-red-600' : 'text-orange-600'}">${(note.amount || 0).toLocaleString('tr-TR')} TL</p>
+                            ${!isPaid ? `
+                              <button onclick="salesManagement.recordPromissoryPayment('${note.id}', '${patientId}', ${note.amount})" 
+                                      class="mt-2 text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                                Tahsil Et
+                              </button>
+                            ` : '<span class="text-sm text-green-600">✓ Tahsil Edildi</span>'}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('') || '<p class="text-gray-500 text-center py-4">Kayıtlı senet yok</p>'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    } catch (error) {
+      console.error('Failed to open collection modal:', error);
+      this.showToast('Tahsilat bilgileri yüklenirken hata oluştu', 'error');
+    }
+  }
+
+  openReturnModal(patientId) {
+    this.showToast('İade/değişim özelliği geliştirme aşamasında', 'info');
+  }
+
+  async recordPayment(saleId, patientId, amount) {
+    const paymentAmount = prompt(`Ödeme tutarını girin (Kalan: ${amount.toLocaleString('tr-TR')} TL):`, amount);
+    if (!paymentAmount) return;
+
+    try {
+      const payment = {
+        patient_id: patientId,
+        sale_id: saleId,
+        amount: parseFloat(paymentAmount),
+        payment_date: new Date().toISOString(),
+        payment_method: 'cash',
+        payment_type: 'payment',
+        status: parseFloat(paymentAmount) >= amount ? 'paid' : 'partial'
+      };
+
+      await this.apiClient.post('/api/payment-records', payment);
+      
+      // Update sale status if fully paid
+      if (parseFloat(paymentAmount) >= amount) {
+        await this.apiClient.patch(`/api/sales/${saleId}`, { status: 'completed' });
+        this.showToast('Ödeme tam tahsil edildi!', 'success');
+      } else {
+        this.showToast('Kısmi ödeme kaydedildi', 'warning');
+      }
+
+      // Refresh modal
+      this.closeModal('collectionModal');
+      this.openCollectionModal(patientId);
+    } catch (error) {
+      console.error('Payment recording failed:', error);
+      this.showToast('Ödeme kaydedilemedi', 'error');
+    }
+  }
+
+  async recordPromissoryPayment(noteId, patientId, amount) {
+    if (!confirm(`${amount.toLocaleString('tr-TR')} TL tutarındaki senet tahsil edildi mi?`)) return;
+
+    try {
+      const payment = {
+        patient_id: patientId,
+        promissory_note_id: noteId,
+        amount: amount,
+        payment_date: new Date().toISOString(),
+        payment_method: 'promissory_note',
+        payment_type: 'promissory_note',
+        status: 'paid'
+      };
+
+      await this.apiClient.post('/api/payment-records', payment);
+      
+      // Update promissory note status
+      await this.apiClient.patch(`/api/promissory-notes/${noteId}`, { status: 'paid' });
+      
+      this.showToast('Senet tahsil edildi!', 'success');
+
+      // Refresh modal
+      this.closeModal('collectionModal');
+      this.openCollectionModal(patientId);
+    } catch (error) {
+      console.error('Promissory payment recording failed:', error);
+      this.showToast('Senet ödemesi kaydedilemedi', 'error');
+    }
+  }
+
+  refreshSalesTab(patientId) {
+    // This would refresh the sales tab content
+    // Implementation depends on the tab system
+  }
+
+  // Modal and UI Helpers
+  closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.remove();
+    }
+  }
+
+  showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+      type === 'success' ? 'bg-green-600' :
+      type === 'error' ? 'bg-red-600' :
+      type === 'warning' ? 'bg-yellow-600' :
+      'bg-blue-600'
+    }`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
+
+  showSaleDetailsModal(sale) {
+    const modalHtml = `
+      <div id="saleDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Satış Detayları - #${sale.id}</h3>
+            <button onclick="salesManagement.closeModal('saleDetailsModal')" class="text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Tarih</label>
+                <p class="text-sm text-gray-900">${new Date(sale.date).toLocaleDateString('tr-TR')}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Ödeme Yöntemi</label>
+                <p class="text-sm text-gray-900">${sale.paymentMethod}</p>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Satış Kalemleri</label>
+              <div class="border rounded-lg overflow-hidden">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ürün</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Miktar</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fiyat</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    ${sale.items.map(item => `
+                      <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.name}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.quantity}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.price.toLocaleString('tr-TR')} TL</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.total.toLocaleString('tr-TR')} TL</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="text-right">
+                <p class="text-lg font-bold">Toplam: ${sale.totalAmount.toLocaleString('tr-TR')} TL</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3 mt-6">
+            <button onclick="salesManagement.closeModal('saleDetailsModal')" 
+                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+              Kapat
+            </button>
+            <button onclick="salesManagement.printInvoice('${sale.id}')" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Fatura Yazdır
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+
+  // Activity Logging
+  logActivity(patientId, activityType, details = {}) {
+    try {
+      const activityLog = {
+        id: 'ACT-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+        patientId: patientId,
+        type: activityType,
+        details: details,
+        timestamp: new Date().toISOString(),
+        user: 'current_user' // This should be replaced with actual user info
+      };
+
+      // Get existing activity logs
+      let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+
+      // Add new activity
+      activityLogs.push(activityLog);
+
+      // Keep only last 1000 activities to prevent localStorage bloat
+      if (activityLogs.length > 1000) {
+        activityLogs = activityLogs.slice(-1000);
+      }
+
+      // Save back to localStorage
+      localStorage.setItem('activityLogs', JSON.stringify(activityLogs));
+
+      console.log('Activity logged:', activityLog);
+    } catch (error) {
+      console.error('Error logging activity:', error);
+    }
+  }
+
+  // Success/Error message helpers
+  showSuccess(message) {
+    this.showToast(message, 'success');
+  }
+
+  showError(message) {
+    this.showToast(message, 'error');
+  }
+
+  // Utility: normalize patient object using shared canonicalizer when available
+  normalizePatientObject(patient) {
+    if (!patient) return patient;
+    try {
+      if (typeof window !== 'undefined' && window.CanonicalizePatient && typeof window.CanonicalizePatient.canonicalizePatient === 'function') {
+        return window.CanonicalizePatient.canonicalizePatient(patient) || patient;
+      }
+    } catch (e) {
+      console.warn('SalesManagementComponent: canonicalizer failed', e);
+    }
+    const p = Object.assign({}, patient);
+    p.identityNumber = p.identityNumber || p.identity_number || p.tcNumber || p.tc || null;
+    if (p.dob && p.dob.indexOf && p.dob.indexOf('T') !== -1) p.dob = p.dob.split('T')[0];
+    p.name = p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim();
+    p.tcNumber = p.tcNumber || p.tc || p.identityNumber || null;
+    return p;
+  }
+
+  // Async helper: fetch patient via domainManager/legacyBridge then render sales tab
+  async renderSalesAsync(patientId) {
+    let pdata = null;
+    try {
+      if (typeof window !== 'undefined') {
+        if (window.domainManager && typeof window.domainManager.getPatient === 'function') {
+          pdata = await window.domainManager.getPatient(patientId);
+        } else if (window.legacyBridge && typeof window.legacyBridge.getPatients === 'function') {
+          const list = await Promise.resolve(window.legacyBridge.getPatients());
+          pdata = list.find(p => p.id === patientId) || null;
+        }
+      }
+    } catch (e) {
+      console.warn('SalesManagementComponent: domainManager/legacyBridge lookup failed', e);
+      pdata = null;
+    }
+
+    if (!pdata) {
+      try {
+        // Fallback to API client for fresh data
+        const res = await this.apiClient.getPatient ? await this.apiClient.getPatient(patientId) : await this.apiClient.get(`/api/patients/${patientId}`);
+        pdata = res && (res.data ?? res) || null;
+      } catch (apiErr) {
+        console.warn('SalesManagementComponent: API patient fetch failed', apiErr);
+      }
+    }
+
+    pdata = this.normalizePatientObject(pdata || {});
+    return this.renderSalesTab(pdata);
+  }
+
+  // Return Invoice Modal
+  async openReturnInvoiceModal(replacementId, patientId) {
+    try {
+      const invoices = this.getDummyInvoices(patientId);
+      
+      // Get replacement from API
+      const response = await fetch(`${this.apiClient.baseUrl}/api/patients/${patientId}/replacements`);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error('Değişim kaydı alınamadı');
+      }
+      
+      const replacement = result.data.find(r => r.id === replacementId);
+      if (!replacement) {
+        showCustomAlert('Hata', 'Değişim kaydı bulunamadı', 'error');
+        return;
+      }
+      
+      const modalHtml = `
+        <div id="returnInvoiceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full my-8">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">İade Faturası Oluştur (Tedarikçiye)</h3>
+                <p class="text-sm text-gray-600 mt-1">Değişim: ${replacement.oldDeviceInfo || replacement.old_device_info || 'Belirtilmemiş'} → ${replacement.newDeviceInfo || replacement.new_device_info || 'Belirtilmemiş'}</p>
+                <p class="text-xs text-amber-600 mt-1">⚠️ Eski cihazı tedarikçiye iade edip yeni cihaz talep ediyoruz</p>
+              </div>
+              <button onclick="salesManagement.closeModal('returnInvoiceModal')" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tedarikçi Alım Faturası Ara</label>
+              <input type="text" id="invoiceSearch" value="${replacement.oldDeviceInfo || replacement.old_device_info || ''}" placeholder="Fatura numarası, tedarikçi adı, ürün adı ile ara..." class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" oninput="salesManagement.filterInvoices()">
+              <p class="text-xs text-gray-500 mt-1">Eski cihazı (örn: ${replacement.oldDeviceInfo || replacement.old_device_info || 'Belirtilmemiş'}) tedarikçiden aldığımız faturasını seçin</p>
+            </div>
+            <div class="p-6 max-h-[50vh] overflow-y-auto">
+              <div id="invoiceGrid" class="space-y-3">
+                ${invoices.map(invoice => `
+                  <div class="invoice-card border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all" data-search="${(invoice.number + ' ' + invoice.items.join(' ') + ' ' + invoice.supplierName).toLowerCase()}" onclick="salesManagement.selectInvoice('${invoice.id}', '${invoice.number}', '${invoice.supplierName}', '${invoice.date}', this)">
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                          <h4 class="font-semibold text-gray-900">${invoice.number}</h4>
+                          <span class="px-2 py-1 text-xs rounded ${invoice.type === 'purchase' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">Tedarikçi Alım</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-1"><strong>Tarih:</strong> ${new Date(invoice.date).toLocaleDateString('tr-TR')}</p>
+                        <p class="text-sm text-gray-600 mb-1"><strong>Tedarikçi:</strong> ${invoice.supplierName}</p>
+                        <p class="text-sm text-gray-600 mb-1"><strong>Ürünler:</strong> ${invoice.items.join(', ')}</p>
+                        <p class="text-sm font-semibold text-gray-900 mt-2">Tutar: ₺${invoice.amount.toLocaleString('tr-TR')}</p>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <input type="hidden" id="selectedInvoiceId" value="">
+            <input type="hidden" id="selectedInvoiceNumber" value="">
+            <input type="hidden" id="selectedSupplierName" value="">
+            <input type="hidden" id="selectedInvoiceDate" value="">
+            <input type="hidden" id="currentReplacementId" value="${replacementId}">
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex gap-3">
+              <button onclick="salesManagement.closeModal('returnInvoiceModal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 font-medium">İptal</button>
+              <button onclick="salesManagement.createReturnInvoice()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">İade Faturası Oluştur</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      setTimeout(() => this.filterInvoices(), 100);
+    } catch (error) {
+      console.error('Error opening return invoice modal:', error);
+      showCustomAlert('Hata', 'İade faturası modalı açılırken hata oluştu', 'error');
+    }
+  }
+
+  getDummyInvoices(patientId) {
+    // TEDARİKÇİDEN ALIM FATURALARI (müşteri faturası DEĞİL!)
+    return [
+      {id: 'SUPP-INV-001', number: 'TEDARİK-2025-001', date: '2025-01-15', supplierName: 'Ear Teknik', items: ['Phonak 333 İşitme Cihazı', 'Pil Paketi'], amount: 8000, type: 'purchase'},
+      {id: 'SUPP-INV-002', number: 'TEDARİK-2025-002', date: '2025-02-20', supplierName: 'Widex Türkiye', items: ['Oticon Force 200', 'Bakım Seti'], amount: 10000, type: 'purchase'},
+      {id: 'SUPP-INV-003', number: 'TEDARİK-2025-003', date: '2025-03-10', supplierName: 'Phonak Distributör', items: ['Widex M440-312', 'Garanti Paketi'], amount: 12000, type: 'purchase'}
+    ];
+  }
+
+  filterInvoices() {
+    const searchTerm = document.getElementById('invoiceSearch')?.value.toLowerCase() || '';
+    const cards = document.querySelectorAll('.invoice-card');
+    cards.forEach(card => {
+      const searchData = card.getAttribute('data-search');
+      card.style.display = (searchData && searchData.includes(searchTerm)) ? 'block' : 'none';
+    });
+  }
+
+  selectInvoice(invoiceId, invoiceNumber, supplierName, invoiceDate, element) {
+    document.querySelectorAll('.invoice-card').forEach(card => {
+      card.classList.remove('border-blue-500', 'bg-blue-50');
+      card.classList.add('border-gray-300');
+    });
+    element.classList.remove('border-gray-300');
+    element.classList.add('border-blue-500', 'bg-blue-50');
+    document.getElementById('selectedInvoiceId').value = invoiceId;
+    document.getElementById('selectedInvoiceNumber').value = invoiceNumber;
+    document.getElementById('selectedSupplierName').value = supplierName;
+    document.getElementById('selectedInvoiceDate').value = invoiceDate;
+  }
+
+  async createReturnInvoice() {
+    try {
+      const replacementId = document.getElementById('currentReplacementId').value;
+      const invoiceId = document.getElementById('selectedInvoiceId').value;
+      const invoiceNumber = document.getElementById('selectedInvoiceNumber').value;
+      const supplierName = document.getElementById('selectedSupplierName').value;
+      const invoiceDate = document.getElementById('selectedInvoiceDate').value;
+      
+      if (!invoiceId) {
+        showCustomAlert('Uyarı', 'Lütfen bir fatura seçiniz', 'warning');
+        return;
+      }
+      
+      const returnInvoiceNumber = `IADE-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+      
+      // Create return invoice via API
+      const invoiceData = {
+        invoiceNumber: returnInvoiceNumber,
+        supplierInvoiceNumber: invoiceNumber,
+        supplierName: supplierName,
+        supplierInvoiceId: invoiceId,
+        supplierInvoiceDate: invoiceDate,
+        invoiceNote: 'Cihaz değişimi nedeniyle iade'
+      };
+      
+      const response = await fetch(`${this.apiClient.baseUrl}/api/replacements/${replacementId}/invoice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invoiceData)
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'İade faturası oluşturulamadı');
+      }
+      
+      // Get patient ID for timeline
+      const replacement = result.data.replacement;
+      console.log('📦 Replacement data from API:', replacement);
+      
+      const patientId = replacement.patientId || replacement.patient_id;
+      console.log('🔍 Patient ID extracted:', patientId);
+      
+      if (!patientId) {
+        console.warn('⚠️ No patient ID found in replacement data, skipping timeline event');
+        this.closeModal('returnInvoiceModal');
+        showCustomAlert('Başarılı', `İade faturası oluşturuldu!\nFatura No: ${returnInvoiceNumber}\nİadeye Konu: ${invoiceNumber}`, 'success');
+        // Refresh current tab
+        if (window.patientTabContentComponent && window.currentPatientData) {
+          const currentTab = document.querySelector('[data-tab].active');
+          if (currentTab) {
+            const content = await window.patientTabContentComponent.render(window.currentPatientData);
+            document.getElementById('tab-content').innerHTML = content;
+          }
+        }
+        return;
+      }
+      
+      // Add to timeline
+      await this.apiClient.addPatientTimelineEvent(patientId, {
+        type: 'return_invoice_created',
+        title: 'İade Faturası Oluşturuldu (Tedarikçiye)',
+        description: `${returnInvoiceNumber} - İadeye konu fatura: ${invoiceNumber} | Tedarikçi: ${supplierName}`,
+        timestamp: new Date().toISOString()
+      });
+      
+      this.closeModal('returnInvoiceModal');
+      showCustomAlert('Başarılı', `İade faturası oluşturuldu!\nFatura No: ${returnInvoiceNumber}\nİadeye Konu: ${invoiceNumber}`, 'success');
+      
+      // Refresh current tab to show updated data
+      if (window.patientTabContentComponent && window.currentPatientData) {
+        const currentTab = document.querySelector('[data-tab].active');
+        if (currentTab) {
+          const content = await window.patientTabContentComponent.render(window.currentPatientData);
+          document.getElementById('tab-content').innerHTML = content;
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error creating return invoice:', error);
+      showCustomAlert('Hata', 'İade faturası oluşturulurken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'error');
+    }
+  }
+
+  async previewInvoice(invoiceId) {
+    try {
+      // Get current patient ID from URL or stored value
+      const patientId = this.currentPatientId || new URLSearchParams(window.location.search).get('id');
+      
+      // Get all replacements to find the one with this invoice
+      const response = await fetch(`${this.apiClient.baseUrl}/api/patients/${patientId}/replacements`);
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error('Değişim bilgileri alınamadı');
+      }
+      
+      const replacement = result.data.find(r => r.return_invoice && r.return_invoice.id === invoiceId);
+      
+      if (!replacement || !replacement.return_invoice) {
+        showCustomAlert('Hata', 'Fatura bilgileri bulunamadı', 'error');
+        return;
+      }
+      
+      const invoice = replacement.return_invoice;
+    
+      const modalHtml = `
+        <div id="invoicePreviewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4 overflow-y-auto">
+          <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full my-8">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-600 to-blue-700">
+              <h3 class="text-xl font-bold text-white">İade Faturası Önizleme</h3>
+              <button onclick="salesManagement.closeModal('invoicePreviewModal')" class="text-white hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Invoice Content -->
+            <div class="p-8 bg-white">
+              <!-- Company Header -->
+              <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">X-EAR İŞİTME MERKEZİ</h1>
+                <p class="text-sm text-gray-600 mt-2">Adres Bilgileri | Tel: (XXX) XXX-XXXX | E-posta: info@xear.com</p>
+              </div>
+              
+              <!-- Invoice Title -->
+              <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-red-600">İADE FATURASI (TEDARİKÇİYE)</h2>
+                <p class="text-sm text-gray-500 mt-1">Fatura No: ${invoice.invoice_number}</p>
+              </div>
+              
+              <!-- Invoice Details Grid -->
+              <div class="grid grid-cols-2 gap-6 mb-6">
+                <div class="border border-gray-300 rounded-lg p-4">
+                  <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">Tedarikçi Bilgileri</h4>
+                  <p class="text-sm text-gray-600 mb-1"><strong>Tedarikçi:</strong> ${invoice.supplier_name || 'Belirtilmemiş'}</p>
+                  <p class="text-sm text-gray-600"><strong>İadeye Konu Fatura:</strong> ${invoice.supplier_invoice_number}</p>
+                </div>
+                
+                <div class="border border-gray-300 rounded-lg p-4">
+                  <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">Fatura Bilgileri</h4>
+                  <p class="text-sm text-gray-600 mb-1"><strong>Fatura Tarihi:</strong> ${new Date(invoice.created_at).toLocaleDateString('tr-TR')}</p>
+                  <p class="text-sm text-gray-600"><strong>Durum:</strong> <span class="text-blue-600 font-medium">${invoice.gib_sent ? 'GİB\'e Gönderildi' : 'Hazır'}</span></p>
+                </div>
+              </div>
+              
+              <!-- Items Table -->
+              <div class="border border-gray-300 rounded-lg overflow-hidden mb-6">
+                <table class="w-full">
+                  <thead class="bg-gray-100">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">İade Edilen Ürün</th>
+                      <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Açıklama</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-t border-gray-200">
+                      <td class="px-4 py-3 text-sm text-gray-900">${replacement.old_device_info}</td>
+                      <td class="px-4 py-3 text-sm text-gray-600">${invoice.invoice_note || 'Cihaz değişimi nedeniyle iade'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Notes -->
+              <div class="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-6">
+                <h4 class="font-semibold text-amber-800 mb-2 flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                  </svg>
+                  Not
+                </h4>
+                <p class="text-sm text-amber-900">${invoice.invoice_note || 'Bu fatura, tedarikçiden alınan ürünün iadesi için düzenlenmiştir.'}</p>
+              </div>
+              
+              <!-- Footer -->
+              <div class="text-center pt-6 border-t border-gray-300">
+                <p class="text-xs text-gray-500">Bu fatura bilgisayar ortamında oluşturulmuştur.</p>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 rounded-b-lg">
+              <button onclick="salesManagement.closeModal('invoicePreviewModal')" 
+                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 font-medium">
+                Kapat
+              </button>
+              <button onclick="salesManagement.printInvoice('${invoiceId}')" 
+                class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium">
+                <i class="fas fa-print mr-2"></i>Yazdır
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      
+    } catch (error) {
+      console.error('Error loading invoice preview:', error);
+      showCustomAlert('Hata', 'Fatura önizlemesi yüklenemedi: ' + (error.message || 'Bilinmeyen hata'), 'error');
+    }
+  }
+  
+  printInvoice(invoiceId) {
+    showCustomAlert('Bilgi', 'Yazdırma özelliği yakında eklenecek', 'info');
+  }
+
+  async sendInvoice(invoiceId) {
+    showCustomConfirm(
+      'Faturayı GİB\'e Gönder',
+      'Bu işlem faturayı GİB\'e (Gelir İdaresi Başkanlığı) gönderecektir. Onaylıyor musunuz?',
+      async () => {
+        try {
+          // Send invoice via API
+          const response = await fetch(`${this.apiClient.baseUrl}/api/return-invoices/${invoiceId}/send-to-gib`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          const result = await response.json();
+          
+          if (!result.success) {
+            throw new Error(result.error || 'Fatura gönderilemedi');
+          }
+          
+          showCustomAlert('Başarılı', 'Fatura GİB\'e gönderildi!', 'success');
+          
+          // Refresh current tab to show updated data
+          if (window.patientTabContentComponent && window.currentPatientData) {
+            const currentTab = document.querySelector('[data-tab].active');
+            if (currentTab) {
+              const content = await window.patientTabContentComponent.render(window.currentPatientData);
+              document.getElementById('tab-content').innerHTML = content;
+            }
+          }
+          
+        } catch (error) {
+          console.error('Error sending invoice:', error);
+          showCustomAlert('Hata', 'Fatura gönderilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'error');
+        }
+      },
+      'warning'
+    );
+  }
+
+  /**
+   * Render proformas list for patient
+   */
+  renderProformas(patientId) {
+    if (!window.proformaManagement) {
+      return '<p class="text-gray-500 text-sm">Proforma modülü yüklenmedi.</p>';
+    }
+
+    const proformas = window.proformaManagement.getPatientProformas(patientId);
+    
+    if (!proformas || proformas.length === 0) {
+      return '<p class="text-gray-500 text-sm">Henüz proforma oluşturulmamış.</p>';
+    }
+
+    return `
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Proforma No</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cihaz</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tutar</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            ${proformas.map(proforma => `
+              <tr>
+                <td class="px-4 py-3 text-sm text-gray-900">${new Date(proforma.createdAt).toLocaleDateString('tr-TR')}</td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">${proforma.id}</td>
+                <td class="px-4 py-3 text-sm text-gray-600">
+                  ${proforma.devices.map(d => `${d.brand} ${d.model} (${d.ear === 'left' ? 'Sol' : d.ear === 'right' ? 'Sağ' : 'Her İki'})`).join(', ')}
+                </td>
+                <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">${(proforma.totalAmount || 0).toLocaleString('tr-TR')} TL</td>
+                <td class="px-4 py-3 text-sm text-center">
+                  <button onclick="salesManagement.viewProforma('${proforma.id}')" 
+                          class="text-blue-600 hover:text-blue-800 mr-2" title="Görüntüle">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button onclick="salesManagement.downloadProforma('${proforma.id}')" 
+                          class="text-green-600 hover:text-green-800" title="İndir">
+                    <i class="fas fa-download"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  /**
+   * Open proforma creation modal
+   */
+  async openProformaModal(patientId) {
+    if (!window.proformaManagement) {
+      if (window.showCustomAlert) {
+        window.showCustomAlert('Hata', 'Proforma modülü yüklenmedi', 'error');
+      } else {
+        alert('Proforma modülü yüklenmedi');
+      }
+      return;
+    }
+
+    // Get patient data
+    let patientData = null;
+    try {
+      if (window.domainManager && typeof window.domainManager.getPatient === 'function') {
+        patientData = await window.domainManager.getPatient(patientId);
+      } else {
+        const response = await this.apiClient.getPatient(patientId);
+        patientData = response?.data || response;
+      }
+    } catch (err) {
+      console.error('Error fetching patient:', err);
+      if (window.showCustomAlert) {
+        window.showCustomAlert('Hata', 'Hasta bilgileri alınamadı', 'error');
+      } else {
+        alert('Hasta bilgileri alınamadı');
+      }
+      return;
+    }
+
+    window.proformaManagement.openModal(patientData);
+  }
+
+  /**
+   * View proforma
+   */
+  viewProforma(proformaId) {
+    if (!window.proformaManagement) {
+      if (window.showCustomAlert) {
+        window.showCustomAlert('Hata', 'Proforma modülü yüklenmedi', 'error');
+      } else {
+        alert('Proforma modülü yüklenmedi');
+      }
+      return;
+    }
+    window.proformaManagement.viewProforma(proformaId);
+  }
+
+  /**
+   * Download proforma as PDF
+   */
+  downloadProforma(proformaId) {
+    if (!window.proformaManagement) {
+      if (window.showCustomAlert) {
+        window.showCustomAlert('Hata', 'Proforma modülü yüklenmedi', 'error');
+      } else {
+        alert('Proforma modülü yüklenmedi');
+      }
+      return;
+    }
+    window.proformaManagement.downloadProforma(proformaId);
+  }
+
+}
+
+// Global helper functions
+window.openNewSaleModal = (patientId) => window.salesManagement?.openNewSaleModal(patientId);
+window.openInvoiceModal = (patientId) => window.salesManagement?.openInvoiceModal(patientId);
+window.openPaymentTrackingModal = (patientId) => window.salesManagement?.openPaymentTrackingModal(patientId);
+window.openCollectionModal = (patientId) => window.salesManagement?.openCollectionModal(patientId);
+window.openReturnModal = (patientId) => window.salesManagement?.openReturnModal(patientId);
+
+// Export for global access
+window.SalesManagementComponent = SalesManagementComponent;

@@ -16,24 +16,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Install Landing deps
-        run: cd apps/landing && npm ci
-
-      - name: Build Landing
-        run: cd apps/landing && npx next build --webpack
-        env:
-          PAGES_BASE_PATH: /x-ear
 
       - name: Prepare deploy
         run: |
@@ -46,13 +36,6 @@ jobs:
         with:
           path: deploy
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

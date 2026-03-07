@@ -1,0 +1,204 @@
+/* Category/Brand Autocomplete Styles */
+.category-brand-autocomplete-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.category-brand-autocomplete-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: #ffffff;
+    color: #111827;
+    transition: all 0.15s ease-in-out;
+}
+
+/* Dark mode support */
+.dark .category-brand-autocomplete-input {
+    border-color: #4b5563;
+    background-color: #1f2937;
+    color: #f9fafb;
+}
+
+.category-brand-autocomplete-input:focus {
+    outline: none;
+    border-color: transparent;
+    box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.category-brand-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    max-height: 240px;
+    overflow-y: auto;
+    margin-top: 2px;
+}
+
+.category-brand-autocomplete-dropdown.hidden {
+    display: none;
+}
+
+.category-brand-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.category-brand-item:last-child {
+    border-bottom: none;
+}
+
+.category-brand-item:hover {
+    background-color: #f9fafb;
+}
+
+.category-brand-item.bg-blue-100 {
+    background-color: #dbeafe;
+}
+
+.category-brand-item.bg-green-100 {
+    background-color: #dcfce7;
+}
+
+.category-brand-item.create-new {
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.category-brand-item.create-new:hover {
+    background-color: #f0fdf4;
+}
+
+.category-brand-item .font-medium {
+    font-weight: 500;
+    color: #111827;
+}
+
+.category-brand-item mark {
+    background-color: #fef3c7;
+    color: #92400e;
+    padding: 1px 2px;
+    border-radius: 2px;
+}
+
+.category-brand-item .text-green-700 {
+    color: #15803d;
+}
+
+.category-brand-item .text-gray-500 {
+    color: #6b7280;
+}
+
+.category-brand-item .text-gray-900 {
+    color: #111827;
+}
+
+/* Loading state */
+.category-brand-autocomplete-loading {
+    padding: 12px 16px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.category-brand-autocomplete-loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid #e5e7eb;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error state */
+.category-brand-autocomplete-error {
+    padding: 12px 16px;
+    text-align: center;
+    color: #dc2626;
+    font-size: 14px;
+    background-color: #fef2f2;
+}
+
+/* Empty state */
+.category-brand-autocomplete-empty {
+    padding: 12px 16px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .category-brand-autocomplete-dropdown {
+        max-height: 200px;
+    }
+    
+    .category-brand-item {
+        padding: 10px 12px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .category-brand-autocomplete-input {
+        background-color: #374151;
+        border-color: #4b5563;
+        color: #f9fafb;
+    }
+    
+    .category-brand-autocomplete-input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    }
+    
+    .category-brand-autocomplete-dropdown {
+        background-color: #374151;
+        border-color: #4b5563;
+    }
+    
+    .category-brand-item {
+        border-color: #4b5563;
+        color: #f9fafb;
+    }
+    
+    .category-brand-item:hover {
+        background-color: #4b5563;
+    }
+    
+    .category-brand-item.bg-blue-100 {
+        background-color: #1e40af;
+    }
+    
+    .category-brand-item.bg-green-100 {
+        background-color: #166534;
+    }
+    
+    .category-brand-item.create-new {
+        background-color: #4b5563;
+        border-color: #6b7280;
+    }
+    
+    .category-brand-item.create-new:hover {
+        background-color: #166534;
+    }
+}
