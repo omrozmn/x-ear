@@ -27,8 +27,25 @@ jobs:
         with:
           node-version: "22"
 
+      # Remove pnpm workspace:* refs that npm can't resolve
+      - name: Patch workspace protocol for npm
+        run: |
+          node -e "
+            const fs = require('fs');
+            const files = [
+              'packages/ui-web/package.json',
+              'packages/ui-web/package-lock.json',
+              'apps/web/package-lock.json',
+              'apps/admin/package-lock.json'
+            ];
+            files.forEach(f => {
+              let txt = fs.readFileSync(f, 'utf8');
+              txt = txt.replace(/\"workspace:\*\"/g, '\"*\"');
+              fs.writeFileSync(f, txt);
+            });
+          "
+
       # ── Install dependencies ──────────────────────────────────────
-      # Workspace packages first (Web/Admin Vite aliases resolve imports from here)
       - name: Install workspace package deps
         run: |
           cd packages/core && npm ci
@@ -38,10 +55,10 @@ jobs:
         run: cd apps/landing && npm ci
 
       - name: Install Web deps
-        run: cd apps/web && npm ci
+        run: cd apps/web && npm install --legacy-peer-deps
 
       - name: Install Admin deps
-        run: cd apps/admin && npm ci
+        run: cd apps/admin && npm install --legacy-peer-deps
 
       # ── Landing (Next.js static export) ──────────────────────────
       - name: Build Landing
