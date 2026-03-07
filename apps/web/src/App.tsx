@@ -14,7 +14,10 @@ import { routeTree } from './routeTree.gen';
 import './api/orval-mutator';
 
 // Create a new router instance
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  basepath: import.meta.env.BASE_URL.replace(/\/$/, '') || undefined,
+});
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
