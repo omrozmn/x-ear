@@ -59,9 +59,9 @@ async def get_integrations(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(MarketplaceIntegration)
-        if access.tenant_id:
-            query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
-        integrations = query.all()
+            if access.tenant_id:
+                query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
+            integrations = query.all()
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i).model_dump(by_alias=True) for i in integrations]}
     except Exception as e:
@@ -113,8 +113,8 @@ async def sync_integration(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             integration = db.query(MarketplaceIntegration).filter(
-            MarketplaceIntegration.id == integration_id
-        ).first()
+                MarketplaceIntegration.id == integration_id
+            ).first()
         if not integration:
             raise HTTPException(status_code=404, detail="Integration not found")
         

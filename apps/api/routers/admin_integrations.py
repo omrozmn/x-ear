@@ -33,7 +33,6 @@ async def get_integrations(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             configs = db.query(IntegrationConfig).all()
-        
         integrations = {}
         for config in configs:
             if config.integration_type not in integrations:

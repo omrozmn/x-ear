@@ -37,23 +37,23 @@ async def get_campaigns(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Campaign)
-        
-        if search:
-            query = query.filter(
-                or_(
-                    Campaign.name.ilike(f"%{search}%"),
-                    Campaign.description.ilike(f"%{search}%")
+            
+            if search:
+                query = query.filter(
+                    or_(
+                        Campaign.name.ilike(f"%{search}%"),
+                        Campaign.description.ilike(f"%{search}%")
+                    )
                 )
-            )
-        
-        if status:
-            if status == "active":
-                query = query.filter(Campaign.is_active == True)
-            elif status == "inactive":
-                query = query.filter(Campaign.is_active == False)
-        
-        total = query.count()
-        campaigns = query.order_by(Campaign.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            if status:
+                if status == "active":
+                    query = query.filter(Campaign.is_active == True)
+                elif status == "inactive":
+                    query = query.filter(Campaign.is_active == False)
+            
+            total = query.count()
+            campaigns = query.order_by(Campaign.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {

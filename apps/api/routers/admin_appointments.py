@@ -37,39 +37,39 @@ async def get_all_appointments(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Appointment).join(Party)
-        
-        if search:
-            query = query.filter(
-                (Party.first_name.ilike(f"%{search}%")) |
-                (Party.last_name.ilike(f"%{search}%")) |
-                (Party.phone.ilike(f"%{search}%"))
-            )
-        
-        if access.tenant_id:
-            query = query.filter(Appointment.tenant_id == access.tenant_id)
-        
-        if status:
-            query = query.filter(Appointment.status == status)
-        
-        if start_date:
-            try:
-                start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
-                query = query.filter(Appointment.date >= start)
-            except ValueError:
-                pass
-        
-        if end_date:
-            try:
-                end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-                query = query.filter(Appointment.date <= end)
-            except ValueError:
-                pass
-        
-        total = query.count()
-        appointments = query.order_by(
-            Appointment.date.desc(), 
-            Appointment.time.desc()
-        ).offset((page - 1) * limit).limit(limit).all()
+            
+            if search:
+                query = query.filter(
+                    (Party.first_name.ilike(f"%{search}%")) |
+                    (Party.last_name.ilike(f"%{search}%")) |
+                    (Party.phone.ilike(f"%{search}%"))
+                )
+            
+            if access.tenant_id:
+                query = query.filter(Appointment.tenant_id == access.tenant_id)
+            
+            if status:
+                query = query.filter(Appointment.status == status)
+            
+            if start_date:
+                try:
+                    start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+                    query = query.filter(Appointment.date >= start)
+                except ValueError:
+                    pass
+            
+            if end_date:
+                try:
+                    end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+                    query = query.filter(Appointment.date <= end)
+                except ValueError:
+                    pass
+            
+            total = query.count()
+            appointments = query.order_by(
+                Appointment.date.desc(), 
+                Appointment.time.desc()
+            ).offset((page - 1) * limit).limit(limit).all()
         
         appointments_list = []
         for appt in appointments:

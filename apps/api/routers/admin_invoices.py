@@ -37,16 +37,16 @@ async def get_admin_invoices(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Invoice)
-        
-        if access.tenant_id:
-            query = query.filter(Invoice.tenant_id == access.tenant_id)
-        if status:
-            query = query.filter(Invoice.status == status)
-        if search:
-            query = query.filter(Invoice.invoice_number.ilike(f"%{search}%"))
-        
-        total = query.count()
-        invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            if access.tenant_id:
+                query = query.filter(Invoice.tenant_id == access.tenant_id)
+            if status:
+                query = query.filter(Invoice.status == status)
+            if search:
+                query = query.filter(Invoice.invoice_number.ilike(f"%{search}%"))
+            
+            total = query.count()
+            invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         invoice_list = []
         for inv in invoices:

@@ -144,7 +144,7 @@ export function IncomingInvoicesPage() {
     } catch {
       // PDF not available from BirFatura, fall back to XML download
       try {
-        const buf = await fetchInvoiceDocument(invoice.invoiceId, 'xml');
+        const { data: buf } = await fetchInvoiceDocument(invoice.invoiceId, 'xml');
         const blob = new Blob([buf], { type: 'application/xml' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

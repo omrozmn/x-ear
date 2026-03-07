@@ -30,25 +30,25 @@ async def get_all_inventory(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Device)
-        
-        if search:
-            query = query.filter(
-                (Device.brand.ilike(f"%{search}%")) |
-                (Device.model.ilike(f"%{search}%")) |
-                (Device.serial_number.ilike(f"%{search}%")) |
-                (Device.serial_number_left.ilike(f"%{search}%")) |
-                (Device.serial_number_right.ilike(f"%{search}%"))
-            )
-        
-        if access.tenant_id:
-            query = query.filter(Device.tenant_id == access.tenant_id)
-        if status:
-            query = query.filter(Device.status == status)
-        if category:
-            query = query.filter(Device.category == category)
-        
-        total = query.count()
-        devices = query.order_by(Device.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            if search:
+                query = query.filter(
+                    (Device.brand.ilike(f"%{search}%")) |
+                    (Device.model.ilike(f"%{search}%")) |
+                    (Device.serial_number.ilike(f"%{search}%")) |
+                    (Device.serial_number_left.ilike(f"%{search}%")) |
+                    (Device.serial_number_right.ilike(f"%{search}%"))
+                )
+            
+            if access.tenant_id:
+                query = query.filter(Device.tenant_id == access.tenant_id)
+            if status:
+                query = query.filter(Device.status == status)
+            if category:
+                query = query.filter(Device.category == category)
+            
+            total = query.count()
+            devices = query.order_by(Device.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         devices_list = []
         for dev in devices:

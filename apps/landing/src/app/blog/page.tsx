@@ -69,10 +69,10 @@ export default function BlogPage() {
                             <div className="w-12 h-12 rounded-full border-4 border-accent-blue/20 border-t-accent-blue animate-spin" />
                         </div>
                     ) : posts.length > 0 ? (
-                        <div className="h-[80vh] w-full overflow-y-auto snap-y snap-mandatory scroll-smooth scrollbar-hide">
-                            <div className="container mx-auto px-4 max-w-5xl py-8 pb-[20vh]">
+                        <div className="h-[75vh] md:h-[85vh] w-full overflow-y-auto snap-y snap-mandatory scroll-smooth scrollbar-hide py-[10vh] md:py-[15vh]">
+                            <div className="container mx-auto px-4 max-w-5xl space-y-16 md:space-y-[20vh] pb-[20vh]">
                                 {posts.map((post, index) => (
-                                    <div key={post.id} className="min-h-[80vh] flex items-center justify-center snap-center mb-8">
+                                    <div key={post.id} className="snap-center snap-always flex items-center justify-center">
                                         <BlogCard post={post} index={index} total={posts.length} />
                                     </div>
                                 ))}

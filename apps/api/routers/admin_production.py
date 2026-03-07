@@ -42,9 +42,9 @@ async def get_orders(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(ProductionOrder)
-        if status:
-            query = query.filter(ProductionOrder.status == status)
-        orders = query.order_by(ProductionOrder.created_at.desc()).all()
+            if status:
+                query = query.filter(ProductionOrder.status == status)
+            orders = query.order_by(ProductionOrder.created_at.desc()).all()
 
         return ResponseEnvelope(data=[ProductionOrderRead.model_validate(o).model_dump(by_alias=True) for o in orders])
     except Exception as e:

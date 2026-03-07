@@ -30,19 +30,19 @@ async def get_stats(
         with unbound_session(reason="admin-cross-tenant"):
             # Outgoing Invoices Stats
             outgoing_stats = db.query(
-            Invoice.edocument_status,
-            func.count(Invoice.id)
-        ).filter(Invoice.edocument_status.isnot(None)).group_by(Invoice.edocument_status).all()
-        
-        outgoing_dict = {status: count for status, count in outgoing_stats}
-        
-        # Incoming Invoices Stats
-        incoming_stats = db.query(
-            PurchaseInvoice.status,
-            func.count(PurchaseInvoice.id)
-        ).group_by(PurchaseInvoice.status).all()
-        
-        incoming_dict = {status: count for status, count in incoming_stats}
+                Invoice.edocument_status,
+                func.count(Invoice.id)
+            ).filter(Invoice.edocument_status.isnot(None)).group_by(Invoice.edocument_status).all()
+            
+            outgoing_dict = {status: count for status, count in outgoing_stats}
+            
+            # Incoming Invoices Stats
+            incoming_stats = db.query(
+                PurchaseInvoice.status,
+                func.count(PurchaseInvoice.id)
+            ).group_by(PurchaseInvoice.status).all()
+            
+            incoming_dict = {status: count for status, count in incoming_stats}
         
         return ResponseEnvelope(data={
             "outgoing": outgoing_dict,
@@ -82,7 +82,6 @@ async def get_invoices(
                 total = query.count()
                 invoices = query.order_by(PurchaseInvoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
                 data = [PurchaseInvoiceRead.model_validate(inv).model_dump(by_alias=True) for inv in invoices]
-        
         return ResponseEnvelope(data={
             "invoices": data,
             "pagination": {
@@ -107,14 +106,14 @@ async def get_logs(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(ActivityLog).filter(
-            or_(
-                ActivityLog.action.like("invoice.%"),
-                ActivityLog.action.like("birfatura.%")
+                or_(
+                    ActivityLog.action.like("invoice.%"),
+                    ActivityLog.action.like("birfatura.%")
+                )
             )
-        )
-        
-        total = query.count()
-        logs = query.order_by(ActivityLog.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            total = query.count()
+            logs = query.order_by(ActivityLog.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(data={
             "logs": [AuditLogRead.model_validate(log).model_dump(by_alias=True) for log in logs],

@@ -36,23 +36,23 @@ async def get_suppliers(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Supplier)
-        
-        if search:
-            query = query.filter(
-                or_(
-                    Supplier.company_name.ilike(f"%{search}%"),
-                    Supplier.contact_person.ilike(f"%{search}%"),
-                    Supplier.email.ilike(f"%{search}%")
+            
+            if search:
+                query = query.filter(
+                    or_(
+                        Supplier.company_name.ilike(f"%{search}%"),
+                        Supplier.contact_person.ilike(f"%{search}%"),
+                        Supplier.email.ilike(f"%{search}%")
+                    )
                 )
-            )
-        if status:
-            # Handle status conversion if needed, assuming status param is matching active/inactive logic or is_active boolean
-            # If status string is used, map it. The usage shows 'status' string param. 
-            pass
-            # query = query.filter(Supplier.is_active == (status == 'ACTIVE'))
-        
-        total = query.count()
-        suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if status:
+                # Handle status conversion if needed, assuming status param is matching active/inactive logic or is_active boolean
+                # If status string is used, map it. The usage shows 'status' string param. 
+                pass
+                # query = query.filter(Supplier.is_active == (status == 'ACTIVE'))
+            
+            total = query.count()
+            suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(
             data={

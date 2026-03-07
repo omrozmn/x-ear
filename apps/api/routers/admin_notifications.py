@@ -78,13 +78,13 @@ async def get_notifications(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Notification)
-        if user_id:
-            query = query.filter(Notification.user_id == user_id)
-        if type_filter:
-            query = query.filter(Notification.notification_type == type_filter)
-        
-        total = query.count()
-        notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if user_id:
+                query = query.filter(Notification.user_id == user_id)
+            if type_filter:
+                query = query.filter(Notification.notification_type == type_filter)
+            
+            total = query.count()
+            notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(
             data=[NotificationRead.model_validate(n) for n in notifications],
@@ -191,15 +191,15 @@ async def get_templates(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(NotificationTemplate)
-        
-        # Apply filters (Flask parity)
-        if category:
-            query = query.filter(NotificationTemplate.template_category == category)
-        if channel:
-            query = query.filter(NotificationTemplate.channel == channel)
-        
-        total = query.count()
-        templates = query.order_by(NotificationTemplate.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            # Apply filters (Flask parity)
+            if category:
+                query = query.filter(NotificationTemplate.template_category == category)
+            if channel:
+                query = query.filter(NotificationTemplate.channel == channel)
+            
+            total = query.count()
+            templates = query.order_by(NotificationTemplate.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return ResponseEnvelope(
             data=[EmailTemplateRead.model_validate(t) for t in templates],

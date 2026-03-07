@@ -28,25 +28,25 @@ async def get_pos_transactions(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(PaymentRecord).filter(PaymentRecord.pos_provider.isnot(None))
-        
-        if provider:
-            query = query.filter(PaymentRecord.pos_provider == provider)
-        
-        if start_date:
-            try:
-                s_dt = datetime.fromisoformat(start_date)
-                query = query.filter(PaymentRecord.payment_date >= s_dt)
-            except (ValueError, TypeError):
-                pass
-        
-        if end_date:
-            try:
-                e_dt = datetime.fromisoformat(end_date)
-                query = query.filter(PaymentRecord.payment_date <= e_dt)
-            except (ValueError, TypeError):
-                pass
-        
-        records = query.order_by(PaymentRecord.payment_date.desc()).limit(limit).all()
+            
+            if provider:
+                query = query.filter(PaymentRecord.pos_provider == provider)
+            
+            if start_date:
+                try:
+                    s_dt = datetime.fromisoformat(start_date)
+                    query = query.filter(PaymentRecord.payment_date >= s_dt)
+                except (ValueError, TypeError):
+                    pass
+            
+            if end_date:
+                try:
+                    e_dt = datetime.fromisoformat(end_date)
+                    query = query.filter(PaymentRecord.payment_date <= e_dt)
+                except (ValueError, TypeError):
+                    pass
+            
+            records = query.order_by(PaymentRecord.payment_date.desc()).limit(limit).all()
         
         return ResponseEnvelope(data=[
             PaymentRecordRead.model_validate(p)

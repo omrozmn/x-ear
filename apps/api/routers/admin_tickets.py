@@ -35,36 +35,36 @@ async def get_admin_tickets(
         with unbound_session(reason="admin-cross-tenant"):
             # Build query
             query = db.query(Ticket)
-        
-        # Filter by status
-        if status:
-            try:
-                query = query.filter(Ticket.status == TicketStatus(status))
-            except ValueError:
-                pass
-        
-        # Filter by priority
-        if priority:
-            try:
-                query = query.filter(Ticket.priority == TicketPriority(priority))
-            except ValueError:
-                pass
-        
-        # Search in title and description
-        if search:
-            search_pattern = f"%{search}%"
-            query = query.filter(
-                or_(
-                    Ticket.title.ilike(search_pattern),
-                    Ticket.description.ilike(search_pattern)
+            
+            # Filter by status
+            if status:
+                try:
+                    query = query.filter(Ticket.status == TicketStatus(status))
+                except ValueError:
+                    pass
+            
+            # Filter by priority
+            if priority:
+                try:
+                    query = query.filter(Ticket.priority == TicketPriority(priority))
+                except ValueError:
+                    pass
+            
+            # Search in title and description
+            if search:
+                search_pattern = f"%{search}%"
+                query = query.filter(
+                    or_(
+                        Ticket.title.ilike(search_pattern),
+                        Ticket.description.ilike(search_pattern)
+                    )
                 )
-            )
-        
-        # Get total count
-        total = query.count()
-        
-        # Paginate
-        tickets = query.order_by(Ticket.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            # Get total count
+            total = query.count()
+            
+            # Paginate
+            tickets = query.order_by(Ticket.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         # Format response
         tickets_data = []

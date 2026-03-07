@@ -51,7 +51,7 @@ def get_admin_roles(
     try:
         with unbound_session(reason="admin-cross-tenant"):
             from models.admin_permission import AdminRoleModel
-        
+            
             roles = db.query(AdminRoleModel).order_by(AdminRoleModel.name).all()
         
         roles_data = []

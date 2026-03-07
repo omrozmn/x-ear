@@ -156,7 +156,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     } catch {
       // Fallback to XML download
       try {
-        const buf = await fetchInvoiceDocument(invoice.invoiceId, 'xml');
+        const { data: buf } = await fetchInvoiceDocument(invoice.invoiceId, 'xml');
         const blob = new Blob([buf], { type: 'application/xml' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
