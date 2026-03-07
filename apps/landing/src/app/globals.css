@@ -1,75 +1,85 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-base-900: var(--color-base-900);
+  --color-base-800: var(--color-base-800);
+  --color-base-700: var(--color-base-700);
+  --color-surface: var(--color-surface);
+  --color-glass: var(--color-glass);
+  --color-border-glow: var(--color-border-glow);
+
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-space-grotesk);
+
+  --color-accent-blue: #0ea5e9;
+  --color-accent-purple: #8b5cf6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+
+  --color-base-900: #e2e8f0;
+  --color-base-800: #cbd5e1;
+  --color-base-700: #94a3b8;
+  --color-surface: #ffffff;
+  --color-glass: rgba(255, 255, 255, 0.7);
+  --color-border-glow: rgba(0, 0, 0, 0.05);
+
+  --color-accent-blue: #0284c7;
+  --color-accent-purple: #7c3aed;
+}
+
+.dark {
+  --background: #030307;
+  --foreground: #ffffff;
+
+  --color-base-900: #030307;
+  --color-base-800: #0c0c12;
+  --color-base-700: #13131a;
+  --color-surface: #1a1a24;
+  --color-glass: rgba(26, 26, 36, 0.4);
+  --color-border-glow: rgba(255, 255, 255, 0.05);
+
+  --color-accent-blue: #22d3ee;
+  --color-accent-purple: #a78bfa;
+}
+
+@utility glass-panel {
+  background: var(--color-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@utility text-glow {
+  text-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
+
 
 body {
   background: var(--background);
   color: var(--foreground);
-}
-
-html {
-  height: 100%;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  font-synthesis-weight: none;
-  scroll-behavior: smooth;
-}
-
-body {
-  min-height: 100%;
+  font-family: var(--font-dm-sans), sans-serif;
   overflow-x: hidden;
-  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-tap-highlight-color: transparent;
 }
 
-/* iOS safe-area support (notch / home indicator) */
-:root {
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-}
-
-/* Better touch behavior */
-a,
-button {
-  touch-action: manipulation;
-}
-
-img,
-svg {
-  -webkit-user-drag: none;
-  user-select: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  * {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
+::selection {
+  background: rgba(167, 139, 250, 0.3);
+  color: #fff;
 }
