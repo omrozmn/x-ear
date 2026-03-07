@@ -32,17 +32,27 @@ jobs:
         run: cd apps/landing && npm ci
 
       - name: Build Landing
+        id: build_landing
+        continue-on-error: true
         run: |
           cd apps/landing
           echo "Node: $(node --version)  NPM: $(npm --version)"
           echo "Next: $(npx next --version)"
           cat next.config.ts
+          echo "=== ENV ==="
+          env | grep -i "pages\|next\|node" || true
           echo "=== BUILD START ==="
           npx next build 2>&1
-          echo "=== BUILD EXIT: $? ==="
-          ls -la out/ 2>/dev/null || echo "No out/ directory"
         env:
           PAGES_BASE_PATH: /x-ear
+
+      - name: Check Landing build
+        if: steps.build_landing.outcome == 'failure'
+        run: |
+          echo "## ❌ Landing Build Failed" >> $GITHUB_STEP_SUMMARY
+          echo "Build step outcome: ${{ steps.build_landing.outcome }}" >> $GITHUB_STEP_SUMMARY
+          ls -la apps/landing/out/ 2>/dev/null || echo "No out/ directory"
+          exit 1
 
       # ── Web App (Vite React SPA) ──────────────────────────────────
       - name: Install Web deps
