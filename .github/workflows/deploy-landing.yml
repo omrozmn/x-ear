@@ -38,56 +38,30 @@ jobs:
 
       # ── Landing (Next.js static export) ──────────────────────────
       - name: Build Landing
-        id: build_landing
-        continue-on-error: true
-        run: cd apps/landing && pnpm exec next build --webpack 2>&1 | tee /tmp/landing-build.log
+        run: cd apps/landing && pnpm exec next build --webpack
         env:
           PAGES_BASE_PATH: /x-ear
 
       # ── Web App (Vite React SPA) ──────────────────────────────────
       - name: Build Web
-        id: build_web
-        continue-on-error: true
-        run: cd apps/web && pnpm exec vite build 2>&1 | tee /tmp/web-build.log
+        run: cd apps/web && pnpm exec vite build
         env:
           VITE_BASE: /x-ear/app/
 
       # ── Admin Panel (Vite React SPA) ──────────────────────────────
       - name: Build Admin
-        id: build_admin
-        continue-on-error: true
-        run: cd apps/admin && pnpm exec vite build 2>&1 | tee /tmp/admin-build.log
+        run: cd apps/admin && pnpm exec vite build
         env:
           VITE_BASE: /x-ear/admin/
-
-      - name: Upload build logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs
-          path: /tmp/*-build.log
-
-      - name: Check build results
-        run: |
-          failed=0
-          for app in landing web admin; do
-            id="build_${app}"
-            outcome="${{ steps.build_landing.outcome }}${{ steps.build_web.outcome }}${{ steps.build_admin.outcome }}"
-          done
-          if [ "${{ steps.build_landing.outcome }}" = "failure" ]; then
-            echo "::error::Landing build failed"; tail -30 /tmp/landing-build.log; failed=1
-          fi
-          if [ "${{ steps.build_web.outcome }}" = "failure" ]; then
-            echo "::error::Web build failed"; tail -30 /tmp/web-build.log; failed=1
-          fi
-          if [ "${{ steps.build_admin.outcome }}" = "failure" ]; then
-            echo "::error::Admin build failed"; tail -30 /tmp/admin-build.log; failed=1
-          fi
-          exit $failed
 
       # ── Combine all outputs ───────────────────────────────────────
       - name: Combine outputs
         run: |
+          set -ex
+          echo "=== Checking build outputs ==="
+          ls -la apps/landing/out/ || true
+          ls -la apps/web/dist/ || true
+          ls -la apps/admin/dist/ || true
           mkdir -p deploy
           # Landing at root
           cp -r apps/landing/out/. deploy/
