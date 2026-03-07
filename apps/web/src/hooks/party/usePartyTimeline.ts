@@ -22,6 +22,8 @@ export interface TimelineEvent {
   time?: string;
   timestamp?: string;
   createdAt: string;
+  priority?: 'low' | 'medium' | 'high';
+  type?: any;
 }
 
 /**

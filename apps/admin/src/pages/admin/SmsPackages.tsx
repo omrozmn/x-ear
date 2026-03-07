@@ -15,8 +15,10 @@ import {
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '../../components/ui/Pagination';
+import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 
 export default function SMSPackagesPage() {
+    const { isMobile } = useAdminResponsive();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingPkg, setEditingPkg] = useState<any>(null);
     const [page, setPage] = useState(1);
@@ -86,52 +88,52 @@ export default function SMSPackagesPage() {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6 max-w-7xl mx-auto'}>
+            <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">SMS Paketleri</h1>
-                    <p className="text-gray-500">Satışa sunulan SMS paketlerini yönetin</p>
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>SMS Paketleri</h1>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">Satışa sunulan SMS paketlerini yönetin</p>
                 </div>
-                <Button onClick={() => { setEditingPkg(null); setIsCreateOpen(true); }}>
+                <Button onClick={() => { setEditingPkg(null); setIsCreateOpen(true); }} className="touch-feedback">
                     <Plus className="w-4 h-4 mr-2" />
-                    Yeni Paket
+                    {!isMobile && 'Yeni Paket'}
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
                 {isLoading ? (
-                    <div className="col-span-3 flex justify-center p-8"><Loader2 className="animate-spin" /></div>
+                    <div className="col-span-3 flex justify-center p-8"><Loader2 className="animate-spin text-gray-400 dark:text-gray-500" /></div>
                 ) : (
                     ((packagesData as any)?.packages || (packagesData as any)?.data || []).map((pkg: any) => (
-                        <div key={pkg.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative group">
+                        <div key={pkg.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 relative group">
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="ghost" size="sm" onClick={() => openEdit(pkg)}>
+                                <Button variant="ghost" size="sm" onClick={() => openEdit(pkg)} className="touch-feedback">
                                     <Edit2 className="w-4 h-4" />
                                 </Button>
                             </div>
 
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600">
+                                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                                     <Package className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">{pkg.name}</h3>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${pkg.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                                    <h3 className="font-bold text-gray-900 dark:text-white">{pkg.name}</h3>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${pkg.isActive ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
                                         {pkg.isActive ? 'Aktif' : 'Pasif'}
                                     </span>
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-500 mb-6 min-h-[40px]">{pkg.description}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 min-h-[40px]">{pkg.description}</p>
 
-                            <div className="flex justify-between items-end border-t pt-4">
+                            <div className="flex justify-between items-end border-t dark:border-gray-700 pt-4">
                                 <div>
-                                    <span className="text-xs text-gray-500 block">SMS Adedi</span>
-                                    <span className="font-bold text-lg">{(pkg.smsCount || 0).toLocaleString()}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 block">SMS Adedi</span>
+                                    <span className="font-bold text-lg text-gray-900 dark:text-white">{(pkg.smsCount || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-xs text-gray-500 block">Fiyat</span>
-                                    <span className="font-bold text-xl text-indigo-600">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 block">Fiyat</span>
+                                    <span className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
                                         {(pkg.price || 0).toLocaleString('tr-TR', { style: 'currency', currency: pkg.currency || 'TRY' })}
                                     </span>
                                 </div>

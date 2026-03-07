@@ -5,6 +5,7 @@ import { useGetAdminDashboard } from '@/lib/api-client';
 import { KillSwitchRecommendation } from '@/ai';
 import { PermissionGate } from '@/hooks/useAdminPermission';
 import { AdminPermissions } from '@/types';
+import { useAdminResponsive } from '@/hooks';
 import {
     Users,
     CreditCard,
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
+    const { isMobile } = useAdminResponsive();
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
 
@@ -116,20 +118,20 @@ export default function AdminDashboardPage() {
     ];
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 pb-12 pt-6">
+        <div className={`mx-auto ${isMobile ? 'px-4 pb-safe' : 'max-w-7xl px-4 sm:px-6 lg:px-8'} space-y-6 pt-6`}>
             {/* Header Section */}
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                    <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-900 dark:text-white tracking-tight`}>
                         Hoşgeldiniz, {user?.first_name ? `${user.first_name}` : 'Admin'} 👋
                     </h1>
-                    <p className="text-gray-500 mt-2 font-medium">
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium text-sm">
                         Platform durumuna genel bakış ve yönetim paneli.
                     </p>
                 </div>
                 <button
                     onClick={loadDashboardData}
-                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                    className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full transition-colors touch-feedback"
                     title="Yenile"
                 >
                     <RefreshCw className={`w-5 h-5 ${metricsLoading ? 'animate-spin' : ''}`} />
@@ -146,18 +148,18 @@ export default function AdminDashboardPage() {
 
             {/* Error State */}
             {errorMessage && (
-                <div className="bg-red-50 border border-red-100 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-red-100 rounded-full">
-                            <AlertTriangle className="h-6 w-6 text-red-600" />
+                <div className={`bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl ${isMobile ? 'p-4' : 'p-6'} shadow-sm animate-in fade-in slide-in-from-top-4 duration-300`}>
+                    <div className="flex items-start gap-3">
+                        <div className={`${isMobile ? 'p-2' : 'p-3'} bg-red-100 dark:bg-red-900/40 rounded-full flex-shrink-0`}>
+                            <AlertTriangle className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-red-600 dark:text-red-400`} />
                         </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-red-900">Veri Yükleme Hatası</h3>
-                            <p className="text-red-700 mt-1">{errorMessage}</p>
-                            <p className="text-red-500 text-sm mt-2">Arka plan servislerinin çalıştığından emin olun (Port 5003).</p>
+                        <div className="flex-1 min-w-0">
+                            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-red-900 dark:text-red-200`}>Veri Yükleme Hatası</h3>
+                            <p className="text-red-700 dark:text-red-300 mt-1 text-sm">{errorMessage}</p>
+                            <p className="text-red-500 dark:text-red-400 text-xs mt-2">Arka plan servislerinin çalıştığından emin olun (Port 5003).</p>
                             <button
                                 onClick={loadDashboardData}
-                                className="mt-4 px-4 py-2 bg-white border border-red-200 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors shadow-sm"
+                                className="mt-3 px-4 py-2 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors shadow-sm touch-feedback"
                             >
                                 Tekrar Dene
                             </button>
@@ -166,11 +168,11 @@ export default function AdminDashboardPage() {
                 </div>
             )}
 
-            {/* Alerts Section - Only show if critical */}
+            {/* Alerts Section */}
             {alerts && ((alerts.expiring_soon || 0) > 0 || (alerts.high_churn || 0) > 0 || (alerts.low_utilization || 0) > 0) && (
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl p-4 flex gap-3 items-center shadow-sm">
-                    <AlertTriangle className="h-5 w-5 text-amber-600" />
-                    <div className="text-sm font-medium text-amber-900 flex gap-4">
+                <div className={`bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200/60 dark:border-amber-800/60 rounded-2xl ${isMobile ? 'p-3' : 'p-4'} flex gap-3 items-center shadow-sm`}>
+                    <AlertTriangle className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-amber-600 dark:text-amber-400 flex-shrink-0`} />
+                    <div className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row gap-2 sm:gap-4`}>
                         {(alerts.expiring_soon || 0) > 0 && <span>• {alerts.expiring_soon} üyelik yakında bitiyor</span>}
                         {(alerts.high_churn || 0) > 0 && <span>• Yüksek churn riski</span>}
                     </div>
@@ -178,52 +180,52 @@ export default function AdminDashboardPage() {
             )}
 
             {/* KPI Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {cards.map((card, idx) => (
                     <div
                         key={idx}
-                        className={`${card.color} rounded-2xl p-6 shadow-lg shadow-gray-100 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl relative overflow-hidden group`}
+                        className={`${card.color} rounded-xl ${isMobile ? 'p-3' : 'p-4'} shadow-md shadow-gray-100 dark:shadow-gray-900 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg relative overflow-hidden group`}
                     >
-                        <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all duration-500"></div>
 
-                        <div className="flex justify-between items-start mb-6 relative z-10">
-                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner border border-white/10 text-white">
+                        <div className={`flex justify-between items-start ${isMobile ? 'mb-2' : 'mb-3'} relative z-10`}>
+                            <div className={`${isMobile ? 'p-1.5' : 'p-2'} bg-white/20 rounded-lg backdrop-blur-sm shadow-inner border border-white/10 text-white`}>
                                 {card.icon}
                             </div>
                             {card.subtext && (
-                                <span className="text-xs font-semibold text-white/90 bg-white/20 px-2 py-1 rounded-lg backdrop-blur-md border border-white/10">
+                                <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-semibold text-white/90 bg-white/20 px-1.5 py-0.5 rounded backdrop-blur-md border border-white/10`}>
                                     {card.subtext}
                                 </span>
                             )}
                         </div>
 
                         <div className="relative z-10">
-                            <h3 className="text-3xl font-bold text-white mb-1 tracking-tight">{card.value}</h3>
-                            <p className="text-white/80 font-medium text-sm tracking-wide bg-white/5 inline-block px-2 py-0.5 rounded-md">{card.title}</p>
+                            <h3 className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-white mb-0.5 tracking-tight`}>{card.value}</h3>
+                            <p className={`text-white/80 font-medium ${isMobile ? 'text-[11px]' : 'text-xs'} tracking-wide`}>{card.title}</p>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content Area (2/3) - Daily Operations & Growth */}
-                <div className="lg:col-span-2 space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                {/* Main Content Area */}
+                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                     {/* Quick Actions */}
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">Hızlı İşlemler</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className={`bg-white dark:bg-gray-800 rounded-xl ${isMobile ? 'p-3' : 'p-4'} shadow-sm border border-gray-100 dark:border-gray-700`}>
+                        <h2 className={`${isMobile ? 'text-sm' : 'text-base'} font-bold text-gray-900 dark:text-white mb-3 px-1`}>Hızlı İşlemler</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                             {quickActions.map((action, idx) => {
                                 const Icon = action.icon;
                                 return (
                                     <button
                                         key={idx}
                                         onClick={() => navigate({ to: action.path })}
-                                        className="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group"
+                                        className={`flex flex-col items-center justify-center ${isMobile ? 'p-2' : 'p-3'} rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-600 group touch-feedback`}
                                     >
-                                        <div className={`p-3 rounded-full mb-3 ${action.color} group-hover:scale-110 transition-transform duration-300`}>
-                                            <Icon className="w-6 h-6" />
+                                        <div className={`${isMobile ? 'p-1.5' : 'p-2'} rounded-full mb-1.5 sm:mb-2 ${action.color} dark:bg-opacity-20 group-hover:scale-110 transition-transform duration-300`}>
+                                            <Icon className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
                                         </div>
-                                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{action.label}</span>
+                                        <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white text-center leading-tight`}>{action.label}</span>
                                     </button>
                                 );
                             })}
@@ -233,53 +235,52 @@ export default function AdminDashboardPage() {
                     {/* Daily Operations */}
                     {dailyStats && (
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">Günlük Operasyon</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-indigo-100 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-violet-100 text-violet-600 rounded-xl">
-                                            <Calendar className="w-5 h-5" />
+                            <h2 className={`${isMobile ? 'text-sm' : 'text-base'} font-bold text-gray-900 dark:text-white mb-3 px-1`}>Günlük Operasyon</h2>
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                                <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:border-indigo-100 dark:hover:border-indigo-800 transition-colors`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`${isMobile ? 'p-1.5' : 'p-2'} bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-lg flex-shrink-0`}>
+                                            <Calendar className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500 font-medium">Randevular</p>
-                                            <p className="text-xl font-bold text-gray-900">{formatNumber(dailyStats.today_appointments || 0)}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium">Bugün</div>
-                                </div>
-
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-teal-100 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-teal-100 text-teal-600 rounded-xl">
-                                            <ShieldCheck className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500 font-medium">Cihazlanan Hasta</p>
-                                            <p className="text-xl font-bold text-gray-900">{formatNumber(dailyStats.fitted_patients || 0)}</p>
+                                        <div className="min-w-0">
+                                            <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} text-gray-500 dark:text-gray-400 font-medium`}>Randevular</p>
+                                            <p className={`${isMobile ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white`}>{formatNumber(dailyStats.today_appointments || 0)}</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-orange-100 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-orange-100 text-orange-600 rounded-xl">
-                                            <FileText className="w-5 h-5" />
+                                <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:border-teal-100 dark:hover:border-teal-800 transition-colors`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`${isMobile ? 'p-1.5' : 'p-2'} bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg flex-shrink-0`}>
+                                            <ShieldCheck className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500 font-medium">Veri Yükleme</p>
-                                            <p className="text-xl font-bold text-gray-900">{formatNumber(dailyStats.daily_uploads || 0)}</p>
+                                        <div className="min-w-0">
+                                            <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} text-gray-500 dark:text-gray-400 font-medium`}>Cihazlanan</p>
+                                            <p className={`${isMobile ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white`}>{formatNumber(dailyStats.fitted_patients || 0)}</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-cyan-100 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-cyan-100 text-cyan-600 rounded-xl">
-                                            <Activity className="w-5 h-5" />
+                                <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:border-orange-100 dark:hover:border-orange-800 transition-colors`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`${isMobile ? 'p-1.5' : 'p-2'} bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg flex-shrink-0`}>
+                                            <FileText className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500 font-medium">SGK İşlem</p>
-                                            <p className="text-xl font-bold text-gray-900">{formatNumber(dailyStats.sgk_processed || 0)}</p>
+                                        <div className="min-w-0">
+                                            <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} text-gray-500 dark:text-gray-400 font-medium`}>Veri Yükleme</p>
+                                            <p className={`${isMobile ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white`}>{formatNumber(dailyStats.daily_uploads || 0)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:border-cyan-100 dark:hover:border-cyan-800 transition-colors`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`${isMobile ? 'p-1.5' : 'p-2'} bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg flex-shrink-0`}>
+                                            <Activity className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} text-gray-500 dark:text-gray-400 font-medium`}>SGK İşlem</p>
+                                            <p className={`${isMobile ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white`}>{formatNumber(dailyStats.sgk_processed || 0)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -288,46 +289,46 @@ export default function AdminDashboardPage() {
                     )}
                 </div>
 
-                {/* Sidebar Column (1/3) - Growth & Status aka Secondary Metrics */}
-                <div className="space-y-6">
+                {/* Sidebar Column */}
+                <div className="space-y-4">
                     {activity && (
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full">
-                            <h2 className="text-lg font-bold text-gray-900 mb-6">Büyüme & Durum</h2>
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-white p-2 rounded-lg shadow-sm text-indigo-600">
-                                            <UserPlus className="w-5 h-5" />
+                        <div className={`bg-white dark:bg-gray-800 rounded-xl ${isMobile ? 'p-3' : 'p-4'} shadow-sm border border-gray-100 dark:border-gray-700 h-full`}>
+                            <h2 className={`${isMobile ? 'text-sm' : 'text-base'} font-bold text-gray-900 dark:text-white mb-3 sm:mb-4`}>Büyüme & Durum</h2>
+                            <div className="space-y-3">
+                                <div className={`flex items-center justify-between ${isMobile ? 'p-2' : 'p-2.5'} rounded-lg bg-gray-50 dark:bg-gray-700/50`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-1' : 'p-1.5'} rounded-md shadow-sm text-indigo-600 dark:text-indigo-400 flex-shrink-0`}>
+                                            <UserPlus className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
                                         </div>
-                                        <span className="text-sm font-medium text-gray-600">Yeni Aboneler (7 gün)</span>
+                                        <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-medium text-gray-600 dark:text-gray-300`}>Yeni Aboneler (7g)</span>
                                     </div>
-                                    <span className="text-lg font-bold text-gray-900">{formatNumber(activity.new_tenants_7d || 0)}</span>
+                                    <span className={`${isMobile ? 'text-sm' : 'text-base'} font-bold text-gray-900 dark:text-white flex-shrink-0`}>{formatNumber(activity.new_tenants_7d || 0)}</span>
                                 </div>
 
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-white p-2 rounded-lg shadow-sm text-rose-500">
-                                            <UserMinus className="w-5 h-5" />
+                                <div className={`flex items-center justify-between ${isMobile ? 'p-2' : 'p-2.5'} rounded-lg bg-gray-50 dark:bg-gray-700/50`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-1' : 'p-1.5'} rounded-md shadow-sm text-rose-500 dark:text-rose-400 flex-shrink-0`}>
+                                            <UserMinus className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
                                         </div>
-                                        <span className="text-sm font-medium text-gray-600">Bitecek Üyelikler</span>
+                                        <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-medium text-gray-600 dark:text-gray-300`}>Bitecek Üyelikler</span>
                                     </div>
-                                    <span className="text-lg font-bold text-gray-900">{formatNumber(activity.expiring_memberships_30d || 0)}</span>
+                                    <span className={`${isMobile ? 'text-sm' : 'text-base'} font-bold text-gray-900 dark:text-white flex-shrink-0`}>{formatNumber(activity.expiring_memberships_30d || 0)}</span>
                                 </div>
 
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-white p-2 rounded-lg shadow-sm text-blue-500">
-                                            <Clock className="w-5 h-5" />
+                                <div className={`flex items-center justify-between ${isMobile ? 'p-2' : 'p-2.5'} rounded-lg bg-gray-50 dark:bg-gray-700/50`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-1' : 'p-1.5'} rounded-md shadow-sm text-blue-500 dark:text-blue-400 flex-shrink-0`}>
+                                            <Clock className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-gray-600">Koltuk Doluluğu</span>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-medium text-gray-600 dark:text-gray-300`}>Koltuk Doluluğu</span>
                                         </div>
                                     </div>
-                                    <span className="text-lg font-bold text-gray-900">%{(health?.avg_seat_utilization_percent || 0).toFixed(1)}</span>
+                                    <span className={`${isMobile ? 'text-sm' : 'text-base'} font-bold text-gray-900 dark:text-white flex-shrink-0`}>%{(health?.avg_seat_utilization_percent || 0).toFixed(1)}</span>
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
                                     <div
-                                        className="bg-blue-500 h-2 rounded-full transition-all duration-1000"
+                                        className="bg-blue-500 dark:bg-blue-400 h-1.5 rounded-full transition-all duration-1000"
                                         style={{ width: `${Math.min(health?.avg_seat_utilization_percent || 0, 100)}%` }}
                                     ></div>
                                 </div>
@@ -337,50 +338,50 @@ export default function AdminDashboardPage() {
                 </div>
             </div>
 
-            {/* Recent Errors Table - Cleaner Look */}
+            {/* Recent Errors Table */}
             {recentErrors && recentErrors.length > 0 && (
-                <div className="bg-white shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-8">
-                    <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden mt-6 sm:mt-8">
+                    <div className={`${isMobile ? 'px-4 py-4' : 'px-6 py-5'} border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-700/50`}>
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-red-100 rounded-md">
-                                <XCircle className="h-4 w-4 text-red-600" />
+                            <div className={`${isMobile ? 'p-1' : 'p-1.5'} bg-red-100 dark:bg-red-900/30 rounded-md`}>
+                                <XCircle className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-red-600 dark:text-red-400`} />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900">Son Sistem Hataları</h3>
+                            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white`}>Son Sistem Hataları</h3>
                         </div>
-                        <span className="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-200 shadow-sm">Son 24 Saat</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-600 shadow-sm">Son 24 Saat</span>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-100 table-fixed">
-                            <thead className="bg-gray-50/50">
+                        <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700 table-fixed">
+                            <thead className="bg-gray-50/50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tarih</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Aksiyon</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">Detay</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kullanıcı / Sistem</th>
+                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32`}>Tarih</th>
+                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32`}>Aksiyon</th>
+                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/3`}>Detay</th>
+                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider`}>Kullanıcı / Sistem</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-50">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-50 dark:divide-gray-700">
                                 {(recentErrors as any[]).map((error) => (
-                                    <tr key={error.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    <tr key={error.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} whitespace-nowrap text-sm text-gray-600 dark:text-gray-300`}>
                                             {new Date(error.created_at).toLocaleString('tr-TR')}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <span className="px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs border border-gray-200 truncate block max-w-[150px]" title={error.action}>
+                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white`}>
+                                            <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs border border-gray-200 dark:border-gray-600 truncate block max-w-[150px]" title={error.action}>
                                                 {error.action}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-red-600/80 font-medium break-words">
+                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} text-sm text-red-600/80 dark:text-red-400/80 font-medium break-words`}>
                                             {error.details}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} whitespace-nowrap text-sm text-gray-500 dark:text-gray-400`}>
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-gray-900">{error.user_name || 'System'}</span>
+                                                <span className="font-medium text-gray-900 dark:text-white">{error.user_name || 'System'}</span>
                                                 {error.tenant_name && error.tenant_name !== 'System' && (
-                                                    <span className="text-xs text-gray-400">{error.tenant_name}</span>
+                                                    <span className="text-xs text-gray-400 dark:text-gray-500">{error.tenant_name}</span>
                                                 )}
                                                 {error.user_email && (
-                                                    <span className="text-xs text-gray-400">{error.user_email}</span>
+                                                    <span className="text-xs text-gray-400 dark:text-gray-500">{error.user_email}</span>
                                                 )}
                                             </div>
                                         </td>

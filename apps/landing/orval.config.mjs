@@ -1,4 +1,4 @@
-export default {
+const config = {
     landing: {
         input: {
             target: process.env.OPENAPI_SOURCE || '../../openapi.yaml',
@@ -21,3 +21,5 @@ export default {
         },
     },
 };
+
+export default config;

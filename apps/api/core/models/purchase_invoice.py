@@ -51,7 +51,10 @@ class PurchaseInvoice(BaseModel, TenantScopedMixin):
     # Status
     status = Column(String(50), default='RECEIVED')  # RECEIVED, PROCESSED, PAID, etc.
     is_matched = Column(Boolean, default=False)  # Matched with supplier?
-    
+
+    # Link to Purchase record created from this invoice
+    purchase_id = Column(String(50), nullable=True, index=True)
+
     # Notes
     notes = Column(Text)
     

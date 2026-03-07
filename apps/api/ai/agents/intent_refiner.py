@@ -576,28 +576,22 @@ class IntentRefiner:
                 if stem in message_clean: return True
             return False
 
-        # 0. SPECIFIC CANCELLATIONS (High Priority)
-        if _has_stem(["iptal et", "randevu iptal", "randevuyu iptal"]):
+        # 0a. CAPABILITY INQUIRY (Requirement 5.2)
+        if any(keyword in message_lower for keyword in self.CAPABILITY_KEYWORDS):
+            conversational_response = "Size yeteneklerimi göstereyim." if language == "tr" else "Let me show you my capabilities."
+            return IntentOutput(
+                intent_type=IntentType.CAPABILITY_INQUIRY,
+                confidence=0.95,
+                entities={},
+                conversational_response=conversational_response,
+                reasoning="Capability inquiry pattern detected"
+            )
+
+        # 0b. SPECIFIC CANCELLATIONS (High Priority)
+        if _has_stem(["iptal et", "randevu iptal", "randevuyu iptal", "iptal etme"]):
             return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, 
                 entities={"action_type": "cancel_appointment"},
                 conversational_response="Randevu iptal işlemini başlatıyorum.", reasoning="İptal tespiti")
-
-        # 1. GENERIC CANCELLATION
-        def _is_cancellation():
-            for kw in (self.CANCELLATION_KEYWORDS or []):
-                if len(kw) <= 3:
-                     # For short keywords like "dur", check if it's a stand-alone word
-                     if re.search(rf"\b{kw}\b", message_lower): return True
-                elif kw in message_lower:
-                    return True
-            return False
-
-        # Cancellation only if NOT combined with a domain keyword (e.g. "randevu iptal" is NOT generic cancel)
-        domain_keywords = ["randevu", "fatura", "cihaz", "satış", "hasta", "stok", "envanter", "appointment", "invoice", "device", "sale", "patient", "stock", "inventory"]
-        if _is_cancellation() and not _has_stem(domain_keywords):
-            conversational_response = "İşlem iptal edildi." if language == "tr" else "Operation cancelled."
-            return IntentOutput(intent_type=IntentType.CANCEL, confidence=0.95,
-                conversational_response=conversational_response, reasoning="İptal anahtar kelimesi")
 
         # 2. CONFIRMATIONS (ee, et, devam, onay, etc.)
         confirmation_keywords_tr = ["evet", "tamam", "olur", "onayla", "ee", "et", "devam", "yap", "devam et", "oldu", "peki"]
@@ -722,6 +716,20 @@ class IntentRefiner:
         if _has_stem(["satış", "satıs", "satiş", "fatura kes", "satış yap", "satış oluştur", "satış kaydet"]):
             return IntentOutput(intent_type=IntentType.ACTION, confidence=0.85, entities={"action_type": "sale_create"},
                 conversational_response="Yeni satış işlemi için hazırlık yapıyorum.", reasoning="Satış")
+
+        # 12. GENERIC CANCELLATION (Fallback for any cancel keyword not caught by specific rules)
+        def _is_cancellation():
+            for kw in (self.CANCELLATION_KEYWORDS or []):
+                if len(kw) <= 3:
+                     if re.search(rf"\b{kw}\b", message_lower): return True
+                elif kw in message_lower:
+                    return True
+            return False
+
+        if _is_cancellation():
+            conversational_response = "İşlem iptal edildi." if language == "tr" else "Operation cancelled."
+            return IntentOutput(intent_type=IntentType.CANCEL, confidence=0.95,
+                conversational_response=conversational_response, reasoning="İptal anahtar kelimesi")
 
         # 6. ENTITY EXTRACTION FALBACK (Phone/Name)
         phone_pattern = r'0?5\d{9}|0?\d{3}\s?\d{3}\s?\d{2}\s?\d{2}'

@@ -17,14 +17,9 @@ export default function TeamSettings() {
     ];
 
     return (
-        <div className="p-6 max-w-6xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ekip Yonetimi</h1>
-                <p className="text-gray-500 dark:text-gray-400">Ekip uyelerinizi, subelerinizi ve izinleri yonetin.</p>
-            </div>
-
+        <div className="space-y-6">
             {/* Tab Navigation */}
-            <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 dark:border-gray-700">
                 <nav className="flex -mb-px space-x-8">
                     {tabs.map(tab => {
                         const Icon = tab.icon;

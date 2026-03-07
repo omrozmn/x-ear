@@ -223,6 +223,10 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
               onChange={(val) => setFormData(prev => ({ ...prev, supplier: val }))}
               placeholder="Tedarikçi adını girin veya seçin"
               required
+              onSupplierCreated={(_name, id) => {
+                const path = id ? `/suppliers/${id}` : '/suppliers';
+                window.open(path, '_blank');
+              }}
             />
           </div>
         )}

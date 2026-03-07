@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/communications.py
+# hypothesis_version: 6.151.9
+
+['EmailLogRead', 'bccEmails', 'bodyHtml', 'bodyText', 'bouncedAt', 'campaignId', 'ccEmails', 'clickedAt', 'communicationType', 'completed', 'contactMethod', 'deliveredAt', 'emailLogId', 'errorMessage', 'fromEmail', 'initiatedBy', 'isActive', 'isSystem', 'lastUsedAt', 'noreply@x-ear.com', 'normal', 'openedAt', 'partyId', 'phoneNumber', 'providerMessageId', 'providerResponse', 'retryCount', 'sentAt', 'smsLogId', 'templateId', 'templateType', 'toEmail', 'usageCount']

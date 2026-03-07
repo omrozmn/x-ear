@@ -14,6 +14,7 @@ import citiesData from '../../data/cities.json';
 import { useListBranches } from '../../api/generated/branches/branches';
 import { BranchRead, PartyRead, PartyCreate, PartyStatus } from '@/api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { getPartySegments, getAcquisitionTypes, loadPartySegmentsFromAPI } from '../../utils/party-segments';
 
 interface PartyFormData {
   firstName?: string;
@@ -61,6 +62,26 @@ export function PartyFormModal({
   const { data: branchesData } = useListBranches();
   const branches = unwrapArray<BranchRead>(branchesData);
 
+  // Load dynamic segments and acquisitions
+  const [segmentOptions, setSegmentOptions] = useState(() => getPartySegments());
+  const [acquisitionOptions, setAcquisitionOptions] = useState(() => getAcquisitionTypes());
+
+  // Load segments from API on mount
+  useEffect(() => {
+    const loadSegments = async () => {
+      try {
+        const { segments, acquisitions } = await loadPartySegmentsFromAPI();
+        setSegmentOptions(segments);
+        setAcquisitionOptions(acquisitions);
+      } catch (error) {
+        console.error('Failed to load segments from API, using localStorage fallback:', error);
+        // Already initialized with localStorage fallback
+      }
+    };
+
+    loadSegments();
+  }, []);
+
   const getSafeAddressProperty = (address: unknown, prop: string): unknown => {
     if (address && typeof address === 'object' && prop in address) {
       return (address as Record<string, unknown>)[prop];
@@ -79,8 +100,8 @@ export function PartyFormModal({
     city: '',
     district: '',
     status: 'active' as PartyStatus,
-    segment: 'NEW',
-    acquisitionType: 'tabela',
+    segment: segmentOptions[0]?.value || 'new',
+    acquisitionType: acquisitionOptions[0]?.value || 'other',
     tags: []
   });
 
@@ -124,7 +145,7 @@ export function PartyFormModal({
         phone: initialData.phone || '',
         tcNumber: initialData.tcNumber || '',
         gender: initialData.gender || '',
-        birthDate: initialData.birthDate || '',
+        birthDate: (initialData.birthDate as string) || '',
         email: initialData.email || '',
         address: typeof initialData.address === 'string' ? initialData.address : initialData.addressFull || '',
         city: (getSafeAddressProperty(initialData.address, 'city') as string) || initialData.addressCity || '',
@@ -152,8 +173,8 @@ export function PartyFormModal({
         city: '',
         district: '',
         status: 'active' as PartyStatus,
-        segment: 'NEW',
-        acquisitionType: 'tabela',
+        segment: segmentOptions[0]?.value || 'new',
+        acquisitionType: acquisitionOptions[0]?.value || 'other',
         branchId: '',
         tags: []
       });
@@ -550,6 +571,43 @@ export function PartyFormModal({
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
+            </div>
+          </div>
+
+          {/* Row 5: Segment + Acquisition Type */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Segment
+              </label>
+              <select
+                value={formData.segment || ''}
+                onChange={(e) => handleInputChange('segment', e.target.value)}
+                className="w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {segmentOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Kazanım Türü
+              </label>
+              <select
+                value={formData.acquisitionType || ''}
+                onChange={(e) => handleInputChange('acquisitionType', e.target.value)}
+                className="w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {acquisitionOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

@@ -2,13 +2,15 @@
 Invoice Sync Service
 Handles synchronization of invoices from BirFatura API to local database
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Dict, Any, Optional, List
 
-from models.base import db
+from sqlalchemy.orm import Session
 from models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem, SuggestedSupplier
 from models.suppliers import Supplier
+from core.models.purchase import Purchase
+from core.database import gen_id
 from services.birfatura.service import BirfaturaClient
 from services.birfatura.invoice_parser import (
     parse_date,
@@ -21,11 +23,14 @@ from services.birfatura.invoice_parser import (
 from models.tenant import Tenant
 from models.integration_config import IntegrationConfig
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class InvoiceSyncService:
     """Service for syncing invoices from BirFatura"""
     
-    def __init__(self, db=None):
+    def __init__(self, db: Session):
         self.client = None
         self.db = db
     
@@ -40,11 +45,6 @@ class InvoiceSyncService:
         Returns:
             Dictionary with counts of imported invoices
         """
-        # Configure client with tenant credentials
-        if not self.db:
-            from core.database import SessionLocal
-            self.db = SessionLocal()
-            
         tenant = self.db.get(Tenant, tenant_id)
         if not tenant:
             raise ValueError(f"Tenant {tenant_id} not found")
@@ -54,17 +54,20 @@ class InvoiceSyncService:
         tenant_secret_key = tenant_invoice_settings.get('secret_key')
         
         # Get Global Settings (Integration Key)
-        from core.database import SessionLocal
-        db = SessionLocal()
-        integration_key_config = db.query(IntegrationConfig).filter_by(
+        integration_key_config = self.db.query(IntegrationConfig).filter_by(
             integration_type='birfatura', 
             config_key='integration_key'
         ).first()
-        db.close()
         global_integration_key = integration_key_config.config_value if integration_key_config else None
 
         # Check credentials in non-mock env
-        using_mock = os.getenv('BIRFATURA_MOCK', '0') == '1' or os.getenv('FLASK_ENV', 'production') != 'production'
+        mock_env = os.getenv('BIRFATURA_MOCK')
+        if mock_env == '1':
+            using_mock = True
+        elif mock_env == '0':
+            using_mock = False
+        else:
+            using_mock = os.getenv('ENVIRONMENT', 'production') != 'production'
         if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_integration_key):
              raise ValueError("Missing BirFatura credentials. Please configure Invoice Integration settings.")
              
@@ -75,7 +78,7 @@ class InvoiceSyncService:
         )
 
         if not end_date:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
         if not start_date:
             start_date = end_date - timedelta(days=7)
         
@@ -91,7 +94,7 @@ class InvoiceSyncService:
             incoming_count = self._sync_incoming_invoices(tenant_id, start_date, end_date)
             stats['incoming'] = incoming_count
         except Exception as e:
-            print(f"Error syncing incoming invoices: {e}")
+            logger.error(f"Error syncing incoming invoices: {e}")
             stats['errors'] += 1
         
         # Sync outgoing invoices (returns/corrections to suppliers)
@@ -99,7 +102,7 @@ class InvoiceSyncService:
             outgoing_count = self._sync_outgoing_invoices(tenant_id, start_date, end_date)
             stats['outgoing'] = outgoing_count
         except Exception as e:
-            print(f"Error syncing outgoing invoices: {e}")
+            logger.error(f"Error syncing outgoing invoices: {e}")
             stats['errors'] += 1
         
         return stats
@@ -124,7 +127,7 @@ class InvoiceSyncService:
             response = self.client.get_inbox_documents(params)
             
             if not response.get('Success'):
-                print(f"API Error: {response.get('Message')}")
+                logger.error(f"API Error: {response.get('Message')}")
                 break
             
             # Extract invoices from response
@@ -141,7 +144,7 @@ class InvoiceSyncService:
                     if self._process_incoming_invoice(tenant_id, invoice_data):
                         count += 1
                 except Exception as e:
-                    print(f"Error processing invoice: {e}")
+                    logger.error(f"Error processing invoice: {e}")
                     continue
             
             # Check if there are more pages
@@ -151,7 +154,7 @@ class InvoiceSyncService:
             
             page += 1
         
-        db.session.commit()
+        self.db.commit()
         return count
     
     def _sync_outgoing_invoices(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
@@ -174,7 +177,7 @@ class InvoiceSyncService:
             response = self.client.get_outbox_documents(params)
             
             if not response.get('Success'):
-                print(f"API Error: {response.get('Message')}")
+                logger.error(f"API Error: {response.get('Message')}")
                 break
             
             # Extract invoices from response
@@ -191,7 +194,7 @@ class InvoiceSyncService:
                     if self._process_outgoing_invoice(tenant_id, invoice_data):
                         count += 1
                 except Exception as e:
-                    print(f"Error processing outgoing invoice: {e}")
+                    logger.error(f"Error processing outgoing invoice: {e}")
                     continue
             
             # Check if there are more pages
@@ -201,30 +204,30 @@ class InvoiceSyncService:
             
             page += 1
         
-        db.session.commit()
+        self.db.commit()
         return count
     
     def _process_incoming_invoice(self, tenant_id: str, invoice_data: Dict[str, Any]) -> bool:
         """Process a single incoming invoice"""
-        # Extract UUID (unique identifier)
-        birfatura_uuid = invoice_data.get('uuid', invoice_data.get('documentUUID'))
+        # Extract UUID (unique identifier) - API returns PascalCase
+        birfatura_uuid = invoice_data.get('UUID') or invoice_data.get('uuid') or invoice_data.get('documentUUID')
         if not birfatura_uuid:
-            print("Invoice missing UUID, skipping")
+            logger.warning("Invoice missing UUID, skipping")
             return False
         
         # Check for duplicates
-        existing = PurchaseInvoice.query.filter_by(birfatura_uuid=birfatura_uuid, tenant_id=tenant_id).first()
+        existing = self.db.query(PurchaseInvoice).filter_by(birfatura_uuid=birfatura_uuid, tenant_id=tenant_id).first()
         if existing:
             return False  # Already processed
         
         # Extract sender information
         sender_info = extract_sender_info(invoice_data)
         if not sender_info['tax_number']:
-            print(f"Invoice {birfatura_uuid} missing sender tax number, skipping")
+            logger.warning(f"Invoice {birfatura_uuid} missing sender tax number, skipping")
             return False
         
         # Try to match with existing supplier
-        supplier = Supplier.query.filter_by(tax_number=sender_info['tax_number'], tenant_id=tenant_id).first()
+        supplier = self.db.query(Supplier).filter_by(tax_number=sender_info['tax_number'], tenant_id=tenant_id).first()
         
         # If no supplier match, add/update suggested supplier
         if not supplier:
@@ -237,8 +240,8 @@ class InvoiceSyncService:
         purchase_invoice = PurchaseInvoice(
             tenant_id=tenant_id,
             birfatura_uuid=birfatura_uuid,
-            invoice_number=invoice_data.get('invoiceId', invoice_data.get('invoiceNumber')),
-            invoice_date=parse_date(invoice_data.get('issueDate', invoice_data.get('invoiceDate'))),
+            invoice_number=invoice_data.get('InvoiceNo') or invoice_data.get('invoiceId') or invoice_data.get('invoiceNumber'),
+            invoice_date=parse_date(invoice_data.get('IssueDate') or invoice_data.get('issueDate') or invoice_data.get('invoiceDate')),
             invoice_type='INCOMING',
             sender_name=sender_info['name'],
             sender_tax_number=sender_info['tax_number'],
@@ -255,9 +258,27 @@ class InvoiceSyncService:
             status='RECEIVED',
         )
         
-        db.session.add(purchase_invoice)
-        db.session.flush()  # Get ID
-        
+        self.db.add(purchase_invoice)
+        self.db.flush()  # Get ID
+
+        # Auto-convert to Purchase when supplier is already known
+        if supplier:
+            purchase = Purchase(
+                id=gen_id("purch"),
+                tenant_id=tenant_id,
+                supplier_id=supplier.id,
+                purchase_date=purchase_invoice.invoice_date or datetime.now(timezone.utc),
+                total_amount=amounts['total_amount'],
+                currency=amounts['currency'] or 'TRY',
+                status='approved',
+                invoice_id=str(purchase_invoice.id),
+                created_from_invoice=True,
+            )
+            self.db.add(purchase)
+            self.db.flush()
+            purchase_invoice.purchase_id = purchase.id
+            purchase_invoice.status = 'PROCESSED'
+
         # Extract and create invoice items
         items = extract_invoice_items(invoice_data)
         for item_data in items:
@@ -274,7 +295,7 @@ class InvoiceSyncService:
                 tax_amount=item_data['tax_amount'],
                 line_total=item_data['line_total'],
             )
-            db.session.add(item)
+            self.db.add(item)
         
         return True
     
@@ -282,32 +303,32 @@ class InvoiceSyncService:
         """Process a single outgoing invoice (return/correction to supplier)"""
         # Similar to incoming but with invoice_type='OUTGOING'
         # Extract UUID
-        birfatura_uuid = invoice_data.get('uuid', invoice_data.get('documentUUID'))
+        birfatura_uuid = invoice_data.get('UUID') or invoice_data.get('uuid') or invoice_data.get('documentUUID')
         if not birfatura_uuid:
             return False
         
         # Check for duplicates
-        existing = PurchaseInvoice.query.filter_by(birfatura_uuid=birfatura_uuid, tenant_id=tenant_id).first()
+        existing = self.db.query(PurchaseInvoice).filter_by(birfatura_uuid=birfatura_uuid, tenant_id=tenant_id).first()
         if existing:
             return False
         
         # For outgoing, the receiver is the supplier
         # We skip suggested suppliers for outgoing since we're sending to them
-        receiver_tax_number = invoice_data.get('receiverTaxNumber', invoice_data.get('receiverVKN'))
+        receiver_tax_number = invoice_data.get('ReceiverKN') or invoice_data.get('receiverTaxNumber') or invoice_data.get('receiverVKN')
         if not receiver_tax_number:
             return False
         
-        supplier = Supplier.query.filter_by(tax_number=receiver_tax_number, tenant_id=tenant_id).first()
+        supplier = self.db.query(Supplier).filter_by(tax_number=receiver_tax_number, tenant_id=tenant_id).first()
         
         amounts = extract_invoice_amounts(invoice_data)
         
         purchase_invoice = PurchaseInvoice(
             tenant_id=tenant_id,
             birfatura_uuid=birfatura_uuid,
-            invoice_number=invoice_data.get('invoiceId', invoice_data.get('invoiceNumber')),
-            invoice_date=parse_date(invoice_data.get('issueDate', invoice_data.get('invoiceDate'))),
+            invoice_number=invoice_data.get('InvoiceNo') or invoice_data.get('invoiceId') or invoice_data.get('invoiceNumber'),
+            invoice_date=parse_date(invoice_data.get('IssueDate') or invoice_data.get('issueDate') or invoice_data.get('invoiceDate')),
             invoice_type='OUTGOING',
-            sender_name=invoice_data.get('receiverName', ''),
+            sender_name=invoice_data.get('ReceiverName') or invoice_data.get('receiverName', ''),
             sender_tax_number=receiver_tax_number,
             supplier_id=supplier.id if supplier else None,
             currency=amounts['currency'],
@@ -319,8 +340,8 @@ class InvoiceSyncService:
             status='SENT',
         )
         
-        db.session.add(purchase_invoice)
-        db.session.flush()
+        self.db.add(purchase_invoice)
+        self.db.flush()
         
         # Add items
         items = extract_invoice_items(invoice_data)
@@ -337,7 +358,7 @@ class InvoiceSyncService:
                 tax_amount=item_data['tax_amount'],
                 line_total=item_data['line_total'],
             )
-            db.session.add(item)
+            self.db.add(item)
         
         return True
     
@@ -345,9 +366,9 @@ class InvoiceSyncService:
         """Add or update suggested supplier"""
         tax_number = sender_info['tax_number']
         
-        suggested = SuggestedSupplier.query.filter_by(tax_number=tax_number, tenant_id=tenant_id).first()
+        suggested = self.db.query(SuggestedSupplier).filter_by(tax_number=tax_number, tenant_id=tenant_id).first()
         
-        invoice_date = parse_date(invoice_data.get('issueDate', invoice_data.get('invoiceDate')))
+        invoice_date = parse_date(invoice_data.get('IssueDate') or invoice_data.get('issueDate') or invoice_data.get('invoiceDate'))
         amounts = extract_invoice_amounts(invoice_data)
         
         if not suggested:
@@ -365,7 +386,7 @@ class InvoiceSyncService:
                 last_invoice_date=invoice_date,
                 status='PENDING',
             )
-            db.session.add(suggested)
+            self.db.add(suggested)
         else:
             # Update existing
             suggested.invoice_count += 1

@@ -38,8 +38,7 @@ const Subscription: React.FC = () => {
     // Super admin check
     if (info?.is_super_admin || user?.role === 'super_admin') {
         return (
-            <div className="p-6 max-w-4xl mx-auto">
-                <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Abonelik ve Paket Bilgileri</h1>
+            <div className="space-y-6">
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-8 text-center">
                     <div className="text-6xl mb-4">👑</div>
                     <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-300 mb-2">Super Admin</h2>
@@ -93,8 +92,7 @@ const Subscription: React.FC = () => {
     const featureUsage = (tenant?.featureUsage ?? {}) as Record<string, FeatureUsageStats>;
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Abonelik ve Paket Bilgileri</h1>
+        <div className="space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Plan Card */}

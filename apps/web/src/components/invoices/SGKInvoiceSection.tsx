@@ -56,17 +56,17 @@ export function SGKInvoiceSection({
             
             // Mükellef Kodu otomatik doldur (sadece boşsa)
             if (!sgkData.mukellefKodu && company.companyInfo?.sgkMukellefKodu) {
-                updates.mukellefKodu = company.companyInfo.sgkMukellefKodu;
+                updates.mukellefKodu = company.companyInfo.sgkMukellefKodu as string;
             }
             
             // Mükellef Adı otomatik doldur (sadece boşsa)
             if (!sgkData.mukellefAdi && company.companyInfo?.sgkMukellefAdi) {
-                updates.mukellefAdi = company.companyInfo.sgkMukellefAdi;
+                updates.mukellefAdi = company.companyInfo.sgkMukellefAdi as string;
             }
             
             // Firma tipine göre additionalInfo otomatik seç (sadece boşsa)
             if (!sgkData.additionalInfo && company.companyInfo?.companyType) {
-                const companyType = company.companyInfo.companyType;
+                const companyType = company.companyInfo.companyType as string;
                 
                 // Firma tipi mapping
                 const typeMapping: Record<string, 'E' | 'H' | 'O' | 'M' | 'A' | 'MH' | 'D'> = {
@@ -77,7 +77,7 @@ export function SGKInvoiceSection({
                     'medical': 'M',         // Medikal
                 };
                 
-                if (typeMapping[companyType]) {
+                if (companyType && typeMapping[companyType]) {
                     updates.additionalInfo = typeMapping[companyType];
                 }
             }
@@ -175,7 +175,7 @@ export function SGKInvoiceSection({
 
                         {/* Mükellef Kodu ve Adı - E, H, O, M için */}
                         {showMukellefFields && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded border border-blue-200">
+                            <div className="grid grid-cols-2 gap-4 bg-white p-4 rounded border border-blue-200">
                                 <div>
                                     <Input
                                         type="text"
@@ -421,51 +421,7 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Payment section removed as per UX changes */}
-                {/* SGK Tutarsal Bilgiler */}
-                <div className="border border-green-200 rounded-lg p-4 bg-green-50">
-                    <h4 className="text-md font-medium text-gray-900 mb-4">SGK Tutarsal Bilgiler</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <Input
-                                type="number"
-                                label="%10 Katılım Payı Tutarı"
-                                value={sgkData.kpv10Amount !== undefined ? sgkData.kpv10Amount : ''}
-                                onChange={(e) => handleChange('kpv10Amount', e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                                placeholder="0.00"
-                                error={errors.kpv10Amount}
-                                fullWidth
-                                min={0}
-                                step="0.01"
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                type="number"
-                                label="%20 Katılım Payı Tutarı"
-                                value={sgkData.kpv20Amount !== undefined ? sgkData.kpv20Amount : ''}
-                                onChange={(e) => handleChange('kpv20Amount', e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                                placeholder="0.00"
-                                error={errors.kpv20Amount}
-                                fullWidth
-                                min={0}
-                                step="0.01"
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                type="number"
-                                label="Tahsil Edilen Katılım Payı"
-                                value={sgkData.tahsilEdilenKp !== undefined ? sgkData.tahsilEdilenKp : ''}
-                                onChange={(e) => handleChange('tahsilEdilenKp', e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                                placeholder="0.00"
-                                error={errors.tahsilEdilenKp}
-                                fullWidth
-                                min={0}
-                                step="0.01"
-                            />
-                        </div>
-                    </div>
-                </div>
+                {/* SGK Tutarsal Bilgiler - Kaldırıldı */}
 
                 {/* Uyarı kaldırıldı per UX isteği */}
             </div>

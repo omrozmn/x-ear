@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.marketplace import MarketplaceIntegration, MarketplaceProduct
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
@@ -56,7 +57,8 @@ async def get_integrations(
 ):
     """Get list of marketplace integrations"""
     try:
-        query = db.query(MarketplaceIntegration)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(MarketplaceIntegration)
         if access.tenant_id:
             query = query.filter(MarketplaceIntegration.tenant_id == access.tenant_id)
         integrations = query.all()
@@ -109,7 +111,8 @@ async def sync_integration(
 ):
     """Trigger sync for an integration"""
     try:
-        integration = db.query(MarketplaceIntegration).filter(
+        with unbound_session(reason="admin-cross-tenant"):
+            integration = db.query(MarketplaceIntegration).filter(
             MarketplaceIntegration.id == integration_id
         ).first()
         if not integration:

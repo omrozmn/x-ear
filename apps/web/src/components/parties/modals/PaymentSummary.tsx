@@ -133,7 +133,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
         // PaymentTrackingModal must accept ExtendedSaleRead or compatible
         // Casting to any to temporarily bypass strict check while types stabilize
         // Ideally PaymentTrackingModal should accept ExtendedSaleRead
-        sale={sale}
+        sale={sale as any}
         onPaymentUpdate={handlePaymentUpdate}
       />
     </>

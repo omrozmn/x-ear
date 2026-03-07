@@ -65,11 +65,9 @@ def get_invoices(
         total = query.count()
         invoices = query.offset((page - 1) * per_page).limit(per_page).all()
         
-        # Use to_dict() for proper serialization
-        invoice_dicts = [inv.to_dict() for inv in invoices]
-        
+        # Use Pydantic schema for type-safe serialization
         return ResponseEnvelope(
-            data=[InvoiceRead.model_validate(inv_dict) for inv_dict in invoice_dicts],
+            data=[InvoiceRead.model_validate(inv) for inv in invoices],
             meta={
                 "page": page,
                 "perPage": per_page,
@@ -334,9 +332,8 @@ def get_invoice(
     if not invoice or invoice.status == 'deleted':
         raise HTTPException(status_code=404, detail={"message": "Invoice not found", "code": "NOT_FOUND"})
     
-    # Use to_dict() for proper serialization
-    invoice_dict = invoice.to_dict()
-    return ResponseEnvelope(data=InvoiceRead.model_validate(invoice_dict))
+    # Use Pydantic schema for type-safe serialization
+    return ResponseEnvelope(data=InvoiceRead.model_validate(invoice))
 
 @router.post("/invoices", operation_id="createInvoices", response_model=ResponseEnvelope[InvoiceRead], status_code=201)
 def create_invoice(
@@ -388,9 +385,8 @@ def create_invoice(
         db_session.commit()
         db_session.refresh(invoice)
         
-        # Use to_dict() for proper serialization, then validate with Pydantic
-        invoice_dict = invoice.to_dict()
-        return ResponseEnvelope(data=InvoiceRead.model_validate(invoice_dict))
+        # Use Pydantic schema for type-safe serialization
+        return ResponseEnvelope(data=InvoiceRead.model_validate(invoice))
     except HTTPException:
         db_session.rollback()  # Explicitly rollback on HTTP exceptions
         raise
@@ -585,12 +581,9 @@ def send_to_gib(
         db_session.commit()
         db_session.refresh(invoice)
 
-        # Use to_dict() for proper serialization
-        invoice_dict = invoice.to_dict()
-        
         # Use Pydantic schema for type-safe serialization
         return ResponseEnvelope(data={
-            'invoice': InvoiceRead.model_validate(invoice_dict).model_dump(by_alias=True),
+            'invoice': InvoiceRead.model_validate(invoice).model_dump(by_alias=True),
             'outbox': {
                 'id': outbox.id if hasattr(outbox, 'id') else None,
                 'invoiceId': outbox.invoice_id,

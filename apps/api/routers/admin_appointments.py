@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.appointment import Appointment
 from core.models.party import Party
 from models.tenant import Tenant
@@ -34,7 +35,8 @@ async def get_all_appointments(
 ):
     """Get list of ALL appointments from ALL tenants"""
     try:
-        query = db.query(Appointment).join(Party)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Appointment).join(Party)
         
         if search:
             query = query.filter(

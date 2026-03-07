@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse as DefaultJSONResponse
@@ -69,6 +70,16 @@ file_handler.setFormatter(json_formatter)
 logging.basicConfig(level=logging.INFO, handlers=[console_handler, file_handler])
 logger = logging.getLogger("x-ear")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan: start/stop background scheduler."""
+    from services.birfatura.auto_sync_scheduler import start_scheduler, stop_scheduler
+    start_scheduler(interval_minutes=15)
+    yield
+    stop_scheduler()
+
+
 # Create FastAPI app - operation_ids are now explicit in each endpoint
 # separate_input_output_schemas=False: Fixes Orval generating 'unknown' types
 # by avoiding OpenAPI 3.1 anyOf syntax for nullable fields
@@ -78,7 +89,8 @@ app = FastAPI(
     version="1.0.0",
     openapi_url="/openapi.json",
     separate_input_output_schemas=False,  # Critical: Orval compatibility
-    default_response_class=DefaultJSONResponse  # Fixed: orjson can't handle large integers
+    default_response_class=DefaultJSONResponse,  # Fixed: orjson can't handle large integers
+    lifespan=lifespan,
 )
 
 import schemas.parties
@@ -311,6 +323,10 @@ app.include_router(admin_analytics.router, prefix="/api")
 app.include_router(admin_example_documents.router, prefix="/api")
 
 # Additional routers
+# New invoices router MUST be before legacy invoices router
+# to avoid /invoices/{invoice_id} catching /invoices/incoming
+from routers import invoices_new
+app.include_router(invoices_new.router, prefix="/api")
 app.include_router(invoices.router, prefix="/api")
 app.include_router(sgk.router, prefix="/api")
 
@@ -366,9 +382,9 @@ app.include_router(admin_roles.router, prefix="/api")  # Has /admin prefix built
 app.include_router(config.router, prefix="/api")
 
 # Phase 5 migrated routers
-from routers import registration
-# sms_packages removed - endpoints already in sms.py
+from routers import registration, sms_packages
 app.include_router(registration.router, prefix="/api")
+app.include_router(sms_packages.router, prefix="/api")  # Has /sms-packages and /admin/sms/packages
 
 # Phase 6 migrated routers - Admin modules
 from routers import (
@@ -425,8 +441,10 @@ app.include_router(email_logs.router)
 from routers.tool_api import email_notifications as tool_api_email
 app.include_router(tool_api_email.router)  # No /api prefix - router already has /tool-api prefix
 
-from routers import commissions
-app.include_router(commissions.router)
+from routers import commissions, blog, admin_blog
+app.include_router(blog.router, prefix="/api")
+app.include_router(admin_blog.router, prefix="/api")
+app.include_router(commissions.router, prefix="/api")
 
 from routers import schema_registry
 app.include_router(schema_registry.router, prefix="/api") # Active: Developer Schema Registry

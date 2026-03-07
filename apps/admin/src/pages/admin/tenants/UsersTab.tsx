@@ -21,8 +21,8 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
     // List users - Keep using generated hook for GET as it works
     const { data: usersResponse, isLoading } = useListAdminTenantUsers(tenantId);
 
-    // Access users from envelope
-    const users = usersResponse?.data?.users || [];
+    // Orval already unwraps ResponseEnvelope, usersResponse.users is the array
+    const users = (usersResponse as any)?.users || [];
 
     // Client-side pagination
     const [page, setPage] = useState(1);

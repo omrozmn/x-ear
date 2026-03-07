@@ -130,7 +130,7 @@ export function DesktopPartiesPage() {
     try {
       await updatePartyMutation.mutateAsync({ 
         partyId, 
-        data: updates
+        data: updates as any
       });
       // Wait for refetch to complete before closing modal
       await refetch();
@@ -169,8 +169,8 @@ export function DesktopPartiesPage() {
           .replace(/Ç/g, 'C');
       };
       
-      const partyStatus = normalizeStatus(party.status || '');
-      const filterStatuses = filters.status.map(s => normalizeStatus(s));
+      const partyStatus = normalizeStatus(party.status ? String(party.status) : '');
+      const filterStatuses = filters.status.map(s => normalizeStatus(String(s || '')));
       if (!filterStatuses.includes(partyStatus)) return false;
     }
 
@@ -332,7 +332,7 @@ export function DesktopPartiesPage() {
               variant="outline"
               size="sm"
               onClick={() => {
-                navigate({ to: '/settings/party-segments' });
+                navigate({ to: '/settings', search: (prev: any) => ({ ...prev, tab: 'parties' }) });
               }}
             >
               <Settings className="h-4 w-4 mr-2" />

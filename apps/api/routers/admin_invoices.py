@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.invoice import Invoice
 from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -34,7 +35,8 @@ async def get_admin_invoices(
 ):
     """Get paginated list of admin invoices"""
     try:
-        query = db.query(Invoice)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Invoice)
         
         if access.tenant_id:
             query = query.filter(Invoice.tenant_id == access.tenant_id)
@@ -111,7 +113,8 @@ async def get_admin_invoice(
 ):
     """Get single invoice"""
     try:
-        invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
@@ -133,7 +136,8 @@ async def record_payment(
 ):
     """Record payment for invoice"""
     try:
-        invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         
@@ -154,7 +158,8 @@ async def get_invoice_pdf(
 ):
     """Get invoice PDF link"""
     try:
-        invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise HTTPException(status_code=404, detail="Invoice not found")
         

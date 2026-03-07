@@ -26,12 +26,14 @@ import {
     Wallet,
     Bot,
 } from 'lucide-react'
+import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Raporlar', href: '/analytics', icon: BarChart3 },
     { name: 'Aboneler', href: '/tenants', icon: Building2 },
     { name: 'Kullanıcılar', href: '/users', icon: Users },
+    { name: 'Blog Yönetimi', href: '/blog', icon: FileText },
     { name: 'Hastalar', href: '/patients', icon: User },
     { name: 'Randevular', href: '/appointments', icon: Calendar },
     { name: 'Cihaz & Stok', href: '/inventory', icon: Box },
@@ -60,6 +62,12 @@ const navigation = [
 
 export function AdminSidebar() {
     const location = useLocation()
+    const { isDesktop } = useAdminResponsive()
+
+    // Only render on desktop
+    if (!isDesktop) {
+        return null
+    }
 
     return (
         <div className="flex flex-col w-64 bg-gray-900 border-r border-gray-800 h-screen">
@@ -67,7 +75,7 @@ export function AdminSidebar() {
                 <img src="/logo/x.svg" alt="X-Ear Logo" className="w-8 h-8" />
                 <span className="text-xl font-bold text-white">X-Ear Admin</span>
             </div>
-            <div className="flex-1 flex flex-col overflow-y-auto">
+            <div className="flex-1 flex flex-col overflow-y-auto hide-scrollbar">
                 <nav className="flex-1 px-2 py-4 space-y-1">
                     {navigation.map((item) => {
                         const isActive = location.pathname === item.href
@@ -76,7 +84,7 @@ export function AdminSidebar() {
                                 key={item.name}
                                 to={item.href}
                                 className={`
-                  group flex items-center px-2 py-2 text-sm font-medium rounded-md
+                  group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
                   ${isActive
                                         ? 'bg-gray-800 text-white'
                                         : 'text-gray-300 hover:bg-gray-800 hover:text-white'}

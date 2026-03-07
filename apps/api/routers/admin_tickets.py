@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import logging
 
 from core.database import get_db
+from core.database import unbound_session
 from middleware.unified_access import UnifiedAccess, require_access
 from schemas.tickets import TicketCreate, TicketUpdate, TicketRead, TicketResponseCreate
 from schemas.base import ResponseEnvelope
@@ -31,8 +32,9 @@ async def get_admin_tickets(
 ):
     """Get list of tickets"""
     try:
-        # Build query
-        query = db.query(Ticket)
+        with unbound_session(reason="admin-cross-tenant"):
+            # Build query
+            query = db.query(Ticket)
         
         # Filter by status
         if status:
@@ -172,7 +174,8 @@ async def update_admin_ticket(
 ):
     """Update a ticket"""
     try:
-        ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
         if not ticket:
             raise HTTPException(status_code=404, detail="Ticket not found")
         
@@ -232,7 +235,8 @@ async def create_ticket_response(
 ):
     """Add a response to a ticket"""
     try:
-        ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
         if not ticket:
             raise HTTPException(status_code=404, detail="Ticket not found")
         

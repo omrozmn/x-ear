@@ -16,6 +16,7 @@ class PlanType(PyEnum):
     PRO = "PRO"
     ENTERPRISE = "ENTERPRISE"
     CUSTOM = "CUSTOM"
+    PAID = "PAID"
 
 
 class BillingInterval(PyEnum):

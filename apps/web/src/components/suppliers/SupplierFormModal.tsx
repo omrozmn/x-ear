@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Autocomplete, type AutocompleteOption } from '@x-ear/ui-web';
-import { Building2, User, MapPin } from 'lucide-react';
+import { Building2, User, MapPin, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { SupplierExtended } from './supplier-search.types';
+import { useAutoFillSupplier } from '../../hooks/useAutoFillSupplier';
 import citiesDataRaw from '../../data/cities.json';
 import countriesData from '../../data/countries.json';
 
@@ -116,6 +118,24 @@ export function SupplierFormModal({
     setErrors({});
   }, [supplier, isOpen]);
 
+  // Auto-fill supplier details from invoice data
+  const { autoFillData, hasData: hasAutoFill } = useAutoFillSupplier(
+    formData.taxNumber || undefined,
+    formData.companyName || undefined,
+  );
+
+  const handleAutoFill = () => {
+    if (!autoFillData) return;
+    setFormData(prev => ({
+      ...prev,
+      companyName: autoFillData.companyName || prev.companyName,
+      taxOffice: autoFillData.taxOffice || prev.taxOffice,
+      address: autoFillData.address || prev.address,
+      city: autoFillData.city || prev.city,
+    }));
+    toast.success('Fatura bilgileri otomatik olarak dolduruldu');
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -199,6 +219,7 @@ export function SupplierFormModal({
                 Şirket Adı *
               </label>
               <Input
+                fullWidth
                 value={formData.companyName}
                 onChange={(e) => handleChange('companyName', e.target.value)}
                 placeholder="Şirket adını giriniz"
@@ -211,6 +232,7 @@ export function SupplierFormModal({
                 Website
               </label>
               <Input
+                fullWidth
                 value={formData.website}
                 onChange={(e) => handleChange('website', e.target.value)}
                 placeholder="https://www.example.com"
@@ -221,11 +243,28 @@ export function SupplierFormModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Vergi Numarası
               </label>
-              <Input
-                value={formData.taxNumber}
-                onChange={(e) => handleChange('taxNumber', e.target.value)}
-                placeholder="10 haneli vergi numarası"
-              />
+              <div className="flex gap-2">
+                <Input
+                  fullWidth
+                  value={formData.taxNumber}
+                  onChange={(e) => handleChange('taxNumber', e.target.value)}
+                  placeholder="10 haneli vergi numarası"
+                  className="flex-1"
+                />
+                {hasAutoFill && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAutoFill}
+                    className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 whitespace-nowrap mt-0 self-end"
+                    title="Fatura bilgilerinden otomatik doldur"
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    Otomatik Doldur
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div>
@@ -233,6 +272,7 @@ export function SupplierFormModal({
                 Şirket Kodu
               </label>
               <Input
+                fullWidth
                 value={formData.companyCode}
                 onChange={(e) => handleChange('companyCode', e.target.value)}
                 placeholder="Örn: SUP001"
@@ -244,6 +284,7 @@ export function SupplierFormModal({
                 Vergi Dairesi
               </label>
               <Input
+                fullWidth
                 value={formData.taxOffice}
                 onChange={(e) => handleChange('taxOffice', e.target.value)}
                 placeholder="Vergi dairesi adı"
@@ -279,6 +320,7 @@ export function SupplierFormModal({
                 Yetkili Kişi
               </label>
               <Input
+                fullWidth
                 value={formData.contactPerson}
                 onChange={(e) => handleChange('contactPerson', e.target.value)}
                 placeholder="İsim soyisim"
@@ -290,6 +332,7 @@ export function SupplierFormModal({
                 E-posta
               </label>
               <Input
+                fullWidth
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
@@ -303,6 +346,7 @@ export function SupplierFormModal({
                 Telefon
               </label>
               <Input
+                fullWidth
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 placeholder="0212 XXX XX XX"
@@ -314,6 +358,7 @@ export function SupplierFormModal({
                 Mobil
               </label>
               <Input
+                fullWidth
                 value={formData.mobile}
                 onChange={(e) => handleChange('mobile', e.target.value)}
                 placeholder="0532 XXX XX XX"
@@ -356,6 +401,7 @@ export function SupplierFormModal({
                     Şehir
                   </label>
                   <Input
+                    fullWidth
                     value={formData.city}
                     onChange={(e) => handleChange('city', e.target.value)}
                     placeholder="Şehir giriniz"
@@ -381,6 +427,7 @@ export function SupplierFormModal({
                     Bölge
                   </label>
                   <Input
+                    fullWidth
                     value={formData.district}
                     onChange={(e) => handleChange('district', e.target.value)}
                     placeholder="Bölge giriniz"
@@ -394,6 +441,7 @@ export function SupplierFormModal({
                 Posta Kodu
               </label>
               <Input
+                fullWidth
                 value={formData.postalCode}
                 onChange={(e) => handleChange('postalCode', e.target.value)}
                 placeholder="34000"

@@ -15,8 +15,11 @@ import {
     Search
 } from 'lucide-react';
 import Pagination from '../../components/ui/Pagination';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
 const AdminBirFaturaPage: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const [activeTab, setActiveTab] = useState<'outgoing' | 'incoming' | 'logs'>('outgoing');
     const [page, setPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState('');
@@ -41,97 +44,97 @@ const AdminBirFaturaPage: React.FC = () => {
     const pagination = activeTab === 'logs' ? ((logsData as any)?.pagination || (logsData as any)?.data?.pagination) : ((invoicesData as any)?.pagination || (invoicesData as any)?.data?.pagination);
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6 max-w-7xl mx-auto'}>
+            <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'} mb-8`}>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">E-Fatura / BirFatura Yönetimi</h1>
-                    <p className="text-gray-500">Fatura entegrasyon durumu ve kuyruk yönetimi</p>
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>E-Fatura / BirFatura Yönetimi</h1>
+                    <p className="text-gray-500 dark:text-gray-400">Fatura entegrasyon durumu ve kuyruk yönetimi</p>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
+                    <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg touch-feedback">
                         <RefreshCw className="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className={`grid gap-4 mb-8 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-500">Giden Faturalar</span>
+                        <span className={`text-gray-500 dark:text-gray-400 ${isMobile ? 'text-xs' : 'text-sm'}`}>Giden Faturalar</span>
                         <ArrowUpRight className="w-4 h-4 text-blue-500" />
                     </div>
-                    <div className="text-2xl font-bold">{stats?.totalOutgoing || 0}</div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>{stats?.totalOutgoing || 0}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {stats?.outgoing?.pending || 0} Bekleyen, {stats?.outgoing?.rejected || 0} Hatalı
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-500">Gelen Faturalar</span>
+                        <span className={`text-gray-500 dark:text-gray-400 ${isMobile ? 'text-xs' : 'text-sm'}`}>Gelen Faturalar</span>
                         <ArrowDownLeft className="w-4 h-4 text-green-500" />
                     </div>
-                    <div className="text-2xl font-bold">{stats?.totalIncoming || 0}</div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>{stats?.totalIncoming || 0}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Son 7 gün
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-500">Hatalı İşlemler</span>
+                        <span className={`text-gray-500 dark:text-gray-400 ${isMobile ? 'text-xs' : 'text-sm'}`}>Hatalı İşlemler</span>
                         <AlertTriangle className="w-4 h-4 text-red-500" />
                     </div>
-                    <div className="text-2xl font-bold text-red-600">
+                    <div className={`font-bold text-red-600 dark:text-red-400 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
                         {(stats?.outgoing?.rejected || 0) + (stats?.outgoing?.error || 0)}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Müdahale gerektirir
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-500">Kuyruk Durumu</span>
+                        <span className={`text-gray-500 dark:text-gray-400 ${isMobile ? 'text-xs' : 'text-sm'}`}>Kuyruk Durumu</span>
                         <Clock className="w-4 h-4 text-orange-500" />
                     </div>
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className={`font-bold text-orange-600 dark:text-orange-400 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
                         {stats?.outgoing?.draft || 0}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Gönderilmeyi bekleyen
                     </div>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="border-b px-6 py-4 flex items-center justify-between">
-                    <div className="flex space-x-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className={`border-b border-gray-200 dark:border-gray-700 ${isMobile ? 'px-4 py-3' : 'px-6 py-4'} flex ${isMobile ? 'flex-col gap-3' : 'items-center justify-between'}`}>
+                    <div className={`flex ${isMobile ? 'w-full overflow-x-auto' : 'space-x-6'}`}>
                         <button
                             onClick={() => { setActiveTab('outgoing'); setPage(1); }}
-                            className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'outgoing'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap touch-feedback ${activeTab === 'outgoing'
+                                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
                             Giden Faturalar
                         </button>
                         <button
                             onClick={() => { setActiveTab('incoming'); setPage(1); }}
-                            className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'incoming'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap touch-feedback ${activeTab === 'incoming'
+                                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
                             Gelen Faturalar
                         </button>
                         <button
                             onClick={() => { setActiveTab('logs'); setPage(1); }}
-                            className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'logs'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap touch-feedback ${activeTab === 'logs'
+                                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
                             Entegrasyon Logları
@@ -139,11 +142,11 @@ const AdminBirFaturaPage: React.FC = () => {
                     </div>
 
                     {activeTab !== 'logs' && (
-                        <div className="flex items-center space-x-2">
+                        <div className={`flex items-center ${isMobile ? 'w-full' : 'space-x-2'}`}>
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className={`text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 ${isMobile ? 'w-full' : ''}`}
                             >
                                 <option value="">Tüm Durumlar</option>
                                 <option value="draft">Taslak</option>
@@ -156,7 +159,7 @@ const AdminBirFaturaPage: React.FC = () => {
                     )}
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className={isMobile ? '' : 'overflow-x-auto'}>
                     {activeTab === 'logs' ? (
                         <table className="w-full text-left text-sm">
                             <thead className="bg-gray-50 text-gray-500">

@@ -605,7 +605,7 @@ def add_serials(
             count += 1
     db.commit()
     db.refresh(item)
-    return ResponseEnvelope(message=f"{count} serial numbers added", data={"item": item.to_dict(), "count": count})
+    return ResponseEnvelope(message=f"{count} serial numbers added", data={"item": item, "count": count})
 
 @router.get("/inventory/{item_id}/movements", operation_id="listInventoryMovements", response_model=ResponseEnvelope[List[StockMovementRead]])
 def get_movements(

@@ -10,8 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { useListUploadFiles, useCreateUploadPresigned, useCreateOcrProcess, useDeleteUploadFiles } from '@/lib/api-client';
 import toast from 'react-hot-toast';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 
 const FileManager: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const [currentFolder, setCurrentFolder] = useState('uploads');
     const [ocrResult, setOcrResult] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,11 +124,11 @@ const FileManager: React.FC = () => {
     };
 
     return (
-        <div className="p-6 relative">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6'}>
             {/* OCR Result Modal */}
             {isModalOpen && ocrResult && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                         <div className="flex justify-between items-center p-4 border-b">
                             <h3 className="text-lg font-medium">OCR Sonuçları</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
@@ -192,15 +194,15 @@ const FileManager: React.FC = () => {
 
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Dosya Yöneticisi</h1>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Dosya Yöneticisi</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Dosyalarınızı yönetin ve paylaşın
                     </p>
                 </div>
                 <div>
-                    <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback">
                         <ArrowUpTrayIcon className="-ml-1 mr-2 h-5 w-5" />
-                        Dosya Yükle
+                        {!isMobile && 'Dosya Yükle'}
                         <input
                             type="file"
                             className="hidden"
@@ -211,48 +213,48 @@ const FileManager: React.FC = () => {
             </div>
 
             {/* Folder Navigation (Simple for now) */}
-            <div className="mb-6 flex space-x-2">
+            <div className={`mb-6 flex ${isMobile ? 'flex-col space-y-2' : 'space-x-2'}`}>
                 <button
                     onClick={() => setCurrentFolder('uploads')}
-                    className={`px-3 py-1 rounded-md text-sm ${currentFolder === 'uploads' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700'}`}
+                    className={`px-3 py-1 rounded-md text-sm touch-feedback ${currentFolder === 'uploads' ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
                 >
                     Genel
                 </button>
                 <button
                     onClick={() => setCurrentFolder('invoices')}
-                    className={`px-3 py-1 rounded-md text-sm ${currentFolder === 'invoices' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700'}`}
+                    className={`px-3 py-1 rounded-md text-sm touch-feedback ${currentFolder === 'invoices' ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
                 >
                     Faturalar
                 </button>
                 <button
                     onClick={() => setCurrentFolder('documents')}
-                    className={`px-3 py-1 rounded-md text-sm ${currentFolder === 'documents' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700'}`}
+                    className={`px-3 py-1 rounded-md text-sm touch-feedback ${currentFolder === 'documents' ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
                 >
                     Belgeler
                 </button>
             </div>
 
             {/* File List */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                 {isLoading ? (
                     <div className="p-6 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                        <p className="mt-2 text-sm text-gray-500">Dosyalar yükleniyor...</p>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400 mx-auto"></div>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Dosyalar yükleniyor...</p>
                     </div>
                 ) : files.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500">
-                        <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+                        <DocumentIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
                         <p className="mt-2">Bu klasörde dosya yok</p>
                     </div>
                 ) : (
-                    <ul className="divide-y divide-gray-200">
+                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {files.map((file: any) => (
-                            <li key={file.key} className="px-6 py-4 hover:bg-gray-50 flex items-center justify-between">
+                            <li key={file.key} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
                                 <div className="flex items-center">
-                                    <DocumentIcon className="h-8 w-8 text-gray-400 mr-3" />
+                                    <DocumentIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">{file.filename}</p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{file.filename}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
                                             {formatSize(file.size)} • {new Date(file.last_modified).toLocaleDateString()}
                                         </p>
                                     </div>
@@ -260,7 +262,7 @@ const FileManager: React.FC = () => {
                                 <div className="flex space-x-2">
                                     <button
                                         onClick={() => handleOcr(file.url)}
-                                        className="p-2 text-blue-600 hover:text-blue-800 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                        className="p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 rounded hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors touch-feedback"
                                         title="OCR Analizi"
                                         disabled={isOcrPending}
                                     >
@@ -270,14 +272,14 @@ const FileManager: React.FC = () => {
                                         href={file.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="p-2 text-gray-400 hover:text-gray-600"
+                                        className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 touch-feedback"
                                         title="İndir / Görüntüle"
                                     >
                                         <ArrowDownTrayIcon className="h-5 w-5" />
                                     </a>
                                     <button
                                         onClick={() => handleDelete(file.key)}
-                                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                        className="p-2 text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors touch-feedback"
                                         title="Sil"
                                     >
                                         <TrashIcon className="h-5 w-5" />

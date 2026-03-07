@@ -2,9 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import AppHeader from '../../AppHeader';
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Scene } from "@/components/canvas/Scene";
+import { HyperGlassCard } from "@/components/ui/HyperGlassCard";
 import { getAffiliate, updateAffiliatePaymentInfo, getAffiliateCommissions, Commission } from '../../../lib/affiliate';
-import { Loader2, LogOut, Wallet, User as UserIcon, Building2, CheckCircle, AlertCircle, Copy, Link as LinkIcon, Phone, History, Banknote } from 'lucide-react';
+import { Loader2, LogOut, Wallet, User as UserIcon, Building2, CheckCircle, AlertCircle, Copy, Check, Link as LinkIcon, Phone, History, Banknote, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
 
 const PanelPage = () => {
   const router = useRouter();
@@ -12,11 +16,9 @@ const PanelPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Commission Data
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [loadingCommissions, setLoadingCommissions] = useState(false);
 
-  // Form States
   const [formName, setFormName] = useState('');
   const [formIban, setFormIban] = useState('');
   const [formPhone, setFormPhone] = useState('');
@@ -24,8 +26,10 @@ const PanelPage = () => {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
 
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
   useEffect(() => {
-    // Check session
     const storedUser = localStorage.getItem('affiliate_user');
     if (!storedUser) {
       router.push('/affiliate/login');
@@ -34,7 +38,8 @@ const PanelPage = () => {
 
     try {
       const user = JSON.parse(storedUser);
-      const userData = user.data && user.success ? user.data : user;
+      // user might be wrapped in {success: true, data: {id: 1, ...}} or it might be just {id: 1, ...}
+      const userData = user.data && user.id === undefined ? user.data : user;
 
       if (!userData || !userData.id) {
         localStorage.removeItem('affiliate_user');
@@ -49,35 +54,29 @@ const PanelPage = () => {
         fetchCommissionsData(userData.id);
       }
     } catch (e) {
-      console.error("Session parse error:", e);
       localStorage.removeItem('affiliate_user');
       router.push('/affiliate/login');
     }
-  }, []);
+  }, [router]);
 
-  // Sync form state
   useEffect(() => {
     if (affiliate) {
-      setFormName(affiliate.account_holder_name || '');
+      setFormName(affiliate.accountHolderName || affiliate.account_holder_name || '');
       setFormIban(affiliate.iban || '');
-      setFormPhone(affiliate.phone_number || '');
+      setFormPhone(affiliate.phoneNumber || affiliate.phone_number || '');
     }
   }, [affiliate]);
 
   const fetchData = async (id: string | number) => {
     try {
       if (!id) return;
-      // Don't set main loading to true for background refresh if data exists
       if (!affiliate) setLoading(true);
 
       const data = await getAffiliate(Number(id));
       setAffiliate(data);
       localStorage.setItem('affiliate_user', JSON.stringify(data));
-      setError(null);
     } catch (err: any) {
-      console.error("Fetch Data Error:", err);
-      const msg = err?.response?.data?.error || err?.response?.data?.detail || err.message;
-      setError('Veriler güncellenemedi: ' + msg);
+      setError('Veriler güncellenemedi.');
     } finally {
       setLoading(false);
     }
@@ -89,7 +88,7 @@ const PanelPage = () => {
       const data = await getAffiliateCommissions(id);
       setCommissions(data);
     } catch (err) {
-      console.error("Fetch Commissions Error:", err);
+      console.error(err);
     } finally {
       setLoadingCommissions(false);
     }
@@ -98,37 +97,20 @@ const PanelPage = () => {
   const handleUpdatePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!affiliate?.id) return;
-
     setPaymentError(null);
     setPaymentSuccess(null);
 
     try {
       const updatedData = await updateAffiliatePaymentInfo(affiliate.id, formIban, formName, formPhone);
-
-      const newAffiliate = {
-        ...affiliate,
-        iban: updatedData.iban,
-        account_holder_name: updatedData.account_holder_name,
-        phone_number: updatedData.phone_number
-      };
+      const newAffiliate = { ...affiliate, ...updatedData };
       setAffiliate(newAffiliate);
       localStorage.setItem('affiliate_user', JSON.stringify(newAffiliate));
-
-      setPaymentSuccess("Bilgiler başarıyla güncellendi.");
+      setPaymentSuccess("Bilgiler güncellendi.");
       setTimeout(() => setPaymentSuccess(null), 3000);
-
     } catch (err: any) {
-      const msg = err?.response?.data?.error || err?.response?.data?.detail || err.message;
-      if (msg && msg.toLowerCase().includes('iban')) {
-        setPaymentError("Geçersiz IBAN formatı. Lütfen kontrol ediniz.");
-      } else {
-        setPaymentError(msg);
-      }
+      setPaymentError(err?.response?.data?.detail || "Güncelleme başarısız.");
     }
   };
-
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('affiliate_user');
@@ -146,246 +128,221 @@ const PanelPage = () => {
     }
   };
 
+  const affiliateCode = affiliate?.referralCode || affiliate?.code || '';
   const referralLink = typeof window !== 'undefined'
-    ? `${window.location.origin}/register?ref=${affiliate?.code}`
-    : `https://xear.com.tr/register?ref=${affiliate?.code}`;
+    ? `${window.location.origin}/register?ref=${affiliateCode}`
+    : `https://x-ear.com/register?ref=${affiliateCode}`;
 
-  // Calculate Total Earnings
   const totalEarnings = commissions
     .filter(c => c.status !== 'cancelled')
     .reduce((sum, c) => sum + c.amount, 0);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'paid': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-500/20 text-green-400">ÖDENDİ</span>;
-      case 'pending': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-400">BEKLEMEDE</span>;
-      case 'cancelled': return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-500/20 text-red-400">İPTAL</span>;
-      default: return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-500/20 text-gray-400">{status.toUpperCase()}</span>;
-    }
-  }
-
-  const getEventLabel = (event: string) => {
-    const map: any = { 'signup': 'Yeni Üyelik', 'payment': 'Ödeme', 'refund': 'İade' };
-    return map[event] || event;
-  }
-
-
   if (!affiliate && loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-accent-blue animate-spin" />
       </div>
     );
   }
 
-  if (!affiliate) return null;
-
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-gray-300 font-sans selection:bg-indigo-500 selection:text-white">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(at_50%_0%,hsla(250,90%,60%,0.15)_0px,transparent_50%)]"></div>
+    <div className="min-h-screen bg-background text-foreground relative flex flex-col">
+      <Header />
+      <div className="fixed inset-0 z-0">
+        <Scene />
       </div>
 
-      <AppHeader />
-
-      <main className="min-h-screen pt-24 px-4 pb-12 relative z-10">
-        <div className="max-w-6xl mx-auto space-y-6">
-
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-1">Affiliate Paneli</h1>
-              <p className="text-gray-400">Hoş geldin, <span className="text-indigo-400">{affiliate.email}</span></p>
-            </div>
-            <div className="flex gap-4 items-center">
-              {/* Commission Rate Badge */}
-              <div className="hidden md:flex flex-col items-end px-4 border-r border-white/10">
-                <span className="text-xs text-gray-400 uppercase font-bold">Abone Başı Kazanç</span>
-                <span className="text-xl font-mono text-indigo-400">%20</span>
-              </div>
-              {/* Total Earnings Badge */}
-              <div className="hidden md:flex flex-col items-end px-4 border-r border-white/10">
-                <span className="text-xs text-gray-400 uppercase font-bold">Toplam Kazanç</span>
-                <span className="text-xl font-mono text-green-400">{formatCurrency(totalEarnings)}</span>
-              </div>
-              <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors text-sm font-medium">
-                <LogOut className="w-4 h-4" /> Çıkış Yap
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {/* Left Column: Stats & Links */}
-            <div className="space-y-6">
-              {/* ID & Status */}
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-4">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <UserIcon className="w-5 h-5 text-indigo-400" /> Hesap Durumu
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-black/20 border border-white/5">
-                    <div className="text-xs text-gray-500 uppercase font-bold mb-1">Affiliate ID</div>
-                    <div className="text-white font-mono text-lg">{affiliate.display_id || affiliate.id}</div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-black/20 border border-white/5">
-                    <div className="text-xs text-gray-500 uppercase font-bold mb-1">Durum</div>
-                    <div className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${affiliate.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {affiliate.is_active ? 'AKTİF' : 'PASİF'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Referral Link & Code */}
-              <div className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 backdrop-blur-xl border border-indigo-500/30 p-6 rounded-2xl space-y-4">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <LinkIcon className="w-5 h-5 text-indigo-400" /> Referans Bağlantıları
-                </h2>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-indigo-300 uppercase font-bold mb-1 block">Referans Kodu</label>
-                    <div className="flex gap-2">
-                      <code className="flex-1 bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white font-mono text-lg tracking-wider">
-                        {affiliate.code || '...'}
-                      </code>
-                      <button onClick={() => copyToClipboard(affiliate.code, 'code')} className="bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/50 text-indigo-300 px-4 rounded-lg transition-colors flex items-center justify-center min-w-[50px]">
-                        {copiedCode ? <CheckCircle className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-indigo-300 uppercase font-bold mb-1 block">Kayıt Linki</label>
-                    <div className="flex gap-2">
-                      <div className="flex-1 bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-gray-300 text-sm truncate font-mono">
-                        {referralLink}
-                      </div>
-                      <button onClick={() => copyToClipboard(referralLink, 'link')} className="bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/50 text-indigo-300 px-4 rounded-lg transition-colors flex items-center justify-center min-w-[50px]">
-                        {copiedLink ? <CheckCircle className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Setup Form */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2 mb-6">
-                <Building2 className="w-5 h-5 text-indigo-400" /> Profil ve Ödeme Bilgileri
-              </h2>
-
-              <form onSubmit={handleUpdatePayment} className="space-y-5">
+      <main className="flex-grow pt-32 pb-24 relative z-10">
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Top Stats Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <HyperGlassCard className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                  <label className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 block">Hesap Sahibi Adı Soyadı</label>
-                  <input className="w-full p-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/5 transition-all text-sm"
-                    value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Ad Soyad" />
+                  <h1 className="text-3xl font-display font-bold text-glow">Partner Paneli</h1>
+                  <p className="text-foreground/50 mt-1">Hoş geldiniz, <span className="text-accent-blue font-semibold">{affiliate.email}</span></p>
                 </div>
-                <div>
-                  <label className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 block">Telefon Numarası</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input className="w-full pl-10 p-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/5 transition-all text-sm"
-                      value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="05XX XXX XX XX" />
+                <div className="flex gap-4 items-center w-full md:w-auto">
+                  <div className="flex flex-col items-end px-6 border-r border-foreground/10">
+                    <span className="text-[10px] text-foreground/40 uppercase font-bold tracking-widest">Toplam Kazanç</span>
+                    <span className="text-2xl font-mono text-emerald-400 font-bold">₺{totalEarnings.toLocaleString('tr-TR')}</span>
                   </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 block">IBAN</label>
-                  <input className={`w-full p-3 rounded-xl bg-black/20 border ${paymentError ? 'border-red-500/50' : 'border-white/10'} text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/5 transition-all text-sm`}
-                    value={formIban} onChange={(e) => setFormIban(e.target.value)} placeholder="TR..." />
-                  {paymentError && (
-                    <div className="flex items-center gap-1.5 mt-2 text-red-400 text-sm animate-in slide-in-from-top-1">
-                      <AlertCircle className="w-4 h-4" />
-                      {paymentError}
-                    </div>
-                  )}
-                </div>
-                <div className="pt-2">
-                  <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2">
-                    <Wallet className="w-4 h-4" /> Bilgileri Güncelle
+                  <button onClick={handleLogout} className="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl transition-all">
+                    <LogOut className="w-5 h-5" />
                   </button>
-                  {paymentSuccess && (
-                    <div className="flex items-center justify-center gap-1.5 mt-3 text-green-400 text-sm animate-in slide-in-from-top-1">
-                      <CheckCircle className="w-4 h-4" /> {paymentSuccess}
-                    </div>
-                  )}
                 </div>
-              </form>
-            </div>
-          </div>
-
-          {/* Commission History Table (Full Width) */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <History className="w-5 h-5 text-indigo-400" /> Komisyon Geçmişi
-              </h2>
-              <div className="md:hidden text-green-400 font-mono text-sm border px-2 py-1 border-green-500/20 bg-green-500/10 rounded">
-                {formatCurrency(totalEarnings)}
               </div>
+            </HyperGlassCard>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Stats & Referral Section */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <HyperGlassCard className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-2xl bg-accent-blue/10 text-accent-blue">
+                      <TrendingUp className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Komisyon Oranı</p>
+                      <p className="text-2xl font-display font-bold">%20</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-foreground/30">Yapılan her başarılı satıştan %20 komisyon kazanırsınız.</p>
+                </HyperGlassCard>
+
+                <HyperGlassCard className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-2xl bg-accent-purple/10 text-accent-purple">
+                      <LinkIcon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Referans Kodu</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-lg font-mono font-bold tracking-widest">{affiliateCode}</p>
+                        <button
+                          onClick={() => copyToClipboard(affiliateCode, 'code')}
+                          className={`p-1.5 rounded-lg transition-all ${copiedCode ? 'bg-emerald-500/20 text-emerald-400 scale-110' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/40 hover:text-foreground'}`}
+                          title="Kodu Kopyala"
+                        >
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={copiedCode ? 'check' : 'copy'}
+                              initial={{ opacity: 0, scale: 0.5 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.5 }}
+                              transition={{ duration: 0.15 }}
+                            >
+                              {copiedCode ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                            </motion.div>
+                          </AnimatePresence>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(referralLink, 'link')}
+                    className={`w-full py-2 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 ${copiedLink ? 'bg-emerald-500/20 text-emerald-400' : 'bg-foreground/5 text-foreground/60 hover:bg-foreground/10'}`}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={copiedLink ? 'check-link' : 'copy-link'}
+                        initial={{ opacity: 0, x: -5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 5 }}
+                        className="flex items-center gap-2"
+                      >
+                        {copiedLink ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" /> Link Kopyalandı
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" /> Linki Kopyala
+                          </>
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                  </button>
+                </HyperGlassCard>
+              </div>
+
+              {/* Commission History */}
+              <HyperGlassCard className="overflow-hidden">
+                <div className="p-6 border-b border-foreground/5 flex items-center justify-between">
+                  <h2 className="text-xl font-display font-bold flex items-center gap-3">
+                    <History className="w-5 h-5 text-accent-blue" /> Kazanç Geçmişi
+                  </h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-foreground/5 text-[10px] font-bold uppercase tracking-widest text-foreground/40">
+                      <tr>
+                        <th className="px-6 py-4">Tarih</th>
+                        <th className="px-6 py-4">İşlem</th>
+                        <th className="px-6 py-4">Durum</th>
+                        <th className="px-6 py-4 text-right">Tutar</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-foreground/5 text-sm">
+                      {loadingCommissions ? (
+                        <tr><td colSpan={4} className="p-12 text-center text-foreground/20 animate-pulse font-display font-bold italic">Yükleniyor...</td></tr>
+                      ) : commissions.length === 0 ? (
+                        <tr><td colSpan={4} className="p-12 text-center text-foreground/20 font-display font-bold italic">Henüz bir kazanç bulunmuyor.</td></tr>
+                      ) : commissions.map((c, i) => (
+                        <tr key={i} className="hover:bg-foreground/5 transition-colors group">
+                          <td className="px-6 py-4 text-foreground/40">{new Date(c.created_at).toLocaleDateString('tr-TR')}</td>
+                          <td className="px-6 py-4 font-bold">{c.event === 'payment' ? 'Satış Komisyonu' : c.event}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${c.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                              {c.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right font-mono font-bold text-emerald-400">₺{c.amount.toLocaleString('tr-TR')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </HyperGlassCard>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-white/5">
-              <table className="w-full text-left text-sm text-gray-400">
-                <thead className="bg-black/20 uppercase tracking-wider text-xs font-semibold text-gray-500">
-                  <tr>
-                    <th className="px-6 py-4">Tarih</th>
-                    <th className="px-6 py-4">Olay/Tip</th>
-                    <th className="px-6 py-4">Durum</th>
-                    <th className="px-6 py-4 text-right">Tutar</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {loadingCommissions ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                        <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
-                        Yükleniyor...
-                      </td>
-                    </tr>
-                  ) : commissions.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                        <Banknote className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        Henüz kayıtlı bir kazanç bulunmuyor.
-                      </td>
-                    </tr>
-                  ) : (
-                    commissions.map((c) => (
-                      <tr key={c.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {new Date(c.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </td>
-                        <td className="px-6 py-4 font-medium text-white">
-                          {getEventLabel(c.event)}
-                        </td>
-                        <td className="px-6 py-4">
-                          {getStatusBadge(c.status)}
-                        </td>
-                        <td className="px-6 py-4 text-right font-mono text-white text-base">
-                          {formatCurrency(c.amount)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            {/* Payment Settings */}
+            <div className="space-y-8">
+              <HyperGlassCard className="p-8">
+                <h2 className="text-xl font-display font-bold flex items-center gap-3 mb-8">
+                  <Wallet className="w-5 h-5 text-accent-purple" /> Ödeme Bilgileri
+                </h2>
+                <form onSubmit={handleUpdatePayment} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/30">Alıcı Adı Soyadı</label>
+                    <input
+                      value={formName}
+                      onChange={e => setFormName(e.target.value)}
+                      className="w-full px-5 py-4 rounded-2xl bg-foreground/5 border border-foreground/10 text-foreground placeholder-foreground/20 focus:outline-none focus:border-accent-purple transition-all text-sm font-medium"
+                      placeholder="İsim Soyisim"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/30">IBAN</label>
+                    <input
+                      value={formIban}
+                      onChange={e => setFormIban(e.target.value)}
+                      className="w-full px-5 py-4 rounded-2xl bg-foreground/5 border border-foreground/10 text-foreground placeholder-foreground/20 focus:outline-none focus:border-accent-purple transition-all text-sm font-medium"
+                      placeholder="TR..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/30">Telefon</label>
+                    <input
+                      value={formPhone}
+                      onChange={e => setFormPhone(e.target.value)}
+                      className="w-full px-5 py-4 rounded-2xl bg-foreground/5 border border-foreground/10 text-foreground placeholder-foreground/20 focus:outline-none focus:border-accent-purple transition-all text-sm font-medium"
+                      placeholder="05..."
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-foreground text-background font-display font-bold py-4 rounded-2xl shadow-xl shadow-foreground/5 hover:opacity-90 active:scale-95 transition-all text-sm"
+                  >
+                    Bilgileri Güncelle
+                  </button>
+
+                  {paymentSuccess && <p className="text-emerald-400 text-xs font-bold text-center animate-pulse">{paymentSuccess}</p>}
+                  {paymentError && <p className="text-red-400 text-xs font-bold text-center">{paymentError}</p>}
+                </form>
+              </HyperGlassCard>
             </div>
           </div>
-
-          {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-              {error}
-            </div>
-          )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

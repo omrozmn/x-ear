@@ -10,10 +10,13 @@ import {
     useUpdateAdminTenantStatus
 } from '@/lib/api-client';
 import * as Dialog from '@radix-ui/react-dialog';
+import { useAdminResponsive } from '@/hooks';
+import { ResponsiveTable } from '@/components/responsive';
 
 type TenantStatus = 'active' | 'trial' | 'suspended' | 'cancelled';
 
 export default function TenantsPage() {
+    const { isMobile } = useAdminResponsive();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [productFilter, setProductFilter] = useState<string>('all');
@@ -56,7 +59,6 @@ export default function TenantsPage() {
                     tenantId: id,
                     data: { status: status as any }
                 });
-                // Invalidate both potential key formats to be safe
                 await queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             })(),
@@ -77,19 +79,157 @@ export default function TenantsPage() {
         }
     };
 
+    const columns = [
+        {
+            key: 'organization',
+            header: 'Organizasyon',
+            sortable: true,
+            sortKey: 'name',
+            render: (tenant: any) => (
+                <div className="flex items-center">
+                    <div className="h-10 w-10 flex-shrink-0 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
+                        {tenant.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="ml-4 min-w-0">
+                        <div className="font-medium text-gray-900 dark:text-white truncate">{tenant.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{tenant.ownerEmail || tenant.owner_email}</div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            key: 'status',
+            header: 'Durum',
+            sortable: true,
+            render: (tenant: any) => (
+                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                    tenant.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                    tenant.status === 'trial' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                    tenant.status === 'suspended' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                }`}>
+                    {tenant.status === 'active' ? 'Aktif' :
+                        tenant.status === 'trial' ? 'Deneme' :
+                        tenant.status === 'suspended' ? 'Askıda' : 'İptal'}
+                </span>
+            )
+        },
+        {
+            key: 'product',
+            header: 'Ürün',
+            sortable: true,
+            sortKey: 'productCode',
+            render: (tenant: any) => {
+                const productCode = tenant.productCode || tenant.product_code;
+                const productConfig = getProductConfig(productCode);
+                return (
+                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                        productConfig.badge === 'purple' ? 'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400' :
+                        productConfig.badge === 'green' ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400' :
+                        productConfig.badge === 'red' ? 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400' :
+                        productConfig.badge === 'orange' ? 'bg-orange-50 text-orange-700 ring-orange-600/20 dark:bg-orange-900/30 dark:text-orange-400' :
+                        'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+                    }`}>
+                        {productConfig.name}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'plan',
+            header: 'Plan',
+            mobileHidden: true,
+            sortable: true,
+            sortKey: 'currentPlan',
+            render: (tenant: any) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {tenant.currentPlan || tenant.current_plan || 'Plan Yok'}
+                </span>
+            )
+        },
+        {
+            key: 'phone',
+            header: 'Telefon',
+            mobileHidden: true,
+            sortable: true,
+            sortKey: 'phone',
+            render: (tenant: any) => {
+                // Try to extract phone from billing_email if phone is null
+                let phoneDisplay = tenant.phone;
+                if (!phoneDisplay && (tenant.billingEmail || tenant.billing_email)) {
+                    const email = tenant.billingEmail || tenant.billing_email;
+                    // Extract phone from format like "555544443@mobile-signup.x-ear.com"
+                    const match = email.match(/^(\d+)@/);
+                    if (match) {
+                        phoneDisplay = match[1];
+                    }
+                }
+                return (
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {phoneDisplay || '-'}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'created',
+            header: 'Oluşturulma',
+            mobileHidden: true,
+            sortable: true,
+            sortKey: 'createdAt',
+            render: (tenant: any) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {(tenant.createdAt || tenant.created_at) ? new Date(tenant.createdAt || tenant.created_at).toLocaleDateString('tr-TR') : '-'}
+                </span>
+            )
+        },
+        {
+            key: 'actions',
+            header: 'İşlemler',
+            render: (tenant: any) => (
+                <div className="flex justify-end space-x-2">
+                    {tenant.status !== 'active' && (
+                        <button
+                            onClick={(e) => handleStatusChange(tenant.id!, 'active', e)}
+                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-1 touch-feedback"
+                            title="Aktifleştir"
+                        >
+                            <CheckCircle className="h-5 w-5" />
+                        </button>
+                    )}
+                    {tenant.status === 'active' && (
+                        <button
+                            onClick={(e) => handleStatusChange(tenant.id!, 'suspended', e)}
+                            className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 touch-feedback"
+                        >
+                            Askıya Al
+                        </button>
+                    )}
+                    <button
+                        onClick={(e) => handleDelete(tenant.id!, e)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 touch-feedback"
+                        title="Sil"
+                    >
+                        <Trash2 className="h-5 w-5" />
+                    </button>
+                </div>
+            )
+        }
+    ];
+
     return (
-        <div className="p-6">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6'}>
             <div className="sm:flex sm:items-center">
                 <div className="sm:flex-auto">
-                    <h1 className="text-2xl font-semibold text-gray-900">Aboneler</h1>
-                    <p className="mt-2 text-sm text-gray-700">
+                    <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-gray-900 dark:text-white`}>Aboneler</h1>
+                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-400">
                         Sistemdeki tüm abonelerin listesi ve yönetimi.
                     </p>
                 </div>
                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
+                        className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto touch-feedback"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Yeni Abone Ekle
@@ -137,136 +277,25 @@ export default function TenantsPage() {
                 </div>
             </div>
 
-            <div className="mt-8 flex flex-col">
-                <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                            <table className="min-w-full divide-y divide-gray-300">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                                            Organizasyon
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                            Durum
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                            Ürün
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                            Plan
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                            Kullanıcılar
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                            Oluşturulma
-                                        </th>
-                                        <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                            <span className="sr-only">İşlemler</span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 bg-white">
-                                    {isLoading ? (
-                                        <tr>
-                                            <td colSpan={7} className="text-center py-4">Yükleniyor...</td>
-                                        </tr>
-                                    ) : tenants.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={7} className="text-center py-4 text-gray-500">Kayıt bulunamadı</td>
-                                        </tr>
-                                    ) : (
-                                        tenants.map((tenant: any) => {
-                                            const productCode = tenant.productCode || tenant.product_code;
-                                            const productConfig = getProductConfig(productCode);
-                                            return (
-                                                <tr
-                                                    key={tenant.id}
-                                                    className="hover:bg-gray-50 cursor-pointer"
-                                                    onClick={() => setSelectedTenantId(tenant.id!)}
-                                                >
-                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                                        <div className="flex items-center">
-                                                            <div className="h-10 w-10 flex-shrink-0 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                                                                {tenant.name?.charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div className="ml-4">
-                                                                <div className="font-medium text-gray-900">{tenant.name}</div>
-                                                                <div className="text-gray-500">{tenant.ownerEmail || tenant.owner_email}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 
-                                                        ${tenant.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                                tenant.status === 'trial' ? 'bg-blue-100 text-blue-800' :
-                                                                    tenant.status === 'suspended' ? 'bg-yellow-100 text-yellow-800' :
-                                                                        'bg-red-100 text-red-800'}`}>
-                                                            {tenant.status === 'active' ? 'Aktif' :
-                                                                tenant.status === 'trial' ? 'Deneme' :
-                                                                    tenant.status === 'suspended' ? 'Askıda' : 'İptal'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${productConfig.badge === 'purple' ? 'bg-purple-50 text-purple-700 ring-purple-600/20' :
-                                                            productConfig.badge === 'green' ? 'bg-green-50 text-green-700 ring-green-600/20' :
-                                                                productConfig.badge === 'red' ? 'bg-red-50 text-red-700 ring-red-600/20' :
-                                                                    productConfig.badge === 'orange' ? 'bg-orange-50 text-orange-700 ring-orange-600/20' :
-                                                                        'bg-blue-50 text-blue-700 ring-blue-600/20'
-                                                            }`}>
-                                                            {productConfig.name}
-                                                        </span>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                        {tenant.currentPlan || tenant.current_plan || 'Plan Yok'}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                        <div className="flex items-center">
-                                                            <Users className="mr-1.5 h-4 w-4 text-gray-400" />
-                                                            Max: {tenant.maxUsers || tenant.max_users}
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                        {(tenant.createdAt || tenant.created_at) ? new Date(tenant.createdAt || tenant.created_at).toLocaleDateString('tr-TR') : '-'}
-                                                    </td>
-                                                    <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                        <div className="flex justify-end space-x-2">
-                                                            {tenant.status !== 'active' && (
-                                                                <button
-                                                                    onClick={(e) => handleStatusChange(tenant.id!, 'active', e)}
-                                                                    className="text-green-600 hover:text-green-900"
-                                                                    title="Aktifleştir"
-                                                                >
-                                                                    <CheckCircle className="h-5 w-5" />
-                                                                </button>
-                                                            )}
-                                                            {tenant.status === 'active' && (
-                                                                <button
-                                                                    onClick={(e) => handleStatusChange(tenant.id!, 'suspended', e)}
-                                                                    className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                                                                >
-                                                                    Askıya Al
-                                                                </button>
-                                                            )}
-                                                            <button
-                                                                onClick={(e) => handleDelete(tenant.id!, e)}
-                                                                className="text-red-600 hover:text-red-900"
-                                                                title="Sil"
-                                                            >
-                                                                <Trash2 className="h-5 w-5" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+            <div className="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                {isLoading ? (
+                    <div className={`${isMobile ? 'p-8' : 'p-12'} text-center`}>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+                        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Aboneler yükleniyor...</p>
                     </div>
-                </div>
+                ) : tenants.length === 0 ? (
+                    <div className={`${isMobile ? 'p-8' : 'p-16'} text-center text-gray-500 dark:text-gray-400`}>
+                        <p>Kayıt bulunamadı</p>
+                    </div>
+                ) : (
+                    <ResponsiveTable
+                        data={tenants}
+                        columns={columns}
+                        keyExtractor={(tenant) => tenant.id!}
+                        onRowClick={(tenant) => setSelectedTenantId(tenant.id!)}
+                        emptyMessage="Kayıt bulunamadı"
+                    />
+                )}
             </div>
 
             <Pagination

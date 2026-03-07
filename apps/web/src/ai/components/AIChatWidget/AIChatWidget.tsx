@@ -166,9 +166,6 @@ function TypingIndicator({ message }: { message?: string }): React.ReactElement 
 /**
  * Empty state when no messages
  */
-/**
- * Empty state when no messages
- */
 function EmptyState({ onAction }: { onAction: (msg: string) => void }): React.ReactElement {
   const { t } = useTranslation();
   return (
@@ -314,7 +311,7 @@ export function AIChatWidget({
 
   // Hooks
   const { data: status, isLoading: isStatusLoading } = useAIStatus();
-  const { executeAction, isExecuting: isExecutingRealAction } = useAIActions();
+  const { executeAction, isExecuting: isExecutingRealAction, createAction } = useAIActions();
 
   const {
     mode, selectedAction: currentAction, currentSlot, slots,
@@ -350,6 +347,7 @@ export function AIChatWidget({
         const cap = response.matchedCapability;
         selectAction({
           name: cap.name,
+          displayName: cap.displayName,
           description: cap.description,
           category: cap.category,
           examplePhrases: [],
@@ -981,11 +979,36 @@ export function AIChatWidget({
                 <div className="flex gap-2">
                   <button
                     data-allow-raw="true"
-                    onClick={() => {
-                      executeAction({
-                        actionId: useAIRuntimeStore.getState().currentPlan?.planId || currentAction?.name || '',
-                        mode: 'execute'
-                      }).catch(console.error);
+                    onClick={async () => {
+                      let planId = useAIRuntimeStore.getState().currentPlan?.planId;
+
+                      // If no real plan exists yet (UX-driven slot filling), create it now
+                      if (!planId && currentAction) {
+                        try {
+                          const plan = await createAction({
+                            intent: {
+                              intentType: 'ACTION',
+                              confidence: 1.0,
+                              entities: slots,
+                              clarificationNeeded: false,
+                            },
+                            additionalContext: {
+                              capability_name: currentAction.name,
+                            },
+                          });
+                          planId = plan.planId;
+                        } catch (err) {
+                          console.error('[AIChatWidget] Action plan creation failed:', err);
+                          return;
+                        }
+                      }
+
+                      if (planId) {
+                        executeAction({
+                          actionId: planId,
+                          mode: 'execute',
+                        }).catch(console.error);
+                      }
                     }}
                     className="flex-1 bg-purple-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
                     disabled={isExecutingRealAction}

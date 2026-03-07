@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button, DatePicker } from '@x-ear/ui-web';
 import { PartyFilters as PartyFiltersType } from '../../types/party/party-search.types';
 import { Filter, X, ChevronUp, Users, Building, Calendar, TrendingUp } from 'lucide-react';
@@ -6,6 +6,7 @@ import type { PartyStatus, PartySegment } from '../../types/party/party-base.typ
 import { useListBranches } from '../../api/generated/branches/branches';
 import { BranchRead } from '../../api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { getPartySegments, getAcquisitionTypes, loadPartySegmentsFromAPI, type SegmentOption, type AcquisitionOption } from '../../utils/party-segments';
 
 interface PartyFiltersProps {
   filters: PartyFiltersType;
@@ -37,6 +38,27 @@ export function PartyFilters({
   showCompact = false // Default false to show expanded
 }: PartyFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true); // Default true for always expanded
+  
+  // Load dynamic segments and acquisitions from localStorage
+  const [segmentOptions, setSegmentOptions] = useState<SegmentOption[]>([]);
+  const [acquisitionOptions, setAcquisitionOptions] = useState<AcquisitionOption[]>([]);
+
+  useEffect(() => {
+    // Load segments and acquisitions from API first, then fallback to localStorage
+    const loadSegments = async () => {
+      try {
+        const { segments, acquisitions } = await loadPartySegmentsFromAPI();
+        setSegmentOptions(segments);
+        setAcquisitionOptions(acquisitions);
+      } catch (error) {
+        console.error('Failed to load segments from API, using localStorage fallback:', error);
+        setSegmentOptions(getPartySegments());
+        setAcquisitionOptions(getAcquisitionTypes());
+      }
+    };
+
+    loadSegments();
+  }, []);
 
   const handleFilterChange = useCallback((key: keyof PartyFiltersType, value: PartyFiltersType[keyof PartyFiltersType]) => {
     onChange({
@@ -60,25 +82,6 @@ export function PartyFilters({
     { value: 'ACTIVE', label: 'Aktif' },
     { value: 'INACTIVE', label: 'Pasif' },
     { value: 'TRIAL', label: 'Deneme' }
-  ];
-
-  const segmentOptions: { value: PartySegment; label: string; count?: number }[] = [
-    { value: 'NEW', label: 'Yeni' },
-    { value: 'TRIAL', label: 'Deneme' },
-    { value: 'PURCHASED', label: 'Satın Alınmış' },
-    { value: 'CONTROL', label: 'Kontrol' },
-    { value: 'RENEWAL', label: 'Yenileme' }
-  ];
-
-  const acquisitionOptions: FilterOption[] = [
-    { value: 'referral', label: 'Referans' },
-    { value: 'online', label: 'Online' },
-    { value: 'walk-in', label: 'Ziyaret' },
-    { value: 'social-media', label: 'Sosyal Medya' },
-    { value: 'advertisement', label: 'Reklam' },
-    { value: 'visit', label: 'Ziyaret' },
-    { value: 'campaign', label: 'Kampanya' },
-    { value: 'other', label: 'Diğer' }
   ];
 
   const branchOptions: FilterOption[] = branches.map(branch => ({
@@ -210,11 +213,11 @@ export function PartyFilters({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleFilterChange('segment',
-                  (filters.segment || []).includes(option.value)
+                  (filters.segment || []).includes(option.value as any)
                     ? (filters.segment || []).filter((s) => s !== option.value)
-                    : [...(filters.segment || []), option.value]
+                    : [...(filters.segment || []), option.value as any]
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${(filters.segment || []).includes(option.value)
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${(filters.segment || []).includes(option.value as any)
                   ? 'bg-green-100 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-300'
                   : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
                   }`}

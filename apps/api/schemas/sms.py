@@ -1,6 +1,6 @@
 from typing import Optional, List, Any, Union, Dict
 from enum import Enum
-from pydantic import Field, EmailStr, field_validator
+from pydantic import Field, EmailStr, field_validator, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
@@ -118,8 +118,7 @@ class SmsPackageBase(AppBaseModel):
     is_active: bool = Field(True, alias="isActive")
 
 class SmsPackageCreate(SmsPackageBase):
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
         
     @property
     def smsCount(self):

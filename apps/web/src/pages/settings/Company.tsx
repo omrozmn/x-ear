@@ -311,30 +311,20 @@ export default function CompanySettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 sm:gap-3">
-              <Building2 className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-600" />
-              Firma Ayarları
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Firma bilgilerinizi ve fatura görsellerini yönetin
-            </p>
-          </div>
-          {hasChanges && isTenantAdmin && (
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              loading={saving}
-              variant="primary"
-              className="flex items-center w-full sm:w-auto justify-center"
-            >
-              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-            </Button>
-          )}
+    <div className="space-y-6">
+      {hasChanges && isTenantAdmin && (
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            loading={saving}
+            variant="primary"
+            className="flex items-center w-full sm:w-auto justify-center"
+          >
+            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+          </Button>
         </div>
+      )}
 
       {!isTenantAdmin && (
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-start gap-2 sm:gap-3">
@@ -711,7 +701,6 @@ export default function CompanySettings() {
           Uygulama dilini değiştirin
         </p>
         <LanguageSwitcher className="!justify-start" />
-      </div>
       </div>
     </div>
   );

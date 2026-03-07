@@ -17,8 +17,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAdminResponsive } from '@/hooks';
+import { ResponsiveTable } from '@/components/responsive';
 
 const AdminSuppliersPage: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
@@ -99,21 +102,83 @@ const AdminSuppliersPage: React.FC = () => {
     const suppliers = (suppliersData as any)?.suppliers || (suppliersData as any)?.data?.suppliers || [];
     const pagination = (suppliersData as any)?.pagination || (suppliersData as any)?.data?.pagination;
 
+    const columns = [
+        {
+            key: 'company',
+            header: 'Firma Adı',
+            render: (supplier: any) => (
+                <div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{supplier.companyName}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{supplier.taxId ? `VN: ${supplier.taxId}` : ''}</div>
+                </div>
+            )
+        },
+        {
+            key: 'contact',
+            header: 'İletişim',
+            mobileHidden: true,
+            render: (supplier: any) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">{supplier.contactName || '-'}</span>
+            )
+        },
+        {
+            key: 'email_phone',
+            header: 'E-posta / Telefon',
+            render: (supplier: any) => (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div>{supplier.email}</div>
+                    <div>{supplier.phone}</div>
+                </div>
+            )
+        },
+        {
+            key: 'status',
+            header: 'Durum',
+            render: (supplier: any) => (
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${supplier.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
+                    {supplier.status === 'active' ? 'Aktif' : 'Pasif'}
+                </span>
+            )
+        },
+        {
+            key: 'actions',
+            header: 'İşlemler',
+            render: (supplier: any) => (
+                <div className="flex justify-end space-x-2">
+                    <button
+                        onClick={() => handleEdit(supplier)}
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 touch-feedback"
+                    >
+                        <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={() => handleDelete(supplier.id!)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 touch-feedback"
+                    >
+                        <TrashIcon className="h-5 w-5" />
+                    </button>
+                </div>
+            )
+        }
+    ];
+
     return (
-        <div className="space-y-6">
+        <div className={isMobile ? 'p-4 pb-safe space-y-6' : 'space-y-6'}>
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-semibold text-gray-900">Tedarikçi Yönetimi</h1>
+                <h1 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+                    Tedarikçi Yönetimi
+                </h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 touch-feedback"
                 >
                     <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                    Yeni Tedarikçi
+                    {!isMobile && 'Yeni Tedarikçi'}
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-lg shadow sm:flex sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow sm:flex sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                 <div className="flex-1 min-w-0 max-w-lg">
                     <div className="relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -121,7 +186,7 @@ const AdminSuppliersPage: React.FC = () => {
                         </div>
                         <input
                             type="text"
-                            className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2"
+                            className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md py-2"
                             placeholder="Tedarikçi ara..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -132,7 +197,7 @@ const AdminSuppliersPage: React.FC = () => {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
-                        className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                        className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
                     >
                         <option value="all">Tüm Durumlar</option>
                         <option value="active">Aktif</option>
@@ -142,68 +207,16 @@ const AdminSuppliersPage: React.FC = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
                 {isLoading ? (
-                    <div className="p-4 text-center text-gray-500">Yükleniyor...</div>
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">Yükleniyor...</div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Firma Adı</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İletişim</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta / Telefon</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {suppliers.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                                            Kayıt bulunamadı.
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    suppliers.map((supplier: any) => (
-                                        <tr key={supplier.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{(supplier as any).companyName}</div>
-                                                <div className="text-sm text-gray-500">{(supplier as any).taxId ? `VN: ${(supplier as any).taxId}` : ''}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {(supplier as any).contactName || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <div>{supplier.email}</div>
-                                                <div>{supplier.phone}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${supplier.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                    {supplier.status === 'active' ? 'Aktif' : 'Pasif'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <button
-                                                    onClick={() => handleEdit(supplier)}
-                                                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                                                >
-                                                    <PencilIcon className="h-5 w-5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(supplier.id!)}
-                                                    className="text-red-600 hover:text-red-900"
-                                                >
-                                                    <TrashIcon className="h-5 w-5" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <ResponsiveTable
+                        data={suppliers}
+                        columns={columns}
+                        keyExtractor={(supplier: any) => supplier.id}
+                        emptyMessage="Kayıt bulunamadı."
+                    />
                 )}
 
                 {/* Pagination */}

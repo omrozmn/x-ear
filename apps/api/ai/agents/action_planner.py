@@ -151,6 +151,7 @@ User intent:
 - Type: {intent_type}
 - Entities: {entities}
 - Reasoning: {reasoning}
+- Language: {language}
 
 Generate a JSON action plan with the following structure:
 {{
@@ -158,11 +159,11 @@ Generate a JSON action plan with the following structure:
         {{
             "tool_name": "tool_name_here",
             "parameters": {{"param1": "value1"}},
-            "description": "What this step does",
-            "rollback_procedure": "How to undo this step (if applicable)"
+            "description": "What this step does (translated to {language})",
+            "rollback_procedure": "How to undo this step (if applicable, in {language})"
         }}
     ],
-    "reasoning": "Why these actions were chosen"
+    "reasoning": "Why these actions were chosen (in {language})"
 }}
 
 If no actions are needed (e.g., for a simple query), return:
@@ -390,6 +391,7 @@ class ActionPlanner:
             intent_type=intent.intent_type.value,
             entities=json.dumps(intent.entities, ensure_ascii=False),
             reasoning=intent.reasoning or "No reasoning provided",
+            language="Turkish" if language == "tr" else "English",
         )
         
         # Call LLM with circuit breaker
@@ -638,6 +640,71 @@ class ActionPlanner:
                     requires_approval=False,
                     plan_hash=self._compute_plan_hash([step]),
                     tool_schema_versions={"createParty": tool.schema_version},
+                )
+                
+                return ActionPlannerResult(
+                    status=PlannerStatus.SUCCESS,
+                    plan=plan,
+                    processing_time_ms=(time.time() - start_time) * 1000,
+                )
+        
+        # SGK Monthly Invoice Draft fallback
+        if intent.intent_type == IntentType.ACTION and intent.entities:
+            if "total_amount" in intent.entities and "dosya_referans_no" in intent.entities:
+                parameters = {
+                    "total_amount": intent.entities.get("total_amount"),
+                    "dosya_referans_no": intent.entities.get("dosya_referans_no"),
+                    "mukellef_kodu": intent.entities.get("mukellef_kodu"),
+                }
+                
+                # Check permissions
+                required_permissions = {"invoices.write"}
+                denied = self._check_permissions(user_permissions, required_permissions)
+                if denied:
+                    return ActionPlannerResult(
+                        status=PlannerStatus.PERMISSION_DENIED,
+                        denied_permissions=denied,
+                        error_message=f"Missing permissions: {', '.join(denied)}",
+                        processing_time_ms=(time.time() - start_time) * 1000,
+                    )
+                
+                # Create step
+                try:
+                    tool = self.tool_registry.get_tool("createSgkMonthlyInvoiceDraft")
+                except Exception:
+                    # Tool might not be registered yet, skip fallback
+                    return ActionPlannerResult(
+                        status=PlannerStatus.NO_ACTIONS_NEEDED,
+                        processing_time_ms=(time.time() - start_time) * 1000,
+                    )
+
+                description = (
+                    f"Create SGK monthly invoice draft for amount {parameters['total_amount']}"
+                    if language == "en" else
+                    f"{parameters['total_amount']} tutarında aylık SGK fatura taslağı oluştur"
+                )
+                
+                step = ActionStep(
+                    step_number=1,
+                    tool_name="createSgkMonthlyInvoiceDraft",
+                    tool_schema_version=tool.schema_version,
+                    parameters=parameters,
+                    description=description,
+                    risk_level=tool.risk_level,
+                    requires_approval=True, # Financial actions usually do
+                )
+                
+                # Create plan
+                plan = ActionPlan(
+                    plan_id=self._generate_plan_id(tenant_id, user_id),
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    intent=intent,
+                    steps=[step],
+                    overall_risk_level=RiskLevel.HIGH, # Financial
+                    requires_approval=True,
+                    plan_hash=self._compute_plan_hash([step]),
+                    tool_schema_versions={"createSgkMonthlyInvoiceDraft": tool.schema_version},
                 )
                 
                 return ActionPlannerResult(

@@ -51,6 +51,9 @@ class ResponseMeta(AppBaseModel):
 
     model_config = ConfigDict(extra='allow')
 
+# Alias for backward compatibility
+PaginationInfo = ResponseMeta
+
 class ResponseEnvelope(AppBaseModel, Generic[T]):
     """
     Standard response envelope for all API responses.

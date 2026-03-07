@@ -50,8 +50,8 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
   const { party, isLoading, error, refetch } = useParty(partyId);
   
-  // Edit modal hook
-  const editModal = usePartyEditModal(refetch || (() => Promise.resolve()));
+  // Edit modal hook - wrap refetch to return Promise
+  const editModal = usePartyEditModal(refetch ? async () => { await refetch(); } : async () => {});
   
   // Tag update mutation (for PartyTagUpdateModal)
   const updatePartyMutation = useUpdateParty({
@@ -343,7 +343,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
         <PartyFormModal
           isOpen={editModal.isOpen}
           onClose={editModal.closeModal}
-          onSubmit={editModal.handleSubmit}
+          onSubmit={editModal.handleSubmit as any}
           initialData={party}
           title="Hasta Düzenle"
           isLoading={editModal.isLoading}

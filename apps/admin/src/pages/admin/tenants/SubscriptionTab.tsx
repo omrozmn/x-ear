@@ -49,8 +49,9 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
-        setSelectedPlanId(tenant.current_plan_id || '');
-        const smsLimit = tenant.feature_usage?.['sms']?.limit ?? tenant.feature_usage?.['SMS']?.limit ?? 0;
+        setSelectedPlanId(tenant.current_plan_id || tenant.currentPlanId || '');
+        const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+        const smsLimit = featureUsage?.['sms']?.limit ?? featureUsage?.['SMS']?.limit ?? 0;
         setManualSmsLimit(smsLimit);
     }, [tenant]);
 
@@ -130,7 +131,8 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
         }
         setLoadingSmsUpdate(true);
         try {
-            const currentUsage = { ...(tenant.feature_usage || {}) };
+            const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+            const currentUsage = { ...featureUsage };
             const key = 'sms';
 
             // Normalize key
@@ -165,7 +167,8 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
         }
         setLoadingSmsUpdate(true);
         try {
-            const currentUsage = { ...(tenant.feature_usage || {}) };
+            const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+            const currentUsage = { ...featureUsage };
             const key = 'sms';
 
             // Normalize key
@@ -210,7 +213,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-gray-500">Plan:</span>
-                            <span className="font-bold text-gray-900">{tenant.current_plan || 'Yok'}</span>
+                            <span className="font-bold text-gray-900">{tenant.current_plan || tenant.currentPlan || 'Yok'}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-500">Durum:</span>
@@ -222,8 +225,8 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         <div className="flex justify-between">
                             <span className="text-gray-500">Bitiş:</span>
                             <span className="text-gray-900">
-                                {(tenant as any).subscription_end_date
-                                    ? new Date((tenant as any).subscription_end_date).toLocaleDateString('tr-TR')
+                                {tenant.subscription_end_date || tenant.subscriptionEndDate
+                                    ? new Date(tenant.subscription_end_date || tenant.subscriptionEndDate!).toLocaleDateString('tr-TR')
                                     : '-'}
                             </span>
                         </div>
@@ -238,22 +241,44 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-gray-500">Toplam Limit:</span>
-                            <span className="font-bold text-gray-900">{tenant.feature_usage?.['sms']?.limit || tenant.feature_usage?.['SMS']?.limit || 0}</span>
+                            <span className="font-bold text-gray-900">
+                                {(() => {
+                                    const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+                                    return featureUsage?.['sms']?.limit || featureUsage?.['SMS']?.limit || 0;
+                                })()}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-gray-500">Kullanılan:</span>
-                            <span className="text-gray-900">{tenant.feature_usage?.['sms']?.used || tenant.feature_usage?.['SMS']?.used || 0}</span>
+                            <span className="text-gray-900">
+                                {(() => {
+                                    const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+                                    return featureUsage?.['sms']?.used || featureUsage?.['SMS']?.used || 0;
+                                })()}
+                            </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
                             <div
                                 className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, (((tenant.feature_usage?.['sms']?.used || 0) / (tenant.feature_usage?.['sms']?.limit || 1)) * 100))}%` }}
+                                style={{ 
+                                    width: `${(() => {
+                                        const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+                                        const used = featureUsage?.['sms']?.used || 0;
+                                        const limit = featureUsage?.['sms']?.limit || 1;
+                                        return Math.min(100, (used / limit) * 100);
+                                    })()}%` 
+                                }}
                             ></div>
                         </div>
                         <div className="flex justify-between text-xs font-medium">
                             <span className="text-gray-500">Kalan:</span>
                             <span className="text-indigo-600 font-bold text-lg">
-                                {Math.max(0, (tenant.feature_usage?.['sms']?.limit || 0) - (tenant.feature_usage?.['sms']?.used || 0))}
+                                {(() => {
+                                    const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+                                    const limit = featureUsage?.['sms']?.limit || 0;
+                                    const used = featureUsage?.['sms']?.used || 0;
+                                    return Math.max(0, limit - used);
+                                })()}
                             </span>
                         </div>
                     </div>
@@ -416,6 +441,23 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                                     </td>
                                 </tr>
                             ))}
+                            {tenant.featureUsage && Object.entries(tenant.featureUsage).map(([key, value]: [string, any]) => (
+                                <tr key={key}>
+                                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">{key}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.limit === 0 ? 'Sınırsız' : value.limit}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.used || 0}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-400 text-xs">
+                                        {value.last_reset ? new Date(value.last_reset).toLocaleDateString() : '-'}
+                                    </td>
+                                </tr>
+                            ))}
+                            {!tenant.feature_usage && !tenant.featureUsage && (
+                                <tr>
+                                    <td colSpan={4} className="px-4 py-4 text-center text-sm text-gray-500">
+                                        Henüz özellik kullanımı kaydı yok
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

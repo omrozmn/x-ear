@@ -241,7 +241,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       setFormData(prev => ({
         ...prev,
         // ✅ FIXED: Use productName from sale-level data (real inventory name)
-        productName: (s.productName as string) || firstDevice?.productName || firstDevice?.name || productDetails?.name || (s.product_name as string) || sale.productId || '',
+        productName: (s.productName as string) || (firstDevice as any)?.productName || firstDevice?.name || productDetails?.name || (s.product_name as string) || sale.productId || '',
         brand: firstDevice?.brand || productDetails?.brand || (s.brand as string) || (s.productBrand as string) || (s.product_brand as string) || '',
         model: firstDevice?.model || productDetails?.model || (s.model as string) || (s.productModel as string) || (s.product_model as string) || '',
         category: firstDevice?.category || productDetails?.category || (s.category as string) || '',
@@ -446,6 +446,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       listPrice: 0,
       salePrice: 0,
       discountAmount: 0,
+      discountValue: 0,
       sgkCoverage: 0,
       sgkScheme: '',
       downPayment: 0,

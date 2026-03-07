@@ -1,5 +1,5 @@
 import { Input, Button, Textarea } from '@x-ear/ui-web';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { User, CheckCircle } from 'lucide-react';
 import { partyService } from '../../services/party.service';
 import { Party } from '../../types/party';
@@ -42,9 +42,26 @@ export function CustomerSectionCompact({
   const [searchResults, setSearchResults] = useState<Party[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [activeSearchField, setActiveSearchField] = useState<'tc' | 'name' | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   // Removed unused selectedParty state - party selection is handled directly via onChange
   const [districts, setDistricts] = useState<string[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!showResults) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      // Keep dropdown open only if clicking inside it
+      if (dropdownRef.current?.contains(target)) return;
+      setShowResults(false);
+      setActiveSearchField(null);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showResults]);
 
   // SGK modunda otomatik doldur
   useEffect(() => {
@@ -66,9 +83,9 @@ export function CustomerSectionCompact({
       return;
     }
 
-    console.log('TC ile arama yapılıyor:', tcNumber);
     setIsSearching(true);
     setShowResults(true);
+    setActiveSearchField('tc');
 
     try {
       const result = await partyService.getParties({
@@ -76,14 +93,10 @@ export function CustomerSectionCompact({
         limit: 10
       });
 
-      console.log('Arama sonucu:', result);
-
       if (result.parties && result.parties.length > 0) {
         setSearchResults(result.parties);
-        console.log('Bulunan hasta sayısı:', result.parties.length);
       } else {
         setSearchResults([]);
-        console.log('Hasta bulunamadı');
       }
     } catch (error) {
       console.error('Hasta arama hatası:', error);
@@ -101,9 +114,9 @@ export function CustomerSectionCompact({
       return;
     }
 
-    console.log('Ad ile arama yapılıyor:', name);
     setIsSearching(true);
     setShowResults(true);
+    setActiveSearchField('name');
 
     try {
       const result = await partyService.getParties({
@@ -111,14 +124,10 @@ export function CustomerSectionCompact({
         limit: 10
       });
 
-      console.log('Arama sonucu:', result);
-
       if (result.parties && result.parties.length > 0) {
         setSearchResults(result.parties);
-        console.log('Bulunan hasta sayısı:', result.parties.length);
       } else {
         setSearchResults([]);
-        console.log('Hasta bulunamadı');
       }
     } catch (error) {
       console.error('Hasta arama hatası:', error);
@@ -279,12 +288,12 @@ export function CustomerSectionCompact({
 
   // Normal mod
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div ref={containerRef} className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="text-gray-600" size={16} />
-            <h3 className="text-sm font-bold text-gray-900">Fatura Alıcı</h3>
+            <h3 className="text-sm font-bold text-gray-900">Fatura Alıcısı</h3>
           </div>
           {(customerFirstName || customerLastName || customerTcNumber || customerTaxNumber) && (
             <Button
@@ -333,8 +342,8 @@ export function CustomerSectionCompact({
             </div>
 
             {/* TC Arama Sonuçları */}
-            {showResults && searchResults.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            {showResults && searchResults.length > 0 && activeSearchField === 'tc' && (
+              <div ref={dropdownRef} className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((party) => (
                   <Button
                     key={party.id}
@@ -370,9 +379,10 @@ export function CustomerSectionCompact({
                 onChange={(e) => {
                   const value = e.target.value;
                   handleManualEdit('customerFirstName', value);
-                  // Ad girildiğinde arama yap
                   if (value.length >= 2) {
                     handleNameSearch(value);
+                  } else {
+                    setShowResults(false);
                   }
                 }}
                 placeholder="Ad (hasta ara)"
@@ -389,9 +399,10 @@ export function CustomerSectionCompact({
                 onChange={(e) => {
                   const value = e.target.value;
                   handleManualEdit('customerLastName', value);
-                  // Soyad girildiğinde arama yap
                   if (value.length >= 2) {
                     handleNameSearch(value);
+                  } else {
+                    setShowResults(false);
                   }
                 }}
                 placeholder="Soyad (hasta ara)"
@@ -400,9 +411,10 @@ export function CustomerSectionCompact({
             </div>
           </div>
 
-          {/* Ad/Soyad Arama Sonuçları */}
-          {showResults && searchResults.length > 0 && !customerTcNumber && (
-            <div className="relative">
+          {/* Ad/Soyad ile arama tetiklendiğinde dropdown TC bloğunda gösterilir (activeSearchField='name')
+               - Eğer TC araması yoksa, ad bloğu altında göster */}
+          {showResults && searchResults.length > 0 && activeSearchField === 'name' && (
+            <div ref={dropdownRef} className="relative">
               <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((party) => (
                   <Button

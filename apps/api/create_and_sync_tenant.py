@@ -73,7 +73,6 @@ def create_and_test_tenant():
         logger.info("Initializing Birfatura Client...")
         
         # IMPORTANT: Force mock to False to hit real API
-        os.environ['FLASK_ENV'] = 'production'
         os.environ['BIRFATURA_MOCK'] = '0'
         
         client = BirfaturaClient(

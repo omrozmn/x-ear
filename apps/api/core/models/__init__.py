@@ -27,6 +27,7 @@ from .stock_movement import StockMovement
 from .sales import Sale, DeviceAssignment, PaymentPlan, PaymentInstallment
 from .invoice import Invoice
 from .purchase_invoice import PurchaseInvoice
+from .purchase import Purchase
 from .promissory_note import PromissoryNote
 
 # Subscriptions & Plans
@@ -83,3 +84,4 @@ from .email_deliverability import EmailBounce, EmailUnsubscribe, DMARCReport, Em
 
 # Bulk Import
 from .bulk_import import BulkImportBatch, BulkImportRecord
+from .post import Post

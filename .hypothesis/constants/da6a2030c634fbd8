@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/services/kill_switch.py
+# hypothesis_version: 6.151.9
+
+['KillSwitch', 'actions', 'activated_at', 'activated_by', 'active', 'all', 'blocked', 'capability', 'chat', 'global', 'ocr', 'reason', 'scope', 'target_id', 'tenant', 'tenant_id']

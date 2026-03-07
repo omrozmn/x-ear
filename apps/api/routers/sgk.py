@@ -5,7 +5,7 @@ Handles SGK document management and OCR processing
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import logging
 import os
 import tempfile
@@ -427,8 +427,8 @@ class PatientRightsQueryRequest(BaseModel):
     tcNumber: str
     partyId: Optional[str] = Field(None, alias="partyId")
     
-    class Config:
-        populate_by_name = True
+    
+    model_config = ConfigDict(populate_by_name=True)
         
     @property
     def party_id(self):
@@ -498,8 +498,7 @@ class WorkflowCreateRequest(BaseModel):
     documentId: Optional[str] = None
     workflowType: Optional[str] = "approval"
     
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
         
     @property
     def party_id(self):
@@ -668,7 +667,7 @@ def seed_test_patients(
     """
     try:
         # Only enable in non-production to avoid accidental DB pollution
-        if os.getenv('FLASK_ENV', 'production') == 'production' and os.getenv('APP_ENV', 'production') == 'production':
+        if os.getenv('ENVIRONMENT', 'production') == 'production' and os.getenv('APP_ENV', 'production') == 'production':
              raise HTTPException(status_code=403, detail="Seeding disabled in production")
 
         svc = get_nlp_service()

@@ -10,6 +10,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { routeTree } from './routeTree.gen'
 
 import './index.css'
+import './styles/admin-mobile.css'
 
 // Create a new router instance
 const router = createRouter({ routeTree })

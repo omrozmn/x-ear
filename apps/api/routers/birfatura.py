@@ -48,7 +48,13 @@ def get_configured_client(tenant_id: str, db: Session):
     ).first()
     global_integration_key = integration_key_config.config_value if integration_key_config else None
     
-    using_mock = os.getenv("BIRFATURA_MOCK", "0") == "1" or os.getenv("FLASK_ENV", "production") != "production"
+    mock_env = os.getenv("BIRFATURA_MOCK")
+    if mock_env == "1":
+        using_mock = True
+    elif mock_env == "0":
+        using_mock = False
+    else:
+        using_mock = os.getenv("ENVIRONMENT", "production") != "production"
     if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_integration_key):
         raise ValueError("Missing BirFatura credentials")
     
@@ -187,7 +193,12 @@ async def sync_invoices(
     
     try:
         stats = sync_service.sync_invoices(access.tenant_id, start_date, end_date)
-        return ResponseEnvelope(data=InvoiceSyncResponse(success=True, data={"imported": stats}))
+        return ResponseEnvelope(data=InvoiceSyncResponse(
+            synced_count=stats.get('incoming', 0) + stats.get('outgoing', 0),
+            incoming=stats.get('incoming', 0),
+            outgoing=stats.get('outgoing', 0),
+            duplicates=stats.get('duplicates', 0),
+        ))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

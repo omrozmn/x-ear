@@ -217,43 +217,50 @@ export function SupplierDetailPage() {
                     </div>
                   ) : productsError ? (
                     <div className="text-red-500 text-center py-8">Ürünler yüklenirken hata oluştu.</div>
-                  ) : (productsData as Record<string, unknown>)?.data && Array.isArray(((productsData as Record<string, unknown>).data as Record<string, unknown>).products) && ((productsData as Record<string, unknown>).data as { products: unknown[] }).products.length ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead>
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ürün Adı</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kod</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Maliyet</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teslim Süresi</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {((productsData as Record<string, unknown>).data as { products: Array<Record<string, unknown>> }).products.map((item: Record<string, unknown>) => (
-                            <tr key={item.id as string}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {(item.supplier_product_name as string) || ((item.product as Record<string, unknown>)?.name as string)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {(item.supplier_product_code as string) || ((item.product as Record<string, unknown>)?.sku as string) || '-'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {item.unit_cost ? `${item.unit_cost} ${item.currency}` : '-'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {item.lead_time_days ? `${item.lead_time_days} Gün` : '-'}
-                              </td>
+                  ) : (() => {
+                    const rawData = productsData as Record<string, unknown> | undefined;
+                    const innerData = rawData?.data as Record<string, unknown> | undefined;
+                    const products = (innerData?.products ?? innerData?.items ?? (Array.isArray(rawData?.data) ? rawData?.data : [])) as Array<Record<string, unknown>>;
+                    if (!products || products.length === 0) {
+                      return (
+                        <div className="text-center py-12 text-gray-500">
+                          <p>Bu tedarikçiye ait ürün bulunamadı.</p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ürün Adı</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kod</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Maliyet</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teslim Süresi</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 text-gray-500">
-                      <p>Bu tedarikçiye ait ürün bulunamadı.</p>
-                      {/* <Button variant="outline" className="mt-4">Ürün Ekle</Button> */}
-                    </div>
-                  )}
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {products.map((item, idx) => (
+                              <tr key={(item.id as string) || idx}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                  {(item.name as string) || (item.supplierProductName as string) || (item.supplier_product_name as string) || ((item.product as Record<string, unknown>)?.name as string) || '-'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {(item.stockCode as string) || (item.sku as string) || (item.supplierProductCode as string) || (item.supplier_product_code as string) || ((item.product as Record<string, unknown>)?.sku as string) || '-'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {item.cost || item.unitCost || item.unit_cost || item.price ? `${item.cost || item.unitCost || item.unit_cost || item.price} ${(item.currency as string) || 'TRY'}` : '-'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {(item.leadTimeDays || item.lead_time_days) ? `${item.leadTimeDays || item.lead_time_days} Gün` : '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </TabsContent>
                 <TabsContent value="orders">
                   <div className="text-center py-12 text-gray-500">

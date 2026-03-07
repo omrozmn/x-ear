@@ -329,7 +329,12 @@ apiClient.interceptors.request.use(
 // Response interceptor for error handling and offline support
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    if (response.data) {
+    // Skip camelCase transformation for binary responses (arraybuffer/blob)
+    const responseType = response.config?.responseType;
+    const isBinary = responseType === 'arraybuffer' || responseType === 'blob'
+      || response.data instanceof ArrayBuffer
+      || (typeof Blob !== 'undefined' && response.data instanceof Blob);
+    if (response.data && !isBinary) {
       // Apply hybrid conversion to response data
       response.data = hybridCamelize(response.data);
     }

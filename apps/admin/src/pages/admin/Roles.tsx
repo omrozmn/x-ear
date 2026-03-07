@@ -29,6 +29,7 @@ import { RoleRead } from '@/api/generated/schemas/roleRead';
 import { PermissionRead as AdminPermission } from '@/api/generated/schemas/permissionRead';
 import { useHasPermission, useIsSuperAdmin, PermissionGate } from '@/hooks/useAdminPermission';
 import { AdminPermissions } from '@/types';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 
 // Permission category display names
 const CATEGORY_NAMES: Record<string, string> = {
@@ -44,6 +45,7 @@ const CATEGORY_NAMES: Record<string, string> = {
 };
 
 const Roles: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const queryClient = useQueryClient();
     const canManageRoles = useHasPermission(AdminPermissions.ROLES_MANAGE);
     const isSuperAdmin = useIsSuperAdmin();
@@ -187,11 +189,11 @@ const Roles: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className={`space-y-6 ${isMobile ? 'p-4 pb-safe' : 'p-6'}`}>
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className={`flex items-center ${isMobile ? 'flex-col gap-4' : 'justify-between'}`}>
+                <div className={isMobile ? 'w-full' : ''}>
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>
                         Rol Yönetimi
                     </h1>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -202,7 +204,7 @@ const Roles: React.FC = () => {
                 <PermissionGate permission={AdminPermissions.ROLES_MANAGE}>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                        className={`flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Plus className="h-4 w-4" />
                         Yeni Rol
@@ -212,7 +214,7 @@ const Roles: React.FC = () => {
 
             {/* Search */}
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <input
                     type="text"
                     placeholder="Rol ara..."
@@ -223,7 +225,7 @@ const Roles: React.FC = () => {
             </div>
 
             {/* Roles Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
                 {filteredRoles.map(role => (
                     <div
                         key={role.id}
@@ -357,7 +359,7 @@ const Roles: React.FC = () => {
                                                 {group.label}
                                             </h4>
                                             <div className="space-y-1">
-                                                {group.permissions.map(perm => (
+                                                {group.permissions.map((perm: AdminPermission) => (
                                                     <label
                                                         key={perm.id}
                                                         className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 p-1 rounded"
@@ -374,7 +376,7 @@ const Roles: React.FC = () => {
                                                                 } else {
                                                                     setFormData(prev => ({
                                                                         ...prev,
-                                                                        permissions: prev.permissions.filter(p => p !== perm.name)
+                                                                        permissions: prev.permissions.filter((p: string) => p !== perm.name)
                                                                     }));
                                                                 }
                                                             }}
@@ -491,8 +493,8 @@ const Roles: React.FC = () => {
                                                 {group.label}
                                             </h4>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {group.permissions.map(perm => {
-                                                    const currentPerms = selectedRole?.permissions?.map(p => p.name) || [];
+                                                {group.permissions.map((perm: AdminPermission) => {
+                                                    const currentPerms = selectedRole?.permissions?.map((p: AdminPermission) => p.name) || [];
                                                     const isActive = currentPerms.includes(perm.name);
 
                                                     return (

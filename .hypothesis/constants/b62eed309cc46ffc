@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/documents.py
+# hypothesis_version: 6.151.9
+
+['completed', 'createdBy', 'fileName', 'filePath', 'mimeType', 'originalName', 'partyId', 'system', 'tenantId', 'uploadedAt']

@@ -19,6 +19,9 @@ import {
   useListAdminUsers,
   useCreateAdminTicketResponse,
 } from '@/lib/api-client';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import Pagination from '@/components/ui/Pagination';
 
 // Local type definitions (not exported from generated client)
 interface SupportTicket {
@@ -40,9 +43,9 @@ interface AdminUser {
   last_name?: string;
   email?: string;
 }
-import Pagination from '@/components/ui/Pagination';
 
 const Support: React.FC = () => {
+  const { isMobile } = useAdminResponsive();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -67,7 +70,7 @@ const Support: React.FC = () => {
   const pagination = (ticketsData as any)?.data?.pagination || (ticketsData as any)?.pagination;
 
   // Fetch admin users for assignment
-  const { data: adminUsersData } = useListAdminUsers({ limit: 100 });
+  const { data: adminUsersData } = useListAdminUsers({ per_page: 100 });
   const adminUsers = (adminUsersData as any)?.data?.users || (adminUsersData as any)?.users || [];
 
   // Mutations
@@ -179,39 +182,39 @@ const Support: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className={`space-y-6 ${isMobile ? 'p-4 pb-safe' : 'p-6'}`}>
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'}`}>
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Destek Ticketları</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Destek Ticketları</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Müşteri destek taleplerini yönetin ve takip edin
           </p>
         </div>
-        <div className="flex space-x-3">
+        <div className={`flex ${isMobile ? 'flex-col w-full' : 'space-x-3'} gap-3`}>
           <div className="flex rounded-md shadow-sm">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-md border ${viewMode === 'list'
+              className={`px-4 py-2 text-sm font-medium rounded-l-md border touch-feedback ${viewMode === 'list'
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                } ${isMobile ? 'flex-1' : ''}`}
             >
               Liste
             </button>
             <button
               onClick={() => setViewMode('kanban')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${viewMode === 'kanban'
+              className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b touch-feedback ${viewMode === 'kanban'
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                } ${isMobile ? 'flex-1' : ''}`}
             >
               Kanban
             </button>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
             Yeni Ticket
@@ -220,19 +223,19 @@ const Support: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
+      <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <TicketIcon className="h-6 w-6 text-gray-400" />
+                <TicketIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     Toplam Ticket
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
                     {pagination?.total || 0}
                   </dd>
                 </dl>
@@ -241,18 +244,18 @@ const Support: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <ClockIcon className="h-6 w-6 text-orange-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     Açık Ticketlar
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
                     {tickets.filter(t => ['open', 'in_progress'].includes(t.status || '')).length || 0}
                   </dd>
                 </dl>
@@ -261,18 +264,18 @@ const Support: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <ExclamationTriangleIcon className="h-6 w-6 text-red-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     SLA Aşımı
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
                     {tickets.filter(t => isOverdue(t.sla_due_date) && !['resolved', 'closed'].includes(t.status || '')).length || 0}
                   </dd>
                 </dl>
@@ -281,18 +284,18 @@ const Support: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <CheckCircleIcon className="h-6 w-6 text-green-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                     Bu Ay Çözülen
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
                     {/* Placeholder logic as resolved_at might not be in the type yet if not updated in schema */
                       0
                     }
@@ -305,8 +308,8 @@ const Support: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
           {/* Search */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -348,7 +351,7 @@ const Support: React.FC = () => {
           </select>
 
           {/* Results count */}
-          <div className="flex items-center text-sm text-gray-500">
+          <div className={`flex items-center text-sm text-gray-500 dark:text-gray-400 ${isMobile ? 'col-span-1' : ''}`}>
             {pagination && (
               <span>
                 {pagination.total} sonuçtan {((page - 1) * 10) + 1}-{Math.min(page * 10, pagination.total || 0)} arası gösteriliyor
@@ -378,6 +381,7 @@ const Support: React.FC = () => {
           getStatusBadge={getStatusBadge}
           formatDate={formatDate}
           isOverdue={isOverdue}
+          isMobile={isMobile}
         />
       ) : (
         <TicketKanbanView
@@ -387,6 +391,7 @@ const Support: React.FC = () => {
           getPriorityBadge={getPriorityBadge}
           formatDate={formatDate}
           isOverdue={isOverdue}
+          isMobile={isMobile}
         />
       )}
 
@@ -432,6 +437,7 @@ interface TicketListViewProps {
   getStatusBadge: (status: string | undefined) => React.ReactNode;
   formatDate: (date: string | undefined) => string;
   isOverdue: (date: string | undefined) => boolean;
+  isMobile: boolean;
 }
 
 const TicketListView: React.FC<TicketListViewProps> = ({
@@ -451,126 +457,138 @@ const TicketListView: React.FC<TicketListViewProps> = ({
   getPriorityBadge,
   getStatusBadge,
   formatDate,
-  isOverdue
+  isOverdue,
+  isMobile
 }) => {
+  const columns = [
+    {
+      key: 'ticket',
+      header: 'Ticket',
+      render: (ticket: SupportTicket) => (
+        <div className="flex items-center">
+          <TicketIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
+          <div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              {ticket.title}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {formatDate(ticket.created_at)}
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'customer',
+      header: 'Müşteri',
+      mobileHidden: true,
+      render: (ticket: SupportTicket) => (
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
+          {ticket.tenant_name}
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      header: 'Durum',
+      render: (ticket: SupportTicket) => (
+        <select
+          value={ticket.status}
+          onChange={(e) => onStatusChange(ticket.id!, e.target.value)}
+          className="text-xs border-0 bg-transparent dark:bg-gray-700 dark:text-white focus:ring-0 p-0 touch-feedback"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <option value="open">Açık</option>
+          <option value="in_progress">İşlemde</option>
+          <option value="resolved">Çözüldü</option>
+          <option value="closed">Kapalı</option>
+        </select>
+      )
+    },
+    {
+      key: 'priority',
+      header: 'Öncelik',
+      mobileHidden: true,
+      render: (ticket: SupportTicket) => getPriorityBadge(ticket.priority)
+    },
+    {
+      key: 'assigned',
+      header: 'Atanan',
+      mobileHidden: true,
+      render: (ticket: SupportTicket) => (
+        <select
+          value={ticket.assigned_to || ''}
+          onChange={(e) => onAssignTicket(ticket.id!, e.target.value)}
+          className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 touch-feedback"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <option value="">Atanmamış</option>
+          {adminUsers.map((admin) => (
+            <option key={admin.id} value={admin.id}>
+              {admin.first_name} {admin.last_name}
+            </option>
+          ))}
+        </select>
+      )
+    },
+    {
+      key: 'sla',
+      header: 'SLA',
+      mobileHidden: true,
+      render: (ticket: SupportTicket) => (
+        <div>
+          <div className={`text-sm ${isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '')
+            ? 'text-red-600 dark:text-red-400 font-medium'
+            : 'text-gray-500 dark:text-gray-400'
+            }`}>
+            {formatDate(ticket.sla_due_date)}
+          </div>
+          {isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '') && (
+            <div className="text-xs text-red-500 dark:text-red-400">Gecikmiş</div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'actions',
+      header: 'İşlemler',
+      render: (ticket: SupportTicket) => (
+        <button
+          onClick={(e) => { e.stopPropagation(); onViewTicket(ticket); }}
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 touch-feedback"
+        >
+          Detay
+        </button>
+      )
+    }
+  ];
+
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
       {isLoading ? (
         <div className="p-6 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-500">Ticketlar yükleniyor...</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Ticketlar yükleniyor...</p>
         </div>
       ) : error ? (
         <div className="p-6 text-center">
-          <p className="text-red-600">Ticketlar yüklenirken hata oluştu</p>
+          <p className="text-red-600 dark:text-red-400">Ticketlar yüklenirken hata oluştu</p>
           <button
             onClick={() => queryClient.invalidateQueries({ queryKey: ['getAdminTickets'] })}
-            className="mt-2 text-sm text-blue-600 hover:text-blue-500"
+            className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 touch-feedback"
           >
             Tekrar dene
           </button>
         </div>
       ) : (
         <>
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ticket
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Müşteri
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Durum
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Öncelik
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Atanan
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  SLA
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  İşlemler
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {tickets.map((ticket) => (
-                <tr key={ticket.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <TicketIcon className="h-5 w-5 text-gray-400 mr-2" />
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {ticket.title}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {formatDate(ticket.created_at)}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {ticket.tenant_name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={ticket.status}
-                      onChange={(e) => onStatusChange(ticket.id!, e.target.value)}
-                      className="text-xs border-0 bg-transparent focus:ring-0 p-0"
-                    >
-                      <option value="open">Açık</option>
-                      <option value="in_progress">İşlemde</option>
-                      <option value="resolved">Çözüldü</option>
-                      <option value="closed">Kapalı</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getPriorityBadge(ticket.priority)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={ticket.assigned_to || ''}
-                      onChange={(e) => onAssignTicket(ticket.id!, e.target.value)}
-                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Atanmamış</option>
-                      {adminUsers.map((admin) => (
-                        <option key={admin.id} value={admin.id}>
-                          {admin.first_name} {admin.last_name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm ${isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '')
-                      ? 'text-red-600 font-medium'
-                      : 'text-gray-500'
-                      }`}>
-                      {formatDate(ticket.sla_due_date)}
-                    </div>
-                    {isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '') && (
-                      <div className="text-xs text-red-500">Gecikmiş</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => onViewTicket(ticket)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Detay
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            data={tickets}
+            columns={columns}
+            keyExtractor={(ticket) => ticket.id!}
+            onRowClick={onViewTicket}
+            emptyMessage="Ticket bulunamadı."
+          />
 
           {/* Pagination */}
           <Pagination
@@ -595,6 +613,7 @@ interface TicketKanbanViewProps {
   getPriorityBadge: (priority: string | undefined) => React.ReactNode;
   formatDate: (date: string | undefined) => string;
   isOverdue: (date: string | undefined) => boolean;
+  isMobile: boolean;
 }
 
 const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
@@ -603,13 +622,14 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
   onStatusChange,
   getPriorityBadge,
   formatDate,
-  isOverdue
+  isOverdue,
+  isMobile
 }) => {
   const columns = [
-    { id: 'open', title: 'Açık', color: 'bg-blue-50 border-blue-200' },
-    { id: 'in_progress', title: 'İşlemde', color: 'bg-yellow-50 border-yellow-200' },
-    { id: 'resolved', title: 'Çözüldü', color: 'bg-green-50 border-green-200' },
-    { id: 'closed', title: 'Kapalı', color: 'bg-gray-50 border-gray-200' }
+    { id: 'open', title: 'Açık', color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' },
+    { id: 'in_progress', title: 'İşlemde', color: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' },
+    { id: 'resolved', title: 'Çözüldü', color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' },
+    { id: 'closed', title: 'Kapalı', color: 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700' }
   ];
 
   const getTicketsByStatus = (status: string) => {
@@ -617,7 +637,7 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
       {columns.map((column) => (
         <div key={column.id} className={`rounded-lg border-2 ${column.color} p-4`}>
           <div className="flex items-center justify-between mb-4">
@@ -631,34 +651,34 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
             {getTicketsByStatus(column.id).map((ticket) => (
               <div
                 key={ticket.id}
-                className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-md transition-shadow touch-feedback"
                 onClick={() => onViewTicket(ticket)}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
                     {ticket.title}
                   </h4>
                   {getPriorityBadge(ticket.priority)}
                 </div>
 
-                <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                   {ticket.description}
                 </p>
 
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span>{ticket.tenant_name}</span>
                   <span>{formatDate(ticket.created_at)}</span>
                 </div>
 
                 {isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '') && (
-                  <div className="mt-2 flex items-center text-xs text-red-600">
+                  <div className="mt-2 flex items-center text-xs text-red-600 dark:text-red-400">
                     <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
                     SLA Aşımı
                   </div>
                 )}
 
                 {ticket.assigned_admin_name && (
-                  <div className="mt-2 flex items-center text-xs text-gray-600">
+                  <div className="mt-2 flex items-center text-xs text-gray-600 dark:text-gray-400">
                     <UserIcon className="h-3 w-3 mr-1" />
                     {ticket.assigned_admin_name}
                   </div>
@@ -667,7 +687,7 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
             ))}
 
             {getTicketsByStatus(column.id).length === 0 && (
-              <div className="text-center py-8 text-gray-500 text-sm">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
                 Bu durumda ticket yok
               </div>
             )}

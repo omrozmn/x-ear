@@ -205,6 +205,63 @@ def list_admin_users(
         logger.error(f"List admin users error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/users/all", operation_id="listAdminUserAll")
+def list_all_tenant_users(
+    page: int = Query(1, ge=1, le=1000000),
+    per_page: int = Query(20, ge=1, le=100),
+    search: Optional[str] = None,
+    role: Optional[str] = None,
+    status: Optional[str] = None,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """List ALL tenant users from ALL tenants (admin operation)"""
+    try:
+        # Query users with tenant_id (exclude admin users)
+        query = db_session.query(User).filter(User.tenant_id.isnot(None))
+        
+        if search:
+            query = query.filter(
+                (User.email.ilike(f'%{search}%')) |
+                (User.first_name.ilike(f'%{search}%')) |
+                (User.last_name.ilike(f'%{search}%'))
+            )
+        
+        if role:
+            query = query.filter_by(role=role)
+        
+        if status:
+            if status == 'active':
+                query = query.filter_by(is_active=True)
+            elif status == 'inactive':
+                query = query.filter_by(is_active=False)
+        
+        total = query.count()
+        users = query.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        
+        # Add tenant name to each user
+        users_data = []
+        for u in users:
+            user_dict = UserRead.model_validate(u).model_dump(by_alias=True)
+            if u.tenant_id:
+                tenant = db_session.get(Tenant, u.tenant_id)
+                if tenant:
+                    user_dict['tenantName'] = tenant.name
+            users_data.append(user_dict)
+        
+        return ResponseEnvelope(data={
+            "users": users_data,
+            "pagination": {
+                "page": page,
+                "perPage": per_page,
+                "total": total,
+                "totalPages": (total + per_page - 1) // per_page
+            }
+        })
+    except Exception as e:
+        logger.error(f"List all tenant users error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/users/{user_id}", operation_id="getAdminUser", response_model=ResponseEnvelope[UserRead])
 def get_admin_user(
     user_id: str,
@@ -217,6 +274,90 @@ def get_admin_user(
         raise HTTPException(status_code=404, detail={"message": "User not found", "code": "NOT_FOUND"})
     
     return ResponseEnvelope(data=UserRead.model_validate(user).model_dump(by_alias=True))
+    """List ALL tenant users from ALL tenants (admin operation)"""
+    try:
+        # Query users with tenant_id (exclude admin users)
+        query = db_session.query(User).filter(User.tenant_id.isnot(None))
+        
+        if search:
+            query = query.filter(
+                (User.email.ilike(f'%{search}%')) |
+                (User.first_name.ilike(f'%{search}%')) |
+                (User.last_name.ilike(f'%{search}%'))
+            )
+        
+        if role:
+            query = query.filter_by(role=role)
+        
+        if status:
+            if status == 'active':
+                query = query.filter_by(is_active=True)
+            elif status == 'inactive':
+                query = query.filter_by(is_active=False)
+        
+        total = query.count()
+        users = query.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        
+        # Add tenant name to each user
+        users_data = []
+        for u in users:
+            user_dict = UserRead.model_validate(u).model_dump(by_alias=True)
+            if u.tenant_id:
+                tenant = db_session.get(Tenant, u.tenant_id)
+                if tenant:
+                    user_dict['tenantName'] = tenant.name
+            users_data.append(user_dict)
+        
+        return ResponseEnvelope(data={
+            "users": users_data,
+            "pagination": {
+                "page": page,
+                "perPage": per_page,
+                "total": total,
+                "totalPages": (total + per_page - 1) // per_page
+            }
+        })
+    except Exception as e:
+        logger.error(f"List all tenant users error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/users/all/{user_id}", operation_id="updateAdminUserAll")
+def update_any_tenant_user(
+    user_id: str,
+    request_data: UserCreate,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Update any tenant user (admin operation)"""
+    try:
+        user = db_session.get(User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail={"message": "User not found", "code": "NOT_FOUND"})
+        
+        # Update fields
+        if request_data.email:
+            user.email = request_data.email
+        if request_data.first_name:
+            user.first_name = request_data.first_name
+        if request_data.last_name:
+            user.last_name = request_data.last_name
+        if request_data.role:
+            user.role = request_data.role
+        if request_data.password:
+            user.set_password(request_data.password)
+        if request_data.is_active is not None:
+            user.is_active = request_data.is_active
+        
+        db_session.commit()
+        db_session.refresh(user)
+        
+        return ResponseEnvelope(data=UserRead.model_validate(user).model_dump(by_alias=True))
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update any tenant user error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 # --- Party Management (Cross-tenant) ---
 
@@ -228,12 +369,14 @@ def get_admin_party(
 ):
     """Get party details (admin operation - cross-tenant)"""
     from schemas.parties import PartyRead
+    from core.database import unbound_session
     
-    party = db_session.get(Party, party_id)
-    if not party:
-        raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
-    
-    return ResponseEnvelope(data=PartyRead.model_validate(party).model_dump(by_alias=True))
+    with unbound_session(reason="admin-get-party"):
+        party = db_session.get(Party, party_id)
+        if not party:
+            raise HTTPException(status_code=404, detail={"message": "Party not found", "code": "NOT_FOUND"})
+        
+        return ResponseEnvelope(data=PartyRead.model_validate(party).model_dump(by_alias=True))
 
 
 # --- Impersonation ---
@@ -439,9 +582,11 @@ def get_admin_sale(
 ):
     """Get sale details (admin operation - cross-tenant)"""
     from schemas.sales import SaleRead
+    from core.database import unbound_session
     
-    sale = db_session.get(Sale, sale_id)
-    if not sale:
-        raise HTTPException(status_code=404, detail={"message": "Sale not found", "code": "NOT_FOUND"})
-    
-    return ResponseEnvelope(data=SaleRead.model_validate(sale).model_dump(by_alias=True))
+    with unbound_session(reason="admin-get-sale"):
+        sale = db_session.get(Sale, sale_id)
+        if not sale:
+            raise HTTPException(status_code=404, detail={"message": "Sale not found", "code": "NOT_FOUND"})
+        
+        return ResponseEnvelope(data=SaleRead.model_validate(sale).model_dump(by_alias=True))

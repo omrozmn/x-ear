@@ -1,429 +1,539 @@
 import { Button, Card } from '@x-ear/ui-web';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, ChevronLeft, ChevronRight, Eye, X, Plus, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle } from 'lucide-react';
+import { formatCurrency, formatDate } from '@/utils/format';
+import { useListOutgoingInvoices } from '@/api/generated/invoices/invoices';
+import type { OutgoingInvoiceResponse } from '@/api/generated/schemas';
+import { ONBOARDING_OUTGOING_INVOICES_DISMISSED } from '@/constants/storage-keys';
+import { useDebounce } from '@/hooks/useDebounce';
+import { apiClient } from '@/api/orval-mutator';
+import toast from 'react-hot-toast';
 import { useNavigate } from '@tanstack/react-router';
-import { Zap, Plus, FileText, AlertTriangle, X } from 'lucide-react';
-import UniversalImporter from '../components/importer/UniversalImporter';
-import { useToastHelpers } from '@x-ear/ui-web';
-import invoicesSchema from '../components/importer/schemas/invoices';
-import { FieldDef } from '../components/importer/UniversalImporter';
-import { Invoice, InvoiceFilters, InvoiceTemplate, GovernmentInvoiceData } from '../types/invoice';
-
-import { InvoiceModal } from '../components/modals/InvoiceModal';
-// import { InvoiceTemplateManager } from '../components/templates/InvoiceTemplateManager'; // Not used - templates view disabled
-import { InvoiceFilters as InvoiceFiltersComponent } from '../components/invoices/InvoiceFilters';
-import { GovernmentInvoiceModal } from '../components/invoices/GovernmentInvoiceModal';
-import { InvoiceStats } from '../components/invoices/InvoiceStats';
-import { invoiceService } from '../services/invoice.service';
-import { InvoiceList } from '../components/invoices/InvoiceList';
 
 interface InvoiceManagementPageProps {
   className?: string;
 }
 
-interface InvoiceStatsType {
-  total: number;
-  [key: string]: unknown;
+async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 'html' | 'xml'): Promise<{ data: ArrayBuffer; contentType: string }> {
+  const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}`, {
+    responseType: 'arraybuffer',
+  });
+  const contentType = (resp.headers?.['content-type'] as string) || (format === 'pdf' ? 'application/pdf' : 'text/html');
+  return { data: resp.data, contentType };
 }
 
-interface PageState {
-  invoices: Invoice[];
-  selectedInvoices: Invoice[];
-  isLoading: boolean;
-  error: string | null;
-  filters: InvoiceFilters;
-  currentView: 'list' | 'templates' | 'bulk' | 'xml';
-  stats: InvoiceStatsType;
-  statsLoading: boolean;
-}
-
-interface ModalState {
-  isOpen: boolean;
-  mode: 'create' | 'quick' | 'template';
-  invoice: Invoice | null;
-  template: InvoiceTemplate | null;
-}
-
-interface ImportResult {
-  created: number;
-  updated: number;
-  errors: Array<{ message: string; line?: number }>;
+async function postInvoiceAction(invoiceId: string | number, action: 'accept' | 'reject' | 'cancel', body?: object): Promise<void> {
+  await apiClient.post(`/api/invoices/${invoiceId}/${action}`, body ?? {});
 }
 
 export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   className = ''
 }) => {
   const navigate = useNavigate();
-  const { success: showSuccess, error: showError } = useToastHelpers();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(25);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [showBanner, setShowBanner] = useState(() => {
+    try { return !localStorage.getItem(ONBOARDING_OUTGOING_INVOICES_DISMISSED ?? 'outgoing_invoices_dismissed'); } catch { return true; }
+  });
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<string>('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [pdfModal, setPdfModal] = useState<{ open: boolean; blobUrl: string; title: string; fileName: string } | null>(null);
+  const [statusModal, setStatusModal] = useState<OutgoingInvoiceResponse | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const [state, setState] = useState<PageState>({
-    invoices: [],
-    selectedInvoices: [],
-    isLoading: true,
-    error: null,
-    filters: {},
-    currentView: 'list',
-    stats: { total: 0 },
-    statsLoading: true
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setActiveMenu(null);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const handleSort = (field: string) => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortField(field); setSortDir('asc'); }
+  };
+
+  const SortIcon = ({ field }: { field: string }) => {
+    if (sortField !== field) return <span className="ml-1 opacity-30">↕</span>;
+    return sortDir === 'asc' ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDownIcon className="inline w-3 h-3 ml-1" />;
+  };
+
+  const { data, isLoading, refetch } = useListOutgoingInvoices({
+    page: currentPage,
+    per_page: perPage,
+    status: statusFilter !== 'all' ? statusFilter as any : undefined,
+    party_name: debouncedSearch || undefined,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
   });
 
-  const [modalState, setModalState] = useState<ModalState>({
-    isOpen: false,
-    mode: 'create',
-    invoice: null,
-    template: null
-  });
+  const invoiceList = data?.data?.invoices ?? [];
+  const totalAmount = Number(data?.data?.totalAmount ?? 0);
+  const paidAmount = Number(data?.data?.paidAmount ?? 0);
+  const pagination = data?.data?.pagination;
+  const totalCount = pagination?.total ?? invoiceList.length;
+  const totalPages = pagination?.totalPages ?? 1;
 
-  const [governmentModalOpen, setGovernmentModalOpen] = useState(false);
-  const [currentInvoiceForGov] = useState<Invoice | null>(null);
-  const [isImporterOpen, setIsImporterOpen] = useState(false);
-  const [importResult, setImportResult] = useState<ImportResult | null>(null);
-
-  // Load invoices and stats on component mount
-  useEffect(() => {
-    loadInvoices();
-    loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // If editId query param present, open editor for that invoice
-  useEffect(() => {
-    (async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const editId = params.get('editId');
-        if (editId) {
-          const inv = await invoiceService.getInvoice(editId);
-          if (inv) {
-            handleEditInvoice(inv);
-            // remove param to avoid re-triggering
-            params.delete('editId');
-            const newSearch = params.toString();
-            const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '');
-            window.history.replaceState({}, '', newUrl);
-          }
-        }
-      } catch (err) {
-        console.warn('Could not open invoice editor from editId param', err);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadStats = useCallback(async () => {
-    setState(prev => ({ ...prev, statsLoading: true }));
-    try {
-      const stats = await invoiceService.getInvoiceStats();
-      const statsWithTotal: InvoiceStatsType = { ...stats as unknown as Record<string, unknown>, total: (stats as unknown as Record<string, unknown>).total as number || 0 };
-      setState(prev => ({ ...prev, stats: statsWithTotal, statsLoading: false }));
-    } catch (error) {
-      console.error('Error loading stats:', error);
-      setState(prev => ({ ...prev, statsLoading: false }));
+  const filteredInvoices = useMemo(() => {
+    let list = [...invoiceList];
+    if (sortField) {
+      list.sort((a: OutgoingInvoiceResponse, b: OutgoingInvoiceResponse) => {
+        let av: any, bv: any;
+        if (sortField === 'party') { av = `${a.partyFirstName} ${a.partyLastName}`; bv = `${b.partyFirstName} ${b.partyLastName}`; }
+        else if (sortField === 'invoiceNumber') { av = a.invoiceNumber || ''; bv = b.invoiceNumber || ''; }
+        else if (sortField === 'invoiceDate') { av = a.invoiceDate || ''; bv = b.invoiceDate || ''; }
+        else if (sortField === 'totalAmount') { av = Number(a.totalAmount || 0); bv = Number(b.totalAmount || 0); }
+        else if (sortField === 'status') { av = a.status || ''; bv = b.status || ''; }
+        else { av = ''; bv = ''; }
+        if (av < bv) return sortDir === 'asc' ? -1 : 1;
+        if (av > bv) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
     }
-  }, []);
+    return list;
+  }, [invoiceList, sortField, sortDir]);
 
-  const loadInvoices = useCallback(async () => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      // Fetch real invoices from service
-      const result = await invoiceService.getInvoices(state.filters);
-
-      setState(prev => ({
-        ...prev,
-        invoices: result.invoices,
-        isLoading: false
-      }));
-    } catch (error) {
-      console.error('Error loading invoices:', error);
-      setState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Faturalar yüklenirken hata oluştu',
-        isLoading: false
-      }));
-    }
-  }, [state.filters]);
-
-  const handleCreateInvoice = useCallback(() => {
-    // Navigate to new invoice page
-    navigate({ to: '/invoices/new' });
-  }, [navigate]);
-
-  const handleQuickInvoice = useCallback(() => {
-    setModalState({
-      isOpen: true,
-      mode: 'quick',
-      invoice: null,
-      template: null
-    });
-  }, []);
-
-  const handleEditInvoice = useCallback((invoice: Invoice) => {
-    // For edit mode, we'll use create mode with initial data
-    setModalState({
-      isOpen: true,
-      mode: 'create',
-      invoice,
-      template: null
-    });
-  }, []);
-
-
-
-  const handleFiltersChange = useCallback((newFilters: InvoiceFilters) => {
-    setState(prev => ({ ...prev, filters: newFilters }));
-  }, []);
-
-  const handleApplyFilters = useCallback(() => {
-    // Filters are already applied via useMemo
-    console.log('Filters applied:', state.filters);
-  }, [state.filters]);
-
-  const handleResetFilters = useCallback(() => {
-    setState(prev => ({ ...prev, filters: {} }));
-  }, []);
-
-  const handleSaveGovernmentData = useCallback((data: GovernmentInvoiceData) => {
-    console.log('Government invoice data:', data);
-    // TODO: Save to invoice
-    if (currentInvoiceForGov) {
-      // Update existing invoice
-    }
-    setGovernmentModalOpen(false);
-  }, [currentInvoiceForGov]);
-
-  const closeModal = useCallback(() => {
-    setModalState({
-      isOpen: false,
-      mode: 'create',
-      invoice: null,
-      template: null
-    });
-  }, []);
-
-  const handleModalSubmit = useCallback(async (data: Invoice | Record<string, unknown>) => {
-    try {
-      // Handle form submission based on mode
-      switch (modalState.mode) {
-        case 'create':
-          // Create new invoice or update existing if invoice is provided
-          if (modalState.invoice) {
-            console.log('Updating invoice:', data);
-          } else {
-            console.log('Creating invoice:', data);
-          }
-          break;
-        case 'quick':
-          // Create quick invoice
-          console.log('Creating quick invoice:', data);
-          break;
-        case 'template':
-          // Create invoice from template
-          console.log('Creating invoice from template:', data);
-          break;
-      }
-
-      // Refresh invoices
-      await loadInvoices();
-
-      // Close modal
-      closeModal();
-    } catch (error) {
-      console.error('Error submitting invoice:', error);
-    }
-  }, [modalState.mode, modalState.invoice, loadInvoices, closeModal]);
-
-  if (state.isLoading) {
+  const getStatusBadge = (status: string, invoice?: OutgoingInvoiceResponse) => {
+    const isSent = status === 'SENT' || status === 'PAID' || status === 'PROCESSED';
+    const style = isSent
+      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+    const label = status === 'PAID' ? 'Ödendi' : status === 'SENT' ? 'Gönderildi' : status === 'PROCESSED' ? 'İşlendi' : 'Taslak';
+    const icon = isSent ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertCircle className="w-3 h-3 mr-1" />;
     return (
-      <div className={`invoice-management-loading ${className}`}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-400">Faturalar yükleniyor...</span>
-        </div>
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${style} ${invoice ? 'cursor-pointer hover:opacity-80' : ''}`}
+        onClick={invoice ? () => setStatusModal(invoice) : undefined}
+        title={invoice ? 'Durum detayı için tıklayın' : undefined}
+      >
+        {icon}{label}
+      </span>
+    );
+  };
+
+  const handleViewPdf = async (invoice: OutgoingInvoiceResponse) => {
+    setActiveMenu(null);
+    const toastId = toast.loading('Fatura yükleniyor...');
+    try {
+      const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
+      const isPdf = contentType.includes('application/pdf');
+      const mimeType = isPdf ? 'application/pdf' : 'text/html';
+      const blob = new Blob([buf], { type: mimeType });
+      const baseUrl = URL.createObjectURL(blob);
+      const url = isPdf ? baseUrl + '#pagemode=none&toolbar=1' : baseUrl;
+      if (pdfModal?.blobUrl) URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]);
+      toast.dismiss(toastId);
+      const fileName = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
+      setPdfModal({ open: true, blobUrl: url, title: `${invoice.invoiceNumber} — ${invoice.partyFirstName} ${invoice.partyLastName}`, fileName });
+    } catch {
+      toast.error('Fatura yüklenemedi', { id: toastId });
+    }
+  };
+
+  const handleDownloadPdf = async (invoice: OutgoingInvoiceResponse) => {
+    setActiveMenu(null);
+    const toastId = toast.loading('İndiriliyor...');
+    try {
+      const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
+      const isPdf = contentType.includes('application/pdf');
+      const blob = new Blob([buf], { type: isPdf ? 'application/pdf' : 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(isPdf ? 'PDF indirildi' : 'Fatura indirildi', { id: toastId });
+    } catch {
+      // Fallback to XML download
+      try {
+        const buf = await fetchInvoiceDocument(invoice.invoiceId, 'xml');
+        const blob = new Blob([buf], { type: 'application/xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${invoice.invoiceNumber || invoice.invoiceId}.xml`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Fatura XML olarak indirildi (PDF mevcut değil)', { id: toastId });
+      } catch {
+        toast.error('Belge indirilemedi', { id: toastId });
+      }
+    }
+  };
+
+  const handleViewHtml = async (invoice: OutgoingInvoiceResponse) => handleViewPdf(invoice);
+
+  const handleCancel = async (invoice: OutgoingInvoiceResponse) => {
+    setActiveMenu(null);
+    setActionLoading(`cancel-${invoice.invoiceId}`);
+    try {
+      await postInvoiceAction(invoice.invoiceId, 'cancel', { reason: 'İptal edildi' });
+      toast.success('Fatura iptal edildi');
+      refetch();
+    } catch {
+      toast.error('İptal işlemi başarısız');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCopy = (invoice: OutgoingInvoiceResponse) => {
+    setActiveMenu(null);
+    navigator.clipboard.writeText(invoice.invoiceNumber || String(invoice.invoiceId))
+      .then(() => toast.success('Fatura no kopyalandı'))
+      .catch(() => toast.error('Kopyalanamadı'));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">Giden faturalar yükleniyor...</span>
       </div>
     );
   }
 
   return (
-    <div className={`invoice-management-page ${className}`}>
+    <div className={`p-6 space-y-6 ${className}`}>
       {/* Header */}
-      <div className="page-header mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Fatura Yönetimi</h1>
-          </div>
-
-          <div className="header-actions flex gap-3">
-            <Button onClick={() => setIsImporterOpen(true)} className="px-3 py-2">İçe Aktar</Button>
-            <Button
-              onClick={handleQuickInvoice}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center gap-2 shadow-sm"
-              style={{ backgroundColor: '#16a34a', color: 'white' }}
-              variant='default'>
-              <Zap size={18} />
-              Hızlı Fatura
-            </Button>
-            <Button
-              onClick={handleCreateInvoice}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2 shadow-sm"
-              style={{ backgroundColor: '#2563eb', color: 'white' }}
-              variant='default'>
-              <Plus size={18} />
-              Yeni Fatura
-            </Button>
-          </div>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Giden Faturalar</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            BirFatura üzerinden gönderilen faturalar
+          </p>
         </div>
-
-        {/* View Tabs */}
-        <div className="view-tabs border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8">
-            {[
-              { key: 'list', label: 'Fatura Listesi', Icon: FileText },
-              // { key: 'templates', label: 'Şablonlar', Icon: File }
-            ].map((tab) => (
-              <Button
-                key={tab.key}
-                onClick={() => setState(prev => ({ ...prev, currentView: tab.key as PageState['currentView'] }))}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${state.currentView === tab.key
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                  }`}
-                variant='default'>
-                <tab.Icon size={16} />
-                {tab.label}
-              </Button>
-            ))}
-          </nav>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
+            <Download size={18} />
+            Yenile
+          </Button>
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { type: 'proforma' } as any })}>
+            <FileText size={18} />
+            Proforma Oluştur
+          </Button>
+          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => navigate({ to: '/invoices/new' })}>
+            <Plus size={18} />
+            Yeni Fatura
+          </Button>
         </div>
       </div>
-      {/* Error Display */}
-      {state.error && (
-        <div className="error-message bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <AlertTriangle className="text-red-400" size={20} />
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
             </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Hata</h3>
-              <p className="mt-1 text-sm text-red-700">{state.error}</p>
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <FileText className="text-blue-600 dark:text-blue-400" size={24} />
             </div>
-            <div className="ml-auto pl-3">
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Tutar</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+                {formatCurrency(totalAmount, 'TRY')}
+              </p>
+            </div>
+            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <Send className="text-green-600 dark:text-green-400" size={24} />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Ödenen Tutar</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
+                {formatCurrency(paidAmount, 'TRY')}
+              </p>
+            </div>
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+              <CheckCircle className="text-purple-600 dark:text-purple-400" size={24} />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Info Banner */}
+      {showBanner && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-center gap-3">
+          <Send className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
+          <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
+            Bu sayfada BirFatura üzerinden gönderilmiş e-faturalarınız listelenmektedir.
+          </p>
+          <button
+            onClick={() => {
+              setShowBanner(false);
+              try { localStorage.setItem(ONBOARDING_OUTGOING_INVOICES_DISMISSED ?? 'outgoing_invoices_dismissed', '1'); } catch {}
+            }}
+            className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 flex-shrink-0"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Alıcı adı veya fatura no ara..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); }}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              placeholder="Başlangıç"
+            />
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              placeholder="Bitiş"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Tüm Durumlar</option>
+              <option value="SENT">Gönderildi</option>
+              <option value="PAID">Ödendi</option>
+              <option value="draft">Taslak</option>
+            </select>
+            <Button onClick={() => refetch()} className="flex items-center gap-2">
+              <Filter size={18} />
+              Ara
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Invoices Table */}
+      <Card>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('party')}>Alıcı<SortIcon field="party" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('totalAmount')}>Tutar<SortIcon field="totalAmount" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceDate')}>Tarih<SortIcon field="invoiceDate" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('status')}>Durum<SortIcon field="status" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredInvoices.map((invoice: OutgoingInvoiceResponse) => (
+                <tr key={invoice.invoiceId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    {invoice.invoiceNumber}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      {invoice.partyFirstName} {invoice.partyLastName}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatCurrency(Number(invoice.totalAmount), 'TRY')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                    {formatDate(invoice.invoiceDate)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getStatusBadge(invoice.status, invoice)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="relative" ref={activeMenu === invoice.invoiceId ? menuRef : null}>
+                      <button
+                        onClick={() => setActiveMenu(activeMenu === invoice.invoiceId ? null : invoice.invoiceId)}
+                        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      {activeMenu === invoice.invoiceId && (
+                        <div className="absolute right-0 z-50 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                          <button onClick={() => handleViewPdf(invoice)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <Eye className="w-4 h-4" /> Fatura Görüntüle
+                          </button>
+                          <button onClick={() => handleDownloadPdf(invoice)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <Download className="w-4 h-4" /> PDF İndir
+                          </button>
+                          <button onClick={() => handleCopy(invoice)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <Copy className="w-4 h-4" /> Kopyala
+                          </button>
+                          <div className="border-t border-gray-100 dark:border-gray-700" />
+                          <button
+                            onClick={() => handleCancel(invoice)}
+                            disabled={actionLoading === `cancel-${invoice.invoiceId}`}
+                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                          >
+                            <XCircle className="w-4 h-4" />
+                            {actionLoading === `cancel-${invoice.invoiceId}` ? 'İşleniyor...' : 'İptal Et'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {filteredInvoices.length === 0 && (
+          <div className="text-center py-12">
+            <FileText className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Giden fatura bulunamadı</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Arama kriterlerinize uygun giden fatura yok.
+            </p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Toplam {totalCount} fatura, Sayfa {currentPage} / {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
               <Button
-                onClick={() => setState(prev => ({ ...prev, error: null }))}
-                className="text-red-400 hover:text-red-600 dark:hover:text-red-300"
-                variant='default'>
-                <X size={16} />
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+              >
+                <ChevronLeft size={16} />
+                Önceki
+              </Button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                const page = start + i;
+                if (page > totalPages) return null;
+                return (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className={page === currentPage ? 'bg-blue-600 text-white' : ''}
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+              >
+                Sonraki
+                <ChevronRight size={16} />
               </Button>
             </div>
           </div>
-        </div>
-      )}
-      {/* Content based on current view */}
-      {state.currentView === 'list' && (
-        <div className="invoice-list-view">
-          {/* Stats */}
-          <InvoiceStats stats={state.stats} loading={state.statsLoading} />
+        )}
+      </Card>
 
-          {/* Filters Component */}
-          <InvoiceFiltersComponent
-            filters={state.filters}
-            onFiltersChange={handleFiltersChange}
-            onApply={handleApplyFilters}
-            onReset={handleResetFilters}
-          />
-
-          {/* Invoice Table (now using shared InvoiceList component) */}
-          <div className="invoice-table bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-            <InvoiceList
-              onInvoiceSelect={(inv) => handleEditInvoice(inv)}
-              filters={state.filters}
-              onFiltersChange={handleFiltersChange}
-              showActions={true}
-              compact={false}
-            />
+      {/* PDF Viewer Modal */}
+      {pdfModal?.open && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center p-4"
+          onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
+        >
+          <div
+            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl flex flex-col"
+            style={{ height: '90vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate pr-4">{pdfModal.title}</h2>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <a
+                  href={pdfModal.blobUrl.split('#')[0]}
+                  download={pdfModal.fileName}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                >
+                  <Download size={15} />
+                  İndir
+                </a>
+                <button
+                  onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <iframe src={pdfModal.blobUrl} className="w-full h-full border-0" title="Fatura PDF" />
+            </div>
           </div>
         </div>
       )}
-      {/* {state.currentView === 'templates' && (
-        <InvoiceTemplateManager
-          onTemplateSelect={handleUseTemplate}
-          onTemplateCreate={() => console.log('Template created')}
-          onTemplateUpdate={() => console.log('Template updated')}
-          onTemplateDelete={() => console.log('Template deleted')}
-        />
-      )} */}
-      {/* Invoice Modal */}
-      {modalState.isOpen && (
-        <InvoiceModal
-          isOpen={modalState.isOpen}
-          mode={modalState.mode}
-          onClose={closeModal}
-          onSuccess={handleModalSubmit}
-          initialData={modalState.invoice || null}
-        />
-      )}
 
-      {/* Government Invoice Modal */}
-      <GovernmentInvoiceModal
-        isOpen={governmentModalOpen}
-        onClose={() => setGovernmentModalOpen(false)}
-        onSave={handleSaveGovernmentData}
-        initialData={currentInvoiceForGov?.governmentData}
-      />
-
-      <UniversalImporter
-        isOpen={isImporterOpen}
-        onClose={() => setIsImporterOpen(false)}
-        entityFields={[
-          // keep legacy keys for backend compatibility plus integrator names
-          { key: 'invoiceNumber', label: 'Fatura No' },
-          { key: 'eInvoiceId', label: 'Fatura No (eInvoiceId)' },
-          { key: 'partyName', label: 'Hasta / Alıcı Adı' },
-          { key: 'billingName', label: 'Alıcı / İsim (billingName)' },
-          { key: 'partyPhone', label: 'Telefon' },
-          { key: 'billingMobilePhone', label: 'Telefon (mobil)' },
-          { key: 'partyTcNumber', label: 'TC Kimlik No' },
-          { key: 'taxNo', label: 'Vergi No (TC/VKN)' },
-          { key: 'issueDate', label: 'Düzenlenme Tarihi' },
-          { key: 'invoiceDate', label: 'Fatura Tarihi (invoiceDate)' },
-          { key: 'dueDate', label: 'Vade Tarihi' },
-          { key: 'currency', label: 'Para Birimi' },
-          { key: 'grandTotal', label: 'Toplam Tutar' },
-          { key: 'totalPaidTaxIncluding', label: 'Toplam Tutar (KDV dahil)' }
-        ] as FieldDef[]}
-        zodSchema={invoicesSchema}
-        uploadEndpoint={'/api/invoices/bulk-upload'}
-        modalTitle={'Toplu Fatura Yükleme'}
-        sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
-        onComplete={(res: Record<string, unknown>) => {
-          const result: ImportResult = {
-            created: (res.created as number) || 0,
-            updated: (res.updated as number) || 0,
-            errors: (res.errors as Array<{ message: string; line?: number }>) || []
-          };
-          if (result.errors && result.errors.length > 0) {
-            showError(`Fatura import tamamlandı — Hatalı satır: ${result.errors.length}`);
-          } else {
-            showSuccess(`Fatura import tamamlandı — Oluşturulan: ${result.created}`);
-          }
-          setImportResult(result);
-          loadInvoices();
-          setIsImporterOpen(false);
-        }}
-      />
-      {importResult && (
-        <div className="mt-4">
-          <Card>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm">Oluşturulan: <strong>{importResult.created}</strong></div>
-                <div className="text-sm">Güncellenen: <strong>{importResult.updated}</strong></div>
-                <div className="text-sm">Hatalı satır: <strong>{importResult.errors?.length || 0}</strong></div>
-              </div>
-              <div>
-                <Button variant="outline" onClick={() => setImportResult(null)}>Kapat</Button>
+      {/* Status Modal */}
+      {statusModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          onClick={() => setStatusModal(null)}
+        >
+          <div
+            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Fatura Durumu</h2>
+              <button onClick={() => setStatusModal(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div><p className="text-xs text-gray-500">Fatura No</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.invoiceNumber}</p></div>
+                <div><p className="text-xs text-gray-500">Alıcı</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.partyFirstName} {statusModal.partyLastName}</p></div>
+                <div><p className="text-xs text-gray-500">Tarih</p><p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(statusModal.invoiceDate)}</p></div>
+                <div><p className="text-xs text-gray-500">Tutar</p><p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(statusModal.totalAmount), 'TRY')}</p></div>
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-500 mb-1">Durum</p>
+                  {getStatusBadge(statusModal.status)}
+                </div>
               </div>
             </div>
-          </Card>
+            <div className="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+              <Button variant="outline" onClick={() => setStatusModal(null)}>Kapat</Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

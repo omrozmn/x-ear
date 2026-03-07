@@ -49,7 +49,7 @@ export function useHasPermission(permission: AdminPermissionCode): boolean {
     // SuperAdmin her şeye erişebilir
     if (data.is_super_admin) return true;
 
-    return data.permissions.includes(permission);
+    return data.permissions?.includes(permission) ?? false;
 }
 
 /**
@@ -76,9 +76,9 @@ export function useHasAnyPermission(
     if (data.is_super_admin) return true;
 
     if (mode === 'any') {
-        return permissions.some(p => data.permissions.includes(p));
+        return permissions.some(p => data.permissions?.includes(p) ?? false);
     } else {
-        return permissions.every(p => data.permissions.includes(p));
+        return permissions.every(p => data.permissions?.includes(p) ?? false);
     }
 }
 
@@ -140,14 +140,14 @@ export function PermissionGate({
 
     // Single permission check
     if (permission) {
-        return data.permissions.includes(permission) ? <>{children}</> : <>{fallback}</>;
+        return data.permissions?.includes(permission) ? <>{children}</> : <>{fallback}</>;
     }
 
     // Multiple permissions check
     if (permissions) {
         const hasAccess = mode === 'any'
-            ? permissions.some(p => data.permissions.includes(p))
-            : permissions.every(p => data.permissions.includes(p));
+            ? permissions.some(p => data.permissions?.includes(p))
+            : permissions.every(p => data.permissions?.includes(p));
 
         return hasAccess ? <>{children}</> : <>{fallback}</>;
     }

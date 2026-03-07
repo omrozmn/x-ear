@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_tickets.py
+# hypothesis_version: 6.151.9
+
+[100, 404, 500, 1000000, '/api/admin/tickets', '/{ticket_id}', 'Admin Tickets', 'Ticket not found', 'assignedAdminName', 'assignedTo', 'category', 'createAdminTicket', 'createdAt', 'createdBy', 'description', 'false', 'id', 'limit', 'listAdminTickets', 'message', 'page', 'pagination', 'priority', 'response', 'slaDueDate', 'status', 'system', 'tenantId', 'tenantName', 'ticket', 'ticketId', 'tickets', 'tickets.manage', 'tickets.read', 'title', 'total', 'totalPages', 'updateAdminTicket', 'updatedAt', 'value']

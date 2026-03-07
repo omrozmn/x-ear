@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UtsRouteImport } from './routes/uts'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SalesRouteImport } from './routes/sales'
+import { Route as PurchasesRouteImport } from './routes/purchases'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvoicesRouteImport } from './routes/invoices'
@@ -44,9 +46,11 @@ import { Route as ReportsActivityRouteImport } from './routes/reports/activity'
 import { Route as PosSuccessRouteImport } from './routes/pos/success'
 import { Route as PosFailRouteImport } from './routes/pos/fail'
 import { Route as PartiesPartyIdRouteImport } from './routes/parties/$partyId'
+import { Route as InvoicesSummaryRouteImport } from './routes/invoices/summary'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
 import { Route as InvoicesPaymentsRouteImport } from './routes/invoices/payments'
 import { Route as InvoicesNewRouteImport } from './routes/invoices/new'
+import { Route as InvoicesIncomingRouteImport } from './routes/invoices/incoming'
 import { Route as InventoryIdRouteImport } from './routes/inventory/$id'
 import { Route as CashflowIdRouteImport } from './routes/cashflow/$id'
 
@@ -63,6 +67,16 @@ const TestRoute = TestRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesRoute = SalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PurchasesRoute = PurchasesRouteImport.update({
+  id: '/purchases',
+  path: '/purchases',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -225,6 +239,11 @@ const PartiesPartyIdRoute = PartiesPartyIdRouteImport.update({
   path: '/parties/$partyId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvoicesSummaryRoute = InvoicesSummaryRouteImport.update({
+  id: '/summary',
+  path: '/summary',
+  getParentRoute: () => InvoicesRoute,
+} as any)
 const InvoicesPurchasesRoute = InvoicesPurchasesRouteImport.update({
   id: '/purchases',
   path: '/purchases',
@@ -238,6 +257,11 @@ const InvoicesPaymentsRoute = InvoicesPaymentsRouteImport.update({
 const InvoicesNewRoute = InvoicesNewRouteImport.update({
   id: '/new',
   path: '/new',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesIncomingRoute = InvoicesIncomingRouteImport.update({
+  id: '/incoming',
+  path: '/incoming',
   getParentRoute: () => InvoicesRoute,
 } as any)
 const InventoryIdRoute = InventoryIdRouteImport.update({
@@ -262,14 +286,18 @@ export interface FileRoutesByFullPath {
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/purchases': typeof PurchasesRoute
+  '/sales': typeof SalesRoute
   '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
   '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/invoices/incoming': typeof InvoicesIncomingRoute
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
+  '/invoices/summary': typeof InvoicesSummaryRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
   '/pos/success': typeof PosSuccessRoute
@@ -286,12 +314,12 @@ export interface FileRoutesByFullPath {
   '/cashflow/': typeof CashflowIndexRoute
   '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
-  '/parties/': typeof PartiesIndexRoute
-  '/pos/': typeof PosIndexRoute
-  '/reports/': typeof ReportsIndexRoute
+  '/parties': typeof PartiesIndexRoute
+  '/pos': typeof PosIndexRoute
+  '/reports': typeof ReportsIndexRoute
   '/settings/': typeof SettingsIndexRoute
-  '/sgk/': typeof SgkIndexRoute
-  '/suppliers/': typeof SuppliersIndexRoute
+  '/sgk': typeof SgkIndexRoute
+  '/suppliers': typeof SuppliersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -301,13 +329,17 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/purchases': typeof PurchasesRoute
+  '/sales': typeof SalesRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
   '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/invoices/incoming': typeof InvoicesIncomingRoute
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
+  '/invoices/summary': typeof InvoicesSummaryRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
   '/pos/success': typeof PosSuccessRoute
@@ -343,14 +375,18 @@ export interface FileRoutesById {
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/purchases': typeof PurchasesRoute
+  '/sales': typeof SalesRoute
   '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
   '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/invoices/incoming': typeof InvoicesIncomingRoute
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/payments': typeof InvoicesPaymentsRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
+  '/invoices/summary': typeof InvoicesSummaryRoute
   '/parties/$partyId': typeof PartiesPartyIdRoute
   '/pos/fail': typeof PosFailRoute
   '/pos/success': typeof PosSuccessRoute
@@ -387,14 +423,18 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/login'
     | '/profile'
+    | '/purchases'
+    | '/sales'
     | '/settings'
     | '/test'
     | '/uts'
     | '/cashflow/$id'
     | '/inventory/$id'
+    | '/invoices/incoming'
     | '/invoices/new'
     | '/invoices/payments'
     | '/invoices/purchases'
+    | '/invoices/summary'
     | '/parties/$partyId'
     | '/pos/fail'
     | '/pos/success'
@@ -411,12 +451,12 @@ export interface FileRouteTypes {
     | '/cashflow/'
     | '/inventory/'
     | '/invoices/'
-    | '/parties/'
-    | '/pos/'
-    | '/reports/'
+    | '/parties'
+    | '/pos'
+    | '/reports'
     | '/settings/'
-    | '/sgk/'
-    | '/suppliers/'
+    | '/sgk'
+    | '/suppliers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -426,13 +466,17 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/profile'
+    | '/purchases'
+    | '/sales'
     | '/test'
     | '/uts'
     | '/cashflow/$id'
     | '/inventory/$id'
+    | '/invoices/incoming'
     | '/invoices/new'
     | '/invoices/payments'
     | '/invoices/purchases'
+    | '/invoices/summary'
     | '/parties/$partyId'
     | '/pos/fail'
     | '/pos/success'
@@ -467,14 +511,18 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/login'
     | '/profile'
+    | '/purchases'
+    | '/sales'
     | '/settings'
     | '/test'
     | '/uts'
     | '/cashflow/$id'
     | '/inventory/$id'
+    | '/invoices/incoming'
     | '/invoices/new'
     | '/invoices/payments'
     | '/invoices/purchases'
+    | '/invoices/summary'
     | '/parties/$partyId'
     | '/pos/fail'
     | '/pos/success'
@@ -510,6 +558,8 @@ export interface RootRouteChildren {
   InvoicesRoute: typeof InvoicesRouteWithChildren
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
+  PurchasesRoute: typeof PurchasesRoute
+  SalesRoute: typeof SalesRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
@@ -547,6 +597,20 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales': {
+      id: '/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/purchases': {
+      id: '/purchases'
+      path: '/purchases'
+      fullPath: '/purchases'
+      preLoaderRoute: typeof PurchasesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -622,14 +686,14 @@ declare module '@tanstack/react-router' {
     '/suppliers/': {
       id: '/suppliers/'
       path: '/suppliers'
-      fullPath: '/suppliers/'
+      fullPath: '/suppliers'
       preLoaderRoute: typeof SuppliersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sgk/': {
       id: '/sgk/'
       path: '/sgk'
-      fullPath: '/sgk/'
+      fullPath: '/sgk'
       preLoaderRoute: typeof SgkIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -643,21 +707,21 @@ declare module '@tanstack/react-router' {
     '/reports/': {
       id: '/reports/'
       path: '/reports'
-      fullPath: '/reports/'
+      fullPath: '/reports'
       preLoaderRoute: typeof ReportsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos/': {
       id: '/pos/'
       path: '/pos'
-      fullPath: '/pos/'
+      fullPath: '/pos'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parties/': {
       id: '/parties/'
       path: '/parties'
-      fullPath: '/parties/'
+      fullPath: '/parties'
       preLoaderRoute: typeof PartiesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -773,6 +837,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartiesPartyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invoices/summary': {
+      id: '/invoices/summary'
+      path: '/summary'
+      fullPath: '/invoices/summary'
+      preLoaderRoute: typeof InvoicesSummaryRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
     '/invoices/purchases': {
       id: '/invoices/purchases'
       path: '/purchases'
@@ -792,6 +863,13 @@ declare module '@tanstack/react-router' {
       path: '/new'
       fullPath: '/invoices/new'
       preLoaderRoute: typeof InvoicesNewRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices/incoming': {
+      id: '/invoices/incoming'
+      path: '/incoming'
+      fullPath: '/invoices/incoming'
+      preLoaderRoute: typeof InvoicesIncomingRouteImport
       parentRoute: typeof InvoicesRoute
     }
     '/inventory/$id': {
@@ -840,16 +918,20 @@ const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
 )
 
 interface InvoicesRouteChildren {
+  InvoicesIncomingRoute: typeof InvoicesIncomingRoute
   InvoicesNewRoute: typeof InvoicesNewRoute
   InvoicesPaymentsRoute: typeof InvoicesPaymentsRoute
   InvoicesPurchasesRoute: typeof InvoicesPurchasesRoute
+  InvoicesSummaryRoute: typeof InvoicesSummaryRoute
   InvoicesIndexRoute: typeof InvoicesIndexRoute
 }
 
 const InvoicesRouteChildren: InvoicesRouteChildren = {
+  InvoicesIncomingRoute: InvoicesIncomingRoute,
   InvoicesNewRoute: InvoicesNewRoute,
   InvoicesPaymentsRoute: InvoicesPaymentsRoute,
   InvoicesPurchasesRoute: InvoicesPurchasesRoute,
+  InvoicesSummaryRoute: InvoicesSummaryRoute,
   InvoicesIndexRoute: InvoicesIndexRoute,
 }
 
@@ -894,6 +976,8 @@ const rootRouteChildren: RootRouteChildren = {
   InvoicesRoute: InvoicesRouteWithChildren,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
+  PurchasesRoute: PurchasesRoute,
+  SalesRoute: SalesRoute,
   SettingsRoute: SettingsRouteWithChildren,
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,

@@ -13,7 +13,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { Party } from '@/types/party';
-import { usePartyTimeline } from '@/hooks/party/usePartyTimeline';
+import { usePartyTimeline, TimelineEvent } from '@/hooks/party/usePartyTimeline';
 
 interface PartyTimelineTabProps {
   party: Party;
@@ -27,7 +27,8 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
   const { timeline: backendTimeline, loading, error, fetchTimeline } = usePartyTimeline(party.id);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const formatDate = (dateStr: string): string => {
+  const formatDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return 'Tarih belirtilmemiş';
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
@@ -39,7 +40,8 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     }
   };
 
-  const formatTime = (dateStr: string): string => {
+  const formatTime = (dateStr: string | undefined): string => {
+    if (!dateStr) return '';
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
@@ -63,6 +65,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     if (loading || !backendTimeline) return [];
     
     return (backendTimeline || []).map(event => ({
+      ...event,
       id: event.id,
       type: event.eventType as any,
       title: event.title,
@@ -135,7 +138,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await fetchTimeline();
+      await fetchTimeline(party.id);
       showSuccessToast('Timeline yenilendi');
     } catch (error) {
       showErrorToast('Timeline yenilenirken hata oluştu');
@@ -297,7 +300,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
           <CardContent className="text-center py-8">
             <div className="text-red-500">
               <p className="text-lg font-medium mb-2">Hata oluştu</p>
-              <p className="text-sm">{error}</p>
+              <p className="text-sm">{error instanceof Error ? error.message : String(error)}</p>
             </div>
           </CardContent>
         </Card>

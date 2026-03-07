@@ -18,9 +18,19 @@ This document describes API contract changes for the x-ear platform.
 ### Admin Panel Stability Fixes
 
 **Non-Breaking Changes:**
-- Fixed Orval API client generation with proper tag structure
 - Added AdminMarketplacesPage placeholder
-- Fixed @tanstack/react-router-devtools dependency
+- Added custom `require_affiliate` dependency for token validation
+
+### Affiliate Security Improvements (v2.1.0)
+
+**Breaking Changes:**
+- Affiliate authentication now uses a dedicated `require_affiliate` dependency instead of generic auth.
+- JWT tokens for affiliates now use `user.id` as `sub` (string-formatted) to match standard JWT conventions.
+- Affiliate ID in path parameters is now strictly validated against token sub ID (returns 403 on mismatch).
+
+**Non-Breaking Changes:**
+- Added copy-to-clipboard visual feedback in affiliate panel.
+- Enhanced login error UI with modern glow effects.
 
 ## Contract Change Guidelines
 

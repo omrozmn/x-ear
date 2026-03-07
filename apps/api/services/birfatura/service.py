@@ -18,9 +18,15 @@ class BirfaturaClient:
     def __init__(self, base_url: str = None, api_key: str = None, secret_key: str = None, integration_key: str = None):
         # Support a local mock mode to avoid calling the real provider during
         # development or CI. Enable by setting BIRFATURA_MOCK=1 in the env.
-        # Also enable mock automatically when FLASK_ENV != 'production' so
-        # local dev runs don't hit the external provider by accident.
-        self._use_mock = os.getenv('BIRFATURA_MOCK', '0') == '1' or os.getenv('FLASK_ENV', 'production') != 'production'
+        # When BIRFATURA_MOCK is explicitly set to '0', always use real API.
+        # Otherwise, enable mock automatically when ENVIRONMENT != 'production'.
+        mock_env = os.getenv('BIRFATURA_MOCK')
+        if mock_env == '1':
+            self._use_mock = True
+        elif mock_env == '0':
+            self._use_mock = False
+        else:
+            self._use_mock = os.getenv('ENVIRONMENT', 'production') != 'production'
         self.base_url = base_url or os.getenv('BIRFATURA_BASE_URL', 'https://uygulama.edonustur.com')
         
         self.headers = {
@@ -179,8 +185,8 @@ class BirfaturaClient:
         return self.post('/api/outEBelgeV2/GetInBoxDocumentsWithDetail', payload)
 
     def preview_document_pdf(self, payload: dict) -> dict:
-        """Get PDF preview of a document"""
-        return self.post('/api/outEBelgeV2/PreviewDocumentReturnPDF', payload)
+        """Get PDF preview of a document. Uses longer timeout as PDF rendering takes time."""
+        return self.post('/api/outEBelgeV2/PreviewDocumentReturnPDF', payload, timeout=60)
 
     def get_pdf_link_by_uuid(self, payload: dict) -> dict:
         """Get PDF download link by UUID.
@@ -190,6 +196,16 @@ class BirfaturaClient:
                 - uuids: (required) List[str]
                 - systemType: (required) "EFATURA", etc.
         """
+        if self._use_mock:
+            import gzip
+            mock_pdf = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\nMOCK PDF FOR TESTING"
+            mock_gzipped = gzip.compress(mock_pdf)
+            return {
+                'Success': True,
+                'Message': 'Mocked get_pdf_link_by_uuid',
+                'Result': {'_mock_bytes': mock_gzipped},
+                '_mock': True
+            }
         return self.post('/api/outEBelgeV2/GetPDFLinkByUUID', payload)
 
     def document_download_by_uuid(self, payload: dict) -> dict:
@@ -283,3 +299,29 @@ class BirfaturaClient:
         if reason:
             payload['reason'] = reason
         return self.post(f'/api/EFatura/Cancel/{invoice_id}', payload)
+
+    def accept_reject_inbox(self, document_uuid: str, accept: bool = True, reason: str = None) -> dict:
+        """Accept or reject an incoming (inbox) invoice via BirFatura.
+        
+        Args:
+            document_uuid: BirFatura UUID of the incoming document
+            accept: True to accept, False to reject
+            reason: Optional reason (used for rejection)
+        
+        Returns:
+            BirFatura API response dict
+        """
+        if self._use_mock:
+            action = 'accept' if accept else 'reject'
+            return {
+                'Success': True,
+                'Message': f'Mocked {action}_inbox for {document_uuid}',
+                '_mock': True
+            }
+        payload = {
+            'documentUUID': document_uuid,
+            'accept': accept,
+        }
+        if reason:
+            payload['reason'] = reason
+        return self.post('/api/outEBelgeV2/GetInBoxDocumentAcceptReject', payload)

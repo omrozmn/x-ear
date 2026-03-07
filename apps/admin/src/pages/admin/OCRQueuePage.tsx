@@ -7,8 +7,11 @@ import {
     ArrowPathIcon,
     DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
 const OCRQueuePage: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const [statusFilter, setStatusFilter] = useState<string>('');
     const { data: jobsData, isLoading, refetch } = useListOcrJobs({ status: statusFilter || undefined });
 
@@ -17,91 +20,115 @@ const OCRQueuePage: React.FC = () => {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'completed':
-                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><CheckCircleIcon className="w-4 h-4 mr-1" /> Tamamlandı</span>;
+                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><CheckCircleIcon className="w-4 h-4 mr-1" /> Tamamlandı</span>;
             case 'processing':
-                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" /> İşleniyor</span>;
+                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"><ArrowPathIcon className="w-4 h-4 mr-1 animate-spin" /> İşleniyor</span>;
             case 'failed':
-                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><XCircleIcon className="w-4 h-4 mr-1" /> Hata</span>;
+                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"><XCircleIcon className="w-4 h-4 mr-1" /> Hata</span>;
             default:
-                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"><ClockIcon className="w-4 h-4 mr-1" /> Bekliyor</span>;
+                return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"><ClockIcon className="w-4 h-4 mr-1" /> Bekliyor</span>;
         }
     };
 
+    const columns = [
+        {
+            key: 'created_at',
+            header: 'Tarih',
+            render: (job: any) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(job.created_at).toLocaleString('tr-TR')}
+                </span>
+            )
+        },
+        {
+            key: 'file_path',
+            header: 'Dosya',
+            render: (job: any) => (
+                <span className="text-sm font-medium text-gray-900 dark:text-white truncate" title={job.file_path}>
+                    {job.file_path.split('/').pop()}
+                </span>
+            )
+        },
+        {
+            key: 'document_type',
+            header: 'Tip',
+            mobileHidden: true,
+            render: (job: any) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">{job.document_type}</span>
+            )
+        },
+        {
+            key: 'patient_name',
+            header: 'Hasta',
+            mobileHidden: true,
+            render: (job: any) => (
+                <span className="text-sm text-gray-900 dark:text-white">{job.patient_name || '-'}</span>
+            )
+        },
+        {
+            key: 'status',
+            header: 'Durum',
+            render: (job: any) => getStatusBadge(job.status)
+        },
+        {
+            key: 'error_message',
+            header: 'Detay',
+            mobileHidden: true,
+            render: (job: any) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {job.error_message ? <span className="text-red-600 dark:text-red-400">{job.error_message}</span> : 'Başarılı'}
+                </span>
+            )
+        }
+    ];
+
     return (
-        <div className="p-6">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6'}>
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">OCR İşlem Kuyruğu</h1>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+                        OCR İşlem Kuyruğu
+                    </h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         SGK ve belge işleme durumlarını takip edin
                     </p>
                 </div>
                 <button
                     onClick={() => refetch()}
-                    className="p-2 text-gray-400 hover:text-gray-600"
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 touch-feedback"
                 >
                     <ArrowPathIcon className="h-5 w-5" />
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="mb-6 flex space-x-2">
-                <button onClick={() => setStatusFilter('')} className={`px-3 py-1 rounded-md text-sm ${statusFilter === '' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700'}`}>Tümü</button>
-                <button onClick={() => setStatusFilter('pending')} className={`px-3 py-1 rounded-md text-sm ${statusFilter === 'pending' ? 'bg-gray-200 text-gray-800' : 'bg-gray-100 text-gray-700'}`}>Bekleyen</button>
-                <button onClick={() => setStatusFilter('processing')} className={`px-3 py-1 rounded-md text-sm ${statusFilter === 'processing' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}`}>İşlenen</button>
-                <button onClick={() => setStatusFilter('completed')} className={`px-3 py-1 rounded-md text-sm ${statusFilter === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>Tamamlanan</button>
-                <button onClick={() => setStatusFilter('failed')} className={`px-3 py-1 rounded-md text-sm ${statusFilter === 'failed' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700'}`}>Hatalı</button>
+            <div className={`mb-6 flex ${isMobile ? 'flex-col space-y-2' : 'space-x-2'}`}>
+                <button onClick={() => setStatusFilter('')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === '' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Tümü</button>
+                <button onClick={() => setStatusFilter('pending')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'pending' ? 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-100' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Bekleyen</button>
+                <button onClick={() => setStatusFilter('processing')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'processing' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>İşlenen</button>
+                <button onClick={() => setStatusFilter('completed')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Tamamlanan</button>
+                <button onClick={() => setStatusFilter('failed')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Hatalı</button>
             </div>
 
             {/* List */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                 {isLoading ? (
                     <div className="p-6 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                        <p className="mt-2 text-sm text-gray-500">Yükleniyor...</p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Yükleniyor...</p>
                     </div>
                 ) : jobs.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500">
-                        <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+                        <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
                         <p className="mt-2">İşlem kaydı bulunamadı</p>
                     </div>
                 ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosya</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tip</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hasta</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detay</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {jobs.map((job: any) => (
-                                <tr key={job.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {new Date(job.created_at).toLocaleString('tr-TR')}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 max-w-xs truncate" title={job.file_path}>
-                                        {job.file_path.split('/').pop()}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {job.document_type}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {job.patient_name || '-'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {getStatusBadge(job.status)}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                                        {job.error_message ? <span className="text-red-600">{job.error_message}</span> : 'Başarılı'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <ResponsiveTable
+                        data={jobs}
+                        columns={columns}
+                        keyExtractor={(job: any) => job.id}
+                        emptyMessage="İşlem kaydı bulunamadı"
+                    />
                 )}
             </div>
         </div>

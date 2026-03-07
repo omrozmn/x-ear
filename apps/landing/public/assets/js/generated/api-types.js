@@ -11,7 +11,7 @@
 export type PatientGender = typeof PatientGender[keyof typeof PatientGender];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const PatientGender = {
   M: 'M',
   F: 'F',
@@ -23,7 +23,7 @@ export const PatientGender = {
 export type PatientStatus = typeof PatientStatus[keyof typeof PatientStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const PatientStatus = {
   active: 'active',
   inactive: 'inactive',
@@ -130,7 +130,7 @@ export interface Patient {
 export type AppointmentStatus = typeof AppointmentStatus[keyof typeof AppointmentStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const AppointmentStatus = {
   scheduled: 'scheduled',
   confirmed: 'confirmed',
@@ -178,7 +178,7 @@ export interface Appointment {
 export type DeviceEar = typeof DeviceEar[keyof typeof DeviceEar];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const DeviceEar = {
   left: 'left',
   right: 'right',
@@ -191,7 +191,7 @@ export const DeviceEar = {
 export type DeviceStatus = typeof DeviceStatus[keyof typeof DeviceStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const DeviceStatus = {
   available: 'available',
   assigned: 'assigned',
@@ -270,7 +270,7 @@ export interface Device {
 export type SaleStatus = typeof SaleStatus[keyof typeof SaleStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const SaleStatus = {
   pending: 'pending',
   completed: 'completed',
@@ -312,7 +312,7 @@ export interface Sale {
 export type InventoryItemDirection = typeof InventoryItemDirection[keyof typeof InventoryItemDirection];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const InventoryItemDirection = {
   left: 'left',
   right: 'right',
@@ -325,7 +325,7 @@ export const InventoryItemDirection = {
 export type InventoryItemEar = typeof InventoryItemEar[keyof typeof InventoryItemEar];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const InventoryItemEar = {
   left: 'left',
   right: 'right',
@@ -385,7 +385,7 @@ export interface InventoryItem {
 export type SupplierStatus = typeof SupplierStatus[keyof typeof SupplierStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const SupplierStatus = {
   active: 'active',
   inactive: 'inactive',
@@ -418,7 +418,7 @@ export interface Supplier {
 export type CampaignStatus = typeof CampaignStatus[keyof typeof CampaignStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const CampaignStatus = {
   draft: 'draft',
   active: 'active',
@@ -453,7 +453,7 @@ export interface Campaign {
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const NotificationType = {
   info: 'info',
   warning: 'warning',
@@ -521,7 +521,7 @@ export interface PaginationInfo {
 export type PaymentRecordStatus = typeof PaymentRecordStatus[keyof typeof PaymentRecordStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const PaymentRecordStatus = {
   pending: 'pending',
   completed: 'completed',
@@ -535,7 +535,7 @@ export const PaymentRecordStatus = {
 export type PaymentRecordEar = typeof PaymentRecordEar[keyof typeof PaymentRecordEar];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const PaymentRecordEar = {
   left: 'left',
   right: 'right',
@@ -825,7 +825,7 @@ branch_id?: string;
 export type AppointmentsGetAppointmentsStatus = typeof AppointmentsGetAppointmentsStatus[keyof typeof AppointmentsGetAppointmentsStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const AppointmentsGetAppointmentsStatus = {
   scheduled: 'scheduled',
   completed: 'completed',
@@ -915,7 +915,7 @@ status?: DevicesGetDevicesStatus;
 export type DevicesGetDevicesStatus = typeof DevicesGetDevicesStatus[keyof typeof DevicesGetDevicesStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const DevicesGetDevicesStatus = {
   available: 'available',
   assigned: 'assigned',
@@ -962,7 +962,7 @@ status?: InventoryGetInventoryItemsStatus;
 export type InventoryGetInventoryItemsStatus = typeof InventoryGetInventoryItemsStatus[keyof typeof InventoryGetInventoryItemsStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const InventoryGetInventoryItemsStatus = {
   available: 'available',
   assigned: 'assigned',
@@ -1007,7 +1007,7 @@ status?: PatientsGetPatientsStatus;
 export type PatientsGetPatientsStatus = typeof PatientsGetPatientsStatus[keyof typeof PatientsGetPatientsStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const PatientsGetPatientsStatus = {
   active: 'active',
   inactive: 'inactive',
@@ -1155,7 +1155,7 @@ category?: string;
 export type SuppliersGetSuppliersStatus = typeof SuppliersGetSuppliersStatus[keyof typeof SuppliersGetSuppliersStatus];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
+ 
 export const SuppliersGetSuppliersStatus = {
   active: 'active',
   inactive: 'inactive',

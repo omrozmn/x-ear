@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from core.dependencies import get_current_admin_user
 from database import get_db
+from core.database import unbound_session
 from schemas.base import ResponseEnvelope
 from schemas.roles import RoleCreate, RoleUpdate, RolePermissionsUpdate, RoleRead, RoleListResponse, RoleResponse, PermissionRead, PermissionGroup, PermissionListResponse
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -48,9 +49,10 @@ def get_admin_roles(
 ):
     """Get all admin roles"""
     try:
-        from models.admin_permission import AdminRoleModel
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminRoleModel
         
-        roles = db.query(AdminRoleModel).order_by(AdminRoleModel.name).all()
+            roles = db.query(AdminRoleModel).order_by(AdminRoleModel.name).all()
         
         roles_data = []
         for r in roles:
@@ -84,9 +86,10 @@ def get_admin_role(
 ):
     """Get single role detail"""
     try:
-        from models.admin_permission import AdminRoleModel
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminRoleModel
         
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -117,15 +120,16 @@ def create_admin_role(
 ):
     """Create new role"""
     try:
-        # Admin user check is already done by get_current_admin_user dependency
-        from models.admin_permission import AdminRoleModel, AdminPermissionModel
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel, AdminPermissionModel
         
-        name = request_data.name.strip()
-        if not name:
-            raise HTTPException(status_code=400, detail="Rol adı zorunludur")
+            name = request_data.name.strip()
+            if not name:
+                raise HTTPException(status_code=400, detail="Rol adı zorunludur")
         
-        # Check if exists
-        existing = db.query(AdminRoleModel).filter_by(name=name).first()
+            # Check if exists
+            existing = db.query(AdminRoleModel).filter_by(name=name).first()
         if existing:
             raise HTTPException(status_code=400, detail="Bu isimde bir rol zaten var")
         
@@ -176,10 +180,11 @@ def update_admin_role(
 ):
     """Update role"""
     try:
-        # Admin user check is already done by get_current_admin_user dependency
-        from models.admin_permission import AdminRoleModel
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel
         
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -229,10 +234,11 @@ def delete_admin_role(
 ):
     """Delete role"""
     try:
-        # Admin user check is already done by get_current_admin_user dependency
-        from models.admin_permission import AdminRoleModel
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel
         
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -270,9 +276,10 @@ def get_admin_role_permissions(
 ):
     """Get role permissions"""
     try:
-        from models.admin_permission import AdminRoleModel
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminRoleModel
         
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -304,10 +311,11 @@ def update_admin_role_permissions(
 ):
     """Update role permissions"""
     try:
-        # Admin user check is already done by get_current_admin_user dependency
-        from models.admin_permission import AdminRoleModel, AdminPermissionModel
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_permission import AdminRoleModel, AdminPermissionModel
         
-        role = db.get(AdminRoleModel, role_id)
+            role = db.get(AdminRoleModel, role_id)
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
@@ -357,9 +365,10 @@ def get_admin_permissions(
 ):
     """Get all permissions"""
     try:
-        from models.admin_permission import AdminPermissionModel
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_permission import AdminPermissionModel
         
-        query = db.query(AdminPermissionModel)
+            query = db.query(AdminPermissionModel)
         if category:
             query = query.filter_by(category=category)
         
@@ -420,9 +429,10 @@ def get_admin_users_with_roles(
 ):
     """Get admin users with roles"""
     try:
-        from models.admin_user import AdminUser
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_user import AdminUser
         
-        users = db.query(AdminUser).filter_by(is_active=True).order_by(AdminUser.email).all()
+            users = db.query(AdminUser).filter_by(is_active=True).order_by(AdminUser.email).all()
         
         return ResponseEnvelope(data={
             'users': [
@@ -446,9 +456,10 @@ def get_admin_user_detail(
 ):
     """Get admin user detail"""
     try:
-        from models.admin_user import AdminUser
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_user import AdminUser
         
-        user = db.get(AdminUser, user_id)
+            user = db.get(AdminUser, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
         
@@ -471,11 +482,12 @@ def update_admin_user_roles(
 ):
     """Update user roles"""
     try:
-        # Admin user check is already done by get_current_admin_user dependency
-        from models.admin_user import AdminUser
-        from models.admin_permission import AdminRoleModel
+        with unbound_session(reason="admin-cross-tenant"):
+            # Admin user check is already done by get_current_admin_user dependency
+            from models.admin_user import AdminUser
+            from models.admin_permission import AdminRoleModel
         
-        user = db.get(AdminUser, user_id)
+            user = db.get(AdminUser, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
         
@@ -521,15 +533,16 @@ def get_my_admin_permissions(
 ):
     """Get current admin user's permissions"""
     try:
-        from models.admin_user import AdminUser
-        from models.admin_permission import AdminPermissionModel
-        from models.user import User
+        with unbound_session(reason="admin-cross-tenant"):
+            from models.admin_user import AdminUser
+            from models.admin_permission import AdminPermissionModel
+            from models.user import User
         
-        user_id = admin_user.id if admin_user else None
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Unauthorized")
+            user_id = admin_user.id if admin_user else None
+            if not user_id:
+                raise HTTPException(status_code=401, detail="Unauthorized")
         
-        user = db.get(AdminUser, user_id)
+            user = db.get(AdminUser, user_id)
         
         # If not found in AdminUser, check standard User table
         if not user:

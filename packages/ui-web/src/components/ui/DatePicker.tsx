@@ -61,11 +61,23 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const [currentMonth, setCurrentMonth] = useState(value || new Date());
   const [availableYears, setAvailableYears] = useState<number[]>(() => {
     const cur = new Date().getFullYear();
+    const minY = minDate ? minDate.getFullYear() : cur - 200;
+    const maxY = maxDate ? maxDate.getFullYear() : cur + 10;
     const yearsArr: number[] = [];
-    // Show 200 years back from current year
-    for (let y = cur; y >= cur - 200; y--) yearsArr.push(y);
+    for (let y = maxY; y >= minY; y--) yearsArr.push(y);
     return yearsArr;
   });
+
+  // Rebuild year list when minDate/maxDate props change
+  useEffect(() => {
+    const cur = new Date().getFullYear();
+    const minY = minDate ? minDate.getFullYear() : cur - 200;
+    const maxY = maxDate ? maxDate.getFullYear() : cur + 10;
+    const yearsArr: number[] = [];
+    for (let y = maxY; y >= minY; y--) yearsArr.push(y);
+    setAvailableYears(yearsArr);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minDate?.getFullYear(), maxDate?.getFullYear()]);
   const [timeValue, setTimeValue] = useState(
     value ? `${value.getHours().toString().padStart(2, '0')}:${value.getMinutes().toString().padStart(2, '0')}` : '00:00'
   );
@@ -226,7 +238,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             }
           }}
           className={cn(
-            'w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer',
+            'w-full pl-3 pr-10 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer',
             error ? 'border-red-300' : 'border-gray-300',
             disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white',
             fullWidth ? 'w-full' : ''

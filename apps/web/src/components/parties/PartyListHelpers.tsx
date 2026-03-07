@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { Badge } from '@x-ear/ui-web';
+import { getSegmentLabel, getAcquisitionLabel } from '../../utils/party-segments';
 
 // Component wrapper for Status Badge
 export const StatusBadge = ({ status }: { status?: string }) => {
@@ -49,36 +50,24 @@ export const StatusBadge = ({ status }: { status?: string }) => {
 export const SegmentBadge = ({ segment }: { segment?: string }) => {
   if (!segment) return <Badge variant="secondary" size="sm">-</Badge>;
 
-  // Turkish label mapping
-  const segmentLabels: Record<string, string> = {
-    'lead': 'Potansiyel Müşteri',
-    'trial': 'Deneme Aşamasında',
-    'control': 'Kontrol Hastası',
-    'purchased': 'Mevcut Hasta',
-    'vip': 'VIP',
-    'premium': 'Premium',
-    'standard': 'Standart',
-    'new': 'Yeni',
-    'churned': 'Kayıp'
-  };
+  // Use dynamic label from settings
+  const label = getSegmentLabel(segment);
 
-  const normalizedSegment = segment.toLowerCase();
-  const label = segmentLabels[normalizedSegment] || segment;
-
-  switch (segment.toUpperCase()) {
-    case 'VIP':
-    case 'PREMIUM':
+  switch (segment.toLowerCase()) {
+    case 'vip':
+    case 'premium':
       return <Badge variant="success" size="sm">{label}</Badge>;
-    case 'PURCHASED':
-    case 'STANDARD':
+    case 'customer':
+    case 'existing':
+    case 'purchased':
       return <Badge variant="default" size="sm">{label}</Badge>;
-    case 'NEW':
-    case 'LEAD':
-    case 'TRIAL':
+    case 'new':
+    case 'lead':
+    case 'trial':
       return <Badge variant="primary" size="sm">{label}</Badge>;
-    case 'CHURNED':
+    case 'churned':
       return <Badge variant="danger" size="sm">{label}</Badge>;
-    case 'CONTROL':
+    case 'control':
       return <Badge variant="warning" size="sm">{label}</Badge>;
     default:
       return <Badge variant="secondary" size="sm">{label}</Badge>;
@@ -88,32 +77,19 @@ export const SegmentBadge = ({ segment }: { segment?: string }) => {
 export const AcquisitionStatusBadge = ({ acquisitionType }: { acquisitionType?: string }) => {
   if (!acquisitionType) return <Badge variant="secondary" size="sm">-</Badge>;
 
-  // Turkish label mapping
-  const acquisitionLabels: Record<string, string> = {
-    'referral': 'Referans',
-    'online': 'Online',
-    'walk-in': 'Ziyaret',
-    'walk_in': 'Ziyaret',
-    'social-media': 'Sosyal Medya',
-    'social_media': 'Sosyal Medya',
-    'advertisement': 'Reklam',
-    'tabela': 'Tabela'
-  };
+  // Use dynamic label from settings
+  const label = getAcquisitionLabel(acquisitionType);
 
-  const normalizedType = acquisitionType.toLowerCase().replace('_', '-');
-  const label = acquisitionLabels[normalizedType] || acquisitionType;
-  const upperType = acquisitionType.toUpperCase().replace('-', '_');
-
-  switch (upperType) {
-    case 'REFERRAL':
+  switch (acquisitionType.toLowerCase().replace('_', '-')) {
+    case 'referral':
       return <Badge variant="primary" size="sm">{label}</Badge>;
-    case 'ONLINE':
+    case 'online':
       return <Badge variant="success" size="sm">{label}</Badge>;
-    case 'SOCIAL_MEDIA':
-    case 'ADVERTISEMENT':
+    case 'social-media':
+    case 'advertisement':
       return <Badge variant="default" size="sm">{label}</Badge>;
-    case 'WALK_IN':
-    case 'TABELA':
+    case 'walk-in':
+    case 'tabela':
       return <Badge variant="secondary" size="sm">{label}</Badge>;
     default:
       return <Badge variant="secondary" size="sm">{label}</Badge>;

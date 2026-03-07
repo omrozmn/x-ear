@@ -10,6 +10,7 @@ import {
 import toast from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
 import { useListAdminSettings, useUpdateAdminSettings } from '@/lib/api-client';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 
 // Define SystemSettings type locally - flexible for form usage
 type SystemSettings = Record<string, unknown>;
@@ -17,6 +18,7 @@ type SystemSettings = Record<string, unknown>;
 type SettingsTab = 'general' | 'email' | 'security' | 'backup' | 'integrations';
 
 const Settings: React.FC = () => {
+  const { isMobile } = useAdminResponsive();
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   // Fetch settings
@@ -104,7 +106,7 @@ const Settings: React.FC = () => {
   ];
 
   if (isLoadingSettings) {
-    return <div className="p-6 text-center">Ayarlar yükleniyor...</div>;
+    return <div className={`text-center text-gray-500 dark:text-gray-400 ${isMobile ? 'p-4' : 'p-6'}`}>Ayarlar yükleniyor...</div>;
   }
 
   return (
@@ -113,50 +115,50 @@ const Settings: React.FC = () => {
         <title>Ayarlar - Admin Paneli</title>
       </Helmet>
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className={`max-w-7xl mx-auto ${isMobile ? 'p-4 pb-safe' : 'p-6'}`}>
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Sistem Ayarları</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Sistem Ayarları</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Sistem genelindeki ayarları ve tercihleri yapılandırın
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className={`flex gap-6 ${isMobile ? 'flex-col' : 'flex-col lg:flex-row'}`}>
           {/* Sidebar Navigation */}
-          <div className="w-full lg:w-64 flex-shrink-0">
-            <nav className="space-y-1">
+          <div className={`flex-shrink-0 ${isMobile ? 'w-full' : 'w-full lg:w-64'}`}>
+            <nav className={isMobile ? 'flex overflow-x-auto space-x-2 pb-2' : 'space-y-1'}>
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeTab === tab.id
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-900 hover:bg-gray-50'
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === tab.id
+                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                    : 'text-gray-900 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                 >
                   <tab.icon
-                    className={`flex-shrink-0 -ml-1 mr-3 h-5 w-5 ${activeTab === tab.id ? 'text-primary-700' : 'text-gray-400'
+                    className={`flex-shrink-0 h-5 w-5 ${isMobile ? '' : '-ml-1 mr-3'} ${activeTab === tab.id ? 'text-primary-700 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'
                       }`}
                   />
-                  <span className="truncate">{tab.label}</span>
+                  {!isMobile && <span className="truncate">{tab.label}</span>}
                 </button>
               ))}
             </nav>
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 bg-white shadow rounded-lg p-6">
+          <div className={`flex-1 bg-white dark:bg-gray-800 shadow rounded-lg ${isMobile ? 'p-4' : 'p-6'}`}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* ... existing tabs ... */}
               {activeTab === 'general' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                    <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Site Adı</label>
+                  <div className={`grid grid-cols-1 gap-y-6 gap-x-4 ${isMobile ? '' : 'sm:grid-cols-6'}`}>
+                    <div className={isMobile ? '' : 'sm:col-span-3'}>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Site Adı</label>
                       <input
                         type="text"
                         {...register('siteName', { required: true })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -164,7 +166,7 @@ const Settings: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700">Varsayılan Saat Dilimi</label>
                       <select
                         {...register('timezone')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="UTC">UTC</option>
                         <option value="Europe/Istanbul">İstanbul</option>
@@ -176,10 +178,10 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Varsayılan Dil</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Varsayılan Dil</label>
                       <select
                         {...register('language')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="tr">Türkçe</option>
                         <option value="en">İngilizce</option>
@@ -190,10 +192,10 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Para Birimi</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Para Birimi</label>
                       <select
                         {...register('currency')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="TRY">TRY - Türk Lirası</option>
                         <option value="USD">USD - Amerikan Doları</option>
@@ -203,11 +205,11 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-6">
-                      <label className="block text-sm font-medium text-gray-700">Site Açıklaması</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Site Açıklaması</label>
                       <textarea
                         {...register('siteDescription')}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -223,8 +225,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">Bakım Modu</label>
-                          <p className="text-gray-500">Siteyi bakım moduna alır. Sadece yöneticiler erişebilir.</p>
+                          <label className="font-medium text-gray-700 dark:text-gray-300">Bakım Modu</label>
+                          <p className="text-gray-500 dark:text-gray-400">Siteyi bakım moduna alır. Sadece yöneticiler erişebilir.</p>
                         </div>
                       </div>
 
@@ -237,8 +239,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">Kullanıcı Kaydı</label>
-                          <p className="text-gray-500">Yeni kullanıcıların kayıt olmasına izin ver.</p>
+                          <label className="font-medium text-gray-700 dark:text-gray-300">Kullanıcı Kaydı</label>
+                          <p className="text-gray-500 dark:text-gray-400">Yeni kullanıcıların kayıt olmasına izin ver.</p>
                         </div>
                       </div>
                     </div>
@@ -250,58 +252,58 @@ const Settings: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-4">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Sunucusu</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SMTP Sunucusu</label>
                       <input
                         type="text"
                         {...register('smtpHost')}
                         placeholder="smtp.gmail.com"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Portu</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SMTP Portu</label>
                       <input
                         type="text"
                         {...register('smtpPort')}
                         placeholder="587"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Kullanıcı Adı</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SMTP Kullanıcı Adı</label>
                       <input
                         type="text"
                         {...register('smtpUsername')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Şifresi</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SMTP Şifresi</label>
                       <input
                         type="password"
                         {...register('smtpPassword')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Gönderen E-posta</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gönderen E-posta</label>
                       <input
                         type="email"
                         {...register('fromEmail')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Gönderen Adı</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gönderen Adı</label>
                       <input
                         type="text"
                         {...register('fromName')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -315,7 +317,7 @@ const Settings: React.FC = () => {
                       />
                     </div>
                     <div className="ml-3 text-sm">
-                      <label className="font-medium text-gray-700">SSL/TLS Kullan</label>
+                      <label className="font-medium text-gray-700 dark:text-gray-300">SSL/TLS Kullan</label>
                     </div>
                   </div>
                 </div>
@@ -325,38 +327,38 @@ const Settings: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Oturum Zaman Aşımı (dakika)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Oturum Zaman Aşımı (dakika)</label>
                       <input
                         type="number"
                         {...register('sessionTimeout')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Maksimum Giriş Denemesi</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Maksimum Giriş Denemesi</label>
                       <input
                         type="number"
                         {...register('maxLoginAttempts')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Minimum Şifre Uzunluğu</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Minimum Şifre Uzunluğu</label>
                       <input
                         type="number"
                         {...register('passwordMinLength')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">JWT Süresi (saat)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">JWT Süresi (saat)</label>
                       <input
                         type="number"
                         {...register('jwtExpiry')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -372,8 +374,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">İki Faktörlü Kimlik Doğrulama (2FA)</label>
-                          <p className="text-gray-500">Tüm yönetici kullanıcıları için 2FA zorunlu kıl.</p>
+                          <label className="font-medium text-gray-700 dark:text-gray-300">İki Faktörlü Kimlik Doğrulama (2FA)</label>
+                          <p className="text-gray-500 dark:text-gray-400">Tüm yönetici kullanıcıları için 2FA zorunlu kıl.</p>
                         </div>
                       </div>
 
@@ -386,8 +388,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">IP Beyaz Listesi</label>
-                          <p className="text-gray-500">Yönetici erişimini beyaz listedeki IP'lerle sınırla.</p>
+                          <label className="font-medium text-gray-700 dark:text-gray-300">IP Beyaz Listesi</label>
+                          <p className="text-gray-500 dark:text-gray-400">Yönetici erişimini beyaz listedeki IP'lerle sınırla.</p>
                         </div>
                       </div>
                     </div>
@@ -399,10 +401,10 @@ const Settings: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Yedekleme Zamanlaması</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Yedekleme Zamanlaması</label>
                       <select
                         {...register('backupSchedule')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="daily">Günlük</option>
                         <option value="weekly">Haftalık</option>
@@ -411,19 +413,19 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Yedek Saklama Süresi (gün)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Yedek Saklama Süresi (gün)</label>
                       <input
                         type="number"
                         {...register('backupRetention')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Yedekleme Konumu</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Yedekleme Konumu</label>
                       <select
                         {...register('backupLocation')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="local">Yerel Depolama</option>
                         <option value="s3">Amazon S3</option>
@@ -432,11 +434,11 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Şifreleme Anahtarı</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Şifreleme Anahtarı</label>
                       <input
                         type="password"
                         {...register('backupEncryptionKey')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -447,22 +449,22 @@ const Settings: React.FC = () => {
                 <div className="space-y-8">
                   {/* BirFatura Integration */}
                   <div className="border-b border-gray-200 pb-6">
-                    <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">BirFatura Entegrasyonu</h3>
-                    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">API Anahtarı (API Key)</label>
+                    <h3 className={`leading-6 text-gray-900 dark:text-white mb-4 ${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>BirFatura Entegrasyonu</h3>
+                    <div className={`grid grid-cols-1 gap-y-6 gap-x-4 ${isMobile ? '' : 'sm:grid-cols-6'}`}>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">API Anahtarı (API Key)</label>
                         <input
                           type="text"
                           {...register('birFaturaApiKey')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">API Gizli Anahtarı (Secret)</label>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">API Gizli Anahtarı (Secret)</label>
                         <input
                           type="password"
                           {...register('birFaturaApiSecret')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                     </div>
@@ -470,41 +472,41 @@ const Settings: React.FC = () => {
 
                   {/* SMS Integration */}
                   <div className="border-b border-gray-200 pb-6">
-                    <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">SMS Entegrasyonu</h3>
-                    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">SMS Sağlayıcı</label>
+                    <h3 className={`leading-6 text-gray-900 dark:text-white mb-4 ${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>SMS Entegrasyonu</h3>
+                    <div className={`grid grid-cols-1 gap-y-6 gap-x-4 ${isMobile ? '' : 'sm:grid-cols-6'}`}>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SMS Sağlayıcı</label>
                         <select
                           {...register('smsProvider')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         >
                           <option value="vatansms">VatanSMS</option>
                           <option value="netgsm">NetGSM</option>
                           <option value="iletimerkezi">İleti Merkezi</option>
                         </select>
                       </div>
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">SMS Başlığı (Header)</label>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SMS Başlığı (Header)</label>
                         <input
                           type="text"
                           {...register('smsHeader')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kullanıcı Adı</label>
                         <input
                           type="text"
                           {...register('smsUsername')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">Şifre</label>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Şifre</label>
                         <input
                           type="password"
                           {...register('smsPassword')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                     </div>
@@ -512,35 +514,35 @@ const Settings: React.FC = () => {
 
                   {/* Payment Infrastructure */}
                   <div>
-                    <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Ödeme Altyapısı</h3>
-                    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">Ödeme Sağlayıcı</label>
+                    <h3 className={`leading-6 text-gray-900 dark:text-white mb-4 ${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>Ödeme Altyapısı</h3>
+                    <div className={`grid grid-cols-1 gap-y-6 gap-x-4 ${isMobile ? '' : 'sm:grid-cols-6'}`}>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ödeme Sağlayıcı</label>
                         <select
                           {...register('paymentProvider')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         >
                           <option value="stripe">Stripe</option>
                           <option value="iyzico">Iyzico</option>
                           <option value="paytr">PayTR</option>
                         </select>
                       </div>
-                      <div className="sm:col-span-3"></div> {/* Spacer */}
+                      <div className={isMobile ? '' : 'sm:col-span-3'}></div> {/* Spacer */}
 
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">API Anahtarı (Public Key)</label>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">API Anahtarı (Public Key)</label>
                         <input
                           type="text"
                           {...register('paymentApiKey')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
-                      <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700">Gizli Anahtar (Secret Key)</label>
+                      <div className={isMobile ? '' : 'sm:col-span-3'}>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gizli Anahtar (Secret Key)</label>
                         <input
                           type="password"
                           {...register('paymentSecretKey')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                     </div>
@@ -548,19 +550,19 @@ const Settings: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-5 border-t border-gray-200">
-                <div className="flex justify-end">
+              <div className={`pt-5 border-t border-gray-200 dark:border-gray-700 ${isMobile ? '' : ''}`}>
+                <div className={`flex ${isMobile ? 'flex-col gap-3' : 'justify-end'}`}>
                   <button
                     type="button"
                     onClick={() => reset()}
-                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className={`bg-white dark:bg-gray-800 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
                   >
                     İptal
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                    className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 touch-feedback ${isMobile ? 'w-full' : 'ml-3'}`}
                   >
                     {isUpdating ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
                   </button>

@@ -18,10 +18,14 @@ import toast from 'react-hot-toast';
 import {
   useCreateAdminUser,
   useListAdminUsers,
+  useListAdminUserAll,
+  useUpdateAdminUserAll,
 } from '@/lib/api-client';
 import Pagination from '@/components/ui/Pagination';
 import { TenantAutocomplete } from '@/components/ui/TenantAutocomplete';
 import { UserRead } from '@/api/generated/schemas';
+import { useAdminResponsive } from '@/hooks';
+import { ResponsiveTable } from '@/components/responsive';
 
 // Local type definitions to handle the mix of generated types and manual needs
 type AdminUserRole = 'super_admin' | 'admin' | 'support' | 'tenant_admin' | 'user' | 'doctor' | 'secretary';
@@ -39,6 +43,7 @@ interface ExtendedUser extends UserRead {
 }
 
 export const Users: React.FC = () => {
+  const { isMobile } = useAdminResponsive();
   const queryClient = useQueryClient();
 
   // State
@@ -82,18 +87,18 @@ export const Users: React.FC = () => {
   // 1. Fetch System Admins (Paginated on Backend)
   const { data: adminUsersData, isLoading: loadingAdmins, error: adminError } = useListAdminUsers({
     page: adminPage,
-    limit: adminLimit,
+    per_page: adminLimit,
     search: searchTerm || undefined
-  }, { query: { enabled: activeTab === 'admin' } });
+  }, { query: { queryKey: ['admin-users', adminPage, adminLimit, searchTerm], enabled: activeTab === 'admin' } });
 
-  // 2. Fetch All Tenant Users (Not Paginated on Backend, Client-side pagination needed)
-  // TODO: Backend endpoint missing - useListAdminUserAll
-  const tenantUsersData = { data: { users: [] } };
-  const loadingTenants = false;
-  const tenantError = null;
-  // const { data: tenantUsersData, isLoading: loadingTenants, error: tenantError } = useListAdminUserAll({
-  //   search: searchTerm || undefined
-  // }, { query: { enabled: activeTab === 'tenant' } });
+  // 2. Fetch All Tenant Users (Paginated on Backend)
+  const { data: tenantUsersData, isLoading: loadingTenants, error: tenantError } = useListAdminUserAll({
+    page: tenantPage,
+    per_page: tenantLimit,
+    search: searchTerm || undefined,
+    role: roleFilter !== 'all' ? roleFilter : undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined
+  }, { query: { queryKey: ['tenant-users', tenantPage, tenantLimit, searchTerm, roleFilter, statusFilter], enabled: activeTab === 'tenant' } });
 
   // --- Derived Data ---
 
@@ -101,27 +106,9 @@ export const Users: React.FC = () => {
   const adminUsersList = ((adminUsersData as any)?.users || (adminUsersData as any)?.data?.users || []) as ExtendedUser[];
   const adminPagination = (adminUsersData as any)?.pagination || (adminUsersData as any)?.data?.pagination;
 
-  // Tenant Users List (Client-side filtering & pagination)
+  // Tenant Users List (Backend-paginated)
   const rawTenantUsers = ((tenantUsersData as any)?.users || (tenantUsersData as any)?.data?.users || []) as ExtendedUser[];
-
-  // Filter Tenant Users (Role/Status)
-  const filteredTenantUsers = rawTenantUsers.filter(user => {
-    if (roleFilter !== 'all' && user.role !== roleFilter) return false;
-    if (statusFilter !== 'all') {
-      const isActive = user.isActive ?? (user as any).is_active;
-      if (statusFilter === 'active' && !isActive) return false;
-      if (statusFilter === 'inactive' && isActive) return false;
-    }
-    return true;
-  });
-
-  // Client-Side Pagination for Tenant Users
-  const tenantTotalItems = filteredTenantUsers.length;
-  const tenantTotalPages = Math.ceil(tenantTotalItems / tenantLimit);
-  const paginatedTenantUsers = filteredTenantUsers.slice(
-    (tenantPage - 1) * tenantLimit,
-    tenantPage * tenantLimit
-  );
+  const tenantPagination = (tenantUsersData as any)?.pagination || (tenantUsersData as any)?.data?.pagination;
 
   // --- Handlers ---
 
@@ -175,8 +162,7 @@ export const Users: React.FC = () => {
   };
 
   const { mutateAsync: createAdminUser } = useCreateAdminUser();
-  // TODO: Backend endpoint missing - useUpdateAdminUserAll
-  const updateAnyTenantUser = async () => { throw new Error('Not implemented'); };
+  const { mutateAsync: updateAnyTenantUser } = useUpdateAdminUserAll();
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,7 +226,7 @@ export const Users: React.FC = () => {
       }
 
       await updateAnyTenantUser({
-        userId: selectedUser.id,
+        userId: selectedUser.id!,
         data: payload
       });
 
@@ -304,78 +290,143 @@ export const Users: React.FC = () => {
     );
   };
 
-  const renderTable = (users: ExtendedUser[], isTenantTab: boolean) => (
-    <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-gray-50">
-        <tr>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-          {isTenantTab && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tenant</th>}
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Son Giriş</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oluşturulma</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-        </tr>
-      </thead>
-      <tbody className="bg-white divide-y divide-gray-200">
-        {users.length === 0 ? (
-          <tr><td colSpan={7} className="px-6 py-4 text-center text-gray-500">Kayıt bulunamadı</td></tr>
-        ) : users.map(user => {
-          const firstName = user.firstName || user.first_name || '';
-          const lastName = user.lastName || user.last_name || '';
-          const fullName = `${firstName} ${lastName}`.trim() || user.email;
-          const isActive = user.isActive ?? (user as any).is_active;
-          const lastLogin = user.lastLogin || (user as any).last_login;
-          const createdAt = user.createdAt || (user as any).created_at;
+  const getColumns = (isTenantTab: boolean) => [
+    {
+      key: 'user',
+      header: 'Kullanıcı',
+      sortable: true,
+      sortKey: 'firstName',
+      render: (user: ExtendedUser) => {
+        const firstName = user.firstName || user.first_name || '';
+        const lastName = user.lastName || user.last_name || '';
+        const fullName = `${firstName} ${lastName}`.trim() || user.email;
+        return (
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+              {fullName.charAt(0).toUpperCase()}
+            </div>
+            <div className="ml-4">
+              <div className="text-sm font-medium text-gray-900 dark:text-white">{fullName}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500">{(user as any).username}</div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'role',
+      header: 'Rol',
+      sortable: true,
+      render: (user: ExtendedUser) => <RoleBadge role={user.role as string} />
+    },
+    ...(isTenantTab ? [{
+      key: 'tenant',
+      header: 'Tenant',
+      mobileHidden: true,
+      sortable: true,
+      sortKey: 'tenantName',
+      render: (user: ExtendedUser) => (
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {user.tenantName || (user as any).tenant_name || '-'}
+        </span>
+      )
+    }] : []),
+    {
+      key: 'status',
+      header: 'Durum',
+      sortable: true,
+      sortKey: 'isActive',
+      render: (user: ExtendedUser) => {
+        const isActive = user.isActive ?? (user as any).is_active;
+        return <StatusBadge active={isActive} />;
+      }
+    },
+    {
+      key: 'lastLogin',
+      header: 'Son Giriş',
+      mobileHidden: true,
+      sortable: true,
+      render: (user: ExtendedUser) => {
+        const lastLogin = user.lastLogin || (user as any).last_login;
+        return (
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {lastLogin ? new Date(lastLogin).toLocaleDateString('tr-TR') : '-'}
+          </span>
+        );
+      }
+    },
+    {
+      key: 'created',
+      header: 'Oluşturulma',
+      mobileHidden: true,
+      sortable: true,
+      sortKey: 'createdAt',
+      render: (user: ExtendedUser) => {
+        const createdAt = user.createdAt || (user as any).created_at;
+        return (
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {createdAt ? new Date(createdAt).toLocaleDateString('tr-TR') : '-'}
+          </span>
+        );
+      }
+    },
+    {
+      key: 'actions',
+      header: 'İşlemler',
+      render: (user: ExtendedUser) => {
+        const isActive = user.isActive ?? (user as any).is_active;
+        return (
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleViewClick(user); }}
+              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 touch-feedback"
+              title="Görüntüle"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleEditClick(user); }}
+              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 touch-feedback"
+              title="Düzenle"
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleStatusToggleClick(user); }}
+              className={`${isActive ? 'text-red-600 hover:text-red-900 dark:text-red-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'} p-1 touch-feedback`}
+              title={isActive ? 'Pasife Al' : 'Aktifleştir'}
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      }
+    }
+  ];
 
-          return (
-            <tr key={user.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold">
-                    {fullName.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">{fullName}</div>
-                    <div className="text-sm text-gray-500">{user.email}</div>
-                    <div className="text-xs text-gray-400">{(user as any).username}</div>
-                  </div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap"><RoleBadge role={user.role as string} /></td>
-              {isTenantTab && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.tenantName || (user as any).tenant_name || '-'}</td>}
-              <td className="px-6 py-4 whitespace-nowrap"><StatusBadge active={isActive} /></td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{lastLogin ? new Date(lastLogin).toLocaleDateString('tr-TR') : '-'}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{createdAt ? new Date(createdAt).toLocaleDateString('tr-TR') : '-'}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div className="flex justify-end space-x-2">
-                  <button onClick={() => handleViewClick(user)} className="text-blue-600 hover:text-blue-900 p-1" title="Görüntüle"><Eye className="h-4 w-4" /></button>
-                  <button onClick={() => handleEditClick(user)} className="text-indigo-600 hover:text-indigo-900 p-1" title="Düzenle"><Edit className="h-4 w-4" /></button>
-                  <button onClick={() => handleStatusToggleClick(user)} className={`${isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'} p-1`} title={isActive ? 'Pasife Al' : 'Aktifleştir'}>
-                    <RefreshCw className="h-4 w-4" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+  const renderTable = (users: ExtendedUser[], isTenantTab: boolean) => (
+    <ResponsiveTable
+      data={users}
+      columns={getColumns(isTenantTab)}
+      keyExtractor={(user) => user.id!}
+      onRowClick={(user) => handleViewClick(user)}
+      emptyMessage="Kayıt bulunamadı"
+    />
   );
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex justify-between items-center">
+    <div className={isMobile ? 'p-4 pb-safe space-y-4' : 'space-y-6'}>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Kullanıcı Yönetimi</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Kullanıcı Yönetimi</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Sistem yöneticilerini ve abone kullanıcılarını buradan yönetebilirsiniz.
           </p>
         </div>
         <button
           onClick={handleAddClick}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
         >
           <UserPlus className="-ml-1 mr-2 h-5 w-5" />
           Kullanıcı Ekle
@@ -383,52 +434,67 @@ export const Users: React.FC = () => {
       </div>
 
       <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-        <Tabs.List className="flex border-b border-gray-200 mb-6">
-          <Tabs.Trigger value="admin" className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${activeTab === 'admin' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-            Sistem Yöneticileri (Admin)
+        <Tabs.List className={`flex border-b border-gray-200 dark:border-gray-700 ${isMobile ? 'mb-4' : 'mb-6'}`}>
+          <Tabs.Trigger
+            value="admin"
+            className={`${isMobile ? 'flex-1 px-3 py-2 text-xs' : 'px-4 py-2 text-sm'} font-medium border-b-2 -mb-px touch-feedback ${activeTab === 'admin' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+          >
+            {isMobile ? 'Sistem' : 'Sistem Yöneticileri (Admin)'}
           </Tabs.Trigger>
-          <Tabs.Trigger value="tenant" className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${activeTab === 'tenant' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-            Abone Kullanıcıları (Tenant)
+          <Tabs.Trigger
+            value="tenant"
+            className={`${isMobile ? 'flex-1 px-3 py-2 text-xs' : 'px-4 py-2 text-sm'} font-medium border-b-2 -mb-px touch-feedback ${activeTab === 'tenant' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+          >
+            {isMobile ? 'Abone' : 'Abone Kullanıcıları (Tenant)'}
           </Tabs.Trigger>
         </Tabs.List>
 
-        {/* Filters Area */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className={`bg-white dark:bg-gray-800 shadow rounded-lg ${isMobile ? 'p-4 mb-4' : 'p-6 mb-6'}`}>
+          <div className="flex flex-col gap-4">
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search className="h-5 w-5 text-gray-400" /></div>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
               <input
                 type="text"
                 placeholder="Arama yapın..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md leading-5 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
             {activeTab === 'tenant' && (
-              <>
-                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="block w-full pl-3 pr-10 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="block w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
                   <option value="all">Tüm Roller</option>
                   <option value="tenant_admin">Yönetici</option>
                   <option value="user">Kullanıcı</option>
                 </select>
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="block w-full pl-3 pr-10 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="block w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
                   <option value="all">Tüm Durumlar</option>
                   <option value="active">Aktif</option>
                   <option value="inactive">Pasif</option>
                 </select>
-              </>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
           <Tabs.Content value="admin">
             {loadingAdmins ? (
-              <div className="p-12 text-center text-gray-500">Yükleniyor...</div>
+              <div className={`${isMobile ? 'p-8' : 'p-12'} text-center text-gray-500 dark:text-gray-400`}>Yükleniyor...</div>
             ) : adminError ? (
-              <div className="p-12 text-center text-red-500">Hata oluştu.</div>
+              <div className={`${isMobile ? 'p-8' : 'p-12'} text-center text-red-500 dark:text-red-400`}>Hata oluştu.</div>
             ) : (
               <>
                 {renderTable(adminUsersList, false)}
@@ -448,17 +514,17 @@ export const Users: React.FC = () => {
 
           <Tabs.Content value="tenant">
             {loadingTenants ? (
-              <div className="p-12 text-center text-gray-500">Yükleniyor...</div>
+              <div className={`${isMobile ? 'p-8' : 'p-12'} text-center text-gray-500 dark:text-gray-400`}>Yükleniyor...</div>
             ) : tenantError ? (
-              <div className="p-12 text-center text-red-500">Hata oluştu.</div>
+              <div className={`${isMobile ? 'p-8' : 'p-12'} text-center text-red-500 dark:text-red-400`}>Hata oluştu.</div>
             ) : (
               <>
-                {renderTable(paginatedTenantUsers, true)}
-                {tenantTotalItems > 0 && (
+                {renderTable(rawTenantUsers, true)}
+                {tenantPagination && (
                   <Pagination
                     currentPage={tenantPage}
-                    totalPages={tenantTotalPages}
-                    totalItems={tenantTotalItems}
+                    totalPages={tenantPagination.totalPages || 1}
+                    totalItems={tenantPagination.total || 0}
                     itemsPerPage={tenantLimit}
                     onPageChange={setTenantPage}
                     onItemsPerPageChange={setTenantLimit}

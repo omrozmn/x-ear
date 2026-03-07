@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useListAdminSettings, useUpdateAdminSettings, useListAdminPlans } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 
 const Features: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const { user } = useAuth();
     const { data: settingsData, isLoading: featuresLoading, refetch: refetchFeatures } = useListAdminSettings();
     const { data: plansData } = useListAdminPlans();
@@ -34,27 +36,27 @@ const Features: React.FC = () => {
         }
     };
 
-    if (featuresLoading) return <div className="p-6">Loading...</div>;
+    if (featuresLoading) return <div className={isMobile ? 'p-4' : 'p-6'}>Loading...</div>;
 
     return (
-        <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Feature Flags</h2>
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6'}>
+            <h2 className={`font-semibold mb-4 text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Feature Flags</h2>
             <div className="space-y-3">
-                {Object.keys(features).length === 0 && <div className="text-sm text-gray-500">No flags defined</div>}
+                {Object.keys(features).length === 0 && <div className="text-sm text-gray-500 dark:text-gray-400">No flags defined</div>}
                 {Object.entries(features).map(([k, v]: [string, any]) => (
-                    <div key={k} className="p-4 border rounded bg-white shadow-sm">
+                    <div key={k} className="p-4 border dark:border-gray-700 rounded bg-white dark:bg-gray-800 shadow-sm">
                         <div className="flex items-start justify-between">
                             <div>
-                                <div className="font-medium">{k}</div>
-                                <div className="text-xs text-gray-500">{k.replace(/_/g, ' ')}</div>
+                                <div className="font-medium text-gray-900 dark:text-white">{k}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">{k.replace(/_/g, ' ')}</div>
                             </div>
-                            <div className="text-sm text-gray-500">Mode: <strong className="ml-1">{v.mode}</strong></div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Mode: <strong className="ml-1 text-gray-900 dark:text-white">{v.mode}</strong></div>
                         </div>
-                        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className={`mt-3 grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Mode</label>
+                                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Mode</label>
                                 <select
-                                    className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full border dark:border-gray-600 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white touch-feedback"
                                     value={v.mode}
                                     onChange={(e) => handleUpdateFeature(k, { mode: e.target.value })}
                                     disabled={!canToggle}
@@ -65,8 +67,8 @@ const Features: React.FC = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Available Plans</label>
-                                <div className="max-h-36 overflow-y-auto border rounded p-2 bg-gray-50">
+                                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Available Plans</label>
+                                <div className="max-h-36 overflow-y-auto border dark:border-gray-600 rounded p-2 bg-gray-50 dark:bg-gray-700">
                                     {plans.map((p: any) => {
                                         const checked = (v.plans || []).includes(p.id);
                                         return (
@@ -81,9 +83,9 @@ const Features: React.FC = () => {
                                                         handleUpdateFeature(k, { plans: Array.from(nextPlans) });
                                                     }}
                                                     disabled={!canToggle}
-                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded touch-feedback"
                                                 />
-                                                <label htmlFor={`${k}_${p.id}`} className="ml-2 text-sm text-gray-700">{p.name}</label>
+                                                <label htmlFor={`${k}_${p.id}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{p.name}</label>
                                             </div>
                                         );
                                     })}

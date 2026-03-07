@@ -34,6 +34,8 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/config/turnstile'): 'public',
     ('POST', '/api/register-phone'): 'public',
     ('POST', '/api/verify-registration-otp'): 'public',
+    ('GET', '/api/blog/'): 'public',
+    ('GET', '/api/blog/<slug>'): 'public',
     
     # =========================================================================
     # AUTH - Kimlik Doğrulama
@@ -710,6 +712,12 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/admin/users/all'): 'platform.users.read',
     ('PUT', '/api/admin/users/all/<user_id>'): 'platform.users.manage',
     ('DELETE', '/api/admin/users/<user_id>'): 'users:delete',
+    
+    # Admin Blog Management
+    ('GET', '/api/admin/blog/'): 'platform.blog.read',
+    ('POST', '/api/admin/blog/'): 'platform.blog.manage',
+    ('PUT', '/api/admin/blog/<post_id>'): 'platform.blog.manage',
+    ('DELETE', '/api/admin/blog/<post_id>'): 'platform.blog.manage',
     
     # Admin Patients
     ('GET', '/api/admin/patients'): 'platform.patients.read',

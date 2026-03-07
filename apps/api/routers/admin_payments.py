@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.sales import PaymentRecord
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
@@ -25,7 +26,8 @@ async def get_pos_transactions(
 ):
     """Get all POS transactions for admin panel"""
     try:
-        query = db.query(PaymentRecord).filter(PaymentRecord.pos_provider.isnot(None))
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(PaymentRecord).filter(PaymentRecord.pos_provider.isnot(None))
         
         if provider:
             query = query.filter(PaymentRecord.pos_provider == provider)

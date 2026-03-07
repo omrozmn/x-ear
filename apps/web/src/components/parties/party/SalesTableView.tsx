@@ -9,12 +9,14 @@ import {
 import { Button } from '@/components/ui/Button';
 
 interface SalesTableViewProps {
-  sales: PartySale[];
-  onSaleClick?: (sale: PartySale) => void;
-  onCreateInvoice?: (sale: PartySale) => void;
-  onViewInvoice?: (sale: PartySale) => void;
-  onManagePromissoryNotes?: (sale: PartySale) => void;
-  onCancelSale?: (sale: PartySale) => void;
+  sales: PartySale[] | any[];
+  partyId?: string;
+  onSaleClick?: (sale: PartySale | any) => void;
+  onEditSale?: (sale: PartySale | any) => void;
+  onCreateInvoice?: (sale: PartySale | any) => void;
+  onViewInvoice?: (sale: PartySale | any) => void;
+  onManagePromissoryNotes?: (sale: PartySale | any) => void;
+  onCancelSale?: (sale: PartySale | any) => void;
 }
 
 export const SalesTableView: React.FC<SalesTableViewProps> = ({

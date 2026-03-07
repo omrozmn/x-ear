@@ -57,6 +57,9 @@ class BirfaturaResponse(AppBaseModel):
 
 class InvoiceSyncResponse(AppBaseModel):
     synced_count: int = 0
+    incoming: int = 0
+    outgoing: int = 0
+    duplicates: int = 0
     errors: List[str] = []
 
 class MockSearchRequest(AppBaseModel):

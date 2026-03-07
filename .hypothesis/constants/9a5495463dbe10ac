@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_api_keys.py
+# hypothesis_version: 6.151.9
+
+[100, 400, 404, 500, 1000000, ',', '/api/admin/api-keys', '/init-db', '/{key_id}', 'API Key not found', 'API Key revoked', 'Admin API Keys', 'api_keys.manage', 'api_keys.read', 'createAdminApiKey', 'data', 'deleteAdminApiKey', 'keys', 'limit', 'listAdminApiKeys', 'message', 'page', 'pagination', 'success', 'system.manage', 'total', 'totalPages']

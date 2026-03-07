@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { CreditCard, Filter, Download, Search, TrendingUp, DollarSign, Activity } from 'lucide-react'
 import { adminApi } from '../../lib/apiMutator'
+import { useAdminResponsive } from '@/hooks'
+import { ResponsiveTable } from '@/components/responsive'
 
 interface PaymentTransaction {
     id: string
@@ -17,6 +19,7 @@ interface PaymentTransaction {
 }
 
 export default function AdminPaymentsPage() {
+    const { isMobile } = useAdminResponsive();
     const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -105,10 +108,10 @@ export default function AdminPaymentsPage() {
 
     const getStatusBadge = (status: string) => {
         const statusColors: Record<string, string> = {
-            'completed': 'bg-green-100 text-green-800',
-            'pending': 'bg-yellow-100 text-yellow-800',
-            'failed': 'bg-red-100 text-red-800',
-            'refunded': 'bg-gray-100 text-gray-800'
+            'completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'failed': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'refunded': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
         }
 
         const statusLabels: Record<string, string> = {
@@ -119,94 +122,166 @@ export default function AdminPaymentsPage() {
         }
 
         return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
                 {statusLabels[status] || status}
             </span>
         )
     }
 
+    const columns = [
+        {
+            key: 'date',
+            header: 'Tarih',
+            render: (transaction: PaymentTransaction) => (
+                <span className="text-sm text-gray-900 dark:text-white">
+                    {formatDate(transaction.payment_date)}
+                </span>
+            )
+        },
+        {
+            key: 'transaction_id',
+            header: 'İşlem ID',
+            mobileHidden: true,
+            render: (transaction: PaymentTransaction) => (
+                <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
+                    {transaction.pos_transaction_id || transaction.id.substring(0, 8)}
+                </span>
+            )
+        },
+        {
+            key: 'amount',
+            header: 'Tutar',
+            render: (transaction: PaymentTransaction) => (
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatCurrency(transaction.amount)}
+                </span>
+            )
+        },
+        {
+            key: 'provider',
+            header: 'POS Sağlayıcı',
+            mobileHidden: true,
+            render: (transaction: PaymentTransaction) => (
+                transaction.pos_provider ? (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-medium rounded">
+                        {transaction.pos_provider.toUpperCase()}
+                    </span>
+                ) : (
+                    <span className="text-gray-400 dark:text-gray-500">-</span>
+                )
+            )
+        },
+        {
+            key: 'payment_method',
+            header: 'Ödeme Yöntemi',
+            mobileHidden: true,
+            render: (transaction: PaymentTransaction) => (
+                <span className="text-sm text-gray-900 dark:text-white">
+                    {transaction.payment_method || 'Nakit'}
+                </span>
+            )
+        },
+        {
+            key: 'status',
+            header: 'Durum',
+            render: (transaction: PaymentTransaction) => getStatusBadge(transaction.status)
+        },
+        {
+            key: 'patient',
+            header: 'Hasta',
+            mobileHidden: true,
+            render: (transaction: PaymentTransaction) => (
+                <span className="text-sm text-gray-900 dark:text-white">
+                    {transaction.patient_name || '-'}
+                </span>
+            )
+        }
+    ];
+
     return (
-        <div className="p-6 space-y-6">
+        <div className={isMobile ? 'p-4 pb-safe space-y-6' : 'p-6 space-y-6'}>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Ödeme Takibi</h1>
-                    <p className="text-sm text-gray-600 mt-1">POS ve diğer ödeme işlemlerini takip edin</p>
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+                        Ödeme Takibi
+                    </h1>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">POS ve diğer ödeme işlemlerini takip edin</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 touch-feedback">
                     <Download className="w-4 h-4" />
-                    Dışa Aktar
+                    {!isMobile && 'Dışa Aktar'}
                 </button>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Toplam Tutar</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Tutar</p>
+                            <p className={`font-bold text-gray-900 dark:text-white mt-1 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                                 {formatCurrency(stats.total_amount)}
                             </p>
                         </div>
-                        <div className="p-3 bg-blue-100 rounded-lg">
-                            <DollarSign className="w-6 h-6 text-blue-600" />
+                        <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                            <DollarSign className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">İşlem Sayısı</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total_count}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">İşlem Sayısı</p>
+                            <p className={`font-bold text-gray-900 dark:text-white mt-1 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.total_count}</p>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-lg">
-                            <Activity className="w-6 h-6 text-green-600" />
+                        <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                            <Activity className="w-6 h-6 text-green-600 dark:text-green-400" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">POS İşlemleri</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.pos_count}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">POS İşlemleri</p>
+                            <p className={`font-bold text-gray-900 dark:text-white mt-1 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.pos_count}</p>
                         </div>
-                        <div className="p-3 bg-purple-100 rounded-lg">
-                            <CreditCard className="w-6 h-6 text-purple-600" />
+                        <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                            <CreditCard className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Ortalama Tutar</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Ortalama Tutar</p>
+                            <p className={`font-bold text-gray-900 dark:text-white mt-1 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                                 {formatCurrency(stats.avg_amount)}
                             </p>
                         </div>
-                        <div className="p-3 bg-orange-100 rounded-lg">
-                            <TrendingUp className="w-6 h-6 text-orange-600" />
+                        <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                            <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-3">
-                    <Filter className="w-5 h-5 text-gray-600" />
-                    <h3 className="font-semibold text-gray-900">Filtreler</h3>
+                    <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Filtreler</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">POS Sağlayıcı</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">POS Sağlayıcı</label>
                         <select
                             value={filter.provider}
                             onChange={(e) => handleFilterChange('provider', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                             <option value="">Tümü</option>
                             <option value="paytr">PayTR</option>
@@ -216,29 +291,29 @@ export default function AdminPaymentsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Başlangıç Tarihi</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Başlangıç Tarihi</label>
                         <input
                             type="date"
                             value={filter.start_date}
                             onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Bitiş Tarihi</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bitiş Tarihi</label>
                         <input
                             type="date"
                             value={filter.end_date}
                             onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
 
                     <div className="flex items-end">
                         <button
                             onClick={applyFilters}
-                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 flex items-center justify-center gap-2 touch-feedback"
                         >
                             <Search className="w-4 h-4" />
                             Filtrele
@@ -248,94 +323,38 @@ export default function AdminPaymentsPage() {
             </div>
 
             {/* Transactions Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="p-4 border-b border-gray-200">
-                    <h3 className="font-semibold text-gray-900">Ödeme İşlemleri</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Ödeme İşlemleri</h3>
                 </div>
 
                 {loading ? (
                     <div className="p-8 text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="text-gray-600 mt-4">Yükleniyor...</p>
+                        <p className="text-gray-600 dark:text-gray-400 mt-4">Yükleniyor...</p>
                     </div>
                 ) : error ? (
                     <div className="p-8 text-center">
-                        <p className="text-red-600">{error}</p>
+                        <p className="text-red-600 dark:text-red-400">{error}</p>
                         <button
                             onClick={fetchTransactions}
-                            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 touch-feedback"
                         >
                             Tekrar Dene
                         </button>
                     </div>
                 ) : transactions.length === 0 ? (
                     <div className="p-8 text-center">
-                        <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">Henüz ödeme işlemi bulunmuyor</p>
+                        <CreditCard className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                        <p className="text-gray-600 dark:text-gray-400">Henüz ödeme işlemi bulunmuyor</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Tarih
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        İşlem ID
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Tutar
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        POS Sağlayıcı
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Ödeme Yöntemi
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Durum
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Hasta
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {transactions.map((transaction) => (
-                                    <tr key={transaction.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {formatDate(transaction.payment_date)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                                            {transaction.pos_transaction_id || transaction.id.substring(0, 8)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                            {formatCurrency(transaction.amount)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {transaction.pos_provider ? (
-                                                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                                                    {transaction.pos_provider.toUpperCase()}
-                                                </span>
-                                            ) : (
-                                                <span className="text-gray-400">-</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {transaction.payment_method || 'Nakit'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            {getStatusBadge(transaction.status)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {transaction.patient_name || '-'}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <ResponsiveTable
+                        data={transactions}
+                        columns={columns}
+                        keyExtractor={(transaction: PaymentTransaction) => transaction.id}
+                        emptyMessage="Ödeme işlemi bulunamadı"
+                    />
                 )}
             </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Button, Input, DatePicker } from '@x-ear/ui-web';
-import { ArrowLeft, CheckCircle, Pill } from 'lucide-react';
+import { Button, Input, DatePicker, Textarea } from '@x-ear/ui-web';
+import { ArrowLeft, CheckCircle, ChevronDown, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
 import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
 import { SGKInvoiceSection } from '../components/invoices/SGKInvoiceSection';
@@ -11,9 +11,9 @@ import { Select } from '@x-ear/ui-web';
 import { CustomerSectionCompact } from '../components/invoices/CustomerSectionCompact';
 import WithholdingCard from '../components/invoices/WithholdingCard';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { ProductLinesSection } from '../components/invoices/ProductLinesSection';
 import { MobileLayout } from '../components/mobile/MobileLayout';
 import { MobileHeader } from '../components/mobile/MobileHeader';
-import { cn } from '@/lib/utils';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -207,7 +207,7 @@ function InvoiceSidebar({
   const _showReturnSection = !!showReturnSection;
   const _showSpecialBaseSection = !!showSpecialBaseSection;
   return (
-    <div className="sticky top-24 space-y-4">
+    <div className="sticky top-[148px] space-y-4 z-10">
       {/* Fatura Alıcı - En Üstte */}
       <CustomerSectionCompact
         isSGK={showSGKSection}
@@ -438,6 +438,28 @@ function InvoiceSidebar({
           </div>
         </div>
       )}
+      {/* Açıklama / Notlar — Modern Card */}
+      <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Fatura Açıklaması</span>
+          </div>
+        </div>
+        <div className="p-4">
+          <Textarea
+            value={(extendedData?.notes as string) || ''}
+            onChange={(e) => handlers?.handleExtendedFieldChange?.('notes', e.target.value)}
+            placeholder="Fatura ile ilgili notlarınızı buraya yazabilirsiniz... (ör. Değişim: Phonak Audeo Paradise P90, Garanti kapsamında)"
+            rows={5}
+            fullWidth
+            className="w-full"
+          />
+        </div>
+      </div>
+
       {/* Per-line editor in sidebar (opened from product lines) */}
       {activeLineEditor && (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
@@ -487,7 +509,8 @@ function NewInvoicePageContent({
   isWithholdingType,
   onRequestLineEditor,
   activeLineEditor,
-  onCloseLineEditor
+  onCloseLineEditor,
+  isMobile
 }: {
   isSaving: boolean;
   handleSubmit: (data: InvoiceFormData) => Promise<void>;
@@ -508,12 +531,19 @@ function NewInvoicePageContent({
   onCloseLineEditor?: () => void;
   isMobile?: boolean;
 }) {
+  const [openCustomer, setOpenCustomer] = useState(true);
+  const [openDetails, setOpenDetails] = useState(true);
+  const [openItems, setOpenItems] = useState(true);
+  const [openSGK, setOpenSGK] = useState(true);
+  const [openGov, setOpenGov] = useState(true);
+
   if (isMobile) {
     return (
-      <MobileLayout className="bg-gray-50 dark:bg-gray-950">
+      <MobileLayout showBottomNav={false} className="bg-gray-50 dark:bg-gray-950">
         <MobileHeader
           title="Yeni Fatura"
           onBack={handleCancel}
+          className="top-[64px]"
           actions={
             <Button
               onClick={() => handleSubmit(formData)}
@@ -526,55 +556,116 @@ function NewInvoicePageContent({
           }
         />
 
-        <div className="p-4 space-y-4 pb-32">
-          {/* 1. Customer Selection (Critical) */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-1">
-            <CustomerSectionCompact
-              customerId={formData.customerId as string}
-              customerFirstName={formData.customerFirstName as string}
-              customerLastName={formData.customerLastName as string}
-              onChange={onFormDataChange}
-            />
+        <div className="p-4 space-y-3 pb-32">
+          {/* 1. Collapsible: Customer Selection */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setOpenCustomer(v => !v)}
+              className="w-full flex items-center justify-between p-4 text-left"
+            >
+              <div className="flex items-center gap-2">
+                {(formData.customerFirstName || formData.customerLastName || formData.customerTcNumber) ? (
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+                ) : (
+                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-gray-300" />
+                )}
+                <h3 className="font-bold text-gray-900 dark:text-white">Fatura Alıcısı</h3>
+              </div>
+              <ChevronDown
+                size={20}
+                className={`text-gray-400 transition-transform duration-200${openCustomer ? ' rotate-180' : ''}`}
+              />
+            </button>
+            {openCustomer && (
+              <div className="border-t border-gray-100 dark:border-gray-700 p-1">
+                <CustomerSectionCompact
+                  isSGK={showSGKSection}
+                  customerId={formData.customerId as string}
+                  customerFirstName={formData.customerFirstName as string}
+                  customerLastName={formData.customerLastName as string}
+                  onChange={onFormDataChange}
+                />
+              </div>
+            )}
           </div>
 
-          {/* 2. Basic Info (Type & Scenario) */}
+          {/* 2. Collapsible: Fatura Detayları */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-            <div className="p-4 border-b border-gray-50 dark:border-gray-800">
-              <h3 className="font-bold text-gray-900 dark:text-white">Fatura Detayları</h3>
-            </div>
-            <InvoiceFormExtended
-              onSubmit={handleSubmit as never}
-              onCancel={handleCancel}
-              isLoading={isSaving}
-              onDataChange={onFormDataChange}
-              onRequestLineEditor={onRequestLineEditor}
-              initialData={formData}
-              mobileHiddenSections={['items', 'additionalInfo']} // We'll handle items separately for better UX
-            />
+            <button
+              type="button"
+              onClick={() => setOpenDetails(v => !v)}
+              className="w-full flex items-center justify-between p-4 text-left"
+            >
+              <div className="flex items-center gap-2">
+                {(formData.invoiceType || formData.scenario !== 'other') ? (
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+                ) : (
+                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-gray-300" />
+                )}
+                <h3 className="font-bold text-gray-900 dark:text-white">Fatura Detayları</h3>
+              </div>
+              <ChevronDown
+                size={20}
+                className={`text-gray-400 transition-transform duration-200${openDetails ? ' rotate-180' : ''}`}
+              />
+            </button>
+            {openDetails && (
+              <div className="border-t border-gray-100 dark:border-gray-700">
+                <InvoiceFormExtended
+                  onSubmit={handleSubmit as never}
+                  onCancel={handleCancel}
+                  isLoading={isSaving}
+                  onDataChange={onFormDataChange}
+                  onRequestLineEditor={onRequestLineEditor}
+                  initialData={formData}
+                  mobileHiddenSections={['items', 'additionalInfo']}
+                />
+              </div>
+            )}
           </div>
 
-          {/* 3. Conditional Sections (SGK, Government, etc.) */}
-          <div className="space-y-4">
+          {/* 3. Conditional Sections (SGK, Government, etc.) - Collapsible */}
+          <div className="space-y-3">
             {showSGKSection && (
               <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/30 overflow-hidden">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/30">
+                <button
+                  type="button"
+                  onClick={() => setOpenSGK(v => !v)}
+                  className="w-full flex items-center justify-between p-4 text-left bg-blue-50 dark:bg-blue-900/20"
+                >
                   <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">SGK Bilgileri</h3>
-                </div>
-                <div className="p-4">
-                  <SGKInvoiceSection
-                    sgkData={formData.sgkData as never}
-                    onChange={(data) => onFormDataChange('sgkData', data)}
-                  />
-                </div>
+                  <ChevronDown size={18} className={`text-blue-400 transition-transform duration-200${openSGK ? ' rotate-180' : ''}`} />
+                </button>
+                {openSGK && (
+                  <div className="p-4 border-t border-blue-100 dark:border-blue-900/30">
+                    <SGKInvoiceSection
+                      sgkData={formData.sgkData as never}
+                      onChange={(data) => onFormDataChange('sgkData', data)}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {showGovernmentSection && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
-                <GovernmentSection
-                  formData={formData as never}
-                  onChange={onFormDataChange}
-                />
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setOpenGov(v => !v)}
+                  className="w-full flex items-center justify-between p-4 text-left"
+                >
+                  <h3 className="font-bold text-gray-900 dark:text-white">Kamu Bilgileri</h3>
+                  <ChevronDown size={18} className={`text-gray-400 transition-transform duration-200${openGov ? ' rotate-180' : ''}`} />
+                </button>
+                {openGov && (
+                  <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+                    <GovernmentSection
+                      formData={formData as never}
+                      onChange={onFormDataChange}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -588,26 +679,50 @@ function NewInvoicePageContent({
             )}
           </div>
 
-          {/* 4. Product Lines (Full width for focus) */}
+          {/* 4. Collapsible: Ürün ve Hizmetler */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-            <div className="p-4 border-b border-gray-50 dark:border-gray-800">
-              <h3 className="font-bold text-gray-900 dark:text-white">Ürün ve Hizmetler</h3>
-            </div>
-            <ProductLinesSection
-              lines={(formData.items as never[]) || []}
-              onChange={(lines) => onFormDataChange('items', lines)}
-              invoiceType={formData.invoiceType}
-              scenario={formData.scenario}
-              currency={formData.currency}
-              onCurrencyChange={(c) => onFormDataChange('currency', c)}
-              generalDiscount={formData.totalDiscount}
-              onGeneralDiscountChange={(v) => onFormDataChange('totalDiscount', v)}
-            />
+            <button
+              type="button"
+              onClick={() => setOpenItems(v => !v)}
+              className="w-full flex items-center justify-between p-4 text-left"
+            >
+              <div className="flex items-center gap-2">
+                {(formData.items as unknown[])?.length > 0 ? (
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+                ) : (
+                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-gray-300" />
+                )}
+                <h3 className="font-bold text-gray-900 dark:text-white">Ürün ve Hizmetler</h3>
+                {(formData.items as unknown[])?.length > 0 && (
+                  <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">
+                    {(formData.items as unknown[]).length} kalem
+                  </span>
+                )}
+              </div>
+              <ChevronDown
+                size={20}
+                className={`text-gray-400 transition-transform duration-200${openItems ? ' rotate-180' : ''}`}
+              />
+            </button>
+            {openItems && (
+              <div className="border-t border-gray-100 dark:border-gray-700">
+                <ProductLinesSection
+                  lines={(formData.items as never[]) || []}
+                  onChange={(lines) => onFormDataChange('items', lines)}
+                  invoiceType={formData.invoiceType}
+                  scenario={formData.scenario}
+                  currency={formData.currency}
+                  onCurrencyChange={(c) => onFormDataChange('currency', c)}
+                  generalDiscount={formData.totalDiscount as number | string | undefined}
+                  onGeneralDiscountChange={(v) => onFormDataChange('totalDiscount', v)}
+                />
+              </div>
+            )}
           </div>
         </div>
 
         {/* Bottom Bar for Action Buttons on Mobile */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 safe-area-inset-bottom z-30">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 safe-area-inset-bottom z-[2100]">
           <div className="flex gap-4">
             <Button
               onClick={handleSaveDraft}
@@ -632,7 +747,7 @@ function NewInvoicePageContent({
   return (
     <div className="new-invoice-page min-h-screen bg-gray-50 dark:bg-gray-900 w-full pb-8">
       {/* Sticky Header with Progress */}
-      <div className="sticky top-0 z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="sticky top-[64px] z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -685,9 +800,9 @@ function NewInvoicePageContent({
 
       {/* Main Content */}
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
           {/* Form - 2/3 width */}
-          <div className="lg:col-span-2">
+          <div className="min-w-0">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <InvoiceFormExtended
                 onSubmit={handleSubmit as never}
@@ -696,12 +811,13 @@ function NewInvoicePageContent({
                 onDataChange={onFormDataChange}
                 onRequestLineEditor={onRequestLineEditor}
                 initialData={formData}
+                mobileHiddenSections={['notes']}
               />
             </div>
           </div>
 
-          {/* Sidebar - 1/3 width */}
-          <div className="lg:col-span-1">
+          {/* Sidebar - 1/3 proportional */}
+          <div className="min-w-0">
             <InvoiceSidebar
               showSGKSection={showSGKSection}
               showExportSection={showExportSection}

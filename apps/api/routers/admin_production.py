@@ -6,6 +6,7 @@ from typing import Optional
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.production_order import ProductionOrder
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.base import ResponseEnvelope
@@ -39,7 +40,8 @@ async def get_orders(
 ):
     """Get production orders"""
     try:
-        query = db.query(ProductionOrder)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(ProductionOrder)
         if status:
             query = query.filter(ProductionOrder.status == status)
         orders = query.order_by(ProductionOrder.created_at.desc()).all()
@@ -57,7 +59,8 @@ async def update_order_status(
 ):
     """Update order status"""
     try:
-        order = db.query(ProductionOrder).filter(ProductionOrder.id == order_id).first()
+        with unbound_session(reason="admin-cross-tenant"):
+            order = db.query(ProductionOrder).filter(ProductionOrder.id == order_id).first()
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
         

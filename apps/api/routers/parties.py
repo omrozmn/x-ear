@@ -267,6 +267,30 @@ def count_parties(
         
     return ResponseEnvelope(data={'count': count})
 
+@router.get("/parties/search", operation_id="searchParties", response_model=ResponseEnvelope[List[dict]])
+def search_parties(
+    q: str = Query(..., min_length=1, description="Search query"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum results"),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
+    db: Session = Depends(get_db)
+):
+    """Search parties for selection (fuzzy search by name/phone)"""
+    service = PartyService(db)
+    results = service.search_parties(access.tenant_id, query=q, limit=limit)
+    
+    # Format for frontend consumption
+    formatted_results = []
+    for party in results:
+        formatted_results.append({
+            "partyId": party.id,
+            "firstName": party.first_name or "",
+            "lastName": party.last_name or "",
+            "phone": party.phone,
+            "fullName": f"{party.first_name or ''} {party.last_name or ''}".strip()
+        })
+    
+    return ResponseEnvelope(data=formatted_results)
+
 @router.get("/parties/{party_id}", operation_id="getParty", response_model=ResponseEnvelope[PartyRead])
 def get_party(
     party_id: str,

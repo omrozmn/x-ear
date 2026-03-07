@@ -141,20 +141,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* New Sidebar Component */}
       <Sidebar
         isOpen={sidebarOpen}
+        isCollapsed={!sidebarOpen && isDesktop}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
         onClose={() => setSidebarOpen(false)}
         currentPath={location.pathname}
         isMobile={isMobile}
         isTablet={isTablet}
         isDesktop={isDesktop}
+        onNavigate={(href) => {
+          navigate({ to: href as any });
+        }}
       />
 
       {/* Main Content */}
       <div className={cn(
         "flex-1 flex flex-col transition-[margin] duration-300 min-w-0",
-        isMobile ? "ml-0" : (isDesktop ? "ml-64" : "ml-16")
+        isMobile ? "ml-0" : (
+          isDesktop ? (sidebarOpen ? "ml-64" : "ml-16") : "ml-16"
+        )
       )}>
         {/* Header */}
-        <header className="sticky top-0 z-[999] px-3 sm:px-4 md:px-8 py-3 md:py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <header className="sticky top-0 z-40 px-3 sm:px-4 md:px-8 py-3 md:py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex justify-between items-center gap-2 md:gap-4">
             {/* Mobile Menu Button */}
             {isMobile && (
@@ -301,7 +308,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
         {/* Content */}
         <main className={cn(
-          "flex-1 p-3 sm:p-4 md:p-8 bg-gray-50 dark:bg-gray-950 min-h-[calc(100vh-64px)]",
+          "flex-1 bg-gray-50 dark:bg-gray-950",
+          location.pathname === '/settings'
+            ? 'h-[calc(100vh-64px)] overflow-hidden'
+            : location.pathname === '/reports'
+            ? 'relative h-[calc(100vh-64px)]'
+            : 'p-3 sm:p-4 md:p-8 min-h-[calc(100vh-64px)]',
           isMobile && "pb-24"
         )}>
           {(user?.isImpersonatingTenant || user?.isImpersonating) && (

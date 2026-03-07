@@ -57,11 +57,20 @@ def extract_sender_info(invoice_data: Dict[str, Any]) -> Dict[str, str]:
         sender_info['address'] = address.get('streetName', '')
         sender_info['city'] = address.get('cityName', '')
     
-    # Fallback to top-level fields
+    # Fallback to top-level fields (API returns PascalCase: SenderName, SenderKN)
     if not sender_info['name']:
-        sender_info['name'] = invoice_data.get('supplierName', invoice_data.get('senderName', ''))
+        sender_info['name'] = (
+            invoice_data.get('SenderName') or
+            invoice_data.get('senderName') or
+            invoice_data.get('supplierName', '')
+        )
     if not sender_info['tax_number']:
-        sender_info['tax_number'] = invoice_data.get('supplierTaxNumber', invoice_data.get('senderVKN', ''))
+        sender_info['tax_number'] = (
+            invoice_data.get('SenderKN') or
+            invoice_data.get('senderKN') or
+            invoice_data.get('senderVKN') or
+            invoice_data.get('supplierTaxNumber', '')
+        )
     if not sender_info['tax_office']:
         sender_info['tax_office'] = invoice_data.get('supplierTaxOffice', '')
     
@@ -95,9 +104,26 @@ def extract_invoice_amounts(invoice_data: Dict[str, Any]) -> Dict[str, Decimal]:
     if amounts['tax_amount'] == 0:
         amounts['tax_amount'] = amounts['total_amount'] - amounts['subtotal']
     
-    # Fallback to top-level fields
-    if amounts['total_amount'] == 0 and 'payableAmount' in invoice_data:
-        amounts['total_amount'] = Decimal(str(invoice_data['payableAmount']))
+    # Fallback to top-level fields (API returns PascalCase)
+    if amounts['total_amount'] == 0:
+        amounts['total_amount'] = Decimal(str(
+            invoice_data.get('PayableAmount') or
+            invoice_data.get('payableAmount') or 0
+        ))
+    if amounts['subtotal'] == 0:
+        amounts['subtotal'] = Decimal(str(
+            invoice_data.get('TaxExclusiveAmount') or
+            invoice_data.get('taxExclusiveAmount') or
+            invoice_data.get('LineExtensionAmount') or
+            invoice_data.get('lineExtensionAmount') or 0
+        ))
+    if amounts['currency'] == 'TRY':
+        amounts['currency'] = (
+            invoice_data.get('DocumentCurrencyCode') or
+            invoice_data.get('documentCurrencyCode') or 'TRY'
+        )
+    if amounts['tax_amount'] == 0 and amounts['total_amount'] > 0 and amounts['subtotal'] > 0:
+        amounts['tax_amount'] = amounts['total_amount'] - amounts['subtotal']
     
     return amounts
 

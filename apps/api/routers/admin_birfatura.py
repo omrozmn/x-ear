@@ -6,6 +6,7 @@ from typing import Optional, List
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from schemas.base import ResponseEnvelope
 from schemas.birfatura import BirFaturaStats, BirFaturaLogsResponse, BirFaturaInvoicesResponse
 from models.invoice import Invoice
@@ -26,8 +27,9 @@ async def get_stats(
 ):
     """Get BirFatura statistics"""
     try:
-        # Outgoing Invoices Stats
-        outgoing_stats = db.query(
+        with unbound_session(reason="admin-cross-tenant"):
+            # Outgoing Invoices Stats
+            outgoing_stats = db.query(
             Invoice.edocument_status,
             func.count(Invoice.id)
         ).filter(Invoice.edocument_status.isnot(None)).group_by(Invoice.edocument_status).all()
@@ -63,22 +65,23 @@ async def get_invoices(
 ):
     """Get invoices with BirFatura status"""
     try:
-        if direction == "outgoing":
-            query = db.query(Invoice).filter(Invoice.edocument_status.isnot(None))
-            if status:
-                query = query.filter(Invoice.edocument_status == status)
-            
-            total = query.count()
-            invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
-            data = [InvoiceRead.model_validate(inv).model_dump(by_alias=True) for inv in invoices]
-        else:
-            query = db.query(PurchaseInvoice)
-            if status:
-                query = query.filter(PurchaseInvoice.status == status)
-            
-            total = query.count()
-            invoices = query.order_by(PurchaseInvoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
-            data = [PurchaseInvoiceRead.model_validate(inv).model_dump(by_alias=True) for inv in invoices]
+        with unbound_session(reason="admin-cross-tenant"):
+            if direction == "outgoing":
+                query = db.query(Invoice).filter(Invoice.edocument_status.isnot(None))
+                if status:
+                    query = query.filter(Invoice.edocument_status == status)
+                
+                total = query.count()
+                invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+                data = [InvoiceRead.model_validate(inv).model_dump(by_alias=True) for inv in invoices]
+            else:
+                query = db.query(PurchaseInvoice)
+                if status:
+                    query = query.filter(PurchaseInvoice.status == status)
+                
+                total = query.count()
+                invoices = query.order_by(PurchaseInvoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+                data = [PurchaseInvoiceRead.model_validate(inv).model_dump(by_alias=True) for inv in invoices]
         
         return ResponseEnvelope(data={
             "invoices": data,
@@ -102,7 +105,8 @@ async def get_logs(
 ):
     """Get BirFatura related logs"""
     try:
-        query = db.query(ActivityLog).filter(
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(ActivityLog).filter(
             or_(
                 ActivityLog.action.like("invoice.%"),
                 ActivityLog.action.like("birfatura.%")

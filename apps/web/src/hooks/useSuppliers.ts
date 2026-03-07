@@ -128,9 +128,21 @@ export const useSupplierProducts = (supplierName?: string): unknown => {
         queryKey: getListInventoryQueryKey({ supplier: supplierName, per_page: 100 }),
         enabled: !!supplierName,
         select: (data) => {
-          // We need to return data in a structure that matches { data: { products: [...] } }
-          // Because SupplierDetailPage expects productsData.data.products
-          const items = (data as Record<string, unknown>)?.data || [];
+          // Unwrap ResponseEnvelope: { success, data: [...], meta, ... }
+          const raw = data as Record<string, unknown>;
+          let items: unknown[] = [];
+          if (Array.isArray(raw?.data)) {
+            items = raw.data;
+          } else if (raw?.data && typeof raw.data === 'object') {
+            const inner = raw.data as Record<string, unknown>;
+            if (Array.isArray(inner?.data)) {
+              items = inner.data;
+            } else if (Array.isArray(inner?.items)) {
+              items = inner.items;
+            }
+          } else if (Array.isArray(raw)) {
+            items = raw;
+          }
           return {
             data: {
               products: items

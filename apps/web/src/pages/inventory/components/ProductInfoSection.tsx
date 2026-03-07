@@ -1,5 +1,6 @@
 import React from 'react';
 import { Input, Textarea, Select, Card } from '@x-ear/ui-web';
+import { useNavigate } from '@tanstack/react-router';
 import { InventoryItem } from '../../../types/inventory';
 import { CategoryAutocomplete } from './CategoryAutocomplete';
 import { BrandAutocomplete } from './BrandAutocomplete';
@@ -22,6 +23,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
   onEditChange,
   onFeaturesChange,
 }) => {
+  const navigate = useNavigate();
   return (
     <Card>
       <div className="p-6">
@@ -135,6 +137,13 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
                   value={editedItem.supplier || ''}
                   onChange={(value) => onEditChange({ supplier: value })}
                   label="Tedarikçi"
+                  onSupplierCreated={(_name, id) => {
+                    if (id) {
+                      navigate({ to: '/suppliers/$supplierId', params: { supplierId: id } });
+                    } else {
+                      navigate({ to: '/suppliers' });
+                    }
+                  }}
                 />
               ) : (
                 <div>

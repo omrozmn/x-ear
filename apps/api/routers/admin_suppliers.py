@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.suppliers import Supplier
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.suppliers import SupplierCreate, SupplierUpdate, SupplierRead
@@ -33,7 +34,8 @@ async def get_suppliers(
 ):
     """Get list of suppliers"""
     try:
-        query = db.query(Supplier)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Supplier)
         
         if search:
             query = query.filter(
@@ -102,7 +104,8 @@ async def get_supplier(
 ):
     """Get single supplier"""
     try:
-        supplier = db.get(Supplier, supplier_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            supplier = db.get(Supplier, supplier_id)
         if not supplier:
             raise HTTPException(status_code=404, detail="Supplier not found")
         return ResponseEnvelope(data={"supplier": SupplierRead.model_validate(supplier).model_dump(by_alias=True)})
@@ -120,7 +123,8 @@ async def update_supplier(
 ):
     """Update a supplier"""
     try:
-        supplier = db.get(Supplier, supplier_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            supplier = db.get(Supplier, supplier_id)
         if not supplier:
             raise HTTPException(status_code=404, detail="Supplier not found")
         
@@ -160,7 +164,8 @@ async def delete_supplier(
 ):
     """Delete a supplier"""
     try:
-        supplier = db.get(Supplier, supplier_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            supplier = db.get(Supplier, supplier_id)
         if not supplier:
             raise HTTPException(status_code=404, detail="Supplier not found")
         

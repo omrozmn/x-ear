@@ -164,14 +164,15 @@ def subscribe(
     
     if plan.features and isinstance(plan.features, list):
         for feature in plan.features:
-            key = feature.get('key')
-            limit = feature.get('limit', 0)
-            if key:
-                feature_usage[key] = {
-                    'limit': limit,
-                    'used': 0,
-                    'last_reset': start_date.isoformat()
-                }
+            if isinstance(feature, dict):
+                key = feature.get('key')
+                limit = feature.get('limit', 0)
+                if key:
+                    feature_usage[key] = {
+                        'limit': limit,
+                        'used': 0,
+                        'last_reset': start_date.isoformat()
+                    }
     
     # Process SMS Package
     if request_data.sms_package_id:
@@ -186,6 +187,22 @@ def subscribe(
     tenant.feature_usage = feature_usage
     flag_modified(tenant, "feature_usage")
     
+    # Generate Referral Commission
+    if tenant.affiliate_id and plan.price and float(plan.price) > 0:
+        try:
+            from services.commission_service import CommissionService
+            commission_amount = float(plan.price) * 0.10  # 10% commission
+            CommissionService.create_commission(
+                db=db,
+                affiliate_id=tenant.affiliate_id,
+                tenant_id=tenant.id,
+                event='signup_subscription',
+                amount=commission_amount
+            )
+        except Exception as e:
+            logger.error(f"Failed to create commission for tenant {tenant.id}: {e}")
+            # Do not fail subscription if commission fails
+
     db.commit()
     
     return ResponseEnvelope(data=SubscriptionResponse(

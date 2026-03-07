@@ -25,6 +25,8 @@ import {
 } from '@/lib/api-client';
 import type { InvoiceRead, DetailedPlanRead as PlanRead, PlanCreate } from '@/api/generated/schemas';
 import { adminApi } from '@/lib/apiMutator';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
 const getAdminInvoicePdf = (id: string) => {
   return adminApi({
@@ -41,6 +43,7 @@ interface CreateInvoiceData {
 }
 
 const Billing: React.FC = () => {
+  const { isMobile } = useAdminResponsive();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
@@ -328,31 +331,126 @@ const Billing: React.FC = () => {
     return new Date(dateString).toLocaleDateString('tr-TR');
   };
 
+  const invoiceColumns = [
+    {
+      key: 'invoiceNumber',
+      header: 'Fatura No',
+      render: (invoice: InvoiceRead) => (
+        <div className="flex items-center">
+          <DocumentTextIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
+          <div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              {invoice.invoiceNumber}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'tenantName',
+      header: 'Abone',
+      mobileHidden: true,
+      render: (invoice: InvoiceRead) => (
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
+          {(invoice as any).tenantName}
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      header: 'Durum',
+      render: (invoice: InvoiceRead) => getStatusBadge(invoice.status || undefined)
+    },
+    {
+      key: 'devicePrice',
+      header: 'Tutar',
+      render: (invoice: InvoiceRead) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
+            {formatCurrency(Number(invoice.devicePrice || 0))}
+          </div>
+          {invoice.status === 'paid' && (
+            <div className="text-sm text-green-600 dark:text-green-400">
+              Ödendi
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'createdAt',
+      header: 'Vade Tarihi',
+      mobileHidden: true,
+      render: (invoice: InvoiceRead) => (
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
+        </span>
+      )
+    },
+    {
+      key: 'actions',
+      header: 'İşlemler',
+      render: (invoice: InvoiceRead) => (
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => handleViewInvoice(invoice.id!.toString())}
+            className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 touch-feedback"
+            title="Detayları Görüntüle"
+          >
+            <EyeIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => handleDownloadPDF(invoice.id!.toString())}
+            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 touch-feedback"
+            title="PDF İndir"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4" />
+          </button>
+          {invoice.status === 'active' && (
+            <button
+              onClick={() => handlePaymentRecordClick(invoice.id!.toString(), Number(invoice.devicePrice || 0))}
+              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 text-xs px-2 py-1 border border-green-300 dark:border-green-700 rounded touch-feedback"
+            >
+              Ödeme
+            </button>
+          )}
+        </div>
+      )
+    }
+  ];
+
   return (
     <>
-      <div className="space-y-6">
+      <div className={isMobile ? 'p-4 pb-safe space-y-6' : 'space-y-6'}>
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Faturalandırma</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+              Faturalandırma
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Faturaları, ödemeleri ve planları yönetin
             </p>
           </div>
           <div className="flex space-x-3">
-            <button
-              onClick={() => setShowPlansModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <BuildingOfficeIcon className="-ml-1 mr-2 h-5 w-5" />
-              Planları Yönet
-            </button>
+            {!isMobile && (
+              <button
+                onClick={() => setShowPlansModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback"
+              >
+                <BuildingOfficeIcon className="-ml-1 mr-2 h-5 w-5" />
+                Planları Yönet
+              </button>
+            )}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
             >
               <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-              Fatura Oluştur
+              {!isMobile && 'Fatura Oluştur'}
             </button>
           </div>
         </div>
@@ -387,19 +485,19 @@ const Billing: React.FC = () => {
         {activeTab === 'invoices' && (
           <>
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <DocumentTextIcon className="h-6 w-6 text-gray-400" />
+                      <DocumentTextIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                           Toplam Fatura
                         </dt>
-                        <dd className="text-lg font-medium text-gray-900">
+                        <dd className="text-lg font-medium text-gray-900 dark:text-white">
                           {pagination?.total || 0}
                         </dd>
                       </dl>
@@ -408,20 +506,20 @@ const Billing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-green-600 dark:bg-green-400 rounded-full"></div>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                           Ödenen
                         </dt>
-                        <dd className="text-lg font-medium text-gray-900">
+                        <dd className="text-lg font-medium text-gray-900 dark:text-white">
                           {invoices.filter(inv => inv.status === 'paid').length || 0}
                         </dd>
                       </dl>
@@ -430,20 +528,20 @@ const Billing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 bg-orange-600 rounded-full"></div>
+                      <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-orange-600 dark:bg-orange-400 rounded-full"></div>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                           Gecikmiş
                         </dt>
-                        <dd className="text-lg font-medium text-gray-900">
+                        <dd className="text-lg font-medium text-gray-900 dark:text-white">
                           -
                         </dd>
                       </dl>
@@ -452,20 +550,20 @@ const Billing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                      <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                           Toplam Tutar
                         </dt>
-                        <dd className="text-lg font-medium text-gray-900">
+                        <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-sm' : 'text-lg'}`}>
                           {formatCurrency(invoices.reduce((sum: number, inv: InvoiceRead) => sum + Number((inv.devicePrice as unknown as number) || 0), 0) || 0)}
                         </dd>
                       </dl>
@@ -476,19 +574,19 @@ const Billing: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
                 {/* Search */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                   </div>
                   <input
                     type="text"
                     placeholder="Fatura ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
@@ -496,7 +594,7 @@ const Billing: React.FC = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="all">Tüm Durumlar</option>
                   <option value="active">Aktif</option>
@@ -506,7 +604,7 @@ const Billing: React.FC = () => {
                 </select>
 
                 {/* Results count */}
-                <div className="flex items-center text-sm text-gray-500">
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   {pagination && (
                     <span>
                       {pagination.total} sonuçtan {((page - 1) * 10) + 1}-{Math.min(page * 10, pagination.total || 0)} arası gösteriliyor
@@ -517,114 +615,30 @@ const Billing: React.FC = () => {
             </div>
 
             {/* Invoices Table */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
               {isLoading ? (
                 <div className="p-6 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-2 text-sm text-gray-500">Faturalar yükleniyor...</p>
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Faturalar yükleniyor...</p>
                 </div>
               ) : error ? (
                 <div className="p-6 text-center">
-                  <p className="text-red-600">Faturalar yüklenirken hata oluştu</p>
+                  <p className="text-red-600 dark:text-red-400">Faturalar yüklenirken hata oluştu</p>
                   <button
                     onClick={() => queryClient.invalidateQueries({ queryKey: ['getAdminInvoices'] })}
-                    className="mt-2 text-sm text-primary-600 hover:text-primary-500"
+                    className="mt-2 text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
                   >
                     Tekrar dene
                   </button>
                 </div>
               ) : (
                 <>
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Fatura No
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Abone
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Durum
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Tutar
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Vade Tarihi
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          İşlemler
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {invoices.map((invoice) => (
-                        <tr key={invoice.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-2" />
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">
-                                  {invoice.invoiceNumber}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {(invoice as any).tenantName}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getStatusBadge(invoice.status || undefined)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {formatCurrency(Number(invoice.devicePrice || 0))}
-                            </div>
-                            {invoice.status === 'paid' && (
-                              <div className="text-sm text-green-600">
-                                Ödendi
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() => handleViewInvoice(invoice.id!.toString())}
-                                className="text-primary-600 hover:text-primary-900"
-                                title="Detayları Görüntüle"
-                              >
-                                <EyeIcon className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDownloadPDF(invoice.id!.toString())}
-                                className="text-gray-600 hover:text-gray-900"
-                                title="PDF İndir"
-                              >
-                                <ArrowDownTrayIcon className="h-4 w-4" />
-                              </button>
-                              {invoice.status === 'active' && (
-                                <button
-                                  onClick={() => handlePaymentRecordClick(invoice.id!.toString(), Number(invoice.devicePrice || 0))}
-                                  className="text-green-600 hover:text-green-900 text-xs px-2 py-1 border border-green-300 rounded"
-                                >
-                                  Ödeme Kaydet
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <ResponsiveTable
+                    data={invoices}
+                    columns={invoiceColumns}
+                    keyExtractor={(invoice: InvoiceRead) => invoice.id!.toString()}
+                    emptyMessage="Fatura bulunamadı"
+                  />
 
                   {/* Pagination */}
                   <Pagination

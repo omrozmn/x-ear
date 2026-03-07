@@ -5,7 +5,7 @@ Handles cash register records for cashflow management
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import logging
 
 from sqlalchemy.orm import Session
@@ -32,8 +32,7 @@ class CashRecordCreate(BaseModel):
     id: Optional[str] = None
     tenant_id: Optional[str] = None
     
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
         
     @property
     def party_id(self):

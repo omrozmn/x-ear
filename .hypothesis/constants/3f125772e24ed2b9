@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/addon.py
+# hypothesis_version: 6.151.9
+
+[100, 255, 'FEATURE', 'FLAT_FEE', 'PER_USER', 'TRY', 'USAGE_BASED', 'addon_type', 'addons', 'created_at', 'currency', 'description', 'id', 'is_active', 'limit_amount', 'name', 'price', 'slug', 'unit_name', 'updated_at']

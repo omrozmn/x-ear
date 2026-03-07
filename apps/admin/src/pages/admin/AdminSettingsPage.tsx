@@ -16,8 +16,10 @@ import {
     Shield
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 
 const AdminSettingsPage: React.FC = () => {
+    const { isMobile } = useAdminResponsive();
     const [activeTab, setActiveTab] = useState('general');
     const [settings, setSettings] = useState<any[]>([]);
 
@@ -70,20 +72,20 @@ const AdminSettingsPage: React.FC = () => {
         return settings.filter(s => s.category === category);
     };
 
-    if (isLoading) return <div className="p-12 text-center">Yükleniyor...</div>;
+    if (isLoading) return <div className="p-12 text-center text-gray-500 dark:text-gray-400">Yükleniyor...</div>;
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+        <div className={isMobile ? 'p-4 pb-safe' : 'p-6 max-w-4xl mx-auto'}>
+            <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'} mb-8`}>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Sistem Ayarları</h1>
-                    <p className="text-gray-500">Genel yapılandırma ve bakım işlemleri</p>
+                    <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Sistem Ayarları</h1>
+                    <p className="text-gray-500 dark:text-gray-400">Genel yapılandırma ve bakım işlemleri</p>
                 </div>
-                <div className="flex space-x-3">
+                <div className={`flex ${isMobile ? 'flex-col w-full' : 'space-x-3'} gap-3`}>
                     <button
                         onClick={handleClearCache}
                         disabled={clearCacheMutation.isPending}
-                        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                        className={`inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Önbelleği Temizle
@@ -91,7 +93,7 @@ const AdminSettingsPage: React.FC = () => {
                     <button
                         onClick={handleBackup}
                         disabled={backupMutation.isPending}
-                        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                        className={`inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Database className="h-4 w-4 mr-2" />
                         Yedekle
@@ -99,7 +101,7 @@ const AdminSettingsPage: React.FC = () => {
                     <button
                         onClick={handleSave}
                         disabled={updateMutation.isPending}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+                        className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Save className="h-4 w-4 mr-2" />
                         Kaydet
@@ -107,55 +109,55 @@ const AdminSettingsPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white shadow rounded-lg overflow-hidden flex">
+            <div className={`bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden ${isMobile ? '' : 'flex'}`}>
                 {/* Sidebar */}
-                <div className="w-64 bg-gray-50 border-r border-gray-200 p-4">
-                    <nav className="space-y-1">
+                <div className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 ${isMobile ? 'border-b overflow-x-auto' : 'w-64 border-r'}`}>
+                    <nav className={`${isMobile ? 'flex p-2 space-x-2' : 'p-4 space-y-1'}`}>
                         <button
                             onClick={() => setActiveTab('general')}
-                            className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeTab === 'general' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'general' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                         >
-                            <Globe className="mr-3 h-5 w-5" />
-                            Genel
+                            <Globe className={`h-5 w-5 ${isMobile ? '' : 'mr-3'}`} />
+                            {!isMobile && 'Genel'}
                         </button>
                         <button
                             onClick={() => setActiveTab('mail')}
-                            className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeTab === 'mail' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'mail' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                         >
-                            <Mail className="mr-3 h-5 w-5" />
-                            E-Posta (SMTP)
+                            <Mail className={`h-5 w-5 ${isMobile ? '' : 'mr-3'}`} />
+                            {!isMobile && 'E-Posta (SMTP)'}
                         </button>
                         <button
                             onClick={() => setActiveTab('maintenance')}
-                            className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeTab === 'maintenance' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'maintenance' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                         >
-                            <Server className="mr-3 h-5 w-5" />
-                            Bakım Modu
+                            <Server className={`h-5 w-5 ${isMobile ? '' : 'mr-3'}`} />
+                            {!isMobile && 'Bakım Modu'}
                         </button>
                     </nav>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 p-8">
+                <div className={isMobile ? 'p-4 pb-safe' : 'flex-1 p-8'}>
                     {activeTab === 'general' && (
                         <div className="space-y-6">
-                            <h3 className="text-lg font-medium text-gray-900">Genel Ayarlar</h3>
+                            <h3 className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Genel Ayarlar</h3>
                             {getSettingsByCategory('general').map(setting => (
                                 <div key={setting.key}>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         {setting.key === 'site_name' ? 'Site İsmi' : setting.key}
                                     </label>
                                     <input
                                         type="text"
                                         value={setting.value}
                                         onChange={(e) => updateSetting(setting.key, e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                     />
                                     {setting.description && (
-                                        <p className="mt-1 text-xs text-gray-500">{setting.description}</p>
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{setting.description}</p>
                                     )}
                                 </div>
                             ))}
@@ -164,17 +166,17 @@ const AdminSettingsPage: React.FC = () => {
 
                     {activeTab === 'mail' && (
                         <div className="space-y-6">
-                            <h3 className="text-lg font-medium text-gray-900">E-Posta Ayarları</h3>
+                            <h3 className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>E-Posta Ayarları</h3>
                             {getSettingsByCategory('mail').map(setting => (
                                 <div key={setting.key}>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         {setting.key}
                                     </label>
                                     <input
                                         type={setting.key.includes('pass') ? 'password' : 'text'}
                                         value={setting.value}
                                         onChange={(e) => updateSetting(setting.key, e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                     />
                                 </div>
                             ))}
@@ -183,21 +185,21 @@ const AdminSettingsPage: React.FC = () => {
 
                     {activeTab === 'maintenance' && (
                         <div className="space-y-6">
-                            <h3 className="text-lg font-medium text-gray-900">Bakım Modu</h3>
+                            <h3 className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Bakım Modu</h3>
                             {getSettingsByCategory('maintenance').map(setting => (
                                 <div key={setting.key} className="flex items-center justify-between">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Bakım Modu
                                         </label>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
                                             Aktif edildiğinde sadece adminler giriş yapabilir.
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => updateSetting(setting.key, setting.value === 'true' ? 'false' : 'true')}
-                                        className={`${setting.value === 'true' ? 'bg-primary-600' : 'bg-gray-200'
-                                            } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
+                                        className={`${setting.value === 'true' ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                                            } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 touch-feedback`}
                                     >
                                         <span
                                             className={`${setting.value === 'true' ? 'translate-x-5' : 'translate-x-0'

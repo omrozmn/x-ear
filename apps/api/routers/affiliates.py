@@ -9,8 +9,27 @@ from schemas.base import ResponseEnvelope
 from schemas.affiliates import AffiliateRead, AffiliateCreate, AffiliateUpdate, CommissionRead, AffiliateLoginRequest
 from models.affiliate_user import AffiliateUser
 from services.affiliate_service import AffiliateService
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+import os
+
 logger = logging.getLogger(__name__)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/affiliates/login", auto_error=False)
+SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
+ALGORITHM = "HS256"
+
+def require_affiliate(token: str = Depends(oauth2_scheme)):
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return user_id
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
 router = APIRouter(prefix="/api/affiliates", tags=["Affiliates"])
 
@@ -49,7 +68,15 @@ async def login_affiliate(data: AffiliateLoginRequest, db: Session = Depends(get
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         display_id = f"{user.created_at.strftime('%y%m%d')}{user.id}"
-        return ResponseEnvelope(data={"id": user.id, "display_id": display_id, "email": user.email, "is_active": user.is_active})
+        from routers.auth import create_access_token
+        access_token = create_access_token(identity=str(user.id))
+        return ResponseEnvelope(data={
+            "id": user.id, 
+            "display_id": display_id, 
+            "email": user.email, 
+            "is_active": user.is_active,
+            "access_token": access_token
+        })
     except HTTPException:
         raise
     except Exception as e:
@@ -58,20 +85,16 @@ async def login_affiliate(data: AffiliateLoginRequest, db: Session = Depends(get
 @router.get("/me", operation_id="listAffiliateMe", response_model=ResponseEnvelope[AffiliateRead])
 async def get_me(
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    affiliate_subject_id: str = Depends(require_affiliate)
 ):
     """Get current affiliate info"""
     try:
-        # Get affiliate_id from access context (from JWT token)
-        if not hasattr(access, 'user_id') or not access.user_id:
-            raise HTTPException(status_code=401, detail="Not authenticated as affiliate")
-        
         # user_id might be UUID string or int, handle both
         try:
-            affiliate_id = int(access.user_id)
+            affiliate_id = int(affiliate_subject_id)
         except (ValueError, TypeError):
             # If it's a UUID string, query by UUID instead
-            user = db.query(AffiliateUser).filter(AffiliateUser.id == access.user_id).first()
+            user = db.query(AffiliateUser).filter(AffiliateUser.id == affiliate_subject_id).first()
             if not user:
                 raise HTTPException(status_code=404, detail="Affiliate not found")
             return ResponseEnvelope(data=user)
@@ -86,18 +109,32 @@ async def get_me(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.patch("/{affiliate_id}", operation_id="updateAffiliate", response_model=ResponseEnvelope[AffiliateRead])
-async def update_affiliate_payment(affiliate_id: int, data: AffiliateUpdate, db: Session = Depends(get_db)):
+async def update_affiliate_payment(
+    affiliate_id: int, 
+    data: AffiliateUpdate, 
+    db: Session = Depends(get_db),
+    affiliate_subject_id: str = Depends(require_affiliate)
+):
     """Update affiliate payment info"""
     try:
+        if str(affiliate_id) != affiliate_subject_id:
+            raise HTTPException(status_code=403, detail="Forbidden")
         user = AffiliateService.update_payment_info(db, affiliate_id, data.iban, data.company_name, data.phone)
         return ResponseEnvelope(data=user)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/{affiliate_id}/commissions", operation_id="listAffiliateCommissions", response_model=ResponseEnvelope[List[CommissionRead]])
-async def get_affiliate_commissions(affiliate_id: int, db: Session = Depends(get_db)):
-    """Get affiliate commissions"""
+async def get_affiliate_commissions(
+    affiliate_id: int, 
+    db: Session = Depends(get_db),
+    affiliate_subject_id: str = Depends(require_affiliate)
+):
+    """Get affiliate's commissions"""
     try:
+        if str(affiliate_id) != affiliate_subject_id:
+             raise HTTPException(status_code=403, detail="Forbidden")
+             
         commissions = AffiliateService.get_commissions(db, affiliate_id)
         return ResponseEnvelope(data=[{"id": c.id, "event": c.event, "amount": float(c.amount), "status": c.status, "createdAt": c.created_at.isoformat() if c.created_at else None} for c in commissions])
     except Exception as e:

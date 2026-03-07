@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGetEmailLogs } from '@/api/generated/email-logs/email-logs';
-import type { EmailLogResponse as EmailLog } from '@/api/generated/schemas';
+import type { EmailLogResponse } from '@/api/generated/schemas';
 import {
   Card,
   CardHeader,
@@ -14,21 +14,27 @@ import {
   Pagination,
 } from '@x-ear/ui-web';
 import { EnvelopeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import type { Column } from '@x-ear/ui-web';
 import { EmailIntegrationNav } from '@/components/integrations/EmailIntegrationNav';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
 
 
 const EmailLogs: React.FC = () => {
+  const { isMobile } = useAdminResponsive();
+  
+  // Type alias for easier usage
+  type EmailLog = EmailLogResponse;
+  
   // Pagination state
   const [page, setPage] = useState(1);
-  const [perPage] = useState(25);
+  const [pageSize, setPageSize] = useState(25);
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [recipientFilter, setRecipientFilter] = useState('');
-  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
-  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
 
   // Expandable rows state
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -36,7 +42,7 @@ const EmailLogs: React.FC = () => {
   // Fetch email logs with filters
   const { data: logsData, isLoading } = useGetEmailLogs({
     page,
-    perPage,
+    perPage: pageSize,
     status: statusFilter || undefined,
     recipient: recipientFilter || undefined,
     dateFrom: dateFrom?.toISOString(),
@@ -104,26 +110,27 @@ const EmailLogs: React.FC = () => {
     }).format(date);
   };
 
-  // Table columns
-  const columns: Column<EmailLog>[] = [
+  // ResponsiveTable columns
+  const columns = [
     {
       key: 'recipient',
-      title: 'Alıcı',
-      render: (_, log) => (
-        <div className="font-medium text-gray-900">{log.recipient}</div>
+      header: 'Alıcı',
+      render: (log: EmailLog) => (
+        <div className="font-medium text-gray-900 dark:text-white">{log.recipient}</div>
       ),
     },
     {
       key: 'subject',
-      title: 'Konu',
-      render: (_, log) => (
-        <div className="max-w-xs truncate text-gray-700">{log.subject}</div>
+      header: 'Konu',
+      mobileHidden: true,
+      render: (log: EmailLog) => (
+        <div className="max-w-xs truncate text-gray-700 dark:text-gray-300">{log.subject}</div>
       ),
     },
     {
       key: 'status',
-      title: 'Durum',
-      render: (_, log) => (
+      header: 'Durum',
+      render: (log: EmailLog) => (
         <Badge variant={getStatusBadgeVariant(log.status)}>
           {getStatusLabel(log.status)}
         </Badge>
@@ -131,41 +138,44 @@ const EmailLogs: React.FC = () => {
     },
     {
       key: 'scenario',
-      title: 'Senaryo',
-      render: (_, log) => (
-        <span className="text-sm text-gray-600">
+      header: 'Senaryo',
+      mobileHidden: true,
+      render: (log: EmailLog) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">
           {log.scenario || '-'}
         </span>
       ),
     },
     {
       key: 'retryCount',
-      title: 'Deneme',
-      render: (_, log) => (
-        <span className="text-sm text-gray-600">{log.retryCount}</span>
+      header: 'Deneme',
+      mobileHidden: true,
+      render: (log: EmailLog) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">{log.retryCount}</span>
       ),
     },
     {
       key: 'createdAt',
-      title: 'Oluşturulma',
-      render: (_, log) => (
-        <span className="text-sm text-gray-600">{formatDate(log.createdAt)}</span>
+      header: 'Oluşturulma',
+      mobileHidden: true,
+      render: (log: EmailLog) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">{formatDate(log.createdAt)}</span>
       ),
     },
     {
       key: 'sentAt',
-      title: 'Gönderilme',
-      render: (_, log) => (
-        <span className="text-sm text-gray-600">{formatDate(log.sentAt)}</span>
+      header: 'Gönderilme',
+      render: (log: EmailLog) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">{formatDate(log.sentAt)}</span>
       ),
     },
     {
       key: 'actions',
-      title: '',
-      render: (_, log) => (
+      header: '',
+      render: (log: EmailLog) => (
         <button
           onClick={() => toggleRowExpansion(log.id)}
-          className="text-primary-600 hover:text-primary-700 p-1"
+          className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 p-1 touch-feedback"
           aria-label={expandedRows.has(log.id) ? 'Daralt' : 'Genişlet'}
         >
           {expandedRows.has(log.id) ? (
@@ -232,27 +242,27 @@ const EmailLogs: React.FC = () => {
     setPage(1); // Reset to first page
   };
 
-  const handleDateFromChange = (date: Date | null) => {
-    setDateFrom(date || undefined);
+  const handleDateFromChange = (date: Date | null | undefined) => {
+    setDateFrom(date || null);
     setPage(1); // Reset to first page
   };
 
-  const handleDateToChange = (date: Date | null) => {
-    setDateTo(date || undefined);
+  const handleDateToChange = (date: Date | null | undefined) => {
+    setDateTo(date || null);
     setPage(1); // Reset to first page
   };
 
   const handleClearFilters = () => {
     setStatusFilter('');
     setRecipientFilter('');
-    setDateFrom(undefined);
-    setDateTo(undefined);
+    setDateFrom(null);
+    setDateTo(null);
     setPage(1);
   };
 
   if (isLoading) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
+      <div className={`flex items-center justify-center min-h-[400px] ${isMobile ? 'p-4' : 'p-6'}`}>
         <div data-testid="spinner">
           <Spinner />
         </div>
@@ -261,13 +271,13 @@ const EmailLogs: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className={isMobile ? 'p-4 pb-safe' : 'p-6'}>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-          <EnvelopeIcon className="h-7 w-7 mr-2 text-primary-600" />
+        <h1 className={`font-bold text-gray-900 dark:text-white flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+          <EnvelopeIcon className={`mr-2 text-primary-600 dark:text-primary-400 ${isMobile ? 'h-6 w-6' : 'h-7 w-7'}`} />
           E-posta Entegrasyonu
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Gönderilen e-postaların geçmişi ve durumu
         </p>
       </div>
@@ -280,7 +290,7 @@ const EmailLogs: React.FC = () => {
           <CardTitle>Filtreler</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
             {/* Status Filter */}
             <div>
               <Select
@@ -351,66 +361,43 @@ const EmailLogs: React.FC = () => {
       </Card>
 
       {/* Email Logs Table */}
-      <Card>
-        <CardContent className="p-0">
-          {logs.length === 0 ? (
-            <div className="text-center py-12" data-testid="empty-state">
-              <EnvelopeIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">E-posta logu bulunamadı</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Henüz gönderilmiş e-posta bulunmuyor veya filtrelerinize uygun sonuç yok.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      {columns.map((column) => (
-                        <th
-                          key={column.key}
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          {column.title}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {logs.map((log) => (
-                      <React.Fragment key={log.id}>
-                        <tr className="hover:bg-gray-50">
-                          {columns.map((column) => (
-                            <td key={column.key} className="px-6 py-4 whitespace-nowrap">
-                              {column.render ? column.render(null, log, 0) : (log as any)[column.key]}
-                            </td>
-                          ))}
-                        </tr>
-                        {renderExpandedRow(log)}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        {logs.length === 0 ? (
+          <div className="text-center py-12" data-testid="empty-state">
+            <EnvelopeIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">E-posta logu bulunamadı</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Henüz gönderilmiş e-posta bulunmuyor veya filtrelerinize uygun sonuç yok.
+            </p>
+          </div>
+        ) : (
+          <>
+            <ResponsiveTable
+              data={logs}
+              columns={columns}
+              keyExtractor={(log: EmailLog) => log.id}
+              emptyMessage="E-posta logu bulunamadı."
+            />
 
-              {/* Pagination */}
-              <div className="px-6 py-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
-                    Toplam <span className="font-medium">{total}</span> kayıt bulundu
-                  </div>
-                  <Pagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
-                  />
+            {/* Pagination */}
+            <div className={`border-t border-gray-200 dark:border-gray-700 ${isMobile ? 'p-4' : 'px-6 py-4'}`}>
+              <div className={`flex items-center ${isMobile ? 'flex-col gap-3' : 'justify-between'}`}>
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  Toplam <span className="font-medium">{total}</span> kayıt bulundu
                 </div>
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  totalItems={total}
+                  itemsPerPage={pageSize}
+                  onPageChange={setPage}
+                  onItemsPerPageChange={setPageSize}
+                />
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

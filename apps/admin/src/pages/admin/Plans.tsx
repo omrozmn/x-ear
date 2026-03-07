@@ -7,11 +7,14 @@ import { useListAdminPlans, useDeleteAdminPlan } from '@/lib/api-client';
 import type { DetailedPlanRead as PlanRead } from '@/api/generated/schemas';
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/ui/Pagination';
+import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
 const PLAN_TYPES = ['BASIC', 'PRO', 'ENTERPRISE', 'CUSTOM'];
 const BILLING_INTERVALS = ['MONTHLY', 'YEARLY', 'QUARTERLY'];
 
 const Plans: React.FC = () => {
+  const { isMobile } = useAdminResponsive();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -201,102 +204,136 @@ const Plans: React.FC = () => {
     setFormData({ ...formData, features: newFeatures });
   };
 
+  const columns = [
+    {
+      key: 'name',
+      header: 'İsim',
+      render: (plan: PlanRead) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900 dark:text-white">{plan.name}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{plan.description}</div>
+        </div>
+      )
+    },
+    {
+      key: 'planType',
+      header: 'Tip',
+      mobileHidden: true,
+      render: (plan: PlanRead) => (
+        <div>
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+            {plan.planType || (plan as any).plan_type}
+          </span>
+          <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+            {plan.billingInterval || (plan as any).billing_interval}
+          </span>
+        </div>
+      )
+    },
+    {
+      key: 'price',
+      header: 'Fiyat',
+      render: (plan: PlanRead) => (
+        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+          {plan.price?.toLocaleString('tr-TR')} ₺
+        </span>
+      )
+    },
+    {
+      key: 'maxUsers',
+      header: 'Kullanıcılar',
+      mobileHidden: true,
+      render: (plan: PlanRead) => (
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {plan.maxUsers || (plan as any).max_users} Kullanıcı
+        </span>
+      )
+    },
+    {
+      key: 'isActive',
+      header: 'Durum',
+      render: (plan: PlanRead) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          plan.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+        }`}>
+          {plan.isActive ? 'Aktif' : 'Pasif'}
+        </span>
+      )
+    },
+    {
+      key: 'actions',
+      header: 'İşlemler',
+      render: (plan: PlanRead) => (
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => { setTogglingPlan(plan); setIsToggleModalOpen(true); }}
+            className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded transition-colors touch-feedback ${
+              plan.isActive
+                ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900 dark:text-amber-200'
+                : 'text-green-700 bg-green-50 hover:bg-green-100 dark:bg-green-900 dark:text-green-200'
+            }`}
+          >
+            {plan.isActive ? 'Pasife Al' : 'Aktifleştir'}
+          </button>
+          <button
+            onClick={() => handleOpenModal(plan)}
+            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors touch-feedback"
+            title="Düzenle"
+          >
+            <PencilIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => { setDeletingPlanId(plan.id!); setIsDeleteModalOpen(true); }}
+            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900 transition-colors touch-feedback"
+            title="Sil"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
+        </div>
+      )
+    }
+  ];
+
   return (
     <>
-      <div className="p-6 space-y-6">
+      <div className={isMobile ? 'p-4 pb-safe space-y-6' : 'p-6 space-y-6'}>
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Planlar</h1>
-            <p className="mt-1 text-sm text-gray-500">Abonelik planlarını ve fiyatlandırmayı yönetin</p>
+            <h1 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+              Planlar
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Abonelik planlarını ve fiyatlandırmayı yönetin
+            </p>
           </div>
           <button
             onClick={() => handleOpenModal()}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-            Plan Ekle
+            {!isMobile && 'Plan Ekle'}
           </button>
         </div>
 
         {isLoading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-sm text-gray-500">Planlar yükleniyor...</p>
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Planlar yükleniyor...</p>
           </div>
         ) : error ? (
-          <div className="p-6 text-center text-red-600 bg-red-50 rounded-lg">Planlar yüklenirken hata oluştu</div>
+          <div className="p-6 text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            Planlar yüklenirken hata oluştu
+          </div>
         ) : (
-          <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İsim</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tip</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcılar</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {plans.map((plan: PlanRead) => (
-                  <tr key={plan.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{plan.name}</div>
-                      <div className="text-xs text-gray-500">{plan.description}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                        {plan.planType || (plan as any).plan_type}
-                      </span>
-                      <span className="ml-2 text-xs text-gray-400">
-                        {plan.billingInterval || (plan as any).billing_interval}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      {plan.price?.toLocaleString('tr-TR')} ₺
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {plan.maxUsers || (plan as any).max_users} Kullanıcı
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {plan.isActive ? 'Aktif' : 'Pasif'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          onClick={() => { setTogglingPlan(plan); setIsToggleModalOpen(true); }}
-                          className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded transition-colors ${plan.isActive
-                            ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
-                            : 'text-green-700 bg-green-50 hover:bg-green-100'
-                            }`}
-                        >
-                          {plan.isActive ? 'Pasife Al' : 'Aktifleştir'}
-                        </button>
-                        <button
-                          onClick={() => handleOpenModal(plan)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                          title="Düzenle"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => { setDeletingPlanId(plan.id!); setIsDeleteModalOpen(true); }}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                          title="Sil"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <ResponsiveTable
+              data={plans}
+              columns={columns}
+              keyExtractor={(plan: PlanRead) => plan.id!}
+              emptyMessage="Plan bulunamadı"
+            />
 
-            <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 sm:px-6">
+            <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
               <Pagination
                 currentPage={page}
                 totalPages={pagination?.totalPages || 1}

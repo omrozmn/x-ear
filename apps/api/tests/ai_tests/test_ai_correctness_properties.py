@@ -23,7 +23,7 @@ import logging
 from ai.agents.intent_refiner import IntentRefiner, IntentRefinerResult, RefinerStatus
 from ai.agents.action_planner import ActionPlanner, ActionPlan, ActionPlannerResult, PlannerStatus
 from ai.schemas.llm_outputs import IntentType, IntentOutput, RiskLevel
-from ai.services.conversation_memory import ConversationMemory
+from ai.services.conversation_memory import ConversationMemory, MemoryConversationMemory
 
 
 # =============================================================================
@@ -258,7 +258,7 @@ def test_property_19_conversation_context_persistence(session_id, user_message, 
     
     Validates: Requirements 4.6
     """
-    memory = ConversationMemory()
+    memory = MemoryConversationMemory()
     
     # Add a conversation turn
     memory.add_turn(

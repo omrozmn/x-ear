@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import { Input, Button } from '@x-ear/ui-web';
 import { useAuthStore } from '../../../stores/authStore';
 import { useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
 import {
   useListSuppliers,
@@ -15,6 +16,7 @@ import {
 interface SupplierAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  onSupplierCreated?: (supplierName: string, supplierId?: string) => void;
   placeholder?: string;
   label?: string;
   className?: string;
@@ -25,6 +27,7 @@ interface SupplierAutocompleteProps {
 export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   value,
   onChange,
+  onSupplierCreated,
   placeholder = "Tedarikçi adı",
   label = "Tedarikçi",
   className = '',
@@ -248,18 +251,51 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     if (!newSupplier) return;
 
     try {
-      await createSupplierMutation.mutateAsync({ data: { name: newSupplier, companyName: newSupplier } });
-      console.log('✅ New supplier created:', newSupplier);
+      const result = await createSupplierMutation.mutateAsync({ data: { name: newSupplier, companyName: newSupplier } });
+
+      // Extract created supplier ID from response
+      const createdId = (result as Record<string, unknown>)?.data
+        ? String(((result as Record<string, unknown>).data as Record<string, unknown>)?.id || '')
+        : '';
 
       // Invalidate React Query cache to refetch suppliers
       queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });
+
+      // Show toast with edit/dismiss actions
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-2">
+            <span className="text-sm">
+              <strong>{newSupplier}</strong> tedarikçi olarak eklendi. Detaylarını düzenlemek ister misiniz?
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  onSupplierCreated?.(newSupplier, createdId);
+                }}
+                className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-nowrap"
+              >
+                Tedarikçiye Git
+              </button>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="px-3 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 whitespace-nowrap"
+              >
+                Daha Sonra
+              </button>
+            </div>
+          </div>
+        ),
+        { duration: 8000 }
+      );
     } catch (error: unknown) {
       if ((error as { response?: { status?: number } }).response?.status === 409) {
-        console.log('Supplier already exists, using existing:', newSupplier);
-        // Invalidate cache
+        toast.success(`${newSupplier} zaten mevcut, kullanılıyor.`);
         queryClient.invalidateQueries({ queryKey: getListSuppliersQueryKey() });
       } else {
-        console.warn('Failed to persist supplier to API, using locally:', error);
+        toast.error('Tedarikçi eklenirken bir hata oluştu');
+        console.warn('Failed to persist supplier to API:', error);
       }
     }
 

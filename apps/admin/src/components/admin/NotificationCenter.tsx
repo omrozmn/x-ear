@@ -16,9 +16,9 @@ export function NotificationCenter() {
         query: {
             retry: false,
             refetchOnWindowFocus: false,
-            // Suppress errors - notifications are optional
-            onError: (error: any) => {
-                console.warn('[NotificationCenter] Notifications endpoint not available:', error?.response?.status);
+            // Suppress errors - notifications are optional (TanStack Query v5 uses meta for error handling)
+            meta: {
+                suppressError: true
             }
         }
     });

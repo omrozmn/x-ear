@@ -209,3 +209,137 @@ def update_settings(
         db_session.rollback()
         logger.error(f"Update settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Party Segments & Acquisition Types ---
+
+class PartySegmentOption(BaseModel):
+    value: str
+    label: str
+
+class AcquisitionTypeOption(BaseModel):
+    value: str
+    label: str
+
+class PartySegmentsResponse(BaseModel):
+    segments: list[PartySegmentOption]
+    acquisitionTypes: list[AcquisitionTypeOption]
+
+@router.get("/settings/party-segments", operation_id="getPartySegments", response_model=ResponseEnvelope[PartySegmentsResponse])
+def get_party_segments(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get party segments and acquisition types"""
+    try:
+        settings_record = db_session.get(Settings, 'party_segments')
+        
+        # Default segments and acquisition types
+        default_segments = [
+            {"value": "new", "label": "Yeni"},
+            {"value": "lead", "label": "Potansiyel Müşteri"},
+            {"value": "trial", "label": "Deneme Aşamasında"},
+            {"value": "customer", "label": "Müşteri"},
+            {"value": "control", "label": "Kontrol Hastası"},
+            {"value": "renewal", "label": "Yenileme"},
+            {"value": "existing", "label": "Mevcut Hasta"},
+            {"value": "vip", "label": "VIP"},
+        ]
+        
+        default_acquisitions = [
+            {"value": "referral", "label": "Referans"},
+            {"value": "online", "label": "Online"},
+            {"value": "walk-in", "label": "Ziyaret"},
+            {"value": "social-media", "label": "Sosyal Medya"},
+            {"value": "advertisement", "label": "Reklam"},
+            {"value": "tabela", "label": "Tabela"},
+            {"value": "other", "label": "Diğer"},
+        ]
+        
+        if settings_record:
+            data = json.loads(settings_record.settings_data)
+            segments = data.get('segments', default_segments)
+            acquisition_types = data.get('acquisitionTypes', default_acquisitions)
+        else:
+            segments = default_segments
+            acquisition_types = default_acquisitions
+            
+        return ResponseEnvelope(data=PartySegmentsResponse(
+            segments=[PartySegmentOption(**s) for s in segments],
+            acquisitionTypes=[AcquisitionTypeOption(**a) for a in acquisition_types]
+        ))
+        
+    except Exception as e:
+        logger.error(f"Get party segments error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/settings/party-segments", operation_id="updatePartySegments", response_model=ResponseEnvelope[PartySegmentsResponse])
+def update_party_segments(
+    segments_data: Dict[str, Any] = Body(...),
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Update party segments and acquisition types"""
+    try:
+        settings_record = db_session.get(Settings, 'party_segments')
+        if not settings_record:
+            settings_record = Settings(id='party_segments', settings_data="{}")
+            db_session.add(settings_record)
+        
+        # Validate and save the data
+        segments = segments_data.get('segments', [])
+        acquisition_types = segments_data.get('acquisitionTypes', [])
+        
+        data = {
+            'segments': segments,
+            'acquisitionTypes': acquisition_types
+        }
+        
+        settings_record.settings_data = json.dumps(data)
+        db_session.commit()
+        
+        return ResponseEnvelope(data=PartySegmentsResponse(
+            segments=[PartySegmentOption(**s) for s in segments],
+            acquisitionTypes=[AcquisitionTypeOption(**a) for a in acquisition_types]
+        ))
+        
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update party segments error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/settings/party-segments/usage/{segment_type}/{value}", operation_id="getSegmentUsage", response_model=ResponseEnvelope[Dict[str, Any]])
+def get_segment_usage(
+    segment_type: str,  # 'segment' or 'acquisition'
+    value: str,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get usage count for a specific segment or acquisition type"""
+    try:
+        # Import Party model here to avoid circular imports
+        from core.models.party import Party
+        
+        if segment_type == 'segment':
+            count = db_session.query(Party).filter(
+                Party.segment == value,
+                Party.tenant_id == access.tenant_id
+            ).count()
+        elif segment_type == 'acquisition':
+            count = db_session.query(Party).filter(
+                Party.acquisition_type == value,
+                Party.tenant_id == access.tenant_id
+            ).count()
+        else:
+            raise HTTPException(status_code=400, detail="Invalid segment_type. Must be 'segment' or 'acquisition'")
+        
+        return ResponseEnvelope(data={
+            "count": count,
+            "canDelete": count == 0,
+            "message": f"Bu {'segment' if segment_type == 'segment' else 'kazanım türü'} {count} hasta tarafından kullanılıyor." if count > 0 else "Güvenle silinebilir."
+        })
+        
+    except Exception as e:
+        logger.error(f"Get segment usage error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

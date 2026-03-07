@@ -180,6 +180,24 @@ class PartyService:
             query = query.filter(Party.segment == segment)
         return query.count()
 
+    def search_parties(self, tenant_id: str, query: str, limit: int = 10) -> List[Party]:
+        """Search parties by name or phone for selection purposes"""
+        from sqlalchemy import or_
+        
+        search_query = self.db.query(Party).filter_by(tenant_id=tenant_id)
+        
+        # Fuzzy search on name and phone
+        search_terms = f"%{query}%"
+        search_query = search_query.filter(
+            or_(
+                Party.first_name.ilike(search_terms),
+                Party.last_name.ilike(search_terms),
+                Party.phone.ilike(search_terms)
+            )
+        )
+        
+        return search_query.limit(limit).all()
+
     # --- Role Management (Remediation 5.1) ---
 
     def assign_role(self, party_id: str, role_code: str, tenant_id: str) -> None:

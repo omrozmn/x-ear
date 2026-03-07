@@ -346,7 +346,7 @@ def send_campaign(
 
 # --- ADMIN ROUTES ---
 
-@router.get("/admin/campaigns", operation_id="listAdminCampaigns", response_model=ResponseEnvelope[List[CampaignRead]])
+@router.get("/admin/campaigns", operation_id="listAdminCampaigns")
 def admin_get_campaigns(
     page: int = 1,
     limit: int = 10,
@@ -355,36 +355,55 @@ def admin_get_campaigns(
     admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
-    """List all campaigns (Admin)"""
+    """List all campaigns (Admin) - includes tenant information"""
     try:
-        query = db.query(CampaignModel)
+        from core.models.tenant import Tenant
+        from core.database import unbound_session
         
-        if search:
-            query = query.filter(
-                or_(
-                    CampaignModel.name.ilike(f'%{search}%'),
-                    CampaignModel.description.ilike(f'%{search}%')
+        # Use unbound_session for admin cross-tenant query
+        with unbound_session(reason="admin-campaigns-list"):
+            query = db.query(CampaignModel)
+            
+            if search:
+                query = query.filter(
+                    or_(
+                        CampaignModel.name.ilike(f'%{search}%'),
+                        CampaignModel.description.ilike(f'%{search}%')
+                    )
                 )
-            )
-        
-        if status:
-            query = query.filter(CampaignModel.status == status)
+            
+            if status:
+                query = query.filter(CampaignModel.status == status)
 
-        query = query.order_by(desc(CampaignModel.created_at))
-        
-        total = query.count()
-        campaigns = query.offset((page - 1) * limit).limit(limit).all()
-        
-        # Use Pydantic schema for type-safe serialization (NO to_dict())
-        return ResponseEnvelope(
-            data=[CampaignRead.model_validate(c).model_dump(by_alias=True) for c in campaigns],
-            meta={
-                "total": total,
-                "page": page,
-                "perPage": limit,
-                "totalPages": (total + limit - 1) // limit
-            }
-        )
+            query = query.order_by(desc(CampaignModel.created_at))
+            
+            total = query.count()
+            campaigns = query.offset((page - 1) * limit).limit(limit).all()
+            
+            # Add tenant information to each campaign
+            campaigns_data = []
+            for c in campaigns:
+                campaign_dict = CampaignRead.model_validate(c).model_dump(by_alias=True)
+                
+                # Add tenant name and email
+                if c.tenant_id:
+                    tenant = db.get(Tenant, c.tenant_id)
+                    if tenant:
+                        campaign_dict['tenantName'] = tenant.name
+                        campaign_dict['tenantEmail'] = tenant.billing_email or tenant.contact_email
+                
+                campaigns_data.append(campaign_dict)
+            
+            return ResponseEnvelope(
+                data=campaigns_data,
+                meta={
+                    "total": total,
+                    "page": page,
+                    "perPage": limit,
+                    "totalPages": (total + limit - 1) // limit
+                }
+            )
+            
     except Exception as e:
         logger.error(f"Admin get campaigns error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/device_tools.py
+# hypothesis_version: 6.151.9
+
+['1.0.0', '1.1.0', 'Assign Device', 'Assigned (Simulated)', 'Assignment details', 'Assignment not found', 'Binaural', 'Check Device Stock', 'Device details', 'Device not found', 'Filter by brand', 'Filter by model', 'Get Device By ID', 'Items per page', 'Left', 'List Devices', 'List of devices', 'Page number', 'Right', 'Stock summary', 'action', 'assignDevice', 'assign_device', 'assignment_id', 'brand', 'category', 'checkDeviceStock', 'db', 'default', 'device_id', 'devices.assign', 'devices.view', 'ear_side', 'getDeviceById', 'id', 'integer', 'items', 'listDevices', 'model', 'object', 'page', 'party_id', 'perPage', 'per_page', 'quantity', 'serialNumber', 'status', 'string', 'system', 'tenant_id', 'to_dict', 'total', 'totalItems', 'totalQuantity', 'updates', 'user_id']

@@ -1,70 +1,101 @@
 "use client";
 
-import Link from "next/link";
-import AppHeader from "../AppHeader";
-import { Menu } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Scene } from "@/components/canvas/Scene";
+import { HyperGlassCard } from "@/components/ui/HyperGlassCard";
+import { TextReveal } from "@/components/ui/TextReveal";
+import { motion } from "framer-motion";
+import { ChevronDown, HelpCircle } from "lucide-react";
+import { useState } from "react";
 
-export default function FAQ() {
+const faqs = [
+    {
+        question: "X-Ear nedir ve ne işe yarar?",
+        answer: "X-Ear, işitme merkezleri için özel olarak tasarlanmış bulut tabanlı bir CRM (Müşteri İlişkileri Yönetimi) yazılımıdır. Hasta takibi, randevu yönetimi, cihaz denemeleri, envanter kontrolü, SGK entegrasyonu ve SMS pazarlama gibi birçok süreci dijitalleştirerek kliniğinizin verimliliğini artırır."
+    },
+    {
+        question: "Hangi paket bana uygun?",
+        answer: "Paketlerimiz, kliniğinizin büyüklüğüne ve ihtiyaçlarına göre ölçeklendirilmiştir. 'Temel' paketimiz yeni başlayan küçük klinikler için idealken, 'Profesyonel' ve 'Business' paketlerimiz büyüyen ve daha fazla otomasyon ihtiyacı duyan işletmelere yöneliktir. 'Enterprise' paketimiz ise zincir klinikler için özel çözümler sunar."
+    },
+    {
+        question: "SGK Medula entegrasyonu nasıl çalışıyor?",
+        answer: "Business ve Enterprise paketlerimizde bulunan SGK Medula entegrasyonu, e-reçeteleri sistemimize OCR (Optik Karakter Tanıma) teknolojisi ile otomatik olarak aktarmanızı sağlar. Bu sayede manuel veri girişini ortadan kaldırır, zamandan tasarruf eder ve hataları en aza indirirsiniz."
+    },
+    {
+        question: "Verilerim güvende mi?",
+        answer: "Evet, verilerinizin güvenliği bizim için en önemli önceliktir. Tüm verileriniz, sektör standardı güvenlik protokolleri ile korunan bulut sunucularımızda şifrelenerek saklanır. Düzenli olarak yedeklemeler alınır ve sistemimiz sürekli olarak izlenir."
+    }
+];
+
+export default function FAQPage() {
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-gray-300 font-sans selection:bg-indigo-500 selection:text-white">
-            {/* Background Gradients */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(at_27%_37%,hsla(215,98%,61%,0.1)_0px,transparent_50%),radial-gradient(at_97%_21%,hsla(125,98%,72%,0.1)_0px,transparent_50%),radial-gradient(at_52%_99%,hsla(355,98%,61%,0.1)_0px,transparent_50%),radial-gradient(at_10%_29%,hsla(256,96%,61%,0.1)_0px,transparent_50%),radial-gradient(at_97%_96%,hsla(38,60%,74%,0.1)_0px,transparent_50%),radial-gradient(at_33%_50%,hsla(222,67%,73%,0.1)_0px,transparent_50%),radial-gradient(at_79%_53%,hsla(343,68%,79%,0.1)_0px,transparent_50%)]"></div>
+        <div className="min-h-screen bg-background text-foreground selection:bg-accent-blue/30 relative flex flex-col">
+            <Header />
+            <div className="fixed inset-0 z-0">
+                <Scene />
             </div>
 
-            <AppHeader />
-
-            <main className="min-h-screen flex items-center justify-center pt-20 relative z-10">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <div className="text-center mb-12 pt-20">
-                        <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-                            Sıkça Sorulan Sorular
+            <main className="flex-grow pt-32 pb-24 relative z-10">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-glow mb-6">
+                            <TextReveal>Sıkça</TextReveal>
+                            <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-purple font-display font-bold">
+                                <TextReveal delay={0.4}>Sorulan Sorular</TextReveal>
+                            </span>
                         </h1>
-                        <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto">
+                        <p className="text-lg md:text-xl text-foreground/60 max-w-2xl mx-auto leading-relaxed">
                             Aklınıza takılan soruların cevaplarını burada bulabilirsiniz.
                         </p>
                     </div>
 
-                    <div className="space-y-6">
-                        <FAQCard
-                            question="X-Ear nedir ve ne işe yarar?"
-                            answer="X-Ear, işitme merkezleri için özel olarak tasarlanmış bulut tabanlı bir CRM (Müşteri İlişkileri Yönetimi) yazılımıdır. Hasta takibi, randevu yönetimi, cihaz denemeleri, envanter kontrolü, SGK entegrasyonu ve SMS pazarlama gibi birçok süreci dijitalleştirerek kliniğinizin verimliliğini artırır."
-                        />
-                        <FAQCard
-                            question="Hangi paket bana uygun?"
-                            answer={
-                                <>
-                                    Paketlerimiz, kliniğinizin büyüklüğüne ve ihtiyaçlarına göre ölçeklendirilmiştir. "Temel" paketimiz yeni
-                                    başlayan küçük klinikler için idealken, "Profesyonel" ve "Business" paketlerimiz büyüyen ve daha fazla
-                                    otomasyon ihtiyacı duyan işletmelere yöneliktir. "Enterprise" paketimiz ise zincir klinikler için özel
-                                    çözümler sunar. Detaylı bilgi için{" "}
-                                    <Link href="/pricing" className="text-indigo-400 hover:underline">
-                                        paketler sayfamızı
-                                    </Link>{" "}
-                                    inceleyebilirsiniz.
-                                </>
-                            }
-                        />
-                        <FAQCard
-                            question="SGK Medula entegrasyonu nasıl çalışıyor?"
-                            answer="Business ve Enterprise paketlerimizde bulunan SGK Medula entegrasyonu, e-reçeteleri sistemimize OCR (Optik Karakter Tanıma) teknolojisi ile otomatik olarak aktarmanızı sağlar. Bu sayede manuel veri girişini ortadan kaldırır, zamandan tasarruf eder ve hataları en aza indirirsiniz."
-                        />
-                        <FAQCard
-                            question="Verilerim güvende mi?"
-                            answer="Evet, verilerinizin güvenliği bizim için en önemli önceliktir. Tüm verileriniz, sektör standardı güvenlik protokolleri ile korunan bulut sunucularımızda şifrelenerek saklanır. Düzenli olarak yedeklemeler alınır ve sistemimiz sürekli olarak izlenir."
-                        />
+                    <div className="space-y-4">
+                        {faqs.map((faq, idx) => (
+                            <FAQItem key={idx} {...faq} index={idx} />
+                        ))}
                     </div>
                 </div>
             </main>
+
+            <Footer />
         </div>
     );
 }
 
-function FAQCard({ question, answer }: { question: string; answer: React.ReactNode }) {
+function FAQItem({ question, answer, index }: { question: string; answer: string; index: number }) {
+    const [isOpen, setIsOpen] = useState(false);
+
     return (
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h3 className="text-xl font-bold text-white mb-3">{question}</h3>
-            <p className="text-slate-300">{answer}</p>
-        </div>
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+        >
+            <HyperGlassCard
+                className={`overflow-hidden transition-all duration-300 ${isOpen ? 'ring-1 ring-accent-blue/30 shadow-lg shadow-accent-blue/10' : ''}`}
+            >
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full text-left p-6 md:p-8 flex items-center justify-between group"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-xl transition-colors ${isOpen ? 'bg-accent-blue/10 text-accent-blue' : 'bg-foreground/5 text-foreground/40 group-hover:text-foreground/60'}`}>
+                            <HelpCircle className="w-5 h-5" />
+                        </div>
+                        <h3 className={`text-lg md:text-xl font-display font-bold transition-colors ${isOpen ? 'text-foreground' : 'text-foreground/80'}`}>
+                            {question}
+                        </h3>
+                    </div>
+                    <ChevronDown className={`w-6 h-6 text-foreground/20 transition-transform duration-300 ${isOpen ? 'rotate-180 text-accent-blue' : ''}`} />
+                </button>
+                <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="px-6 md:px-8 pb-8 pt-0 text-foreground/60 leading-relaxed text-base md:text-lg border-t border-foreground/5 mt-2 pt-6">
+                        {answer}
+                    </div>
+                </div>
+            </HyperGlassCard>
+        </motion.div>
     );
 }

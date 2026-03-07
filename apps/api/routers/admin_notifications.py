@@ -6,6 +6,7 @@ from typing import Optional, List
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.notification import Notification
 from models.notification_template import NotificationTemplate
 from models.tenant import Tenant
@@ -75,7 +76,8 @@ async def get_notifications(
 ):
     """Get list of notifications"""
     try:
-        query = db.query(Notification)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Notification)
         if user_id:
             query = query.filter(Notification.user_id == user_id)
         if type_filter:
@@ -100,16 +102,17 @@ async def send_notification(
 ):
     """Send a notification to tenants - supports push, email, or both channels"""
     try:
-        if not data.title or not data.message:
-            raise HTTPException(status_code=400, detail="Title and message are required")
+        with unbound_session(reason="admin-cross-tenant"):
+            if not data.title or not data.message:
+                raise HTTPException(status_code=400, detail="Title and message are required")
         
-        # For email channel, send via EmailService (Flask parity)
-        if data.channel in ['email', 'both']:
-            from services.email_service import email_service
+            # For email channel, send via EmailService (Flask parity)
+            if data.channel in ['email', 'both']:
+                from services.email_service import email_service
             
-            # Determine recipients
-            if data.targetType == 'tenant' and data.targetId:
-                tenant = db.get(Tenant, data.targetId)
+                # Determine recipients
+                if data.targetType == 'tenant' and data.targetId:
+                    tenant = db.get(Tenant, data.targetId)
                 if not tenant:
                     raise HTTPException(status_code=404, detail="Tenant not found")
                 # Get tenant admins/owners
@@ -186,7 +189,8 @@ async def get_templates(
 ):
     """Get notification templates - Flask parity with category/channel filters"""
     try:
-        query = db.query(NotificationTemplate)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(NotificationTemplate)
         
         # Apply filters (Flask parity)
         if category:
@@ -261,7 +265,8 @@ async def update_template(
 ):
     """Update a notification template"""
     try:
-        template = db.get(NotificationTemplate, template_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            template = db.get(NotificationTemplate, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         
@@ -315,7 +320,8 @@ async def delete_template(
 ):
     """Delete a notification template"""
     try:
-        template = db.get(NotificationTemplate, template_id)
+        with unbound_session(reason="admin-cross-tenant"):
+            template = db.get(NotificationTemplate, template_id)
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
         

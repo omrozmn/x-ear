@@ -29,6 +29,7 @@ import { Route as FilesRouteImport } from './routes/files'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as ApiKeysRouteImport } from './routes/api-keys'
@@ -147,6 +148,11 @@ const CampaignsRoute = CampaignsRouteImport.update({
   path: '/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BillingRoute = BillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
@@ -283,6 +290,7 @@ export interface FileRoutesByTo {
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
@@ -323,6 +331,7 @@ export interface FileRoutesById {
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
@@ -364,6 +373,7 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/appointments'
     | '/billing'
+    | '/blog'
     | '/campaigns'
     | '/dashboard'
     | '/features'
@@ -403,6 +413,7 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/appointments'
     | '/billing'
+    | '/blog'
     | '/campaigns'
     | '/dashboard'
     | '/features'
@@ -442,6 +453,7 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/appointments'
     | '/billing'
+    | '/blog'
     | '/campaigns'
     | '/dashboard'
     | '/features'
@@ -482,6 +494,7 @@ export interface RootRouteChildren {
   ApiKeysRoute: typeof ApiKeysRoute
   AppointmentsRoute: typeof AppointmentsRoute
   BillingRoute: typeof BillingRoute
+  BlogRoute: typeof BlogRoute
   CampaignsRoute: typeof CampaignsRoute
   DashboardRoute: typeof DashboardRoute
   FeaturesRoute: typeof FeaturesRoute
@@ -653,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/billing': {
       id: '/billing'
       path: '/billing'
@@ -797,6 +817,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiKeysRoute: ApiKeysRoute,
   AppointmentsRoute: AppointmentsRoute,
   BillingRoute: BillingRoute,
+  BlogRoute: BlogRoute,
   CampaignsRoute: CampaignsRoute,
   DashboardRoute: DashboardRoute,
   FeaturesRoute: FeaturesRoute,

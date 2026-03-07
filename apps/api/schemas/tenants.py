@@ -92,6 +92,13 @@ class TenantRead(TenantBase, IDMixin, TimestampMixin):
     product_code: Optional[ProductCode] = Field(None, description="Product Code")
 
     # Subscription info
+    current_plan: Optional[str] = Field(None, alias="currentPlan", description="Current plan slug")
+    current_plan_id: Optional[str] = Field(None, alias="currentPlanId", description="Current plan ID")
+    subscription_start_date: Optional[datetime] = Field(None, alias="subscriptionStartDate", description="Subscription start date")
+    subscription_end_date: Optional[datetime] = Field(None, alias="subscriptionEndDate", description="Subscription end date")
+    feature_usage: Optional[Dict[str, Any]] = Field(None, alias="featureUsage", description="Feature usage tracking")
+    
+    # Legacy fields (for backward compatibility)
     plan_id: Optional[str] = Field(None, alias="planId")
     plan_name: Optional[str] = Field(None, alias="planName")
     subscription_end: Optional[datetime] = Field(None, alias="subscriptionEnd")

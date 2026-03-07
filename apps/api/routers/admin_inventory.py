@@ -5,6 +5,7 @@ from typing import Optional, List
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from models.device import Device
 from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -27,7 +28,8 @@ async def get_all_inventory(
 ):
     """Get list of ALL devices/inventory from ALL tenants"""
     try:
-        query = db.query(Device)
+        with unbound_session(reason="admin-cross-tenant"):
+            query = db.query(Device)
         
         if search:
             query = query.filter(

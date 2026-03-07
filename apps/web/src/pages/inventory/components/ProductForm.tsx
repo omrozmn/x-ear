@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Textarea, Checkbox, Radio } from '@x-ear/ui-web';
+import { useNavigate } from '@tanstack/react-router';
 import { InventoryFormData, InventoryCategory, InventoryType, EarDirection, InventoryItem } from '../../../types/inventory';
 
 import { FeatureTagInput } from './FeatureTagInput';
@@ -44,6 +45,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   initialData,
   mode
 }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '',
     brand: '',
@@ -352,6 +354,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={formData.supplier || ''}
                   onChange={(value) => handleInputChange('supplier', value)}
                   placeholder="Tedarikçi seçin veya ekleyin"
+                  onSupplierCreated={(_name, id) => {
+                    if (id) {
+                      navigate({ to: '/suppliers/$supplierId', params: { supplierId: id } });
+                    } else {
+                      navigate({ to: '/suppliers' });
+                    }
+                  }}
                 />
               </div>
 

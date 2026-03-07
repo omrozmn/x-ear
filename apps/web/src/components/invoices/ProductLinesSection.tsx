@@ -578,58 +578,57 @@ export function ProductLinesSection({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6 overflow-visible">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Ürün/Hizmet</h3>
-        <div className="flex items-center gap-3">
-          {/* Para Birimi Seçimi */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
-            <label className="text-sm font-medium text-gray-700">Para Birimi:</label>
+    <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 overflow-visible">
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">Ürün/Hizmet</h3>
+          <Button
+            type="button"
+            onClick={addLine}
+            variant="default"
+            style={{ backgroundColor: '#2563eb', color: 'white' }}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-4 py-2 whitespace-nowrap"
+          >
+            + Yeni Kalem
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 py-3 bg-gray-100 rounded-lg text-sm">
+          <div className="flex items-center gap-2">
+            <label className="font-medium text-gray-700 whitespace-nowrap text-xs">Para Birimi:</label>
             <Select
               value={currency}
               onChange={(e) => onCurrencyChange?.(e.target.value)}
-              className="ml-2 !w-auto"
+              className="!w-auto min-w-[100px]"
               options={[
                 { value: 'TRY', label: `TRY (${getCurrencySymbol('TRY')})` },
                 { value: 'USD', label: `USD (${getCurrencySymbol('USD')})` },
                 { value: 'EUR', label: `EUR (${getCurrencySymbol('EUR')})` },
               ]}
             />
-            {/* Genel İskonto: moved here */}
-            <div className="ml-4 flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Genel İskonto</label>
-              <Input
-                type="number"
-                step="0.01"
-                value={generalDiscount === undefined || generalDiscount === null ? '' : String(generalDiscount)}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  onGeneralDiscountChange?.(v === '' ? '' : parseFloat(v));
-                }}
-                placeholder="0.00"
-                className="w-28"
-              />
-              <Select
-                value={''}
-                onChange={() => { /* keep percentage/amount toggling elsewhere if needed */ }}
-                className="ml-1 !w-20"
-                options={[
-                  { value: 'percentage', label: '%' },
-                  { value: 'amount', label: '₺' },
-                ]}
-              />
-            </div>
           </div>
-          <Button
-            type="button"
-            onClick={addLine}
-            variant="default"
-            style={{ backgroundColor: '#2563eb', color: 'white' }}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-4 py-2"
-          >
-            + Yeni Kalem Ekle
-          </Button>
-          {/* Global 'Ürün Ara' removed: inline suggestions cover the need */}
+          <div className="flex items-center gap-2">
+            <label className="font-medium text-gray-700 whitespace-nowrap text-xs">Genel İskonto:</label>
+            <Input
+              type="number"
+              step="0.01"
+              value={generalDiscount === undefined || generalDiscount === null ? '' : String(generalDiscount)}
+              onChange={(e) => {
+                const v = e.target.value;
+                onGeneralDiscountChange?.(v === '' ? '' : parseFloat(v));
+              }}
+              placeholder="0.00"
+              className="w-20 min-w-0"
+            />
+            <Select
+              value={''}
+              onChange={() => {}}
+              className="!w-16 flex-shrink-0"
+              options={[
+                { value: 'percentage', label: '%' },
+                { value: 'amount', label: '₺' },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
@@ -777,10 +776,10 @@ export function ProductLinesSection({
                 )}
               </div>
 
-              {/* İkinci Satır: Miktar, Birim, Fiyat, İskonto, KDV, Toplam */}
-              <div className="grid grid-cols-12 gap-3">
+              {/* İkinci Satır: Miktar, Birim, Fiyat — 3'lü grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Miktar */}
-                <div className="col-span-2">
+                <div className="min-w-0">
                   <Input
                     type="number"
                     label="Miktar"
@@ -794,7 +793,7 @@ export function ProductLinesSection({
                 </div>
 
                 {/* Birim */}
-                <div className="col-span-2">
+                <div className="min-w-0">
                   <UnitSelector
                     value={line.unit}
                     onChange={(value) => handleLineChange(index, 'unit', value)}
@@ -802,7 +801,7 @@ export function ProductLinesSection({
                 </div>
 
                 {/* Birim Fiyat */}
-                <div className="col-span-2">
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Birim Fiyat
                   </label>
@@ -814,6 +813,7 @@ export function ProductLinesSection({
                       min="0"
                       step="0.01"
                       required
+                      fullWidth
                       className="pl-8"
                     />
                     <span className="absolute left-3 top-2.5 text-gray-500 text-sm font-medium">
@@ -821,9 +821,12 @@ export function ProductLinesSection({
                     </span>
                   </div>
                 </div>
+              </div>
 
+              {/* Üçüncü Satır: İskonto, KDV, Toplam — 3'lü grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* İskonto */}
-                <div className="col-span-2">
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     İskonto
                   </label>
@@ -835,6 +838,7 @@ export function ProductLinesSection({
                       min="0"
                       step="0.01"
                       placeholder="0"
+                      className="min-w-0 flex-1"
                     />
                     <Select
                       value={line.discountType || 'percentage'}
@@ -843,14 +847,14 @@ export function ProductLinesSection({
                         { value: 'percentage', label: '%' },
                         { value: 'amount', label: '₺' }
                       ]}
-                      className="w-16"
+                      className="w-14 flex-shrink-0"
                       title={line.discountType === 'percentage' ? 'Yüzde' : 'Birim'}
                     />
                   </div>
                 </div>
 
                 {/* KDV */}
-                <div className="col-span-2">
+                <div className="min-w-0">
                   <Select
                     label="KDV"
                     value={line.taxRate.toString()}
@@ -862,7 +866,7 @@ export function ProductLinesSection({
                 </div>
 
                 {/* Toplam */}
-                <div className="col-span-2">
+                <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Toplam
                   </label>

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/config/__init__.py
+# hypothesis_version: 6.151.9
+
+['ENDPOINT_PERMISSIONS', 'get_all_permissions']

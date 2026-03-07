@@ -6,6 +6,7 @@ import type { Party, PartyStatus, PartySegment } from '../../types/party/party-b
 import { useListBranches } from '../../api/generated/branches/branches';
 import { unwrapArray } from '../../utils/response-unwrap';
 import { BranchRead } from '../../api/generated/schemas';
+import { getPartySegments, getAcquisitionTypes } from '../../utils/party-segments';
 
 interface PartyTagUpdateModalProps {
   isOpen: boolean;
@@ -36,6 +37,10 @@ export function PartyTagUpdateModal({
   // Fetch branches dynamically
   const { data: branchesResponse } = useListBranches();
   const allBranches = unwrapArray<BranchRead>(branchesResponse) || [];
+
+  // Load dynamic segments and acquisitions
+  const segmentOptions = getPartySegments();
+  const acquisitionOptions = getAcquisitionTypes();
 
   // Filter branches by party's tenant_id (for super admin viewing different tenants)
   const partyTenantId = 'tenantId' in (party || {}) ? (party as { tenantId?: string }).tenantId : undefined;
@@ -117,7 +122,7 @@ export function PartyTagUpdateModal({
             variant="outline" 
             size="md"
             onClick={() => {
-              navigate({ to: '/settings/party-segments' });
+              navigate({ to: '/settings', search: (prev: any) => ({ ...prev, tab: 'parties' }) });
             }}
             icon={<Settings className="w-5 h-5" />}
             iconPosition="left"
@@ -175,14 +180,11 @@ export function PartyTagUpdateModal({
               disabled={isLoading}
               className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <option value="new" className="dark:bg-slate-800">Yeni</option>
-              <option value="lead" className="dark:bg-slate-800">Potansiyel Müşteri</option>
-              <option value="trial" className="dark:bg-slate-800">Deneme Aşamasında</option>
-              <option value="customer" className="dark:bg-slate-800">Müşteri</option>
-              <option value="control" className="dark:bg-slate-800">Kontrol Hastası</option>
-              <option value="renewal" className="dark:bg-slate-800">Yenileme</option>
-              <option value="existing" className="dark:bg-slate-800">Mevcut Hasta</option>
-              <option value="vip" className="dark:bg-slate-800">VIP</option>
+              {segmentOptions.map((option) => (
+                <option key={option.value} value={option.value} className="dark:bg-slate-800">
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -198,13 +200,11 @@ export function PartyTagUpdateModal({
               className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="" className="dark:bg-slate-800">Seçiniz</option>
-              <option value="referral" className="dark:bg-slate-800">Referans</option>
-              <option value="online" className="dark:bg-slate-800">Online</option>
-              <option value="walk-in" className="dark:bg-slate-800">Ziyaret</option>
-              <option value="social-media" className="dark:bg-slate-800">Sosyal Medya</option>
-              <option value="advertisement" className="dark:bg-slate-800">Reklam</option>
-              <option value="tabela" className="dark:bg-slate-800">Tabela</option>
-              <option value="other" className="dark:bg-slate-800">Diğer</option>
+              {acquisitionOptions.map((option) => (
+                <option key={option.value} value={option.value} className="dark:bg-slate-800">
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>

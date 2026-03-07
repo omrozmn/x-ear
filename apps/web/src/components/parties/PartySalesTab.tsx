@@ -512,11 +512,11 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             // viewMode === 'table' ? (
             // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
-              sales={filteredSales as unknown as SaleRead[]}
+              sales={filteredSales as any}
               partyId={party.id || ''}
-              onSaleClick={(sale) => handleEditSaleClick(sale as SaleRead)}
-              onEditSale={(sale) => handleEditSaleClick(sale as SaleRead)}
-              onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as SaleRead)}
+              onSaleClick={(sale: any) => handleEditSaleClick(sale as SaleRead)}
+              onEditSale={(sale: any) => handleEditSaleClick(sale as SaleRead)}
+              onManagePromissoryNotes={(sale: any) => handlePromissoryNoteClick(sale as SaleRead)}
             />
           )}
         </CardContent>

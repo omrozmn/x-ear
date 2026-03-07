@@ -1,8 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
-import CompanySettings from '../../pages/settings/Company'
+import SettingsPage from '../../pages/SettingsPage'
+import { z } from 'zod'
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - TanStack Router type generation out of sync
+const settingsSearchSchema = z.object({
+  tab: z.enum(['company', 'integration', 'team', 'parties', 'sgk', 'subscription']).optional(),
+})
+
 export const Route = createFileRoute('/settings/')({
-  component: CompanySettings,
+  component: SettingsPage,
+  validateSearch: settingsSearchSchema,
 })

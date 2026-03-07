@@ -94,7 +94,8 @@ def list_tenants(
         if search:
             query = query.filter(
                 (Tenant.name.ilike(f'%{search}%')) |
-                (Tenant.owner_email.ilike(f'%{search}%'))
+                (Tenant.owner_email.ilike(f'%{search}%')) |
+                (Tenant.billing_email.ilike(f'%{search}%'))
             )
         
         query = query.order_by(Tenant.created_at.desc())

@@ -56,7 +56,7 @@ export interface SaleDeviceData {
  * 
  * @see !!RULES!!.md (Gap G-01: hybridCamelize bloat)
  */
-export interface ExtendedSaleRead extends SaleRead {
+export interface ExtendedSaleRead extends Omit<SaleRead, 'devices'> {
     totalAmount?: number;
     paidAmount?: number;
     finalAmount?: number;
@@ -83,7 +83,7 @@ export interface ExtendedSaleRead extends SaleRead {
 }
 
 // Type guard to check if a sale has the extended fields
-export function isExtendedSale(sale: SaleRead): sale is ExtendedSaleRead {
+export function isExtendedSale(sale: any): sale is ExtendedSaleRead {
     return true; // Runtime objects imply this is always true for our app due to interceptors
 }
 

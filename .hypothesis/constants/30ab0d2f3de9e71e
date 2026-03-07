@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/upload.py
+# hypothesis_version: 6.151.9
+
+[400, 403, 500, 503, '/files', '/presigned', '/upload', 'Filename is required', 'Upload', 'User-Agent', 'admin', 'deleteUploadFiles', 'fields', 'file', 'file_delete', 'file_upload_init', 'key', 'listUploadFiles', 'public', 'system', 'uploads', 'url']

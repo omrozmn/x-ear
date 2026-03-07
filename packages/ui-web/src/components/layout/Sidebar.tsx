@@ -13,7 +13,12 @@ import {
   ChevronDown,
   ChevronRight,
   X,
+  BarChart3,
+  ShoppingCart,
+  CreditCard,
+  PlusCircle,
 } from 'lucide-react';
+import { useBreakpoints } from '../../hooks/useMediaQuery';
 
 interface MenuItem {
   id: string;
@@ -25,13 +30,15 @@ interface MenuItem {
 }
 
 interface SidebarProps {
-  isOpen?: boolean;
-  onClose?: () => void;
+  isOpen: boolean;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  onClose: () => void;
   currentPath?: string;
-  className?: string;
   isMobile?: boolean;
   isTablet?: boolean;
   isDesktop?: boolean;
+  onNavigate?: (href: string) => void;
 }
 
 const menuItems: MenuItem[] = [
@@ -39,13 +46,13 @@ const menuItems: MenuItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: <Home className="w-5 h-5" />,
-    href: '/dashboard',
+    href: '/',
   },
   {
     id: 'patients',
     label: 'Hastalar',
     icon: <Users className="w-5 h-5" />,
-    href: '/patients',
+    href: '/parties',
     badge: '12',
   },
   {
@@ -67,10 +74,22 @@ const menuItems: MenuItem[] = [
     href: '/suppliers',
   },
   {
-    id: 'cashflow',
-    label: 'Nakit Akışı',
+    id: 'sales',
+    label: 'Satışlar',
+    icon: <ShoppingCart className="w-5 h-5" />,
+    href: '/sales',
+  },
+  {
+    id: 'purchases',
+    label: 'Alışlar',
+    icon: <CreditCard className="w-5 h-5" />,
+    href: '/purchases',
+  },
+  {
+    id: 'payments',
+    label: 'Ödemeler',
     icon: <DollarSign className="w-5 h-5" />,
-    href: '/cashflow',
+    href: '/payments',
   },
   {
     id: 'campaigns',
@@ -84,22 +103,36 @@ const menuItems: MenuItem[] = [
     icon: <FileText className="w-5 h-5" />,
     children: [
       {
-        id: 'new-invoice',
-        label: 'Yeni Fatura',
-        icon: <FileText className="w-4 h-4" />,
-        href: '/invoices/new',
-      },
-      {
-        id: 'invoice-list',
-        label: 'Fatura Listesi',
+        id: 'outgoing-invoices',
+        label: 'Giden Faturalar',
         icon: <FileText className="w-4 h-4" />,
         href: '/invoices',
+        badge: '3',
+      },
+      {
+        id: 'incoming-invoices',
+        label: 'Gelen Faturalar',
+        icon: <FileText className="w-4 h-4" />,
+        href: '/invoices/incoming',
+        badge: '5',
+      },
+      {
+        id: 'invoice-summary',
+        label: 'Fatura Özeti',
+        icon: <BarChart3 className="w-4 h-4" />,
+        href: '/invoices/summary',
+      },
+      {
+        id: 'new-invoice',
+        label: 'Yeni Fatura',
+        icon: <PlusCircle className="w-4 h-4" />,
+        href: '/invoices/new',
       },
     ],
   },
   {
     id: 'sgk-reports',
-    label: 'SGK Raporları',
+    label: 'SGK',
     icon: <Activity className="w-5 h-5" />,
     children: [
       {
@@ -119,69 +152,84 @@ const menuItems: MenuItem[] = [
   {
     id: 'reports',
     label: 'Raporlar',
-    icon: <FileText className="w-5 h-5" />,
-    children: [
-      {
-        id: 'financial-reports',
-        label: 'Mali Raporlar',
-        icon: <FileText className="w-4 h-4" />,
-        href: '/reports/financial',
-      },
-      {
-        id: 'patient-reports',
-        label: 'Hasta Raporları',
-        icon: <FileText className="w-4 h-4" />,
-        href: '/reports/patients',
-      },
-    ],
+    icon: <BarChart3 className="w-5 h-5" />,
+    href: '/reports',
   },
   {
     id: 'settings',
     label: 'Ayarlar',
     icon: <Settings className="w-5 h-5" />,
-    href: '/settings',
+    children: [
+      {
+        id: 'settings-company',
+        label: 'Firma Bilgileri',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=company',
+      },
+      {
+        id: 'settings-integration',
+        label: 'Entegrasyonlar',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=integration',
+      },
+      {
+        id: 'settings-team',
+        label: 'Ekip Yönetimi',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=team',
+      },
+      {
+        id: 'settings-parties',
+        label: 'Hasta Ayarları',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=parties',
+      },
+      {
+        id: 'settings-sgk',
+        label: 'SGK Ayarları',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=sgk',
+      },
+      {
+        id: 'settings-subscription',
+        label: 'Abonelik',
+        icon: <Settings className="w-4 h-4" />,
+        href: '/settings?tab=subscription',
+      },
+    ],
   },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  isOpen = true,
+  isOpen,
+  isCollapsed,
+  onToggle,
   onClose,
-  currentPath = '/dashboard',
-  className = '',
-  isMobile = false,
-  isTablet = false,
-  isDesktop = true,
+  currentPath = '/',
+  isMobile: propIsMobile,
+  isTablet: propIsTablet,
+  isDesktop: propIsDesktop,
+  onNavigate,
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const breakpoints = useBreakpoints();
+  const isMobile = propIsMobile ?? breakpoints.isMobile;
+  const isTablet = propIsTablet ?? breakpoints.isTablet;
+  const isDesktop = propIsDesktop ?? breakpoints.isDesktop;
+  
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Load collapsed state from localStorage
+  // Load expanded items from localStorage
   useEffect(() => {
-    const savedCollapsed = localStorage.getItem('sidebar-collapsed');
-    if (savedCollapsed) {
-      setCollapsed(JSON.parse(savedCollapsed));
-    }
-
-    // Load expanded items from localStorage
     const savedExpanded = localStorage.getItem('sidebar-expanded');
     if (savedExpanded) {
       setExpandedItems(new Set(JSON.parse(savedExpanded)));
     }
   }, []);
 
-  // Save collapsed state to localStorage
-  useEffect(() => {
-    localStorage.setItem('sidebar-collapsed', JSON.stringify(collapsed));
-  }, [collapsed]);
-
   // Save expanded items to localStorage
   useEffect(() => {
     localStorage.setItem('sidebar-expanded', JSON.stringify([...expandedItems]));
   }, [expandedItems]);
-
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
-  };
 
   const toggleExpanded = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -195,51 +243,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const isActive = (href?: string) => {
     if (!href) return false;
+    if (href === '/') return currentPath === '/';
     return currentPath === href || currentPath.startsWith(href + '/');
   };
 
-  const handleMenuClick = (item: MenuItem, hasChildren: boolean) => {
-    if (hasChildren) {
-      toggleExpanded(item.id);
-    } else if (item.href) {
-      window.location.href = item.href;
-      if (isMobile && onClose) {
+  const handleNavigation = (href?: string) => {
+    if (href && onNavigate) {
+      onNavigate(href);
+      if (isMobile) {
         onClose();
       }
     }
   };
 
   const renderMenuItem = (item: MenuItem, level = 0) => {
-    const hasChildren = !!(item.children && item.children.length > 0);
+    const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.has(item.id);
     const active = isActive(item.href);
-    const showCollapsed = collapsed && !isMobile;
+    const showLabel = !isCollapsed || isMobile;
 
     return (
       <div key={item.id}>
         <div
           data-testid={`sidebar-menu-${item.id}`}
           className={`
-            flex items-center rounded-lg cursor-pointer transition-all
+            flex items-center px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors
             ${level > 0 ? 'ml-6' : ''}
-            ${showCollapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'}
             ${active
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
             }
-            min-h-[44px]
+            ${!showLabel ? 'justify-center' : ''}
           `}
-          onClick={() => handleMenuClick(item, hasChildren)}
+          onClick={() => {
+            if (hasChildren) {
+              toggleExpanded(item.id);
+            } else {
+              handleNavigation(item.href);
+            }
+          }}
         >
-          <div className="flex items-center flex-1 min-w-0" data-testid={`sidebar-menu-item-${item.id}`}>
+          <div className={`flex items-center ${showLabel ? 'flex-1 min-w-0' : ''}`} data-testid={`sidebar-menu-item-${item.id}`}>
             <div className="flex-shrink-0" data-testid={`sidebar-icon-${item.id}`}>
               {item.icon}
             </div>
-            {!showCollapsed && (
+            {showLabel && (
               <>
-                <span className="ml-3 truncate text-sm font-medium" data-testid={`sidebar-label-${item.id}`}>
-                  {item.label}
-                </span>
+                <span className="ml-3 truncate" data-testid={`sidebar-label-${item.id}`}>{item.label}</span>
                 {item.badge && (
                   <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" data-testid={`sidebar-badge-${item.id}`}>
                     {item.badge}
@@ -248,7 +298,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </>
             )}
           </div>
-          {hasChildren && !showCollapsed && (
+          {hasChildren && showLabel && (
             <div className="flex-shrink-0 ml-2" data-testid={`sidebar-expand-${item.id}`}>
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
@@ -259,7 +309,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {hasChildren && isExpanded && !showCollapsed && (
+        {/* Submenu */}
+        {hasChildren && isExpanded && showLabel && (
           <div className="mt-1 space-y-1">
             {item.children?.map((child) => renderMenuItem(child, level + 1))}
           </div>
@@ -268,49 +319,55 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
-  // Mobile: Full overlay + slide-in sidebar
+  // Mobile: Full screen overlay
   if (isMobile) {
     return (
       <>
+        {/* Overlay */}
         {isOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity"
-            onClick={() => onClose?.()}
+            className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75"
+            onClick={onClose}
           />
         )}
 
+        {/* Sidebar */}
         <div
           data-testid="sidebar-container"
           className={`
-            fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
-            w-[280px] transition-transform duration-300 ease-in-out
+            fixed inset-y-0 left-0 z-50 w-[280px] flex flex-col bg-white dark:bg-gray-800 
+            border-r border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out
             ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-            ${className}
           `}
         >
+          {/* Header */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">X</span>
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">X</span>
+                </div>
               </div>
-              <span className="text-xl font-semibold text-gray-900 dark:text-white">
+              <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
                 X-Ear
               </span>
             </div>
             
             <button
-              onClick={() => onClose?.()}
-              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              onClick={onClose}
+              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
               data-testid="sidebar-close-button"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
+          {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             {menuItems.map((item) => renderMenuItem(item))}
           </nav>
 
+          {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
               X-Ear v1.0.0
@@ -321,43 +378,93 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
   }
 
-  // Tablet/Desktop: Static sidebar with collapse
+  // Tablet: Icon-only sidebar (64px)
+  if (isTablet) {
+    return (
+      <div
+        data-testid="sidebar-container"
+        className="fixed inset-y-0 left-0 z-40 w-16 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">X</span>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+          {menuItems.map((item) => renderMenuItem(item))}
+        </nav>
+      </div>
+    );
+  }
+
+  // Desktop: Collapsible sidebar (256px or 64px)
   return (
     <div
       data-testid="sidebar-container"
       className={`
-        fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
-        transition-all duration-300 ease-in-out
-        ${collapsed ? 'w-16' : 'w-64'}
-        ${className}
+        fixed inset-y-0 left-0 z-40 flex flex-col bg-white dark:bg-gray-800 
+        border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'w-16' : 'w-64'}
       `}
     >
+      {/* Header */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">X</span>
+        {!isCollapsed && (
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">X</span>
+              </div>
             </div>
-            <span className="text-xl font-semibold text-gray-900 dark:text-white">
+            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
               X-Ear
             </span>
           </div>
         )}
         
-        <button
-          onClick={toggleCollapsed}
-          className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
-          data-testid="sidebar-collapse-button"
-        >
-          <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
-        </button>
+        {isCollapsed && (
+          <div className="w-full flex justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">X</span>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop collapse button */}
+        {!isCollapsed && (
+          <button
+            onClick={onToggle}
+            className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            data-testid="sidebar-collapse-button"
+          >
+            <ChevronRight className="w-4 h-4 transition-transform rotate-180" />
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      {/* Expand button when collapsed */}
+      {isCollapsed && (
+        <div className="flex justify-center py-2 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={onToggle}
+            className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+            data-testid="sidebar-expand-button"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <nav className={`flex-1 py-4 space-y-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-3'}`}>
         {menuItems.map((item) => renderMenuItem(item))}
       </nav>
 
-      {!collapsed && (
+      {/* Footer */}
+      {!isCollapsed && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
             X-Ear v1.0.0

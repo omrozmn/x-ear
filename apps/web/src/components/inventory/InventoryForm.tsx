@@ -1,5 +1,6 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { Save, X, AlertCircle, Package } from 'lucide-react';
 import {
   InventoryFormData,
@@ -33,6 +34,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
   onCancel,
   className = ''
 }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '',
     brand: '',
@@ -573,6 +575,13 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               onChange={(value) => handleInputChange('supplier', value)}
               placeholder="Tedarikçi adını girin veya seçin"
               label="Tedarikçi"
+              onSupplierCreated={(_name, id) => {
+                if (id) {
+                  navigate({ to: '/suppliers/$supplierId', params: { supplierId: id } });
+                } else {
+                  navigate({ to: '/suppliers' });
+                }
+              }}
             />
           </div>
 

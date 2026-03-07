@@ -4,7 +4,7 @@ Invoice Schemas - Pydantic models for Invoice domain
 from typing import Optional, List, Any, Dict
 from datetime import datetime
 from enum import Enum
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
@@ -78,8 +78,7 @@ class InvoiceCreate(InvoiceBase):
     return_reference_date: Optional[datetime] = Field(None, alias="returnReferenceDate")
     metadata: Optional[Dict[str, Any]] = Field(None, alias="metadata")
     
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
         
     @property
     def tenant_id(self):

@@ -69,6 +69,8 @@ export function InvoiceDateTimeSection({
               const dd = String(date.getDate()).padStart(2, '0');
               onChange('dueDate', `${yyyy}-${mm}-${dd}`);
             }}
+            minDate={new Date()}
+            maxDate={new Date(new Date().getFullYear() + 5, 11, 31)}
             placeholder="Tarih seçin"
             fullWidth
           />

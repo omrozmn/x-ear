@@ -5,6 +5,7 @@ from typing import Optional
 import logging
 
 from database import get_db
+from core.database import unbound_session
 from core.models.party import Party
 from models.tenant import Tenant
 from models.sales import DeviceAssignment, Sale
@@ -36,34 +37,38 @@ async def get_all_parties(
 ):
     """Get list of ALL parties from ALL tenants"""
     try:
-        query = db.query(Party)
-        
-        if search:
-            query = query.filter(
-                (Party.first_name.ilike(f"%{search}%")) |
-                (Party.last_name.ilike(f"%{search}%")) |
-                (Party.tc_number.ilike(f"%{search}%")) |
-                (Party.phone.ilike(f"%{search}%"))
+        with unbound_session(reason="admin-list-parties"):
+            query = db.query(Party)
+            
+            if search:
+                # Join with Tenant to enable tenant name search
+                query = query.outerjoin(Tenant, Party.tenant_id == Tenant.id)
+                query = query.filter(
+                    (Party.first_name.ilike(f"%{search}%")) |
+                    (Party.last_name.ilike(f"%{search}%")) |
+                    (Party.tc_number.ilike(f"%{search}%")) |
+                    (Party.phone.ilike(f"%{search}%")) |
+                    (Tenant.name.ilike(f"%{search}%"))
+                )
+            
+            total = query.count()
+            parties = query.order_by(Party.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            
+            parties_list = []
+            for p in parties:
+                p_dict = PartyRead.model_validate(p).model_dump(by_alias=True)
+                if p.tenant_id:
+                    tenant = db.get(Tenant, p.tenant_id)
+                    if tenant:
+                        p_dict["tenantName"] = tenant.name
+                parties_list.append(p_dict)
+            
+            return ResponseEnvelope(
+                data={
+                    "parties": parties_list,
+                    "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
+                }
             )
-        
-        total = query.count()
-        parties = query.order_by(Party.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
-        
-        parties_list = []
-        for p in parties:
-            p_dict = PartyRead.model_validate(p).model_dump(by_alias=True)
-            if p.tenant_id:
-                tenant = db.get(Tenant, p.tenant_id)
-                if tenant:
-                    p_dict["tenantName"] = tenant.name
-            parties_list.append(p_dict)
-        
-        return ResponseEnvelope(
-            data={
-                "parties": parties_list,
-                "pagination": {"page": page, "limit": limit, "total": total, "totalPages": (total + limit - 1) // limit}
-            }
-        )
     except Exception as e:
         logger.error(f"Get all patients error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -76,16 +81,17 @@ async def get_party_detail(
 ):
     """Get single party detail"""
     try:
-        party = db.get(Party, party_id)
-        if not party:
-            raise HTTPException(status_code=404, detail="Party not found")
-        
-        party_dict = PartyRead.model_validate(party).model_dump(by_alias=True)
-        if party.tenant_id:
-            tenant = db.get(Tenant, party.tenant_id)
-            if tenant:
-                party_dict["tenantName"] = tenant.name
-        return ResponseEnvelope(data=party_dict)
+        with unbound_session(reason="admin-get-party-detail"):
+            party = db.get(Party, party_id)
+            if not party:
+                raise HTTPException(status_code=404, detail="Party not found")
+            
+            party_dict = PartyRead.model_validate(party).model_dump(by_alias=True)
+            if party.tenant_id:
+                tenant = db.get(Tenant, party.tenant_id)
+                if tenant:
+                    party_dict["tenantName"] = tenant.name
+            return ResponseEnvelope(data=party_dict)
     except HTTPException:
         raise
     except Exception as e:
@@ -100,12 +106,13 @@ async def get_party_devices(
 ):
     """Get devices for a party"""
     try:
-        party = db.get(Party, party_id)
-        if not party:
-            raise HTTPException(status_code=404, detail="Party not found")
-        
-        devices = db.query(DeviceAssignment).filter(DeviceAssignment.party_id == party_id).all()
-        return ResponseEnvelope(data={"devices": [DeviceAssignmentRead.model_validate(d).model_dump(by_alias=True) for d in devices]})
+        with unbound_session(reason="admin-get-party-devices"):
+            party = db.get(Party, party_id)
+            if not party:
+                raise HTTPException(status_code=404, detail="Party not found")
+            
+            devices = db.query(DeviceAssignment).filter(DeviceAssignment.party_id == party_id).all()
+            return ResponseEnvelope(data={"devices": [DeviceAssignmentRead.model_validate(d).model_dump(by_alias=True) for d in devices]})
     except HTTPException:
         raise
     except Exception as e:
