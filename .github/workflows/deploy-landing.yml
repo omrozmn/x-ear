@@ -22,44 +22,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "pnpm"
 
-      # Remove pnpm workspace:* refs that npm can't resolve
-      # Replace with file: protocol pointing to local paths
-      - name: Patch workspace protocol for npm
-        run: |
-          node -e "
-            const fs = require('fs');
-            const patches = [
-              { file: 'packages/ui-web/package.json', from: '\"workspace:*\"', to: '\"file:../core\"' },
-              { file: 'packages/ui-web/package-lock.json', from: '\"workspace:*\"', to: '\"file:../core\"' },
-              { file: 'apps/web/package-lock.json', from: '\"workspace:*\"', to: '\"file:../../packages/core\"' },
-              { file: 'apps/admin/package-lock.json', from: '\"workspace:*\"', to: '\"file:../../packages/core\"' },
-            ];
-            patches.forEach(({ file, from, to }) => {
-              let txt = fs.readFileSync(file, 'utf8');
-              txt = txt.split(from).join(to);
-              fs.writeFileSync(file, txt);
-            });
-          "
-
-      # ── Install dependencies ──────────────────────────────────────
-      - name: Install workspace package deps
-        run: |
-          cd packages/core && npm ci
-          cd ../ui-web && npm install --legacy-peer-deps
-
-      - name: Install Landing deps
-        run: cd apps/landing && npm ci
-
-      - name: Install Web deps
-        run: cd apps/web && npm install --legacy-peer-deps
-
-      - name: Install Admin deps
-        run: cd apps/admin && npm install --legacy-peer-deps
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       # ── Landing (Next.js static export) ──────────────────────────
       - name: Build Landing
