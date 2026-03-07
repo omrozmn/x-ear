@@ -34,7 +34,7 @@ jobs:
       - name: Build Landing
         run: |
           cd apps/landing
-          npx next build --webpack 2>&1 | tee /tmp/landing-build.log
+          npx next build 2>&1 | tee /tmp/landing-build.log
           BUILD_EXIT=${PIPESTATUS[0]}
           if [ $BUILD_EXIT -ne 0 ]; then
             echo "## ❌ Landing Build Failed" >> $GITHUB_STEP_SUMMARY
