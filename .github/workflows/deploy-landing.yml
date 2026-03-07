@@ -36,22 +36,22 @@ jobs:
         continue-on-error: true
         run: |
           cd apps/landing
-          echo "Node: $(node --version)  NPM: $(npm --version)"
-          echo "Next: $(npx next --version)"
-          cat next.config.ts
-          echo "=== ENV ==="
-          env | grep -i "pages\|next\|node" || true
-          echo "=== BUILD START ==="
-          npx next build 2>&1
+          npx next build --webpack 2>&1 | tee /tmp/landing-build.log
         env:
           PAGES_BASE_PATH: /x-ear
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: landing-build-log
+          path: /tmp/landing-build.log
 
       - name: Check Landing build
         if: steps.build_landing.outcome == 'failure'
         run: |
-          echo "## ❌ Landing Build Failed" >> $GITHUB_STEP_SUMMARY
-          echo "Build step outcome: ${{ steps.build_landing.outcome }}" >> $GITHUB_STEP_SUMMARY
-          ls -la apps/landing/out/ 2>/dev/null || echo "No out/ directory"
+          echo "Build failed. Check the 'landing-build-log' artifact."
+          tail -50 /tmp/landing-build.log
           exit 1
 
       # ── Web App (Vite React SPA) ──────────────────────────────────
