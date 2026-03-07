@@ -34,11 +34,13 @@ jobs:
       - name: Build Landing
         run: |
           cd apps/landing
-          npm run build 2>&1 | tee /tmp/landing-build.log
+          npx next build --no-turbopack 2>&1 | tee /tmp/landing-build.log
           BUILD_EXIT=${PIPESTATUS[0]}
           if [ $BUILD_EXIT -ne 0 ]; then
-            echo "::error::Landing build failed. Last 30 lines:"
-            tail -30 /tmp/landing-build.log
+            echo "## ❌ Landing Build Failed" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -50 /tmp/landing-build.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
             exit $BUILD_EXIT
           fi
         env:
