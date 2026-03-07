@@ -32,7 +32,13 @@ jobs:
         run: cd apps/landing && npm ci
 
       - name: Build Landing
-        run: cd apps/landing && npm run build
+        run: |
+          cd apps/landing
+          echo "=== TS Config ==="
+          cat tsconfig.json
+          echo "=== Files in src/app ==="
+          find src/app -maxdepth 3 -type f | head -30
+          npm run build
         env:
           PAGES_BASE_PATH: /x-ear
 
