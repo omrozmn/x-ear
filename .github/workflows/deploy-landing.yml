@@ -22,56 +22,54 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "pnpm"
 
-      - name: Install all dependencies
-        run: pnpm install --frozen-lockfile
+      # ── Install dependencies ──────────────────────────────────────
+      # Workspace packages first (Web/Admin Vite aliases resolve imports from here)
+      - name: Install workspace package deps
+        run: |
+          cd packages/core && npm ci
+          cd ../ui-web && npm ci
+
+      - name: Install Landing deps
+        run: cd apps/landing && npm ci
+
+      - name: Install Web deps
+        run: cd apps/web && npm ci
+
+      - name: Install Admin deps
+        run: cd apps/admin && npm ci
 
       # ── Landing (Next.js static export) ──────────────────────────
       - name: Build Landing
-        run: cd apps/landing && pnpm exec next build --webpack
+        run: cd apps/landing && npx next build --webpack
         env:
           PAGES_BASE_PATH: /x-ear
 
       # ── Web App (Vite React SPA) ──────────────────────────────────
       - name: Build Web
-        run: cd apps/web && pnpm exec vite build
+        run: cd apps/web && npx vite build
         env:
           VITE_BASE: /x-ear/app/
 
       # ── Admin Panel (Vite React SPA) ──────────────────────────────
       - name: Build Admin
-        run: cd apps/admin && pnpm exec vite build
+        run: cd apps/admin && npx vite build
         env:
           VITE_BASE: /x-ear/admin/
 
       # ── Combine all outputs ───────────────────────────────────────
       - name: Combine outputs
         run: |
-          set -ex
-          echo "=== Checking build outputs ==="
-          ls -la apps/landing/out/ || true
-          ls -la apps/web/dist/ || true
-          ls -la apps/admin/dist/ || true
           mkdir -p deploy
-          # Landing at root
           cp -r apps/landing/out/. deploy/
           touch deploy/.nojekyll
-          # Web app at /app/
           mkdir -p deploy/app
           cp -r apps/web/dist/. deploy/app/
-          # SPA fallback: GitHub Pages serves 404.html for unknown routes
           cp deploy/app/index.html deploy/app/404.html
-          # Admin at /admin/
           mkdir -p deploy/admin
           cp -r apps/admin/dist/. deploy/admin/
           cp deploy/admin/index.html deploy/admin/404.html
