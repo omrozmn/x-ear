@@ -698,7 +698,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-500" />
-                  BirFatura İşlem Adımları
+                  İşlem Geçmişi
                 </h3>
                 {logsLoading ? (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
