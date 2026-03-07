@@ -47,6 +47,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const [statusLogs, setStatusLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -58,6 +59,9 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Clear selection on page/filter change
+  useEffect(() => { setSelectedIds(new Set()); }, [currentPage, statusFilter]);
 
   // Fetch BirFatura document logs when status modal opens
   useEffect(() => {
@@ -233,42 +237,66 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     }
   };
 
-  // Copy invoice content as a new draft - stores customer/amount data in sessionStorage
-  const handleCopy = (invoice: OutgoingInvoiceResponse) => {
+  // Copy invoice content as a new draft via API - adds to list without navigating
+  const handleCopy = async (invoice: OutgoingInvoiceResponse) => {
     setActiveMenu(null);
-    const draft = {
-      customerFirstName: invoice.partyFirstName || '',
-      customerLastName: invoice.partyLastName || '',
-      totalAmount: invoice.totalAmount,
-    };
-    sessionStorage.setItem('invoice_copy_draft', JSON.stringify(draft));
-    navigate({ to: '/invoices/new' });
-    toast.success('Fatura içeriği yeni taslak olarak açılıyor...');
+    const toastId = toast.loading('Fatura kopyalanıyor...');
+    try {
+      await apiClient.post(`/api/invoices/${invoice.invoiceId}/copy`);
+      toast.success('Fatura taslak olarak kopyalandı', { id: toastId });
+      refetch();
+    } catch {
+      toast.error('Kopyalama başarısız', { id: toastId });
+    }
   };
 
   // Copy invoice as draft AND cancel the current invoice
   const handleCopyAndCancel = async (invoice: OutgoingInvoiceResponse) => {
     setActiveMenu(null);
-    // First store draft data
-    const draft = {
-      customerFirstName: invoice.partyFirstName || '',
-      customerLastName: invoice.partyLastName || '',
-      totalAmount: invoice.totalAmount,
-    };
-    sessionStorage.setItem('invoice_copy_draft', JSON.stringify(draft));
-    // Then cancel the original invoice
     setActionLoading(`cancel-${invoice.invoiceId}`);
     try {
+      await apiClient.post(`/api/invoices/${invoice.invoiceId}/copy`);
       await postInvoiceAction(invoice.invoiceId, 'cancel', { reason: 'Kopyalanarak iptal edildi' });
-      toast.success('Fatura iptal edildi, kopya taslak açılıyor...');
+      toast.success('Fatura kopyalandı ve orijinali iptal edildi');
       refetch();
-      navigate({ to: '/invoices/new' });
     } catch {
-      sessionStorage.removeItem('invoice_copy_draft');
-      toast.error('İptal işlemi başarısız, kopyalama iptal edildi');
+      toast.error('İşlem başarısız');
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredInvoices.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filteredInvoices.map((inv: OutgoingInvoiceResponse) => inv.invoiceId)));
+  };
+  const handleBulkCancel = async () => {
+    const count = selectedIds.size;
+    const toastId = toast.loading(`${count} fatura iptal ediliyor...`);
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => postInvoiceAction(id, 'cancel', { reason: 'Toplu iptal' })));
+      toast.success(`${count} fatura iptal edildi`, { id: toastId });
+      setSelectedIds(new Set()); refetch();
+    } catch { toast.error('Toplu iptal işlemi başarısız', { id: toastId }); }
+  };
+  const handleBulkExportCsv = () => {
+    const selected = filteredInvoices.filter((inv: OutgoingInvoiceResponse) => selectedIds.has(inv.invoiceId));
+    const headers = ['Fatura No', 'Alıcı', 'Tutar', 'Tarih', 'Durum'];
+    const rows = selected.map((inv: OutgoingInvoiceResponse) => [
+      inv.invoiceNumber || '', `${inv.partyFirstName || ''} ${inv.partyLastName || ''}`.trim(),
+      String(inv.totalAmount || 0), inv.invoiceDate || '', inv.status || '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `giden_faturalar_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success('CSV dışa aktarıldı');
+    setSelectedIds(new Set());
   };
 
   if (isLoading) {
@@ -283,67 +311,67 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   return (
     <div className={`p-6 space-y-6 ${className}`}>
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Giden Faturalar</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Giden Faturalar</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
             BirFatura üzerinden gönderilen faturalar
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
-            <Download size={18} />
-            Yenile
+            <Download size={16} />
+            <span className="hidden sm:inline">Yenile</span>
           </Button>
           <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { type: 'proforma' } as any })}>
-            <FileText size={18} />
-            Proforma Oluştur
+            <FileText size={16} />
+            <span className="hidden sm:inline">Proforma</span>
           </Button>
           <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => navigate({ to: '/invoices/new' })}>
-            <Plus size={18} />
-            Yeni Fatura
+            <Plus size={16} />
+            <span className="hidden sm:inline">Yeni Fatura</span>
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-3 gap-3 md:gap-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
+              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-              <FileText className="text-blue-600 dark:text-blue-400" size={24} />
+            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <FileText className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Tutar</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Tutar</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
                 {formatCurrency(totalAmount, 'TRY')}
               </p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
-              <Send className="text-green-600 dark:text-green-400" size={24} />
+            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <Send className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Ödenen Tutar</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Ödenen Tutar</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
                 {formatCurrency(paidAmount, 'TRY')}
               </p>
             </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-              <CheckCircle className="text-purple-600 dark:text-purple-400" size={24} />
+            <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+              <CheckCircle className="text-purple-600 dark:text-purple-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
@@ -426,6 +454,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             key={invoice.invoiceId}
             invoice={invoice}
             onView={() => handleViewPdf(invoice)}
+            onDownload={() => handleDownloadPdf(invoice)}
             onCopy={() => handleCopy(invoice)}
             onCopyAndCancel={() => handleCopyAndCancel(invoice)}
             onCancel={() => handleCancel(invoice)}
@@ -441,6 +470,9 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
+                <th className="px-3 py-3 w-10">
+                  <input type="checkbox" checked={filteredInvoices.length > 0 && selectedIds.size === filteredInvoices.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('party')}>Alıcı<SortIcon field="party" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('totalAmount')}>Tutar<SortIcon field="totalAmount" /></th>
@@ -453,9 +485,12 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               {filteredInvoices.map((invoice: OutgoingInvoiceResponse) => (
                 <tr
                   key={invoice.invoiceId}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${selectedIds.has(invoice.invoiceId) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}
                   onClick={() => handleViewPdf(invoice)}
                 >
+                  <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                    <input type="checkbox" checked={selectedIds.has(invoice.invoiceId)} onChange={() => toggleSelect(invoice.invoiceId)} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {invoice.invoiceNumber}
                   </td>
@@ -575,6 +610,24 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         )}
       </Card>
 
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <button onClick={handleBulkCancel} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+            <Ban className="w-4 h-4" /> Toplu İptal
+          </button>
+          <button onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+            <Download className="w-4 h-4" /> CSV Dışa Aktar
+          </button>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <button onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <X className="w-4 h-4" /> Seçimi Kaldır
+          </button>
+        </div>
+      )}
+
       {/* PDF Viewer Modal */}
       {pdfModal?.open && (
         <div
@@ -658,13 +711,13 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                   <div className="relative pl-4">
                     <div className="absolute left-2 top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
                     <div className="space-y-4">
-                      {statusLogs.filter((log: any) => log.isUserCanSee !== false).map((log: any, idx: number) => (
+                      {statusLogs.map((log: any, idx: number) => (
                         <div key={log.id ?? idx} className="relative pl-4">
                           <div className="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-white dark:ring-gray-800" />
                           <p className="text-xs font-semibold text-gray-900 dark:text-white">{log.description || log.status || 'Adım'}</p>
-                          {log.createTime && (
+                          {(log.createDate || log.createTime) && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                              {new Date(log.createTime).toLocaleString('tr-TR')}
+                              {log.createDate ? `${log.createDate} ` : ''}{log.createTime ? log.createTime.split('.')[0] : ''}
                             </p>
                           )}
                         </div>
@@ -688,6 +741,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
 interface InvoiceMobileCardProps {
   invoice: OutgoingInvoiceResponse;
   onView: () => void;
+  onDownload: () => void;
   onCopy: () => void;
   onCopyAndCancel: () => void;
   onCancel: () => void;
@@ -695,7 +749,7 @@ interface InvoiceMobileCardProps {
   actionLoading: string | null;
 }
 
-function InvoiceMobileCard({ invoice, onView, onCopy, onCopyAndCancel, onCancel, getStatusBadge, actionLoading }: InvoiceMobileCardProps) {
+function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCancel, onCancel, getStatusBadge, actionLoading }: InvoiceMobileCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -709,9 +763,7 @@ function InvoiceMobileCard({ invoice, onView, onCopy, onCopyAndCancel, onCancel,
   }, [menuOpen]);
 
   return (
-    <div
-      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible"
-    >
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible">
       {/* Tappable card body */}
       <div
         className="p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors"
@@ -735,9 +787,12 @@ function InvoiceMobileCard({ invoice, onView, onCopy, onCopyAndCancel, onCancel,
                 <MoreVertical className="w-4 h-4" />
               </button>
               {menuOpen && (
-                <div className="absolute right-0 top-8 z-50 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
+                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
                   <button onClick={() => { setMenuOpen(false); onView(); }} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <Eye className="w-4 h-4" /> Görüntüle
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); onDownload(); }} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <Download className="w-4 h-4" /> PDF İndir
                   </button>
                   <button onClick={() => { setMenuOpen(false); onCopy(); }} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <Copy className="w-4 h-4" /> Kopyala (Taslak)

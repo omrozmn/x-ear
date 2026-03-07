@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Button } from '@x-ear/ui-web';
-import { ShoppingCart, Download, Filter, Search, FileText, DollarSign, ChevronLeft, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon } from 'lucide-react';
+import { ShoppingCart, Download, Filter, Search, FileText, DollarSign, ChevronLeft, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, X } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useListSales } from '@/api/generated/sales/sales';
 import type { SaleRead } from '@/api/generated/schemas';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@tanstack/react-router';
+import toast from 'react-hot-toast';
 
 export function SalesPage() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export function SalesPage() {
   const [dateTo, setDateTo] = useState('');
   const [sortField, setSortField] = useState<string>('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -105,8 +107,9 @@ export function SalesPage() {
   };
 
   const exportToCsv = () => {
+    const items = selectedIds.size > 0 ? sortedSales.filter((s: SaleRead) => selectedIds.has(String(s.id))) : sortedSales;
     const headers = ['Hasta Adı', 'Hasta ID', 'Ürün', 'Marka', 'Model', 'Tutar', 'Tarih', 'Durum', 'Seri No'];
-    const rows = sortedSales.map((s: SaleRead) => {
+    const rows = items.map((s: SaleRead) => {
       const p = s.patient as any;
       const name = (p?.firstName || p?.lastName) ? `${p.firstName || ''} ${p.lastName || ''}`.trim() : '';
       return [
@@ -129,6 +132,15 @@ export function SalesPage() {
     a.download = `satislar_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    if (selectedIds.size > 0) { toast.success('Seçili kayıtlar CSV olarak dışa aktarıldı'); setSelectedIds(new Set()); }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sortedSales.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(sortedSales.map((s: SaleRead) => String(s.id))));
   };
 
   if (isLoading) {
@@ -248,6 +260,9 @@ export function SalesPage() {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
+                <th className="px-3 py-3 w-10">
+                  <input type="checkbox" checked={sortedSales.length > 0 && selectedIds.size === sortedSales.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('patient')}>Hasta<SortIcon field="patient" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('productName')}>Ürün<SortIcon field="productName" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('finalAmount')}>Tutar<SortIcon field="finalAmount" /></th>
@@ -258,7 +273,10 @@ export function SalesPage() {
             </thead>
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {sortedSales.map((sale: SaleRead) => (
-                <tr key={sale.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr key={sale.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(sale.id)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
+                  <td className="px-3 py-4">
+                    <input type="checkbox" checked={selectedIds.has(String(sale.id))} onChange={() => toggleSelect(String(sale.id))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {getPatientName(sale) ?? <span className="text-gray-400">—</span>}
@@ -303,6 +321,21 @@ export function SalesPage() {
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Arama kriterlerinize uygun satış kaydı yok.
             </p>
+          </div>
+        )}
+
+        {/* Bulk Action Bar */}
+        {selectedIds.size > 0 && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
+            <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+            <button onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+              <Download className="w-4 h-4" /> CSV Dışa Aktar
+            </button>
+            <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+            <button onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <X className="w-4 h-4" /> Seçimi Kaldır
+            </button>
           </div>
         )}
 

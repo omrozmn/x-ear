@@ -1,3 +1,11 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  ⚠️  DOKUNULMAZ DOSYA — DO NOT MODIFY — NE YAPTIĞINI BİLMEDEN DOKUNMA  ⚠️  ║
+# ║                                                                         ║
+# ║  Bu dosya fatura servis katmanını içerir.                               ║
+# ║  InvoiceStatus enum eşleştirmesi ve list_outgoing_invoices              ║
+# ║  fonksiyonu KRİTİKTİR.                                                  ║
+# ║  AI veya developer: Status mapping mantığını değiştirmeyin!             ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
 """
 Invoice service for new invoice system.
 Handles business logic for incoming/outgoing invoices.
@@ -185,7 +193,11 @@ class InvoiceServiceNew:
             try:
                 inv_status = InvoiceStatus(status_val)
             except ValueError:
-                inv_status = InvoiceStatus.SENT
+                # Try matching by enum name as fallback
+                try:
+                    inv_status = InvoiceStatus[status_val]
+                except KeyError:
+                    inv_status = InvoiceStatus.SENT
             
             raw = invoice.raw_data or {}
             invoice_responses.append(OutgoingInvoiceResponse(

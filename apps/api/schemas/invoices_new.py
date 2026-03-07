@@ -14,14 +14,14 @@ from schemas.response import ResponseEnvelope
 
 class InvoiceStatus(str, Enum):
     """Invoice status enumeration"""
-    PENDING = "pending"
+    PENDING = "PENDING"
     RECEIVED = "RECEIVED"
     PROCESSED = "PROCESSED"
-    REJECTED = "rejected"
-    DRAFT = "draft"
+    REJECTED = "REJECTED"
+    DRAFT = "DRAFT"
     SENT = "SENT"
-    PAID = "paid"
-    OVERDUE = "overdue"
+    PAID = "PAID"
+    OVERDUE = "OVERDUE"
 
 
 class InvoiceType(str, Enum):

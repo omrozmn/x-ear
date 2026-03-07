@@ -1,3 +1,12 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  ⚠️  DOKUNULMAZ DOSYA — DO NOT MODIFY — NE YAPTIĞINI BİLMEDEN DOKUNMA  ⚠️  ║
+# ║                                                                         ║
+# ║  Bu dosya BirFatura API istemcisini içerir.                             ║
+# ║  document_download_by_uuid() ve preview_document_pdf() metotları        ║
+# ║  fatura PDF akışı için KRİTİKTİR.                                       ║
+# ║  AI veya developer: Bu metotları silmeyin veya imzalarını               ║
+# ║  değiştirmeyin! Akış bozulursa PDF görüntüleme çalışmaz.               ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
 import os
 import json
 import datetime

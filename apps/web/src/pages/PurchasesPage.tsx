@@ -7,6 +7,7 @@ import { useListIncomingInvoices } from '@/api/generated/invoices/invoices';
 import type { IncomingInvoiceResponse } from '@/api/generated/schemas';
 import { ONBOARDING_PURCHASES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
+import toast from 'react-hot-toast';
 
 export function PurchasesPage() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export function PurchasesPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<IncomingInvoiceResponse | null>(null);
   const [sortField, setSortField] = useState<string>('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -86,6 +88,30 @@ export function PurchasesPage() {
         {labels[status] || status}
       </span>
     );
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sortedInvoices.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(sortedInvoices.map((inv: IncomingInvoiceResponse) => String(inv.invoiceId))));
+  };
+  const handleBulkExportCsv = () => {
+    const selected = sortedInvoices.filter((inv: IncomingInvoiceResponse) => selectedIds.has(String(inv.invoiceId)));
+    const headers = ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'];
+    const rows = selected.map((inv: IncomingInvoiceResponse) => [
+      inv.invoiceNumber || '', inv.supplierName || '', inv.supplierTaxNumber || '',
+      String(inv.totalAmount || 0), inv.invoiceDate || '', inv.status || '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `alislar_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success('CSV dışa aktarıldı');
+    setSelectedIds(new Set());
   };
 
   if (isLoading) {
@@ -241,6 +267,9 @@ export function PurchasesPage() {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
+                <th className="px-3 py-3 w-10">
+                  <input type="checkbox" checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('supplierName')}>Tedarikçi<SortIcon field="supplierName" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('totalAmount')}>Tutar<SortIcon field="totalAmount" /></th>
@@ -251,7 +280,10 @@ export function PurchasesPage() {
             </thead>
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
-                <tr key={invoice.invoiceId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr key={invoice.invoiceId} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(invoice.invoiceId)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
+                  <td className="px-3 py-4">
+                    <input type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {invoice.invoiceNumber}
                   </td>
@@ -336,6 +368,21 @@ export function PurchasesPage() {
           </div>
         )}
       </Card>
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <button onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+            <Download className="w-4 h-4" /> CSV Dışa Aktar
+          </button>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <button onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <X className="w-4 h-4" /> Seçimi Kaldır
+          </button>
+        </div>
+      )}
 
       {/* Detail Modal */}
       {selectedInvoice && (

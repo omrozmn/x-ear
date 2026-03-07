@@ -36,6 +36,7 @@ export function IncomingInvoicesPage() {
   // Invoice viewer modal
   const [pdfModal, setPdfModal] = useState<{ open: boolean; blobUrl: string; title: string; fileName: string } | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -46,6 +47,9 @@ export function IncomingInvoicesPage() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Clear selection on page/filter change
+  useEffect(() => { setSelectedIds(new Set()); }, [currentPage, statusFilter]);
 
   const handleSort = (field: string) => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -196,6 +200,48 @@ export function IncomingInvoicesPage() {
       .catch(() => toast.error('Kopyalanamadı'));
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredInvoices.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filteredInvoices.map((inv: IncomingInvoiceResponse) => String(inv.invoiceId))));
+  };
+  const handleBulkAccept = async () => {
+    const count = selectedIds.size;
+    const toastId = toast.loading(`${count} fatura kabul ediliyor...`);
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => postInvoiceAction(id, 'accept')));
+      toast.success(`${count} fatura kabul edildi`, { id: toastId });
+      setSelectedIds(new Set()); refetch();
+    } catch { toast.error('Toplu kabul işlemi başarısız', { id: toastId }); }
+  };
+  const handleBulkReject = async () => {
+    const count = selectedIds.size;
+    const toastId = toast.loading(`${count} fatura reddediliyor...`);
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => postInvoiceAction(id, 'reject', { reason: 'Toplu reddetme' })));
+      toast.success(`${count} fatura reddedildi`, { id: toastId });
+      setSelectedIds(new Set()); refetch();
+    } catch { toast.error('Toplu reddetme işlemi başarısız', { id: toastId }); }
+  };
+  const handleBulkExportCsv = () => {
+    const selected = filteredInvoices.filter((inv: IncomingInvoiceResponse) => selectedIds.has(String(inv.invoiceId)));
+    const headers = ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'];
+    const rows = selected.map((inv: IncomingInvoiceResponse) => [
+      inv.invoiceNumber || '', inv.supplierName || '', inv.supplierTaxNumber || '',
+      String(inv.totalAmount || 0), inv.invoiceDate || '', inv.status || '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `gelen_faturalar_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success('CSV dışa aktarıldı');
+    setSelectedIds(new Set());
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -224,39 +270,39 @@ export function IncomingInvoicesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-3 gap-3 md:gap-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
+              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-              <FileText className="text-blue-600 dark:text-blue-400" size={24} />
+            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <FileText className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Bekleyen</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{pendingCount}</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Bekleyen</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{pendingCount}</p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
-              <CheckCircle className="text-green-600 dark:text-green-400" size={24} />
+            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <CheckCircle className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Alışa Dönüştürülen</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{processedCount}</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Alışa Dönüştürülen</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{processedCount}</p>
             </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-              <ShoppingCart className="text-purple-600 dark:text-purple-400" size={24} />
+            <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+              <ShoppingCart className="text-purple-600 dark:text-purple-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
@@ -351,6 +397,9 @@ export function IncomingInvoicesPage() {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
+                <th className="px-3 py-3 w-10">
+                  <input type="checkbox" checked={filteredInvoices.length > 0 && selectedIds.size === filteredInvoices.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('supplierName')}>Tedarikçi<SortIcon field="supplierName" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('totalAmount')}>Tutar<SortIcon field="totalAmount" /></th>
@@ -363,9 +412,12 @@ export function IncomingInvoicesPage() {
               {filteredInvoices.map((invoice: IncomingInvoiceResponse) => (
                 <tr
                   key={invoice.invoiceId}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${selectedIds.has(String(invoice.invoiceId)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}
                   onClick={() => handleViewPdf(invoice)}
                 >
+                  <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                    <input type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
@@ -489,6 +541,27 @@ export function IncomingInvoicesPage() {
           </div>
         )}
       </Card>
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <button onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+            <CheckCircle className="w-4 h-4" /> Toplu Kabul
+          </button>
+          <button onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+            <XCircle className="w-4 h-4" /> Toplu Reddet
+          </button>
+          <button onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+            <Download className="w-4 h-4" /> CSV Dışa Aktar
+          </button>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <button onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <X className="w-4 h-4" /> Seçimi Kaldır
+          </button>
+        </div>
+      )}
 
       {/* Invoice Viewer Modal */}
       {pdfModal?.open && (

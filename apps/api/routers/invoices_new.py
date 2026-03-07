@@ -1,3 +1,14 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  ⚠️  DOKUNULMAZ DOSYA — DO NOT MODIFY — NE YAPTIĞINI BİLMEDEN DOKUNMA  ⚠️  ║
+# ║                                                                         ║
+# ║  Bu dosya BirFatura 2-adımlı PDF akışını içerir:                        ║
+# ║  1) DocumentDownloadByUUID → XML indir                                  ║
+# ║  2) PreviewDocumentReturnPDF → gerçek PDF oluştur                       ║
+# ║                                                                         ║
+# ║  Bu akış BOZULURSA fatura görüntüleme/indirme ÇALIŞMAZ.                ║
+# ║  AI veya developer: Bu dosyayı refactor etmeyin, silmeyin,              ║
+# ║  veya endpoint imzalarını değiştirmeyin!                                ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
 """
 New invoices router for incoming/outgoing invoice management.
 Separate from existing invoices.py to avoid conflicts.
@@ -8,6 +19,7 @@ import gzip
 import io
 import logging
 import os
+import uuid
 import zipfile
 from typing import Optional, List, Literal
 from datetime import datetime, date
@@ -252,7 +264,6 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
 
     inv_type = raw.get("InvoiceTypeCode") or invoice.invoice_type or "SATIS"
 
-    # For INCOMING invoices: sender is supplier (who billed us), receiver is us (customer)
     supplier_name = raw.get("SenderName") or invoice.sender_name or ""
     supplier_vkn = raw.get("SenderKN") or invoice.sender_tax_number or ""
     supplier_tax_office = invoice.sender_tax_office or ""
@@ -433,7 +444,7 @@ def get_invoice_document(
                         headers={"Content-Disposition": f'inline; filename="{filename}"'})
 
     if format == "pdf":
-        # Download XML from BirFatura then convert to PDF via PreviewDocumentReturnPDF (2 requests)
+        # 2-step: Download XML from BirFatura then convert to PDF via PreviewDocumentReturnPDF
         pdf_bytes = None
         if invoice.birfatura_uuid:
             try:
@@ -467,9 +478,8 @@ def get_invoice_document(
                 logger.warning(f"BirFatura PDF generation failed for invoice {invoice_id}: {e}")
 
         if pdf_bytes:
-            content = pdf_bytes
             filename = f"{invoice.invoice_number or invoice_id}.pdf"
-            return Response(content=content, media_type="application/pdf",
+            return Response(content=pdf_bytes, media_type="application/pdf",
                             headers={"Content-Disposition": f'inline; filename="{filename}"'})
         else:
             # Fallback: render PDF locally via WeasyPrint or return HTML
@@ -486,6 +496,7 @@ def get_invoice_document(
                 return Response(content=html_content, media_type="text/html",
                                 headers={"Content-Disposition": f'inline; filename="{filename}"'})
 
+    # XML download
     try:
         client = _get_birfatura_client(tenant_id, db)
         resp = client.document_download_by_uuid({
@@ -629,6 +640,93 @@ def cancel_invoice(
     )
 
 
+@router.get("/{invoice_id}/logs",
+            operation_id="getInvoiceLogs")
+def get_invoice_logs(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Get BirFatura document lifecycle logs for an invoice."""
+    tenant_id = _resolve_tenant(access)
+    invoice = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    if not invoice.birfatura_uuid:
+        return ResponseEnvelope(success=True, data=[], message="No BirFatura UUID")
+    try:
+        client = _get_birfatura_client(tenant_id, db)
+        resp = client.get_document_logs({"documentUUID": invoice.birfatura_uuid})
+        logs = resp.get("Result") or resp.get("Data") or []
+        # Reverse to chronological order (oldest first)
+        if isinstance(logs, list):
+            logs = list(reversed(logs))
+        return ResponseEnvelope(success=True, data=logs, message="Logs retrieved")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching logs for invoice {invoice_id}: {e}")
+        return ResponseEnvelope(success=True, data=[], message="Could not fetch logs")
+
+
+@router.post("/{invoice_id}/copy",
+             operation_id="copyInvoice",
+             response_model=ResponseEnvelope[InvoiceActionResponse])
+def copy_invoice(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Copy an invoice as a new DRAFT in the system."""
+    tenant_id = _resolve_tenant(access)
+    original = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id
+    ).first()
+    if not original:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    copy = PurchaseInvoice(
+        tenant_id=tenant_id,
+        branch_id=original.branch_id,
+        birfatura_uuid=f"draft-{uuid.uuid4()}",
+        invoice_number=None,
+        invoice_date=datetime.utcnow(),
+        invoice_type=original.invoice_type,
+        sender_name=original.sender_name,
+        sender_tax_number=original.sender_tax_number,
+        sender_tax_office=original.sender_tax_office,
+        sender_address=original.sender_address,
+        sender_city=original.sender_city,
+        supplier_id=original.supplier_id,
+        currency=original.currency,
+        subtotal=original.subtotal,
+        tax_amount=original.tax_amount,
+        total_amount=original.total_amount,
+        raw_data=original.raw_data,
+        status="DRAFT",
+        is_matched=False,
+        notes=f"Fatura #{original.id} kopyası",
+    )
+    db.add(copy)
+    try:
+        db.commit()
+        db.refresh(copy)
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error copying invoice {invoice_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to copy invoice")
+
+    return ResponseEnvelope(
+        success=True,
+        data=InvoiceActionResponse(invoice_id=copy.id, success=True, message="Fatura kopyalandı"),
+        message="Invoice copied as draft"
+    )
+
+
 @router.delete("/purchases/{purchase_id}",
                operation_id="deletePurchase",
                response_model=ResponseEnvelope[InvoiceActionResponse])
@@ -674,39 +772,3 @@ def delete_purchase(
         data=InvoiceActionResponse(invoice_id=0, success=True, message="Alış kaydı silindi"),
         message="Purchase deleted"
     )
-
-
-@router.get("/{invoice_id}/logs",
-            operation_id="getInvoiceLogs",
-            response_model=ResponseEnvelope[List[dict]])
-def get_invoice_logs(
-    invoice_id: int,
-    db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access("invoices.view"))
-):
-    """
-    Get BirFatura document status log history for an invoice.
-    Returns a list of log entries showing the invoice's lifecycle steps.
-    """
-    tenant_id = _resolve_tenant(access)
-    invoice = db.query(PurchaseInvoice).filter(
-        PurchaseInvoice.id == invoice_id,
-        PurchaseInvoice.tenant_id == tenant_id
-    ).first()
-    if not invoice:
-        raise HTTPException(status_code=404, detail="Invoice not found")
-
-    if not invoice.birfatura_uuid:
-        return ResponseEnvelope(success=True, data=[], message="No BirFatura UUID for this invoice")
-
-    try:
-        client = _get_birfatura_client(tenant_id, db)
-        resp = client.get_document_logs({"documentUUID": invoice.birfatura_uuid})
-        # BirFatura returns logs in "Data" key (array at top level, not nested in "Result")
-        logs = resp.get("Data") or resp.get("data") or resp.get("Result") or []
-        if not isinstance(logs, list):
-            logs = []
-        return ResponseEnvelope(success=True, data=logs)
-    except Exception as e:
-        logger.warning(f"Error fetching document logs for invoice {invoice_id}: {e}")
-        return ResponseEnvelope(success=True, data=[], message="Logs unavailable")
