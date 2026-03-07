@@ -32,7 +32,7 @@ jobs:
       - name: Install workspace package deps
         run: |
           cd packages/core && npm ci
-          cd ../ui-web && npm ci
+          cd ../ui-web && npm install --legacy-peer-deps
 
       - name: Install Landing deps
         run: cd apps/landing && npm ci
