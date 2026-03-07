@@ -22,53 +22,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "pnpm"
+
+      - name: Install all dependencies
+        run: pnpm install --frozen-lockfile
 
       # ── Landing (Next.js static export) ──────────────────────────
-      - name: Install Landing deps
-        run: cd apps/landing && npm ci
-
       - name: Build Landing
-        id: build_landing
-        continue-on-error: true
-        run: |
-          cd apps/landing
-          npx next build --webpack 2>&1 | tee /tmp/landing-build.log
+        run: cd apps/landing && pnpm exec next build --webpack
         env:
           PAGES_BASE_PATH: /x-ear
 
-      - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: landing-build-log
-          path: /tmp/landing-build.log
-
-      - name: Check Landing build
-        if: steps.build_landing.outcome == 'failure'
-        run: |
-          echo "Build failed. Check the 'landing-build-log' artifact."
-          tail -50 /tmp/landing-build.log
-          exit 1
-
       # ── Web App (Vite React SPA) ──────────────────────────────────
-      - name: Install Web deps
-        run: cd apps/web && npm ci
-
       - name: Build Web
-        run: cd apps/web && npx vite build
+        run: cd apps/web && pnpm exec vite build
         env:
           VITE_BASE: /x-ear/app/
 
       # ── Admin Panel (Vite React SPA) ──────────────────────────────
-      - name: Install Admin deps
-        run: cd apps/admin && npm ci
-
       - name: Build Admin
-        run: cd apps/admin && npx vite build
+        run: cd apps/admin && pnpm exec vite build
         env:
           VITE_BASE: /x-ear/admin/
 
