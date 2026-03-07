@@ -44,7 +44,7 @@ export function Header() {
                     <Link href="/" className="flex items-center gap-3 group z-[60]" onClick={closeMenu}>
                         <div className="relative h-9 w-9 flex items-center justify-center">
                             <Image
-                                src="/logo/x.svg"
+                                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo/x.svg`}
                                 alt="X-EAR Logo"
                                 width={36}
                                 height={36}
@@ -60,14 +60,14 @@ export function Header() {
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-10">
                         {navigation.map((item) => (
-                            <a
+                            <Link
                                 key={item.name}
                                 href={item.href}
                                 className="text-sm font-medium text-foreground/70 hover:text-accent-blue transition-colors relative group"
                             >
                                 {item.name}
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent-blue transition-all group-hover:w-full" />
-                            </a>
+                            </Link>
                         ))}
                     </nav>
 
@@ -114,7 +114,7 @@ export function Header() {
                     >
                         <nav className="flex flex-col gap-4">
                             {navigation.map((item) => (
-                                <a
+                                <Link
                                     key={item.name}
                                     href={item.href}
                                     onClick={closeMenu}
@@ -122,7 +122,7 @@ export function Header() {
                                 >
                                     {item.name}
                                     <ChevronRight className="w-6 h-6 text-foreground/20" />
-                                </a>
+                                </Link>
                             ))}
                         </nav>
 

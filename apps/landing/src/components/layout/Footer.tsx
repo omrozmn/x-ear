@@ -17,7 +17,7 @@ export function Footer() {
                         <Link href="/" className="flex items-center gap-3 group">
                             <div className="relative h-9 w-9 flex items-center justify-center">
                                 <Image
-                                    src="/logo/x.svg"
+                                    src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo/x.svg`}
                                     alt="X-EAR Logo"
                                     width={36}
                                     height={36}
