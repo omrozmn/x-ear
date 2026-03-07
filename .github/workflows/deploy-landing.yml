@@ -22,51 +22,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
-        timeout-minutes: 10
+      - name: Install Landing deps
+        run: cd apps/landing && npm ci
 
-      # ── Landing (Next.js static export) ──────────────────────────
       - name: Build Landing
         run: cd apps/landing && npx next build --webpack
         env:
           PAGES_BASE_PATH: /x-ear
 
-      # ── Web App (Vite React SPA) ──────────────────────────────────
-      - name: Build Web
-        run: cd apps/web && npx vite build
-        env:
-          VITE_BASE: /x-ear/app/
-
-      # ── Admin Panel (Vite React SPA) ──────────────────────────────
-      - name: Build Admin
-        run: cd apps/admin && npx vite build
-        env:
-          VITE_BASE: /x-ear/admin/
-
-      # ── Combine all outputs ───────────────────────────────────────
-      - name: Combine outputs
+      - name: Prepare deploy
         run: |
           mkdir -p deploy
           cp -r apps/landing/out/. deploy/
           touch deploy/.nojekyll
-          mkdir -p deploy/app
-          cp -r apps/web/dist/. deploy/app/
-          cp deploy/app/index.html deploy/app/404.html
-          mkdir -p deploy/admin
-          cp -r apps/admin/dist/. deploy/admin/
-          cp deploy/admin/index.html deploy/admin/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
