@@ -25,14 +25,22 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       # ── Landing (Next.js static export) ──────────────────────────
       - name: Install Landing deps
         run: cd apps/landing && npm ci
 
       - name: Build Landing
-        run: cd apps/landing && npm run build
+        run: |
+          cd apps/landing
+          npm run build 2>&1 | tee /tmp/landing-build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "::error::Landing build failed. Last 30 lines:"
+            tail -30 /tmp/landing-build.log
+            exit $BUILD_EXIT
+          fi
         env:
           PAGES_BASE_PATH: /x-ear
 
