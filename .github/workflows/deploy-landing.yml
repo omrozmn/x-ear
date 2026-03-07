@@ -28,20 +28,21 @@ jobs:
           node-version: "22"
 
       # Remove pnpm workspace:* refs that npm can't resolve
+      # Replace with file: protocol pointing to local paths
       - name: Patch workspace protocol for npm
         run: |
           node -e "
             const fs = require('fs');
-            const files = [
-              'packages/ui-web/package.json',
-              'packages/ui-web/package-lock.json',
-              'apps/web/package-lock.json',
-              'apps/admin/package-lock.json'
+            const patches = [
+              { file: 'packages/ui-web/package.json', from: '\"workspace:*\"', to: '\"file:../core\"' },
+              { file: 'packages/ui-web/package-lock.json', from: '\"workspace:*\"', to: '\"file:../core\"' },
+              { file: 'apps/web/package-lock.json', from: '\"workspace:*\"', to: '\"file:../../packages/core\"' },
+              { file: 'apps/admin/package-lock.json', from: '\"workspace:*\"', to: '\"file:../../packages/core\"' },
             ];
-            files.forEach(f => {
-              let txt = fs.readFileSync(f, 'utf8');
-              txt = txt.replace(/\"workspace:\*\"/g, '\"*\"');
-              fs.writeFileSync(f, txt);
+            patches.forEach(({ file, from, to }) => {
+              let txt = fs.readFileSync(file, 'utf8');
+              txt = txt.split(from).join(to);
+              fs.writeFileSync(file, txt);
             });
           "
 
