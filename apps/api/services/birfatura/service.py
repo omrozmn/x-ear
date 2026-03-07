@@ -300,6 +300,33 @@ class BirfaturaClient:
             payload['reason'] = reason
         return self.post(f'/api/EFatura/Cancel/{invoice_id}', payload)
 
+    def get_document_logs(self, payload: dict) -> dict:
+        """Get document status log history from BirFatura.
+        
+        Args:
+            payload: dict containing:
+                - documentUUID: (required) str  — the BirFatura UUID of the document
+        
+        Real API Response:
+        {
+            "Success": true,
+            "Data": [ { "status": "...", "description": "...", "createTime": "...", ... } ]
+        }
+        """
+        if self._use_mock:
+            import datetime as _dt
+            now = _dt.datetime.utcnow().isoformat()
+            return {
+                'Success': True,
+                'Data': [
+                    {'id': 1, 'status': 'QUEUED', 'description': 'Fatura gönderme kuyruğa alındı.', 'createTime': now, 'isUserCanSee': True},
+                    {'id': 2, 'status': 'SENT', 'description': 'Fatura GİB\'e gönderildi.', 'createTime': now, 'isUserCanSee': True},
+                    {'id': 3, 'status': 'DELIVERED', 'description': 'Fatura alıcıya iletildi.', 'createTime': now, 'isUserCanSee': True},
+                ],
+                '_mock': True
+            }
+        return self.post('/api/outEBelgeV2/GetDocumentLogs', payload)
+
     def accept_reject_inbox(self, document_uuid: str, accept: bool = True, reason: str = None) -> dict:
         """Accept or reject an incoming (inbox) invoice via BirFatura.
         

@@ -324,8 +324,29 @@ export function IncomingInvoicesPage() {
         </div>
       </Card>
 
-      {/* Invoices Table */}
-      <Card>
+      {/* Mobile Card View (< md) */}
+      <div className="block md:hidden space-y-3">
+        {filteredInvoices.length === 0 ? (
+          <div className="text-center py-12">
+            <FileText className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Gelen fatura bulunamadı</h3>
+          </div>
+        ) : filteredInvoices.map((invoice: IncomingInvoiceResponse) => (
+          <IncomingInvoiceMobileCard
+            key={invoice.invoiceId}
+            invoice={invoice}
+            onView={() => handleViewPdf(invoice)}
+            onAccept={() => handleAccept(invoice)}
+            onReject={() => handleReject(invoice)}
+            onDownload={() => handleDownloadPdf(invoice)}
+            getStatusBadge={getStatusBadge}
+            actionLoading={actionLoading}
+          />
+        ))}
+      </div>
+
+      {/* Desktop Table View (>= md) */}
+      <Card className="hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -340,7 +361,11 @@ export function IncomingInvoicesPage() {
             </thead>
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredInvoices.map((invoice: IncomingInvoiceResponse) => (
-                <tr key={invoice.invoiceId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr
+                  key={invoice.invoiceId}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                  onClick={() => handleViewPdf(invoice)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
@@ -354,7 +379,7 @@ export function IncomingInvoicesPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                     {formatDate(invoice.invoiceDate)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     {getStatusBadge(invoice.status)}
                     {invoice.isConvertedToPurchase && (
                       <div className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
@@ -363,7 +388,7 @@ export function IncomingInvoicesPage() {
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
                     <div className="relative" ref={activeMenu === String(invoice.invoiceId) ? menuRef : null}>
                       <button
                         onClick={() => setActiveMenu(activeMenu === String(invoice.invoiceId) ? null : String(invoice.invoiceId))}
@@ -505,6 +530,92 @@ export function IncomingInvoicesPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Mobile Card Component ────────────────────────────────────────────────────
+interface IncomingInvoiceMobileCardProps {
+  invoice: IncomingInvoiceResponse;
+  onView: () => void;
+  onAccept: () => void;
+  onReject: () => void;
+  onDownload: () => void;
+  getStatusBadge: (status: string) => React.ReactNode;
+  actionLoading: string | null;
+}
+
+function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDownload, getStatusBadge, actionLoading }: IncomingInvoiceMobileCardProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible">
+      {/* Tappable card body */}
+      <div
+        className="p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors"
+        onClick={onView}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.invoiceNumber}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{invoice.supplierName}</p>
+            {invoice.supplierTaxNumber && (
+              <p className="text-xs text-gray-400 dark:text-gray-500">VKN: {invoice.supplierTaxNumber}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+            {getStatusBadge(invoice.status)}
+            <div className="relative" ref={menuRef}>
+              <button
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400"
+                onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v); }}
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
+                  <button onClick={() => { setMenuOpen(false); onView(); }} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <Eye className="w-4 h-4" /> Görüntüle
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); onDownload(); }} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <Download className="w-4 h-4" /> PDF İndir
+                  </button>
+                  <div className="border-t border-gray-100 dark:border-gray-700" />
+                  <button onClick={() => { setMenuOpen(false); onAccept(); }} disabled={actionLoading === `accept-${invoice.invoiceId}`} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50">
+                    <CheckCircle className="w-4 h-4" /> Kabul Et
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); onReject(); }} disabled={actionLoading === `reject-${invoice.invoiceId}`} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50">
+                    <XCircle className="w-4 h-4" /> Reddet
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+            {formatCurrency(Number(invoice.totalAmount), invoice.currency || 'TRY')}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {formatDate(invoice.invoiceDate)}
+          </span>
+        </div>
+        {invoice.isConvertedToPurchase && (
+          <div className="mt-2 text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+            <ShoppingCart className="w-3 h-3" /> Alışa dönüştürüldü
+          </div>
+        )}
+      </div>
     </div>
   );
 }

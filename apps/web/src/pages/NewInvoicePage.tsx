@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button, Input, DatePicker, Textarea } from '@x-ear/ui-web';
 import { ArrowLeft, CheckCircle, ChevronDown, Pill } from 'lucide-react';
@@ -77,6 +77,20 @@ export function NewInvoicePage() {
     currency: 'TRY'
   });
   const isMobile = useIsMobile();
+
+  // Pre-fill form data from a copied invoice stored in sessionStorage
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('invoice_copy_draft');
+      if (raw) {
+        const draft = JSON.parse(raw);
+        sessionStorage.removeItem('invoice_copy_draft');
+        setFormData(prev => ({ ...prev, ...draft }));
+      }
+    } catch {
+      // Ignore JSON parse errors
+    }
+  }, []);
 
   const handleSubmit = async (invoiceData: InvoiceFormData) => {
     setIsSaving(true);

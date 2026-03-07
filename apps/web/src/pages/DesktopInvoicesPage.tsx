@@ -1,6 +1,6 @@
 import { Button, Card } from '@x-ear/ui-web';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, ChevronLeft, ChevronRight, Eye, X, Plus, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle } from 'lucide-react';
+import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, ChevronLeft, ChevronRight, Eye, X, Plus, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle, Clock, Ban, CreditCard } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useListOutgoingInvoices } from '@/api/generated/invoices/invoices';
 import type { OutgoingInvoiceResponse } from '@/api/generated/schemas';
@@ -44,6 +44,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [pdfModal, setPdfModal] = useState<{ open: boolean; blobUrl: string; title: string; fileName: string } | null>(null);
   const [statusModal, setStatusModal] = useState<OutgoingInvoiceResponse | null>(null);
+  const [statusLogs, setStatusLogs] = useState<any[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +58,19 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Fetch BirFatura document logs when status modal opens
+  useEffect(() => {
+    if (!statusModal) { setStatusLogs([]); return; }
+    setLogsLoading(true);
+    apiClient.get(`/api/invoices/${statusModal.invoiceId}/logs`)
+      .then((res: any) => {
+        const data = res.data?.data ?? [];
+        setStatusLogs(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setStatusLogs([]))
+      .finally(() => setLogsLoading(false));
+  }, [statusModal]);
 
   const handleSort = (field: string) => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -103,12 +118,43 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   }, [invoiceList, sortField, sortDir]);
 
   const getStatusBadge = (status: string, invoice?: OutgoingInvoiceResponse) => {
-    const isSent = status === 'SENT' || status === 'PAID' || status === 'PROCESSED';
-    const style = isSent
-      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-    const label = status === 'PAID' ? 'Ödendi' : status === 'SENT' ? 'Gönderildi' : status === 'PROCESSED' ? 'İşlendi' : 'Taslak';
-    const icon = isSent ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertCircle className="w-3 h-3 mr-1" />;
+    const s = (status || '').toUpperCase();
+    let style = '';
+    let label = '';
+    let icon = <AlertCircle className="w-3 h-3 mr-1" />;
+    if (s === 'SENT' || s === 'DELIVERED') {
+      style = 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      label = s === 'DELIVERED' ? 'İletildi' : 'Gönderildi';
+      icon = <Send className="w-3 h-3 mr-1" />;
+    } else if (s === 'PAID') {
+      style = 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+      label = 'Ödendi';
+      icon = <CreditCard className="w-3 h-3 mr-1" />;
+    } else if (s === 'PROCESSED') {
+      style = 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      label = 'İşlendi';
+      icon = <CheckCircle className="w-3 h-3 mr-1" />;
+    } else if (s === 'CANCELLED' || s === 'CANCELED') {
+      style = 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      label = 'İptal Edildi';
+      icon = <Ban className="w-3 h-3 mr-1" />;
+    } else if (s === 'REJECTED') {
+      style = 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      label = 'Reddedildi';
+      icon = <XCircle className="w-3 h-3 mr-1" />;
+    } else if (s === 'OVERDUE') {
+      style = 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
+      label = 'Vadesi Geçti';
+      icon = <AlertCircle className="w-3 h-3 mr-1" />;
+    } else if (s === 'DRAFT') {
+      style = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+      label = 'Taslak';
+      icon = <Clock className="w-3 h-3 mr-1" />;
+    } else {
+      style = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      label = status || 'Bilinmiyor';
+      icon = <Clock className="w-3 h-3 mr-1" />;
+    }
     return (
       <span
         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${style} ${invoice ? 'cursor-pointer hover:opacity-80' : ''}`}
@@ -187,11 +233,42 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     }
   };
 
+  // Copy invoice content as a new draft - stores customer/amount data in sessionStorage
   const handleCopy = (invoice: OutgoingInvoiceResponse) => {
     setActiveMenu(null);
-    navigator.clipboard.writeText(invoice.invoiceNumber || String(invoice.invoiceId))
-      .then(() => toast.success('Fatura no kopyalandı'))
-      .catch(() => toast.error('Kopyalanamadı'));
+    const draft = {
+      customerFirstName: invoice.partyFirstName || '',
+      customerLastName: invoice.partyLastName || '',
+      totalAmount: invoice.totalAmount,
+    };
+    sessionStorage.setItem('invoice_copy_draft', JSON.stringify(draft));
+    navigate({ to: '/invoices/new' });
+    toast.success('Fatura içeriği yeni taslak olarak açılıyor...');
+  };
+
+  // Copy invoice as draft AND cancel the current invoice
+  const handleCopyAndCancel = async (invoice: OutgoingInvoiceResponse) => {
+    setActiveMenu(null);
+    // First store draft data
+    const draft = {
+      customerFirstName: invoice.partyFirstName || '',
+      customerLastName: invoice.partyLastName || '',
+      totalAmount: invoice.totalAmount,
+    };
+    sessionStorage.setItem('invoice_copy_draft', JSON.stringify(draft));
+    // Then cancel the original invoice
+    setActionLoading(`cancel-${invoice.invoiceId}`);
+    try {
+      await postInvoiceAction(invoice.invoiceId, 'cancel', { reason: 'Kopyalanarak iptal edildi' });
+      toast.success('Fatura iptal edildi, kopya taslak açılıyor...');
+      refetch();
+      navigate({ to: '/invoices/new' });
+    } catch {
+      sessionStorage.removeItem('invoice_copy_draft');
+      toast.error('İptal işlemi başarısız, kopyalama iptal edildi');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   if (isLoading) {
@@ -337,8 +414,29 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         </div>
       </Card>
 
-      {/* Invoices Table */}
-      <Card>
+      {/* Mobile Card View (< md) */}
+      <div className="block md:hidden space-y-3">
+        {filteredInvoices.length === 0 ? (
+          <div className="text-center py-12">
+            <FileText className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Giden fatura bulunamadı</h3>
+          </div>
+        ) : filteredInvoices.map((invoice: OutgoingInvoiceResponse) => (
+          <InvoiceMobileCard
+            key={invoice.invoiceId}
+            invoice={invoice}
+            onView={() => handleViewPdf(invoice)}
+            onCopy={() => handleCopy(invoice)}
+            onCopyAndCancel={() => handleCopyAndCancel(invoice)}
+            onCancel={() => handleCancel(invoice)}
+            getStatusBadge={getStatusBadge}
+            actionLoading={actionLoading}
+          />
+        ))}
+      </div>
+
+      {/* Desktop Table View (>= md) */}
+      <Card className="hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -353,7 +451,11 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             </thead>
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredInvoices.map((invoice: OutgoingInvoiceResponse) => (
-                <tr key={invoice.invoiceId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr
+                  key={invoice.invoiceId}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                  onClick={() => handleViewPdf(invoice)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {invoice.invoiceNumber}
                   </td>
@@ -368,10 +470,10 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                     {formatDate(invoice.invoiceDate)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     {getStatusBadge(invoice.status, invoice)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
                     <div className="relative" ref={activeMenu === invoice.invoiceId ? menuRef : null}>
                       <button
                         onClick={() => setActiveMenu(activeMenu === invoice.invoiceId ? null : invoice.invoiceId)}
@@ -380,7 +482,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       {activeMenu === invoice.invoiceId && (
-                        <div className="absolute right-0 z-50 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                        <div className="absolute right-0 z-50 mt-1 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
                           <button onClick={() => handleViewPdf(invoice)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <Eye className="w-4 h-4" /> Fatura Görüntüle
                           </button>
@@ -388,9 +490,17 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                             <Download className="w-4 h-4" /> PDF İndir
                           </button>
                           <button onClick={() => handleCopy(invoice)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <Copy className="w-4 h-4" /> Kopyala
+                            <Copy className="w-4 h-4" /> Faturayı Kopyala (Taslak)
                           </button>
                           <div className="border-t border-gray-100 dark:border-gray-700" />
+                          <button
+                            onClick={() => handleCopyAndCancel(invoice)}
+                            disabled={!!actionLoading}
+                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 disabled:opacity-50"
+                          >
+                            <Copy className="w-4 h-4" />
+                            {actionLoading?.startsWith(`cancel-`) ? 'İşleniyor...' : 'Kopyala ve İptal Et'}
+                          </button>
                           <button
                             onClick={() => handleCancel(invoice)}
                             disabled={actionLoading === `cancel-${invoice.invoiceId}`}
@@ -502,35 +612,69 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         </div>
       )}
 
-      {/* Status Modal */}
+      {/* Status Modal with BirFatura Log History */}
       {statusModal && (
         <div
           className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
           onClick={() => setStatusModal(null)}
         >
           <div
-            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full"
+            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Fatura Durumu</h2>
               <button onClick={() => setStatusModal(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              {/* Invoice Details */}
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-xs text-gray-500">Fatura No</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.invoiceNumber}</p></div>
                 <div><p className="text-xs text-gray-500">Alıcı</p><p className="text-sm font-medium text-gray-900 dark:text-white">{statusModal.partyFirstName} {statusModal.partyLastName}</p></div>
                 <div><p className="text-xs text-gray-500">Tarih</p><p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(statusModal.invoiceDate)}</p></div>
                 <div><p className="text-xs text-gray-500">Tutar</p><p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(statusModal.totalAmount), 'TRY')}</p></div>
                 <div className="col-span-2">
-                  <p className="text-xs text-gray-500 mb-1">Durum</p>
+                  <p className="text-xs text-gray-500 mb-1">Mevcut Durum</p>
                   {getStatusBadge(statusModal.status)}
                 </div>
               </div>
+
+              {/* BirFatura Log History */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-gray-500" />
+                  BirFatura İşlem Adımları
+                </h3>
+                {logsLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+                    Yükleniyor...
+                  </div>
+                ) : statusLogs.length === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">İşlem geçmişi bulunamadı.</p>
+                ) : (
+                  <div className="relative pl-4">
+                    <div className="absolute left-2 top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
+                    <div className="space-y-4">
+                      {statusLogs.filter((log: any) => log.isUserCanSee !== false).map((log: any, idx: number) => (
+                        <div key={log.id ?? idx} className="relative pl-4">
+                          <div className="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-white dark:ring-gray-800" />
+                          <p className="text-xs font-semibold text-gray-900 dark:text-white">{log.description || log.status || 'Adım'}</p>
+                          {log.createTime && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                              {new Date(log.createTime).toLocaleString('tr-TR')}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
               <Button variant="outline" onClick={() => setStatusModal(null)}>Kapat</Button>
             </div>
           </div>
@@ -539,3 +683,86 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     </div>
   );
 };
+
+// ─── Mobile Card Component ───────────────────────────────────────────────────
+interface InvoiceMobileCardProps {
+  invoice: OutgoingInvoiceResponse;
+  onView: () => void;
+  onCopy: () => void;
+  onCopyAndCancel: () => void;
+  onCancel: () => void;
+  getStatusBadge: (status: string, invoice?: OutgoingInvoiceResponse) => React.ReactNode;
+  actionLoading: string | null;
+}
+
+function InvoiceMobileCard({ invoice, onView, onCopy, onCopyAndCancel, onCancel, getStatusBadge, actionLoading }: InvoiceMobileCardProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
+  return (
+    <div
+      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible"
+    >
+      {/* Tappable card body */}
+      <div
+        className="p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors"
+        onClick={onView}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.invoiceNumber}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+              {invoice.partyFirstName} {invoice.partyLastName}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+            {getStatusBadge(invoice.status)}
+            {/* Actions ⋮ button */}
+            <div className="relative" ref={menuRef}>
+              <button
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400"
+                onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v); }}
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-8 z-50 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
+                  <button onClick={() => { setMenuOpen(false); onView(); }} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <Eye className="w-4 h-4" /> Görüntüle
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); onCopy(); }} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <Copy className="w-4 h-4" /> Kopyala (Taslak)
+                  </button>
+                  <div className="border-t border-gray-100 dark:border-gray-700" />
+                  <button onClick={() => { setMenuOpen(false); onCopyAndCancel(); }} disabled={!!actionLoading} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 disabled:opacity-50">
+                    <Copy className="w-4 h-4" /> Kopyala ve İptal Et
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); onCancel(); }} disabled={actionLoading === `cancel-${invoice.invoiceId}`} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50">
+                    <XCircle className="w-4 h-4" /> İptal Et
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+            {formatCurrency(Number(invoice.totalAmount), 'TRY')}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {formatDate(invoice.invoiceDate)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}

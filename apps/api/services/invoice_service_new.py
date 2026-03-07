@@ -187,12 +187,13 @@ class InvoiceServiceNew:
             except ValueError:
                 inv_status = InvoiceStatus.SENT
             
+            raw = invoice.raw_data or {}
             invoice_responses.append(OutgoingInvoiceResponse(
                 invoice_id=str(invoice.id),
                 party_id="",
                 party_first_name=invoice.sender_name or "Bilinmeyen Alıcı",
                 party_last_name="",
-                invoice_number=invoice.invoice_number or f"INV-{invoice.id}",
+                invoice_number=invoice.invoice_number or raw.get('DocumentNo') or f"INV-{invoice.id}",
                 invoice_date=invoice.invoice_date or invoice.created_at,
                 due_date=None,
                 total_amount=invoice_total,

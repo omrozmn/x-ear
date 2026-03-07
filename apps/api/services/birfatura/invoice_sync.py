@@ -325,7 +325,7 @@ class InvoiceSyncService:
         purchase_invoice = PurchaseInvoice(
             tenant_id=tenant_id,
             birfatura_uuid=birfatura_uuid,
-            invoice_number=invoice_data.get('InvoiceNo') or invoice_data.get('invoiceId') or invoice_data.get('invoiceNumber'),
+            invoice_number=invoice_data.get('DocumentNo') or invoice_data.get('InvoiceNo') or invoice_data.get('invoiceId') or invoice_data.get('invoiceNumber'),
             invoice_date=parse_date(invoice_data.get('IssueDate') or invoice_data.get('issueDate') or invoice_data.get('invoiceDate')),
             invoice_type='OUTGOING',
             sender_name=invoice_data.get('ReceiverName') or invoice_data.get('receiverName', ''),

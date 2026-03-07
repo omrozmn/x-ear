@@ -674,3 +674,39 @@ def delete_purchase(
         data=InvoiceActionResponse(invoice_id=0, success=True, message="Alış kaydı silindi"),
         message="Purchase deleted"
     )
+
+
+@router.get("/{invoice_id}/logs",
+            operation_id="getInvoiceLogs",
+            response_model=ResponseEnvelope[List[dict]])
+def get_invoice_logs(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """
+    Get BirFatura document status log history for an invoice.
+    Returns a list of log entries showing the invoice's lifecycle steps.
+    """
+    tenant_id = _resolve_tenant(access)
+    invoice = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    if not invoice.birfatura_uuid:
+        return ResponseEnvelope(success=True, data=[], message="No BirFatura UUID for this invoice")
+
+    try:
+        client = _get_birfatura_client(tenant_id, db)
+        resp = client.get_document_logs({"documentUUID": invoice.birfatura_uuid})
+        # BirFatura returns logs in "Data" key (array at top level, not nested in "Result")
+        logs = resp.get("Data") or resp.get("data") or resp.get("Result") or []
+        if not isinstance(logs, list):
+            logs = []
+        return ResponseEnvelope(success=True, data=logs)
+    except Exception as e:
+        logger.warning(f"Error fetching document logs for invoice {invoice_id}: {e}")
+        return ResponseEnvelope(success=True, data=[], message="Logs unavailable")
