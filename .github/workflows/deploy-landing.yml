@@ -34,7 +34,8 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --reporter=append-only
+        timeout-minutes: 10
 
       # ── Landing (Next.js static export) ──────────────────────────
       - name: Build Landing
