@@ -34,15 +34,13 @@ jobs:
       - name: Build Landing
         run: |
           cd apps/landing
-          npx next build 2>&1 | tee /tmp/landing-build.log
-          BUILD_EXIT=${PIPESTATUS[0]}
-          if [ $BUILD_EXIT -ne 0 ]; then
-            echo "## ❌ Landing Build Failed" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -50 /tmp/landing-build.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            exit $BUILD_EXIT
-          fi
+          echo "Node: $(node --version)  NPM: $(npm --version)"
+          echo "Next: $(npx next --version)"
+          cat next.config.ts
+          echo "=== BUILD START ==="
+          npx next build 2>&1
+          echo "=== BUILD EXIT: $? ==="
+          ls -la out/ 2>/dev/null || echo "No out/ directory"
         env:
           PAGES_BASE_PATH: /x-ear
 
