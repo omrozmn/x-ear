@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from '@tanstack/react-router';
-import { useListAffiliateList, AffiliateRead } from '@/lib/api-client';
+import {
+  useListAffiliateList,
+  type AffiliateRead,
+  type ResponseEnvelopeListAffiliateRead,
+} from '@/lib/api-client';
 import AffiliateDetailModal from '../../components/admin/AffiliateDetailModal';
 import CreateAffiliateModal from '../../components/admin/CreateAffiliateModal';
 import { PlusIcon } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+
+function getAffiliates(
+  data: ResponseEnvelopeListAffiliateRead | AffiliateRead[] | undefined
+): AffiliateRead[] {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return Array.isArray(data?.data) ? data.data : [];
+}
 
 const AffiliatesPage: React.FC = () => {
   const { isMobile } = useAdminResponsive();
@@ -13,9 +26,7 @@ const AffiliatesPage: React.FC = () => {
   const [selectedAffiliateId, setSelectedAffiliateId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // Backend returns array directly, not wrapped
-  // Backend returns array directly, but response envelope might wrap it
-  const affiliates = (affiliatesData as any)?.affiliates || (affiliatesData as any)?.data?.affiliates || (Array.isArray(affiliatesData) ? affiliatesData : (affiliatesData as any)?.data || []);
+  const affiliates = getAffiliates(affiliatesData);
 
   if (isLoading) return <div className="p-4">Yükleniyor...</div>;
   if (error) return <div className="p-4 text-red-600">Hata oluştu: {(error as Error).message}</div>;

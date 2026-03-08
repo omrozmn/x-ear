@@ -18,7 +18,7 @@ export function ResponsiveGrid({
   gap = 'md',
   className = '',
 }: ResponsiveGridProps) {
-  const { isMobile, isTablet, isDesktop } = useAdminResponsive();
+  const { isMobile, isTablet } = useAdminResponsive();
 
   const gapClasses = {
     sm: 'gap-2',

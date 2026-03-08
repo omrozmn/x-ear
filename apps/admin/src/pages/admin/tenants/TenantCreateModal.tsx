@@ -11,11 +11,30 @@ interface TenantCreateModalProps {
     onClose: () => void;
 }
 
+type TenantStatus = 'trial' | 'active';
+
+interface TenantCreateFormData {
+    name: string;
+    owner_email: string;
+    status: TenantStatus;
+    product_code: string;
+}
+
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+        };
+    };
+}
+
 export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) => {
     const queryClient = useQueryClient();
     const { mutateAsync: createTenant, isPending } = useCreateAdminTenant();
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<TenantCreateFormData>({
         name: '',
         owner_email: '',
         status: 'trial',
@@ -25,14 +44,14 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const payload = {
+                name: formData.name,
+                ownerEmail: formData.owner_email,
+                status: formData.status,
+                product_code: formData.product_code
+            };
             await createTenant({
-                data: {
-                    name: formData.name,
-                    ownerEmail: formData.owner_email,
-                    status: formData.status as any,
-                    // @ts-ignore - product_code is added in backend
-                    product_code: formData.product_code
-                }
+                data: payload
             });
             toast.success('Abone başarıyla oluşturuldu');
             queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
@@ -44,8 +63,9 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                 status: 'trial',
                 product_code: 'xear_hearing'
             });
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Oluşturma başarısız');
+        } catch (error: unknown) {
+            const apiError = error as ApiErrorLike;
+            toast.error(apiError.response?.data?.error?.message || 'Oluşturma başarısız');
         }
     };
 
@@ -104,7 +124,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     {Object.entries(PRODUCT_REGISTRY)
-                                        .filter(([_, config]) => config.enabled && config.creatable)
+                                        .filter(([, config]) => config.enabled && config.creatable)
                                         .map(([key, config]) => (
                                             <option key={key} value={key}>{config.name}</option>
                                         ))
@@ -117,7 +137,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                 <label className="block text-sm font-medium text-gray-700">Başlangıç Durumu</label>
                                 <select
                                     value={formData.status}
-                                    onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                    onChange={e => setFormData({ ...formData, status: e.target.value as TenantStatus })}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     <option value="trial">Deneme (Trial)</option>

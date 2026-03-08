@@ -15,6 +15,39 @@ interface SmsDocumentsTabProps {
     onUpdate: () => void;
 }
 
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+            message?: string;
+        };
+    };
+}
+
+type SmsDocumentStatus = 'uploaded' | 'sent' | 'revision_requested' | 'approved';
+
+interface SmsDocument {
+    type: string;
+    url?: string;
+    filename?: string;
+    status?: SmsDocumentStatus;
+}
+
+interface SmsDocumentsResponse {
+    documents?: SmsDocument[];
+    documentsSubmitted?: boolean;
+    allDocumentsApproved?: boolean;
+}
+
+interface PreviewDownloadResponse {
+    data?: {
+        url?: string;
+    };
+    url?: string;
+}
+
 const DOCUMENT_LABELS: Record<string, string> = {
     contract: 'Sözleşme',
     id_card: 'Kimlik Fotokopisi',
@@ -24,22 +57,27 @@ const DOCUMENT_LABELS: Record<string, string> = {
     signature_circular: 'İmza Sirküleri'
 };
 
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    const apiError = error as ApiErrorLike;
+    return apiError.response?.data?.error?.message || apiError.response?.data?.message || fallback;
+}
+
 export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) => {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [previewDoc, setPreviewDoc] = useState<{ type: string; url: string; filename: string } | null>(null);
     const [revisionDialog, setRevisionDialog] = useState<{ docType: string; note: string } | null>(null);
     const [confirmEmailDialog, setConfirmEmailDialog] = useState(false);
 
-    const { data: documentsData, isLoading, refetch } = useListAdminTenantSmsDocuments(tenantId, {
+    const { data: documentsData, isLoading, refetch } = useListAdminTenantSmsDocuments<SmsDocumentsResponse>(tenantId, {
         query: { enabled: !!tenantId }
     });
 
     const { mutateAsync: updateStatus } = useUpdateAdminTenantSmsDocumentStatus();
     const { mutateAsync: sendEmail } = useCreateAdminTenantSmsDocumentSendEmail();
 
-    const documents = (documentsData as any)?.data?.documents || [];
-    const documentsSubmitted = (documentsData as any)?.data?.documentsSubmitted || false;
-    const allDocumentsApproved = (documentsData as any)?.data?.allDocumentsApproved || false;
+    const documents = documentsData?.documents ?? [];
+    const documentsSubmitted = documentsData?.documentsSubmitted ?? false;
+    const allDocumentsApproved = documentsData?.allDocumentsApproved ?? false;
 
     const handleApprove = async (docType: string) => {
         setActionLoading(docType);
@@ -52,8 +90,8 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
             toast.success('Belge onaylandı');
             await refetch();
             onUpdate();
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Onaylama başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Onaylama başarısız'));
         } finally {
             setActionLoading(null);
         }
@@ -77,8 +115,8 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
             toast.success('Revizyon istendi');
             await refetch();
             onUpdate();
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'İşlem başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'İşlem başarısız'));
         } finally {
             setActionLoading(null);
         }
@@ -94,25 +132,23 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
         try {
             await sendEmail({ tenantId });
             toast.success('E-posta gönderildi');
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'E-posta gönderilemedi');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'E-posta gönderilemedi'));
         } finally {
             setActionLoading(null);
         }
     };
 
     const handlePreview = (docType: string) => {
-        const doc = documents.find((d: any) => d.type === docType) as any;
+        const doc = documents.find((document) => document.type === docType);
         if (!doc) return;
 
-        // Admin uses different endpoint
-        // Admin uses different endpoint
-        adminApi<{ data: { url: string } }>({
+        adminApi<PreviewDownloadResponse>({
             url: `/api/admin/tenants/${tenantId}/sms-documents/${docType}/download`,
             method: 'GET'
         })
             .then(data => {
-                const previewUrl = (data as any)?.data?.url || (data as any)?.url;
+                const previewUrl = data.data?.url || data.url;
                 if (previewUrl) {
                     setPreviewDoc({ type: docType, url: previewUrl, filename: doc.filename || '' });
                 } else {
@@ -167,7 +203,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {documents.map((doc: any) => (
+                        {documents.map((doc) => (
                             <div key={doc.type} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <div className="flex-1">
                                     <div className="font-medium text-gray-900">{DOCUMENT_LABELS[doc.type] || doc.type}</div>

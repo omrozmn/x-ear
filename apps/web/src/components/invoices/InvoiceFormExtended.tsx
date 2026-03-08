@@ -114,6 +114,7 @@ interface InvoiceFormExtendedProps {
   onSubmit: (data: CreateInvoiceData) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  documentKind?: 'invoice' | 'despatch';
   onDataChange?: (field: string, value: unknown) => void;
   initialData?: Partial<InvoiceFormState>;
   onRequestLineEditor?: (type: 'withholding' | 'special' | 'medical', index: number) => void;
@@ -138,6 +139,7 @@ export function InvoiceFormExtended({
   onSubmit,
   onCancel,
   isLoading = false,
+  documentKind = 'invoice',
   onDataChange,
   initialData,
   onRequestLineEditor,
@@ -384,6 +386,7 @@ export function InvoiceFormExtended({
                     <InvoiceTypeSection
                       invoiceType={extendedData.invoiceType || ''}
                       scenario={extendedData.scenario || extendedData.scenarioData?.scenario || 'other'}
+                      documentKind={documentKind}
                       specialTaxBase={extendedData.specialTaxBase}
                       returnInvoiceDetails={extendedData.returnInvoiceDetails}
                       onChange={handleExtendedFieldChange}

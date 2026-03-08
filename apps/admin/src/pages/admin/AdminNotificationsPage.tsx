@@ -1,26 +1,32 @@
 import React, { useState } from 'react';
 import { useListAdminNotificationTemplates, useCreateAdminNotificationSend } from '@/lib/api-client';
+import type { EmailTemplateRead, NotificationSend, ResponseEnvelopeListEmailTemplateRead } from '@/api/generated/schemas';
 import {
-    BellIcon,
     PaperAirplaneIcon,
     PlusIcon,
     ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
-import { useAdminResponsive } from '@/hooks';
+
+function getTemplates(data: ResponseEnvelopeListEmailTemplateRead | undefined): EmailTemplateRead[] {
+    if (!Array.isArray(data?.data)) {
+        return [];
+    }
+
+    return data.data.filter((template): template is EmailTemplateRead => typeof template?.id === 'string');
+}
 
 const AdminNotificationsPage: React.FC = () => {
-    const { isMobile } = useAdminResponsive();
-    const { data: templatesData, isLoading: templatesLoading } = useListAdminNotificationTemplates({} as any);
+    const { data: templatesData, isLoading: templatesLoading } = useListAdminNotificationTemplates();
     const sendNotificationMutation = useCreateAdminNotificationSend();
 
-    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateRead | null>(null);
     const [targetType, setTargetType] = useState<'user' | 'tenant' | 'all'>('all');
     const [targetId, setTargetId] = useState('');
     const [customTitle, setCustomTitle] = useState('');
     const [customMessage, setCustomMessage] = useState('');
 
-    const templates = (templatesData as any)?.templates || (templatesData as any)?.data || (Array.isArray(templatesData) ? templatesData : []);
+    const templates = getTemplates(templatesData);
 
     const handleSend = async () => {
         if (!customTitle || !customMessage) {
@@ -29,14 +35,16 @@ const AdminNotificationsPage: React.FC = () => {
         }
 
         try {
+            const payload: NotificationSend = {
+                targetType,
+                targetId: targetId || undefined,
+                title: customTitle,
+                message: customMessage,
+                type: 'info'
+            };
+
             await sendNotificationMutation.mutateAsync({
-                data: {
-                    targetType,
-                    targetId: targetId || undefined,
-                    title: customTitle,
-                    message: customMessage,
-                    type: 'info'
-                }
+                data: payload
             });
             toast.success('Bildirim başarıyla gönderildi');
             setCustomTitle('');
@@ -47,7 +55,7 @@ const AdminNotificationsPage: React.FC = () => {
         }
     };
 
-    const handleTemplateSelect = (template: any) => {
+    const handleTemplateSelect = (template: EmailTemplateRead) => {
         setSelectedTemplate(template);
         setCustomTitle(template.titleTemplate || '');
         setCustomMessage(template.bodyTemplate || '');
@@ -76,7 +84,7 @@ const AdminNotificationsPage: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700">Hedef Kitle</label>
                                 <select
                                     value={targetType}
-                                    onChange={(e) => setTargetType(e.target.value as any)}
+                                    onChange={(e) => setTargetType(e.target.value as 'user' | 'tenant' | 'all')}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                 >
                                     <option value="all">Tüm Kullanıcılar</option>
@@ -151,7 +159,7 @@ const AdminNotificationsPage: React.FC = () => {
                             <div className="text-center py-4 text-gray-500">Yükleniyor...</div>
                         ) : (
                             <div className="space-y-3">
-                                {templates.map((template: any) => (
+                                {templates.map((template) => (
                                     <div
                                         key={template.id}
                                         onClick={() => handleTemplateSelect(template)}
@@ -165,7 +173,7 @@ const AdminNotificationsPage: React.FC = () => {
                                         <div className="mt-2 flex items-center space-x-2">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${template.channel === 'sms' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
                                                 }`}>
-                                                {template.channel.toUpperCase()}
+                                                {(template.channel || 'unknown').toUpperCase()}
                                             </span>
                                         </div>
                                     </div>

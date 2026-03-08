@@ -77,6 +77,24 @@ export function IncomingInvoicesPage() {
   const pendingCount = data?.data?.pendingCount ?? 0;
   const processedCount = data?.data?.processedCount ?? 0;
 
+  const renderDocumentBadges = (invoice: IncomingInvoiceResponse) => (
+    <div className="mt-1 flex flex-wrap gap-1">
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${invoice.documentKind === 'despatch' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300'}`}>
+        {invoice.documentKindLabel || (invoice.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
+      </span>
+      {invoice.profileId && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          {invoice.profileId}
+        </span>
+      )}
+      {invoice.invoiceTypeCode && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+          {invoice.invoiceTypeCode}
+        </span>
+      )}
+    </div>
+  );
+
   const getStatusBadge = (status: string) => {
     const isProcessed = status === 'RECEIVED' || status === 'PROCESSED' || status === 'PAID';
     const style = isProcessed
@@ -425,6 +443,7 @@ export function IncomingInvoicesPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
+                    {renderDocumentBadges(invoice)}
                     {invoice.supplierTaxNumber && (
                       <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {invoice.supplierTaxNumber}</div>
                     )}

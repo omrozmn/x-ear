@@ -23,6 +23,14 @@ interface ResponsiveTableProps<T> {
 
 type SortDirection = 'asc' | 'desc' | null;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getCellValue<T>(item: T, key: string): unknown {
+  return isRecord(item) ? item[key] : undefined;
+}
+
 export function ResponsiveTable<T>({
   data,
   columns,
@@ -31,7 +39,7 @@ export function ResponsiveTable<T>({
   emptyMessage = 'Veri bulunamadı',
   className = '',
 }: ResponsiveTableProps<T>) {
-  const { isMobile, isTablet, width } = useAdminResponsive();
+  const { isMobile, isTablet } = useAdminResponsive();
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   
@@ -60,8 +68,8 @@ export function ResponsiveTable<T>({
     if (!sortColumn || !sortDirection) return data;
 
     return [...data].sort((a, b) => {
-      const aValue = (a as any)[sortColumn];
-      const bValue = (b as any)[sortColumn];
+      const aValue = getCellValue(a, sortColumn);
+      const bValue = getCellValue(b, sortColumn);
 
       // Handle null/undefined
       if (aValue == null && bValue == null) return 0;
@@ -144,7 +152,7 @@ export function ResponsiveTable<T>({
                   {col.header}
                 </span>
                 <span className="text-sm text-gray-900 dark:text-white text-right ml-4">
-                  {col.render ? col.render(item) : (item as any)[col.key]}
+                  {col.render ? col.render(item) : String(getCellValue(item, col.key) ?? '')}
                 </span>
               </div>
             ))}
@@ -191,7 +199,7 @@ export function ResponsiveTable<T>({
                   key={col.key}
                   className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
                 >
-                  {col.render ? col.render(item) : (item as any)[col.key]}
+                  {col.render ? col.render(item) : String(getCellValue(item, col.key) ?? '')}
                 </td>
               ))}
             </tr>

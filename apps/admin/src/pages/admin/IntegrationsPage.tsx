@@ -33,6 +33,38 @@ interface Integration {
     status: 'active' | 'inactive';
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getIntegrations(data: unknown): Integration[] {
+    if (!isRecord(data)) {
+        return [];
+    }
+
+    const directIntegrations = data.integrations;
+    if (Array.isArray(directIntegrations)) {
+        return directIntegrations.filter(isRecord).map((integration) => ({
+            id: String(integration.id ?? ''),
+            name: typeof integration.name === 'string' ? integration.name : '',
+            type: typeof integration.type === 'string' ? integration.type : '',
+            status: integration.status === 'active' ? 'active' : 'inactive',
+        }));
+    }
+
+    const envelopeData = data.data;
+    if (isRecord(envelopeData) && Array.isArray(envelopeData.integrations)) {
+        return envelopeData.integrations.filter(isRecord).map((integration) => ({
+            id: String(integration.id ?? ''),
+            name: typeof integration.name === 'string' ? integration.name : '',
+            type: typeof integration.type === 'string' ? integration.type : '',
+            status: integration.status === 'active' ? 'active' : 'inactive',
+        }));
+    }
+
+    return [];
+}
+
 export default function IntegrationsPage() {
     const { isMobile } = useAdminResponsive();
     const queryClient = useQueryClient();
@@ -189,7 +221,7 @@ export default function IntegrationsPage() {
     }, []);
 
 
-    const integrations = (integrationsData as any)?.integrations || (integrationsData as any)?.data?.integrations || [];
+    const integrations = getIntegrations(integrationsData);
 
     const handleSave = async () => {
         try {

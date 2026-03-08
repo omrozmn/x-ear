@@ -2,16 +2,111 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
-import { apiClient } from '@/lib/api';
-import { useListAdminPlans, useDeleteAdminPlan } from '@/lib/api-client';
-import type { DetailedPlanRead as PlanRead } from '@/api/generated/schemas';
+import { useListAdminPlans, useDeleteAdminPlan, useCreateAdminPlan, useUpdateAdminPlan } from '@/lib/api-client';
+import type { DetailedPlanRead as PlanRead, ListAdminPlansParams, PlanCreate, PlanListResponse, PlanUpdate } from '@/api/generated/schemas';
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
-const PLAN_TYPES = ['BASIC', 'PRO', 'ENTERPRISE', 'CUSTOM'];
-const BILLING_INTERVALS = ['MONTHLY', 'YEARLY', 'QUARTERLY'];
+const PLAN_TYPES = ['BASIC', 'PRO', 'ENTERPRISE', 'CUSTOM'] as const;
+const BILLING_INTERVALS = ['MONTHLY', 'YEARLY', 'QUARTERLY'] as const;
+
+type PlanType = (typeof PLAN_TYPES)[number];
+type BillingInterval = (typeof BILLING_INTERVALS)[number];
+
+interface ApiErrorLike {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+      };
+    };
+  };
+}
+
+interface FeatureFormItem {
+  key: string;
+  name: string;
+  limit: number;
+  is_visible: boolean;
+}
+
+interface PaginationInfo {
+  totalPages?: number;
+  total?: number;
+}
+
+interface PlanFormState {
+  name: string;
+  description: string;
+  price: number;
+  planType: PlanType;
+  billingInterval: BillingInterval;
+  maxUsers: number;
+  maxStorageGb: number;
+  features: FeatureFormItem[];
+  isActive: boolean;
+}
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  const apiError = error as ApiErrorLike;
+  return apiError.response?.data?.error?.message || fallback;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getPlans(data: PlanListResponse | undefined): PlanRead[] {
+  const responseData = data?.data;
+  if (!responseData || typeof responseData !== 'object' || !('plans' in responseData) || !Array.isArray(responseData.plans)) {
+    return [];
+  }
+
+  return responseData.plans.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
+}
+
+function getPagination(data: PlanListResponse | undefined): PaginationInfo {
+  const responseData = data?.data;
+  if (!responseData || typeof responseData !== 'object' || !('pagination' in responseData) || !isRecord(responseData.pagination)) {
+    return {};
+  }
+
+  return {
+    totalPages: typeof responseData.pagination.totalPages === 'number' ? responseData.pagination.totalPages : undefined,
+    total: typeof responseData.pagination.total === 'number' ? responseData.pagination.total : undefined,
+  };
+}
+
+function normalizeFeatures(features: PlanRead['features']): FeatureFormItem[] {
+  if (Array.isArray(features)) {
+    return features
+      .filter(isRecord)
+      .map((feature, index) => ({
+        key: typeof feature.key === 'string' ? feature.key : `feature_${index}`,
+        name: typeof feature.name === 'string' ? feature.name : `Feature ${index + 1}`,
+        limit: typeof feature.limit === 'number' ? feature.limit : 0,
+        is_visible: typeof feature.is_visible === 'boolean' ? feature.is_visible : true,
+      }));
+  }
+
+  if (!features || typeof features !== 'object') {
+    return [];
+  }
+
+  return Object.entries(features)
+    .filter(([, value]) => isRecord(value))
+    .map(([key, value]) => {
+      const feature = value as Record<string, unknown>;
+      return {
+        key,
+        name: typeof feature.name === 'string' ? feature.name : key,
+        limit: typeof feature.limit === 'number' ? feature.limit : 0,
+        is_visible: typeof feature.is_visible === 'boolean' ? feature.is_visible : true,
+      };
+    });
+}
 
 const Plans: React.FC = () => {
   const { isMobile } = useAdminResponsive();
@@ -19,27 +114,15 @@ const Plans: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
-  // Use generated hook for reading data (GET usually works fine with standard params)
-  const { data: plansData, isLoading, error } = useListAdminPlans({ page, limit } as any);
+  const params: ListAdminPlansParams = { page, limit };
+  const { data: plansData, isLoading, error } = useListAdminPlans(params);
 
-  const plans = (plansData as any)?.plans || (plansData as any)?.data?.plans || [];
-  const pagination = (plansData as any)?.pagination || (plansData as any)?.data?.pagination;
+  const plans = getPlans(plansData);
+  const pagination = getPagination(plansData);
 
-  // Use generated hook for DELETE (usually simplest payload/param)
+  const { mutateAsync: createPlan } = useCreateAdminPlan();
+  const { mutateAsync: updatePlan } = useUpdateAdminPlan();
   const { mutateAsync: deletePlan } = useDeleteAdminPlan();
-
-  // Local state interface
-  interface PlanFormState {
-    name: string;
-    description: string;
-    price: number;
-    planType: string;
-    billingInterval: string;
-    maxUsers: number;
-    maxStorageGb: number;
-    features: any[];
-    isActive: boolean;
-  }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanRead | null>(null);
@@ -65,26 +148,16 @@ const Plans: React.FC = () => {
   const handleOpenModal = (plan?: PlanRead) => {
     if (plan) {
       setEditingPlan(plan);
-      // Convert features to array for UI
-      let featuresArray: any[] = [];
-      if (Array.isArray(plan.features)) {
-        featuresArray = plan.features;
-      } else if (plan.features && typeof plan.features === 'object') {
-        featuresArray = Object.entries(plan.features).map(([key, value]: [string, any]) => ({
-          key,
-          ...value
-        }));
-      }
 
       setFormData({
-        name: plan.name || '',
+        name: plan.name,
         description: plan.description || '',
-        price: plan.price || 0,
-        planType: plan.planType || (plan as any).plan_type || 'BASIC',
-        billingInterval: plan.billingInterval || (plan as any).billing_interval || 'MONTHLY',
-        maxUsers: plan.maxUsers || (plan as any).max_users || 1,
-        maxStorageGb: plan.maxStorageGb || (plan as any).max_storage_gb || 1,
-        features: featuresArray,
+        price: plan.price,
+        planType: (plan.planType as PlanType | undefined) || 'BASIC',
+        billingInterval: (plan.billingInterval as BillingInterval | undefined) || 'MONTHLY',
+        maxUsers: plan.maxUsers || 1,
+        maxStorageGb: plan.maxStorageGb || 1,
+        features: normalizeFeatures(plan.features),
         isActive: plan.isActive ?? true
       });
     } else {
@@ -108,7 +181,6 @@ const Plans: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Convert features array back to key-value object
       const featuresObject = formData.features.reduce((acc, feature) => {
         const key = feature.key || feature.name.toLowerCase().replace(/ /g, '_');
         acc[key] = {
@@ -117,35 +189,34 @@ const Plans: React.FC = () => {
           is_visible: feature.is_visible
         };
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, { name: string; limit: number; is_visible: boolean }>);
 
-      // Explicit snake_case payload
-      const payload = {
+      const payload: PlanCreate | PlanUpdate = {
         name: formData.name,
         description: formData.description,
         price: formData.price,
-        plan_type: formData.planType,
-        billing_interval: formData.billingInterval,
-        max_users: formData.maxUsers,
-        max_storage_gb: formData.maxStorageGb,
+        planType: formData.planType,
+        billingInterval: formData.billingInterval,
+        maxUsers: formData.maxUsers,
+        maxStorageGb: formData.maxStorageGb,
         features: featuresObject,
-        is_active: formData.isActive
+        isActive: formData.isActive
       };
 
       if (editingPlan) {
-        await apiClient.put(`/admin/plans/${editingPlan.id}`, payload);
+        await updatePlan({ planId: editingPlan.id, data: payload as PlanUpdate });
         toast.success('Plan güncellendi');
       } else {
-        await apiClient.post(`/admin/plans`, payload);
+        await createPlan({ data: payload as PlanCreate });
         toast.success('Plan oluşturuldu');
       }
 
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] }); // Invalidate both possible keys
       setIsModalOpen(false);
-    } catch (e: any) {
-      console.error('Plan save error:', e);
-      toast.error(e.response?.data?.error?.message || 'İşlem başarısız');
+    } catch (error: unknown) {
+      console.error('Plan save error:', error);
+      toast.error(getApiErrorMessage(error, 'İşlem başarısız'));
     } finally {
       setIsSubmitting(false);
     }
@@ -156,27 +227,20 @@ const Plans: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Only send fields that need updating, but typically PUT requires full object or specific PATCH endpoint.
-      // Assuming PUT based on previous code. Safest is to send minimal update if supported, or correct full payload.
-      // Using direct axios put to /admin/plans/{id} with just is_active if backend supports it, otherwise sending known fields.
-      // Here we'll try sending just the status update if backend supports partial updates via PUT or PATCH, 
-      // but the generated hook used PUT. Let's send key fields manually.
-
-      const payload = {
+      const payload: PlanUpdate = {
         name: togglingPlan.name,
         price: togglingPlan.price,
-        plan_type: togglingPlan.planType || (togglingPlan as any).plan_type,
-        is_active: !togglingPlan.isActive
+        isActive: !togglingPlan.isActive
       };
 
-      await apiClient.put(`/admin/plans/${togglingPlan.id}`, payload);
+      await updatePlan({ planId: togglingPlan.id, data: payload });
 
       toast.success('Plan durumu güncellendi');
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       setIsToggleModalOpen(false);
-    } catch (e: any) {
-      console.error('Toggle active error:', e);
-      toast.error(e.response?.data?.error?.message || 'Güncelleme başarısız');
+    } catch (error: unknown) {
+      console.error('Toggle active error:', error);
+      toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
     } finally {
       setIsSubmitting(false);
     }
@@ -190,9 +254,9 @@ const Plans: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       toast.success('Plan silindi');
       setIsDeleteModalOpen(false);
-    } catch (e: any) {
-      console.error('Delete plan error:', e);
-      toast.error(e.response?.data?.error?.message || 'Silme başarısız');
+    } catch (error: unknown) {
+      console.error('Delete plan error:', error);
+      toast.error(getApiErrorMessage(error, 'Silme başarısız'));
     } finally {
       setIsSubmitting(false);
     }
@@ -222,10 +286,10 @@ const Plans: React.FC = () => {
       render: (plan: PlanRead) => (
         <div>
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-            {plan.planType || (plan as any).plan_type}
+            {plan.planType}
           </span>
           <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
-            {plan.billingInterval || (plan as any).billing_interval}
+            {plan.billingInterval}
           </span>
         </div>
       )
@@ -245,7 +309,7 @@ const Plans: React.FC = () => {
       mobileHidden: true,
       render: (plan: PlanRead) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {plan.maxUsers || (plan as any).max_users} Kullanıcı
+          {plan.maxUsers || 0} Kullanıcı
         </span>
       )
     },
@@ -401,9 +465,9 @@ const Plans: React.FC = () => {
                     <select
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.planType}
-                      onChange={(e) => setFormData({ ...formData, planType: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, planType: e.target.value as PlanType })}
                     >
-                      {PLAN_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      {PLAN_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                   <div>
@@ -411,9 +475,9 @@ const Plans: React.FC = () => {
                     <select
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.billingInterval}
-                      onChange={(e) => setFormData({ ...formData, billingInterval: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, billingInterval: e.target.value as BillingInterval })}
                     >
-                      {BILLING_INTERVALS.map(t => <option key={t} value={t}>{t}</option>)}
+                      {BILLING_INTERVALS.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                 </div>
@@ -445,7 +509,7 @@ const Plans: React.FC = () => {
                   <h4 className="text-sm font-medium text-gray-900 mb-3">Özellikler (Features)</h4>
 
                   <div className="space-y-3 mb-4 max-h-[200px] overflow-y-auto px-1">
-                    {formData.features.map((feature: any, index: number) => (
+                    {formData.features.map((feature, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200">
                         <div>
                           <div className="font-medium text-sm text-gray-900">{feature.name}</div>

@@ -19,7 +19,7 @@ export function ComposerOverlay() {
     const {
         isOpen, setOpen,
         mode, query, context, selectedAction, currentSlot, slots, executionResult,
-        setQuery, setContext, selectAction, updateSlot, nextSlot, reset, setExecutionResult
+        setQuery, selectAction, updateSlot, nextSlot, reset, setExecutionResult
     } = useComposerStore();
 
     const {

@@ -2,17 +2,42 @@ import React, { useState } from 'react';
 import { Bell, Check } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import { useListNotifications, useUpdateNotificationRead } from '../../lib/api-client';
-import { Button } from '@x-ear/ui-web';
+import type { ListNotificationsParams, NotificationRead } from '../../api/generated/schemas';
+
+interface NotificationsResponseShape {
+    data?: {
+        notifications?: NotificationItem[];
+    };
+}
+
+interface NotificationItem extends NotificationRead {
+    read?: boolean;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function extractNotifications(value: unknown): NotificationItem[] {
+    if (!isRecord(value)) {
+        return [];
+    }
+
+    const response = value as NotificationsResponseShape;
+    return response.data?.notifications ?? [];
+}
 
 export function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false);
     const userId = 'system'; // In a real app, this would come from auth context
 
     // Gracefully handle missing notifications endpoint (404)
-    const { data: notificationsData, refetch, isError } = useListNotifications({
+    const params: ListNotificationsParams = {
         user_id: userId,
         page: 1
-    } as any, {
+    };
+
+    const { data: notificationsData, refetch, isError } = useListNotifications(params, {
         query: {
             retry: false,
             refetchOnWindowFocus: false,
@@ -27,7 +52,7 @@ export function NotificationCenter() {
 
     const handleMarkRead = async (id: string) => {
         try {
-            await markReadMutation.mutateAsync({ notificationId: id } as any);
+            await markReadMutation.mutateAsync({ notificationId: id });
             refetch();
         } catch (error) {
             console.error('[NotificationCenter] Mark read failed:', error);
@@ -35,7 +60,8 @@ export function NotificationCenter() {
     };
 
     // If endpoint returns error, show 0 notifications
-    const unreadCount = isError ? 0 : ((notificationsData as any)?.data?.notifications?.filter((n: any) => !n.read).length || 0);
+    const notifications = extractNotifications(notificationsData);
+    const unreadCount = isError ? 0 : notifications.filter((notification) => !(notification.read ?? notification.isRead)).length;
 
     return (
         <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -64,17 +90,17 @@ export function NotificationCenter() {
                             <div className="p-8 text-center text-gray-500 text-sm">
                                 Bildirim servisi şu anda kullanılamıyor.
                             </div>
-                        ) : (notificationsData as any)?.data?.notifications && (notificationsData as any).data.notifications.length > 0 ? (
+                        ) : notifications.length > 0 ? (
                             <div className="divide-y">
-                                {(notificationsData as any).data.notifications.map((notif: any) => (
-                                    <div key={notif.id} className={`p-4 hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-indigo-50/50' : ''}`}>
+                                {notifications.map((notification) => (
+                                    <div key={notification.id} className={`p-4 hover:bg-gray-50 transition-colors ${!(notification.read ?? notification.isRead) ? 'bg-indigo-50/50' : ''}`}>
                                         <div className="flex justify-between items-start mb-1">
-                                            <h4 className={`text-sm ${!notif.read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
-                                                {notif.title}
+                                            <h4 className={`text-sm ${!(notification.read ?? notification.isRead) ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
+                                                {notification.title}
                                             </h4>
-                                            {!notif.read && (
+                                            {!(notification.read ?? notification.isRead) && (
                                                 <button
-                                                    onClick={() => handleMarkRead(notif.id)}
+                                                    onClick={() => handleMarkRead(notification.id)}
                                                     className="text-indigo-600 hover:text-indigo-800"
                                                     title="Okundu işaretle"
                                                 >
@@ -82,9 +108,9 @@ export function NotificationCenter() {
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-xs text-gray-500 mb-2">{notif.message}</p>
+                                        <p className="text-xs text-gray-500 mb-2">{notification.message}</p>
                                         <span className="text-[10px] text-gray-400">
-                                            {new Date(notif.createdAt).toLocaleString('tr-TR')}
+                                            {notification.createdAt ? new Date(notification.createdAt).toLocaleString('tr-TR') : '-'}
                                         </span>
                                     </div>
                                 ))}

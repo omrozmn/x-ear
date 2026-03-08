@@ -1,92 +1,78 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { CreditCard, Filter, Download, Search, TrendingUp, DollarSign, Activity } from 'lucide-react'
-import { adminApi } from '../../lib/apiMutator'
+import { useListAdminPaymentPoTransactions } from '@/lib/api-client'
+import type { ListAdminPaymentPoTransactionsParams, PaymentRecordRead, ResponseEnvelopeListPaymentRecordRead } from '@/api/generated/schemas'
 import { useAdminResponsive } from '@/hooks'
 import { ResponsiveTable } from '@/components/responsive'
 
-interface PaymentTransaction {
-    id: string
-    payment_date: string
-    amount: number
+interface PaymentTransaction extends PaymentRecordRead {
+    payment_date?: string
     pos_provider?: string
     pos_transaction_id?: string
-    payment_method: string
-    status: string
     patient_name?: string
-    sale_id?: string
-    tenant_id: string
-    created_at: string
+    tenant_id?: string
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null
+}
+
+function getTransactions(data: ResponseEnvelopeListPaymentRecordRead | undefined): PaymentTransaction[] {
+    if (!Array.isArray(data?.data)) {
+        return []
+    }
+
+    return data.data.filter((item): item is PaymentTransaction => isRecord(item) && typeof item.id === 'string')
 }
 
 export default function AdminPaymentsPage() {
     const { isMobile } = useAdminResponsive();
-    const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
     const [filter, setFilter] = useState({
         provider: '',
         start_date: '',
         end_date: '',
         search: ''
     })
+    const [appliedFilter, setAppliedFilter] = useState(filter)
 
-    // Stats
-    const [stats, setStats] = useState({
-        total_amount: 0,
-        total_count: 0,
-        pos_count: 0,
-        avg_amount: 0
+    const params: ListAdminPaymentPoTransactionsParams = {
+        provider: appliedFilter.provider || undefined,
+        start_date: appliedFilter.start_date || undefined,
+        end_date: appliedFilter.end_date || undefined,
+    }
+
+    const { data, isLoading: loading, error, refetch } = useListAdminPaymentPoTransactions(params)
+    const transactions = getTransactions(data).filter((transaction) => {
+        if (!appliedFilter.search) {
+            return true
+        }
+
+        const searchTerm = appliedFilter.search.toLowerCase()
+        return [
+            transaction.id,
+            transaction.pos_transaction_id,
+            transaction.referenceNumber,
+            transaction.patient_name,
+        ].some((value) => typeof value === 'string' && value.toLowerCase().includes(searchTerm))
     })
 
-    useEffect(() => {
-        fetchTransactions()
-    }, [])
-
-    const fetchTransactions = async () => {
-        try {
-            setLoading(true)
-            setError(null)
-
-            const params: any = {}
-            if (filter.provider) params.provider = filter.provider
-            if (filter.start_date) params.start_date = filter.start_date
-            if (filter.end_date) params.end_date = filter.end_date
-
-            const response = await adminApi<{ success: boolean, data: PaymentTransaction[] }>({
-                url: '/admin/payments/pos/transactions',
-                params
-            })
-
-            if (response.success && response.data) {
-                setTransactions(response.data)
-
-                // Calculate stats
-                const total = response.data.reduce((sum: number, t: PaymentTransaction) => sum + (t.amount || 0), 0)
-                const posCount = response.data.filter((t: PaymentTransaction) => t.pos_provider).length
-
-                setStats({
-                    total_amount: total,
-                    total_count: response.data.length,
-                    pos_count: posCount,
-                    avg_amount: response.data.length > 0 ? total / response.data.length : 0
-                })
-            } else {
-                setError('Ödemeler yüklenemedi')
-            }
-        } catch (err: any) {
-            console.error('Error fetching payments:', err)
-            setError(err.message || 'Ödemeler yüklenirken hata oluştu')
-        } finally {
-            setLoading(false)
+    const stats = useMemo(() => {
+        const total = transactions.reduce((sum, transaction) => sum + (transaction.amount || 0), 0)
+        const posCount = transactions.filter((transaction) => transaction.pos_provider).length
+        return {
+            total_amount: total,
+            total_count: transactions.length,
+            pos_count: posCount,
+            avg_amount: transactions.length > 0 ? total / transactions.length : 0,
         }
-    }
+    }, [transactions])
 
     const handleFilterChange = (key: string, value: string) => {
         setFilter(prev => ({ ...prev, [key]: value }))
     }
 
     const applyFilters = () => {
-        fetchTransactions()
+        setAppliedFilter(filter)
     }
 
     const formatCurrency = (amount: number) => {
@@ -96,7 +82,10 @@ export default function AdminPaymentsPage() {
         }).format(amount)
     }
 
-    const formatDate = (dateString: string) => {
+    const formatDate = (dateString?: string) => {
+        if (!dateString) {
+            return '-'
+        }
         return new Date(dateString).toLocaleDateString('tr-TR', {
             year: 'numeric',
             month: 'short',
@@ -134,7 +123,7 @@ export default function AdminPaymentsPage() {
             header: 'Tarih',
             render: (transaction: PaymentTransaction) => (
                 <span className="text-sm text-gray-900 dark:text-white">
-                    {formatDate(transaction.payment_date)}
+                    {formatDate(transaction.payment_date || transaction.paymentDate)}
                 </span>
             )
         },
@@ -177,14 +166,14 @@ export default function AdminPaymentsPage() {
             mobileHidden: true,
             render: (transaction: PaymentTransaction) => (
                 <span className="text-sm text-gray-900 dark:text-white">
-                    {transaction.payment_method || 'Nakit'}
+                    {transaction.paymentMethod || 'Nakit'}
                 </span>
             )
         },
         {
             key: 'status',
             header: 'Durum',
-            render: (transaction: PaymentTransaction) => getStatusBadge(transaction.status)
+            render: (transaction: PaymentTransaction) => getStatusBadge(transaction.status || 'pending')
         },
         {
             key: 'patient',
@@ -335,9 +324,9 @@ export default function AdminPaymentsPage() {
                     </div>
                 ) : error ? (
                     <div className="p-8 text-center">
-                        <p className="text-red-600 dark:text-red-400">{error}</p>
+                        <p className="text-red-600 dark:text-red-400">{error instanceof Error ? error.message : 'Ödemeler yüklenirken hata oluştu'}</p>
                         <button
-                            onClick={fetchTransactions}
+                    onClick={() => refetch()}
                             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 touch-feedback"
                         >
                             Tekrar Dene

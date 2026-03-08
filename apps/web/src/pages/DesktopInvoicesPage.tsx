@@ -128,6 +128,24 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     return list;
   }, [invoiceList, sortField, sortDir]);
 
+  const renderDocumentBadges = (invoice: OutgoingInvoiceResponse) => (
+    <div className="mt-1 flex flex-wrap gap-1">
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${invoice.documentKind === 'despatch' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300'}`}>
+        {invoice.documentKindLabel || (invoice.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
+      </span>
+      {invoice.profileId && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          {invoice.profileId}
+        </span>
+      )}
+      {invoice.invoiceTypeCode && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+          {invoice.invoiceTypeCode}
+        </span>
+      )}
+    </div>
+  );
+
   const getStatusBadge = (status: string, invoice?: OutgoingInvoiceResponse) => {
     const s = (status || '').toUpperCase();
     let style = '';
@@ -339,6 +357,10 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             <FileText size={16} />
             <span className="hidden sm:inline">Proforma</span>
           </Button>
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { documentKind: 'despatch' } as { type?: string; draftId?: number; documentKind?: 'invoice' | 'despatch' } })}>
+            <Send size={16} />
+            <span className="hidden sm:inline">Yeni E-İrsaliye</span>
+          </Button>
           <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => navigate({ to: '/invoices/new' })}>
             <Plus size={16} />
             <span className="hidden sm:inline">Yeni Fatura</span>
@@ -394,7 +416,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-center gap-3">
           <Send className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
           <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
-            Bu sayfada BirFatura üzerinden gönderilmiş e-faturalarınız listelenmektedir.
+            Bu sayfada BirFatura üzerinden gönderilmiş e-fatura ve e-irsaliyeleriniz listelenmektedir.
           </p>
           <Button
             variant="ghost"
@@ -520,6 +542,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                     <div className="text-sm text-gray-900 dark:text-white">
                       {invoice.partyFirstName} {invoice.partyLastName}
                     </div>
+                    {renderDocumentBadges(invoice)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
                     {formatCurrency(Number(invoice.totalAmount), 'TRY')}

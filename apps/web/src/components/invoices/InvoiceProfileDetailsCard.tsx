@@ -82,6 +82,7 @@ export function InvoiceProfileDetailsCard({
           <Input type="text" label="Uyruğu" value={data.passengerNationality || ''} onChange={(e) => patch({ passengerNationality: e.target.value })} />
           <Input type="text" label="Vergi Temsilcisi" value={data.taxRepresentativeName || ''} onChange={(e) => patch({ taxRepresentativeName: e.target.value })} />
           <Input type="text" label="Temsilci Vergi No" value={data.taxRepresentativeTaxId || ''} onChange={(e) => patch({ taxRepresentativeTaxId: e.target.value })} />
+          <Input type="text" label="Temsilci Etiketi" value={data.taxRepresentativeLabel || ''} onChange={(e) => patch({ taxRepresentativeLabel: e.target.value })} />
           <Input type="text" label="İade IBAN" value={data.refundBankIban || ''} onChange={(e) => patch({ refundBankIban: e.target.value })} />
         </div>
       </div>

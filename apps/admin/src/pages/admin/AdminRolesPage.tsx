@@ -2,25 +2,40 @@ import React, { useState } from 'react';
 import {
     useListAdminRoles,
     useCreateAdminRoles,
-    useUpdateAdminRole,
     useDeleteAdminRole,
     useListPermissions,
-    useUpdateRolePermissions
+    useUpdateRolePermissions,
+    type PermissionGroup,
+    type PermissionRead,
+    type ResponseEnvelopePermissionListResponse,
+    type ResponseEnvelopeRoleListResponse,
+    type RoleRead,
+    type SchemasRolesRoleCreate,
 } from '@/lib/api-client';
 import {
     Shield,
     PlusIcon,
     TrashIcon,
-    EditIcon,
-    CheckIcon,
     LockIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+function getRoles(data: ResponseEnvelopeRoleListResponse | undefined): RoleRead[] {
+    return Array.isArray(data?.data?.roles) ? data.data.roles : [];
+}
+
+function getPermissionGroups(data: ResponseEnvelopePermissionListResponse | undefined): PermissionGroup[] {
+    return Array.isArray(data?.data?.data) ? data.data.data : [];
+}
+
+function getPermissionKey(permission: PermissionRead): string {
+    return permission.name;
+}
+
 const AdminRolesPage: React.FC = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<any>(null);
+    const [selectedRole, setSelectedRole] = useState<RoleRead | null>(null);
 
     // Form state
     const [roleName, setRoleName] = useState('');
@@ -31,13 +46,11 @@ const AdminRolesPage: React.FC = () => {
     const { data: permissionsData } = useListPermissions({});
 
     const createRoleMutation = useCreateAdminRoles();
-    const updateRoleMutation = useUpdateAdminRole();
     const deleteRoleMutation = useDeleteAdminRole();
     const updatePermissionsMutation = useUpdateRolePermissions();
 
-    const roles = (rolesData as any)?.roles || (rolesData as any)?.data?.roles || [];
-    const groupedPermissions = (permissionsData as any)?.grouped || (permissionsData as any)?.data?.grouped || {};
-    const categories = (permissionsData as any)?.categories || (permissionsData as any)?.data?.categories || [];
+    const roles = getRoles(rolesData);
+    const permissionGroups = getPermissionGroups(permissionsData);
 
     const handleCreate = async () => {
         if (!roleName) {
@@ -46,19 +59,20 @@ const AdminRolesPage: React.FC = () => {
         }
 
         try {
+            const payload: SchemasRolesRoleCreate = {
+                name: roleName,
+                description: roleDescription,
+            };
+
             await createRoleMutation.mutateAsync({
-                data: {
-                    name: roleName,
-                    description: roleDescription
-                    // Note: permissions are handled separately via updateRolePermissions
-                } as any
+                data: payload
             });
             toast.success('Rol oluşturuldu');
             setIsCreateModalOpen(false);
             setRoleName('');
             setRoleDescription('');
             refetch();
-        } catch (error) {
+        } catch {
             toast.error('Rol oluşturulamadı');
         }
     };
@@ -70,14 +84,14 @@ const AdminRolesPage: React.FC = () => {
             await deleteRoleMutation.mutateAsync({ roleId: roleId });
             toast.success('Rol silindi');
             refetch();
-        } catch (error: any) {
-            toast.error(error?.response?.data?.error?.message || 'Silme işlemi başarısız');
+        } catch {
+            toast.error('Silme işlemi başarısız');
         }
     };
 
-    const openPermissionModal = (role: any) => {
+    const openPermissionModal = (role: RoleRead) => {
         setSelectedRole(role);
-        setSelectedPermissions(role.permissions?.map((p: any) => p.code) || []);
+        setSelectedPermissions(role.permissions?.map(getPermissionKey) || []);
         setIsPermissionModalOpen(true);
     };
 
@@ -92,8 +106,8 @@ const AdminRolesPage: React.FC = () => {
             toast.success('İzinler güncellendi');
             setIsPermissionModalOpen(false);
             refetch();
-        } catch (error: any) {
-            toast.error(error?.response?.data?.error?.message || 'Güncelleme başarısız');
+        } catch {
+            toast.error('Güncelleme başarısız');
         }
     };
 
@@ -125,23 +139,23 @@ const AdminRolesPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
                     <div className="col-span-3 text-center py-12">Yükleniyor...</div>
-                ) : roles.map((role: any) => (
+                ) : roles.map((role) => (
                     <div key={role.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center space-x-3">
-                                <div className={`p-2 rounded-lg ${role.isSystemRole ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                                <div className={`p-2 rounded-lg ${role.isSystem ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
                                     <Shield className="w-6 h-6" />
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-gray-900">{role.name}</h3>
-                                    {role.isSystemRole && (
+                                    {role.isSystem && (
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
                                             Sistem Rolü
                                         </span>
                                     )}
                                 </div>
                             </div>
-                            {!role.isSystemRole && (
+                            {!role.isSystem && (
                                 <button
                                     onClick={() => handleDelete(role.id)}
                                     className="text-gray-400 hover:text-red-600"
@@ -234,18 +248,18 @@ const AdminRolesPage: React.FC = () => {
 
                         <div className="flex-1 overflow-y-auto pr-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {categories.map((category: string) => (
-                                    <div key={category} className="bg-gray-50 rounded-lg p-4">
+                                {permissionGroups.map((group) => (
+                                    <div key={group.category} className="bg-gray-50 rounded-lg p-4">
                                         <h4 className="font-medium text-gray-900 mb-3 capitalize border-b pb-2">
-                                            {category}
+                                            {group.label}
                                         </h4>
                                         <div className="space-y-2">
-                                            {groupedPermissions[category]?.map((perm: any) => (
+                                            {group.permissions.map((perm: PermissionRead) => (
                                                 <label key={perm.id} className="flex items-start">
                                                     <input
                                                         type="checkbox"
-                                                        checked={selectedPermissions.includes(perm.code)}
-                                                        onChange={() => togglePermission(perm.code)}
+                                                        checked={selectedPermissions.includes(getPermissionKey(perm))}
+                                                        onChange={() => togglePermission(getPermissionKey(perm))}
                                                         disabled={selectedRole.name === 'SuperAdmin'} // SuperAdmin permissions locked
                                                         className="mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                                     />

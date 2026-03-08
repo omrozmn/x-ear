@@ -38,11 +38,10 @@ export interface UseKillSwitchOptions {
  * Fetches kill switch status from the backend
  */
 async function fetchKillSwitchStatus(): Promise<KillSwitchStatusResponse> {
-  const response = await adminApi<KillSwitchStatusResponse>({
+  return adminApi<KillSwitchStatusResponse>({
     url: '/ai/admin/kill-switch',
     method: 'GET',
   });
-  return (response as any).data || response;
 }
 
 /**

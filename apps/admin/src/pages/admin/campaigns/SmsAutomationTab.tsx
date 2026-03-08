@@ -12,7 +12,6 @@ import {
     CreditCard,
     Edit3,
     Eye,
-    FileText,
     Package,
     Pause,
     Play,
@@ -21,7 +20,6 @@ import {
     ShoppingCart,
     Trash2,
     TrendingUp,
-    User,
     UserPlus,
     X,
     Zap
@@ -39,6 +37,9 @@ type TriggerType =
     | 'feature_limit'         // Özellik limiti aşıldığında
     | 'inactive_tenant';      // Uzun süredir giriş yapmamış
 
+type TimingType = 'immediate' | 'before' | 'after';
+type TimingUnit = 'minutes' | 'hours' | 'days';
+
 interface AutomationRule {
     id: string;
     name: string;
@@ -47,9 +48,9 @@ interface AutomationRule {
     templateContent: string;
     isActive: boolean;
     timing?: {
-        type: 'immediate' | 'before' | 'after';
+        type: TimingType;
         value?: number;
-        unit?: 'minutes' | 'hours' | 'days';
+        unit?: TimingUnit;
     };
     stats?: {
         sent: number;
@@ -66,7 +67,7 @@ const TRIGGER_CONFIG: Record<TriggerType, {
     description: string;
     icon: React.ReactNode;
     category: 'tenant' | 'subscription' | 'payment' | 'other';
-    defaultTiming: { type: 'immediate' | 'before' | 'after'; value?: number; unit?: 'minutes' | 'hours' | 'days' };
+    defaultTiming: { type: TimingType; value?: number; unit?: TimingUnit };
     dynamicFields: string[];
 }> = {
     new_tenant: {
@@ -197,7 +198,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
         name: string;
         trigger: TriggerType;
         templateContent: string;
-        timing: { type: 'immediate' | 'before' | 'after'; value?: number; unit?: 'minutes' | 'hours' | 'days' };
+        timing: { type: TimingType; value?: number; unit?: TimingUnit };
     }>({
         name: '',
         trigger: 'new_tenant',
@@ -559,7 +560,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                         value={formData.timing.type}
                                         onChange={(e) => setFormData(prev => ({
                                             ...prev,
-                                            timing: { ...prev.timing, type: e.target.value as any }
+                                            timing: { ...prev.timing, type: e.target.value as TimingType }
                                         }))}
                                         className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
                                     >
@@ -583,7 +584,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                                 value={formData.timing.unit || 'days'}
                                                 onChange={(e) => setFormData(prev => ({
                                                     ...prev,
-                                                    timing: { ...prev.timing, unit: e.target.value as any }
+                                                    timing: { ...prev.timing, unit: e.target.value as TimingUnit }
                                                 }))}
                                                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
                                             >

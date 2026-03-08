@@ -30,6 +30,16 @@ export interface IncomingInvoiceResponse {
   currency?: string;
   /** Invoice status */
   status: SchemasInvoicesNewInvoiceStatus;
+  /** Document kind */
+  documentKind?: string;
+  /** Document kind label */
+  documentKindLabel?: string;
+  /** Invoice/despatch type code */
+  invoiceTypeCode?: string;
+  /** UBL profile ID */
+  profileId?: string;
+  /** Provider system type code */
+  systemTypeCode?: string;
   /** Converted to purchase */
   isConvertedToPurchase?: boolean;
   /** Related purchase ID */

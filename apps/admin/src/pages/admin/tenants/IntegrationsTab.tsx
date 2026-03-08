@@ -4,26 +4,76 @@ import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
 import { useUpdateAdminTenant } from '@/lib/api-client';
 
-// Local type since Tenant is not exported from generated client
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+            message?: string;
+        };
+    };
+}
+
+interface PosIntegrationSettings {
+    provider: string;
+    enabled: boolean;
+    merchant_id: string;
+    merchant_key: string;
+    merchant_salt: string;
+    test_mode: boolean;
+    updated_at?: string;
+}
+
+interface InvoiceIntegrationSettings {
+    provider: string;
+    enabled: boolean;
+    api_key: string;
+    secret_key: string;
+    updated_at?: string;
+}
+
+interface SmsIntegrationSettings {
+    enabled: boolean;
+    updated_at?: string;
+}
+
+interface TenantSettings {
+    pos_integration?: Partial<PosIntegrationSettings>;
+    invoice_integration?: Partial<InvoiceIntegrationSettings>;
+    sms_integration?: Partial<SmsIntegrationSettings>;
+}
+
+interface SmsConfigResponse {
+    apiUsername?: string;
+    documentsEmail?: string;
+    documentsSubmitted?: boolean;
+    allDocumentsApproved?: boolean;
+}
+
 interface ExtendedTenant {
     id?: string;
-    settings?: Record<string, any>;
+    settings?: TenantSettings;
     current_plan_id?: string;
     subscription_start_date?: string;
     subscription_end_date?: string;
-    feature_usage?: Record<string, any>;
 }
 
-export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdate: () => void }) => {
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    const apiError = error as ApiErrorLike;
+    return apiError.response?.data?.error?.message || apiError.response?.data?.message || fallback;
+}
+
+export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; onUpdate: () => void }) => {
     const { mutateAsync: updateTenant, isPending } = useUpdateAdminTenant();
-    const [smsConfigData, setSmsConfigData] = useState<any>(null);
+    const [smsConfigData, setSmsConfigData] = useState<SmsConfigResponse | null>(null);
     const [loadingSmsConfig, setLoadingSmsConfig] = useState(true);
 
-    const posSettings = (tenant.settings?.pos_integration || {}) as any;
-    const invoiceSettings = (tenant.settings?.invoice_integration || {}) as any;
-    const smsSettings = (tenant.settings?.sms_integration || {}) as any;
+    const posSettings = tenant.settings?.pos_integration ?? {};
+    const invoiceSettings = tenant.settings?.invoice_integration ?? {};
+    const smsSettings = tenant.settings?.sms_integration ?? {};
 
-    const [config, setConfig] = useState({
+    const [config, setConfig] = useState<PosIntegrationSettings>({
         provider: 'paytr',
         enabled: posSettings.enabled || false,
         merchant_id: posSettings.merchant_id || '',
@@ -32,24 +82,23 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         test_mode: posSettings.test_mode || false
     });
 
-    const [invoiceConfig, setInvoiceConfig] = useState({
+    const [invoiceConfig, setInvoiceConfig] = useState<InvoiceIntegrationSettings>({
         provider: 'birfatura',
         enabled: invoiceSettings.enabled || false,
         api_key: invoiceSettings.api_key || '',
         secret_key: invoiceSettings.secret_key || ''
     });
 
-    const [smsConfig, setSmsConfig] = useState({
+    const [smsConfig, setSmsConfig] = useState<SmsIntegrationSettings>({
         enabled: smsSettings.enabled || false
     });
 
     useEffect(() => {
         const fetchSmsConfig = async () => {
             try {
-                const response = await apiClient.get(`/api/admin/tenants/${tenant.id}/sms-config`);
-                // Backend returns ResponseEnvelope, Orval unwraps to {data: ...}
+                const response = await apiClient.get<SmsConfigResponse>(`/api/admin/tenants/${tenant.id}/sms-config`);
                 setSmsConfigData(response.data || null);
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error('Failed to fetch SMS config:', error);
             } finally {
                 setLoadingSmsConfig(false);
@@ -58,24 +107,28 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         fetchSmsConfig();
     }, [tenant.id]);
 
-    const handleChange = (field: string, value: any) => {
+    const handleChange = <Key extends keyof PosIntegrationSettings>(field: Key, value: PosIntegrationSettings[Key]) => {
         setConfig(prev => ({ ...prev, [field]: value }));
     };
 
 
-    const handleInvoiceChange = (field: string, value: any) => {
+    const handleInvoiceChange = <Key extends keyof InvoiceIntegrationSettings>(field: Key, value: InvoiceIntegrationSettings[Key]) => {
         setInvoiceConfig(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleSmsChange = (field: string, value: any) => {
+    const handleSmsChange = <Key extends keyof SmsIntegrationSettings>(field: Key, value: SmsIntegrationSettings[Key]) => {
         setSmsConfig(prev => ({ ...prev, [field]: value }));
     };
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!tenant.id) {
+            toast.error('Tenant bilgisi eksik');
+            return;
+        }
         try {
             const currentSettings = tenant.settings || {};
-            const newSettings = {
+            const newSettings: TenantSettings = {
                 ...currentSettings,
                 pos_integration: {
                     ...config,
@@ -92,13 +145,13 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
             };
 
             await updateTenant({
-                tenantId: tenant.id!,
-                data: { settings: newSettings } as any
+                tenantId: tenant.id,
+                data: { settings: newSettings as Record<string, unknown> }
             });
             toast.success('Entegrasyon ayarları güncellendi');
             onUpdate();
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Güncelleme başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
         }
     };
 

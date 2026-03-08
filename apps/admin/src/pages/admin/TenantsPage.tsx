@@ -1,19 +1,121 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, CheckCircle, Users, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Plus, Search, CheckCircle, Trash2, AlertTriangle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/ui/Pagination';
 import { TenantEditModal, TenantCreateModal } from './tenants';
 import { PRODUCT_REGISTRY, getProductConfig } from '@/config/productRegistry';
 import {
     useListAdminTenants,
-    useUpdateAdminTenantStatus
+    useUpdateAdminTenantStatus,
+    ProductCode,
+    type ListAdminTenantsParams,
+    type TenantRead,
+    type TenantStatus,
+    type UpdateStatusRequest,
 } from '@/lib/api-client';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
 
-type TenantStatus = 'active' | 'trial' | 'suspended' | 'cancelled';
+type TenantFilterStatus = Extract<TenantStatus, 'active' | 'trial' | 'suspended' | 'cancelled'>;
+
+interface TenantListPagination {
+    total: number;
+    totalPages: number;
+}
+
+interface TenantRow extends TenantRead {
+    owner_email?: string;
+    product_code?: string;
+    current_plan?: string;
+    billing_email?: string;
+    created_at?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getString(value: unknown): string | undefined {
+    return typeof value === 'string' ? value : undefined;
+}
+
+function isProductCode(value: unknown): value is ListAdminTenantsParams['product_code'] {
+    return typeof value === 'string' && Object.values(ProductCode).includes(value as (typeof ProductCode)[keyof typeof ProductCode]);
+}
+
+function toTenantRow(value: Record<string, unknown>): TenantRow | null {
+    const id = getString(value.id);
+    const name = getString(value.name);
+    const slug = getString(value.slug);
+    const status = getString(value.status) as TenantStatus | undefined;
+
+    if (!id || !name || !slug || !status) {
+        return null;
+    }
+
+    return {
+        id,
+        name,
+        slug,
+        status,
+        email: getString(value.email),
+        phone: getString(value.phone),
+        ownerEmail: getString(value.ownerEmail),
+        billingEmail: getString(value.billingEmail),
+        productCode: isProductCode(value.productCode) ? value.productCode : undefined,
+        currentPlan: getString(value.currentPlan),
+        createdAt: getString(value.createdAt),
+        owner_email: getString(value.owner_email),
+        product_code: getString(value.product_code),
+        current_plan: getString(value.current_plan),
+        billing_email: getString(value.billing_email),
+        created_at: getString(value.created_at),
+    };
+}
+
+function getTenants(data: unknown): TenantRow[] {
+    if (!isRecord(data)) {
+        return [];
+    }
+
+    const directTenants = data.tenants;
+    if (Array.isArray(directTenants)) {
+        return directTenants.filter(isRecord).map(toTenantRow).filter((tenant): tenant is TenantRow => tenant !== null);
+    }
+
+    const envelope = data.data;
+    if (isRecord(envelope) && Array.isArray(envelope.tenants)) {
+        return envelope.tenants.filter(isRecord).map(toTenantRow).filter((tenant): tenant is TenantRow => tenant !== null);
+    }
+
+    return [];
+}
+
+function getPagination(data: unknown): TenantListPagination {
+    if (!isRecord(data)) {
+        return { total: 0, totalPages: 1 };
+    }
+
+    const directPagination = data.pagination;
+    if (isRecord(directPagination)) {
+        return {
+            total: typeof directPagination.total === 'number' ? directPagination.total : 0,
+            totalPages: typeof directPagination.totalPages === 'number' ? directPagination.totalPages : 1,
+        };
+    }
+
+    const envelope = data.data;
+    if (isRecord(envelope) && isRecord(envelope.pagination)) {
+        return {
+            total: typeof envelope.pagination.total === 'number' ? envelope.pagination.total : 0,
+            totalPages: typeof envelope.pagination.totalPages === 'number' ? envelope.pagination.totalPages : 1,
+        };
+    }
+
+    return { total: 0, totalPages: 1 };
+}
 
 export default function TenantsPage() {
     const { isMobile } = useAdminResponsive();
@@ -25,24 +127,24 @@ export default function TenantsPage() {
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
-    const [selectedTenantForStatus, setSelectedTenantForStatus] = useState<{ id: string, status: string } | null>(null);
+    const [selectedTenantForStatus, setSelectedTenantForStatus] = useState<{ id: string, status: TenantFilterStatus } | null>(null);
     const queryClient = useQueryClient();
+    const productCodeFilter = productFilter !== 'all' && isProductCode(productFilter) ? productFilter : undefined;
 
     const { data: tenantsData, isLoading } = useListAdminTenants({
         page,
         limit,
         search: searchTerm || undefined,
-        status: statusFilter !== 'all' ? (statusFilter as TenantStatus) : undefined,
-        // @ts-ignore - API client not regenerated yet
-        product_code: productFilter !== 'all' ? productFilter : undefined
-    } as any);
+        status: statusFilter !== 'all' ? (statusFilter as TenantFilterStatus) : undefined,
+        product_code: productCodeFilter
+    });
 
-    const tenants = (tenantsData as any)?.data?.tenants || (tenantsData as any)?.tenants || [];
-    const pagination = (tenantsData as any)?.data?.pagination || (tenantsData as any)?.pagination;
+    const tenants = getTenants(tenantsData);
+    const pagination = getPagination(tenantsData);
 
     const { mutateAsync: updateStatus } = useUpdateAdminTenantStatus();
 
-    const handleStatusChange = (tenantId: string, newStatus: string, e: React.MouseEvent) => {
+    const handleStatusChange = (tenantId: string, newStatus: TenantFilterStatus, e: React.MouseEvent) => {
         e.stopPropagation();
         setSelectedTenantForStatus({ id: tenantId, status: newStatus });
         setStatusModalOpen(true);
@@ -55,9 +157,10 @@ export default function TenantsPage() {
 
         await toast.promise(
             (async () => {
+                const payload: UpdateStatusRequest = { status };
                 await updateStatus({
                     tenantId: id,
-                    data: { status: status as any }
+                    data: payload
                 });
                 await queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
                 await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
@@ -85,7 +188,7 @@ export default function TenantsPage() {
             header: 'Organizasyon',
             sortable: true,
             sortKey: 'name',
-            render: (tenant: any) => (
+            render: (tenant: TenantRow) => (
                 <div className="flex items-center">
                     <div className="h-10 w-10 flex-shrink-0 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
                         {tenant.name?.charAt(0).toUpperCase()}
@@ -101,7 +204,7 @@ export default function TenantsPage() {
             key: 'status',
             header: 'Durum',
             sortable: true,
-            render: (tenant: any) => (
+            render: (tenant: TenantRow) => (
                 <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
                     tenant.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                     tenant.status === 'trial' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
@@ -119,9 +222,9 @@ export default function TenantsPage() {
             header: 'Ürün',
             sortable: true,
             sortKey: 'productCode',
-            render: (tenant: any) => {
+            render: (tenant: TenantRow) => {
                 const productCode = tenant.productCode || tenant.product_code;
-                const productConfig = getProductConfig(productCode);
+                const productConfig = getProductConfig(productCode ?? ProductCode.xear_hearing);
                 return (
                     <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
                         productConfig.badge === 'purple' ? 'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400' :
@@ -141,7 +244,7 @@ export default function TenantsPage() {
             mobileHidden: true,
             sortable: true,
             sortKey: 'currentPlan',
-            render: (tenant: any) => (
+            render: (tenant: TenantRow) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                     {tenant.currentPlan || tenant.current_plan || 'Plan Yok'}
                 </span>
@@ -153,13 +256,13 @@ export default function TenantsPage() {
             mobileHidden: true,
             sortable: true,
             sortKey: 'phone',
-            render: (tenant: any) => {
+            render: (tenant: TenantRow) => {
                 // Try to extract phone from billing_email if phone is null
                 let phoneDisplay = tenant.phone;
                 if (!phoneDisplay && (tenant.billingEmail || tenant.billing_email)) {
                     const email = tenant.billingEmail || tenant.billing_email;
                     // Extract phone from format like "555544443@mobile-signup.x-ear.com"
-                    const match = email.match(/^(\d+)@/);
+                    const match = email?.match(/^(\d+)@/);
                     if (match) {
                         phoneDisplay = match[1];
                     }
@@ -177,20 +280,20 @@ export default function TenantsPage() {
             mobileHidden: true,
             sortable: true,
             sortKey: 'createdAt',
-            render: (tenant: any) => (
+            render: (tenant: TenantRow) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {(tenant.createdAt || tenant.created_at) ? new Date(tenant.createdAt || tenant.created_at).toLocaleDateString('tr-TR') : '-'}
+                    {(tenant.createdAt || tenant.created_at) ? new Date(tenant.createdAt || tenant.created_at || Date.now()).toLocaleDateString('tr-TR') : '-'}
                 </span>
             )
         },
         {
             key: 'actions',
             header: 'İşlemler',
-            render: (tenant: any) => (
+            render: (tenant: TenantRow) => (
                 <div className="flex justify-end space-x-2">
                     {tenant.status !== 'active' && (
                         <button
-                            onClick={(e) => handleStatusChange(tenant.id!, 'active', e)}
+                            onClick={(e) => handleStatusChange(tenant.id, 'active', e)}
                             className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-1 touch-feedback"
                             title="Aktifleştir"
                         >
@@ -199,14 +302,14 @@ export default function TenantsPage() {
                     )}
                     {tenant.status === 'active' && (
                         <button
-                            onClick={(e) => handleStatusChange(tenant.id!, 'suspended', e)}
+                            onClick={(e) => handleStatusChange(tenant.id, 'suspended', e)}
                             className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 touch-feedback"
                         >
                             Askıya Al
                         </button>
                     )}
                     <button
-                        onClick={(e) => handleDelete(tenant.id!, e)}
+                        onClick={(e) => handleDelete(tenant.id, e)}
                         className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 touch-feedback"
                         title="Sil"
                     >
@@ -291,8 +394,8 @@ export default function TenantsPage() {
                     <ResponsiveTable
                         data={tenants}
                         columns={columns}
-                        keyExtractor={(tenant) => tenant.id!}
-                        onRowClick={(tenant) => setSelectedTenantId(tenant.id!)}
+                        keyExtractor={(tenant) => tenant.id}
+                        onRowClick={(tenant) => setSelectedTenantId(tenant.id)}
                         emptyMessage="Kayıt bulunamadı"
                     />
                 )}
@@ -300,8 +403,8 @@ export default function TenantsPage() {
 
             <Pagination
                 currentPage={page}
-                totalPages={pagination?.totalPages || 1}
-                totalItems={pagination?.total || 0}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.total}
                 itemsPerPage={limit}
                 onPageChange={setPage}
                 onItemsPerPageChange={setLimit}

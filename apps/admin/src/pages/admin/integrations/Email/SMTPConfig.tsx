@@ -7,6 +7,21 @@ import { z } from 'zod';
 import type { SmtpConfigCreate } from '@/api/generated/schemas';
 import { EmailIntegrationNav } from '@/components/integrations/EmailIntegrationNav';
 
+interface ApiErrorLike {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+      };
+    };
+  };
+}
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  const apiError = error as ApiErrorLike;
+  return apiError.response?.data?.error?.message || fallback;
+}
+
 // Zod validation schema
 const smtpConfigSchema = z.object({
   host: z.string().min(1, 'SMTP sunucusu gerekli').max(255, 'Maksimum 255 karakter'),
@@ -101,8 +116,8 @@ const SMTPConfig: React.FC = () => {
       await createOrUpdateMutation.mutateAsync({ data: formData });
       toast.success('SMTP ayarları başarıyla kaydedildi');
       refetch();
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || 'SMTP ayarları kaydedilemedi';
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error, 'SMTP ayarları kaydedilemedi');
       toast.error(errorMessage);
       console.error('SMTP config save error:', error);
     }
@@ -124,8 +139,8 @@ const SMTPConfig: React.FC = () => {
       toast.success('Test e-postası gönderildi');
       setShowTestConfirm(false);
       setTestEmail('');
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || 'Test e-postası gönderilemedi';
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error, 'Test e-postası gönderilemedi');
       toast.error(errorMessage);
       console.error('Test email error:', error);
     }

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useMemo } from 'react';
 import { useAIStatus } from '../hooks/useAIStatus';
 import { useAIContext } from '../hooks/useAIContext';

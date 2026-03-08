@@ -17,29 +17,144 @@ import {
   useListAdminInvoices,
   useGetAdminInvoice,
   useCreateAdminInvoice,
+  useCreateAdminInvoicePayment,
   useListAdminPlans,
   useCreateAdminPlan,
   useUpdateAdminPlan,
   useDeleteAdminPlan,
   useListAdminTenants,
+  listAdminInvoicePdf,
 } from '@/lib/api-client';
-import type { InvoiceRead, DetailedPlanRead as PlanRead, PlanCreate } from '@/api/generated/schemas';
-import { adminApi } from '@/lib/apiMutator';
+import type {
+  DetailedPlanRead as PlanRead,
+  InvoiceCreate,
+  InvoiceDetailResponse,
+  InvoiceListResponse,
+  InvoiceRead,
+  PlanCreate,
+  PlanListResponse,
+  PlanUpdate,
+  SchemasBaseResponseEnvelope,
+} from '@/api/generated/schemas';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
-const getAdminInvoicePdf = (id: string) => {
-  return adminApi({
-    url: `/admin/invoices/${id}/pdf`,
-    method: 'GET',
-    responseType: 'blob'
-  });
-};
-
-// Helper interfaces for component state if not fully covered by generated types
 interface CreateInvoiceData {
   tenant_id: string;
   amount: number;
+}
+
+type BillingInterval = 'MONTHLY' | 'YEARLY';
+
+interface ApiErrorLike {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+      };
+    };
+  };
+}
+
+interface InvoicePaginationInfo {
+  total?: number;
+  totalPages?: number;
+}
+
+interface AdminInvoice extends InvoiceRead {
+  tenantName?: string;
+  patientName?: string;
+}
+
+interface TenantOption {
+  id: string;
+  name: string;
+  company_name?: string;
+}
+
+interface PlanFormState {
+  name: string;
+  description: string;
+  price: number;
+  billing_interval: BillingInterval;
+  features: Record<string, string>;
+  is_active: boolean;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  const apiError = error as ApiErrorLike;
+  return apiError.response?.data?.error?.message || fallback;
+}
+
+function toNumber(value: unknown): number {
+  return typeof value === 'number' ? value : Number(value || 0);
+}
+
+function getInvoices(data: InvoiceListResponse | undefined): AdminInvoice[] {
+  const responseData = data?.data;
+  if (!isRecord(responseData) || !Array.isArray(responseData.items)) {
+    return [];
+  }
+
+  return responseData.items.filter((invoice): invoice is AdminInvoice => isRecord(invoice));
+}
+
+function getInvoicePagination(data: InvoiceListResponse | undefined): InvoicePaginationInfo {
+  const responseData = data?.data;
+  if (!isRecord(responseData) || !isRecord(responseData.pagination)) {
+    return {};
+  }
+
+  return {
+    total: typeof responseData.pagination.total === 'number' ? responseData.pagination.total : undefined,
+    totalPages: typeof responseData.pagination.totalPages === 'number' ? responseData.pagination.totalPages : undefined,
+  };
+}
+
+function getSelectedInvoice(data: InvoiceDetailResponse | undefined): AdminInvoice | null {
+  const responseData = data?.data;
+  if (!isRecord(responseData) || !isRecord(responseData.invoice)) {
+    return null;
+  }
+
+  return responseData.invoice as AdminInvoice;
+}
+
+function getPlans(data: PlanListResponse | undefined): PlanRead[] {
+  const responseData = data?.data;
+  if (!responseData || typeof responseData !== 'object' || !('plans' in responseData) || !Array.isArray(responseData.plans)) {
+    return [];
+  }
+
+  return responseData.plans.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
+}
+
+function getTenants(data: unknown): TenantOption[] {
+  if (isRecord(data)) {
+    const directTenants = data.tenants;
+    if (Array.isArray(directTenants)) {
+      return directTenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
+    }
+
+    const nestedData = data.data;
+    if (isRecord(nestedData) && Array.isArray(nestedData.tenants)) {
+      return nestedData.tenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
+    }
+  }
+
+  return [];
+}
+
+function getPdfUrl(data: SchemasBaseResponseEnvelope): string | null {
+  if (!isRecord(data.data) || typeof data.data.url !== 'string') {
+    return null;
+  }
+
+  return data.data.url;
 }
 
 const Billing: React.FC = () => {
@@ -54,20 +169,17 @@ const Billing: React.FC = () => {
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentInvoiceId, setPaymentInvoiceId] = useState<string | null>(null);
-  const [paymentMaxAmount, setPaymentMaxAmount] = useState<number>(0);
-  const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'invoices' | 'plans'>('invoices');
 
   // Plan Management State
   const [planModalView, setPlanModalView] = useState<'list' | 'form'>('list');
   const [editingPlan, setEditingPlan] = useState<PlanRead | null>(null);
-  const [planFormData, setPlanFormData] = useState({
+  const [planFormData, setPlanFormData] = useState<PlanFormState>({
     name: '',
     description: '',
     price: 0,
-    currency: 'TRY',
     billing_interval: 'MONTHLY',
-    features: {} as Record<string, string>,
+    features: {},
     is_active: true
   });
   const [planFeaturesList, setPlanFeaturesList] = useState<string[]>([]);
@@ -83,41 +195,34 @@ const Billing: React.FC = () => {
     status: statusFilter !== 'all' ? (statusFilter as InvoiceRead['status']) : undefined
   });
 
-  const invoices = ((invoicesData as any)?.invoices || (invoicesData as any)?.data?.invoices || []) as InvoiceRead[];
-  const pagination = (invoicesData as any)?.pagination || (invoicesData as any)?.data?.pagination;
+  const invoices = getInvoices(invoicesData);
+  const pagination = getInvoicePagination(invoicesData);
 
   // Fetch plans
   const { data: plansData } = useListAdminPlans();
-  const plans = ((plansData as any)?.plans || (plansData as any)?.data?.plans || []) as PlanRead[];
+  const plans = getPlans(plansData);
 
   // Fetch tenants for invoice creation
   const { data: tenantsData } = useListAdminTenants({ limit: 100 }, { query: { enabled: showCreateModal } });
-  const tenants = (tenantsData as any)?.tenants || (tenantsData as any)?.data?.tenants || [];
+  const tenants = getTenants(tenantsData);
 
   // Fetch invoice details
-  const { data: invoiceDetailsData } = useGetAdminInvoice(selectedInvoiceId!, {
-    query: { enabled: !!selectedInvoiceId && showInvoiceModal }
+  const { data: invoiceDetailsData } = useGetAdminInvoice(selectedInvoiceId ?? '', {
+    query: { enabled: Boolean(selectedInvoiceId) && showInvoiceModal }
   });
-  const selectedInvoice = (invoiceDetailsData as any)?.invoice || (invoiceDetailsData as any)?.data?.invoice;
-
-  // Placeholder for payment recording to satisfy TS. Functionality to be implemented.
-  const recordPayment = async (params: any) => {
-    console.warn('recordPayment not implemented', params);
-    throw new Error('Payment recording not implemented yet');
-  };
+  const selectedInvoice = getSelectedInvoice(invoiceDetailsData);
 
   // Create invoice mutation
-  const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateAdminInvoice();
+  const { mutateAsync: createInvoice } = useCreateAdminInvoice();
+  const { mutateAsync: recordInvoicePayment } = useCreateAdminInvoicePayment();
 
   // Plan mutations
   const { mutateAsync: createPlan } = useCreateAdminPlan();
   const { mutateAsync: updatePlan } = useUpdateAdminPlan();
   const { mutateAsync: deletePlan } = useDeleteAdminPlan();
 
-  const handlePaymentRecordClick = (invoiceId: string, totalAmount: number) => {
+  const handlePaymentRecordClick = (invoiceId: string) => {
     setPaymentInvoiceId(invoiceId);
-    setPaymentMaxAmount(totalAmount);
-    setPaymentAmount(totalAmount); // Default to full remaining amount
     setShowPaymentModal(true);
   };
 
@@ -127,25 +232,17 @@ const Billing: React.FC = () => {
     e.preventDefault();
     if (!paymentInvoiceId) return;
 
-    if (paymentAmount > 0 && paymentAmount <= paymentMaxAmount) {
-      setIsSubmitting(true);
-      try {
-        await recordPayment({ id: paymentInvoiceId, data: { amount: paymentAmount } });
-        await queryClient.invalidateQueries({ queryKey: ['/admin/invoices'] });
-        await queryClient.invalidateQueries({ queryKey: ['getAdminInvoicesId', paymentInvoiceId] });
-        toast.success('Ödeme başarıyla kaydedildi');
-        setShowPaymentModal(false);
-        // Also close invoice detail modal if open and it's the same invoice
-        if (showInvoiceModal && selectedInvoiceId === paymentInvoiceId) {
-          // Optionally keep it open but it will refresh due to query invalidation
-        }
-      } catch (error: any) {
-        toast.error(error.response?.data?.error?.message || 'Ödeme kaydedilirken hata oluştu');
-      } finally {
-        setIsSubmitting(false);
-      }
-    } else {
-      toast.error('Geçersiz ödeme tutarı');
+    setIsSubmitting(true);
+    try {
+      await recordInvoicePayment({ invoiceId: paymentInvoiceId });
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/invoices'] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/admin/invoices/${paymentInvoiceId}`] });
+      toast.success('Fatura ödendi olarak işaretlendi');
+      setShowPaymentModal(false);
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Ödeme kaydedilirken hata oluştu'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,35 +253,14 @@ const Billing: React.FC = () => {
 
   const handleDownloadPDF = async (invoiceId: string) => {
     try {
-      const response = await getAdminInvoicePdf(invoiceId);
-      // response is Blob because of the way getAdminInvoicesIdPdf is generated with responseType: 'blob'
-      // but we need to check if orval returns the data directly or the axios response.
-      // Based on previous experience with Orval and the generated code I saw:
-      // return adminApi<Blob>(...)
-      // adminApi usually returns AxiosResponse or the data depending on config.
-      // Assuming it returns the data (Blob) or we access .data if it returns response.
-      // Let's assume it returns the data directly if using a custom instance that unwraps, 
-      // but the standard generated one usually returns the promise of the response.
-      // However, looking at the generated code: `return adminApi<Blob>(...)`.
-      // If adminApi is the custom instance from `@/lib/api`, I should check if it unwraps data.
-      // The `api.ts` I viewed earlier showed interceptors but didn't explicitly show unwrapping in the default export.
-      // But `useQuery` hooks usage `response.data.data` suggests it returns the full response.
-      // So `getAdminInvoicesIdPdf` likely returns the response.
+      const response = await listAdminInvoicePdf(invoiceId);
+      const pdfUrl = getPdfUrl(response);
+      if (!pdfUrl) {
+        throw new Error('PDF link not available');
+      }
 
-      // Let's try to handle it safely.
-      const blob = response as any; // Cast to any to avoid TS issues if type is complex
-      // If it's an axios response, it has .data. If it's already blob, it is the blob.
-      const pdfBlob = blob.data instanceof Blob ? blob.data : blob;
-
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `invoice-${invoiceId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    } catch (error: unknown) {
       console.error(error);
       toast.error('PDF indirilemedi');
     }
@@ -193,12 +269,20 @@ const Billing: React.FC = () => {
   const handleCreateInvoice = async (data: CreateInvoiceData) => {
     setIsSubmitting(true);
     try {
-      await createInvoice({ data: data as any });
-      await queryClient.invalidateQueries({ queryKey: ['/admin/invoices'] });
+      const payload: InvoiceCreate = {
+        tenantId: data.tenant_id,
+        subtotal: data.amount,
+        vatAmount: 0,
+        discountAmount: 0,
+        totalAmount: data.amount,
+      };
+
+      await createInvoice({ data: payload });
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/invoices'] });
       setShowCreateModal(false);
       toast.success('Fatura başarıyla oluşturuldu');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error?.message || 'Fatura oluşturulurken hata oluştu');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Fatura oluşturulurken hata oluştu'));
     } finally {
       setIsSubmitting(false);
     }
@@ -211,7 +295,6 @@ const Billing: React.FC = () => {
       name: '',
       description: '',
       price: 0,
-      currency: 'TRY',
       billing_interval: 'MONTHLY',
       features: {},
       is_active: true
@@ -230,8 +313,7 @@ const Billing: React.FC = () => {
       name: plan.name || '',
       description: plan.description || '',
       price: plan.price || 0,
-      currency: (plan as any).currency || 'TRY',
-      billing_interval: plan.billingInterval || 'MONTHLY',
+      billing_interval: (plan.billingInterval as BillingInterval | undefined) || 'MONTHLY',
       features: (plan.features || {}) as Record<string, string>,
       is_active: plan.isActive ?? true
     });
@@ -242,10 +324,10 @@ const Billing: React.FC = () => {
     if (window.confirm('Bu planı silmek istediğinize emin misiniz?')) {
       try {
         await deletePlan({ planId: id });
-        await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
         toast.success('Plan silindi');
-      } catch (error: any) {
-        toast.error('Plan silinemedi');
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, 'Plan silinemedi'));
       }
     }
   };
@@ -271,27 +353,27 @@ const Billing: React.FC = () => {
       featuresMap[`feature_${i}`] = f;
     });
 
-    const dataToSave: any = {
+    const dataToSave: PlanCreate | PlanUpdate = {
       name: planFormData.name,
       description: planFormData.description,
       price: planFormData.price,
-      billing_interval: planFormData.billing_interval,
-      features: featuresMap as any, // Cast to any or PlanInputFeatures
-      is_active: planFormData.is_active
+      billingInterval: planFormData.billing_interval,
+      features: featuresMap,
+      isActive: planFormData.is_active
     };
 
     try {
       if (editingPlan?.id) {
-        await updatePlan({ planId: editingPlan.id, data: dataToSave });
+        await updatePlan({ planId: editingPlan.id, data: dataToSave as PlanUpdate });
         toast.success('Plan güncellendi');
       } else {
-        await createPlan({ data: dataToSave });
+        await createPlan({ data: dataToSave as PlanCreate });
         toast.success('Plan oluşturuldu');
       }
-      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       setPlanModalView('list');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error?.message || 'İşlem başarısız');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'İşlem başarısız'));
     } finally {
       setIsSubmitting(false);
     }
@@ -335,7 +417,7 @@ const Billing: React.FC = () => {
     {
       key: 'invoiceNumber',
       header: 'Fatura No',
-      render: (invoice: InvoiceRead) => (
+      render: (invoice: AdminInvoice) => (
         <div className="flex items-center">
           <DocumentTextIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
           <div>
@@ -353,21 +435,21 @@ const Billing: React.FC = () => {
       key: 'tenantName',
       header: 'Abone',
       mobileHidden: true,
-      render: (invoice: InvoiceRead) => (
+      render: (invoice: AdminInvoice) => (
         <div className="text-sm font-medium text-gray-900 dark:text-white">
-          {(invoice as any).tenantName}
+          {invoice.tenantName || '-'}
         </div>
       )
     },
     {
       key: 'status',
       header: 'Durum',
-      render: (invoice: InvoiceRead) => getStatusBadge(invoice.status || undefined)
+      render: (invoice: AdminInvoice) => getStatusBadge(invoice.status ?? undefined)
     },
     {
       key: 'devicePrice',
       header: 'Tutar',
-      render: (invoice: InvoiceRead) => (
+      render: (invoice: AdminInvoice) => (
         <div>
           <div className="text-sm font-medium text-gray-900 dark:text-white">
             {formatCurrency(Number(invoice.devicePrice || 0))}
@@ -384,7 +466,7 @@ const Billing: React.FC = () => {
       key: 'createdAt',
       header: 'Vade Tarihi',
       mobileHidden: true,
-      render: (invoice: InvoiceRead) => (
+      render: (invoice: AdminInvoice) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">
           {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
         </span>
@@ -393,7 +475,7 @@ const Billing: React.FC = () => {
     {
       key: 'actions',
       header: 'İşlemler',
-      render: (invoice: InvoiceRead) => (
+      render: (invoice: AdminInvoice) => (
         <div className="flex justify-end space-x-2">
           <button
             onClick={() => handleViewInvoice(invoice.id!.toString())}
@@ -411,7 +493,7 @@ const Billing: React.FC = () => {
           </button>
           {invoice.status === 'active' && (
             <button
-              onClick={() => handlePaymentRecordClick(invoice.id!.toString(), Number(invoice.devicePrice || 0))}
+              onClick={() => handlePaymentRecordClick(invoice.id!.toString())}
               className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 text-xs px-2 py-1 border border-green-300 dark:border-green-700 rounded touch-feedback"
             >
               Ödeme
@@ -564,7 +646,7 @@ const Billing: React.FC = () => {
                           Toplam Tutar
                         </dt>
                         <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                          {formatCurrency(invoices.reduce((sum: number, inv: InvoiceRead) => sum + Number((inv.devicePrice as unknown as number) || 0), 0) || 0)}
+                          {formatCurrency(invoices.reduce((sum: number, inv: InvoiceRead) => sum + toNumber(inv.devicePrice), 0) || 0)}
                         </dd>
                       </dl>
                     </div>
@@ -636,7 +718,7 @@ const Billing: React.FC = () => {
                   <ResponsiveTable
                     data={invoices}
                     columns={invoiceColumns}
-                    keyExtractor={(invoice: InvoiceRead) => invoice.id!.toString()}
+                    keyExtractor={(invoice: AdminInvoice) => invoice.id!.toString()}
                     emptyMessage="Fatura bulunamadı"
                   />
 
@@ -738,7 +820,7 @@ const Billing: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-gray-500">Durum:</dt>
-                        <dd>{getStatusBadge(selectedInvoice.status)}</dd>
+                        <dd>{getStatusBadge(selectedInvoice.status ?? undefined)}</dd>
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-gray-500">Oluşturulma:</dt>
@@ -776,7 +858,7 @@ const Billing: React.FC = () => {
                         <tr>
                           <td className="px-6 py-4 text-sm text-gray-900">{selectedInvoice.deviceName || 'Cihaz Satışı'}</td>
                           <td className="px-6 py-4 text-sm text-gray-900">
-                            {formatCurrency(selectedInvoice.devicePrice || 0)}
+                            {formatCurrency(toNumber(selectedInvoice.devicePrice))}
                           </td>
                         </tr>
                       </tbody>
@@ -789,7 +871,7 @@ const Billing: React.FC = () => {
                   <dl className="space-y-2 text-sm">
                     <div className="flex justify-between border-t pt-2 font-medium">
                       <dt className="text-gray-900">Toplam:</dt>
-                      <dd className="text-gray-900">{formatCurrency(selectedInvoice.devicePrice || 0)}</dd>
+                      <dd className="text-gray-900">{formatCurrency(toNumber(selectedInvoice.devicePrice))}</dd>
                     </div>
                   </dl>
                 </div>
@@ -806,7 +888,7 @@ const Billing: React.FC = () => {
                   {selectedInvoice.status === 'active' && (
                     <button
                       onClick={() => {
-                        handlePaymentRecordClick(selectedInvoice.id!.toString(), selectedInvoice.devicePrice || 0);
+                        handlePaymentRecordClick(selectedInvoice.id!.toString());
                       }}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
                     >
@@ -924,18 +1006,6 @@ const Billing: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Para Birimi</label>
-                      <select
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-                        value={planFormData.currency}
-                        onChange={(e) => setPlanFormData({ ...planFormData, currency: e.target.value })}
-                      >
-                        <option value="TRY">TRY</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                      </select>
-                    </div>
-                    <div>
                       <label className="block text-sm font-medium text-gray-700">Fatura Aralığı</label>
                       <select
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
@@ -1033,20 +1103,9 @@ const Billing: React.FC = () => {
                 Ödeme Kaydet
               </Dialog.Title>
               <form onSubmit={handleConfirmPayment} className="space-y-4">
-                <div>
-                  <label htmlFor="payment-amount" className="block text-sm font-medium text-gray-700">Tutar (Maks: {formatCurrency(paymentMaxAmount)})</label>
-                  <input
-                    id="payment-amount"
-                    type="number"
-                    required
-                    min="0.01"
-                    step="0.01"
-                    max={paymentMaxAmount}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                  />
-                </div>
+                <p className="text-sm text-gray-600">
+                  Bu işlem faturayı ödendi olarak işaretler.
+                </p>
                 <div className="mt-6 flex justify-end space-x-3">
                   <Dialog.Close asChild>
                     <button
@@ -1086,7 +1145,7 @@ interface CreateInvoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateInvoiceData) => void;
-  tenants: any[];
+  tenants: TenantOption[];
   isLoading: boolean;
 }
 

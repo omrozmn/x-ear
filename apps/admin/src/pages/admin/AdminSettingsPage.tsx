@@ -3,25 +3,41 @@ import {
     useListAdminSettings,
     useUpdateAdminSettings,
     useCreateAdminSettingCacheClear,
-    useCreateAdminSettingBackup
+    useCreateAdminSettingBackup,
+    type ResponseEnvelopeListSystemSettingRead,
+    type SettingItem,
+    type SystemSettingRead,
 } from '@/lib/api-client';
 import {
     Save,
     Database,
     Trash2,
-    RefreshCw,
     Server,
     Mail,
     Globe,
-    Shield
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 
+type SettingsTab = 'general' | 'mail' | 'maintenance';
+
+function getSettings(data: ResponseEnvelopeListSystemSettingRead | undefined): SystemSettingRead[] {
+    return Array.isArray(data?.data) ? data.data : [];
+}
+
+function toSettingItems(settings: SystemSettingRead[]): SettingItem[] {
+    return settings.map((setting) => ({
+        key: setting.key,
+        value: setting.value ?? '',
+        category: setting.category ?? undefined,
+        isPublic: setting.isPublic ?? undefined,
+    }));
+}
+
 const AdminSettingsPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
-    const [activeTab, setActiveTab] = useState('general');
-    const [settings, setSettings] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+    const [settings, setSettings] = useState<SystemSettingRead[]>([]);
 
     const { data: settingsData, isLoading, refetch } = useListAdminSettings({});
     const updateMutation = useUpdateAdminSettings();
@@ -29,18 +45,15 @@ const AdminSettingsPage: React.FC = () => {
     const backupMutation = useCreateAdminSettingBackup();
 
     useEffect(() => {
-        const actualSettings = (settingsData as any)?.settings || (settingsData as any)?.data;
-        if (actualSettings) {
-            setSettings(actualSettings);
-        }
+        setSettings(getSettings(settingsData));
     }, [settingsData]);
 
     const handleSave = async () => {
         try {
-            await updateMutation.mutateAsync({ data: settings as any });
+            await updateMutation.mutateAsync({ data: toSettingItems(settings) });
             toast.success('Ayarlar kaydedildi');
             refetch();
-        } catch (error) {
+        } catch {
             toast.error('Ayarlar kaydedilemedi');
         }
     };
@@ -50,7 +63,7 @@ const AdminSettingsPage: React.FC = () => {
         try {
             await clearCacheMutation.mutateAsync();
             toast.success('Önbellek temizlendi');
-        } catch (error) {
+        } catch {
             toast.error('İşlem başarısız');
         }
     };
@@ -59,7 +72,7 @@ const AdminSettingsPage: React.FC = () => {
         try {
             await backupMutation.mutateAsync();
             toast.success('Yedekleme başlatıldı');
-        } catch (error) {
+        } catch {
             toast.error('Yedekleme başlatılamadı');
         }
     };
@@ -152,7 +165,7 @@ const AdminSettingsPage: React.FC = () => {
                                     </label>
                                     <input
                                         type="text"
-                                        value={setting.value}
+                                        value={setting.value ?? ''}
                                         onChange={(e) => updateSetting(setting.key, e.target.value)}
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                     />
@@ -174,7 +187,7 @@ const AdminSettingsPage: React.FC = () => {
                                     </label>
                                     <input
                                         type={setting.key.includes('pass') ? 'password' : 'text'}
-                                        value={setting.value}
+                                        value={setting.value ?? ''}
                                         onChange={(e) => updateSetting(setting.key, e.target.value)}
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                     />

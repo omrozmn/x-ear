@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useListAdminAppointments } from '@/lib/api-client';
+import type { AppointmentListResponse, AppointmentRead } from '@/api/generated/schemas';
 import {
     CalendarIcon,
     MagnifyingGlassIcon,
@@ -8,6 +9,36 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+
+interface PaginationInfo {
+    total: number;
+    totalPages: number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getAppointments(data: AppointmentListResponse | undefined): AppointmentRead[] {
+    const responseData = data?.data;
+    if (!isRecord(responseData) || !Array.isArray(responseData.appointments)) {
+        return [];
+    }
+
+    return responseData.appointments.filter((appointment): appointment is AppointmentRead => isRecord(appointment) && typeof appointment.id === 'string');
+}
+
+function getPagination(data: AppointmentListResponse | undefined): PaginationInfo | null {
+    const responseData = data?.data;
+    if (!isRecord(responseData) || !isRecord(responseData.pagination)) {
+        return null;
+    }
+
+    return {
+        total: typeof responseData.pagination.total === 'number' ? responseData.pagination.total : 0,
+        totalPages: typeof responseData.pagination.totalPages === 'number' ? responseData.pagination.totalPages : 0,
+    };
+}
 
 const AdminAppointmentsPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
@@ -22,8 +53,8 @@ const AdminAppointmentsPage: React.FC = () => {
         status: statusFilter || undefined
     });
 
-    const appointments = (appointmentsData as any)?.appointments || (appointmentsData as any)?.data?.appointments || (appointmentsData as any)?.data || [];
-    const pagination = (appointmentsData as any)?.pagination || (appointmentsData as any)?.data?.pagination;
+    const appointments = getAppointments(appointmentsData);
+    const pagination = getPagination(appointmentsData);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -45,13 +76,13 @@ const AdminAppointmentsPage: React.FC = () => {
             key: 'date',
             header: 'Tarih / Saat',
             sortable: true,
-            render: (appt: any) => (
+            render: (appt: AppointmentRead) => (
                 <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {new Date(appt.date).toLocaleDateString('tr-TR')}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {appt.time} ({appt.duration} dk)
+                        {appt.time} ({appt.duration ?? 0} dk)
                     </div>
                 </div>
             )
@@ -61,8 +92,8 @@ const AdminAppointmentsPage: React.FC = () => {
             header: 'Hasta',
             sortable: true,
             sortKey: 'patientName',
-            render: (appt: any) => (
-                <div className="text-sm font-medium text-gray-900 dark:text-white">{appt.patientName || '-'}</div>
+            render: (appt: AppointmentRead) => (
+                <div className="text-sm font-medium text-gray-900 dark:text-white">{appt.partyName || '-'}</div>
             )
         },
         {
@@ -70,8 +101,8 @@ const AdminAppointmentsPage: React.FC = () => {
             header: 'Tip',
             mobileHidden: true,
             sortable: true,
-            render: (appt: any) => (
-                <span className="text-sm text-gray-500 dark:text-gray-400">{appt.type}</span>
+            render: (appt: AppointmentRead) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">{appt.type || appt.appointmentType || '-'}</span>
             )
         },
         {
@@ -80,7 +111,7 @@ const AdminAppointmentsPage: React.FC = () => {
             mobileHidden: true,
             sortable: true,
             sortKey: 'tenantName',
-            render: (appt: any) => (
+            render: (appt: AppointmentRead) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">{appt.tenantName || appt.tenantId}</span>
             )
         },
@@ -88,7 +119,7 @@ const AdminAppointmentsPage: React.FC = () => {
             key: 'status',
             header: 'Durum',
             sortable: true,
-            render: (appt: any) => getStatusBadge(appt.status)
+            render: (appt: AppointmentRead) => getStatusBadge(appt.status || '-')
         }
     ];
 
@@ -158,7 +189,7 @@ const AdminAppointmentsPage: React.FC = () => {
                     <ResponsiveTable
                         data={appointments}
                         columns={columns}
-                        keyExtractor={(appt: any) => appt.id}
+                        keyExtractor={(appt: AppointmentRead) => appt.id}
                         emptyMessage="Randevu bulunamadı"
                     />
                 )}

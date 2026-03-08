@@ -1,4 +1,8 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, {
+    AxiosHeaders,
+    AxiosRequestConfig,
+    type InternalAxiosRequestConfig,
+} from 'axios';
 
 /**
  * Retry configuration for failed requests
@@ -29,21 +33,31 @@ const axiosInstance = axios.create({
     },
 });
 
+type RequestConfigSummary = Pick<AxiosRequestConfig, 'url' | 'method'>;
+
+interface ResponseEnvelope<T> {
+    data: T;
+}
+
+function ensureHeaders(config: InternalAxiosRequestConfig): AxiosHeaders {
+    const headers = AxiosHeaders.from(config.headers ?? {});
+    config.headers = headers;
+    return headers;
+}
+
+function hasResponseEnvelope<T>(value: unknown): value is ResponseEnvelope<T> {
+    return typeof value === 'object' && value !== null && 'data' in value;
+}
+
 // Request interceptor for auth token and idempotency
 axiosInstance.interceptors.request.use(
     (config) => {
+        const headers = ensureHeaders(config);
         const token = typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null;
         console.log(`[Orval Request] ${config.url} - Token found: ${!!token}`);
 
         if (token) {
-            // Use .set() for Axios 1.x compatibility and ensure headers object exists
-            if (config.headers && typeof config.headers.set === 'function') {
-                config.headers.set('Authorization', `Bearer ${token}`);
-            } else {
-                config.headers = config.headers || {};
-                // @ts-ignore
-                config.headers['Authorization'] = `Bearer ${token}`;
-            }
+            headers.set('Authorization', `Bearer ${token}`);
         } else {
             console.warn(`[Orval Request] No token found for ${config.url}`);
         }
@@ -51,22 +65,12 @@ axiosInstance.interceptors.request.use(
         // Add Idempotency-Key for write operations (POST, PUT, PATCH)
         const method = config.method?.toUpperCase() || 'GET';
         if (['POST', 'PUT', 'PATCH'].includes(method)) {
-            // Ensure headers object exists
-            config.headers = config.headers || {};
-            
             // Check if Idempotency-Key already exists
-            const existingKey = config.headers['Idempotency-Key'] || 
-                               (config.headers.get && config.headers.get('Idempotency-Key'));
-            
+            const existingKey = headers.get('Idempotency-Key');
+
             if (!existingKey) {
                 const idempotencyKey = generateIdempotencyKey();
-                // Try both methods for Axios compatibility
-                if (config.headers.set && typeof config.headers.set === 'function') {
-                    config.headers.set('Idempotency-Key', idempotencyKey);
-                } else {
-                    // @ts-ignore
-                    config.headers['Idempotency-Key'] = idempotencyKey;
-                }
+                headers.set('Idempotency-Key', idempotencyKey);
                 console.log(`[Orval Request] Added Idempotency-Key: ${idempotencyKey}`);
             }
         }
@@ -121,14 +125,21 @@ function calculateBackoffDelay(attempt: number): number {
 /**
  * Check if error is retryable
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
+    if (!axios.isAxiosError(error)) {
+        return false;
+    }
+
     // Check error codes
     if (error.code && RETRY_CONFIG.retryableErrors.includes(error.code)) {
         return true;
     }
 
     // Check HTTP status codes
-    if (error.response?.status && RETRY_CONFIG.retryableStatusCodes.includes(error.response.status)) {
+    if (
+        error.response?.status &&
+        RETRY_CONFIG.retryableStatusCodes.includes(error.response.status)
+    ) {
         return true;
     }
 
@@ -147,18 +158,20 @@ function sleep(ms: number): Promise<void> {
  */
 async function retryRequest<T>(
     requestFn: () => Promise<T>,
-    config: any,
+    config: RequestConfigSummary,
     attempt: number = 1
 ): Promise<T> {
     try {
         return await requestFn();
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const axiosError = axios.isAxiosError(error) ? error : undefined;
+
         // Don't retry if we've exceeded max attempts
         if (attempt >= RETRY_CONFIG.maxRetries) {
             console.error(`Request failed after ${attempt} attempts:`, {
                 url: config.url,
                 method: config.method,
-                error: error.code || error.message
+                error: axiosError?.code || (error instanceof Error ? error.message : 'Unknown error')
             });
             throw error;
         }
@@ -173,7 +186,7 @@ async function retryRequest<T>(
         console.warn(`Request failed (attempt ${attempt}/${RETRY_CONFIG.maxRetries}), retrying in ${delay}ms:`, {
             url: config.url,
             method: config.method,
-            error: error.code || error.message
+            error: axiosError?.code || (error instanceof Error ? error.message : 'Unknown error')
         });
 
         await sleep(delay);
@@ -213,7 +226,7 @@ export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
     return retryRequest(
         () => axiosInstance(requestConfig).then(response => {
             // Unwrap ResponseEnvelope: {success: true, data: {...}} -> {...}
-            if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            if (hasResponseEnvelope<T>(response.data)) {
                 return response.data.data;
             }
             return response.data;

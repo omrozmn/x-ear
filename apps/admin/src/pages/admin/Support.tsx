@@ -9,10 +9,19 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XMarkIcon,
-  StarIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import {
+  HTTPValidationError,
+  ListAdminTicketsParams,
+  ResponseEnvelopeListUserRead,
+  SchemasBaseResponseEnvelopeDict,
+  TicketCategory,
+  TicketCreate,
+  TicketPriority,
+  TicketResponseCreate,
+  TicketStatus,
+  TicketUpdate,
   useListAdminTickets,
   useCreateAdminTicket,
   useUpdateAdminTicket,
@@ -23,149 +32,307 @@ import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import Pagination from '@/components/ui/Pagination';
 
-// Local type definitions (not exported from generated client)
+type UnknownRecord = Record<string, unknown>;
+type TicketStatusFilter = TicketStatus | 'all';
+type TicketPriorityFilter = TicketPriority | 'all';
+type TicketColumnStatus = TicketStatus;
+
 interface SupportTicket {
-  id?: string;
-  title?: string;
+  id: string;
+  title: string;
   description?: string;
-  status?: string;
-  priority?: string;
-  tenant_name?: string;
-  assigned_to?: string;
-  assigned_admin_name?: string;
-  sla_due_date?: string;
-  created_at?: string;
+  status: TicketStatus;
+  priority?: TicketPriority;
+  tenantName?: string;
+  assignedTo?: string;
+  assignedAdminName?: string;
+  slaDueDate?: string;
+  createdAt?: string;
 }
 
-interface AdminUser {
-  id?: string;
-  first_name?: string;
-  last_name?: string;
+interface AdminUserOption {
+  id: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
 }
+
+interface TicketPagination {
+  total: number;
+  totalPages: number;
+  page: number;
+  perPage: number;
+}
+
+interface CreateTicketFormData {
+  title: string;
+  description: string;
+  priority: TicketPriority;
+  category: TicketCategory;
+}
+
+const isRecord = (value: unknown): value is UnknownRecord =>
+  typeof value === 'object' && value !== null;
+
+const getString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() !== '' ? value : undefined;
+
+const getNumber = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+
+const isTicketStatus = (value: string): value is TicketStatus =>
+  Object.values(TicketStatus).includes(value as TicketStatus);
+
+const isTicketPriority = (value: string): value is TicketPriority =>
+  Object.values(TicketPriority).includes(value as TicketPriority);
+
+const isTicketCategory = (value: string): value is TicketCategory =>
+  Object.values(TicketCategory).includes(value as TicketCategory);
+
+const isTicketStatusFilter = (value: string): value is TicketStatusFilter =>
+  value === 'all' || isTicketStatus(value);
+
+const isTicketPriorityFilter = (value: string): value is TicketPriorityFilter =>
+  value === 'all' || isTicketPriority(value);
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (!isRecord(error)) {
+    return fallback;
+  }
+
+  const directMessage = getString(error.message);
+  if (directMessage) {
+    return directMessage;
+  }
+
+  const response = isRecord(error.response) ? error.response : undefined;
+  const responseData = response && isRecord(response.data) ? response.data : undefined;
+  const nestedError = responseData && isRecord(responseData.error) ? responseData.error : undefined;
+  const nestedMessage = nestedError ? getString(nestedError.message) : undefined;
+
+  return nestedMessage ?? fallback;
+};
+
+const normalizeTicket = (value: unknown): SupportTicket | null => {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const id = getString(value.id);
+  const title = getString(value.title) ?? getString(value.subject);
+  const rawStatus = getString(value.status);
+
+  if (!id || !title || !rawStatus || !isTicketStatus(rawStatus)) {
+    return null;
+  }
+
+  const rawPriority = getString(value.priority);
+  const priority = rawPriority && isTicketPriority(rawPriority) ? rawPriority : undefined;
+
+  return {
+    id,
+    title,
+    description: getString(value.description),
+    status: rawStatus,
+    priority,
+    tenantName: getString(value.tenantName) ?? getString(value.tenant_name),
+    assignedTo: getString(value.assignedTo) ?? getString(value.assigned_to),
+    assignedAdminName: getString(value.assignedAdminName) ?? getString(value.assigned_admin_name),
+    slaDueDate: getString(value.slaDueDate) ?? getString(value.sla_due_date),
+    createdAt: getString(value.createdAt) ?? getString(value.created_at),
+  };
+};
+
+const getTickets = (response: SchemasBaseResponseEnvelopeDict | undefined): SupportTicket[] => {
+  const data = response?.data;
+
+  if (!data) {
+    return [];
+  }
+
+  const candidate = isRecord(data) && Array.isArray(data.tickets)
+    ? data.tickets
+    : Array.isArray(data)
+      ? data
+      : [];
+
+  return candidate
+    .map(normalizeTicket)
+    .filter((ticket): ticket is SupportTicket => ticket !== null);
+};
+
+const getTicketPagination = (response: SchemasBaseResponseEnvelopeDict | undefined): TicketPagination | null => {
+  const nestedData = response?.data;
+  const pagination =
+    nestedData && isRecord(nestedData) && isRecord(nestedData.pagination)
+      ? nestedData.pagination
+      : response?.meta && isRecord(response.meta)
+        ? response.meta
+        : undefined;
+
+  if (!pagination || !isRecord(pagination)) {
+    return null;
+  }
+
+  return {
+    total: getNumber(pagination.total) ?? 0,
+    totalPages: getNumber(pagination.totalPages) ?? 1,
+    page: getNumber(pagination.page) ?? 1,
+    perPage: getNumber(pagination.perPage) ?? 10,
+  };
+};
+
+const getAdminUsers = (response: unknown): AdminUserOption[] => {
+  const candidate = isRecord(response) && Array.isArray(response.data)
+    ? response.data
+    : isRecord(response) && isRecord(response.data) && Array.isArray(response.data.users)
+      ? response.data.users
+      : [];
+
+  return candidate.reduce<AdminUserOption[]>((users, user) => {
+    if (!isRecord(user)) {
+      return users;
+    }
+
+      const id = getString(user.id);
+
+      if (!id) {
+        return users;
+      }
+
+      users.push({
+        id,
+        firstName: getString(user.firstName) ?? getString(user.first_name),
+        lastName: getString(user.lastName) ?? getString(user.last_name),
+        email: getString(user.email),
+      });
+
+      return users;
+    }, []);
+};
+
+const getAdminUserLabel = (user: AdminUserOption) => {
+  const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+  return fullName || user.email || user.id;
+};
+
+const getPriorityBadge = (priority: TicketPriority | undefined) => {
+  if (!priority) {
+    return null;
+  }
+
+  const priorityClasses: Record<TicketPriority, string> = {
+    low: 'bg-gray-100 text-gray-800',
+    medium: 'bg-blue-100 text-blue-800',
+    high: 'bg-orange-100 text-orange-800',
+    urgent: 'bg-red-100 text-red-800',
+  };
+
+  const priorityLabels: Record<TicketPriority, string> = {
+    low: 'Düşük',
+    medium: 'Orta',
+    high: 'Yüksek',
+    urgent: 'Acil',
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityClasses[priority]}`}
+    >
+      {priorityLabels[priority]}
+    </span>
+  );
+};
+
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) {
+    return '';
+  }
+
+  return new Date(dateString).toLocaleDateString('tr-TR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const isOverdue = (slaDate: string | undefined) => {
+  if (!slaDate) {
+    return false;
+  }
+
+  return new Date(slaDate) < new Date();
+};
 
 const Support: React.FC = () => {
   const { isMobile } = useAdminResponsive();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<TicketStatusFilter>('all');
+  const [priorityFilter, setPriorityFilter] = useState<TicketPriorityFilter>('all');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch tickets
-  const { data: ticketsData, isLoading, error } = useListAdminTickets({
+  const ticketParams: ListAdminTicketsParams = {
     page,
     limit,
     search: searchTerm || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
-    priority: priorityFilter !== 'all' ? priorityFilter : undefined
-  } as any);
+    priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+  };
 
-  const tickets = ((ticketsData as any)?.data?.tickets || (ticketsData as any)?.tickets || []) as SupportTicket[];
-  const pagination = (ticketsData as any)?.data?.pagination || (ticketsData as any)?.pagination;
-
-  // Fetch admin users for assignment
-  const { data: adminUsersData } = useListAdminUsers({ per_page: 100 });
-  const adminUsers = (adminUsersData as any)?.data?.users || (adminUsersData as any)?.users || [];
-
-  // Mutations
+  const { data: ticketsData, isLoading, error } = useListAdminTickets(ticketParams);
+  const { data: adminUsersData } = useListAdminUsers<ResponseEnvelopeListUserRead>({ per_page: 100 });
   const { mutateAsync: updateTicket } = useUpdateAdminTicket();
   const { mutateAsync: createTicket } = useCreateAdminTicket();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const tickets = getTickets(ticketsData);
+  const pagination = getTicketPagination(ticketsData);
+  const adminUsers = getAdminUsers(adminUsersData);
 
-  const handleUpdateTicket = async (id: string, data: any) => {
+  const invalidateTickets = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['/api/admin/tickets'] });
+  };
+
+  const handleUpdateTicket = async (id: string, data: TicketUpdate) => {
     setIsSubmitting(true);
     try {
       await updateTicket({ ticketId: id, data });
-      await queryClient.invalidateQueries({ queryKey: ['/admin/tickets'] });
+      await invalidateTickets();
       toast.success('Ticket başarıyla güncellendi');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error?.message || 'Ticket güncellenirken hata oluştu');
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError, 'Ticket güncellenirken hata oluştu'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleCreateTicket = async (data: any) => {
+  const handleCreateTicket = async (data: CreateTicketFormData) => {
+    const payload: TicketCreate = {
+      title: data.title.trim(),
+      description: data.description.trim() || null,
+      priority: data.priority,
+      category: data.category,
+    };
+
     setIsSubmitting(true);
     try {
-      await createTicket({ data });
-      await queryClient.invalidateQueries({ queryKey: ['/admin/tickets'] });
+      await createTicket({ data: payload });
+      await invalidateTickets();
       toast.success('Ticket başarıyla oluşturuldu');
       setShowCreateModal(false);
-    } catch (error: any) {
-      toast.error(error.response?.data?.error?.message || 'Ticket oluşturulurken hata oluştu');
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError, 'Ticket oluşturulurken hata oluştu'));
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const getPriorityBadge = (priority: string | undefined) => {
-    if (!priority) return null;
-    const priorityClasses: Record<string, string> = {
-      low: 'bg-gray-100 text-gray-800',
-      medium: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800'
-    };
-
-    const priorityLabels: Record<string, string> = {
-      low: 'Düşük',
-      medium: 'Orta',
-      high: 'Yüksek',
-      urgent: 'Acil'
-    };
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityClasses[priority] || 'bg-gray-100 text-gray-800'}`}>
-        {priorityLabels[priority] || priority}
-      </span>
-    );
-  };
-
-  const getStatusBadge = (status: string | undefined) => {
-    if (!status) return null;
-    const statusClasses: Record<string, string> = {
-      open: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      resolved: 'bg-green-100 text-green-800',
-      closed: 'bg-gray-100 text-gray-800'
-    };
-
-    const statusLabels: Record<string, string> = {
-      open: 'Açık',
-      in_progress: 'İşlemde',
-      resolved: 'Çözüldü',
-      closed: 'Kapalı'
-    };
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`}>
-        {statusLabels[status] || status}
-      </span>
-    );
-  };
-
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const isOverdue = (slaDate: string | undefined) => {
-    if (!slaDate) return false;
-    return new Date(slaDate) < new Date();
   };
 
   const handleViewTicket = (ticket: SupportTicket) => {
@@ -174,19 +341,20 @@ const Support: React.FC = () => {
   };
 
   const handleAssignTicket = (ticketId: string, adminId: string) => {
-    handleUpdateTicket(ticketId, { assigned_to: adminId });
+    handleUpdateTicket(ticketId, { assignedTo: adminId || null });
   };
 
-  const handleStatusChange = (ticketId: string, status: string) => {
+  const handleStatusChange = (ticketId: string, status: TicketStatus) => {
     handleUpdateTicket(ticketId, { status });
   };
 
   return (
     <div className={`space-y-6 ${isMobile ? 'p-4 pb-safe' : 'p-6'}`}>
-      {/* Header */}
       <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'}`}>
         <div>
-          <h1 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Destek Ticketları</h1>
+          <h1 className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+            Destek Ticketları
+          </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Müşteri destek taleplerini yönetin ve takip edin
           </p>
@@ -195,19 +363,21 @@ const Support: React.FC = () => {
           <div className="flex rounded-md shadow-sm">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-md border touch-feedback ${viewMode === 'list'
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                } ${isMobile ? 'flex-1' : ''}`}
+              className={`px-4 py-2 text-sm font-medium rounded-l-md border touch-feedback ${
+                viewMode === 'list'
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              } ${isMobile ? 'flex-1' : ''}`}
             >
               Liste
             </button>
             <button
               onClick={() => setViewMode('kanban')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b touch-feedback ${viewMode === 'kanban'
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                } ${isMobile ? 'flex-1' : ''}`}
+              className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b touch-feedback ${
+                viewMode === 'kanban'
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              } ${isMobile ? 'flex-1' : ''}`}
             >
               Kanban
             </button>
@@ -222,7 +392,6 @@ const Support: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
           <div className={isMobile ? 'p-4' : 'p-5'}>
@@ -232,11 +401,9 @@ const Support: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                    Toplam Ticket
-                  </dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Toplam Ticket</dt>
                   <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
-                    {pagination?.total || 0}
+                    {pagination?.total ?? 0}
                   </dd>
                 </dl>
               </div>
@@ -252,11 +419,9 @@ const Support: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                    Açık Ticketlar
-                  </dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Açık Ticketlar</dt>
                   <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
-                    {tickets.filter(t => ['open', 'in_progress'].includes(t.status || '')).length || 0}
+                    {tickets.filter((ticket) => ['open', 'in_progress'].includes(ticket.status)).length}
                   </dd>
                 </dl>
               </div>
@@ -272,11 +437,13 @@ const Support: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                    SLA Aşımı
-                  </dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">SLA Aşımı</dt>
                   <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
-                    {tickets.filter(t => isOverdue(t.sla_due_date) && !['resolved', 'closed'].includes(t.status || '')).length || 0}
+                    {
+                      tickets.filter(
+                        (ticket) => isOverdue(ticket.slaDueDate) && !['resolved', 'closed'].includes(ticket.status),
+                      ).length
+                    }
                   </dd>
                 </dl>
               </div>
@@ -292,13 +459,9 @@ const Support: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                    Bu Ay Çözülen
-                  </dt>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Bu Ay Çözülen</dt>
                   <dd className={`font-medium text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
-                    {/* Placeholder logic as resolved_at might not be in the type yet if not updated in schema */
-                      0
-                    }
+                    {tickets.filter((ticket) => ticket.status === 'resolved').length}
                   </dd>
                 </dl>
               </div>
@@ -307,10 +470,8 @@ const Support: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
-          {/* Search */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -324,10 +485,13 @@ const Support: React.FC = () => {
             />
           </div>
 
-          {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              if (isTicketStatusFilter(e.target.value)) {
+                setStatusFilter(e.target.value);
+              }
+            }}
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Tüm Durumlar</option>
@@ -337,10 +501,13 @@ const Support: React.FC = () => {
             <option value="closed">Kapalı</option>
           </select>
 
-          {/* Priority Filter */}
           <select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
+            onChange={(e) => {
+              if (isTicketPriorityFilter(e.target.value)) {
+                setPriorityFilter(e.target.value);
+              }
+            }}
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Tüm Öncelikler</option>
@@ -350,18 +517,17 @@ const Support: React.FC = () => {
             <option value="low">Düşük</option>
           </select>
 
-          {/* Results count */}
           <div className={`flex items-center text-sm text-gray-500 dark:text-gray-400 ${isMobile ? 'col-span-1' : ''}`}>
             {pagination && (
               <span>
-                {pagination.total} sonuçtan {((page - 1) * 10) + 1}-{Math.min(page * 10, pagination.total || 0)} arası gösteriliyor
+                {pagination.total} sonuçtan {(page - 1) * limit + 1}-
+                {Math.min(page * limit, pagination.total)} arası gösteriliyor
               </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Content based on view mode */}
       {viewMode === 'list' ? (
         <TicketListView
           tickets={tickets}
@@ -376,19 +542,12 @@ const Support: React.FC = () => {
           limit={limit}
           setLimit={setLimit}
           pagination={pagination}
-          queryClient={queryClient}
-          getPriorityBadge={getPriorityBadge}
-          getStatusBadge={getStatusBadge}
-          formatDate={formatDate}
-          isOverdue={isOverdue}
-          isMobile={isMobile}
+          onRetry={invalidateTickets}
         />
       ) : (
         <TicketKanbanView
           tickets={tickets}
           onViewTicket={handleViewTicket}
-          onStatusChange={handleStatusChange}
-          getPriorityBadge={getPriorityBadge}
           formatDate={formatDate}
           isOverdue={isOverdue}
           isMobile={isMobile}
@@ -399,45 +558,33 @@ const Support: React.FC = () => {
         <TicketDetailModal
           ticket={selectedTicket}
           onClose={() => setShowTicketModal(false)}
-          onUpdate={(data) => handleUpdateTicket(selectedTicket.id!, data)}
+          onUpdate={(data) => handleUpdateTicket(selectedTicket.id, data)}
           adminUsers={adminUsers}
           isLoading={isSubmitting}
         />
       )}
 
-      {/* Create Ticket Modal */}
       {showCreateModal && (
-        <CreateTicketModal
-          onClose={() => setShowCreateModal(false)}
-          onCreate={handleCreateTicket}
-          adminUsers={adminUsers}
-          isLoading={isSubmitting}
-        />
+        <CreateTicketModal onClose={() => setShowCreateModal(false)} onCreate={handleCreateTicket} isLoading={isSubmitting} />
       )}
     </div>
   );
 };
 
-// Ticket List View Component
 interface TicketListViewProps {
   tickets: SupportTicket[];
   isLoading: boolean;
-  error: any;
+  error: HTTPValidationError | null;
   onViewTicket: (ticket: SupportTicket) => void;
   onAssignTicket: (ticketId: string, adminId: string) => void;
-  onStatusChange: (ticketId: string, status: string) => void;
-  adminUsers: AdminUser[];
+  onStatusChange: (ticketId: string, status: TicketStatus) => void;
+  adminUsers: AdminUserOption[];
   page: number;
   setPage: (page: number) => void;
   limit: number;
   setLimit: (limit: number) => void;
-  pagination: any;
-  queryClient: any;
-  getPriorityBadge: (priority: string | undefined) => React.ReactNode;
-  getStatusBadge: (status: string | undefined) => React.ReactNode;
-  formatDate: (date: string | undefined) => string;
-  isOverdue: (date: string | undefined) => boolean;
-  isMobile: boolean;
+  pagination: TicketPagination | null;
+  onRetry: () => Promise<void>;
 }
 
 const TicketListView: React.FC<TicketListViewProps> = ({
@@ -453,12 +600,7 @@ const TicketListView: React.FC<TicketListViewProps> = ({
   limit,
   setLimit,
   pagination,
-  queryClient,
-  getPriorityBadge,
-  getStatusBadge,
-  formatDate,
-  isOverdue,
-  isMobile
+  onRetry,
 }) => {
   const columns = [
     {
@@ -468,25 +610,19 @@ const TicketListView: React.FC<TicketListViewProps> = ({
         <div className="flex items-center">
           <TicketIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {ticket.title}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {formatDate(ticket.created_at)}
-            </div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">{ticket.title}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(ticket.createdAt)}</div>
           </div>
         </div>
-      )
+      ),
     },
     {
       key: 'customer',
       header: 'Müşteri',
       mobileHidden: true,
       render: (ticket: SupportTicket) => (
-        <div className="text-sm font-medium text-gray-900 dark:text-white">
-          {ticket.tenant_name}
-        </div>
-      )
+        <div className="text-sm font-medium text-gray-900 dark:text-white">{ticket.tenantName || '-'}</div>
+      ),
     },
     {
       key: 'status',
@@ -494,7 +630,11 @@ const TicketListView: React.FC<TicketListViewProps> = ({
       render: (ticket: SupportTicket) => (
         <select
           value={ticket.status}
-          onChange={(e) => onStatusChange(ticket.id!, e.target.value)}
+          onChange={(e) => {
+            if (isTicketStatus(e.target.value)) {
+              onStatusChange(ticket.id, e.target.value);
+            }
+          }}
           className="text-xs border-0 bg-transparent dark:bg-gray-700 dark:text-white focus:ring-0 p-0 touch-feedback"
           onClick={(e) => e.stopPropagation()}
         >
@@ -503,13 +643,13 @@ const TicketListView: React.FC<TicketListViewProps> = ({
           <option value="resolved">Çözüldü</option>
           <option value="closed">Kapalı</option>
         </select>
-      )
+      ),
     },
     {
       key: 'priority',
       header: 'Öncelik',
       mobileHidden: true,
-      render: (ticket: SupportTicket) => getPriorityBadge(ticket.priority)
+      render: (ticket: SupportTicket) => getPriorityBadge(ticket.priority),
     },
     {
       key: 'assigned',
@@ -517,19 +657,19 @@ const TicketListView: React.FC<TicketListViewProps> = ({
       mobileHidden: true,
       render: (ticket: SupportTicket) => (
         <select
-          value={ticket.assigned_to || ''}
-          onChange={(e) => onAssignTicket(ticket.id!, e.target.value)}
+          value={ticket.assignedTo || ''}
+          onChange={(e) => onAssignTicket(ticket.id, e.target.value)}
           className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 touch-feedback"
           onClick={(e) => e.stopPropagation()}
         >
           <option value="">Atanmamış</option>
           {adminUsers.map((admin) => (
             <option key={admin.id} value={admin.id}>
-              {admin.first_name} {admin.last_name}
+              {getAdminUserLabel(admin)}
             </option>
           ))}
         </select>
-      )
+      ),
     },
     {
       key: 'sla',
@@ -537,30 +677,36 @@ const TicketListView: React.FC<TicketListViewProps> = ({
       mobileHidden: true,
       render: (ticket: SupportTicket) => (
         <div>
-          <div className={`text-sm ${isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '')
-            ? 'text-red-600 dark:text-red-400 font-medium'
-            : 'text-gray-500 dark:text-gray-400'
-            }`}>
-            {formatDate(ticket.sla_due_date)}
+          <div
+            className={`text-sm ${
+              isOverdue(ticket.slaDueDate) && !['resolved', 'closed'].includes(ticket.status)
+                ? 'text-red-600 dark:text-red-400 font-medium'
+                : 'text-gray-500 dark:text-gray-400'
+            }`}
+          >
+            {formatDate(ticket.slaDueDate)}
           </div>
-          {isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '') && (
+          {isOverdue(ticket.slaDueDate) && !['resolved', 'closed'].includes(ticket.status) && (
             <div className="text-xs text-red-500 dark:text-red-400">Gecikmiş</div>
           )}
         </div>
-      )
+      ),
     },
     {
       key: 'actions',
       header: 'İşlemler',
       render: (ticket: SupportTicket) => (
         <button
-          onClick={(e) => { e.stopPropagation(); onViewTicket(ticket); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewTicket(ticket);
+          }}
           className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 touch-feedback"
         >
           Detay
         </button>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -574,7 +720,9 @@ const TicketListView: React.FC<TicketListViewProps> = ({
         <div className="p-6 text-center">
           <p className="text-red-600 dark:text-red-400">Ticketlar yüklenirken hata oluştu</p>
           <button
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['getAdminTickets'] })}
+            onClick={() => {
+              void onRetry();
+            }}
             className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 touch-feedback"
           >
             Tekrar dene
@@ -585,12 +733,11 @@ const TicketListView: React.FC<TicketListViewProps> = ({
           <ResponsiveTable
             data={tickets}
             columns={columns}
-            keyExtractor={(ticket) => ticket.id!}
+            keyExtractor={(ticket: SupportTicket) => ticket.id}
             onRowClick={onViewTicket}
             emptyMessage="Ticket bulunamadı."
           />
 
-          {/* Pagination */}
           <Pagination
             currentPage={page}
             totalPages={pagination?.totalPages || 1}
@@ -605,12 +752,9 @@ const TicketListView: React.FC<TicketListViewProps> = ({
   );
 };
 
-// Ticket Kanban View Component
 interface TicketKanbanViewProps {
   tickets: SupportTicket[];
   onViewTicket: (ticket: SupportTicket) => void;
-  onStatusChange: (ticketId: string, status: string) => void;
-  getPriorityBadge: (priority: string | undefined) => React.ReactNode;
   formatDate: (date: string | undefined) => string;
   isOverdue: (date: string | undefined) => boolean;
   isMobile: boolean;
@@ -619,22 +763,18 @@ interface TicketKanbanViewProps {
 const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
   tickets,
   onViewTicket,
-  onStatusChange,
-  getPriorityBadge,
   formatDate,
   isOverdue,
-  isMobile
+  isMobile,
 }) => {
-  const columns = [
+  const columns: Array<{ id: TicketColumnStatus; title: string; color: string }> = [
     { id: 'open', title: 'Açık', color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' },
     { id: 'in_progress', title: 'İşlemde', color: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' },
     { id: 'resolved', title: 'Çözüldü', color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' },
-    { id: 'closed', title: 'Kapalı', color: 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700' }
+    { id: 'closed', title: 'Kapalı', color: 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700' },
   ];
 
-  const getTicketsByStatus = (status: string) => {
-    return tickets.filter(ticket => ticket.status === status);
-  };
+  const getTicketsByStatus = (status: TicketColumnStatus) => tickets.filter((ticket) => ticket.status === status);
 
   return (
     <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
@@ -655,41 +795,35 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
                 onClick={() => onViewTicket(ticket)}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
-                    {ticket.title}
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">{ticket.title}</h4>
                   {getPriorityBadge(ticket.priority)}
                 </div>
 
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                  {ticket.description}
-                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{ticket.description}</p>
 
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>{ticket.tenant_name}</span>
-                  <span>{formatDate(ticket.created_at)}</span>
+                  <span>{ticket.tenantName || '-'}</span>
+                  <span>{formatDate(ticket.createdAt)}</span>
                 </div>
 
-                {isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '') && (
+                {isOverdue(ticket.slaDueDate) && !['resolved', 'closed'].includes(ticket.status) && (
                   <div className="mt-2 flex items-center text-xs text-red-600 dark:text-red-400">
                     <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
                     SLA Aşımı
                   </div>
                 )}
 
-                {ticket.assigned_admin_name && (
+                {ticket.assignedAdminName && (
                   <div className="mt-2 flex items-center text-xs text-gray-600 dark:text-gray-400">
                     <UserIcon className="h-3 w-3 mr-1" />
-                    {ticket.assigned_admin_name}
+                    {ticket.assignedAdminName}
                   </div>
                 )}
               </div>
             ))}
 
             {getTicketsByStatus(column.id).length === 0 && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
-                Bu durumda ticket yok
-              </div>
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">Bu durumda ticket yok</div>
             )}
           </div>
         </div>
@@ -698,12 +832,11 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
   );
 };
 
-// Ticket Detail Modal Component
 interface TicketDetailModalProps {
   ticket: SupportTicket;
   onClose: () => void;
-  onUpdate: (data: Partial<SupportTicket>) => void;
-  adminUsers: AdminUser[];
+  onUpdate: (data: TicketUpdate) => void;
+  adminUsers: AdminUserOption[];
   isLoading: boolean;
 }
 
@@ -712,78 +845,69 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   onClose,
   onUpdate,
   adminUsers,
-  isLoading
+  isLoading,
 }) => {
   const [response, setResponse] = useState('');
   const [isSending, setIsSending] = useState(false);
   const { mutateAsync: createTicketResponse } = useCreateAdminTicketResponse();
-  // CSAT fields removed as they are not in schema yet
 
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const getPriorityColor = (priority: TicketPriority | undefined) => {
+    if (priority === 'urgent') {
+      return 'text-red-600';
+    }
+    if (priority === 'high') {
+      return 'text-orange-600';
+    }
+    if (priority === 'medium') {
+      return 'text-blue-600';
+    }
+    return 'text-gray-600';
   };
 
-  const isOverdue = (slaDate: string | undefined) => {
-    if (!slaDate) return false;
-    return new Date(slaDate) < new Date();
-  };
-
-  const getPriorityColor = (priority: string | undefined) => {
-    const colors: Record<string, string> = {
-      low: 'text-gray-600',
-      medium: 'text-blue-600',
-      high: 'text-orange-600',
-      critical: 'text-red-600',
-      urgent: 'text-red-600'
-    };
-    return colors[priority || ''] || 'text-gray-600';
-  };
-
-  const handleStatusUpdate = (status: string) => {
-    const updateData: any = { status };
-    onUpdate(updateData);
+  const handleStatusUpdate = (status: TicketStatus) => {
+    onUpdate({ status });
   };
 
   const handleAssignmentUpdate = (adminId: string) => {
-    onUpdate({ assigned_to: adminId });
+    onUpdate({ assignedTo: adminId || null });
+  };
+
+  const handleSendResponse = async () => {
+    if (!response.trim()) {
+      return;
+    }
+
+    const payload: TicketResponseCreate = { message: response.trim() };
+
+    setIsSending(true);
+    try {
+      await createTicketResponse({ ticketId: ticket.id, data: payload });
+      toast.success('Yanıt gönderildi');
+      setResponse('');
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError, 'Yanıt gönderilirken hata oluştu'));
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900">
-            Ticket Detayları
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <h3 className="text-lg font-medium text-gray-900">Ticket Detayları</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Ticket Header */}
             <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-lg font-medium text-gray-900 mb-2">
-                {ticket.title}
-              </h4>
-              <p className="text-gray-700 whitespace-pre-wrap">
-                {ticket.description}
-              </p>
+              <h4 className="text-lg font-medium text-gray-900 mb-2">{ticket.title}</h4>
+              <p className="text-gray-700 whitespace-pre-wrap">{ticket.description}</p>
             </div>
 
-            {/* Response Section */}
             <div>
               <h5 className="text-sm font-medium text-gray-900 mb-2">Yanıt Ekle</h5>
               <textarea
@@ -795,22 +919,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
               />
               <div className="mt-2 flex justify-end">
                 <button
-                  onClick={async () => {
-                    if (!response.trim()) return;
-                    setIsSending(true);
-                    try {
-                      // Try to send response via API
-                      await createTicketResponse({ ticketId: ticket.id!, data: { message: response } });
-                      toast.success('Yanıt gönderildi');
-                      setResponse('');
-                    } catch (error) {
-                      console.error('Failed to send response:', error);
-                      // Fallback or just show success if it's a mock
-                      toast.success('Yanıt gönderildi (Simülasyon)');
-                      setResponse('');
-                    } finally {
-                      setIsSending(false);
-                    }
+                  onClick={() => {
+                    void handleSendResponse();
                   }}
                   disabled={!response.trim() || isSending}
                   className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -821,9 +931,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Status & Priority */}
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <h5 className="text-sm font-medium text-gray-900 mb-3">Durum & Öncelik</h5>
 
@@ -832,7 +940,11 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   <label className="block text-xs text-gray-500 mb-1">Durum</label>
                   <select
                     value={ticket.status}
-                    onChange={(e) => handleStatusUpdate(e.target.value)}
+                    onChange={(e) => {
+                      if (isTicketStatus(e.target.value)) {
+                        handleStatusUpdate(e.target.value);
+                      }
+                    }}
                     disabled={isLoading}
                     className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -850,13 +962,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     {ticket.priority === 'medium' && 'Orta'}
                     {ticket.priority === 'high' && 'Yüksek'}
                     {ticket.priority === 'urgent' && 'Acil'}
+                    {!ticket.priority && '-'}
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Atanan Kişi</label>
                   <select
-                    value={ticket.assigned_to || ''}
+                    value={ticket.assignedTo || ''}
                     onChange={(e) => handleAssignmentUpdate(e.target.value)}
                     disabled={isLoading}
                     className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -864,7 +977,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     <option value="">Atanmamış</option>
                     {adminUsers.map((admin) => (
                       <option key={admin.id} value={admin.id}>
-                        {admin.first_name} {admin.last_name}
+                        {getAdminUserLabel(admin)}
                       </option>
                     ))}
                   </select>
@@ -872,29 +985,31 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Ticket Info */}
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <h5 className="text-sm font-medium text-gray-900 mb-3">Ticket Bilgileri</h5>
 
               <dl className="space-y-2 text-sm">
                 <div>
                   <dt className="text-xs text-gray-500">Müşteri</dt>
-                  <dd className="text-gray-900">{ticket.tenant_name}</dd>
+                  <dd className="text-gray-900">{ticket.tenantName || '-'}</dd>
                 </div>
 
                 <div>
                   <dt className="text-xs text-gray-500">Oluşturulma</dt>
-                  <dd className="text-gray-900">{formatDate(ticket.created_at)}</dd>
+                  <dd className="text-gray-900">{formatDate(ticket.createdAt)}</dd>
                 </div>
 
                 <div>
                   <dt className="text-xs text-gray-500">SLA Bitiş</dt>
-                  <dd className={`${isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '')
-                    ? 'text-red-600 font-medium'
-                    : 'text-gray-900'
-                    }`}>
-                    {formatDate(ticket.sla_due_date)}
-                    {isOverdue(ticket.sla_due_date) && !['resolved', 'closed'].includes(ticket.status || '') && (
+                  <dd
+                    className={`${
+                      isOverdue(ticket.slaDueDate) && !['resolved', 'closed'].includes(ticket.status)
+                        ? 'text-red-600 font-medium'
+                        : 'text-gray-900'
+                    }`}
+                  >
+                    {formatDate(ticket.slaDueDate)}
+                    {isOverdue(ticket.slaDueDate) && !['resolved', 'closed'].includes(ticket.status) && (
                       <span className="block text-xs text-red-500">Gecikmiş</span>
                     )}
                   </dd>
@@ -908,29 +1023,22 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   );
 };
 
-// Create Ticket Modal Component
 interface CreateTicketModalProps {
   onClose: () => void;
-  onCreate: (data: any) => void;
-  adminUsers: AdminUser[];
+  onCreate: (data: CreateTicketFormData) => void;
   isLoading: boolean;
 }
 
-const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
-  onClose,
-  onCreate,
-  adminUsers,
-  isLoading
-}) => {
-  const [formData, setFormData] = useState({
-    subject: '',
+const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ onClose, onCreate, isLoading }) => {
+  const [formData, setFormData] = useState<CreateTicketFormData>({
+    title: '',
     description: '',
     priority: 'medium',
-    category: 'general'
+    category: 'general',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     onCreate(formData);
   };
 
@@ -938,50 +1046,56 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900">
-            Yeni Ticket Oluştur
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <h3 className="text-lg font-medium text-gray-900">Yeni Ticket Oluştur</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="subject" className="block text-sm font-medium text-gray-700">Başlık</label>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              Başlık
+            </label>
             <input
-              id="subject"
+              id="title"
               type="text"
               required
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={formData.subject}
-              onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+              value={formData.title}
+              onChange={(e) => setFormData((current) => ({ ...current, title: e.target.value }))}
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Açıklama</label>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Açıklama
+            </label>
             <textarea
               id="description"
               required
               rows={4}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => setFormData((current) => ({ ...current, description: e.target.value }))}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700">Öncelik</label>
+              <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                Öncelik
+              </label>
               <select
                 id="priority"
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                onChange={(e) => {
+                  const nextPriority = e.target.value;
+                  if (isTicketPriority(nextPriority)) {
+                    setFormData((current): CreateTicketFormData => ({ ...current, priority: nextPriority }));
+                  }
+                }}
               >
                 <option value="low">Düşük</option>
                 <option value="medium">Orta</option>
@@ -991,12 +1105,19 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
             </div>
 
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">Kategori</label>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                Kategori
+              </label>
               <select
                 id="category"
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) => {
+                  const nextCategory = e.target.value;
+                  if (isTicketCategory(nextCategory)) {
+                    setFormData((current): CreateTicketFormData => ({ ...current, category: nextCategory }));
+                  }
+                }}
               >
                 <option value="general">Genel</option>
                 <option value="technical">Teknik</option>

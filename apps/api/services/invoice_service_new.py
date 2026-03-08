@@ -11,8 +11,9 @@ Invoice service for new invoice system.
 Handles business logic for incoming/outgoing invoices.
 MAX 500 LOC per project rules.
 """
+import json
 import logging
-from typing import Optional, List, Dict
+from typing import Any, Optional, List, Dict
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy.orm import Session
@@ -39,6 +40,40 @@ class InvoiceServiceNew:
     
     def __init__(self, db: Session):
         self.db = db
+
+    @staticmethod
+    def _raw_payload(invoice: PurchaseInvoice) -> dict[str, Any]:
+        raw = invoice.raw_data or {}
+        if isinstance(raw, dict):
+            return raw
+        if isinstance(raw, str):
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception:
+                return {}
+        return {}
+
+    @staticmethod
+    def _document_metadata(raw: dict[str, Any]) -> dict[str, str]:
+        system_type = str(
+            raw.get("systemType")
+            or raw.get("systemTypeCode")
+            or raw.get("documentType")
+            or raw.get("document_type")
+            or "EFATURA"
+        ).strip() or "EFATURA"
+        profile_id = str(raw.get("profileId") or raw.get("ProfileId") or raw.get("profile_id") or "").strip()
+        invoice_type_code = str(raw.get("invoiceTypeCode") or raw.get("InvoiceTypeCode") or raw.get("invoiceType") or "").strip()
+        document_kind = "despatch" if system_type == "EIRSALIYE" or profile_id == "TEMELIRSALIYE" or invoice_type_code == "SEVK" else "invoice"
+        return {
+            "document_kind": document_kind,
+            "document_kind_label": "E-İrsaliye" if document_kind == "despatch" else ("E-Arşiv" if system_type == "EARSIV" else "E-Fatura"),
+            "system_type_code": system_type,
+            "profile_id": profile_id,
+            "invoice_type_code": invoice_type_code,
+        }
     
     def list_incoming_invoices(
         self,
@@ -83,6 +118,8 @@ class InvoiceServiceNew:
         # Convert to response format
         invoice_responses = []
         for invoice in invoices:
+            raw = self._raw_payload(invoice)
+            meta = self._document_metadata(raw)
             # Map DB status to enum
             status_val = (invoice.status or "RECEIVED").upper()
             try:
@@ -99,6 +136,11 @@ class InvoiceServiceNew:
                 total_amount=invoice.total_amount or Decimal("0"),
                 currency=invoice.currency or "TRY",
                 status=inv_status,
+                document_kind=meta["document_kind"],
+                document_kind_label=meta["document_kind_label"],
+                invoice_type_code=meta["invoice_type_code"] or None,
+                profile_id=meta["profile_id"] or None,
+                system_type_code=meta["system_type_code"] or None,
                 is_converted_to_purchase=invoice.is_matched or False,
                 purchase_id=invoice.purchase_id,
                 created_at=invoice.created_at
@@ -186,6 +228,8 @@ class InvoiceServiceNew:
         for invoice in invoices:
             invoice_total = invoice.total_amount or Decimal("0")
             total_amount += invoice_total
+            raw = self._raw_payload(invoice)
+            meta = self._document_metadata(raw)
             
             # For OUTGOING, sender_name = receiver/customer name (set during sync)
             status_val = (invoice.status or "SENT").upper()
@@ -198,7 +242,6 @@ class InvoiceServiceNew:
                 except KeyError:
                     inv_status = InvoiceStatus.SENT
             
-            raw = invoice.raw_data or {}
             invoice_responses.append(OutgoingInvoiceResponse(
                 invoice_id=str(invoice.id),
                 party_id="",
@@ -210,6 +253,11 @@ class InvoiceServiceNew:
                 total_amount=invoice_total,
                 paid_amount=Decimal("0"),
                 status=inv_status,
+                document_kind=meta["document_kind"],
+                document_kind_label=meta["document_kind_label"],
+                invoice_type_code=meta["invoice_type_code"] or None,
+                profile_id=meta["profile_id"] or None,
+                system_type_code=meta["system_type_code"] or None,
                 can_create_proforma=False,
                 created_at=invoice.created_at
             ))

@@ -5,7 +5,7 @@ import { AdminMobileHeader } from './AdminMobileHeader'
 import { AdminMobileNav } from './AdminMobileNav'
 import { AdminBottomNav } from './AdminBottomNav'
 import { NotificationCenter } from './NotificationCenter'
-import { Search, Bot, Command } from 'lucide-react'
+import { Search, Bot } from 'lucide-react'
 import { ComposerOverlay } from '../ai/ComposerOverlay'
 import { useComposerStore } from '../../stores/composerStore'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
@@ -20,7 +20,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { toggleOpen } = useComposerStore()
-    const { isMobile, isTablet, isDesktop } = useAdminResponsive()
+    const { isMobile, isTablet } = useAdminResponsive()
 
     // Keyboard shortcut (Cmd+K)
     useEffect(() => {
@@ -137,4 +137,3 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
     )
 }
-

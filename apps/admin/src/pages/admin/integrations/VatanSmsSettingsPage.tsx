@@ -1,8 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { useListAdminIntegrationVatanSmConfig, useUpdateAdminIntegrationVatanSmConfig } from '@/lib/api-client';
+import {
+    useListAdminIntegrationVatanSmConfig,
+    useUpdateAdminIntegrationVatanSmConfig,
+    type IntegrationDetailResponse,
+    type VatanSmsConfigUpdate,
+} from '@/lib/api-client';
 import { EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+
+const DEFAULT_SUBJECT = '[X-Ear CRM] {{tenant_name}} - Yeni Belge Onayı';
+const DEFAULT_BODY = '<h3>Merhaba,</h3><p>{{tenant_name}} adlı müşterimiz yeni belge yükledi.</p><p><strong>Belge Türleri:</strong> {{document_types}}</p><p><strong>Yükleyen:</strong> {{uploaded_by}}</p><p><strong>Tarih:</strong> {{uploaded_at}}</p><p>İyi çalışmalar,<br>X-Ear CRM Sistemi</p>';
+
+interface EmailTemplateConfig {
+    emailSubject?: string;
+    emailBodyHtml?: string;
+}
+
+interface VatanSmsConfigView {
+    approvalEmail: string;
+    emailTemplate?: EmailTemplateConfig;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getString(value: unknown, fallback = ''): string {
+    return typeof value === 'string' ? value : fallback;
+}
+
+function getConfigView(data: IntegrationDetailResponse | undefined): VatanSmsConfigView {
+    const source = isRecord(data?.data) ? data.data : null;
+    const emailTemplateSource = isRecord(source?.emailTemplate) ? source.emailTemplate : null;
+
+    return {
+        approvalEmail: getString(source?.approvalEmail),
+        emailTemplate: {
+            emailSubject: getString(emailTemplateSource?.emailSubject, DEFAULT_SUBJECT),
+            emailBodyHtml: getString(emailTemplateSource?.emailBodyHtml, DEFAULT_BODY),
+        },
+    };
+}
 
 const VatanSmsSettingsPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
@@ -12,26 +51,27 @@ const VatanSmsSettingsPage: React.FC = () => {
     const [approvalEmail, setApprovalEmail] = useState('');
     const [emailSubject, setEmailSubject] = useState('');
     const [emailBody, setEmailBody] = useState('');
+    const configView = getConfigView(configData);
 
     useEffect(() => {
-        if ((configData as any)?.data) {
-            setApprovalEmail((configData as any).data.approvalEmail || '');
-            setEmailSubject((configData as any).data.emailTemplate?.emailSubject || '[X-Ear CRM] {{tenant_name}} - Yeni Belge Onayı');
-            setEmailBody((configData as any).data.emailTemplate?.emailBodyHtml || '<h3>Merhaba,</h3><p>{{tenant_name}} adlı müşterimiz yeni belge yükledi.</p><p><strong>Belge Türleri:</strong> {{document_types}}</p><p><strong>Yükleyen:</strong> {{uploaded_by}}</p><p><strong>Tarih:</strong> {{uploaded_at}}</p><p>İyi çalışmalar,<br>X-Ear CRM Sistemi</p>');
-        }
-    }, [configData]);
+        setApprovalEmail(configView.approvalEmail);
+        setEmailSubject(configView.emailTemplate?.emailSubject ?? DEFAULT_SUBJECT);
+        setEmailBody(configView.emailTemplate?.emailBodyHtml ?? DEFAULT_BODY);
+    }, [configView]);
 
     const handleSave = async () => {
         try {
-            await updateMutation.mutateAsync({
-                data: {
-                    approvalEmail,
-                    emailTemplate: {
-                        name: 'VatanSMS Document Approval',
-                        emailSubject,
-                        emailBodyHtml: emailBody
-                    }
+            const payload: VatanSmsConfigUpdate = {
+                approvalEmail,
+                emailTemplate: {
+                    name: 'VatanSMS Document Approval',
+                    emailSubject,
+                    emailBodyHtml: emailBody
                 }
+            };
+
+            await updateMutation.mutateAsync({
+                data: payload
             });
             toast.success('VatanSMS ayarları başarıyla kaydedildi');
         } catch (error) {
@@ -153,9 +193,9 @@ const VatanSmsSettingsPage: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => {
-                            setApprovalEmail((configData as any)?.data?.approvalEmail || '');
-                            setEmailSubject((configData as any)?.data?.emailTemplate?.emailSubject || '');
-                            setEmailBody((configData as any)?.data?.emailTemplate?.emailBodyHtml || '');
+                            setApprovalEmail(configView.approvalEmail);
+                            setEmailSubject(configView.emailTemplate?.emailSubject ?? DEFAULT_SUBJECT);
+                            setEmailBody(configView.emailTemplate?.emailBodyHtml ?? DEFAULT_BODY);
                         }}
                         className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >

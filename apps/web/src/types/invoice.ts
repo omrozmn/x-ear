@@ -757,6 +757,7 @@ export interface SpecialProfileDetailsData {
   passengerNationality?: string;
   taxRepresentativeName?: string;
   taxRepresentativeTaxId?: string;
+  taxRepresentativeLabel?: string;
   refundBankIban?: string;
   otvCode?: string;
   otvRate?: number;

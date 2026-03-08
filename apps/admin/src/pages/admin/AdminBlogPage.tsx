@@ -3,7 +3,9 @@ import {
     useListAdminPosts,
     useDeleteAdminPost,
     useUpdateAdminPost,
-    useCreateAdminPost
+    useCreateAdminPost,
+    type BlogListResponse,
+    type BlogPost,
 } from '@/lib/api-client';
 import {
     PlusIcon,
@@ -27,9 +29,9 @@ const AdminBlogPage: React.FC = () => {
     const [limit, setLimit] = useState(10);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedPost, setSelectedPost] = useState<any>(null);
+    const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [postToDelete, setPostToDelete] = useState<any>(null);
+    const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
 
     const { data: postsData, isLoading, refetch } = useListAdminPosts({
         page,
@@ -46,7 +48,7 @@ const AdminBlogPage: React.FC = () => {
     });
 
     // Handle flat array response or wrapped response
-    let posts = [];
+    let posts: BlogPost[] = [];
     if (Array.isArray(postsData)) {
         posts = postsData;
     } else if (postsData?.data && Array.isArray(postsData.data)) {
@@ -55,10 +57,10 @@ const AdminBlogPage: React.FC = () => {
         posts = postsData.posts;
     }
 
-    const pagination = (postsData as any)?.pagination;
+    const pagination = Array.isArray(postsData) ? undefined : (postsData as BlogListResponse | undefined)?.pagination;
     const totalPages = pagination?.totalPages || 1;
 
-    const handleDeleteClick = (post: any) => {
+    const handleDeleteClick = (post: BlogPost) => {
         setPostToDelete(post);
         setIsDeleteModalOpen(true);
     };
@@ -71,9 +73,9 @@ const AdminBlogPage: React.FC = () => {
         }
     };
 
-    const togglePublish = async (post: any) => {
+    const togglePublish = async (post: BlogPost) => {
         await updatePost.mutateAsync({
-            postId: post.id,
+            postId: String(post.id),
             data: { is_published: !post.is_published }
         });
     };
@@ -82,7 +84,7 @@ const AdminBlogPage: React.FC = () => {
         {
             key: 'title',
             header: 'Başlık',
-            render: (post: any) => (
+            render: (post: BlogPost) => (
                 <div className="flex flex-col">
                     <span className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-xs">{post.title}</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">/{post.slug}</span>
@@ -93,7 +95,7 @@ const AdminBlogPage: React.FC = () => {
             key: 'category',
             header: 'Kategori',
             mobileHidden: true,
-            render: (post: any) => (
+            render: (post: BlogPost) => (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                     {post.category || 'Genel'}
                 </span>
@@ -102,7 +104,7 @@ const AdminBlogPage: React.FC = () => {
         {
             key: 'status',
             header: 'Durum',
-            render: (post: any) => (
+            render: (post: BlogPost) => (
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${post.is_published
                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                     : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
@@ -116,7 +118,7 @@ const AdminBlogPage: React.FC = () => {
             key: 'date',
             header: 'Tarih',
             mobileHidden: true,
-            render: (post: any) => (
+            render: (post: BlogPost) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                     {post.published_at ? new Date(post.published_at).toLocaleDateString('tr-TR') : 'Yayınlanmadı'}
                 </span>
@@ -125,7 +127,7 @@ const AdminBlogPage: React.FC = () => {
         {
             key: 'actions',
             header: '',
-            render: (post: any) => (
+            render: (post: BlogPost) => (
                 <div className="flex items-center justify-end gap-2">
                     <button
                         onClick={() => togglePublish(post)}
@@ -315,22 +317,35 @@ const AdminBlogPage: React.FC = () => {
 };
 
 // Comprehensive Post Modal for Create and Edit
-const PostModal = ({ post, onClose, onSuccess }: { post?: any, onClose: () => void, onSuccess: () => void }) => {
+interface BlogPostFormData {
+    title: string;
+    slug: string;
+    content: string;
+    category: string;
+    excerpt: string;
+    imageUrl: string;
+    metaTitle: string;
+    metaDescription: string;
+    metaKeywords: string;
+    isPublished: boolean;
+}
+
+const PostModal = ({ post, onClose, onSuccess }: { post?: BlogPost, onClose: () => void, onSuccess: () => void }) => {
     const isEdit = !!post;
     const createPost = useCreateAdminPost({ onSuccess });
     const updatePost = useUpdateAdminPost({ onSuccess });
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<BlogPostFormData>({
         title: post?.title || '',
         slug: post?.slug || '',
-        content: post?.content || '',
+        content: typeof post?.content === 'string' ? post.content : '',
         category: post?.category || 'Duyurular',
-        excerpt: post?.excerpt || '',
-        imageUrl: post?.imageUrl || '',
-        metaTitle: post?.metaTitle || '',
-        metaDescription: post?.metaDescription || '',
-        metaKeywords: post?.metaKeywords || '',
-        isPublished: post?.isPublished ?? false
+        excerpt: typeof post?.excerpt === 'string' ? post.excerpt : '',
+        imageUrl: typeof post?.imageUrl === 'string' ? post.imageUrl : '',
+        metaTitle: typeof post?.metaTitle === 'string' ? post.metaTitle : '',
+        metaDescription: typeof post?.metaDescription === 'string' ? post.metaDescription : '',
+        metaKeywords: typeof post?.metaKeywords === 'string' ? post.metaKeywords : '',
+        isPublished: typeof post?.isPublished === 'boolean' ? post.isPublished : false
     });
 
     // Auto-generate slug from title if not editing an existing slug
@@ -356,7 +371,7 @@ const PostModal = ({ post, onClose, onSuccess }: { post?: any, onClose: () => vo
 
         if (isEdit) {
             await updatePost.mutateAsync({
-                postId: post.id,
+                postId: String(post.id),
                 data: payload
             });
         } else {

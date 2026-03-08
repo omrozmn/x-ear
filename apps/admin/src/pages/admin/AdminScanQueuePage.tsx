@@ -3,6 +3,7 @@ import {
     useListAdminScanQueue,
     useCreateAdminScanQueueRetry
 } from '@/lib/api-client';
+import type { ResponseEnvelopeListScanQueueRead, ScanQueueRead } from '@/api/generated/schemas';
 import {
     RefreshCw,
     Clock,
@@ -15,6 +16,18 @@ import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getQueueItems(data: ResponseEnvelopeListScanQueueRead | undefined): ScanQueueRead[] {
+    if (!Array.isArray(data?.data)) {
+        return [];
+    }
+
+    return data.data.filter((item): item is ScanQueueRead => isRecord(item) && typeof item.id === 'string');
+}
+
 const AdminScanQueuePage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const [statusFilter, setStatusFilter] = useState('');
@@ -24,7 +37,7 @@ const AdminScanQueuePage: React.FC = () => {
     );
     const retryMutation = useCreateAdminScanQueueRetry();
 
-    const queueItems = (queueData as any)?.data || [];
+    const queueItems = getQueueItems(queueData);
 
     const handleRetry = async (id: string) => {
         try {
@@ -53,7 +66,7 @@ const AdminScanQueuePage: React.FC = () => {
         {
             key: 'id',
             header: 'ID / Tenant',
-            render: (item: any) => (
+            render: (item: ScanQueueRead) => (
                 <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{item.id}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">{item.tenantId.substring(0, 8)}...</div>
@@ -63,18 +76,18 @@ const AdminScanQueuePage: React.FC = () => {
         {
             key: 'status',
             header: 'Durum',
-            render: (item: any) => getStatusBadge(item.status)
+            render: (item: ScanQueueRead) => getStatusBadge(item.status || 'pending')
         },
         {
             key: 'priority',
             header: 'Öncelik',
             mobileHidden: true,
-            render: (item: any) => (
+            render: (item: ScanQueueRead) => (
                 <span className={`text-xs font-medium ${
                     item.priority === 'high' ? 'text-red-600 dark:text-red-400' :
                     item.priority === 'low' ? 'text-gray-500 dark:text-gray-400' : 'text-blue-600 dark:text-blue-400'
                 }`}>
-                    {item.priority.toUpperCase()}
+                    {(item.priority || 'normal').toUpperCase()}
                 </span>
             )
         },
@@ -82,7 +95,7 @@ const AdminScanQueuePage: React.FC = () => {
             key: 'details',
             header: 'Detaylar',
             mobileHidden: true,
-            render: (item: any) => (
+            render: (item: ScanQueueRead) => (
                 <div>
                     <div className="text-sm text-gray-900 dark:text-white">Polygon: {item.polygonCount || '-'}</div>
                     {item.errorMessage && (
@@ -98,7 +111,7 @@ const AdminScanQueuePage: React.FC = () => {
             key: 'renderTimeMs',
             header: 'Süre',
             mobileHidden: true,
-            render: (item: any) => (
+            render: (item: ScanQueueRead) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                     {item.renderTimeMs ? `${(item.renderTimeMs / 1000).toFixed(2)}s` : '-'}
                 </span>
@@ -107,7 +120,7 @@ const AdminScanQueuePage: React.FC = () => {
         {
             key: 'actions',
             header: 'İşlemler',
-            render: (item: any) => (
+            render: (item: ScanQueueRead) => (
                 item.status === 'failed' ? (
                     <button
                         onClick={() => handleRetry(item.id)}
@@ -180,7 +193,7 @@ const AdminScanQueuePage: React.FC = () => {
                     <ResponsiveTable
                         data={queueItems}
                         columns={columns}
-                        keyExtractor={(item: any) => item.id}
+                        keyExtractor={(item: ScanQueueRead) => item.id}
                         emptyMessage="Kuyrukta işlem yok"
                     />
                 )}

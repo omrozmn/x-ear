@@ -187,52 +187,33 @@ export function KillSwitchRecommendation({
   
   // Filter to high-severity unacknowledged alerts
   const criticalAlerts = getHighSeverityAlerts(alerts);
-  
-  // Don't render if:
-  // - No critical alerts
-  // - Banner is dismissed
-  // - Global kill switch is already active
-  if (
-    criticalAlerts.length === 0 ||
-    isDismissed ||
-    status?.global_switch.active
-  ) {
-    return null;
-  }
-  
-  // Count by severity
+  const isGlobalSwitchActive = status?.global_switch.active ?? false;
   const criticalCount = criticalAlerts.filter((a) => a.severity === 'critical').length;
   const errorCount = criticalAlerts.filter((a) => a.severity === 'error').length;
-  
+  const isLoading = isActivating || isKillSwitchLoading || isAcknowledging;
+
   /**
    * Handles kill switch activation with auto-acknowledgment
    */
   const handleActivateKillSwitch = useCallback(async () => {
     setIsActivating(true);
-    
+
     try {
-      // Generate reason from alerts
       const reason = generateKillSwitchReason(criticalAlerts);
-      
-      // Activate global kill switch
+
       await activateGlobal(reason);
-      
-      // Auto-acknowledge all related alerts
+
       const acknowledgePromises = criticalAlerts.map((alert) =>
         acknowledge(alert.alert_id, 'Auto-acknowledged on kill switch activation')
           .catch((err) => {
             console.error(`Failed to acknowledge alert ${alert.alert_id}:`, err);
           })
       );
-      
+
       await Promise.allSettled(acknowledgePromises);
-      
+
       toast.success('Global kill switch aktive edildi ve ilgili alertler onaylandı');
-      
-      // Call optional callback
       onActivate?.();
-      
-      // Dismiss the banner
       setIsDismissed(true);
     } catch (error) {
       console.error('Failed to activate kill switch:', error);
@@ -241,23 +222,27 @@ export function KillSwitchRecommendation({
       setIsActivating(false);
     }
   }, [criticalAlerts, activateGlobal, acknowledge, onActivate]);
-  
-  /**
-   * Handles banner dismissal
-   */
+
   const handleDismiss = useCallback(() => {
     setIsDismissed(true);
   }, []);
-  
-  /**
-   * Toggles alert list expansion
-   */
+
   const handleToggleExpand = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
   
-  const isLoading = isActivating || isKillSwitchLoading || isAcknowledging;
-  
+  // Don't render if:
+  // - No critical alerts
+  // - Banner is dismissed
+  // - Global kill switch is already active
+  if (
+    criticalAlerts.length === 0 ||
+    isDismissed ||
+    isGlobalSwitchActive
+  ) {
+    return null;
+  }
+
   return (
     <div
       className={`

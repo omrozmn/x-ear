@@ -32,16 +32,17 @@ if (typeof window !== 'undefined') {
     const originalRemoveItem = window.localStorage.removeItem;
     const originalClear = window.localStorage.clear;
 
-    window.localStorage.removeItem = function (key) {
+    window.localStorage.removeItem = function (...args: [string]) {
+        const [key] = args;
         if (key === 'admin_token') {
             console.error('[TRAP] localStorage.removeItem("admin_token") called!', new Error().stack);
         }
-        return originalRemoveItem.apply(this, arguments as any);
+        return originalRemoveItem.apply(this, args);
     };
 
-    window.localStorage.clear = function () {
+    window.localStorage.clear = function (...args: []) {
         console.error('[TRAP] localStorage.clear() called!', new Error().stack);
-        return originalClear.apply(this, arguments as any);
+        return originalClear.apply(this, args);
     };
 }
 // --- DEBUG TRAP END ---

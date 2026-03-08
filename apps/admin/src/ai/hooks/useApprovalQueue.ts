@@ -45,41 +45,43 @@ interface ApprovalActionResponse {
   message?: string;
 }
 
+interface ApprovalQueueApiItem {
+  id: string;
+  action_id: string;
+  risk_level: PendingApprovalItem['risk_level'];
+  risk_reasoning?: string;
+  tenant_id: string;
+  user_id: string;
+  created_at: string;
+  expires_at: string;
+  status: string;
+}
+
+interface ApprovalQueueApiResponse {
+  items: ApprovalQueueApiItem[];
+  total: number;
+}
+
 /**
  * Fetches pending approvals from the backend
  */
 async function fetchApprovalQueue(tenantId?: string): Promise<ApprovalQueueResponse> {
   const params = tenantId ? { tenant_id: tenantId } : undefined;
 
-  const response = await adminApi<{
-    items: Array<{
-      id: string;
-      action_id: string;
-      risk_level: string;
-      risk_reasoning?: string;
-      tenant_id: string;
-      user_id: string;
-      created_at: string;
-      expires_at: string;
-      status: string;
-    }>;
-    total: number;
-  }>({
+  const actualData = await adminApi<ApprovalQueueApiResponse>({
     url: '/ai/admin/pending-approvals',
     method: 'GET',
     params,
   });
-
-  const actualData = (response as any).data || response;
-  const rawItems = actualData.items || (Array.isArray(actualData) ? actualData : []);
+  const rawItems = actualData.items ?? [];
 
   // Transform backend response to frontend types
-  const items: PendingApprovalItem[] = rawItems.map((item: any) => ({
+  const items: PendingApprovalItem[] = rawItems.map((item) => ({
     action_id: item.action_id,
     plan_id: item.id, // Using queue item id as plan_id
     tenant_id: item.tenant_id,
     user_id: item.user_id,
-    risk_level: item.risk_level as 'low' | 'medium' | 'high' | 'critical',
+    risk_level: item.risk_level,
     steps_count: 0, // Not provided by backend, will be fetched in detail view
     steps_summary: [], // Not provided by backend, will be fetched in detail view
     created_at: item.created_at,

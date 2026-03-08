@@ -24,8 +24,72 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { Helmet } from 'react-helmet-async';
-import { useGetAdminAnalytics } from '@/lib/api-client';
+import {
+  useGetAdminAnalytics,
+  type AdminAnalyticsData,
+  type AdminAnalyticsDataDomainMetrics,
+  type ResponseEnvelopeAdminAnalyticsData,
+} from '@/lib/api-client';
 import { useAdminResponsive } from '@/hooks';
+
+interface DomainMetricPoint {
+  month: string;
+  count: number;
+  approved?: number;
+}
+
+type PieChartDatum = {
+  name: string;
+  value: number;
+  color: string;
+};
+
+interface DomainMetricsView {
+  sgkSubmissions: DomainMetricPoint[];
+  deviceFittings: DomainMetricPoint[];
+  appointmentConversion: number;
+  avgFittingTime: number;
+  totalPatientsFitted: number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Bir hata oluştu';
+}
+
+function getMetricPoints(value: unknown): DomainMetricPoint[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(isRecord)
+    .map((item) => ({
+      month: typeof item.month === 'string' ? item.month : '',
+      count: typeof item.count === 'number' ? item.count : 0,
+      approved: typeof item.approved === 'number' ? item.approved : undefined,
+    }))
+    .filter((item) => item.month !== '');
+}
+
+function getDomainMetrics(value: AdminAnalyticsDataDomainMetrics | undefined): DomainMetricsView {
+  const source = isRecord(value) ? value : null;
+
+  return {
+    sgkSubmissions: getMetricPoints(source?.sgkSubmissions),
+    deviceFittings: getMetricPoints(source?.deviceFittings),
+    appointmentConversion: typeof source?.appointmentConversion === 'number' ? source.appointmentConversion : 0,
+    avgFittingTime: typeof source?.avgFittingTime === 'number' ? source.avgFittingTime : 0,
+    totalPatientsFitted: typeof source?.totalPatientsFitted === 'number' ? source.totalPatientsFitted : 0,
+  };
+}
+
+function getAnalyticsData(data: ResponseEnvelopeAdminAnalyticsData | undefined): AdminAnalyticsData | null {
+  return data?.data ?? null;
+}
 
 const Analytics: React.FC = () => {
   const { isMobile } = useAdminResponsive();
@@ -34,14 +98,14 @@ const Analytics: React.FC = () => {
   const [selectedMetric, setSelectedMetric] = useState('revenue');
 
   // Fetch analytics data
-  const { data: analyticsData, isLoading, error } = useGetAdminAnalytics({
-    metric: selectedMetric
-  } as any);
-
-  // Robust Data Extraction: Handle wrapping and potential stale backend structure
-  const rawData = analyticsData as any;
-  const unwrapped = rawData?.data || rawData;
-  const data = unwrapped?.metrics || unwrapped;
+  const { data: analyticsResponse, isLoading, error } = useGetAdminAnalytics();
+  const data = getAnalyticsData(analyticsResponse);
+  const domainMetrics = getDomainMetrics(data?.domainMetrics);
+  const planDistributionData: PieChartDatum[] = (data?.planDistribution ?? []).map((item) => ({
+    name: item.name,
+    value: item.value,
+    color: item.color,
+  }));
 
   const handleExport = () => {
     console.log('Exporting analytics data...');
@@ -71,14 +135,9 @@ const Analytics: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6 text-center text-red-600 bg-red-50 m-4 rounded-lg border border-red-200">
+        <div className="p-6 text-center text-red-600 bg-red-50 m-4 rounded-lg border border-red-200">
         <h3 className="font-bold text-lg">Veriler Yüklenemedi</h3>
-        <p className="mt-2">{(error as any)?.message || 'Bir hata oluştu'}</p>
-        <p className="text-xs mt-1 font-mono text-red-500">
-          {typeof (error as any)?.response?.data?.error === 'object'
-            ? JSON.stringify((error as any)?.response?.data?.error)
-            : (error as any)?.response?.data?.error || ''}
-        </p>
+        <p className="mt-2">{getErrorMessage(error)}</p>
       </div>
     );
   }
@@ -91,7 +150,7 @@ const Analytics: React.FC = () => {
 
       {/* Debug Bar: Veri durumunu kontrol etmek için */}
       <div className="bg-yellow-50 p-1 text-[10px] text-gray-400 text-center border-b border-yellow-100 font-mono">
-        DEBUG: Trend={data?.revenue_trend?.length} | Plans={data?.plan_distribution?.length} | Engagement={data?.user_engagement?.length} | Rev={data?.overview?.total_revenue}
+        DEBUG: Trend={data?.revenueTrend.length} | Plans={data?.planDistribution.length} | Engagement={data?.userEngagement.length} | Rev={data?.overview.totalRevenue}
       </div>
 
       <div className={isMobile ? 'p-4 pb-safe max-w-7xl mx-auto space-y-6' : 'p-6 max-w-7xl mx-auto space-y-6'}>
@@ -150,19 +209,19 @@ const Analytics: React.FC = () => {
                   <dt className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400 truncate`}>Toplam Gelir</dt>
                   <dd className="flex items-baseline">
                     <div className={`${isMobile ? 'text-base' : 'text-2xl'} font-semibold text-gray-900 dark:text-white`}>
-                      {formatCurrency(data?.overview?.total_revenue || 0)}
+                      {formatCurrency(data?.overview.totalRevenue || 0)}
                     </div>
                     {!isMobile && (
-                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview?.revenue_growth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {(data?.overview?.revenue_growth || 0) >= 0 ? (
+                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview.revenueGrowth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {(data?.overview.revenueGrowth || 0) >= 0 ? (
                           <ArrowTrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-green-500" aria-hidden="true" />
                         ) : (
                           <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                         )}
                         <span className="sr-only">
-                          {(data?.overview?.revenue_growth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
+                          {(data?.overview.revenueGrowth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
                         </span>
-                        {Math.abs(data?.overview?.revenue_growth || 0)}%
+                        {Math.abs(data?.overview.revenueGrowth || 0)}%
                       </div>
                     )}
                   </dd>
@@ -182,19 +241,19 @@ const Analytics: React.FC = () => {
                   <dt className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400 truncate`}>Aktif Aboneler</dt>
                   <dd className="flex items-baseline">
                     <div className={`${isMobile ? 'text-base' : 'text-2xl'} font-semibold text-gray-900 dark:text-white`}>
-                      {formatNumber(data?.overview?.active_tenants || 0)}
+                      {formatNumber(data?.overview.activeTenants || 0)}
                     </div>
                     {!isMobile && (
-                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview?.tenants_growth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {(data?.overview?.tenants_growth || 0) >= 0 ? (
+                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview.tenantsGrowth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {(data?.overview.tenantsGrowth || 0) >= 0 ? (
                           <ArrowTrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-green-500" aria-hidden="true" />
                         ) : (
                           <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                         )}
                         <span className="sr-only">
-                          {(data?.overview?.tenants_growth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
+                          {(data?.overview.tenantsGrowth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
                         </span>
-                        {Math.abs(data?.overview?.tenants_growth || 0)}%
+                        {Math.abs(data?.overview.tenantsGrowth || 0)}%
                       </div>
                     )}
                   </dd>
@@ -214,19 +273,19 @@ const Analytics: React.FC = () => {
                   <dt className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400 truncate`}>{isMobile ? 'AAK' : 'Aylık Aktif Kullanıcılar'}</dt>
                   <dd className="flex items-baseline">
                     <div className={`${isMobile ? 'text-base' : 'text-2xl'} font-semibold text-gray-900 dark:text-white`}>
-                      {formatNumber(data?.overview?.monthly_active_users || 0)}
+                      {formatNumber(data?.overview.monthlyActiveUsers || 0)}
                     </div>
                     {!isMobile && (
-                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview?.mau_growth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {(data?.overview?.mau_growth || 0) >= 0 ? (
+                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview.mauGrowth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {(data?.overview.mauGrowth || 0) >= 0 ? (
                           <ArrowTrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-green-500" aria-hidden="true" />
                         ) : (
                           <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                         )}
                         <span className="sr-only">
-                          {(data?.overview?.mau_growth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
+                          {(data?.overview.mauGrowth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
                         </span>
-                        {Math.abs(data?.overview?.mau_growth || 0)}%
+                        {Math.abs(data?.overview.mauGrowth || 0)}%
                       </div>
                     )}
                   </dd>
@@ -246,19 +305,19 @@ const Analytics: React.FC = () => {
                   <dt className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400 truncate`}>{isMobile ? 'Kayıp' : 'Kayıp Oranı (Churn)'}</dt>
                   <dd className="flex items-baseline">
                     <div className={`${isMobile ? 'text-base' : 'text-2xl'} font-semibold text-gray-900 dark:text-white`}>
-                      {data?.overview?.churn_rate || 0}%
+                      {data?.overview.churnRate || 0}%
                     </div>
                     {!isMobile && (
-                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview?.churn_growth || 0) <= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {(data?.overview?.churn_growth || 0) <= 0 ? (
+                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${(data?.overview.churnGrowth || 0) <= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {(data?.overview.churnGrowth || 0) <= 0 ? (
                           <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-green-500" aria-hidden="true" />
                         ) : (
                           <ArrowTrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                         )}
                         <span className="sr-only">
-                          {(data?.overview?.churn_growth || 0) <= 0 ? 'Azaldı' : 'Arttı'}
+                          {(data?.overview.churnGrowth || 0) <= 0 ? 'Azaldı' : 'Arttı'}
                         </span>
-                        {Math.abs(data?.overview?.churn_growth || 0)}%
+                        {Math.abs(data?.overview.churnGrowth || 0)}%
                       </div>
                     )}
                   </dd>
@@ -276,7 +335,7 @@ const Analytics: React.FC = () => {
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Gelir Trendi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
-                  <AreaChart data={(data?.revenue_trend || []) as any[]}>
+                  <AreaChart data={data?.revenueTrend || []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -300,7 +359,7 @@ const Analytics: React.FC = () => {
                 <ResponsiveContainer width="100%" height={320}>
                   <PieChart>
                     <Pie
-                      data={(data?.plan_distribution || []) as any[]}
+                      data={planDistributionData}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
@@ -309,7 +368,7 @@ const Analytics: React.FC = () => {
                       dataKey="value"
                       label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     >
-                      {data?.plan_distribution?.map((entry: any, index: number) => (
+                      {planDistributionData.map((entry, index: number) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -329,7 +388,7 @@ const Analytics: React.FC = () => {
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Kullanıcı Etkileşimi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
-                  <LineChart data={(data?.user_engagement || []) as any[]}>
+                  <LineChart data={data?.userEngagement || []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="date" />
                     <YAxis />
@@ -348,7 +407,7 @@ const Analytics: React.FC = () => {
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Gelir Büyümesi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={(data?.revenue_trend || []) as any[]}>
+                  <BarChart data={data?.revenueTrend || []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -369,7 +428,7 @@ const Analytics: React.FC = () => {
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">SGK Başvuru Durumu</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={(data?.domain_metrics?.sgk_submissions || []) as any[]}>
+                  <BarChart data={domainMetrics.sgkSubmissions}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -387,7 +446,7 @@ const Analytics: React.FC = () => {
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Cihaz Uygulama Trendi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
-                  <AreaChart data={(data?.domain_metrics?.device_fittings || []) as any[]}>
+                  <AreaChart data={domainMetrics.deviceFittings}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -405,7 +464,7 @@ const Analytics: React.FC = () => {
           <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3' : 'p-6'} rounded-lg shadow flex items-center justify-between`}>
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400`}>Randevu Dönüşüm</p>
-              <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>%{data?.domain_metrics?.appointment_conversion}</p>
+              <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>%{domainMetrics.appointmentConversion}</p>
             </div>
             <div className={`${isMobile ? 'p-2' : 'p-3'} bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400`}>
               <ArrowTrendingUpIcon className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
@@ -414,7 +473,7 @@ const Analytics: React.FC = () => {
           <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3' : 'p-6'} rounded-lg shadow flex items-center justify-between`}>
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400`}>Ort. Uygulama</p>
-              <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>{data?.domain_metrics?.avg_fitting_time} dk</p>
+              <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>{domainMetrics.avgFittingTime} dk</p>
             </div>
             <div className={`${isMobile ? 'p-2' : 'p-3'} bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400`}>
               <UsersIcon className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
@@ -423,7 +482,7 @@ const Analytics: React.FC = () => {
           <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3 col-span-2' : 'p-6'} rounded-lg shadow flex items-center justify-between`}>
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400`}>Toplam Cihazlanan</p>
-              <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>{data?.domain_metrics?.total_patients_fitted}</p>
+              <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>{domainMetrics.totalPatientsFitted}</p>
             </div>
             <div className={`${isMobile ? 'p-2' : 'p-3'} bg-purple-100 dark:bg-purple-900/30 rounded-full text-purple-600 dark:text-purple-400`}>
               <UsersIcon className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
@@ -456,7 +515,7 @@ const Analytics: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {data?.top_tenants?.map((tenant: any) => (
+                  {data?.topTenants.map((tenant) => (
                     <tr key={tenant.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         {tenant.name}

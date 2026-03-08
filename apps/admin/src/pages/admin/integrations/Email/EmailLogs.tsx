@@ -188,46 +188,42 @@ const EmailLogs: React.FC = () => {
     },
   ];
 
-  // Render expanded row content
-  const renderExpandedRow = (log: EmailLog) => {
+  const renderExpandedDetails = (log: EmailLog) => {
     if (!expandedRows.has(log.id)) return null;
 
     return (
-      <tr key={`${log.id}-expanded`}>
-        <td colSpan={8} className="px-6 py-4 bg-gray-50">
-          <div className="space-y-3">
-            {/* Body Preview */}
-            {log.bodyPreview && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-1">İçerik Önizleme:</h4>
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">{typeof log.bodyPreview === 'string' ? log.bodyPreview : JSON.stringify(log.bodyPreview)}</p>
-              </div>
-            )}
+      <div key={`${log.id}-expanded`} className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-6 py-4">
+        <div className="space-y-3">
+          {log.bodyPreview && (
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">İçerik Önizleme:</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                {typeof log.bodyPreview === 'string' ? log.bodyPreview : JSON.stringify(log.bodyPreview)}
+              </p>
+            </div>
+          )}
 
-            {/* Error Message */}
-            {log.errorMessage && (
-              <div>
-                <h4 className="text-sm font-medium text-red-700 mb-1">Hata Mesajı:</h4>
-                <p className="text-sm text-red-600 bg-red-50 p-3 rounded border border-red-200">
-                  {log.errorMessage}
-                </p>
-              </div>
-            )}
+          {log.errorMessage && (
+            <div>
+              <h4 className="text-sm font-medium text-red-700 dark:text-red-300 mb-1">Hata Mesajı:</h4>
+              <p className="text-sm text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-950/40 p-3 rounded border border-red-200 dark:border-red-900">
+                {log.errorMessage}
+              </p>
+            </div>
+          )}
 
-            {/* Additional Details */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-700">Şablon:</span>{' '}
-                <span className="text-gray-600">{log.templateName || '-'}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Güncelleme:</span>{' '}
-                <span className="text-gray-600">{formatDate(log.updatedAt)}</span>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-medium text-gray-700 dark:text-gray-200">Şablon:</span>{' '}
+              <span className="text-gray-600 dark:text-gray-300">{log.templateName || '-'}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700 dark:text-gray-200">Güncelleme:</span>{' '}
+              <span className="text-gray-600 dark:text-gray-300">{formatDate(log.updatedAt)}</span>
             </div>
           </div>
-        </td>
-      </tr>
+        </div>
+      </div>
     );
   };
 
@@ -378,6 +374,7 @@ const EmailLogs: React.FC = () => {
               keyExtractor={(log: EmailLog) => log.id}
               emptyMessage="E-posta logu bulunamadı."
             />
+            {logs.map((log) => renderExpandedDetails(log))}
 
             {/* Pagination */}
             <div className={`border-t border-gray-200 dark:border-gray-700 ${isMobile ? 'p-4' : 'px-6 py-4'}`}>

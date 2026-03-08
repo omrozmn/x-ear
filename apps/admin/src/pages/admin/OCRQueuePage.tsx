@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { useListOcrJobs } from '@/lib/api-client';
+import {
+    useListOcrJobs,
+    type OcrJobRead,
+    type ResponseEnvelopeListOcrJobRead,
+} from '@/lib/api-client';
 import {
     ClockIcon,
     CheckCircleIcon,
@@ -10,12 +14,16 @@ import {
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
+function getJobs(data: ResponseEnvelopeListOcrJobRead | undefined): OcrJobRead[] {
+    return Array.isArray(data?.data) ? data.data : [];
+}
+
 const OCRQueuePage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const [statusFilter, setStatusFilter] = useState<string>('');
     const { data: jobsData, isLoading, refetch } = useListOcrJobs({ status: statusFilter || undefined });
 
-    const jobs = (jobsData as any)?.jobs || (jobsData as any)?.data || [];
+    const jobs = getJobs(jobsData);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -34,18 +42,18 @@ const OCRQueuePage: React.FC = () => {
         {
             key: 'created_at',
             header: 'Tarih',
-            render: (job: any) => (
+            render: (job: OcrJobRead) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(job.created_at).toLocaleString('tr-TR')}
+                    {job.createdAt ? new Date(job.createdAt).toLocaleString('tr-TR') : '-'}
                 </span>
             )
         },
         {
             key: 'file_path',
             header: 'Dosya',
-            render: (job: any) => (
-                <span className="text-sm font-medium text-gray-900 dark:text-white truncate" title={job.file_path}>
-                    {job.file_path.split('/').pop()}
+            render: (job: OcrJobRead) => (
+                <span className="text-sm font-medium text-gray-900 dark:text-white truncate" title={job.filePath}>
+                    {job.filePath.split('/').pop()}
                 </span>
             )
         },
@@ -53,30 +61,30 @@ const OCRQueuePage: React.FC = () => {
             key: 'document_type',
             header: 'Tip',
             mobileHidden: true,
-            render: (job: any) => (
-                <span className="text-sm text-gray-500 dark:text-gray-400">{job.document_type}</span>
+            render: (job: OcrJobRead) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">{job.documentType}</span>
             )
         },
         {
             key: 'patient_name',
             header: 'Hasta',
             mobileHidden: true,
-            render: (job: any) => (
-                <span className="text-sm text-gray-900 dark:text-white">{job.patient_name || '-'}</span>
+            render: (job: OcrJobRead) => (
+                <span className="text-sm text-gray-900 dark:text-white">{job.patientName || '-'}</span>
             )
         },
         {
             key: 'status',
             header: 'Durum',
-            render: (job: any) => getStatusBadge(job.status)
+            render: (job: OcrJobRead) => getStatusBadge(job.status)
         },
         {
             key: 'error_message',
             header: 'Detay',
             mobileHidden: true,
-            render: (job: any) => (
+            render: (job: OcrJobRead) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                    {job.error_message ? <span className="text-red-600 dark:text-red-400">{job.error_message}</span> : 'Başarılı'}
+                    {job.errorMessage ? <span className="text-red-600 dark:text-red-400">{job.errorMessage}</span> : 'Başarılı'}
                 </span>
             )
         }
@@ -126,7 +134,7 @@ const OCRQueuePage: React.FC = () => {
                     <ResponsiveTable
                         data={jobs}
                         columns={columns}
-                        keyExtractor={(job: any) => job.id}
+                        keyExtractor={(job) => job.id}
                         emptyMessage="İşlem kaydı bulunamadı"
                     />
                 )}

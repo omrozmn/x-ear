@@ -12,10 +12,9 @@ const AffiliateCard: React.FC<AffiliateCardProps> = ({ affiliate }) => (
   <div className="affiliate-card">
     <h3>{affiliate.email}</h3>
     <p>IBAN: {affiliate.iban}</p>
-    <p>Aktif: {(affiliate as any).isActive ? 'Evet' : 'Hayır'}</p>
-    <p>Oluşturulma: {(affiliate as any).createdAt}</p>
+    <p>Aktif: {affiliate.isActive ? 'Evet' : 'Hayır'}</p>
+    <p>Oluşturulma: {affiliate.createdAt ?? '-'}</p>
   </div>
 );
 
 export default AffiliateCard;
-

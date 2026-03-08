@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Trash2, FileText, Eye, Download } from 'lucide-react';
+import { Upload, FileText, Eye, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';

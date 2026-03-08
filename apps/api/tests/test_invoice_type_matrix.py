@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import xml.etree.ElementTree as ET
 
 from utils.draft_to_invoice import build_invoice_dict_from_form, build_sgk_invoice_data
-from utils.ubl_utils import NS, generate_sgk_invoice_xml, generate_ubl_xml
+from utils.ubl_utils import NS, generate_despatch_advice_xml, generate_sgk_invoice_xml, generate_ubl_xml
 
 
 def _tenant():
@@ -49,6 +49,8 @@ def _xml_root(invoice_dict: dict, tmp_path: Path) -> ET.Element:
     xml_path = tmp_path / f"{invoice_dict['invoiceType']}.xml"
     if str(invoice_dict.get("invoiceType")) == "14":
         generate_sgk_invoice_xml(build_sgk_invoice_data(invoice_dict), str(xml_path))
+    elif invoice_dict.get("systemType") == "EIRSALIYE":
+        generate_despatch_advice_xml(invoice_dict, str(xml_path))
     else:
         generate_ubl_xml(invoice_dict, str(xml_path), currency=invoice_dict.get("currency", "TRY"))
     return ET.parse(xml_path).getroot()
@@ -95,7 +97,10 @@ def test_invoice_type_matrix_generates_expected_profiles_and_elements(tmp_path: 
         root = _xml_root(invoice_dict, tmp_path)
         assert _text(root, "cbc:ProfileID") == expected_profile
         if expected_type:
-            assert _text(root, "cbc:InvoiceTypeCode") == expected_type
+            if invoice_dict.get("systemType") == "EIRSALIYE":
+                assert _text(root, "cbc:DespatchAdviceTypeCode") == expected_type
+            else:
+                assert _text(root, "cbc:InvoiceTypeCode") == expected_type
 
     hks_root = _xml_root(build_invoice_dict_from_form({**_base_form("hks"), "profileDetails": {"hotelRegistrationNo": "HKS-1", "accommodationStartDate": "2026-03-01", "accommodationEndDate": "2026-03-05"}}, tenant, draft_id=2), tmp_path)
     assert _text(hks_root, "cac:InvoicePeriod/cbc:StartDate") == "2026-03-01"

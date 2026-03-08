@@ -90,7 +90,7 @@ export function AdminMobileNav({ isOpen, onClose }: AdminMobileNavProps) {
     if (isOpen) {
       onClose();
     }
-  }, [location.pathname]);
+  }, [isOpen, location.pathname, onClose]);
 
   // Prevent body scroll when drawer is open
   useEffect(() => {

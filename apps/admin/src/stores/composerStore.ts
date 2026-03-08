@@ -6,8 +6,7 @@ import type {
     EntityItem,
     Capability,
     SlotConfig,
-    ExecuteResponse,
-    ImpactMetric
+    ExecuteResponse
 } from '../api/generated/schemas';
 
 // Define modes for the state machine

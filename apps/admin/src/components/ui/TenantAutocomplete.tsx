@@ -16,6 +16,27 @@ interface TenantAutocompleteProps {
     error?: string;
 }
 
+interface TenantsResponseData {
+    tenants?: Tenant[];
+}
+
+interface TenantsResponseShape {
+    data?: TenantsResponseData;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function extractTenants(value: unknown): Tenant[] {
+    if (!isRecord(value)) {
+        return [];
+    }
+
+    const response = value as TenantsResponseShape;
+    return response.data?.tenants ?? [];
+}
+
 export function TenantAutocomplete({
     value = '',
     onSelect,
@@ -37,7 +58,17 @@ export function TenantAutocomplete({
         }
     });
 
-    const tenants = (tenantsData as any)?.data?.tenants || [];
+    const tenants = extractTenants(tenantsData);
+
+    useEffect(() => {
+        if (!value) {
+            return;
+        }
+        const selectedTenant = tenants.find((tenant) => tenant.id === value);
+        if (selectedTenant) {
+            setSearchQuery(selectedTenant.name);
+        }
+    }, [tenants, value]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -90,7 +121,7 @@ export function TenantAutocomplete({
                             Sonuç bulunamadı
                         </div>
                     ) : (
-                        tenants.map((tenant: any) => (
+                        tenants.map((tenant) => (
                             <div
                                 key={tenant.id}
                                 className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center space-x-3"

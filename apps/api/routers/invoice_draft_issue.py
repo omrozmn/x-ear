@@ -16,7 +16,7 @@ from schemas.invoices_new import InvoiceActionResponse
 from schemas.response import ResponseEnvelope
 from services.birfatura.service import BirfaturaClient
 from utils.draft_to_invoice import build_invoice_dict_from_form, build_sgk_invoice_data
-from utils.ubl_utils import generate_sgk_invoice_xml, generate_ubl_xml
+from utils.ubl_utils import generate_despatch_advice_xml, generate_sgk_invoice_xml, generate_ubl_xml
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/invoices", tags=["invoices"])
@@ -95,6 +95,8 @@ def issue_invoice_draft(
         if str(invoice_dict.get("invoiceType")) == "14":
             sgk_payload = build_sgk_invoice_data(invoice_dict)
             generate_sgk_invoice_xml(sgk_payload, xml_path)
+        elif invoice_dict.get("systemType") == "EIRSALIYE":
+            generate_despatch_advice_xml(invoice_dict, xml_path)
         else:
             generate_ubl_xml(invoice_dict, xml_path, currency=invoice_dict.get("currency", "TRY"))
 

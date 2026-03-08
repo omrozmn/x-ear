@@ -8,34 +8,128 @@ import {
     useUpdateAdminAddon,
     useDeleteAdminAddon,
 } from '@/lib/api-client';
+import type { AddonCreate, AddonListResponse, AddonRead, AddonUpdate, ListAdminAddonsParams } from '@/api/generated/schemas';
 
-// Local type definition (not exported from generated client)
 interface AddOn {
-    id?: string;
-    name?: string;
+    id: string;
+    name: string;
     slug?: string;
-    price?: number;
+    price: number;
     addon_type?: string;
+    addonType?: string;
     is_active?: boolean;
+    isActive?: boolean;
     description?: string;
     limit_amount?: number;
+    limitAmount?: number;
     unit_name?: string;
+    unitName?: string;
     currency?: string;
 }
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+
+interface PaginationInfo {
+    totalPages?: number;
+    total?: number;
+}
+
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+        };
+    };
+}
+
+type AddonType = 'FLAT_FEE' | 'PER_USER' | 'USAGE_BASED';
+
+interface AddOnFormData {
+    name: string;
+    price: number;
+    description: string;
+    addon_type: AddonType;
+    is_active: boolean;
+    currency: string;
+}
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    const apiError = error as ApiErrorLike;
+    return apiError.response?.data?.error?.message || fallback;
+}
+
+function isAddonRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function normalizeAddon(value: AddonRead | Record<string, unknown>): AddOn | null {
+    if (!isAddonRecord(value)) {
+        return null;
+    }
+
+    const id = typeof value.id === 'string' ? value.id : null;
+    const name = typeof value.name === 'string' ? value.name : null;
+    const price = typeof value.price === 'number' ? value.price : null;
+
+    if (!id || !name || price === null) {
+        return null;
+    }
+
+    return {
+        id,
+        name,
+        price,
+        slug: typeof value.slug === 'string' ? value.slug : undefined,
+        description: typeof value.description === 'string' ? value.description : undefined,
+        currency: typeof value.currency === 'string' ? value.currency : undefined,
+        addonType: typeof value.addonType === 'string' ? value.addonType : undefined,
+        addon_type: typeof value.addon_type === 'string' ? value.addon_type : typeof value.addonType === 'string' ? value.addonType : undefined,
+        isActive: typeof value.isActive === 'boolean' ? value.isActive : undefined,
+        is_active: typeof value.is_active === 'boolean' ? value.is_active : typeof value.isActive === 'boolean' ? value.isActive : undefined,
+        limitAmount: typeof value.limitAmount === 'number' ? value.limitAmount : undefined,
+        limit_amount: typeof value.limit_amount === 'number' ? value.limit_amount : typeof value.limitAmount === 'number' ? value.limitAmount : undefined,
+        unitName: typeof value.unitName === 'string' ? value.unitName : undefined,
+        unit_name: typeof value.unit_name === 'string' ? value.unit_name : typeof value.unitName === 'string' ? value.unitName : undefined,
+    };
+}
+
+function getAddons(data: AddonListResponse | undefined): AddOn[] {
+    const responseData = data?.data;
+    if (!responseData || typeof responseData !== 'object' || !('addons' in responseData) || !Array.isArray(responseData.addons)) {
+        return [];
+    }
+
+    return responseData.addons
+        .map((addon) => normalizeAddon(addon as AddonRead | Record<string, unknown>))
+        .filter((addon): addon is AddOn => addon !== null);
+}
+
+function getPagination(data: AddonListResponse | undefined): PaginationInfo {
+    const responseData = data?.data;
+    if (!responseData || typeof responseData !== 'object' || !('pagination' in responseData) || !isAddonRecord(responseData.pagination)) {
+        return {};
+    }
+
+    return {
+        totalPages: typeof responseData.pagination.totalPages === 'number' ? responseData.pagination.totalPages : undefined,
+        total: typeof responseData.pagination.total === 'number' ? responseData.pagination.total : undefined,
+    };
+}
 
 const AddOns: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const queryClient = useQueryClient();
     const [page, setPage] = React.useState(1);
     const [limit, setLimit] = React.useState(10);
-    const { data: addonsData, isLoading, error } = useListAdminAddons({ page, limit } as any);
-    const addons = (addonsData as any)?.data?.addons || (addonsData as any)?.addons || [];
-    const pagination = (addonsData as any)?.data?.pagination || (addonsData as any)?.pagination;
+    const params: ListAdminAddonsParams = { page, limit };
+    const { data: addonsData, isLoading, error } = useListAdminAddons(params);
+    const addons = getAddons(addonsData);
+    const pagination = getPagination(addonsData);
 
     const { mutateAsync: createAddon } = useCreateAdminAddon();
     const { mutateAsync: updateAddon } = useUpdateAdminAddon();
@@ -45,13 +139,13 @@ const AddOns: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
     const [editingAddon, setEditingAddon] = React.useState<AddOn | null>(null);
     const [deletingAddonId, setDeletingAddonId] = React.useState<string | null>(null);
-    const [formData, setFormData] = React.useState<Partial<AddOn>>({
+    const [formData, setFormData] = React.useState<AddOnFormData>({
         name: '',
         price: 0,
         description: '',
-        limit_amount: 0,
-        unit_name: '',
+        addon_type: 'FLAT_FEE',
         is_active: true,
+        currency: 'TRY',
     });
     const [isStatusModalOpen, setIsStatusModalOpen] = React.useState(false);
     const [statusAddon, setStatusAddon] = React.useState<AddOn | null>(null);
@@ -62,8 +156,9 @@ const AddOns: React.FC = () => {
             setFormData({
                 name: addon.name || '',
                 price: addon.price || 0,
-                addon_type: (addon.addon_type as any) || 'FLAT_FEE',
-                is_active: addon.is_active ?? true,
+                description: addon.description || '',
+                addon_type: (addon.addon_type || addon.addonType || 'FLAT_FEE') as AddonType,
+                is_active: addon.is_active ?? addon.isActive ?? true,
                 currency: addon.currency || 'TRY'
             });
         } else {
@@ -71,6 +166,7 @@ const AddOns: React.FC = () => {
             setFormData({
                 name: '',
                 price: 0,
+                description: '',
                 addon_type: 'FLAT_FEE',
                 is_active: true,
                 currency: 'TRY'
@@ -85,22 +181,31 @@ const AddOns: React.FC = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const payload: AddonCreate | AddonUpdate = {
+                name: formData.name,
+                price: formData.price,
+                description: formData.description,
+                addonType: formData.addon_type,
+                isActive: formData.is_active,
+                currency: formData.currency,
+            };
+
             if (editingAddon) {
                 await updateAddon({
-                    addonId: editingAddon.id!,
-                    data: formData as any
+                    addonId: editingAddon.id,
+                    data: payload
                 });
                 toast.success('Eklenti güncellendi');
             } else {
                 await createAddon({
-                    data: formData as any
+                    data: payload as AddonCreate
                 });
                 toast.success('Eklenti oluşturuldu');
             }
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             setIsModalOpen(false);
-        } catch (e: any) {
-            toast.error(e.response?.data?.error?.message || 'İşlem başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'İşlem başarısız'));
         } finally {
             setIsSubmitting(false);
         }
@@ -119,8 +224,8 @@ const AddOns: React.FC = () => {
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             toast.success('Eklenti silindi');
             setIsDeleteModalOpen(false);
-        } catch (e: any) {
-            toast.error(e.response?.data?.error?.message || 'Silme başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Silme başarısız'));
         } finally {
             setIsSubmitting(false);
         }
@@ -133,21 +238,22 @@ const AddOns: React.FC = () => {
 
     const confirmStatusChange = async () => {
         if (!statusAddon?.id) return;
+        if (!statusAddon.name) return;
         setIsSubmitting(true);
         try {
             await updateAddon({
                 addonId: statusAddon.id,
                 data: {
-                    name: statusAddon.name!,
-                    price: statusAddon.price!,
-                    isActive: !statusAddon.is_active
+                    name: statusAddon.name,
+                    price: statusAddon.price,
+                    isActive: !(statusAddon.is_active ?? statusAddon.isActive ?? false)
                 }
             });
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             toast.success('Eklenti durumu güncellendi');
             setIsStatusModalOpen(false);
-        } catch (e: any) {
-            toast.error(e.response?.data?.error?.message || 'Güncelleme başarısız');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
         } finally {
             setIsSubmitting(false);
         }
@@ -157,7 +263,7 @@ const AddOns: React.FC = () => {
         {
             key: 'name',
             header: 'İsim',
-            render: (addon: any) => (
+            render: (addon: AddOn) => (
                 <div>
                     <div className="font-medium text-gray-900 dark:text-white">{addon.name}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">{addon.slug}</div>
@@ -168,40 +274,40 @@ const AddOns: React.FC = () => {
             key: 'addon_type',
             header: 'Tip',
             mobileHidden: true,
-            render: (addon: any) => (
-                <span className="text-gray-500 dark:text-gray-400">{addon.addon_type}</span>
+            render: (addon: AddOn) => (
+                <span className="text-gray-500 dark:text-gray-400">{addon.addon_type || addon.addonType}</span>
             )
         },
         {
             key: 'price',
             header: 'Fiyat (TRY)',
-            render: (addon: any) => (
+            render: (addon: AddOn) => (
                 <span className="text-gray-900 dark:text-white">{addon.price?.toLocaleString('tr-TR') ?? '-'} TL</span>
             )
         },
         {
             key: 'is_active',
             header: 'Durum',
-            render: (addon: any) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${addon.is_active ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
-                    {addon.is_active ? 'Aktif' : 'Pasif'}
+            render: (addon: AddOn) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(addon.is_active ?? addon.isActive) ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
+                    {(addon.is_active ?? addon.isActive) ? 'Aktif' : 'Pasif'}
                 </span>
             )
         },
         {
             key: 'actions',
             header: 'İşlemler',
-            render: (addon: any) => (
+            render: (addon: AddOn) => (
                 <div className="flex justify-end space-x-2">
                     <button
                         onClick={(e) => { e.stopPropagation(); handleStatusChangeClick(addon); }}
-                        className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 touch-feedback ${addon.is_active
+                        className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 touch-feedback ${(addon.is_active ?? addon.isActive)
                             ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500 dark:bg-yellow-900 dark:text-yellow-200'
                             : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500 dark:bg-green-900 dark:text-green-200'
                             }`}
-                        title={addon.is_active ? 'Pasif Yap' : 'Aktif Yap'}
+                        title={(addon.is_active ?? addon.isActive) ? 'Pasif Yap' : 'Aktif Yap'}
                     >
-                        {addon.is_active ? 'Pasife Al' : 'Aktifleştir'}
+                        {(addon.is_active ?? addon.isActive) ? 'Pasife Al' : 'Aktifleştir'}
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); handleOpenModal(addon); }}
@@ -211,7 +317,7 @@ const AddOns: React.FC = () => {
                         <PencilIcon className="h-4 w-4" />
                     </button>
                     <button
-                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(addon.id!); }}
+                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(addon.id); }}
                         className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 touch-feedback"
                         title="Sil"
                     >
@@ -248,7 +354,7 @@ const AddOns: React.FC = () => {
                         <ResponsiveTable
                             data={addons}
                             columns={columns}
-                            keyExtractor={(addon: any) => addon.id}
+                            keyExtractor={(addon: AddOn) => addon.id}
                             emptyMessage="Eklenti bulunamadı."
                         />
                         <Pagination
@@ -301,7 +407,7 @@ const AddOns: React.FC = () => {
                                     id="addon-type"
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                     value={formData.addon_type}
-                                    onChange={(e) => setFormData({ ...formData, addon_type: e.target.value as any })}
+                                    onChange={(e) => setFormData({ ...formData, addon_type: e.target.value as AddonType })}
                                 >
                                     <option value="FLAT_FEE">Sabit Ücret</option>
                                     <option value="PER_USER">Kullanıcı Başına</option>

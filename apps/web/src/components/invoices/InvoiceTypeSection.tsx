@@ -8,6 +8,7 @@ import { SpecialTaxBaseData, ReturnInvoiceDetailsData } from '../../types/invoic
 interface InvoiceTypeSectionProps {
   invoiceType: string;
   scenario?: string;
+  documentKind?: 'invoice' | 'despatch';
   currency?: string;
   specialTaxBase?: SpecialTaxBaseData;
   returnInvoiceDetails?: ReturnInvoiceDetailsData;
@@ -18,6 +19,7 @@ interface InvoiceTypeSectionProps {
 export function InvoiceTypeSection({
   invoiceType,
   scenario,
+  documentKind = 'invoice',
   currency,
   // specialTaxBase, // Not used in current implementation
   // returnInvoiceDetails, // Not used in current implementation
@@ -83,6 +85,9 @@ export function InvoiceTypeSection({
 
   // Filter available invoice types based on selected scenario
   const allowedTypesForScenario = () => {
+    if (documentKind === 'despatch') {
+      return ['sevk'];
+    }
     // Accept both string keys and numeric codes for scenarios
     // scenario may be: 'other' | 'export' | 'government' | 'medical' OR '36' | '5' | '7' | '45'
     const s = String(scenario);
@@ -111,7 +116,7 @@ export function InvoiceTypeSection({
       {/* Fatura Tipi */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Fatura Tipi <span className="text-red-500">*</span>
+          {documentKind === 'despatch' ? 'Belge Tipi' : 'Fatura Tipi'} <span className="text-red-500">*</span>
         </label>
         <Select
           value={invoiceType}

@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(__file__))
 
 from services.birfatura.service import BirfaturaClient
-from utils.ubl_utils import generate_sgk_invoice_xml, generate_ubl_xml, validate_ubl_xml
+from utils.ubl_utils import generate_despatch_advice_xml, generate_sgk_invoice_xml, generate_ubl_xml, validate_ubl_xml
 
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
@@ -187,6 +187,7 @@ TESTS = [
             "passengerNationality": "DE",
             "refundBankIban": "TR000000000000000000000001",
             "taxRepresentativeTaxId": "1111111111",
+            "taxRepresentativeLabel": "urn:mail:taxfree@example.com",
         },
         "lines": list(ZERO_TAX_LINES),
     }, "SATIS"),
@@ -310,7 +311,9 @@ def run_test(test_name, invoice_type, scenario, extra, expected_type_code):
         inv = make_invoice(invoice_type, scenario, extra)
         xml_filename = f"TEST_{expected_type_code}_{int(datetime.now().timestamp())}.xml"
         xml_path = os.path.join(outbox_dir, xml_filename)
-        if expected_type_code == "TEVKIFAT":
+        if extra.get("systemTypeCodes") == "EIRSALIYE" or (inv or {}).get("systemType") == "EIRSALIYE":
+            generate_despatch_advice_xml(inv, xml_path)
+        elif expected_type_code == "TEVKIFAT":
             generate_tevkifat_reference_xml(xml_path)
         else:
             generate_ubl_xml(inv, xml_path, currency=inv.get("currency", "TRY"))

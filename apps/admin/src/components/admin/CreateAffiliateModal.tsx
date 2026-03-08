@@ -9,6 +9,18 @@ interface CreateAffiliateModalProps {
     onClose: () => void;
 }
 
+interface CreateAffiliatePayload {
+    account_holder_name: string;
+    email: string;
+    password: string;
+    phone_number: string;
+    iban: string;
+}
+
+interface ApiErrorLike {
+    message?: string;
+}
+
 export default function CreateAffiliateModal({ isOpen, onClose }: CreateAffiliateModalProps) {
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
@@ -20,7 +32,7 @@ export default function CreateAffiliateModal({ isOpen, onClose }: CreateAffiliat
     });
 
     const createMutation = useMutation({
-        mutationFn: (data: any) => adminApi({
+        mutationFn: (data: CreateAffiliatePayload) => adminApi({
             url: '/affiliate', // This becomes /api/affiliate via apiMutator
             method: 'POST',
             data
@@ -31,7 +43,7 @@ export default function CreateAffiliateModal({ isOpen, onClose }: CreateAffiliat
             setFormData({ account_holder_name: '', email: '', password: '', phone_number: '', iban: '' });
             onClose();
         },
-        onError: (error: any) => {
+        onError: (error: ApiErrorLike) => {
             toast.error(`Hata: ${error.message || 'Oluşturulamadı'}`);
         }
     });

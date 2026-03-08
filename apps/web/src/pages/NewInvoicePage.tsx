@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useLocation, useNavigate, useSearch } from '@tanstack/react-router';
 import { Button, Input, DatePicker, Textarea } from '@x-ear/ui-web';
 import { ArrowLeft, CheckCircle, ChevronDown, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
@@ -78,6 +78,14 @@ interface BlockingAlert {
   message: string;
 }
 
+type DocumentKind = 'invoice' | 'despatch';
+
+interface LinkedDocumentOptions {
+  createLinkedDocument?: boolean;
+  linkedInvoiceType?: string;
+  linkedScenario?: string;
+}
+
 const invoiceTypeNeedsZeroVatExemption = (invoiceType?: string) => !['14', '15', '49', '50'].includes(String(invoiceType || ''));
 
 const hasZeroVatLineWithoutExemption = (payload: Record<string, unknown>) => {
@@ -91,19 +99,107 @@ const hasZeroVatLineWithoutExemption = (payload: Record<string, unknown>) => {
   });
 };
 
+const DEFAULT_LINKED_OPTIONS: LinkedDocumentOptions = {
+  createLinkedDocument: false,
+  linkedInvoiceType: '0',
+  linkedScenario: 'other',
+};
+
+const LINKED_INVOICE_TYPE_OPTIONS = [
+  { value: '0', label: 'Satış Faturası' },
+  { value: '13', label: 'İstisna' },
+  { value: '11', label: 'Tevkifat' },
+  { value: '12', label: 'Özel Matrah' },
+  { value: '27', label: 'İhraç Kayıtlı Fatura' },
+  { value: '14', label: 'SGK' },
+  { value: 'earsiv', label: 'E-Arşiv Fatura' },
+  { value: 'hks', label: 'Konaklama Vergisi (HKS)' },
+  { value: 'sarj', label: 'Enerji Şarj' },
+  { value: 'sarjanlik', label: 'Şarj Anlık' },
+  { value: 'yolcu', label: 'Yolcu Beraberi' },
+  { value: 'otv', label: 'ÖTV' },
+  { value: 'hastane', label: 'Hastane Faturası' },
+];
+
+const getDocumentKindText = (documentKind: DocumentKind) => documentKind === 'despatch' ? 'E-İrsaliye' : 'Fatura';
+
+const sanitizeLinkedDocumentOptions = (value: unknown): LinkedDocumentOptions => {
+  if (!value || typeof value !== 'object') return { ...DEFAULT_LINKED_OPTIONS };
+  const raw = value as Record<string, unknown>;
+  return {
+    createLinkedDocument: Boolean(raw.createLinkedDocument),
+    linkedInvoiceType: String(raw.linkedInvoiceType || DEFAULT_LINKED_OPTIONS.linkedInvoiceType),
+    linkedScenario: String(raw.linkedScenario || DEFAULT_LINKED_OPTIONS.linkedScenario),
+  };
+};
+
+const buildLinkedDocumentPayload = (source: Record<string, unknown>, documentKind: DocumentKind): Record<string, unknown> => {
+  const linkedOptions = sanitizeLinkedDocumentOptions(source.linkedDocumentOptions);
+  const clonedItems = Array.isArray(source.items) ? source.items.map((item) => {
+    if (!item || typeof item !== 'object') return item;
+    const line = { ...(item as Record<string, unknown>) };
+    delete line.withholdingData;
+    return line;
+  }) : [];
+
+  if (documentKind === 'invoice') {
+    return {
+      ...source,
+      invoiceType: 'sevk',
+      scenario: 'other',
+      scenarioData: { scenario: 'other', currentScenarioType: '2' },
+      profileDetails: {
+        ...((source.profileDetails as Record<string, unknown> | undefined) || {}),
+        systemType: 'EIRSALIYE',
+        profileId: 'TEMELIRSALIYE',
+      },
+      linkedDocumentOptions: { ...DEFAULT_LINKED_OPTIONS, linkedInvoiceType: linkedOptions.linkedInvoiceType, linkedScenario: linkedOptions.linkedScenario },
+      items: clonedItems,
+    };
+  }
+
+  return {
+    ...source,
+    invoiceType: linkedOptions.linkedInvoiceType || '0',
+    scenario: linkedOptions.linkedScenario || 'other',
+    scenarioData: { scenario: linkedOptions.linkedScenario || 'other', currentScenarioType: '3' },
+    profileDetails: undefined,
+    linkedDocumentOptions: { ...DEFAULT_LINKED_OPTIONS, linkedInvoiceType: linkedOptions.linkedInvoiceType, linkedScenario: linkedOptions.linkedScenario },
+    items: clonedItems,
+  };
+};
+
 export function NewInvoicePage() {
   const navigate = useNavigate();
-  const { draftId: searchDraftId } = useSearch({ from: '/invoices/new' });
+  const location = useLocation();
+  const search = useSearch({ from: '/invoices/new' });
+  const searchDraftId = search.draftId;
+  const documentKind: DocumentKind = location.pathname.endsWith('/new-despatch') || search.documentKind === 'despatch' ? 'despatch' : 'invoice';
   const [isSaving, setIsSaving] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<number | undefined>(searchDraftId);
   const [formData, setFormData] = useState<InvoiceFormData>({
-    invoiceType: '',
+    invoiceType: documentKind === 'despatch' ? 'sevk' : '',
     scenario: 'other',
     currency: 'TRY'
   });
   const [blockingAlert, setBlockingAlert] = useState<BlockingAlert | null>(null);
   const isMobile = useIsMobile();
   const { data: companyData } = useGetTenantCompany();
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      invoiceType: documentKind === 'despatch' ? 'sevk' : (String(prev.invoiceType || '') === 'sevk' ? '' : prev.invoiceType),
+      linkedDocumentOptions: sanitizeLinkedDocumentOptions(prev.linkedDocumentOptions),
+      profileDetails: documentKind === 'despatch'
+        ? {
+            ...((prev.profileDetails as Record<string, unknown> | undefined) || {}),
+            systemType: 'EIRSALIYE',
+            profileId: 'TEMELIRSALIYE',
+          }
+        : prev.profileDetails,
+    }));
+  }, [documentKind]);
 
   // Load draft from API when draftId is provided in URL
   useEffect(() => {
@@ -142,6 +238,7 @@ export function NewInvoicePage() {
     setIsSaving(true);
     try {
       const mergedInvoiceData = { ...formData, ...invoiceData } as Record<string, unknown>;
+      const linkedOptions = sanitizeLinkedDocumentOptions(mergedInvoiceData.linkedDocumentOptions);
       const defaultExemptionCode = String(
         ((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.defaultExemptionCode as string | undefined) || ''
       ).trim();
@@ -182,8 +279,20 @@ export function NewInvoicePage() {
 
       // Step 2: Issue the draft (send to GİB)
       const issueRes: { data?: { data?: { message?: string } } } = await apiClient.post(`/api/invoices/draft/${draftId}/issue`);
-      const msg = issueRes.data?.data?.message || 'Fatura gönderildi';
-      toast.success(msg);
+      const messages = [issueRes.data?.data?.message || `${getDocumentKindText(documentKind)} gönderildi`];
+
+      if (linkedOptions.createLinkedDocument) {
+        const linkedPayload = buildLinkedDocumentPayload(mergedInvoiceData, documentKind);
+        const linkedDraftRes: { data?: { data?: { invoiceId?: number; invoice_id?: number } } } = await apiClient.post('/api/invoices/draft', { form_data: linkedPayload });
+        const linkedDraftId = linkedDraftRes.data?.data?.invoiceId ?? linkedDraftRes.data?.data?.invoice_id;
+        if (!linkedDraftId) {
+          throw new Error('Bağlı belge taslağı oluşturulamadı');
+        }
+        const linkedIssueRes: { data?: { data?: { message?: string } } } = await apiClient.post(`/api/invoices/draft/${linkedDraftId}/issue`);
+        messages.push(linkedIssueRes.data?.data?.message || `${getDocumentKindText(documentKind === 'invoice' ? 'despatch' : 'invoice')} gönderildi`);
+      }
+
+      toast.success(messages.join(' | '));
       navigate({ to: '/invoices' });
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } }; message?: string };
@@ -265,6 +374,7 @@ export function NewInvoicePage() {
       handleSaveDraft={handleSaveDraft}
       handleCancel={handleCancel}
       formData={formData}
+      documentKind={documentKind}
       onFormDataChange={handleFormDataChange}
       showSGKSection={showSGKSection}
       showGovernmentSection={showGovernmentSection}
@@ -274,6 +384,7 @@ export function NewInvoicePage() {
       showSpecialOperations={showSpecialOperations}
       showSpecialBaseSection={showSpecialBaseSection}
       isWithholdingType={isWithholdingType}
+      documentKind={documentKind}
       onRequestLineEditor={handleRequestLineEditor}
       activeLineEditor={activeLineEditor}
       onCloseLineEditor={handleCloseLineEditor}
@@ -285,6 +396,7 @@ export function NewInvoicePage() {
 
 // Sidebar Component
 function InvoiceSidebar({
+  documentKind,
   showSGKSection,
   showExportSection,
   showMedicalSection,
@@ -297,6 +409,7 @@ function InvoiceSidebar({
   activeLineEditor,
   onCloseLineEditor
 }: {
+  documentKind?: DocumentKind;
   showSGKSection?: boolean;
   showExportSection?: boolean;
   showMedicalSection?: boolean;
@@ -318,6 +431,61 @@ function InvoiceSidebar({
   const _showSpecialBaseSection = !!showSpecialBaseSection;
   return (
     <div className="sticky top-[148px] space-y-4 z-10">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="mb-3">
+          <h3 className="text-sm font-bold text-gray-900">Bağlı Belge</h3>
+          <p className="text-xs text-gray-500">
+            {documentKind === 'despatch'
+              ? 'Bu e-irsaliye gönderildikten sonra bağlı fatura da oluşturulsun'
+              : 'Bu fatura gönderildikten sonra bağlı e-irsaliye de oluşturulsun'}
+          </p>
+        </div>
+        <label className="flex items-start gap-3">
+          <input
+            data-allow-raw="true"
+            type="checkbox"
+            checked={Boolean(sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).createLinkedDocument)}
+            onChange={(e) => handlers?.handleExtendedFieldChange?.('linkedDocumentOptions', {
+              ...sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions),
+              createLinkedDocument: e.target.checked,
+            })}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300"
+          />
+          <span className="text-sm text-gray-700">
+            {documentKind === 'despatch' ? 'Bağlı fatura oluştur' : 'Bağlı e-irsaliye oluştur'}
+          </span>
+        </label>
+        {documentKind === 'despatch' && sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).createLinkedDocument && (
+          <div className="mt-3 space-y-3">
+            <Select
+              label="Bağlı Fatura Tipi"
+              value={sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).linkedInvoiceType || '0'}
+              onChange={(e) => handlers?.handleExtendedFieldChange?.('linkedDocumentOptions', {
+                ...sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions),
+                linkedInvoiceType: e.target.value,
+              })}
+              options={LINKED_INVOICE_TYPE_OPTIONS}
+              fullWidth
+            />
+            <Select
+              label="Bağlı Fatura Senaryosu"
+              value={sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).linkedScenario || 'other'}
+              onChange={(e) => handlers?.handleExtendedFieldChange?.('linkedDocumentOptions', {
+                ...sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions),
+                linkedScenario: e.target.value,
+              })}
+              options={[
+                { value: 'other', label: 'Diğer' },
+                { value: 'export', label: 'İhracat' },
+                { value: 'government', label: 'Kamu' },
+                { value: 'medical', label: 'Tıbbi' },
+              ]}
+              fullWidth
+            />
+          </div>
+        )}
+      </div>
+
       {/* Fatura Alıcı - En Üstte */}
       <CustomerSectionCompact
         isSGK={showSGKSection}
@@ -617,6 +785,7 @@ function NewInvoicePageContent({
   handleSaveDraft,
   handleCancel,
   formData,
+  documentKind,
   onFormDataChange,
   showSGKSection,
   showGovernmentSection,
@@ -637,6 +806,7 @@ function NewInvoicePageContent({
   handleSaveDraft?: () => void;
   handleCancel: () => void;
   formData: InvoiceFormData;
+  documentKind: DocumentKind;
   onFormDataChange: (field: string, value: unknown) => void;
   showSGKSection?: boolean;
   showGovernmentSection?: boolean;
@@ -663,7 +833,7 @@ function NewInvoicePageContent({
     return (
       <MobileLayout showBottomNav={false} className="bg-gray-50 dark:bg-gray-950">
         <MobileHeader
-          title="Yeni Fatura"
+          title={`Yeni ${getDocumentKindText(documentKind)}`}
           onBack={handleCancel}
           className="top-[64px]"
           actions={
@@ -688,6 +858,61 @@ function NewInvoicePageContent({
               retryText="Firma Ayarlarına Git"
             />
           )}
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 space-y-3">
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-white">Bağlı Belge</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {documentKind === 'despatch'
+                  ? 'E-irsaliye ile birlikte bağlı fatura da oluşturulabilir.'
+                  : 'Fatura ile birlikte bağlı e-irsaliye de oluşturulabilir.'}
+              </p>
+            </div>
+            <label className="flex items-start gap-3">
+              <input
+                data-allow-raw="true"
+                type="checkbox"
+                checked={Boolean(sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).createLinkedDocument)}
+                onChange={(e) => onFormDataChange('linkedDocumentOptions', {
+                  ...sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions),
+                  createLinkedDocument: e.target.checked,
+                })}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {documentKind === 'despatch' ? 'Bağlı fatura oluştur' : 'Bağlı e-irsaliye oluştur'}
+              </span>
+            </label>
+            {documentKind === 'despatch' && sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).createLinkedDocument && (
+              <div className="space-y-3">
+                <Select
+                  label="Bağlı Fatura Tipi"
+                  value={sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).linkedInvoiceType || '0'}
+                  onChange={(e) => onFormDataChange('linkedDocumentOptions', {
+                    ...sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions),
+                    linkedInvoiceType: e.target.value,
+                  })}
+                  options={LINKED_INVOICE_TYPE_OPTIONS}
+                  fullWidth
+                />
+                <Select
+                  label="Bağlı Fatura Senaryosu"
+                  value={sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).linkedScenario || 'other'}
+                  onChange={(e) => onFormDataChange('linkedDocumentOptions', {
+                    ...sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions),
+                    linkedScenario: e.target.value,
+                  })}
+                  options={[
+                    { value: 'other', label: 'Diğer' },
+                    { value: 'export', label: 'İhracat' },
+                    { value: 'government', label: 'Kamu' },
+                    { value: 'medical', label: 'Tıbbi' },
+                  ]}
+                  fullWidth
+                />
+              </div>
+            )}
+          </div>
 
           {/* 1. Collapsible: Customer Selection */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
@@ -750,6 +975,7 @@ function NewInvoicePageContent({
                   onSubmit={handleSubmit as never}
                   onCancel={handleCancel}
                   isLoading={isSaving}
+                  documentKind={documentKind}
                   onDataChange={onFormDataChange}
                   onRequestLineEditor={onRequestLineEditor}
                   initialData={formData}
@@ -896,7 +1122,7 @@ function NewInvoicePageContent({
                 <ArrowLeft size={20} />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Yeni Fatura</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{`Yeni ${getDocumentKindText(documentKind)}`}</h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Fatura bilgilerini doldurun
                 </p>
@@ -941,11 +1167,12 @@ function NewInvoicePageContent({
           {/* Form - 2/3 width */}
           <div className="min-w-0">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <InvoiceFormExtended
-                onSubmit={handleSubmit as never}
-                onCancel={handleCancel}
-                isLoading={isSaving}
-                onDataChange={onFormDataChange}
+                <InvoiceFormExtended
+                  onSubmit={handleSubmit as never}
+                  onCancel={handleCancel}
+                  isLoading={isSaving}
+                  documentKind={documentKind}
+                  onDataChange={onFormDataChange}
                 onRequestLineEditor={onRequestLineEditor}
                 initialData={formData}
                 mobileHiddenSections={['notes']}
@@ -967,6 +1194,7 @@ function NewInvoicePageContent({
               </div>
             )}
             <InvoiceSidebar
+              documentKind={documentKind}
               showSGKSection={showSGKSection}
               showExportSection={showExportSection}
               showMedicalSection={showMedicalSection}

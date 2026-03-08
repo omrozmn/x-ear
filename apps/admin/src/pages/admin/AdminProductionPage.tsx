@@ -1,48 +1,72 @@
 import React, { useState } from 'react';
 import {
-    useListAdminProductionOrders as useGetProductionOrdersApi,
-    useUpdateAdminProductionOrderStatus
+    useListAdminProductionOrders,
+    useUpdateAdminProductionOrderStatus,
+    type ListAdminProductionOrdersParams,
+    type OrderStatusUpdate,
+    type SchemasBaseResponseEnvelope,
 } from '@/lib/api-client';
 import {
-    Package,
     Truck,
     CheckCircle,
     Clock,
-    Filter,
     Search
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 
-// Fallback hook if useListAdminProductionOrders doesn't exist
-const useGetProductionOrders = (params?: any) => {
-    // Try to use the API hook, fallback to empty data
-    try {
-        // @ts-ignore - hook may not exist
-        return (useGetProductionOrdersApi as any)?.(params) || { data: [], isLoading: false, refetch: () => { } };
-    } catch {
-        return { data: { data: [] }, isLoading: false, refetch: () => { } };
+interface ProductionOrderView {
+    id: string;
+    orderNumber: string;
+    tenantId: string;
+    productType: string;
+    status: string;
+    manufacturer?: string;
+    estimatedDeliveryDate?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getOrders(data: SchemasBaseResponseEnvelope | undefined): ProductionOrderView[] {
+    const source = data?.data;
+    if (!Array.isArray(source)) {
+        return [];
     }
-};
+
+    return source
+        .filter(isRecord)
+        .map((order) => ({
+            id: typeof order.id === 'string' ? order.id : '',
+            orderNumber: typeof order.orderNumber === 'string' ? order.orderNumber : '-',
+            tenantId: typeof order.tenantId === 'string' ? order.tenantId : '-',
+            productType: typeof order.productType === 'string' ? order.productType : '-',
+            status: typeof order.status === 'string' ? order.status : 'new',
+            manufacturer: typeof order.manufacturer === 'string' ? order.manufacturer : undefined,
+            estimatedDeliveryDate: typeof order.estimatedDeliveryDate === 'string' ? order.estimatedDeliveryDate : undefined,
+        }))
+        .filter((order) => order.id);
+}
 
 const AdminProductionPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const [statusFilter, setStatusFilter] = useState('');
+    const params: ListAdminProductionOrdersParams | undefined = statusFilter ? { status: statusFilter } : undefined;
 
-    const { data: ordersData, isLoading, refetch } = useGetProductionOrders(
-        statusFilter ? { status: statusFilter } : undefined
-    );
+    const { data: ordersData, isLoading, refetch } = useListAdminProductionOrders(params);
     const updateStatusMutation = useUpdateAdminProductionOrderStatus();
 
-    const orders = (ordersData as any)?.orders || (ordersData as any)?.data || (Array.isArray(ordersData) ? ordersData : []);
+    const orders = getOrders(ordersData);
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         try {
-            await updateStatusMutation.mutateAsync({ orderId: id, data: { status: newStatus } });
+            const payload: OrderStatusUpdate = { status: newStatus };
+            await updateStatusMutation.mutateAsync({ orderId: id, data: payload });
             toast.success('Sipariş durumu güncellendi');
             refetch();
-        } catch (error) {
+        } catch {
             toast.error('Güncelleme başarısız');
         }
     };
@@ -66,7 +90,7 @@ const AdminProductionPage: React.FC = () => {
         {
             key: 'orderNumber',
             header: 'Sipariş No',
-            render: (order: any) => (
+            render: (order: ProductionOrderView) => (
                 <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{order.orderNumber}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">{order.tenantId.substring(0, 8)}...</div>
@@ -77,7 +101,7 @@ const AdminProductionPage: React.FC = () => {
             key: 'productType',
             header: 'Ürün Tipi',
             mobileHidden: true,
-            render: (order: any) => (
+            render: (order: ProductionOrderView) => (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
                     {order.productType === 'mold' ? 'Kulak Kalıbı' :
                         order.productType === 'filter' ? 'Filtre' : order.productType}
@@ -87,13 +111,13 @@ const AdminProductionPage: React.FC = () => {
         {
             key: 'status',
             header: 'Durum',
-            render: (order: any) => getStatusBadge(order.status)
+            render: (order: ProductionOrderView) => getStatusBadge(order.status)
         },
         {
             key: 'manufacturer',
             header: 'Üretici',
             mobileHidden: true,
-            render: (order: any) => (
+            render: (order: ProductionOrderView) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">{order.manufacturer || '-'}</span>
             )
         },
@@ -101,7 +125,7 @@ const AdminProductionPage: React.FC = () => {
             key: 'estimatedDeliveryDate',
             header: 'Tahmini Teslim',
             mobileHidden: true,
-            render: (order: any) => (
+            render: (order: ProductionOrderView) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                     {order.estimatedDeliveryDate ? new Date(order.estimatedDeliveryDate).toLocaleDateString('tr-TR') : '-'}
                 </span>
@@ -110,7 +134,7 @@ const AdminProductionPage: React.FC = () => {
         {
             key: 'actions',
             header: 'İşlemler',
-            render: (order: any) => (
+            render: (order: ProductionOrderView) => (
                 <select
                     value={order.status}
                     onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
@@ -191,7 +215,7 @@ const AdminProductionPage: React.FC = () => {
                     <ResponsiveTable
                         data={orders}
                         columns={columns}
-                        keyExtractor={(order: any) => order.id}
+                        keyExtractor={(order) => order.id}
                         emptyMessage="Sipariş bulunamadı"
                     />
                 )}

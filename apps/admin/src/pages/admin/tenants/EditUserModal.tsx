@@ -13,12 +13,36 @@ interface EditUserModalProps {
     onSuccess: () => void;
 }
 
+interface ExtendedUserRead extends UserRead {
+    username?: string;
+}
+
+interface TenantUserUpdatePayload {
+    first_name: string;
+    last_name: string;
+    email: string;
+    username: string;
+    role: string;
+    password?: string;
+}
+
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+        };
+    };
+}
+
 export const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: EditUserModalProps) => {
+    const currentUser = user as ExtendedUserRead;
     const [formData, setFormData] = useState({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         email: user.email || '',
-        username: (user as any).username || user.email || '',
+        username: currentUser.username || user.email || '',
         role: user.role || 'tenant_user',
         password: ''
     });
@@ -30,33 +54,35 @@ export const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: Ed
             firstName: user.firstName || '',
             lastName: user.lastName || '',
             email: user.email || '',
-            username: (user as any).username || user.email || '',
+            username: currentUser.username || user.email || '',
             role: user.role || 'tenant_user',
             password: ''
         });
-    }, [user]);
+    }, [currentUser.username, user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
+            const payload: TenantUserUpdatePayload = {
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                email: formData.email,
+                username: formData.username,
+                role: formData.role,
+                ...(formData.password ? { password: formData.password } : {})
+            };
             await updateTenantUser({
                 tenantId: tenantId,
                 userId: user.id,
-                data: {
-                    first_name: formData.firstName,
-                    last_name: formData.lastName,
-                    email: formData.email,
-                    username: formData.username,
-                    role: formData.role,
-                    ...(formData.password ? { password: formData.password } : {})
-                } as any
+                data: payload
             });
             toast.success('Kullanıcı güncellendi');
             onSuccess();
             onClose();
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Güncelleme başarısız');
+        } catch (error: unknown) {
+            const apiError = error as ApiErrorLike;
+            toast.error(apiError.response?.data?.error?.message || 'Güncelleme başarısız');
         } finally {
             setLoading(false);
         }
@@ -77,7 +103,7 @@ export const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: Ed
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
                             <input type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" required />
-                            <div className="text-xs text-gray-400">{(user as any).username || user.email}</div>
+                            <div className="text-xs text-gray-400">{currentUser.username || user.email}</div>
                         </div>
                         <div><label className="block text-sm font-medium text-gray-700">Email</label><input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" required /></div>
                         <div><label className="block text-sm font-medium text-gray-700">Rol</label><select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"><option value="tenant_user">Kullanıcı</option><option value="tenant_admin">Yönetici</option></select></div>

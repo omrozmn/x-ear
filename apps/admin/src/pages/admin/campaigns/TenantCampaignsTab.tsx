@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Megaphone, Search, X } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
@@ -22,6 +22,14 @@ interface Campaign {
     createdAt?: string;
 }
 
+interface CampaignListResponse {
+    data?: Campaign[];
+    meta?: {
+        total?: number;
+        totalPages?: number;
+    };
+}
+
 export default function TenantCampaignsTab() {
     const { isMobile } = useAdminResponsive();
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,51 +37,47 @@ export default function TenantCampaignsTab() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
     const perPage = 20;
 
-    // Fetch campaigns from backend
-    useEffect(() => {
-        fetchCampaigns();
-    }, [page, statusFilter]);
-
-    const fetchCampaigns = async () => {
+    const fetchCampaigns = useCallback(async (searchValue: string) => {
         try {
             setIsLoading(true);
-            const response = await adminApi<any>({
+            const response = await adminApi<CampaignListResponse>({
                 url: '/admin/campaigns',
                 method: 'GET',
                 params: {
                     page,
                     limit: perPage,
-                    search: searchTerm,
+                    search: searchValue,
                     status: statusFilter !== 'all' ? statusFilter : undefined
                 }
             });
             
-            if (response && response.data) {
-                setCampaigns(response.data);
-                // Backend meta bilgisini kullan
-                if (response.meta) {
-                    setTotal(response.meta.total || 0);
-                    setTotalPages(response.meta.totalPages || 1);
-                }
-            }
-        } catch (error: any) {
+            setCampaigns(response.data ?? []);
+            setTotal(response.meta?.total ?? 0);
+            setTotalPages(response.meta?.totalPages ?? 1);
+        } catch (error) {
             console.error('Failed to fetch campaigns:', error);
             toast.error('Kampanyalar yüklenirken hata oluştu');
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [page, perPage, statusFilter]);
+
+    // Fetch campaigns from backend
+    useEffect(() => {
+        void fetchCampaigns(debouncedSearchTerm);
+    }, [debouncedSearchTerm, fetchCampaigns]);
 
     // Refetch when search changes (debounced)
     useEffect(() => {
         const timer = setTimeout(() => {
             setPage(1);
-            fetchCampaigns();
+            setDebouncedSearchTerm(searchTerm);
         }, 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);

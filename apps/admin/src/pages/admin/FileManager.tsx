@@ -1,28 +1,141 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-    FolderIcon,
     DocumentIcon,
     ArrowUpTrayIcon,
     TrashIcon,
     ArrowDownTrayIcon,
     XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useListUploadFiles, useCreateUploadPresigned, useCreateOcrProcess, useDeleteUploadFiles } from '@/lib/api-client';
+import {
+    useListUploadFiles,
+    useCreateUploadPresigned,
+    useCreateOcrProcess,
+    useDeleteUploadFiles,
+    type DeleteUploadFilesParams,
+    type OcrProcessResponseResult,
+    type ResponseEnvelopeFileListResponse,
+    type ResponseEnvelopeOcrProcessResponse,
+    type ResponseEnvelopePresignedUploadResponse,
+} from '@/lib/api-client';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+
+interface UploadedFile {
+    key: string;
+    filename: string;
+    size: number;
+    lastModified?: string;
+    url: string;
+}
+
+interface OcrEntity {
+    text: string;
+}
+
+interface OcrMedicalTerm {
+    term: string;
+}
+
+interface OcrClassification {
+    type?: string;
+    confidence?: number;
+}
+
+interface OcrPatientInfo {
+    name?: string;
+}
+
+interface OcrResultView extends OcrProcessResponseResult {
+    entities?: OcrEntity[];
+    patient_info?: OcrPatientInfo;
+    classification?: OcrClassification;
+    medical_terms?: OcrMedicalTerm[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getFiles(data: ResponseEnvelopeFileListResponse | undefined): UploadedFile[] {
+    const files = data?.data?.files;
+    if (!Array.isArray(files)) {
+        return [];
+    }
+
+    return files
+        .filter(isRecord)
+        .map((file) => ({
+            key: typeof file.key === 'string' ? file.key : '',
+            filename: typeof file.filename === 'string' ? file.filename : '',
+            size: typeof file.size === 'number' ? file.size : 0,
+            lastModified: typeof file.last_modified === 'string' ? file.last_modified : undefined,
+            url: typeof file.url === 'string' ? file.url : '',
+        }))
+        .filter((file) => file.key && file.url);
+}
+
+function getPresignedUpload(data: ResponseEnvelopePresignedUploadResponse): { url: string; fields: Record<string, string> } | null {
+    if (!data.data) {
+        return null;
+    }
+
+    return {
+        url: data.data.url,
+        fields: Object.entries(data.data.fields).reduce<Record<string, string>>((acc, [key, value]) => {
+            acc[key] = String(value);
+            return acc;
+        }, {}),
+    };
+}
+
+function getOcrResult(data: ResponseEnvelopeOcrProcessResponse): OcrResultView | null {
+    const result = data.data?.result;
+    if (!isRecord(result)) {
+        return null;
+    }
+
+    const entities = Array.isArray(result.entities)
+        ? result.entities
+            .filter(isRecord)
+            .map((entity) => ({ text: typeof entity.text === 'string' ? entity.text : '' }))
+            .filter((entity) => entity.text)
+        : undefined;
+    const patientInfo = isRecord(result.patient_info)
+        ? { name: typeof result.patient_info.name === 'string' ? result.patient_info.name : undefined }
+        : undefined;
+    const classification = isRecord(result.classification)
+        ? {
+            type: typeof result.classification.type === 'string' ? result.classification.type : undefined,
+            confidence: typeof result.classification.confidence === 'number' ? result.classification.confidence : undefined,
+        }
+        : undefined;
+    const medicalTerms = Array.isArray(result.medical_terms)
+        ? result.medical_terms
+            .filter(isRecord)
+            .map((term) => ({ term: typeof term.term === 'string' ? term.term : '' }))
+            .filter((term) => term.term)
+        : undefined;
+
+    return {
+        ...result,
+        entities,
+        patient_info: patientInfo,
+        classification,
+        medical_terms: medicalTerms,
+    };
+}
 
 const FileManager: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const [currentFolder, setCurrentFolder] = useState('uploads');
-    const [ocrResult, setOcrResult] = useState<any>(null);
+    const [ocrResult, setOcrResult] = useState<OcrResultView | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const queryClient = useQueryClient();
 
     // Fetch files
     const { data: filesData, isLoading } = useListUploadFiles({ folder: currentFolder });
-    // Accessing nested data structure based on the API response schema
-    const files = (filesData as any)?.files || (filesData as any)?.data?.files || [];
+    const files = getFiles(filesData);
 
     // Get presigned URL mutation
     const { mutateAsync: getPresignedUrl } = useCreateUploadPresigned();
@@ -51,21 +164,22 @@ const FileManager: React.FC = () => {
 
             // Accessing nested data structure
             // The response structure is: response.data.data.url / fields
-            const { url, fields } = ((presignedData as any).data as any).data;
+            const uploadData = getPresignedUpload(presignedData);
+            if (!uploadData) {
+                throw new Error('Presigned upload response is missing');
+            }
 
             // 2. Upload to S3
             const formData = new FormData();
             // Add fields first (policy, signature, etc.)
-            if (fields) {
-                Object.entries(fields).forEach(([key, value]) => {
-                    formData.append(key, value as string);
-                });
-            }
+            Object.entries(uploadData.fields).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
             // Add file last
             formData.append('file', file);
 
             // Use fetch for presigned POST to S3 (avoid central API instance since this posts to external URL)
-            await fetch(url, {
+            await fetch(uploadData.url, {
                 method: 'POST',
                 body: formData
             });
@@ -81,16 +195,17 @@ const FileManager: React.FC = () => {
     const handleOcr = async (fileUrl: string) => {
         const toastId = toast.loading('OCR analizi yapılıyor...');
         try {
-            const result = await processOcr({
+            const response = await processOcr({
                 data: {
                     imagePath: fileUrl,
                     autoCrop: true
                 }
             });
 
-            // Handle both axios response and direct data response
-            const responseData = result as any;
-            const data = responseData.data?.result || responseData.result;
+            const data = getOcrResult(response);
+            if (!data) {
+                throw new Error('OCR response is missing result data');
+            }
 
             setOcrResult(data);
             setIsModalOpen(true);
@@ -106,7 +221,8 @@ const FileManager: React.FC = () => {
 
         const toastId = toast.loading('Dosya siliniyor...');
         try {
-            await deleteFile({ key } as any);
+            const deleteParams: DeleteUploadFilesParams = { key };
+            await deleteFile({ params: deleteParams });
             toast.success('Dosya silindi', { id: toastId });
             queryClient.invalidateQueries({ queryKey: ['/api/upload/files'] });
         } catch (error) {
@@ -140,7 +256,7 @@ const FileManager: React.FC = () => {
                                 <div>
                                     <h4 className="font-medium mb-2">Çıkarılan Metin</h4>
                                     <div className="bg-gray-50 p-3 rounded text-sm font-mono whitespace-pre-wrap h-64 overflow-y-auto border">
-                                        {ocrResult.entities?.map((e: any) => e.text).join('\n')}
+                                        {ocrResult.entities?.map((entity) => entity.text).join('\n')}
                                     </div>
                                 </div>
                                 <div>
@@ -155,14 +271,14 @@ const FileManager: React.FC = () => {
                                         {ocrResult.classification && (
                                             <div className="bg-purple-50 p-3 rounded border border-purple-100">
                                                 <span className="text-xs font-bold text-purple-700 uppercase">Belge Tipi</span>
-                                                <p className="text-sm">{ocrResult.classification.type} (%{Math.round(ocrResult.classification.confidence * 100)})</p>
+                                                <p className="text-sm">{ocrResult.classification.type} (%{Math.round((ocrResult.classification.confidence ?? 0) * 100)})</p>
                                             </div>
                                         )}
                                         {ocrResult.medical_terms && ocrResult.medical_terms.length > 0 && (
                                             <div className="bg-green-50 p-3 rounded border border-green-100">
                                                 <span className="text-xs font-bold text-green-700 uppercase">Tıbbi Terimler</span>
                                                 <div className="flex flex-wrap gap-1 mt-1">
-                                                    {ocrResult.medical_terms.map((term: any, idx: number) => (
+                                                    {ocrResult.medical_terms.map((term, idx) => (
                                                         <span key={idx} className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
                                                             {term.term}
                                                         </span>
@@ -248,14 +364,14 @@ const FileManager: React.FC = () => {
                     </div>
                 ) : (
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {files.map((file: any) => (
+                        {files.map((file) => (
                             <li key={file.key} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
                                 <div className="flex items-center">
                                     <DocumentIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
                                     <div>
                                         <p className="text-sm font-medium text-gray-900 dark:text-white">{file.filename}</p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {formatSize(file.size)} • {new Date(file.last_modified).toLocaleDateString()}
+                                            {formatSize(file.size)} • {file.lastModified ? new Date(file.lastModified).toLocaleDateString() : '-'}
                                         </p>
                                     </div>
                                 </div>

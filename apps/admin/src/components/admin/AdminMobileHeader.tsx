@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, Search, Bell, Bot, Command } from 'lucide-react';
+import { Menu, Search, Bell, Bot } from 'lucide-react';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 import { useComposerStore } from '../../stores/composerStore';
 

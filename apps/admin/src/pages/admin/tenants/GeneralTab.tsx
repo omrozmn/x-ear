@@ -14,7 +14,6 @@ interface ExtendedTenant {
     maxUsers?: number;
     product_code?: string;
     productCode?: string;
-    [key: string]: any;
 }
 
 interface GeneralTabProps {
@@ -22,30 +21,46 @@ interface GeneralTabProps {
     onUpdate: () => void;
 }
 
+type TenantStatus = 'active' | 'trial' | 'suspended' | 'cancelled';
+
+interface TenantFormData {
+    name: string;
+    owner_email: string;
+    status: TenantStatus;
+    max_users: number;
+    product_code: string;
+}
+
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+            message?: string;
+        };
+    };
+}
+
 export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
     const queryClient = useQueryClient();
     const [isPending, setIsPending] = useState(false);
 
-    // Helper to get initial value with fallback for snake_case/camelCase
-    const getInitialValue = (keySnake: string, keyCamel: string, defaultValue: any) => {
-        return tenant[keySnake] ?? tenant[keyCamel] ?? defaultValue;
-    };
-
-    const [formData, setFormData] = useState({
-        name: getInitialValue('name', 'name', ''),
-        owner_email: getInitialValue('owner_email', 'ownerEmail', ''),
-        status: getInitialValue('status', 'status', 'active'),
-        max_users: getInitialValue('max_users', 'maxUsers', 5),
-        product_code: getInitialValue('product_code', 'productCode', 'xear_hearing')
+    const [formData, setFormData] = useState<TenantFormData>({
+        name: tenant.name ?? '',
+        owner_email: tenant.owner_email ?? tenant.ownerEmail ?? '',
+        status: (tenant.status as TenantStatus | undefined) ?? 'active',
+        max_users: tenant.max_users ?? tenant.maxUsers ?? 5,
+        product_code: tenant.product_code ?? tenant.productCode ?? 'xear_hearing'
     });
 
     useEffect(() => {
         setFormData({
-            name: getInitialValue('name', 'name', ''),
-            owner_email: getInitialValue('owner_email', 'ownerEmail', ''),
-            status: getInitialValue('status', 'status', 'active'),
-            max_users: getInitialValue('max_users', 'maxUsers', 5),
-            product_code: getInitialValue('product_code', 'productCode', 'xear_hearing')
+            name: tenant.name ?? '',
+            owner_email: tenant.owner_email ?? tenant.ownerEmail ?? '',
+            status: (tenant.status as TenantStatus | undefined) ?? 'active',
+            max_users: tenant.max_users ?? tenant.maxUsers ?? 5,
+            product_code: tenant.product_code ?? tenant.productCode ?? 'xear_hearing'
         });
     }, [tenant]);
 
@@ -68,10 +83,11 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
             // Invalidate queries to refresh data
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Update tenant error:', error);
-            const message = error.response?.data?.error?.message
-                || error.response?.data?.message
+            const apiError = error as ApiErrorLike;
+            const message = apiError.response?.data?.error?.message
+                || apiError.response?.data?.message
                 || 'Güncelleme başarısız';
             toast.error(message);
         } finally {
@@ -108,7 +124,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                     <label className="block text-sm font-medium text-gray-700">Durum</label>
                     <select
                         value={formData.status}
-                        onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                        onChange={e => setFormData({ ...formData, status: e.target.value as TenantStatus })}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         <option value="active">Aktif</option>
@@ -126,7 +142,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         {Object.entries(PRODUCT_REGISTRY)
-                            .filter(([_, config]) => config.enabled && config.creatable)
+                            .filter(([, config]) => config.enabled && config.creatable)
                             .map(([key, config]) => (
                                 <option key={key} value={key}>{config.name}</option>
                             ))
@@ -139,7 +155,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                     <input
                         type="number"
                         value={formData.max_users}
-                        onChange={e => setFormData({ ...formData, max_users: parseInt(e.target.value) })}
+                        onChange={e => setFormData({ ...formData, max_users: Number.parseInt(e.target.value, 10) || 1 })}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         min={1}
                     />

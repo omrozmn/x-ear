@@ -1,5 +1,12 @@
 import React from 'react';
-import { useListAffiliateDetails, useListAffiliateCommissions, CommissionRead } from '@/lib/api-client';
+import {
+  useListAffiliateDetails,
+  useListAffiliateCommissions,
+  type AffiliateRead,
+  type CommissionRead,
+  type ResponseEnvelopeAffiliateRead,
+  type ResponseEnvelopeListCommissionRead,
+} from '@/lib/api-client';
 import { Link } from '@tanstack/react-router';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
@@ -8,53 +15,94 @@ interface AffiliateDetailPageProps {
   affiliateId: string;
 }
 
+interface AffiliateDetail extends AffiliateRead {
+  referralCode?: string;
+}
+
+interface AffiliateCommission extends CommissionRead {
+  event?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getAffiliate(data: ResponseEnvelopeAffiliateRead | undefined): AffiliateDetail | null {
+  const affiliate = data?.data;
+  if (!affiliate) {
+    return null;
+  }
+
+  const record = isRecord(affiliate) ? affiliate : null;
+  const referralCode = typeof record?.referralCode === 'string' ? record.referralCode : undefined;
+
+  return {
+    ...affiliate,
+    referralCode,
+  };
+}
+
+function getCommissions(data: ResponseEnvelopeListCommissionRead | undefined): AffiliateCommission[] {
+  if (!Array.isArray(data?.data)) {
+    return [];
+  }
+
+  return data.data.map((commission) => {
+    const record = isRecord(commission) ? commission : null;
+    const event = typeof record?.event === 'string' ? record.event : undefined;
+
+    return {
+      ...commission,
+      event,
+    };
+  });
+}
+
 const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }) => {
   const { isMobile } = useAdminResponsive();
   const idAsNumber = parseInt(affiliateId, 10);
   const { data: affiliateData, isLoading: loadingAffiliate } = useListAffiliateDetails(idAsNumber);
-  const { data: commissionsData, isLoading: loadingCommissions } = useListAffiliateCommissions(idAsNumber);
+  const { data: commissionsData } = useListAffiliateCommissions(idAsNumber);
 
-  const affiliate = (affiliateData as any)?.data;
-  const commissions = (commissionsData as any)?.data;
+  const affiliate = getAffiliate(affiliateData);
+  const commissions = getCommissions(commissionsData);
 
   if (loadingAffiliate) return <div className={`text-center text-gray-500 dark:text-gray-400 ${isMobile ? 'p-4' : 'p-8'}`}>Yükleniyor...</div>;
   if (!affiliate) return <div className={`text-center text-red-500 dark:text-red-400 ${isMobile ? 'p-4' : 'p-8'}`}>Affiliate bulunamadı.</div>;
 
-  const totalEarnings = commissions?.filter((c: CommissionRead) => c.status !== 'cancelled').reduce((sum: number, c: CommissionRead) => sum + c.amount, 0) || 0;
+  const totalEarnings = commissions
+    .filter((commission) => commission.status !== 'cancelled')
+    .reduce((sum, commission) => sum + commission.amount, 0);
 
   const columns = [
     {
       key: 'createdAt',
       header: 'Tarih',
-      label: 'Tarih',
-      render: (c: any) => c.createdAt ? new Date(c.createdAt).toLocaleDateString('tr-TR') : '-',
+      render: (commission: AffiliateCommission) => commission.createdAt ? new Date(commission.createdAt).toLocaleDateString('tr-TR') : '-',
     },
     {
       key: 'event',
       header: 'Olay / Tip',
-      label: 'Olay / Tip',
-      render: (c: any) => c.event,
+      render: (commission: AffiliateCommission) => commission.event ?? '-',
     },
     {
       key: 'status',
       header: 'Durum',
-      label: 'Durum',
-      render: (c: any) => (
+      render: (commission: AffiliateCommission) => (
         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-          ${c.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-            c.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' : 
+          ${commission.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+            commission.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' :
             'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'}`}>
-          {c.status}
+          {commission.status ?? '-'}
         </span>
       ),
     },
     {
       key: 'amount',
       header: 'Tutar',
-      label: 'Tutar',
-      render: (c: any) => (
+      render: (commission: AffiliateCommission) => (
         <span className="font-mono">
-          {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(c.amount)}
+          {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(commission.amount)}
         </span>
       ),
       align: 'right' as const,
@@ -67,7 +115,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
       <div className={`flex items-center ${isMobile ? 'flex-col gap-4' : 'justify-between'}`}>
         <div className={`flex items-center gap-4 ${isMobile ? 'w-full' : ''}`}>
           <Link to="/affiliates" className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-sm text-gray-900 dark:text-white touch-feedback">← Geri</Link>
-          <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Affiliate Detayı: {affiliate.id}</h1>
+          <h1 className={`font-bold text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Affiliate Detayı: {String(affiliate.id)}</h1>
         </div>
       </div>
 
@@ -77,7 +125,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
         <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
           <div>
             <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Referans Kodu</label>
-            <div className="mt-1 font-mono text-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded inline-block">{affiliate.referralCode}</div>
+            <div className="mt-1 font-mono text-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded inline-block">{affiliate.referralCode ?? affiliate.code}</div>
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Durum</label>
@@ -121,9 +169,9 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
         {isMobile ? (
           <div className="p-4">
             <ResponsiveTable
-              data={commissions || []}
+              data={commissions}
               columns={columns}
-              keyExtractor={(c: any) => c.id}
+              keyExtractor={(commission) => String(commission.id)}
               emptyMessage="Henüz komisyon kaydı bulunmuyor."
             />
           </div>
@@ -138,24 +186,24 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {commissions?.map((c: any) => (
-                <tr key={c.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{c.event}</td>
+              {commissions.map((commission) => (
+                <tr key={String(commission.id)}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{commission.createdAt ? new Date(commission.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{commission.event ?? '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                          ${c.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-                        c.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' : 
+                          ${commission.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+                        commission.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' :
                         'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'}`}>
-                      {c.status}
+                      {commission.status ?? '-'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-mono">
-                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(c.amount)}
+                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(commission.amount)}
                   </td>
                 </tr>
               ))}
-              {(!commissions || commissions.length === 0) && (
+              {commissions.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">Henüz komisyon kaydı bulunmuyor.</td>
                 </tr>

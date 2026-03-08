@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useListAdminInventory } from '@/lib/api-client';
+import type { DeviceRead, ResponseEnvelopeListDeviceRead } from '@/api/generated/schemas';
 import {
     CubeIcon,
     MagnifyingGlassIcon,
@@ -8,6 +9,40 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+
+interface PaginationInfo {
+    total: number;
+    totalPages: number;
+}
+
+interface AdminInventoryItem extends DeviceRead {
+    tenantName?: string;
+    serialNumberLeft?: string;
+    serialNumberRight?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getInventoryItems(data: ResponseEnvelopeListDeviceRead | undefined): AdminInventoryItem[] {
+    if (!Array.isArray(data?.data)) {
+        return [];
+    }
+
+    return data.data.filter((item): item is AdminInventoryItem => isRecord(item) && typeof item.id === 'string');
+}
+
+function getPagination(data: ResponseEnvelopeListDeviceRead | undefined): PaginationInfo | null {
+    if (!isRecord(data?.meta)) {
+        return null;
+    }
+
+    return {
+        total: typeof data.meta.total === 'number' ? data.meta.total : 0,
+        totalPages: typeof data.meta.totalPages === 'number' ? data.meta.totalPages : 0,
+    };
+}
 
 const AdminInventoryPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
@@ -24,8 +59,8 @@ const AdminInventoryPage: React.FC = () => {
         category: categoryFilter || undefined
     });
 
-    const inventory = (inventoryData as any)?.inventory || (inventoryData as any)?.data?.inventory || [];
-    const pagination = (inventoryData as any)?.pagination || (inventoryData as any)?.data?.pagination;
+    const inventory = getInventoryItems(inventoryData);
+    const pagination = getPagination(inventoryData);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -50,10 +85,10 @@ const AdminInventoryPage: React.FC = () => {
             header: 'Cihaz / Ürün',
             sortable: true,
             sortKey: 'brand',
-            render: (item: any) => (
+            render: (item: AdminInventoryItem) => (
                 <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{item.brand} {item.model}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{item.type} - {item.ear}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{item.brand} {item.model || ''}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{item.name} - {item.ear || '-'}</div>
                 </div>
             )
         },
@@ -61,7 +96,7 @@ const AdminInventoryPage: React.FC = () => {
             key: 'serialNumber',
             header: 'Seri No',
             sortable: true,
-            render: (item: any) => (
+            render: (item: AdminInventoryItem) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                     {item.serialNumber || item.serialNumberLeft || item.serialNumberRight || '-'}
                 </span>
@@ -72,8 +107,8 @@ const AdminInventoryPage: React.FC = () => {
             header: 'Kategori',
             mobileHidden: true,
             sortable: true,
-            render: (item: any) => (
-                <span className="text-sm text-gray-500 dark:text-gray-400">{item.category}</span>
+            render: (item: AdminInventoryItem) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">{item.category || '-'}</span>
             )
         },
         {
@@ -82,7 +117,7 @@ const AdminInventoryPage: React.FC = () => {
             mobileHidden: true,
             sortable: true,
             sortKey: 'tenantName',
-            render: (item: any) => (
+            render: (item: AdminInventoryItem) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">{item.tenantName || item.tenantId || '-'}</span>
             )
         },
@@ -90,7 +125,7 @@ const AdminInventoryPage: React.FC = () => {
             key: 'status',
             header: 'Durum',
             sortable: true,
-            render: (item: any) => getStatusBadge(item.status)
+            render: (item: AdminInventoryItem) => getStatusBadge(item.status || '-')
         }
     ];
 
@@ -173,7 +208,7 @@ const AdminInventoryPage: React.FC = () => {
                     <ResponsiveTable
                         data={inventory}
                         columns={columns}
-                        keyExtractor={(item: any) => item.id}
+                        keyExtractor={(item: AdminInventoryItem) => item.id}
                         emptyMessage="Kayıt bulunamadı"
                     />
                 )}

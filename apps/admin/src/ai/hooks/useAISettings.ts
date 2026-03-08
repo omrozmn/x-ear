@@ -80,11 +80,10 @@ export interface UseAISettingsReturn {
  * Fetch AI settings from the backend
  */
 async function fetchAISettings(): Promise<AISettingsData> {
-  const response = await adminApi<AISettingsData>({
+  return adminApi<AISettingsData>({
     url: '/api/ai/admin/settings',
     method: 'GET',
   });
-  return (response as any).data || response;
 }
 
 // =============================================================================

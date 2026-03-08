@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Search,
@@ -9,7 +9,6 @@ import {
   EyeOff,
   RefreshCw,
   Edit,
-  Trash2
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
@@ -20,26 +19,125 @@ import {
   useListAdminUsers,
   useListAdminUserAll,
   useUpdateAdminUserAll,
+  type AdminUsersAllUser,
+  type PaginationMeta,
+  type UpdateAdminUserAllPayload,
 } from '@/lib/api-client';
 import Pagination from '@/components/ui/Pagination';
 import { TenantAutocomplete } from '@/components/ui/TenantAutocomplete';
-import { UserRead } from '@/api/generated/schemas';
+import type { SchemasUsersUserCreate } from '@/api/generated/schemas';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
 
 // Local type definitions to handle the mix of generated types and manual needs
-type AdminUserRole = 'super_admin' | 'admin' | 'support' | 'tenant_admin' | 'user' | 'doctor' | 'secretary';
-const AdminUserRoleValues = ['super_admin', 'admin', 'support', 'tenant_admin', 'user', 'doctor', 'secretary'];
+const AdminUserRoleValues = ['super_admin', 'admin', 'support', 'tenant_admin', 'user', 'doctor', 'secretary'] as const;
+type AdminUserRole = (typeof AdminUserRoleValues)[number];
+type UserType = 'admin' | 'tenant';
 
-interface ExtendedUser extends UserRead {
-  // Add compatible fields for display
+interface ExtendedUser extends AdminUsersAllUser {
   tenantName?: string;
-  tenant_name?: string;
-  // Allow for snake_case variants if they come from raw API
-  first_name?: string;
-  last_name?: string;
-  last_login?: string;
-  created_at?: string;
+}
+
+interface UserFormData {
+  email: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  role: AdminUserRole;
+  password: string;
+  user_type: UserType;
+  tenant_id: string;
+}
+
+interface UsersResponseData {
+  users: ExtendedUser[];
+  pagination?: PaginationMeta;
+}
+
+interface UsersResponseShape extends UsersResponseData {
+  data?: UsersResponseData;
+}
+
+interface ApiErrorPayload {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+      };
+    };
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function extractUsersResponse(value: unknown): UsersResponseData {
+  if (!isRecord(value)) {
+    return { users: [] };
+  }
+
+  const response = value as unknown as UsersResponseShape;
+  return {
+    users: response.users ?? response.data?.users ?? [],
+    pagination: response.pagination ?? response.data?.pagination,
+  };
+}
+
+function isApiError(error: unknown): error is ApiErrorPayload {
+  return isRecord(error);
+}
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (isApiError(error)) {
+    return error.response?.data?.error?.message ?? fallback;
+  }
+  return fallback;
+}
+
+function getUserTenantId(user: ExtendedUser): string {
+  return user.tenantId ?? user.tenant_id ?? '';
+}
+
+function getUserFirstName(user: ExtendedUser): string {
+  return user.firstName ?? user.first_name ?? '';
+}
+
+function getUserLastName(user: ExtendedUser): string {
+  return user.lastName ?? user.last_name ?? '';
+}
+
+function getUserUsername(user: ExtendedUser): string {
+  return user.username ?? '';
+}
+
+function getUserLastLogin(user: ExtendedUser): string {
+  return user.lastLogin ?? user.last_login ?? '';
+}
+
+function getUserCreatedAt(user: ExtendedUser): string {
+  return user.createdAt ?? user.created_at ?? '';
+}
+
+function getUserTenantName(user: ExtendedUser): string {
+  return user.tenantName ?? user.tenant_name ?? '';
+}
+
+function getUserIsActive(user: ExtendedUser): boolean {
+  return user.isActive ?? user.is_active ?? false;
+}
+
+function getInitialFormData(userType: UserType, role: AdminUserRole): UserFormData {
+  return {
+    email: '',
+    username: '',
+    first_name: '',
+    last_name: '',
+    role,
+    password: '',
+    user_type: userType,
+    tenant_id: '',
+  };
 }
 
 export const Users: React.FC = () => {
@@ -71,16 +169,7 @@ export const Users: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form Data
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    first_name: '',
-    last_name: '',
-    role: 'support',
-    password: '',
-    user_type: 'admin', // 'admin' | 'tenant'
-    tenant_id: ''
-  });
+  const [formData, setFormData] = useState<UserFormData>(getInitialFormData('admin', 'support'));
 
   // --- Data Fetching ---
 
@@ -103,12 +192,10 @@ export const Users: React.FC = () => {
   // --- Derived Data ---
 
   // Admin Users List
-  const adminUsersList = ((adminUsersData as any)?.users || (adminUsersData as any)?.data?.users || []) as ExtendedUser[];
-  const adminPagination = (adminUsersData as any)?.pagination || (adminUsersData as any)?.data?.pagination;
+  const { users: adminUsersList, pagination: adminPagination } = extractUsersResponse(adminUsersData);
 
   // Tenant Users List (Backend-paginated)
-  const rawTenantUsers = ((tenantUsersData as any)?.users || (tenantUsersData as any)?.data?.users || []) as ExtendedUser[];
-  const tenantPagination = (tenantUsersData as any)?.pagination || (tenantUsersData as any)?.data?.pagination;
+  const { users: rawTenantUsers, pagination: tenantPagination } = extractUsersResponse(tenantUsersData);
 
   // --- Handlers ---
 
@@ -126,29 +213,25 @@ export const Users: React.FC = () => {
   };
 
   const handleAddClick = () => {
-    setFormData({
-      email: '',
-      username: '',
-      first_name: '',
-      last_name: '',
-      role: activeTab === 'admin' ? 'support' : 'user',
-      password: '',
-      user_type: activeTab === 'tenant' ? 'tenant' : 'admin',
-      tenant_id: ''
-    });
+    setFormData(
+      getInitialFormData(
+        activeTab === 'tenant' ? 'tenant' : 'admin',
+        activeTab === 'admin' ? 'support' : 'user'
+      )
+    );
     setIsAddModalOpen(true);
   };
 
   const handleEditClick = (user: ExtendedUser) => {
     setSelectedUser(user);
-    const tenantId = user.tenantId || (user as any).tenant_id || '';
+    const tenantId = getUserTenantId(user);
 
     setFormData({
       email: user.email || '',
-      username: (user as any).username || '',
-      first_name: user.firstName || user.first_name || '',
-      last_name: user.lastName || user.last_name || '',
-      role: user.role || 'user',
+      username: getUserUsername(user),
+      first_name: getUserFirstName(user),
+      last_name: getUserLastName(user),
+      role: (user.role as AdminUserRole | undefined) || 'user',
       password: '',
       user_type: tenantId ? 'tenant' : 'admin',
       tenant_id: tenantId
@@ -175,22 +258,16 @@ export const Users: React.FC = () => {
     }
 
     try {
-      // Construct payload with explicit snake_case keys
-      const payload: any = {
+      const payload: SchemasUsersUserCreate = {
         email: formData.email,
         password: formData.password,
-        username: formData.username,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+        username: formData.username || undefined,
+        firstName: formData.first_name || undefined,
+        lastName: formData.last_name || undefined,
         role: formData.role,
-        is_active: true
+        tenantId: formData.user_type === 'tenant' ? formData.tenant_id : '',
+        isActive: true,
       };
-
-      if (formData.user_type === 'tenant') {
-        payload.tenant_id = formData.tenant_id;
-      }
-
-      // @ts-ignore: generated type might vary
       await createAdminUser({ data: payload });
 
       toast.success(`Kullanıcı başarıyla oluşturuldu`);
@@ -200,8 +277,8 @@ export const Users: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
 
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || 'Kullanıcı oluşturulamadı');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Kullanıcı oluşturulamadı'));
     } finally {
       setIsSubmitting(false);
     }
@@ -213,7 +290,7 @@ export const Users: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const payload: any = {
+      const payload: UpdateAdminUserAllPayload = {
         email: formData.email,
         username: formData.username,
         first_name: formData.first_name,
@@ -235,8 +312,8 @@ export const Users: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
 
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || 'Güncelleme başarısız');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
     } finally {
       setIsSubmitting(false);
     }
@@ -245,7 +322,7 @@ export const Users: React.FC = () => {
   const handleStatusToggleClick = (user: ExtendedUser) => {
     setUserToToggle({
       id: user.id!,
-      status: !!(user.isActive ?? (user as any).is_active)
+      status: getUserIsActive(user)
     });
     setConfirmModalOpen(true);
   };
@@ -256,13 +333,13 @@ export const Users: React.FC = () => {
     try {
       await updateAnyTenantUser({
         userId: userToToggle.id,
-        data: { is_active: !userToToggle.status } as any
+        data: { is_active: !userToToggle.status }
       });
       toast.success(`Kullanıcı ${!userToToggle.status ? 'aktif' : 'pasif'} duruma getirildi`);
       setConfirmModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
-    } catch (err: any) {
+    } catch (error: unknown) {
       toast.error('Durum değiştirilemedi');
     } finally {
       setIsSubmitting(false);
@@ -272,7 +349,7 @@ export const Users: React.FC = () => {
   // --- Components ---
 
   const RoleBadge = ({ role }: { role?: string }) => {
-    const colors: any = {
+    const colors: Record<string, string> = {
       super_admin: 'bg-red-100 text-red-800',
       admin: 'bg-blue-100 text-blue-800',
       support: 'bg-indigo-100 text-indigo-800',
@@ -308,7 +385,7 @@ export const Users: React.FC = () => {
             <div className="ml-4">
               <div className="text-sm font-medium text-gray-900 dark:text-white">{fullName}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500">{(user as any).username}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500">{getUserUsername(user)}</div>
             </div>
           </div>
         );
@@ -328,7 +405,7 @@ export const Users: React.FC = () => {
       sortKey: 'tenantName',
       render: (user: ExtendedUser) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {user.tenantName || (user as any).tenant_name || '-'}
+          {getUserTenantName(user) || '-'}
         </span>
       )
     }] : []),
@@ -338,7 +415,7 @@ export const Users: React.FC = () => {
       sortable: true,
       sortKey: 'isActive',
       render: (user: ExtendedUser) => {
-        const isActive = user.isActive ?? (user as any).is_active;
+        const isActive = getUserIsActive(user);
         return <StatusBadge active={isActive} />;
       }
     },
@@ -348,7 +425,7 @@ export const Users: React.FC = () => {
       mobileHidden: true,
       sortable: true,
       render: (user: ExtendedUser) => {
-        const lastLogin = user.lastLogin || (user as any).last_login;
+        const lastLogin = getUserLastLogin(user);
         return (
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {lastLogin ? new Date(lastLogin).toLocaleDateString('tr-TR') : '-'}
@@ -363,7 +440,7 @@ export const Users: React.FC = () => {
       sortable: true,
       sortKey: 'createdAt',
       render: (user: ExtendedUser) => {
-        const createdAt = user.createdAt || (user as any).created_at;
+        const createdAt = getUserCreatedAt(user);
         return (
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {createdAt ? new Date(createdAt).toLocaleDateString('tr-TR') : '-'}
@@ -375,7 +452,7 @@ export const Users: React.FC = () => {
       key: 'actions',
       header: 'İşlemler',
       render: (user: ExtendedUser) => {
-        const isActive = user.isActive ?? (user as any).is_active;
+        const isActive = getUserIsActive(user);
         return (
           <div className="flex justify-end space-x-2">
             <button
@@ -552,11 +629,11 @@ export const Users: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Tipi</label>
                 <div className="flex space-x-4">
                   <label className="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="user_type" value="admin" checked={formData.user_type === 'admin'} onChange={e => setFormData({ ...formData, user_type: e.target.value })} className="text-blue-600 focus:ring-blue-500" />
+                    <input type="radio" name="user_type" value="admin" checked={formData.user_type === 'admin'} onChange={() => setFormData({ ...formData, user_type: 'admin' })} className="text-blue-600 focus:ring-blue-500" />
                     <span>Sistem Yöneticisi</span>
                   </label>
                   <label className="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="user_type" value="tenant" checked={formData.user_type === 'tenant'} onChange={e => setFormData({ ...formData, user_type: e.target.value })} className="text-blue-600 focus:ring-blue-500" />
+                    <input type="radio" name="user_type" value="tenant" checked={formData.user_type === 'tenant'} onChange={() => setFormData({ ...formData, user_type: 'tenant' })} className="text-blue-600 focus:ring-blue-500" />
                     <span>Abone (Tenant) Kullanıcısı</span>
                   </label>
                 </div>
@@ -610,7 +687,7 @@ export const Users: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Rol</label>
-                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as AdminUserRole })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
                   {AdminUserRoleValues.map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
               </div>
@@ -670,7 +747,7 @@ export const Users: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Rol</label>
-                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as AdminUserRole })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
                   {AdminUserRoleValues.map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
               </div>
@@ -703,7 +780,7 @@ export const Users: React.FC = () => {
                     {(selectedUser.firstName || selectedUser.first_name || selectedUser.email?.[0] || '?').substring(0, 1).toUpperCase()}
                   </div>
                   <div>
-                    <div className="text-lg font-medium text-gray-900">{selectedUser.firstName || selectedUser.first_name} {selectedUser.lastName || selectedUser.last_name}</div>
+                    <div className="text-lg font-medium text-gray-900">{getUserFirstName(selectedUser)} {getUserLastName(selectedUser)}</div>
                     <div className="text-gray-500">{selectedUser.email}</div>
                     <div className="text-xs text-gray-400 uppercase mt-1">{selectedUser.role}</div>
                   </div>
@@ -712,24 +789,24 @@ export const Users: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="text-gray-500">Kullanıcı Adı</div>
-                    <div className="font-medium">{(selectedUser as any).username || '-'}</div>
+                    <div className="font-medium">{getUserUsername(selectedUser) || '-'}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">Durum</div>
-                    <div className="font-medium"><StatusBadge active={selectedUser.isActive ?? (selectedUser as any).is_active} /></div>
+                    <div className="font-medium"><StatusBadge active={getUserIsActive(selectedUser)} /></div>
                   </div>
                   <div>
                     <div className="text-gray-500">Son Giriş</div>
-                    <div className="font-medium">{(selectedUser.lastLogin || (selectedUser as any).last_login) ? new Date(selectedUser.lastLogin || (selectedUser as any).last_login).toLocaleString('tr-TR') : '-'}</div>
+                    <div className="font-medium">{getUserLastLogin(selectedUser) ? new Date(getUserLastLogin(selectedUser)).toLocaleString('tr-TR') : '-'}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">Oluşturulma</div>
-                    <div className="font-medium">{(selectedUser.createdAt || (selectedUser as any).created_at) ? new Date(selectedUser.createdAt || (selectedUser as any).created_at).toLocaleString('tr-TR') : '-'}</div>
+                    <div className="font-medium">{getUserCreatedAt(selectedUser) ? new Date(getUserCreatedAt(selectedUser)).toLocaleString('tr-TR') : '-'}</div>
                   </div>
-                  {(selectedUser.tenantName || (selectedUser as any).tenant_name) && (
+                  {getUserTenantName(selectedUser) && (
                     <div className="col-span-2">
                       <div className="text-gray-500">Abone (Tenant)</div>
-                      <div className="font-medium">{selectedUser.tenantName || (selectedUser as any).tenant_name}</div>
+                      <div className="font-medium">{getUserTenantName(selectedUser)}</div>
                     </div>
                   )}
                 </div>

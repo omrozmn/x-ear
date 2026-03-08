@@ -1,5 +1,5 @@
 import React from 'react';
-import { XMarkIcon, UserGroupIcon, CurrencyDollarIcon, ChartBarIcon, CalendarIcon, ShoppingBagIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, UserGroupIcon, CurrencyDollarIcon, ChartBarIcon, ShoppingBagIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { adminApi } from '@/lib/apiMutator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -54,6 +54,10 @@ interface AffiliateDetails {
     recent_commissions: Commission[];
 }
 
+interface ApiErrorLike {
+    message?: string;
+}
+
 const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
     affiliateId,
     isOpen,
@@ -78,7 +82,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
             toast.success('Affiliate durumu güncellendi');
             onStatusChange();
         },
-        onError: (error: any) => {
+        onError: (error: ApiErrorLike) => {
             toast.error(`Hata: ${error.message || 'Durum güncellenemedi'}`);
         }
     });
@@ -146,7 +150,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
 
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-                        Hata: {(error as any).message || 'Veri yüklenemedi'}
+                        Hata: {(error as ApiErrorLike).message || 'Veri yüklenemedi'}
                     </div>
                 )}
 

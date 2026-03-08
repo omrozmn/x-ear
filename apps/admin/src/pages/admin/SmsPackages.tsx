@@ -10,33 +10,71 @@ import { Button, Input, Textarea } from '@x-ear/ui-web';
 import {
     useListAdminSmPackages,
     useCreateAdminSmPackages,
-    useUpdateAdminSmPackage
+    useUpdateAdminSmPackage,
+    type DetailedSmsPackageRead,
+    type ListAdminSmPackagesParams,
+    type ResponseEnvelopeListDetailedSmsPackageRead,
+    type SmsPackageCreate,
+    type SmsPackageUpdate,
 } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '../../components/ui/Pagination';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 
+interface PackagePagination {
+    total?: number;
+    totalPages?: number;
+}
+
+interface PackageFormData {
+    name: string;
+    description: string;
+    smsCount: number;
+    price: number;
+    currency: string;
+    isActive: boolean;
+}
+
+function getPackages(data: ResponseEnvelopeListDetailedSmsPackageRead | undefined): DetailedSmsPackageRead[] {
+    return Array.isArray(data?.data) ? data.data : [];
+}
+
+function getPagination(data: ResponseEnvelopeListDetailedSmsPackageRead | undefined): PackagePagination {
+    const meta = data?.meta;
+    return {
+        total: meta?.total ?? 0,
+        totalPages: meta?.totalPages ?? 1,
+    };
+}
+
+function toFormData(pkg?: DetailedSmsPackageRead | null): PackageFormData {
+    return {
+        name: pkg?.name ?? '',
+        description: pkg?.description ?? '',
+        smsCount: pkg?.smsCount ?? 1000,
+        price: typeof pkg?.price === 'number' ? pkg.price : Number(pkg?.price ?? 0),
+        currency: 'TRY',
+        isActive: pkg?.isActive ?? true,
+    };
+}
+
 export default function SMSPackagesPage() {
     const { isMobile } = useAdminResponsive();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingPkg, setEditingPkg] = useState<any>(null);
+    const [editingPkg, setEditingPkg] = useState<DetailedSmsPackageRead | null>(null);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const packageParams: ListAdminSmPackagesParams = { page, limit };
 
-    const { data: packagesData, isLoading, refetch } = useListAdminSmPackages({ page, limit } as any);
+    const { data: packagesData, isLoading, refetch } = useListAdminSmPackages(packageParams);
 
     const createMutation = useCreateAdminSmPackages();
     const updateMutation = useUpdateAdminSmPackage();
 
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        smsCount: 1000,
-        price: 0,
-        currency: 'TRY',
-        isActive: true
-    });
+    const [formData, setFormData] = useState<PackageFormData>(toFormData());
+    const packages = getPackages(packagesData);
+    const pagination = getPagination(packagesData);
 
     const handleSave = async () => {
         if (!formData.name || formData.smsCount <= 0 || formData.price < 0) {
@@ -45,28 +83,32 @@ export default function SMSPackagesPage() {
         }
 
         try {
+            const payload: SmsPackageCreate = {
+                name: formData.name,
+                description: formData.description,
+                smsCount: formData.smsCount,
+                price: formData.price,
+                currency: formData.currency,
+                isActive: formData.isActive,
+            };
+
             if (editingPkg) {
+                const updatePayload: SmsPackageUpdate = payload;
                 await updateMutation.mutateAsync({
                     packageId: editingPkg.id,
-                    data: {
-                        name: formData.name,
-                        description: formData.description,
-                        smsCount: formData.smsCount,
-                        price: formData.price,
-                        isActive: formData.isActive
-                    }
+                    data: updatePayload
                 });
                 toast.success('Paket güncellendi');
             } else {
                 await createMutation.mutateAsync({
-                    data: formData
+                    data: payload
                 });
                 toast.success('Paket oluşturuldu');
             }
 
             setIsCreateOpen(false);
             setEditingPkg(null);
-            setFormData({ name: '', description: '', smsCount: 1000, price: 0, currency: 'TRY', isActive: true });
+            setFormData(toFormData());
             refetch();
         } catch (error) {
             toast.error('İşlem başarısız');
@@ -74,16 +116,9 @@ export default function SMSPackagesPage() {
         }
     };
 
-    const openEdit = (pkg: any) => {
+    const openEdit = (pkg: DetailedSmsPackageRead) => {
         setEditingPkg(pkg);
-        setFormData({
-            name: pkg.name,
-            description: pkg.description || '',
-            smsCount: pkg.smsCount,
-            price: pkg.price,
-            currency: pkg.currency,
-            isActive: pkg.isActive
-        });
+        setFormData(toFormData(pkg));
         setIsCreateOpen(true);
     };
 
@@ -104,7 +139,7 @@ export default function SMSPackagesPage() {
                 {isLoading ? (
                     <div className="col-span-3 flex justify-center p-8"><Loader2 className="animate-spin text-gray-400 dark:text-gray-500" /></div>
                 ) : (
-                    ((packagesData as any)?.packages || (packagesData as any)?.data || []).map((pkg: any) => (
+                    packages.map((pkg) => (
                         <div key={pkg.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 relative group">
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button variant="ghost" size="sm" onClick={() => openEdit(pkg)} className="touch-feedback">
@@ -134,7 +169,7 @@ export default function SMSPackagesPage() {
                                 <div className="text-right">
                                     <span className="text-xs text-gray-500 dark:text-gray-400 block">Fiyat</span>
                                     <span className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
-                                        {(pkg.price || 0).toLocaleString('tr-TR', { style: 'currency', currency: pkg.currency || 'TRY' })}
+                                        {Number(pkg.price || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
                                     </span>
                                 </div>
                             </div>
@@ -144,8 +179,8 @@ export default function SMSPackagesPage() {
             </div>
             <Pagination
                 currentPage={page}
-                totalPages={(packagesData as any)?.pagination?.totalPages || (packagesData as any)?.data?.pagination?.totalPages || 1}
-                totalItems={(packagesData as any)?.pagination?.total || (packagesData as any)?.data?.pagination?.total || 0}
+                totalPages={pagination.totalPages ?? 1}
+                totalItems={pagination.total ?? 0}
                 itemsPerPage={limit}
                 onPageChange={setPage}
                 onItemsPerPageChange={setLimit}

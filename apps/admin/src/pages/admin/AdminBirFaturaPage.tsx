@@ -5,18 +5,115 @@ import {
     useListAdminBirfaturaLogs
 } from '@/lib/api-client';
 import {
-    FileText,
     ArrowUpRight,
     ArrowDownLeft,
     AlertTriangle,
-    CheckCircle,
     Clock,
     RefreshCw,
-    Search
 } from 'lucide-react';
 import Pagination from '../../components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
-import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import {
+    type BirFaturaLogEntry,
+    type BirFaturaLogsResponse,
+    type BirFaturaStats,
+    type ResponseEnvelopeBirFaturaInvoicesResponse,
+    type ResponseEnvelopeBirFaturaLogsResponse,
+    type ResponseEnvelopeBirFaturaStats,
+} from '@/lib/api-client';
+
+interface BirFaturaInvoiceView {
+    id: string;
+    invoiceNumber?: string;
+    invoiceDate?: string;
+    createdAt?: string;
+    patientName?: string;
+    receiverName?: string;
+    senderName?: string;
+    currency?: string;
+    totalAmount?: number;
+    devicePrice?: number;
+    edocumentStatus?: string;
+    status?: string;
+    ettn?: string;
+    birfaturaUuid?: string;
+}
+
+interface BirFaturaPagination {
+    total: number;
+    totalPages: number;
+    limit: number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getNumber(value: unknown): number | undefined {
+    if (typeof value === 'number') {
+        return value;
+    }
+
+    if (typeof value === 'string') {
+        const parsed = Number(value);
+        return Number.isNaN(parsed) ? undefined : parsed;
+    }
+
+    return undefined;
+}
+
+function getStats(data: ResponseEnvelopeBirFaturaStats | undefined): BirFaturaStats | null {
+    return data?.data ?? null;
+}
+
+function getInvoices(data: ResponseEnvelopeBirFaturaInvoicesResponse | undefined): BirFaturaInvoiceView[] {
+    const invoices = data?.data?.invoices;
+    if (!Array.isArray(invoices)) {
+        return [];
+    }
+
+    return invoices
+        .filter(isRecord)
+        .map((invoice) => ({
+            id: String(invoice.id ?? invoice.ettn ?? invoice.birfaturaUuid ?? invoice.invoiceNumber ?? invoice.createdAt ?? ''),
+            invoiceNumber: typeof invoice.invoiceNumber === 'string' ? invoice.invoiceNumber : undefined,
+            invoiceDate: typeof invoice.invoiceDate === 'string' ? invoice.invoiceDate : undefined,
+            createdAt: typeof invoice.createdAt === 'string' ? invoice.createdAt : undefined,
+            patientName: typeof invoice.patientName === 'string' ? invoice.patientName : undefined,
+            receiverName: typeof invoice.receiverName === 'string' ? invoice.receiverName : undefined,
+            senderName: typeof invoice.senderName === 'string' ? invoice.senderName : undefined,
+            currency: typeof invoice.currency === 'string' ? invoice.currency : undefined,
+            totalAmount: getNumber(invoice.totalAmount),
+            devicePrice: getNumber(invoice.devicePrice),
+            edocumentStatus: typeof invoice.edocumentStatus === 'string' ? invoice.edocumentStatus : undefined,
+            status: typeof invoice.status === 'string' ? invoice.status : undefined,
+            ettn: typeof invoice.ettn === 'string' ? invoice.ettn : undefined,
+            birfaturaUuid: typeof invoice.birfaturaUuid === 'string' ? invoice.birfaturaUuid : undefined,
+        }))
+        .filter((invoice) => invoice.id);
+}
+
+function getLogs(data: ResponseEnvelopeBirFaturaLogsResponse | undefined): BirFaturaLogEntry[] {
+    const response: BirFaturaLogsResponse | null | undefined = data?.data;
+    return Array.isArray(response?.logs) ? response.logs : [];
+}
+
+function getPagination(
+    invoiceData: ResponseEnvelopeBirFaturaInvoicesResponse | undefined,
+    logData: ResponseEnvelopeBirFaturaLogsResponse | undefined,
+    activeTab: 'outgoing' | 'incoming' | 'logs',
+): BirFaturaPagination | null {
+    const rawPagination = activeTab === 'logs' ? logData?.data?.pagination : invoiceData?.data?.pagination;
+    if (!isRecord(rawPagination)) {
+        return null;
+    }
+
+    return {
+        total: getNumber(rawPagination.total) ?? 0,
+        totalPages: getNumber(rawPagination.totalPages) ?? 1,
+        limit: getNumber(rawPagination.limit) ?? 20,
+    };
+}
 
 const AdminBirFaturaPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
@@ -38,10 +135,10 @@ const AdminBirFaturaPage: React.FC = () => {
         limit: 20
     }, { query: { enabled: activeTab === 'logs' } });
 
-    const stats = (statsData as any)?.data;
-    const invoices = (invoicesData as any)?.invoices || (invoicesData as any)?.data?.invoices || [];
-    const logs = (logsData as any)?.logs || (logsData as any)?.data?.logs || [];
-    const pagination = activeTab === 'logs' ? ((logsData as any)?.pagination || (logsData as any)?.data?.pagination) : ((invoicesData as any)?.pagination || (invoicesData as any)?.data?.pagination);
+    const stats = getStats(statsData);
+    const invoices = getInvoices(invoicesData);
+    const logs = getLogs(logsData);
+    const pagination = getPagination(invoicesData, logsData, activeTab);
 
     return (
         <div className={isMobile ? 'p-4 pb-safe' : 'p-6 max-w-7xl mx-auto'}>
@@ -174,10 +271,10 @@ const AdminBirFaturaPage: React.FC = () => {
                             <tbody className="divide-y divide-gray-200">
                                 {logsLoading ? (
                                     <tr><td colSpan={5} className="p-8 text-center">Yükleniyor...</td></tr>
-                                ) : logs.map((log: any) => (
+                                ) : logs.map((log) => (
                                     <tr key={log.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 text-gray-500">
-                                            {new Date(log.createdAt).toLocaleString('tr-TR')}
+                                            {log.createdAt ? new Date(log.createdAt).toLocaleString('tr-TR') : '-'}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -213,13 +310,13 @@ const AdminBirFaturaPage: React.FC = () => {
                             <tbody className="divide-y divide-gray-200">
                                 {invoicesLoading ? (
                                     <tr><td colSpan={7} className="p-8 text-center">Yükleniyor...</td></tr>
-                                ) : invoices.map((inv: any) => (
+                                ) : invoices.map((inv) => (
                                     <tr key={inv.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 font-medium text-gray-900">
                                             {inv.invoiceNumber || '-'}
                                         </td>
                                         <td className="px-6 py-4 text-gray-500">
-                                            {new Date(inv.invoiceDate || inv.createdAt).toLocaleDateString('tr-TR')}
+                                            {new Date(inv.invoiceDate || inv.createdAt || Date.now()).toLocaleDateString('tr-TR')}
                                         </td>
                                         <td className="px-6 py-4 text-gray-700">
                                             {activeTab === 'outgoing'

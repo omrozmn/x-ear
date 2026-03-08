@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import {
-    MessageSquare,
     CheckCircle,
     XCircle,
     FileText,
-    Search,
     Loader2,
     ExternalLink
 } from 'lucide-react';
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input } from '@x-ear/ui-web';
 import {
     useListSmAdminHeaders,
-    useUpdateSmAdminHeaderStatus
+    useUpdateSmAdminHeaderStatus,
+    type HeaderStatusUpdate,
+    type SmsHeaderRequestRead,
+    type ResponseEnvelopeListSmsHeaderRequestRead,
 } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -19,21 +20,44 @@ import Pagination from '../../components/ui/Pagination';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 import { ResponsiveTable } from '../../components/responsive/ResponsiveTable';
 
+interface SmsHeaderDocument {
+    url: string;
+    filename: string;
+}
+
+interface SmsHeaderRequestView extends SmsHeaderRequestRead {
+    documentsView: SmsHeaderDocument[];
+}
+
+function getHeaders(data: ResponseEnvelopeListSmsHeaderRequestRead | undefined): SmsHeaderRequestView[] {
+    const headers = Array.isArray(data?.data) ? data.data : [];
+
+    return headers.map((header) => ({
+        ...header,
+        documentsView: Array.isArray(header.documents)
+            ? header.documents.map((url, index) => ({
+                url,
+                filename: url.split('/').pop() || `document-${index + 1}`,
+            }))
+            : [],
+    }));
+}
+
 export default function SMSHeadersPage() {
     const { isMobile } = useAdminResponsive();
     const [statusFilter, setStatusFilter] = useState('pending');
-    const [selectedHeader, setSelectedHeader] = useState<any>(null);
+    const [selectedHeader, setSelectedHeader] = useState<SmsHeaderRequestView | null>(null);
     const [rejectionReason, setRejectionReason] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
 
-    const { data: headersData, isLoading, refetch } = useListSmAdminHeaders({
-        status: statusFilter,
+    const { data: headersData, isLoading, refetch } = useListSmAdminHeaders<ResponseEnvelopeListSmsHeaderRequestRead>({
         page,
-        limit
-    } as any);
+        per_page: limit
+    });
 
     const updateStatusMutation = useUpdateSmAdminHeaderStatus();
+    const headers = getHeaders(headersData).filter((header) => (header.status ?? 'pending') === statusFilter);
 
     const handleStatusUpdate = async (status: 'approved' | 'rejected') => {
         if (!selectedHeader) return;
@@ -43,12 +67,14 @@ export default function SMSHeadersPage() {
         }
 
         try {
+            const payload: HeaderStatusUpdate = {
+                status,
+                rejection_reason: status === 'rejected' ? rejectionReason : undefined
+            };
+
             await updateStatusMutation.mutateAsync({
                 headerId: selectedHeader.id,
-                data: {
-                    status,
-                    rejection_reason: status === 'rejected' ? rejectionReason : undefined
-                }
+                data: payload
             });
             toast.success(`Başlık ${status === 'approved' ? 'onaylandı' : 'reddedildi'}`);
             setSelectedHeader(null);
@@ -65,21 +91,21 @@ export default function SMSHeadersPage() {
             key: 'tenantId',
             header: 'Tenant ID',
             mobileHidden: true,
-            render: (header: any) => (
+            render: (header: SmsHeaderRequestView) => (
                 <span className="font-mono text-xs text-gray-500 dark:text-gray-400">{header.tenantId}</span>
             )
         },
         {
             key: 'headerText',
             header: 'Başlık',
-            render: (header: any) => (
+            render: (header: SmsHeaderRequestView) => (
                 <span className="font-bold text-gray-900 dark:text-white">{header.headerText}</span>
             )
         },
         {
             key: 'headerType',
             header: 'Tip',
-            render: (header: any) => (
+            render: (header: SmsHeaderRequestView) => (
                 <span className="text-gray-600 dark:text-gray-400">
                     {header.headerType === 'company_title' ? 'Firma Unvanı' :
                         header.headerType === 'trademark' ? 'Marka Tescili' :
@@ -91,9 +117,9 @@ export default function SMSHeadersPage() {
             key: 'documents',
             header: 'Belgeler',
             mobileHidden: true,
-            render: (header: any) => header.documents?.length > 0 ? (
+            render: (header: SmsHeaderRequestView) => header.documentsView.length > 0 ? (
                 <div className="flex gap-2">
-                    {header.documents.map((doc: any, i: number) => (
+                    {header.documentsView.map((doc, i) => (
                         <a
                             key={i}
                             href={doc.url}
@@ -113,7 +139,7 @@ export default function SMSHeadersPage() {
         {
             key: 'status',
             header: 'Durum',
-            render: (header: any) => (
+            render: (header: SmsHeaderRequestView) => (
                 <span className={`px-2 py-1 rounded text-xs font-medium ${header.status === 'approved' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
                     header.status === 'rejected' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
                         'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
@@ -125,8 +151,8 @@ export default function SMSHeadersPage() {
         {
             key: 'actions',
             header: 'İşlemler',
-            render: (header: any) => header.status === 'pending' ? (
-                <Button size="sm" onClick={(e: any) => { e.stopPropagation(); setSelectedHeader(header); }} className="touch-feedback">
+            render: (header: SmsHeaderRequestView) => header.status === 'pending' ? (
+                <Button size="sm" onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setSelectedHeader(header); }} className="touch-feedback">
                     İncele
                 </Button>
             ) : null
@@ -162,16 +188,16 @@ export default function SMSHeadersPage() {
                 ) : (
                     <>
                         <ResponsiveTable
-                            data={((headersData as any)?.headers || (headersData as any)?.data || [])}
+                            data={headers}
                             columns={columns}
-                            keyExtractor={(header: any) => header.id}
-                            onRowClick={(header: any) => header.status === 'pending' && setSelectedHeader(header)}
+                            keyExtractor={(header) => header.id}
+                            onRowClick={(header) => header.status === 'pending' && setSelectedHeader(header)}
                             emptyMessage="Bu filtrede kayıt bulunamadı."
                         />
                         <Pagination
                             currentPage={page}
-                            totalPages={(headersData as any)?.pagination?.totalPages || 1}
-                            totalItems={(headersData as any)?.pagination?.total || 0}
+                            totalPages={headersData?.meta?.totalPages ?? 1}
+                            totalItems={headersData?.meta?.total ?? headers.length}
                             itemsPerPage={limit}
                             onPageChange={setPage}
                             onItemsPerPageChange={setLimit}
@@ -204,9 +230,9 @@ export default function SMSHeadersPage() {
 
                                 <div>
                                     <h4 className="font-medium mb-2">Belgeler</h4>
-                                    {selectedHeader.documents?.length > 0 ? (
+                                    {selectedHeader.documentsView.length > 0 ? (
                                         <div className="space-y-2">
-                                            {selectedHeader.documents.map((doc: any, i: number) => (
+                                            {selectedHeader.documentsView.map((doc, i) => (
                                                 <div key={i} className="flex justify-between items-center p-2 border rounded">
                                                     <span className="text-sm truncate max-w-[200px]">{doc.filename}</span>
                                                     <a

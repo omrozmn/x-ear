@@ -9,7 +9,13 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
-import { useListAdminSettings, useUpdateAdminSettings } from '@/lib/api-client';
+import {
+  useListAdminSettings,
+  useUpdateAdminSettings,
+  type ResponseEnvelopeListSystemSettingRead,
+  type SettingItem,
+  type SystemSettingRead,
+} from '@/lib/api-client';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 
 // Define SystemSettings type locally - flexible for form usage
@@ -17,18 +23,65 @@ type SystemSettings = Record<string, unknown>;
 
 type SettingsTab = 'general' | 'email' | 'security' | 'backup' | 'integrations';
 
+function getSettingsMap(data: ResponseEnvelopeListSystemSettingRead | undefined): SystemSettings {
+  const settings = Array.isArray(data?.data) ? data.data : [];
+
+  return settings.reduce<SystemSettings>((acc, setting) => {
+    acc[setting.key] = normalizeSettingValue(setting);
+    return acc;
+  }, {});
+}
+
+function normalizeSettingValue(setting: SystemSettingRead): string | boolean {
+  const value = setting.value ?? '';
+  const normalizedKey = setting.key.toLowerCase();
+
+  if (value === 'true' || value === 'false') {
+    return value === 'true';
+  }
+
+  if (
+    normalizedKey.includes('enabled') ||
+    normalizedKey.includes('mode') ||
+    normalizedKey.includes('secure') ||
+    normalizedKey.includes('auth') ||
+    normalizedKey.includes('logging') ||
+    normalizedKey.includes('whitelist') ||
+    normalizedKey.includes('compression')
+  ) {
+    return value === 'true';
+  }
+
+  return value;
+}
+
+function toSettingItems(data: SystemSettings): SettingItem[] {
+  return Object.entries(data).map(([key, value]) => ({
+    key,
+    value: String(value),
+  }));
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return 'Ayarlar kaydedilemedi';
+}
+
 const Settings: React.FC = () => {
   const { isMobile } = useAdminResponsive();
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   // Fetch settings
   const { data: settingsData, isLoading: isLoadingSettings } = useListAdminSettings();
-  const settings = (settingsData as any)?.data?.settings;
+  const settings = getSettingsMap(settingsData);
 
   // Update settings mutation
   const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateAdminSettings();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<SystemSettings>({
+  const { register, handleSubmit, reset } = useForm<SystemSettings>({
     defaultValues: {
       siteName: 'Admin Panel',
       siteDescription: 'Multi-tenant SaaS Admin Panel',
@@ -74,7 +127,7 @@ const Settings: React.FC = () => {
 
   // Reset form when settings are loaded
   useEffect(() => {
-    if (settings) {
+    if (Object.keys(settings).length > 0) {
       reset(settings);
     }
   }, [settings, reset]);
@@ -82,18 +135,11 @@ const Settings: React.FC = () => {
   const onSubmit = async (data: SystemSettings) => {
     try {
       // Convert flat object to array of settings
-      const settingsArray = Object.entries(data).map(([key, value]) => ({
-        key,
-        value: String(value), // Ensure value is string or handle types as needed
-        is_encrypted: false,
-        description: ''
-      }));
-
-      await updateSettings({ data: settingsArray as any });
+      await updateSettings({ data: toSettingItems(data) });
       toast.success('Ayarlar başarıyla kaydedildi');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error(error.response?.data?.error?.message || 'Ayarlar kaydedilemedi');
+      toast.error(getErrorMessage(error));
     }
   };
 

@@ -5,18 +5,56 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { apiClient } from '@/lib/api';
 import { useListAdminPlans, useListAdminAddons } from '@/lib/api-client';
+import type { AddonRead, DetailedPlanRead } from '@/api/generated/schemas';
 
-// Local type since Tenant is not exported from generated client
+interface ApiErrorLike {
+    response?: {
+        data?: {
+            error?: {
+                message?: string;
+            };
+            message?: string;
+        };
+    };
+}
+
+interface FeatureUsageItem {
+    limit?: number;
+    used?: number;
+    last_reset?: string;
+    lastReset?: string;
+}
+
+type FeatureUsageMap = Record<string, FeatureUsageItem>;
+
+interface TenantAddon {
+    id?: string;
+    addon_id?: string;
+    name?: string;
+    limit_amount?: number;
+    unit_name?: string;
+    price?: number;
+    added_at?: string;
+}
+
+interface TenantSettings {
+    addons?: TenantAddon[];
+}
+
 interface ExtendedTenant {
     id?: string;
-    settings?: Record<string, any>;
+    settings?: TenantSettings;
     status?: string;
     current_plan?: string;
+    currentPlan?: string;
     current_plan_id?: string;
+    currentPlanId?: string;
     subscription_start_date?: string;
+    subscriptionStartDate?: string;
     subscription_end_date?: string;
-    feature_usage?: Record<string, any>;
-    [key: string]: any;
+    subscriptionEndDate?: string;
+    feature_usage?: FeatureUsageMap;
+    featureUsage?: FeatureUsageMap;
 }
 
 interface SubscriptionTabProps {
@@ -24,18 +62,92 @@ interface SubscriptionTabProps {
     onUpdate: () => void;
 }
 
+type BillingInterval = 'MONTHLY' | 'YEARLY';
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    const apiError = error as ApiErrorLike;
+    return apiError.response?.data?.error?.message || apiError.response?.data?.message || fallback;
+}
+
+function isDetailedPlanRead(value: unknown): value is DetailedPlanRead {
+    if (!value || typeof value !== 'object') {
+        return false;
+    }
+
+    const candidate = value as Record<string, unknown>;
+    return typeof candidate.id === 'string' && typeof candidate.name === 'string' && typeof candidate.price === 'number';
+}
+
+function isAddonRead(value: unknown): value is AddonRead {
+    if (!value || typeof value !== 'object') {
+        return false;
+    }
+
+    const candidate = value as Record<string, unknown>;
+    return typeof candidate.id === 'string' && typeof candidate.name === 'string' && typeof candidate.price === 'number';
+}
+
+function getPlans(data: unknown): DetailedPlanRead[] {
+    if (Array.isArray(data)) {
+        return data.filter(isDetailedPlanRead);
+    }
+
+    if (!data || typeof data !== 'object') {
+        return [];
+    }
+
+    if ('plans' in data && Array.isArray(data.plans)) {
+        return data.plans.filter(isDetailedPlanRead);
+    }
+
+    if ('data' in data && data.data && typeof data.data === 'object' && 'plans' in data.data && Array.isArray(data.data.plans)) {
+        return data.data.plans.filter(isDetailedPlanRead);
+    }
+
+    return [];
+}
+
+function getAddons(data: unknown): AddonRead[] {
+    if (Array.isArray(data)) {
+        return data.filter(isAddonRead);
+    }
+
+    if (!data || typeof data !== 'object') {
+        return [];
+    }
+
+    if ('addons' in data && Array.isArray(data.addons)) {
+        return data.addons.filter(isAddonRead);
+    }
+
+    if ('data' in data && data.data && typeof data.data === 'object' && 'addons' in data.data && Array.isArray(data.data.addons)) {
+        return data.data.addons.filter(isAddonRead);
+    }
+
+    return [];
+}
+
+function getFeatureUsage(tenant: ExtendedTenant): FeatureUsageMap {
+    return tenant.feature_usage ?? tenant.featureUsage ?? {};
+}
+
+function getSmsUsage(tenant: ExtendedTenant): FeatureUsageItem {
+    const featureUsage = getFeatureUsage(tenant);
+    return featureUsage.sms ?? featureUsage.SMS ?? {};
+}
+
 export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
     const queryClient = useQueryClient();
 
     // Use generated hooks for reading data (GET usually works fine)
     const { data: plansData } = useListAdminPlans();
-    const plans = (plansData as any)?.data?.plans || (plansData as any)?.plans || [];
+    const plans = getPlans(plansData);
 
     const { data: addonsData } = useListAdminAddons();
-    const addons = (addonsData as any)?.data?.addons || (addonsData as any)?.addons || [];
+    const addons = getAddons(addonsData);
 
     const [selectedPlanId, setSelectedPlanId] = useState(tenant.current_plan_id || '');
-    const [billingInterval, setBillingInterval] = useState('YEARLY');
+    const [billingInterval, setBillingInterval] = useState<BillingInterval>('YEARLY');
     const [selectedAddonId, setSelectedAddonId] = useState('');
     const [selectedSmsPackage, setSelectedSmsPackage] = useState<number | null>(null);
     const [manualSmsLimit, setManualSmsLimit] = useState<number | string>(0);
@@ -50,15 +162,14 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
 
     useEffect(() => {
         setSelectedPlanId(tenant.current_plan_id || tenant.currentPlanId || '');
-        const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
-        const smsLimit = featureUsage?.['sms']?.limit ?? featureUsage?.['SMS']?.limit ?? 0;
+        const smsLimit = getSmsUsage(tenant).limit ?? 0;
         setManualSmsLimit(smsLimit);
     }, [tenant]);
 
     // Use apiClient manually for updates to ensure consistency and avoid auth issues
 
     const handleSubscribe = async () => {
-        if (!selectedPlanId) return;
+        if (!selectedPlanId || !tenant.id) return;
         setLoadingSubscribe(true);
         try {
             await apiClient.post(`/api/admin/tenants/${tenant.id}/subscribe`, {
@@ -69,15 +180,15 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             toast.success('Abonelik güncellendi');
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
-        } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Abonelik güncellenemedi');
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Abonelik güncellenemedi'));
         } finally {
             setLoadingSubscribe(false);
         }
     };
 
     const handleAddAddon = async () => {
-        if (!selectedAddonId) return;
+        if (!selectedAddonId || !tenant.id) return;
         setLoadingAddon(true);
         try {
             await apiClient.post(`/api/admin/tenants/${tenant.id}/addons`, {
@@ -88,16 +199,16 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             setSelectedAddonId('');
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Add addon error:', error);
-            toast.error(error.response?.data?.error?.message || 'Ek özellik eklenemedi');
+            toast.error(getApiErrorMessage(error, 'Ek özellik eklenemedi'));
         } finally {
             setLoadingAddon(false);
         }
     };
 
     const handleRemoveAddon = async () => {
-        if (!confirmDeleteId) return;
+        if (!confirmDeleteId || !tenant.id) return;
         setLoadingRemoveAddon(true);
         try {
             await apiClient.delete(`/api/admin/tenants/${tenant.id}/addons`, {
@@ -107,9 +218,9 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             toast.success('Ek özellik kaldırıldı');
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Remove addon error:', error);
-            toast.error(error.response?.data?.error?.message || 'Ek özellik kaldırılamadı');
+            toast.error(getApiErrorMessage(error, 'Ek özellik kaldırılamadı'));
         } finally {
             setLoadingRemoveAddon(false);
             setConfirmDeleteId(null);
@@ -117,7 +228,11 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
     };
 
     // SMS updates use the general tenant update endpoint
-    const updateTenantFeatureUsage = async (newUsage: any) => {
+    const updateTenantFeatureUsage = async (newUsage: FeatureUsageMap) => {
+        if (!tenant.id) {
+            throw new Error('Tenant bilgisi eksik');
+        }
+
         await apiClient.put(`/api/admin/tenants/${tenant.id}`, {
             feature_usage: newUsage
         });
@@ -131,7 +246,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
         }
         setLoadingSmsUpdate(true);
         try {
-            const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+            const featureUsage = getFeatureUsage(tenant);
             const currentUsage = { ...featureUsage };
             const key = 'sms';
 
@@ -152,9 +267,9 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             toast.success('SMS limiti güncellendi');
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Update SMS limit error:', error);
-            toast.error(error.response?.data?.error?.message || 'SMS limiti güncellenemedi');
+            toast.error(getApiErrorMessage(error, 'SMS limiti güncellenemedi'));
         } finally {
             setLoadingSmsUpdate(false);
         }
@@ -167,7 +282,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
         }
         setLoadingSmsUpdate(true);
         try {
-            const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
+            const featureUsage = getFeatureUsage(tenant);
             const currentUsage = { ...featureUsage };
             const key = 'sms';
 
@@ -193,9 +308,9 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             setManualSmsLimit(newLimit);
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Add SMS package error:', error);
-            toast.error(error.response?.data?.error?.message || 'SMS paketi eklenemedi');
+            toast.error(getApiErrorMessage(error, 'SMS paketi eklenemedi'));
         } finally {
             setLoadingSmsUpdate(false);
         }
@@ -225,9 +340,12 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         <div className="flex justify-between">
                             <span className="text-gray-500">Bitiş:</span>
                             <span className="text-gray-900">
-                                {tenant.subscription_end_date || tenant.subscriptionEndDate
-                                    ? new Date(tenant.subscription_end_date || tenant.subscriptionEndDate!).toLocaleDateString('tr-TR')
+                                {(() => {
+                                    const subscriptionEndDate = tenant.subscription_end_date ?? tenant.subscriptionEndDate;
+                                    return subscriptionEndDate
+                                        ? new Date(subscriptionEndDate).toLocaleDateString('tr-TR')
                                     : '-'}
+                                )()}
                             </span>
                         </div>
                     </div>
@@ -242,31 +360,25 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-gray-500">Toplam Limit:</span>
                             <span className="font-bold text-gray-900">
-                                {(() => {
-                                    const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
-                                    return featureUsage?.['sms']?.limit || featureUsage?.['SMS']?.limit || 0;
-                                })()}
+                                {getSmsUsage(tenant).limit || 0}
                             </span>
                         </div>
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-gray-500">Kullanılan:</span>
                             <span className="text-gray-900">
-                                {(() => {
-                                    const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
-                                    return featureUsage?.['sms']?.used || featureUsage?.['SMS']?.used || 0;
-                                })()}
+                                {getSmsUsage(tenant).used || 0}
                             </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
                             <div
                                 className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500"
-                                style={{ 
+                                style={{
                                     width: `${(() => {
-                                        const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
-                                        const used = featureUsage?.['sms']?.used || 0;
-                                        const limit = featureUsage?.['sms']?.limit || 1;
+                                        const smsUsage = getSmsUsage(tenant);
+                                        const used = smsUsage.used || 0;
+                                        const limit = smsUsage.limit || 1;
                                         return Math.min(100, (used / limit) * 100);
-                                    })()}%` 
+                                    })()}%`
                                 }}
                             ></div>
                         </div>
@@ -274,9 +386,9 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                             <span className="text-gray-500">Kalan:</span>
                             <span className="text-indigo-600 font-bold text-lg">
                                 {(() => {
-                                    const featureUsage = tenant.feature_usage || tenant.featureUsage || {};
-                                    const limit = featureUsage?.['sms']?.limit || 0;
-                                    const used = featureUsage?.['sms']?.used || 0;
+                                    const smsUsage = getSmsUsage(tenant);
+                                    const limit = smsUsage.limit || 0;
+                                    const used = smsUsage.used || 0;
                                     return Math.max(0, limit - used);
                                 })()}
                             </span>
@@ -303,9 +415,9 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                             className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="">Özellik Seç...</option>
-                            {addons.map((addon: any) => (
+                            {addons.map((addon) => (
                                 <option key={addon.id} value={addon.id || ''}>
-                                    {addon.name} ({addon.limit_amount} {addon.unit_name}) - {addon.price} TL
+                                    {addon.name} ({addon.limitAmount ?? 0} {addon.unitName ?? ''}) - {addon.price} TL
                                 </option>
                             ))}
                         </select>
@@ -320,23 +432,23 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                     </div>
 
                     <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden min-h-[150px]">
-                        {((tenant.settings as any)?.addons || []).length === 0 ? (
+                        {(tenant.settings?.addons ?? []).length === 0 ? (
                             <div className="p-4 text-center text-gray-500 text-sm italic">
                                 Henüz eklenmiş özellik yok.
                             </div>
                         ) : (
                             <ul className="divide-y divide-gray-200">
-                                {((tenant.settings as any)?.addons || []).map((addon: any, idx: number) => (
+                                {(tenant.settings?.addons ?? []).map((addon, idx) => (
                                     <li key={idx} className="p-3 flex items-center justify-between hover:bg-white transition-colors">
                                         <div>
                                             <p className="text-sm font-medium text-gray-900">{addon.name}</p>
                                             <p className="text-xs text-gray-500">
-                                                {addon.limit_amount} {addon.unit_name} • {addon.price} TL
+                                                {addon.limit_amount ?? 0} {addon.unit_name ?? ''} • {addon.price ?? 0} TL
                                                 {addon.added_at && ` • ${new Date(addon.added_at).toLocaleDateString()}`}
                                             </p>
                                         </div>
                                         <button
-                                            onClick={() => setConfirmDeleteId(addon.addon_id || addon.id)}
+                                            onClick={() => setConfirmDeleteId(addon.addon_id ?? addon.id ?? null)}
                                             type="button"
                                             disabled={loadingRemoveAddon}
                                             className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
@@ -431,7 +543,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {tenant.feature_usage && Object.entries(tenant.feature_usage).map(([key, value]: [string, any]) => (
+                            {tenant.feature_usage && Object.entries(tenant.feature_usage).map(([key, value]) => (
                                 <tr key={key}>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">{key}</td>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.limit === 0 ? 'Sınırsız' : value.limit}</td>
@@ -441,13 +553,13 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                                     </td>
                                 </tr>
                             ))}
-                            {tenant.featureUsage && Object.entries(tenant.featureUsage).map(([key, value]: [string, any]) => (
+                            {tenant.featureUsage && Object.entries(tenant.featureUsage).map(([key, value]) => (
                                 <tr key={key}>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">{key}</td>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.limit === 0 ? 'Sınırsız' : value.limit}</td>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.used || 0}</td>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-400 text-xs">
-                                        {value.last_reset ? new Date(value.last_reset).toLocaleDateString() : '-'}
+                                        {(value.last_reset || value.lastReset) ? new Date(value.last_reset || value.lastReset || '').toLocaleDateString() : '-'}
                                     </td>
                                 </tr>
                             ))}
@@ -478,7 +590,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="">Plan Seçin...</option>
-                            {plans.map((plan: any) => (
+                            {plans.map((plan) => (
                                 <option key={plan.id} value={plan.id}>{plan.name} ({plan.price} TL)</option>
                             ))}
                         </select>
@@ -487,7 +599,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         <label className="block text-xs font-medium text-gray-500 mb-1">Fatura Dönemi</label>
                         <select
                             value={billingInterval}
-                            onChange={e => setBillingInterval(e.target.value)}
+                            onChange={e => setBillingInterval(e.target.value as BillingInterval)}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="MONTHLY">Aylık</option>

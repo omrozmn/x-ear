@@ -20,15 +20,27 @@ interface Tenant {
     max_users?: number;
     current_plan?: string;
     created_at?: string;
-    settings?: any;
+    settings?: Record<string, unknown>;
     product_code?: string;
+}
+
+interface FeatureUsageItem {
+    limit?: number;
+    used?: number;
+    last_reset?: string;
+    lastReset?: string;
 }
 
 interface ExtendedTenant extends Tenant {
     current_plan_id?: string;
     subscription_start_date?: string;
     subscription_end_date?: string;
-    feature_usage?: Record<string, any>;
+    currentPlan?: string;
+    currentPlanId?: string;
+    subscriptionStartDate?: string;
+    subscriptionEndDate?: string;
+    featureUsage?: Record<string, FeatureUsageItem>;
+    feature_usage?: Record<string, FeatureUsageItem>;
 }
 
 export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: string | null, isOpen: boolean, onClose: () => void }) => {

@@ -1,5 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
 import { ReactNode } from 'react';
-import { PRODUCT_REGISTRY, ProductCode } from '@/config/productRegistry';
 
 interface ProductGuardProps {
     currentProduct: string; // Tenant's product code

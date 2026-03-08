@@ -28,6 +28,8 @@ type AudienceFilters = {
     dateEnd?: string;
 };
 
+type AudienceStatus = NonNullable<AudienceFilters['status']>;
+
 type ExcelPreview = {
     headers: (string | number)[];
     rows: (string | number | undefined)[][];
@@ -236,7 +238,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                         value={audienceFilters.status || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
                             ...prev,
-                            status: event.target.value ? (event.target.value as any) : undefined
+                            status: event.target.value ? (event.target.value as AudienceStatus) : undefined
                         }))}
                         options={[
                             { value: '', label: 'Tümü' },

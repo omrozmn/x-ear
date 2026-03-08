@@ -6,7 +6,7 @@ import {
     ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import Pagination from '@/components/ui/Pagination';
-import { PartyRead } from '@/api/generated/schemas';
+import type { PartyListResponse, PartyRead } from '@/api/generated/schemas';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
 
@@ -14,11 +14,37 @@ import { ResponsiveTable } from '@/components/responsive';
 interface ExtendedParty extends PartyRead {
     tenantName?: string;
     branchName?: string;
-    // Fallbacks
-    first_name?: string;
-    last_name?: string;
-    tc_number?: string;
+    tenant_name?: string;
+    branch_name?: string;
     created_at?: string;
+}
+
+interface PaginationInfo {
+    total: number;
+    totalPages: number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function getPatients(data: PartyListResponse | undefined): ExtendedParty[] {
+    if (!isRecord(data?.data) || !Array.isArray(data.data.parties)) {
+        return [];
+    }
+
+    return data.data.parties.filter((patient): patient is ExtendedParty => isRecord(patient) && typeof patient.id === 'string');
+}
+
+function getPagination(data: PartyListResponse | undefined): PaginationInfo | null {
+    if (!isRecord(data?.data) || !isRecord(data.data.pagination)) {
+        return null;
+    }
+
+    return {
+        total: typeof data.data.pagination.total === 'number' ? data.data.pagination.total : 0,
+        totalPages: typeof data.data.pagination.totalPages === 'number' ? data.data.pagination.totalPages : 0,
+    };
 }
 
 const AdminPatientsPage: React.FC = () => {
@@ -33,8 +59,8 @@ const AdminPatientsPage: React.FC = () => {
         search: search || undefined
     });
 
-    const patients = ((patientsData as any)?.parties || (patientsData as any)?.data?.parties || []) as ExtendedParty[];
-    const pagination = (patientsData as any)?.pagination || (patientsData as any)?.data?.pagination;
+    const patients = getPatients(patientsData);
+    const pagination = getPagination(patientsData);
 
     // Determine total pages safely
     const totalPages = pagination?.totalPages || Math.ceil((pagination?.total || 0) / limit) || 1;
@@ -50,7 +76,7 @@ const AdminPatientsPage: React.FC = () => {
                 day: 'numeric',
                 ...(isMobile ? {} : { hour: '2-digit', minute: '2-digit' })
             });
-        } catch (e) {
+        } catch {
             return '-';
         }
     };
@@ -62,8 +88,8 @@ const AdminPatientsPage: React.FC = () => {
             sortable: true,
             sortKey: 'firstName',
             render: (patient: ExtendedParty) => {
-                const firstName = patient.firstName || patient.first_name || '';
-                const lastName = patient.lastName || patient.last_name || '';
+                const firstName = patient.firstName || '';
+                const lastName = patient.lastName || '';
                 const email = patient.email || '';
                 return (
                     <div className="flex items-center">
@@ -87,7 +113,7 @@ const AdminPatientsPage: React.FC = () => {
             sortable: true,
             sortKey: 'tcNumber',
             render: (patient: ExtendedParty) => {
-                const tcKimlik = patient.tcNumber || patient.tc_number || (patient as any).identity_number || '-';
+                const tcKimlik = patient.tcNumber || patient.identityNumber || '-';
                 return <span className="text-sm text-gray-900 dark:text-white font-mono">{tcKimlik}</span>;
             }
         },
@@ -106,8 +132,8 @@ const AdminPatientsPage: React.FC = () => {
             sortable: true,
             sortKey: 'tenantName',
             render: (patient: ExtendedParty) => {
-                const tenantName = patient.tenantName || (patient as any).tenant_name || '-';
-                const branchName = patient.branchName || (patient as any).branch_name || '-';
+                const tenantName = patient.tenantName || patient.tenant_name || '-';
+                const branchName = patient.branchName || patient.branch_name || '-';
                 return (
                     <div className="flex flex-col">
                         <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">{tenantName}</span>
@@ -123,8 +149,8 @@ const AdminPatientsPage: React.FC = () => {
             sortable: true,
             sortKey: 'createdAt',
             render: (patient: ExtendedParty) => {
-                const createdAt = patient.createdAt || (patient as any).created_at;
-                return <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(createdAt as string)}</span>;
+                const createdAt = patient.createdAt || patient.created_at;
+                return <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(createdAt)}</span>;
             }
         }
     ];
